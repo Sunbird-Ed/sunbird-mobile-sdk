@@ -1,3 +1,5 @@
+export * from "./config/api.config";
+
 export * from "./def/api.response";
 export * from "./def/api.conn";
 export * from "./def/api.interceptor";
