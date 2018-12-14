@@ -23,11 +23,11 @@ export class SunbirdAuthHandler implements APIAuthHandler {
 
     private buildResetTokenAPIRequest(): APIRequest {
         return new APIRequest(
-            `${this.config.baseUrl}/consumer/mobile_device/credential/register`,
+            `${this.config.baseUrl}/consumer/${this.config.mobileAppConsumer}/credential/register`,
             REQUEST_TYPE.POST,
             {
                 'Content-Encoding': 'gzip',
-                'Authorization': this.generateMobileDeviceConsumerBearerToken()
+                'Authorization': `Bearer ${this.generateMobileDeviceConsumerBearerToken()}`
             }
         )
     }
