@@ -10,13 +10,13 @@
   "license": "ISC",
   "peerDependencies": {
     "@angular/core": ">= 5.0.0 < 6",
-    "@ionic-native/http": ">= 3.0.0 < 4"
+    "@ionic-native/http": ">= 4.0.0 < 5"
   },
   "devDependencies": {
     "@angular/compiler": ">= 5.0.0 < 6",
     "@angular/compiler-cli": ">= 5.0.0 < 6",
     "@angular/core": ">= 5.0.0 < 6",
-    "@ionic-native/http": ">= 3.0.0 < 4",
+    "@ionic-native/http": ">= 4.0.0 < 5",
     "jasmine": "^3.3.0",
     "jasmine-ts-console-reporter": "^3.1.1",
     "ng-packagr": "^2.1.0",
