@@ -11,10 +11,7 @@ export class SunbirdAuthHandler implements APIAuthHandler {
     }
 
     resetAuthToken(): Promise<string> {
-        // TODO: provide appropriate path
-        return this.connection.invoke(new APIRequest('', REQUEST_TYPE.POST, {
-            'Authorization': `Bearer ${this.generateMobileDeviceConsumerBearerToken()}`
-        })).then((r: APIResponse) => {
+        return this.connection.invoke(this.buildResetTokenAPIRequest()).then((r: APIResponse) => {
             try {
                 const bearerToken = r.response().result.secret;
                 return Promise.resolve(bearerToken);
@@ -22,6 +19,17 @@ export class SunbirdAuthHandler implements APIAuthHandler {
                 return Promise.reject(e);
             }
         });
+    }
+
+    private buildResetTokenAPIRequest(): APIRequest {
+        return new APIRequest(
+            `${this.config.baseUrl}/consumer/mobile_device/credential/register`,
+            REQUEST_TYPE.POST,
+            {
+                'Content-Encoding': 'gzip',
+                'Authorization': this.generateMobileDeviceConsumerBearerToken()
+            }
+        )
     }
 
     private generateMobileDeviceConsumerBearerToken(): string {
