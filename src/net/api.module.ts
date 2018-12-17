@@ -7,7 +7,9 @@ import {SunbirdSessionApiConnection} from "./impl/sunbird.session.api.conn";
 import {HttpClient} from "./def/http.client";
 import {MobileHttpClient} from "./impl/mobile.http";
 import {APIResponseInterceptor} from "./def/api.interceptor";
-import {SunbirdResponseInterceptor} from "./impl/sunbird.interceptor";
+import {SunbirdUnauthorisedResponseInterceptor} from "./impl/sunbird.unauthorizedResponse.interceptor";
+import {APIAuthHandler} from './def/api.authHandler';
+import {SunbirdAuthHandler} from './impl/sunbird.authHandler';
 
 export class APIModule {
 
@@ -15,10 +17,12 @@ export class APIModule {
         return {
             ngModule: APIModule,
             providers: [
-                {provide: HttpClient, useValue: MobileHttpClient},
-                {provide: APIResponseInterceptor, useValue: SunbirdResponseInterceptor},
-                {provide: APIConnection, useValue: config, useClass: SunbirdAPIConnection},
-                {provide: SessionAPIConnection, useValue: config, useClass: SunbirdSessionApiConnection}
+                {provide: APIConfig, useValue: config},
+                {provide: HttpClient, useClass: MobileHttpClient},
+                {provide: APIResponseInterceptor, useClass: SunbirdUnauthorisedResponseInterceptor},
+                {provide: APIConnection, useClass: SunbirdAPIConnection},
+                {provide: APIAuthHandler, useClass: SunbirdAuthHandler},
+                {provide: SessionAPIConnection, useClass: SunbirdSessionApiConnection}
             ]
         };
     }

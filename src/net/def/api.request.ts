@@ -4,7 +4,6 @@ export enum REQUEST_TYPE {
     PATCH = "PATCH"
 }
 
-
 export class APIRequest {
 
     constructor(public path: string,
@@ -12,7 +11,6 @@ export class APIRequest {
                 public headers?: any,
                 public body?: string,
                 public parameters?: string) {
-
     }
 
 }
