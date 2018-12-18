@@ -1,4 +1,4 @@
-export abstract class APIAuthHandler {
+export abstract class AuthHandler {
 
     /**
      * @return {Promise<string>} returns Bearer Token

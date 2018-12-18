@@ -1,18 +1,16 @@
 import {Injectable} from "@angular/core";
-import {APIRequest, REQUEST_TYPE} from "../def/api.request";
-import {APIResponseInterceptor} from "../def/api.interceptor";
+import {Request, REQUEST_TYPE} from "../def/request";
+import {ResponseInterceptor} from "../def/response-interceptor";
 import {APIConfig} from "../config/api.config";
-import {SunbirdAPIResponse} from "./sunbird.response";
-import {APIResponse} from "../def/api.response";
-import {HTTPResponse} from "@ionic-native/http";
-import {APIConnection} from "../def/api.conn";
+import {Response} from "../def/response";
+import {Connection} from "../def/connection";
 import {HttpClient} from '..';
 
 @Injectable()
-export class SunbirdAPIConnection implements APIConnection{
+export class SunbirdConnection implements Connection {
 
-    constructor(protected http: HttpClient<HTTPResponse>,
-                protected interceptor: APIResponseInterceptor,
+    constructor(protected http: HttpClient,
+                protected interceptor: ResponseInterceptor,
                 protected apiConfig: APIConfig) {
 
     }
@@ -35,29 +33,29 @@ export class SunbirdAPIConnection implements APIConnection{
         this.http.addHeader("Authorization", "Bearer " + token);
     }
 
-    invoke(request: APIRequest): Promise<APIResponse> {
+    invoke(request: Request): Promise<Response> {
         switch (request.type) {
             case REQUEST_TYPE.GET:
                 return this.http.get(request.path, request.headers, request.parameters)
-                    .then((response: HTTPResponse) => {
+                    .then((response: Response) => {
                         return this.intercept(request, response);
                     });
             case REQUEST_TYPE.PATCH:
                 return this.http.patch(request.path, request.headers, request.body!!)
-                    .then((response: HTTPResponse) => {
+                    .then((response: Response) => {
                         return this.intercept(request, response);
                     });;
             case REQUEST_TYPE.POST:
                 return this.http.post(request.path, request.headers, request.body!!)
-                    .then((response: HTTPResponse) => {
+                    .then((response: Response) => {
                         return this.intercept(request, response);
                     });;
         }
     }
 
-    private intercept(request: APIRequest, response: HTTPResponse): Promise<APIResponse> {
+    private intercept(request: Request, response: Response): Promise<Response> {
         return this.interceptor.onResponse(
-            request, new SunbirdAPIResponse(response.status, response.error!!, response.data), this);
+            request, response, this);
     }
 
 }

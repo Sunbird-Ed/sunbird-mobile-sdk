@@ -1,15 +1,14 @@
-import {ModuleWithProviders, NgModule} from "@angular/core";
+import {ModuleWithProviders} from "@angular/core";
 import {APIConfig} from "./config/api.config";
-import {APIConnection} from "./def/api.conn";
-import {SunbirdAPIConnection} from "./impl/sunbird.api.conn";
-import {SessionAPIConnection} from "./def/api.session.conn";
-import {SunbirdSessionApiConnection} from "./impl/sunbird.session.api.conn";
-import {HttpClient} from "./def/http.client";
-import {MobileHttpClient} from "./impl/mobile.http";
-import {APIResponseInterceptor} from "./def/api.interceptor";
-import {SunbirdUnauthorisedResponseInterceptor} from "./impl/sunbird.unauthorizedResponse.interceptor";
-import {APIAuthHandler} from './def/api.authHandler';
-import {SunbirdAuthHandler} from './impl/sunbird.authHandler';
+import {Connection} from "./def/connection";
+import {SunbirdConnection} from "./impl/sunbird-connection";
+import {SessionConnection} from "./def/session-connection";
+import {SunbirdSessionConnection} from "./impl/sunbird-session-connection";
+import {HttpClient} from "./def/http-client";
+import {MobileHttpClient} from "./impl/mobile/mobile-http-client";
+import {ResponseInterceptor} from "./def/response-interceptor";
+import {UnauthorisedResponseInterceptor} from "./impl/mobile/interceptors/unauthorized-response-interceptor";
+import {MobileAuthHandler} from './impl/mobile/mobile-auth-handler';
 
 export class APIModule {
 
@@ -19,10 +18,10 @@ export class APIModule {
             providers: [
                 {provide: APIConfig, useValue: config},
                 {provide: HttpClient, useClass: MobileHttpClient},
-                {provide: APIResponseInterceptor, useClass: SunbirdUnauthorisedResponseInterceptor},
-                {provide: APIConnection, useClass: SunbirdAPIConnection},
-                {provide: APIAuthHandler, useClass: SunbirdAuthHandler},
-                {provide: SessionAPIConnection, useClass: SunbirdSessionApiConnection}
+                {provide: ResponseInterceptor, useClass: UnauthorisedResponseInterceptor},
+                {provide: Connection, useClass: SunbirdConnection},
+                {provide: MobileAuthHandler, useClass: MobileAuthHandler},
+                {provide: SessionConnection, useClass: SunbirdSessionConnection}
             ]
         };
     }

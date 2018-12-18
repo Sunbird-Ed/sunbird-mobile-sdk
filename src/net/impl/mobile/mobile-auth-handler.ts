@@ -1,17 +1,17 @@
-import {APIAuthHandler} from '../def/api.authHandler';
-import {APIConfig} from '../config/api.config';
+import {AuthHandler} from '../../def/auth-handler';
+import {APIConfig} from '../../config/api.config';
 import {Injectable} from '@angular/core';
-import {JWTokenType, JWTUtil} from '../util/jwt.util';
-import {APIConnection, APIRequest, APIResponse, REQUEST_TYPE} from '..';
+import {JWTokenType, JWTUtil} from '../../util/jwt.util';
+import {Connection, Request, REQUEST_TYPE, Response} from '../../index';
 
 @Injectable()
-export class SunbirdAuthHandler implements APIAuthHandler {
+export class MobileAuthHandler implements AuthHandler {
 
-    constructor(private config: APIConfig, private connection: APIConnection) {
+    constructor(private config: APIConfig, private connection: Connection) {
     }
 
-    resetAuthToken(): Promise<string> {
-        return this.connection.invoke(this.buildResetTokenAPIRequest()).then((r: APIResponse) => {
+    public resetAuthToken(): Promise<string> {
+        return this.connection.invoke(this.buildResetTokenAPIRequest()).then((r: Response) => {
             try {
                 const bearerToken = r.response().result.secret;
                 return Promise.resolve(bearerToken);
@@ -21,8 +21,8 @@ export class SunbirdAuthHandler implements APIAuthHandler {
         });
     }
 
-    private buildResetTokenAPIRequest(): APIRequest {
-        return new APIRequest(
+    private buildResetTokenAPIRequest(): Request {
+        return new Request(
             `${this.config.baseUrl}/consumer/${this.config.mobileAppConsumer}/credential/register`,
             REQUEST_TYPE.POST,
             {

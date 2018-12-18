@@ -4,7 +4,7 @@ export enum REQUEST_TYPE {
     PATCH = "PATCH"
 }
 
-export class APIRequest {
+export class Request {
 
     constructor(public path: string,
                 public type: REQUEST_TYPE,

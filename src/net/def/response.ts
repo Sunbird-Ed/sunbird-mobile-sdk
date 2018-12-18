@@ -1,10 +1,13 @@
-import {APIResponse} from "../def/api.response";
+export enum RESPONSE_CODE_TYPE {
+    UNAUTHORISED = 401,
+    SUCCESS = 200
+}
 
-export class SunbirdAPIResponse implements APIResponse{
+export class Response {
 
-    constructor(private responseCode: number,
+    constructor(private responseCode: RESPONSE_CODE_TYPE,
                 private errorMesg: string,
-                private body: string) {
+                private body: any) {
 
     }
 
@@ -17,7 +20,7 @@ export class SunbirdAPIResponse implements APIResponse{
     }
 
     response(): any {
-        return JSON.parse(this.body);
+        return this.body;
     }
 
     success(): boolean {
