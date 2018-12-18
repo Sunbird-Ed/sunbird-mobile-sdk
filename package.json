@@ -4,7 +4,8 @@
   "description": "Heart of the sunbird mobile app. Holds the imporatnat business logic including api calls and db operations.",
   "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "author": "",
   "license": "ISC",
@@ -13,12 +14,20 @@
     "@ionic-native/http": ">= 4.0.0 < 5"
   },
   "devDependencies": {
+    "@types/jest": "^23.3.9",
     "@angular/compiler": ">= 5.0.0 < 6",
     "@angular/compiler-cli": ">= 5.0.0 < 6",
     "@angular/core": ">= 5.0.0 < 6",
     "@ionic-native/http": ">= 4.0.0 < 5",
-    "jasmine": "^3.3.0",
-    "jasmine-ts-console-reporter": "^3.1.1",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/plugin-proposal-decorators": "^7.0.0",
+    "@babel/core": "^7.1.6",
+    "@babel/preset-typescript": "^7.1.0",
+    "@babel/preset-env": "^7.1.0",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^23.4.0",
+    "jest": "^23.6.0",
     "ng-packagr": "^2.1.0",
     "ts-node": ">=3.2.0 <8",
     "tsickle": "^0.27.2",
@@ -40,6 +49,40 @@
     }
   },
   "dependencies": {
+    "jsrsasign": "^8.0.12",
     "moment": "^2.23.0"
+  },
+  "jest": {
+    "browser": false,
+    "rootDir": "./",
+    "roots": [
+      "<rootDir>/src/"
+    ],
+    "moduleDirectories": [
+      "node_modules"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "testMatch": [
+      "**/?(*.)(spec).ts"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "json",
+      "ts",
+      "tsx"
+    ],
+    "transform": {
+      "^.+\\.(ts|js)$": "babel-jest"
+    },
+    "coverageReporters": [
+      "text"
+    ],
+    "moduleNameMapper": {
+      "^@app/(.*)$": "<rootDir>/src/$1"
+    },
+    "transformIgnorePatterns": []
   }
 }

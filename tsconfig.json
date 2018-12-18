@@ -17,6 +17,9 @@
       "dom",
       "es2015"
     ],
+    "types": [
+      "jest"
+    ],
     "moduleResolution": "node"
   },
   "include": [
