@@ -1,5 +1,5 @@
 
-export abstract class DBMigration {
+export abstract class Migration {
 
     targetDbVersion: number;
 

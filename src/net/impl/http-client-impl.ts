@@ -1,6 +1,5 @@
-import {HttpClient} from "../../def/http-client";
-import {Injectable} from "@angular/core";
-import {Response} from "../../def/response";
+import {HttpClient} from "../def/http-client";
+import {Response} from "../def/response";
 
 interface HttpResponse {
     status: number;
@@ -27,17 +26,11 @@ declare var cordova: {
     }
 };
 
-@Injectable()
-export class MobileHttpClient implements HttpClient {
+export class HttpClientImpl implements HttpClient {
 
-    private baseUrl: string;
     private http = cordova.plugin.http;
 
     constructor() {
-    }
-
-    withBaseUrl(baseUrl: string) {
-        this.baseUrl = baseUrl;
     }
 
     addHeaders(headers: any) {
@@ -52,16 +45,16 @@ export class MobileHttpClient implements HttpClient {
         this.http.setHeader('*', key, value);
     }
 
-    get(path: string, headers: any, parameters: any): Promise<Response> {
-        return this.invokeRequest('get', this.baseUrl + path, parameters, headers);
+    get(baseUrl: string, path: string, headers: any, parameters: any): Promise<Response> {
+        return this.invokeRequest('get', baseUrl + path, parameters, headers);
     }
 
-    patch(path: string, headers: any, body: any): Promise<Response> {
-        return this.invokeRequest('patch', this.baseUrl + path, body, headers);
+    patch(baseUrl: string, path: string, headers: any, body: any): Promise<Response> {
+        return this.invokeRequest('patch', baseUrl + path, body, headers);
     }
 
-    post(path: string, headers: any, body: any): Promise<Response> {
-        return this.invokeRequest('patch', this.baseUrl + path, body, headers);
+    post(baseUrl: string, path: string, headers: any, body: any): Promise<Response> {
+        return this.invokeRequest('patch', baseUrl + path, body, headers);
     }
 
     private invokeRequest(type: 'get' | 'post' | 'patch', url: string, parametersOrData: any, headers: { [key: string]: string }): Promise<Response> {

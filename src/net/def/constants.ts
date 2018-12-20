@@ -1,0 +1,1 @@
+export const KEY_API_TOKEN = "key_api_token";

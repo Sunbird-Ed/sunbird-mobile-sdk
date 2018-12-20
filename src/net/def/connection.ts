@@ -1,10 +1,11 @@
 import {Request} from "./request";
 import {Response} from "./response";
+import {ResponseInterceptor} from "./response-interceptor";
 
-export abstract class Connection {
+export interface Connection {
 
-    abstract invoke(request: Request): Promise<Response>
+    addResponseInterceptor(responseInteptor: ResponseInterceptor);
 
-    abstract useAPIToken(token: string);
+    invoke(request: Request): Promise<Response>
 
 }

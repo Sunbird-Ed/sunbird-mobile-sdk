@@ -1,4 +1,4 @@
-export class DBConstant {
+export class Constant {
     static DATE_TYPE = " DATE";
     static TEXT_TYPE = " TEXT";
     static INT_TYPE = " INTEGER";

@@ -1,21 +1,39 @@
-import {Injectable} from "@angular/core";
-import {DBContext} from "./db.context";
-import {DBService} from "../def/db.service";
+import {Context} from "../def/context";
+import {Service} from "../def/service";
+import {InsertQuery, ReadQuery, UpdateQuery} from "../def/query";
 
-@Injectable()
-export class DBhelper implements DBService {
+declare var db: {
+    init: (dbName, dbVersion, migrations, callback) => void,
+    read: (distinct: boolean,
+           table: string,
+           columns: Array<string>,
+           selection: string,
+           selectionArgs: Array<string>,
+           groupBy: string,
+           having: string,
+           orderBy: string,
+           limit: string,
+           success,
+           error) => void,
+    execute: (query: string, success, error) => void,
+    insert: (table: string, model: string, success, error) => void,
+    beginTransaction: () => void,
+    endTransaction: (isOperationSuccessful: boolean) => void
+};
 
-    private context: DBContext;
+export class ServiceImpl implements Service {
+
+    private context: Context;
     private initialized: boolean = false;
 
-    constructor(context: DBContext) {
+    constructor(context: Context) {
         this.context = context;
     }
 
     private init() {
         this.initialized = true;
 
-        (<any>window).db.init(this.context.getDBName(),
+        db.init(this.context.getDBName(),
             this.context.getDBVersion(),
             this.prepareMigrationList(),
             value => {
@@ -49,37 +67,29 @@ export class DBhelper implements DBService {
 
     execute(query: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            (<any>window).db.execute(query, value => {
-               resolve(value);
+            db.execute(query, value => {
+                resolve(value);
             }, error => {
                 reject(error);
             });
         })
     }
 
-    read(distinct,
-         table,
-         columns,
-         selection,
-         selectionArgs,
-         groupBy,
-         having,
-         orderBy,
-         limit): Promise<string> {
+    read(readQuery: ReadQuery): Promise<string> {
 
         if (!this.initialized) {
             this.init();
         }
         return new Promise<string>((resolve, reject) => {
-            (<any>window).db.query(distinct,
-                table,
-                columns,
-                selection,
-                selectionArgs,
-                groupBy,
-                having,
-                orderBy,
-                limit, (json: string) => {
+            db.read(readQuery.distinct,
+                readQuery.table,
+                readQuery.columns!!,
+                readQuery.selection!!,
+                readQuery.selectionArgs!!,
+                readQuery.groupBy!!,
+                readQuery.having!!,
+                readQuery.orderBy!!,
+                readQuery.limit!!, (json: string) => {
                     resolve(json);
                 }, (error: string) => {
                     reject(error);
@@ -87,14 +97,14 @@ export class DBhelper implements DBService {
         });
     }
 
-    insert(tableName: string, json: string): Promise<number> {
+    insert(inserQuery: InsertQuery): Promise<number> {
         if (!this.initialized) {
             this.init();
         }
 
         return new Promise<number>((resolve, reject) => {
-            (<any>window).db.insert(tableName,
-                json, (number: number) => {
+            db.insert(inserQuery.table,
+                inserQuery.modelJson, (number: number) => {
                     resolve(number);
                 }, (error: string) => {
                     reject(error);
@@ -102,7 +112,7 @@ export class DBhelper implements DBService {
         });
     }
 
-    update(query: string): Promise<boolean> {
+    update(updateQuery: UpdateQuery): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
 
@@ -111,11 +121,11 @@ export class DBhelper implements DBService {
     }
 
     beginTransaction(): void {
-        (<any>window).db.beginTransaction();
+       db.beginTransaction();
     }
 
     endTransaction(isOperationSuccessful: boolean): void {
-        (<any>window).db.endTransaction(isOperationSuccessful);
+        db.endTransaction(isOperationSuccessful);
     }
 
 

@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {DBService} from "../../db";
+import {DbService} from "../../db";
 import {TelemetryService} from "..";
 import {TelemetryStat} from "..";
 import {TelemetrySyncStat} from "..";
@@ -22,7 +22,7 @@ export class SunbirdTelemetryService implements TelemetryService {
 
     private static readonly KEY_SYNC_TIME = "telemetry_sync_time";
 
-    constructor(private dbService: DBService, private decorator: TelemetryDecorator) {
+    constructor(private dbService: DbService, private decorator: TelemetryDecorator) {
     }
 
     audit(): void {

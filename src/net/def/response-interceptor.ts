@@ -2,7 +2,7 @@ import {Request} from "./request";
 import {Response} from "./response";
 import {Connection} from './connection';
 
-export abstract class ResponseInterceptor {
+export interface ResponseInterceptor {
 
     /**
      * Intercept response
@@ -12,5 +12,5 @@ export abstract class ResponseInterceptor {
      * @param {Connection} connection - The connection used to establish the API
      * @return {Promise<Response>} The response after interceptor mutation
      */
-    abstract onResponse(request: Request, response: Response, connection: Connection): Promise<Response>;
+    onResponse(request: Request, response: Response, connection: Connection): Promise<Response>;
 }
