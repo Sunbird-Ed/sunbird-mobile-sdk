@@ -1,11 +1,16 @@
-import {ApiConfig} from '..';
+import {ApiConfig, Connection, Request, REQUEST_TYPE, Response} from '..';
 import {JWTokenType, JWTUtil} from '../util/jwt.util';
-import {Connection, Request, REQUEST_TYPE, Response} from '..';
 
 export class MobileAuthHandler {
 
-    public resetAuthToken(config: ApiConfig, connection: Connection): Promise<string> {
-        return connection.invoke(this.buildResetTokenAPIRequest(config)).then((r: Response) => {
+    private config: ApiConfig;
+
+    constructor(config: ApiConfig) {
+        this.config = config;
+    }
+
+    public resetAuthToken(connection: Connection): Promise<string> {
+        return connection.invoke(this.buildResetTokenAPIRequest(this.config)).then((r: Response) => {
             try {
                 const bearerToken = r.response().result.secret;
                 return Promise.resolve(bearerToken);
@@ -21,15 +26,15 @@ export class MobileAuthHandler {
             REQUEST_TYPE.POST,
             {
                 'Content-Encoding': 'gzip',
-                'Authorization': `Bearer ${this.generateMobileDeviceConsumerBearerToken(config)}`
+                'Authorization': `Bearer ${this.generateMobileDeviceConsumerBearerToken()}`
             }
         )
     }
 
-    private generateMobileDeviceConsumerBearerToken(config: ApiConfig): string {
-        const mobileAppConsumerKey = config.mobileAppKey;
-        const mobileAppConsumerSecret = config.mobileAppSecret;
-        const mobileDeviceConsumerKey = config.producerId + '-' + config.deviceId;
+    private generateMobileDeviceConsumerBearerToken(): string {
+        const mobileAppConsumerKey = this.config.mobileAppKey;
+        const mobileAppConsumerSecret = this.config.mobileAppSecret;
+        const mobileDeviceConsumerKey = this.config.producerId + '-' + this.config.deviceId;
 
         const mobileDeviceConsumerSecret = JWTUtil.createJWToken(mobileAppConsumerKey, mobileAppConsumerSecret, JWTokenType.HS256);
         const mobileDeviceConsumerBearerToken = JWTUtil.createJWToken(mobileDeviceConsumerKey, mobileDeviceConsumerSecret, JWTokenType.HS256);

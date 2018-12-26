@@ -7,5 +7,9 @@ export type ApiConfig = {
     channelId: string,
     producerId: string,
     deviceId: string,
-
+    auth: {
+        redirect_url: string;
+        logout_url: string;
+        auth_url: string;
+    }
 }
