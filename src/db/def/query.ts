@@ -1,6 +1,6 @@
 export type ReadQuery = {
 
-    distinct: boolean,
+    distinct?: boolean,
     table: string,
     columns?: Array<string>,
     selection?: string,

@@ -1,6 +1,6 @@
 import { Migration } from "./migration";
 
-export abstract class Context {
+export abstract class DbConfig {
 
     abstract getDBName(): string
     abstract getDBVersion(): number

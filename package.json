@@ -10,15 +10,10 @@
   "author": "",
   "license": "ISC",
   "peerDependencies": {
-    "@angular/core": ">= 5.0.0 < 6",
     "cordova-plugin-advanced-http": "^2.0.2"
   },
   "devDependencies": {
     "@types/jest": "^23.3.9",
-    "@angular/compiler": ">= 5.0.0 < 6",
-    "@angular/compiler-cli": ">= 5.0.0 < 6",
-    "@angular/core": ">= 5.0.0 < 6",
-    "@ionic-native/http": ">= 4.0.0 < 5",
     "@babel/plugin-proposal-class-properties": "^7.1.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
     "@babel/plugin-proposal-decorators": "^7.0.0",
@@ -29,25 +24,10 @@
     "babel-jest": "^23.4.0",
     "cordova-plugin-advanced-http": "^2.0.2",
     "jest": "^23.6.0",
-    "ng-packagr": "^2.1.0",
     "ts-node": ">=3.2.0 <8",
     "tsickle": "^0.27.2",
     "tslib": "^1.9.0",
     "typescript": "^2.5.0"
-  },
-  "ngPackage": {
-    "$schema": "./node_modules/ng-packagr/ng-package.schema.json",
-    "dest": "./dist",
-    "workingDirectory": "../.ng_build",
-    "lib": {
-      "entryFile": "./src/index.ts",
-      "umdModuleIds": {
-        "ionic-angular": "ionicBundle"
-      },
-      "externals": {
-        "ionic-angular": "ionicBundle"
-      }
-    }
   },
   "dependencies": {
     "jsrsasign": "^8.0.12",

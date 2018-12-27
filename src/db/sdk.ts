@@ -1,6 +1,7 @@
-import {Context} from "./def/context";
+import {DbConfig} from "./def/db.config";
 import {Service} from "./def/service";
 import {ServiceImpl} from "./impl/service-impl";
+import {InsertQuery, ReadQuery, UpdateQuery} from "./def/query";
 
 export class Sdk {
 
@@ -12,18 +13,14 @@ export class Sdk {
         throw new Error("Should not be instantiated!!");
     }
 
-    public static init(dbContext: Context) {
+    public static init(dbConfig: DbConfig) {
         if (Sdk.dbService == undefined) {
-            Sdk.dbService = new ServiceImpl(dbContext);
+            Sdk.dbService = new ServiceImpl(dbConfig);
         }
     }
 
     public static getService(): Service {
-        if (Sdk.dbService == undefined) {
-            throw new Error("db is not initialized yet!! Call DbSdk.init() with valid db context.");
-        }
         return Sdk.dbService;
     }
-
 
 }

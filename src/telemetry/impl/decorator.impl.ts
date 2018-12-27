@@ -1,8 +1,6 @@
-import { TelemetryDecorator } from "../def/telemetry.decorator";
-import { Injectable } from "@angular/core";
+import { TelemetryDecorator } from "..";
 
-@Injectable()
-export class SunbirdTelemetryDecorator implements TelemetryDecorator {
+export class TelemetryDecoratorImpl implements TelemetryDecorator {
     
     decorate(event: any): any {
         return event;

@@ -18,6 +18,13 @@ export class Sdk {
         Sdk.apiConfig = apiConfig;
     }
 
+    /**
+     * Initiate a http/https request with the base url provided during initialization.
+     * @param request
+     * @param requiredApiToken
+     * @param requiredSessionToken
+     * @param responseInterceptors
+     */
     public static async fetch(request: Request,
                               requiredApiToken: boolean = true,
                               requiredSessionToken?: boolean,

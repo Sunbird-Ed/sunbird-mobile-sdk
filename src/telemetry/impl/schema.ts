@@ -1,4 +1,4 @@
-import {DBConstant, DBMigration} from "sunbird-module-db";
+import {Constant, Migration} from "../../db";
 
 export class TelemetryEntry {
 
@@ -12,10 +12,10 @@ export class TelemetryEntry {
     static getCreateEntry(): string {
         return "CREATE TABLE " + TelemetryEntry.TABLE_NAME + " (" +
             TelemetryEntry._ID + " INTEGER PRIMARY KEY," +
-            TelemetryEntry.COLUMN_NAME_EVENT_TYPE + DBConstant.TEXT_TYPE + DBConstant.COMMA_SEP +
-            TelemetryEntry.COLUMN_NAME_EVENT + DBConstant.TEXT_TYPE + DBConstant.COMMA_SEP +
-            TelemetryEntry.COLUMN_NAME_TIMESTAMP + DBConstant.INT_TYPE + DBConstant.COMMA_SEP +
-            TelemetryEntry.COLUMN_NAME_PRIORITY + DBConstant.INT_TYPE +
+            TelemetryEntry.COLUMN_NAME_EVENT_TYPE + Constant.TEXT_TYPE + Constant.COMMA_SEP +
+            TelemetryEntry.COLUMN_NAME_EVENT + Constant.TEXT_TYPE + Constant.COMMA_SEP +
+            TelemetryEntry.COLUMN_NAME_TIMESTAMP + Constant.INT_TYPE + Constant.COMMA_SEP +
+            TelemetryEntry.COLUMN_NAME_PRIORITY + Constant.INT_TYPE +
             " )";
     }
 
@@ -38,10 +38,10 @@ export class TelemetryProcessedEntry {
     static getCreateEntry(): string {
         return "CREATE TABLE " + TelemetryProcessedEntry.TABLE_NAME + " (" +
             TelemetryProcessedEntry._ID + " INTEGER PRIMARY KEY," +
-            TelemetryProcessedEntry.COLUMN_NAME_MSG_ID + DBConstant.TEXT_TYPE + DBConstant.COMMA_SEP +
-            TelemetryProcessedEntry.COLUMN_NAME_DATA + DBConstant.TEXT_TYPE + DBConstant.COMMA_SEP +
-            TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS + DBConstant.INT_TYPE + DBConstant.COMMA_SEP +
-            TelemetryProcessedEntry.COLUMN_NAME_PRIORITY + DBConstant.INT_TYPE +
+            TelemetryProcessedEntry.COLUMN_NAME_MSG_ID + Constant.TEXT_TYPE + Constant.COMMA_SEP +
+            TelemetryProcessedEntry.COLUMN_NAME_DATA + Constant.TEXT_TYPE + Constant.COMMA_SEP +
+            TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS + Constant.INT_TYPE + Constant.COMMA_SEP +
+            TelemetryProcessedEntry.COLUMN_NAME_PRIORITY + Constant.INT_TYPE +
             " )";
     }
 
@@ -50,7 +50,7 @@ export class TelemetryProcessedEntry {
     }
 }
 
-export class TelemetryMigration extends DBMigration {
+export class TelemetryMigration extends Migration {
 
     constructor() {
         super(1);

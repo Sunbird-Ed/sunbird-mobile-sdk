@@ -1,4 +1,4 @@
-import {Context} from "../def/context";
+import {DbConfig} from "../def/context";
 import {Service} from "../def/service";
 import {InsertQuery, ReadQuery, UpdateQuery} from "../def/query";
 
@@ -23,10 +23,10 @@ declare var db: {
 
 export class ServiceImpl implements Service {
 
-    private context: Context;
+    private context: DbConfig;
     private initialized: boolean = false;
 
-    constructor(context: Context) {
+    constructor(context: DbConfig) {
         this.context = context;
     }
 

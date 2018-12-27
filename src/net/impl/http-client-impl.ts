@@ -26,6 +26,7 @@ declare var cordova: {
     }
 };
 
+
 export class HttpClientImpl implements HttpClient {
 
     private http = cordova.plugin.http;

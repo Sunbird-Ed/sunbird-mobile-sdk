@@ -1,10 +1,6 @@
-import {Injectable} from "@angular/core";
-import {DbService} from "../../db";
-import {TelemetryService} from "..";
-import {TelemetryStat} from "..";
-import {TelemetrySyncStat} from "..";
+import {InsertQuery, ReadQuery, Sdk as DbSdk} from "../../db";
+import {TelemetryDecorator, TelemetryService, TelemetryStat, TelemetrySyncStat} from "..";
 import {TelemetryEntry, TelemetryProcessedEntry} from "./schema";
-import {TelemetryDecorator} from "..";
 import {
     CorrelationData,
     End,
@@ -17,12 +13,11 @@ import {
     TelemetryObject
 } from "../def/telemetry.model";
 
-@Injectable()
-export class SunbirdTelemetryService implements TelemetryService {
+export class TelemetryServiceImpl implements TelemetryService {
 
     private static readonly KEY_SYNC_TIME = "telemetry_sync_time";
 
-    constructor(private dbService: DbService, private decorator: TelemetryDecorator) {
+    constructor(private decorator: TelemetryDecorator) {
     }
 
     audit(): void {
@@ -184,15 +179,15 @@ export class SunbirdTelemetryService implements TelemetryService {
         let syncStat = new TelemetryStat();
 
         return new Promise<TelemetryStat>((resolve, reject) => {
-            this.dbService.execute(telemetryEventCountQuery)
+            DbSdk.execute(telemetryEventCountQuery)
                 .then(value => {
                     telemetryEventCount = value[0];
-                    return this.dbService.execute(processedTelemetryEventCountQuery);
+                    return DbSdk.execute(processedTelemetryEventCountQuery);
                 })
                 .then(value => {
                     processedTelemetryEventCount = value[0];
                     syncStat.unSyncedEventCount = telemetryEventCount + processedTelemetryEventCount;
-                    let syncTime = localStorage.getItem(SunbirdTelemetryService.KEY_SYNC_TIME);
+                    let syncTime = localStorage.getItem(TelemetryServiceImpl.KEY_SYNC_TIME);
                     if (syncTime !== null)
                         syncStat.lastSyncTime = parseInt(syncTime);
 
@@ -207,11 +202,13 @@ export class SunbirdTelemetryService implements TelemetryService {
 
     sync(): Promise<TelemetrySyncStat> {
 
+        let readQuery: ReadQuery = {
+            table: TelemetryEntry.TABLE_NAME,
+            limit: '1000'
+        };
+
         //fetch events from telemetry table
-        this.dbService.read(undefined, TelemetryEntry.TABLE_NAME,
-            undefined, undefined,
-            undefined, undefined,
-            undefined, undefined, "1000")
+        DbSdk.read(readQuery,)
             .then(value => {
 
             })
@@ -226,8 +223,13 @@ export class SunbirdTelemetryService implements TelemetryService {
 
     private save(telemetry: any): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            this.dbService.insert(TelemetryEntry.TABLE_NAME,
-                JSON.stringify(this.decorator.prepare(this.decorator.decorate(telemetry))))
+
+            let insertQuery: InsertQuery = {
+                table: TelemetryEntry.TABLE_NAME,
+                modelJson: JSON.stringify(this.decorator.prepare(this.decorator.decorate(telemetry)))
+            };
+
+            DbSdk.insert(insertQuery)
 
                 .then(numberOfRow => {
                     resolve(numberOfRow > 0);
