@@ -24,18 +24,11 @@ export class ApiSdk {
      * @param config
      */
     public static async fetch(request: Request,
-                              config?: FetchConfig): Promise<Response> {
-
-        function initFetchConfig() {
-            if (config == null) {
-                config = {
-                    requiredApiToken: true,
-                    requiredSessionToken: false,
-                    responseInterceptors: []
-                }
-            }
-        }
-
+                              config: FetchConfig = {
+                                  requiredApiToken: true,
+                                  requiredSessionToken: false,
+                                  responseInterceptors: []
+                              }): Promise<Response> {
 
         function createConnection() {
             let httpClient = new HttpClientImpl();
