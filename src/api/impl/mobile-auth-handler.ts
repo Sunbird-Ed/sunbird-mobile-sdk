@@ -22,7 +22,7 @@ export class MobileAuthHandler {
 
     private buildResetTokenAPIRequest(config: ApiConfig): Request {
         return new Request(
-            `/consumer/${config.mobileAppConsumer}/credential/register`,
+            `/consumer/${config.api_authentication.mobileAppConsumer}/credential/register`,
             REQUEST_TYPE.POST,
             {
                 'Content-Encoding': 'gzip',
@@ -32,9 +32,9 @@ export class MobileAuthHandler {
     }
 
     private generateMobileDeviceConsumerBearerToken(): string {
-        const mobileAppConsumerKey = this.config.mobileAppKey;
-        const mobileAppConsumerSecret = this.config.mobileAppSecret;
-        const mobileDeviceConsumerKey = this.config.producerId + '-' + this.config.deviceId;
+        const mobileAppConsumerKey = this.config.api_authentication.mobileAppKey;
+        const mobileAppConsumerSecret = this.config.api_authentication.mobileAppSecret;
+        const mobileDeviceConsumerKey = this.config.api_authentication.producerId + '-' + this.config.api_authentication.deviceId;
 
         const mobileDeviceConsumerSecret = JWTUtil.createJWToken(mobileAppConsumerKey, mobileAppConsumerSecret, JWTokenType.HS256);
         const mobileDeviceConsumerBearerToken = JWTUtil.createJWToken(mobileDeviceConsumerKey, mobileDeviceConsumerSecret, JWTokenType.HS256);

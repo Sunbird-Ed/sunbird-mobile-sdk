@@ -1,15 +1,17 @@
 export type ApiConfig = {
 
     baseUrl: string,
-    mobileAppKey: string,
-    mobileAppSecret: string,
-    mobileAppConsumer: string,
-    channelId: string,
-    producerId: string,
-    deviceId: string,
-    auth: {
-        redirect_url: string;
-        logout_url: string;
-        auth_url: string;
+    user_authentication: {
+        redirectUrl: string;
+        logoutUrl: string;
+        authUrl: string;
+    },
+    api_authentication: {
+        mobileAppKey: string,
+        mobileAppSecret: string,
+        mobileAppConsumer: string,
+        channelId: string,
+        producerId: string,
+        deviceId: string,
     }
 }

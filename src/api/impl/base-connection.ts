@@ -1,9 +1,4 @@
-import {Request, REQUEST_TYPE} from "..";
-import {ResponseInterceptor} from "..";
-import {ApiConfig} from "..";
-import {Response} from "..";
-import {Connection} from "..";
-import {HttpClient} from '..';
+import {ApiConfig, Connection, HttpClient, Request, REQUEST_TYPE, Response, ResponseInterceptor} from "..";
 
 export class BaseConnection implements Connection {
 
@@ -17,9 +12,9 @@ export class BaseConnection implements Connection {
 
     protected addGlobalHeader() {
         let header = {
-            "X-Channel-Id": this.apiConfig.channelId,
-            "X-App-Id": this.apiConfig.producerId,
-            "X-Device-Id": this.apiConfig.deviceId
+            "X-Channel-Id": this.apiConfig.api_authentication.channelId,
+            "X-App-Id": this.apiConfig.api_authentication.producerId,
+            "X-Device-Id": this.apiConfig.api_authentication.deviceId
         };
         this.http.addHeaders(header);
     }
