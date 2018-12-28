@@ -1,4 +1,4 @@
-import {ApiConfig} from "./net";
+import {ApiConfig} from "./api";
 import {DbConfig} from "./db";
 
 export type SdkConfig = {

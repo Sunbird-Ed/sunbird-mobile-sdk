@@ -1,4 +1,4 @@
-import {InsertQuery, ReadQuery, Sdk as DbSdk} from "../../db";
+import {InsertQuery, ReadQuery, DbSdk as DbSdk} from "../../db";
 import {TelemetryDecorator, TelemetryService, TelemetryStat, TelemetrySyncStat} from "..";
 import {TelemetryEntry, TelemetryProcessedEntry} from "./schema";
 import {

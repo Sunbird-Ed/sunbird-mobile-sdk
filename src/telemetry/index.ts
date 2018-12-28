@@ -4,4 +4,4 @@ export * from "./def/telemetry.service";
 export * from "./def/telemetry.stat";
 export * from "./def/telemetry.sync.stat";
 export * from "./impl/schema";
-export * from "./sdk";
+export * from "./telemetry-sdk";

@@ -5,33 +5,41 @@ import {HttpClientImpl} from "./impl/http-client-impl";
 import {Request} from "./def/request";
 import {Response} from "./def/response";
 import {SessionInterceptor} from "./impl/session-interceptor";
-import {ResponseInterceptor} from "./def/response-interceptor";
 import {KEY_API_TOKEN} from "./def/constants";
+import {FetchConfig} from "./config/fetch-config";
 
-export class Sdk {
+export class ApiSdk {
 
     private static apiConfig: ApiConfig;
 
     public static init(apiConfig: ApiConfig) {
-        if (Sdk.apiConfig)
+        if (ApiSdk.apiConfig)
             return; //should be initialized only once
-        Sdk.apiConfig = apiConfig;
+        ApiSdk.apiConfig = apiConfig;
     }
 
     /**
      * Initiate a http/https request with the base url provided during initialization.
      * @param request
-     * @param requiredApiToken
-     * @param requiredSessionToken
-     * @param responseInterceptors
+     * @param config
      */
     public static async fetch(request: Request,
-                              requiredApiToken: boolean = true,
-                              requiredSessionToken?: boolean,
-                              responseInterceptors?: Array<ResponseInterceptor>): Promise<Response> {
+                              config?: FetchConfig): Promise<Response> {
+
+        function initFetchConfig() {
+            if (config == null) {
+                config = {
+                    requiredApiToken: true,
+                    requiredSessionToken: false,
+                    responseInterceptors: []
+                }
+            }
+        }
+
+
         function createConnection() {
             let httpClient = new HttpClientImpl();
-            let baseConnection = new BaseConnection(httpClient, Sdk.apiConfig);
+            let baseConnection = new BaseConnection(httpClient, ApiSdk.apiConfig);
             return baseConnection;
         }
 
@@ -39,17 +47,17 @@ export class Sdk {
 
 
         function handleBearerToken() {
-            if (requiredApiToken == true) {
+            if (config!!.requiredApiToken == true) {
                 let bearerToken = localStorage.getItem(KEY_API_TOKEN);
                 let existingHeaders = request.headers;
                 existingHeaders["Authorization"] = "Bearer " + bearerToken;
                 request.headers = existingHeaders;
-                baseConnection.addResponseInterceptor(new BearerInterceptor(Sdk.apiConfig));
+                baseConnection.addResponseInterceptor(new BearerInterceptor(ApiSdk.apiConfig));
             }
         }
 
         function handleSessionToken() {
-            if (requiredSessionToken && requiredSessionToken == true) {
+            if (config!!.requiredSessionToken == true) {
                 baseConnection.addResponseInterceptor(new SessionInterceptor());
             }
 
@@ -57,8 +65,8 @@ export class Sdk {
 
 
         function handleCustomInterceptors() {
-            if (responseInterceptors && responseInterceptors.length > 0) {
-                for (let interceptor of responseInterceptors) {
+            if (config!!.responseInterceptors!!.length > 0) {
+                for (let interceptor of config!!.responseInterceptors!!) {
                     baseConnection.addResponseInterceptor(interceptor);
                 }
             }

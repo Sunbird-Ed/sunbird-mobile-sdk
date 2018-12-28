@@ -8,4 +8,4 @@ export * from "./def/request";
 export * from "./def/session-connection";
 export * from "./def/http-client";
 
-export * from "./sdk";
+export * from "./api-sdk";

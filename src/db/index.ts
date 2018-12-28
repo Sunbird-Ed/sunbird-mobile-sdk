@@ -4,4 +4,4 @@ export * from "./def/migration";
 export * from "./def/query";
 export * from "./def/service";
 
-export * from "./sdk";
+export * from "./db-sdk";

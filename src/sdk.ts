@@ -1,6 +1,6 @@
-import {Sdk as DBSdk} from "./db";
-import {Sdk as NetSdk} from "./net";
-import {Sdk as TelemetrySdk} from "./telemetry";
+import {DbSdk} from "./db";
+import {ApiSdk} from "./api";
+import {TelemetrySdk} from "./telemetry";
 import {SdkConfig} from "./sdk.config";
 
 export class SunbirdSdk {
@@ -12,8 +12,8 @@ export class SunbirdSdk {
     }
 
     public static init(sdkConfig: SdkConfig) {
-        NetSdk.init(sdkConfig.apiConfig);
-        DBSdk.init(sdkConfig.dbContext);
+        ApiSdk.init(sdkConfig.apiConfig);
+        DbSdk.init(sdkConfig.dbContext);
         TelemetrySdk.init();
     }
 

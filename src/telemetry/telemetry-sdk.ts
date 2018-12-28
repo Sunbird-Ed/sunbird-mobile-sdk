@@ -2,7 +2,7 @@ import {TelemetryService} from "./def/telemetry.service";
 import {TelemetryServiceImpl} from "./impl/service.impl";
 import {TelemetryDecoratorImpl} from "./impl/decorator.impl";
 
-export class Sdk {
+export class TelemetrySdk {
 
     private static telemetryService: TelemetryService;
 
@@ -13,14 +13,14 @@ export class Sdk {
     }
 
     public static init() {
-        if (Sdk.telemetryService == undefined) {
+        if (TelemetrySdk.telemetryService == undefined) {
             let decorator = new TelemetryDecoratorImpl();
-            Sdk.telemetryService = new TelemetryServiceImpl(decorator);
+            TelemetrySdk.telemetryService = new TelemetryServiceImpl(decorator);
         }
     }
 
     public static getService(): TelemetryService {
-        return Sdk.telemetryService;
+        return TelemetrySdk.telemetryService;
     }
 
 }
