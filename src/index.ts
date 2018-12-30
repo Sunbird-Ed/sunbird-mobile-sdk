@@ -5,4 +5,3 @@ import * as Telemetry from "./telemetry/index";
 export {Db};
 export {Api};
 export {Telemetry};
-

@@ -1,78 +1,51 @@
 import {ApiConfig} from "./config/api-config";
-import {BaseConnection} from "./impl/base-connection";
-import {BearerInterceptor} from "./impl/bearer-interceptor";
-import {HttpClientImpl} from "./impl/http-client-impl";
 import {Request} from "./def/request";
 import {Response} from "./def/response";
-import {SessionInterceptor} from "./impl/session-interceptor";
-import {KEY_API_TOKEN} from "./def/constants";
 import {FetchConfig} from "./config/fetch-config";
+import {FetchHandler} from './impl/handlers/fetch-handler';
+import {OauthHandler} from './impl/handlers/oauth-handler';
 
 export class ApiSdk {
 
-    private static apiConfig: ApiConfig;
+    private static readonly _instance?: ApiSdk;
+    private apiConfig?: ApiConfig;
 
-    public static init(apiConfig: ApiConfig) {
-        if (ApiSdk.apiConfig)
-            return; //should be initialized only once
-        ApiSdk.apiConfig = apiConfig;
+    public static get instance(): ApiSdk {
+        if (!ApiSdk._instance) {
+            return new ApiSdk();
+        }
+
+        return ApiSdk._instance;
     }
 
     /**
-     * Initiate a http/https request with the base url provided during initialization.
-     * @param request
-     * @param config
+     * Instantiate SDK
+     * @param apiConfig - provide configuration
      */
-    public static async fetch(request: Request,
-                              config: FetchConfig = {
+    public init(apiConfig: ApiConfig) {
+        this.apiConfig = apiConfig;
+    }
+
+    /**
+     * Invoke an http/https request
+     * @param request
+     * @param fetchConfig - provide fetch configuration
+     */
+    public async fetch(request: Request, fetchConfig: FetchConfig = {
                                   requiredApiToken: true,
                                   requiredSessionToken: false,
                                   responseInterceptors: []
                               }): Promise<Response> {
-
-        function createConnection() {
-            let httpClient = new HttpClientImpl();
-            let baseConnection = new BaseConnection(httpClient, ApiSdk.apiConfig);
-            return baseConnection;
-        }
-
-        let baseConnection = createConnection();
-
-
-        function handleBearerToken() {
-            if (config!!.requiredApiToken == true) {
-                let bearerToken = localStorage.getItem(KEY_API_TOKEN);
-                let existingHeaders = request.headers;
-                existingHeaders["Authorization"] = "Bearer " + bearerToken;
-                request.headers = existingHeaders;
-                baseConnection.addResponseInterceptor(new BearerInterceptor(ApiSdk.apiConfig));
-            }
-        }
-
-        function handleSessionToken() {
-            if (config!!.requiredSessionToken == true) {
-                baseConnection.addResponseInterceptor(new SessionInterceptor());
-            }
-
-        }
-
-
-        function handleCustomInterceptors() {
-            if (config!!.responseInterceptors!!.length > 0) {
-                for (let interceptor of config!!.responseInterceptors!!) {
-                    baseConnection.addResponseInterceptor(interceptor);
-                }
-            }
-
-        }
-
-        handleBearerToken();
-        handleSessionToken();
-        handleCustomInterceptors();
-
-
-
-        return await baseConnection.invoke(request);
+        return new FetchHandler(request, this.apiConfig!, fetchConfig).doFetch();
     }
 
+    public async login() {
+        const oauthHandler = new OauthHandler(this.apiConfig!);
+        return oauthHandler.doLogin();
+    }
+
+    public async logout() {
+        const oauthHandler = new OauthHandler(this.apiConfig!);
+        return oauthHandler.doLogout();
+    }
 }

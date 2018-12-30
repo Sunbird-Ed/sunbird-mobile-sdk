@@ -1,7 +1,8 @@
-import {ApiConfig, Connection, Request, REQUEST_TYPE, Response} from '..';
-import {JWTokenType, JWTUtil} from '../util/jwt.util';
+import {ApiConfig, Connection, Request, REQUEST_TYPE, Response} from '../../index';
+import {JWTokenType, JWTUtil} from '../../util/jwt/jwt.util';
+import {ApiAuthService} from '../../def/auth/api-auth-service';
 
-export class MobileAuthHandler {
+export class MobileApiAuthService implements ApiAuthService {
 
     private config: ApiConfig;
 
@@ -9,7 +10,7 @@ export class MobileAuthHandler {
         this.config = config;
     }
 
-    public resetAuthToken(connection: Connection): Promise<string> {
+    public refreshAuthToken(connection: Connection): Promise<string> {
         return connection.invoke(this.buildResetTokenAPIRequest(this.config)).then((r: Response) => {
             try {
                 const bearerToken = r.response().result.secret;
