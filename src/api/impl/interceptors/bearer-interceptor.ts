@@ -22,6 +22,10 @@ export class BearerInterceptor implements ResponseInterceptor {
             return Promise.resolve(response);
         }
 
+        if (!response.response().message) {
+            return Promise.resolve(response);
+        }
+
         return this.authHandler.refreshAuthToken(connection)
             .then((bearerToken: string) => {
                 localStorage.setItem(KEY_API_TOKEN, bearerToken);

@@ -32,7 +32,7 @@ export class MobileUserAuthService implements UserAuthService {
             }))
         );
 
-        const sessionData: SessionData = JSON.parse(response.response())
+        const sessionData: SessionData = JSON.parse(response.response());
 
         return {
             ...sessionData,
