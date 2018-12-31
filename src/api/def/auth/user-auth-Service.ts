@@ -1,9 +1,12 @@
 import {Connection} from '../connection';
+import {SessionData} from './session-data';
 
 export interface UserAuthService {
-    refreshSessionToken(connection: Connection): Promise<{
-        accessToken: string,
-        userToken: string,
-        refreshToken: string
-    }>;
+    refreshSession(connection: Connection): Promise<SessionData>;
+
+    startSession(sessionData: SessionData);
+
+    endSession();
+
+    getSessionData(): Promise<SessionData>
 }

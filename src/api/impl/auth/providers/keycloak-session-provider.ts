@@ -3,9 +3,8 @@ import {SessionData} from '../../../def/auth/session-data';
 import {ApiSdk} from '../../../api-sdk';
 import {ApiConfig, Request, REQUEST_TYPE, Response} from '../../..';
 
-export class KeycloakSessionProvider extends SessionProvider {
+export class KeycloakSessionProvider implements SessionProvider {
     constructor(private apiConfig: ApiConfig) {
-        super();
     }
 
     public async createSession(accessToken: string): Promise<SessionData> {
@@ -23,15 +22,7 @@ export class KeycloakSessionProvider extends SessionProvider {
 
         const sessionData = JSON.parse(response.response());
 
-        await this.startSession(sessionData);
-
         return sessionData;
-    }
-
-
-    refreshSession(): Promise<SessionData> {
-        // TODO
-        return null as any;
     }
 
     private parseUserTokenFromAccessToken(accessToken: string): string {

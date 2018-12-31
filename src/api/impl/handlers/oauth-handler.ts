@@ -2,6 +2,8 @@ import {ApiConfig} from '../../index';
 import {GoogleSessionProvider} from '../auth/providers/google-session-provider';
 import {SessionData} from '../../def/auth/session-data';
 import {KeycloakSessionProvider} from '../auth/providers/keycloak-session-provider';
+import {UserAuthService} from '../../def/auth/user-auth-Service';
+import {MobileUserAuthService} from '../auth/mobile-user-auth-service';
 
 declare var customtabs: {
     isAvailable: (success: () => void, error: (error: string) => void) => void;
@@ -12,7 +14,10 @@ declare var customtabs: {
 
 export class OauthHandler {
 
+    private userAuthService: UserAuthService;
+
     constructor(private apiConfig: ApiConfig) {
+        this.userAuthService = new MobileUserAuthService(this.apiConfig);
     }
 
     private static isGoogleSignupCallBackUrl(url: string): boolean {
@@ -41,16 +46,14 @@ export class OauthHandler {
         return new Promise((resolve, reject) => {
             customtabs.isAvailable(() => {
                 customtabs.launch(this.apiConfig.user_authentication.logoutUrl!!, async () => {
-                    const keycloakSessionProvider = new KeycloakSessionProvider(this.apiConfig);
-                    await keycloakSessionProvider.endSession();
+                    await this.userAuthService.endSession();
                     resolve();
                 }, error => {
                     reject(error);
                 });
             }, error => {
                 customtabs.launchInBrowser(this.apiConfig.user_authentication.logoutUrl!!, async () => {
-                    const keycloakSessionProvider = new KeycloakSessionProvider(this.apiConfig);
-                    await keycloakSessionProvider.endSession();
+                    await this.userAuthService.endSession();
                     resolve();
                 }, error => {
                     reject(error);
@@ -69,11 +72,11 @@ export class OauthHandler {
         if (OauthHandler.isGoogleSignupCallBackUrl(url)) {
             const googleSessionProvider = new GoogleSessionProvider();
             await googleSessionProvider.createSession(params.get('access_token')!, params.get('refresh_token')!)
-            return googleSessionProvider.getSession();
+            return this.userAuthService.getSessionData();
         } else {
             const keycloakSessionProvider = new KeycloakSessionProvider(this.apiConfig);
             await keycloakSessionProvider.createSession(params.get('access_token')!);
-            return keycloakSessionProvider.getSession();
+            return this.userAuthService.getSessionData();
         }
     }
 }
