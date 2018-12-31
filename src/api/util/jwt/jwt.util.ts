@@ -10,4 +10,9 @@ export class JWTUtil {
         const header = {alg: tokenType, typ: 'JWT'};
         return KJUR.jws.JWS.sign(tokenType, header, subject, secretKey);
     }
+
+    public static parseUserTokenFromAccessToken(accessToken: string): string {
+        // TODO
+        return ''
+    }
 }

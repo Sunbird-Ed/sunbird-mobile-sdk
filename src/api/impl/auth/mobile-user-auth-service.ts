@@ -1,6 +1,17 @@
 import {UserAuthService} from '../../def/auth/user-auth-Service';
-import {ApiConfig, Connection, KEY_ACCESS_TOKEN, KEY_REFRESH_TOKEN, KEY_USER_TOKEN} from '../..';
+import {
+    ApiConfig,
+    ApiSdk,
+    Connection,
+    KEY_ACCESS_TOKEN,
+    KEY_REFRESH_TOKEN,
+    KEY_USER_TOKEN,
+    Request,
+    REQUEST_TYPE,
+    Response
+} from '../..';
 import {SessionData} from '../../def/auth/session-data';
+import {JWTUtil} from '../../util/jwt/jwt.util';
 
 export class MobileUserAuthService implements UserAuthService {
     private config: ApiConfig;
@@ -9,10 +20,24 @@ export class MobileUserAuthService implements UserAuthService {
         this.config = config;
     }
 
-    refreshSession(connection: Connection): Promise<SessionData> {
-        return new Promise<SessionData>((resolve, reject) => {
-            // TODO
-        });
+    public async refreshSession(connection: Connection): Promise<SessionData> {
+        const response: Response = await ApiSdk.instance.fetch(new Request(
+            this.config.user_authentication.authUrl,
+            REQUEST_TYPE.POST,
+            null,
+            JSON.stringify({
+                refresh_token: localStorage.getItem(KEY_REFRESH_TOKEN),
+                grant_type: 'refresh_token',
+                client_id: 'android'
+            }))
+        );
+
+        const sessionData: SessionData = JSON.parse(response.response())
+
+        return {
+            ...sessionData,
+            userToken: JWTUtil.parseUserTokenFromAccessToken(sessionData.accessToken)
+        };
     }
 
     public async startSession(sessionData: SessionData): Promise<undefined> {
