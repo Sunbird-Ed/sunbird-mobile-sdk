@@ -1,6 +1,6 @@
 import {Profile, ProfileService} from '..';
-import {StorageMiddleware} from "../../db/utility/db-to-object/storage-middleware";
-import {DbSdk, Service, Table} from "../../db";
+import {StorageMiddleware} from '../../db/utility/db-to-object/storage-middleware';
+import {DbSdk, Service, Table} from '../../db';
 
 export class ProfileServiceImpl implements ProfileService {
     private dbService: Service;
@@ -15,5 +15,7 @@ export class ProfileServiceImpl implements ProfileService {
         return profile;
     }
 
-
+    async deleteProfile(uid: string): Promise<number> {
+        return this.dbService.delete(Table.PROFILES, 'uid =? ', [uid]);
+    }
 }
