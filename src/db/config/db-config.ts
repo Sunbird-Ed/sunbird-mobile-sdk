@@ -1,4 +1,4 @@
-import { Migration } from "./migration";
+import {Migration} from "../def/migration";
 
 export abstract class DbConfig {
 

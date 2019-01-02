@@ -52,7 +52,7 @@ export class FetchHandler {
             this.request.headers = existingHeaders;
         }
 
-        this.baseConnection.addResponseInterceptor(new SessionInterceptor());
+        this.baseConnection.addResponseInterceptor(new SessionInterceptor(this.apiConfig));
     };
 
     private handleCustomInterceptors() {

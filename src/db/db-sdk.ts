@@ -1,25 +1,27 @@
-import {DbConfig} from "./def/db.config";
+import {DbConfig} from "./config/db-config";
 import {Service} from "./def/service";
 import {ServiceImpl} from "./impl/service-impl";
-import {InsertQuery, ReadQuery, UpdateQuery} from "./def/query";
 
 export class DbSdk {
 
+    private static readonly _instance?: DbSdk;
     private static dbService: Service;
 
-    private constructor() {
-        //although private, what happens when it transpiles to javascript!!
-        //hence throwing error...
-        throw new Error("Should not be instantiated!!");
+    public static get instance(): DbSdk {
+        if (!DbSdk._instance) {
+            return new DbSdk();
+        }
+
+        return DbSdk._instance;
     }
 
-    public static init(dbConfig: DbConfig) {
+    public init(dbConfig: DbConfig) {
         if (DbSdk.dbService == undefined) {
             DbSdk.dbService = new ServiceImpl(dbConfig);
         }
     }
 
-    public static getService(): Service {
+    public getService(): Service {
         return DbSdk.dbService;
     }
 

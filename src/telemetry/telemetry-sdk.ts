@@ -1,25 +1,31 @@
 import {TelemetryService} from "./def/telemetry.service";
-import {TelemetryServiceImpl} from "./impl/service.impl";
+import {TelemetryServiceImpl} from "./impl/service-impl";
 import {TelemetryDecoratorImpl} from "./impl/decorator.impl";
+import {Service} from '../db';
 
 export class TelemetrySdk {
 
     private static telemetryService: TelemetryService;
 
-    private constructor() {
-        //although private, what happens when it transpiles to javascript!!
-        //hence throwing error...
-        throw new Error("Should not be instantiated!!");
+    private static readonly _instance?: TelemetrySdk;
+    private static dbService: Service;
+
+    public static get instance(): TelemetrySdk {
+        if (!TelemetrySdk._instance) {
+            return new TelemetrySdk();
+        }
+
+        return TelemetrySdk._instance;
     }
 
-    public static init() {
+    public init() {
         if (TelemetrySdk.telemetryService == undefined) {
             let decorator = new TelemetryDecoratorImpl();
             TelemetrySdk.telemetryService = new TelemetryServiceImpl(decorator);
         }
     }
 
-    public static getService(): TelemetryService {
+    public getService(): TelemetryService {
         return TelemetrySdk.telemetryService;
     }
 

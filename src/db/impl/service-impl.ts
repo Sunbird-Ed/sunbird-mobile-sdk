@@ -1,6 +1,6 @@
-import {DbConfig} from "../def/context";
 import {Service} from "../def/service";
 import {InsertQuery, ReadQuery, UpdateQuery} from "../def/query";
+import {DbConfig} from '..';
 
 declare var db: {
     init: (dbName, dbVersion, migrations, callback) => void,
@@ -81,7 +81,7 @@ export class ServiceImpl implements Service {
             this.init();
         }
         return new Promise<string>((resolve, reject) => {
-            db.read(readQuery.distinct,
+            db.read(readQuery.distinct!!,
                 readQuery.table,
                 readQuery.columns!!,
                 readQuery.selection!!,

@@ -1,4 +1,4 @@
-import {InsertQuery, ReadQuery, DbSdk as DbSdk} from "../../db";
+import {DbSdk as DbSdk, InsertQuery, ReadQuery} from "../../db";
 import {TelemetryDecorator, TelemetryService, TelemetryStat, TelemetrySyncStat} from "..";
 import {TelemetryEntry, TelemetryProcessedEntry} from "./schema";
 import {
@@ -179,10 +179,10 @@ export class TelemetryServiceImpl implements TelemetryService {
         let syncStat = new TelemetryStat();
 
         return new Promise<TelemetryStat>((resolve, reject) => {
-            DbSdk.execute(telemetryEventCountQuery)
+            DbSdk.instance.getService().execute(telemetryEventCountQuery)
                 .then(value => {
                     telemetryEventCount = value[0];
-                    return DbSdk.execute(processedTelemetryEventCountQuery);
+                    return DbSdk.instance.getService().execute(processedTelemetryEventCountQuery);
                 })
                 .then(value => {
                     processedTelemetryEventCount = value[0];
@@ -208,7 +208,7 @@ export class TelemetryServiceImpl implements TelemetryService {
         };
 
         //fetch events from telemetry table
-        DbSdk.read(readQuery,)
+        DbSdk.instance.getService().read(readQuery,)
             .then(value => {
 
             })
@@ -229,7 +229,7 @@ export class TelemetryServiceImpl implements TelemetryService {
                 modelJson: JSON.stringify(this.decorator.prepare(this.decorator.decorate(telemetry)))
             };
 
-            DbSdk.insert(insertQuery)
+            DbSdk.instance.getService().insert(insertQuery)
 
                 .then(numberOfRow => {
                     resolve(numberOfRow > 0);
