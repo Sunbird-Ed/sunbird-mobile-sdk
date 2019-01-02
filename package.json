@@ -6,6 +6,7 @@
   "scripts": {
     "build": "webpack",
     "build:dev": "webpack --mode=development",
+    "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
     "test": "jest",
     "test:coverage": "jest --coverage"
   },
