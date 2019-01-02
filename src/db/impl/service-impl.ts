@@ -97,14 +97,14 @@ export class ServiceImpl implements Service {
         });
     }
 
-    insert(inserQuery: InsertQuery): Promise<number> {
+    insert(insertQuery: InsertQuery): Promise<number> {
         if (!this.initialized) {
             this.init();
         }
 
         return new Promise<number>((resolve, reject) => {
-            db.insert(inserQuery.table,
-                inserQuery.modelJson, (number: number) => {
+            db.insert(insertQuery.table,
+                insertQuery.modelJson, (number: number) => {
                     resolve(number);
                 }, (error: string) => {
                     reject(error);

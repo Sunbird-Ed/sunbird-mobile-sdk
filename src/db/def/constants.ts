@@ -11,3 +11,7 @@ export class Constant {
     static NOT_NULL = " NOT NULL";
     static NULL = " NULL";
 }
+
+export enum Table {
+    PROFILES = "profiles"
+}
