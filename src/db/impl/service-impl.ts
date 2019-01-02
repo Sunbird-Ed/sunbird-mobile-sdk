@@ -72,7 +72,7 @@ export class ServiceImpl implements Service {
             }, error => {
                 reject(error);
             });
-        })
+        });
     }
 
     read(readQuery: ReadQuery): Promise<string> {
@@ -116,8 +116,10 @@ export class ServiceImpl implements Service {
         throw new Error("Method not implemented.");
     }
 
-    delete(query: string): Promise<boolean> {
-        throw new Error("Method not implemented.");
+
+    delete(table: string, whereClause: string, whereArgs: string[]): Promise<number> {
+        // TODO
+        throw new Error('Method not implemented.');
     }
 
     beginTransaction(): void {
