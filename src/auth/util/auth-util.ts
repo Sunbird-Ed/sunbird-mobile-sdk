@@ -1,38 +1,34 @@
-import {UserAuthService} from '../../def/auth/user-auth-Service';
 import {
-    ApiConfig,
-    ApiSdk,
+    ApiService,
     Connection,
+    JWTUtil,
     KEY_ACCESS_TOKEN,
     KEY_REFRESH_TOKEN,
     KEY_USER_TOKEN,
     Request,
     REQUEST_TYPE,
     Response
-} from '../..';
-import {SessionData} from '../../def/auth/session-data';
-import {JWTUtil} from '../../util/jwt/jwt.util';
+} from '../../api';
+import {OauthSession} from '..';
 
-export class MobileUserAuthService implements UserAuthService {
-    private config: ApiConfig;
+export class AuthUtil {
 
-    constructor(config: ApiConfig) {
-        this.config = config;
-    }
+    public static async refreshSession(connection: Connection, authUrl: string): Promise<OauthSession> {
 
-    public async refreshSession(connection: Connection): Promise<SessionData> {
-        const response: Response = await ApiSdk.instance.fetch(new Request(
-            this.config.user_authentication.authUrl,
-            REQUEST_TYPE.POST,
-            null,
-            JSON.stringify({
+        const request = new Request.Builder()
+            .withPath(authUrl)
+            .withType(REQUEST_TYPE.POST)
+            .withBody(JSON.stringify({
                 refresh_token: localStorage.getItem(KEY_REFRESH_TOKEN),
                 grant_type: 'refresh_token',
                 client_id: 'android'
             }))
-        );
+            .build();
 
-        const sessionData: SessionData = JSON.parse(response.response());
+
+        const response: Response = await ApiService.instance.fetch(request);
+
+        const sessionData: OauthSession = JSON.parse(response.response());
 
         return {
             ...sessionData,
@@ -40,7 +36,7 @@ export class MobileUserAuthService implements UserAuthService {
         };
     }
 
-    public async startSession(sessionData: SessionData): Promise<undefined> {
+    public static async startSession(sessionData: OauthSession): Promise<undefined> {
         localStorage.setItem(KEY_ACCESS_TOKEN, sessionData.accessToken);
         localStorage.setItem(KEY_REFRESH_TOKEN, sessionData.refreshToken);
         localStorage.setItem(KEY_USER_TOKEN, sessionData.userToken);
@@ -48,7 +44,7 @@ export class MobileUserAuthService implements UserAuthService {
         return;
     }
 
-    public async endSession(): Promise<undefined> {
+    public static async endSession(): Promise<undefined> {
         localStorage.removeItem(KEY_ACCESS_TOKEN);
         localStorage.removeItem(KEY_REFRESH_TOKEN);
         localStorage.removeItem(KEY_USER_TOKEN);
@@ -56,7 +52,7 @@ export class MobileUserAuthService implements UserAuthService {
         return;
     }
 
-    public async getSessionData(): Promise<SessionData> {
+    public static async getSessionData(): Promise<OauthSession> {
         return {
             accessToken: localStorage.getItem(KEY_ACCESS_TOKEN)!,
             refreshToken: localStorage.getItem(KEY_REFRESH_TOKEN)!,

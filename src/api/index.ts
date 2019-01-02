@@ -6,5 +6,6 @@ export * from "./def/constants";
 export * from "./def/response-interceptor";
 export * from "./def/request";
 export * from "./def/http-client";
+export * from "./util/jwt.util";
 
-export * from "./api-sdk";
+export * from "./api-service";

@@ -1,8 +1,7 @@
-import {ApiConfig, Connection, Request, REQUEST_TYPE, Response} from '../../index';
-import {JWTokenType, JWTUtil} from '../../util/jwt/jwt.util';
-import {ApiAuthService} from '../../def/auth/api-auth-service';
+import {ApiConfig, Connection, Request, REQUEST_TYPE, Response} from '..';
+import {JWTokenType, JWTUtil} from './jwt.util';
 
-export class MobileApiAuthService implements ApiAuthService {
+export class ApiTokenHandler {
 
     private config: ApiConfig;
 

@@ -1,5 +1,5 @@
-import {Service} from "../def/service";
-import {InsertQuery, ReadQuery, UpdateQuery} from "../def/query";
+import {DbService} from "..";
+import {InsertQuery, ReadQuery, UpdateQuery} from "..";
 import {DbConfig} from '..';
 
 declare var db: {
@@ -21,7 +21,7 @@ declare var db: {
     endTransaction: (isOperationSuccessful: boolean) => void
 };
 
-export class ServiceImpl implements Service {
+export class DbServiceImpl implements DbService {
 
     private context: DbConfig;
     private initialized: boolean = false;
@@ -75,12 +75,12 @@ export class ServiceImpl implements Service {
         });
     }
 
-    read(readQuery: ReadQuery): Promise<string> {
+    read(readQuery: ReadQuery): Promise<any[]> {
 
         if (!this.initialized) {
             this.init();
         }
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<any[]>((resolve, reject) => {
             db.read(readQuery.distinct!!,
                 readQuery.table,
                 readQuery.columns!!,
@@ -89,7 +89,7 @@ export class ServiceImpl implements Service {
                 readQuery.groupBy!!,
                 readQuery.having!!,
                 readQuery.orderBy!!,
-                readQuery.limit!!, (json: string) => {
+                readQuery.limit!!, (json: any[]) => {
                     resolve(json);
                 }, (error: string) => {
                     reject(error);
