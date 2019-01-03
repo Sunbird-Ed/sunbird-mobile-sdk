@@ -9,5 +9,5 @@ export class Constant {
     static SUBJECT = 'SUBJECT';
     static GRADE = 'GRADE';
     static SYLLABUS = 'SYLLABUS';
-    static SOURCE = 'USERSOURCE';
+    static SOURCE = 'PROFILESOURCE';
 }

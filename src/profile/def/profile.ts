@@ -5,7 +5,7 @@ export enum ProfileType {
     TEACHER = 'teacher'
 }
 
-export enum UserSource {
+export enum ProfileSource {
     SERVER = 'server',
     LOCAL = 'local'
 }
@@ -21,13 +21,13 @@ export class Profile {
     grade: string[];
     gradeValueMap: { [key: string]: any };
     syllabus: string[];
-    source: UserSource;
+    source: ProfileSource;
 
 
     constructor(handle: string, medium: string[],
                 board: string[], profileType: ProfileType, subject: string[],
                 grade: string[], gradeValueMap: { [p: string]: any },
-                syllabus: string[], source: UserSource) {
+                syllabus: string[], source: ProfileSource) {
         this.handle = handle;
         this.medium = medium;
         this.board = board;

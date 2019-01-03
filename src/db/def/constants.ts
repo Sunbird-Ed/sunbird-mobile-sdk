@@ -13,5 +13,5 @@ export class Constant {
 }
 
 export enum Table {
-    PROFILES = "profiles"
+    PROFILES = 'profiles'
 }

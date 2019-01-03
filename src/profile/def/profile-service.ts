@@ -4,6 +4,4 @@ export interface ProfileService {
     createProfile(profile: Profile): Promise<Profile>;
 
     deleteProfile(uid: string): Promise<number>;
-
-    // getAllUserProfiles(profileRequest: ProfileRequest): Promise<Profile[]>;
 }

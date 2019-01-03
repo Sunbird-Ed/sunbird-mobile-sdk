@@ -15,7 +15,7 @@ describe('StorageMiddleware', () => {
         expect(result).toEqual({
             prop: 'val',
             prop1: '["val1","val2"]'
-        })
+        });
     });
 
     it('should convert back to obj', () => {
@@ -32,6 +32,6 @@ describe('StorageMiddleware', () => {
         expect(result).toEqual({
             prop: 'val',
             prop1: ['val1', 'val2']
-        })
+        });
     });
 });

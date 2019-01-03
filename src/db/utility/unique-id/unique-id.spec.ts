@@ -1,10 +1,11 @@
-import {UniqueId} from "./unique-id";
+import {UniqueId} from './unique-id';
 
 describe.only('UniqueId', () => {
-    let uniqueId: UniqueId;
-    it('should generate UniqueId', function () {
+    // const uniqueId: UniqueId;
+    it('should generate UniqueId', () => {
         // arrange
         // act
+        // uniqueId
         // assert
     });
 });

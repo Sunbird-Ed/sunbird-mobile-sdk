@@ -1,12 +1,9 @@
 import {Profile, ProfileService} from '..';
 import {StorageMiddleware} from '../../db/utility/db-to-object/storage-middleware';
-import {DbSdk, Service, Table} from '../../db';
+import {DbService, Table} from '../../db';
 
 export class ProfileServiceImpl implements ProfileService {
-    private dbService: Service;
-
-    constructor() {
-        this.dbService = DbSdk.instance.getService();
+    constructor(private dbService: DbService) {
     }
 
     async createProfile(profile: Profile): Promise<Profile> {
