@@ -1,6 +1,6 @@
-import { TelemetryStat } from "./telemetry-stat";
-import { TelemetrySyncStat } from "./telemetry-sync-stat";
-import {CorrelationData, Rollup, TelemetryObject} from "./telemetry-model";
+import {TelemetryStat} from './telemetry-stat';
+import {TelemetrySyncStat} from './telemetry-sync-stat';
+import {CorrelationData, Rollup, TelemetryObject} from './telemetry-model';
 
 
 export abstract class TelemetryService {

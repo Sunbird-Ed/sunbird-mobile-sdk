@@ -1,6 +1,6 @@
-import {ApiConfig} from "./config/api-config";
-import {Request} from "./def/request";
-import {Response} from "./def/response";
+import {ApiConfig} from './config/api-config';
+import {Request} from './def/request';
+import {Response} from './def/response';
 import {FetchHandler} from './util/fetch-handler';
 
 export class ApiService {
@@ -32,5 +32,4 @@ export class ApiService {
     public async fetch(request: Request): Promise<Response> {
         return new FetchHandler(request, this.apiConfig!).doFetch();
     }
-
 }

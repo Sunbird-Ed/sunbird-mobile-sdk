@@ -1,6 +1,6 @@
-import {DbService, InsertQuery, ReadQuery} from "../../db";
-import {TelemetryDecorator, TelemetryService, TelemetryStat, TelemetrySyncStat} from "..";
-import {TelemetryEntry, TelemetryProcessedEntry} from "./schema";
+import {DbService, InsertQuery, ReadQuery} from '../../db';
+import {TelemetryDecorator, TelemetryService, TelemetryStat, TelemetrySyncStat} from '..';
+import {TelemetryEntry, TelemetryProcessedEntry} from './schema';
 import {
     CorrelationData,
     End,
@@ -11,11 +11,11 @@ import {
     Rollup,
     Start,
     TelemetryObject
-} from "../def/telemetry-model";
+} from '../def/telemetry-model';
 
 export class TelemetryServiceImpl implements TelemetryService {
 
-    private static readonly KEY_SYNC_TIME = "telemetry_sync_time";
+    private static readonly KEY_SYNC_TIME = 'telemetry_sync_time';
 
     constructor(private dbService: DbService, private decorator: TelemetryDecorator) {
     }
@@ -164,19 +164,20 @@ export class TelemetryServiceImpl implements TelemetryService {
     }
 
     import(sourcePath: string): Promise<boolean> {
-        throw new Error("Method not implemented.");
+        throw new Error('Method not implemented.');
     }
 
     export(destPath: string): Promise<boolean> {
-        throw new Error("Method not implemented.");
+        throw new Error('Method not implemented.');
     }
 
     getTelemetryStat(): Promise<TelemetryStat> {
-        let telemetryEventCountQuery = "select count(*) from " + TelemetryEntry.TABLE_NAME;
-        let processedTelemetryEventCountQuery = "select sum(" + TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS + ") from " + TelemetryProcessedEntry.TABLE_NAME;
+        const telemetryEventCountQuery = 'select count(*) from ' + TelemetryEntry.TABLE_NAME;
+        const processedTelemetryEventCountQuery = 'select sum(' +
+            TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS + ') from ' + TelemetryProcessedEntry.TABLE_NAME;
         let telemetryEventCount = 0;
         let processedTelemetryEventCount = 0;
-        let syncStat = new TelemetryStat();
+        const syncStat = new TelemetryStat();
 
         return new Promise<TelemetryStat>((resolve, reject) => {
             this.dbService.execute(telemetryEventCountQuery)
@@ -187,28 +188,29 @@ export class TelemetryServiceImpl implements TelemetryService {
                 .then(value => {
                     processedTelemetryEventCount = value[0];
                     syncStat.unSyncedEventCount = telemetryEventCount + processedTelemetryEventCount;
-                    let syncTime = localStorage.getItem(TelemetryServiceImpl.KEY_SYNC_TIME);
-                    if (syncTime !== null)
-                        syncStat.lastSyncTime = parseInt(syncTime);
+                    const syncTime = localStorage.getItem(TelemetryServiceImpl.KEY_SYNC_TIME);
+                    if (syncTime !== null) {
+                        syncStat.lastSyncTime = parseInt(syncTime, 10);
+                    }
 
                     resolve(syncStat);
                 })
                 .catch(error => {
                     reject(error);
-                })
+                });
         });
     }
 
 
     sync(): Promise<TelemetrySyncStat> {
 
-        let readQuery: ReadQuery = {
+        const readQuery: ReadQuery = {
             table: TelemetryEntry.TABLE_NAME,
             limit: '1000'
         };
 
-        //fetch events from telemetry table
-        this.dbService.read(readQuery,)
+        // fetch events from telemetry table
+        this.dbService.read(readQuery)
             .then(value => {
 
             })
@@ -217,14 +219,14 @@ export class TelemetryServiceImpl implements TelemetryService {
             });
 
 
-        throw new Error("Method not implemented.");
+        throw new Error('Method not implemented.');
     }
 
 
     private save(telemetry: any): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
 
-            let insertQuery: InsertQuery = {
+            const insertQuery: InsertQuery = {
                 table: TelemetryEntry.TABLE_NAME,
                 modelJson: JSON.stringify(this.decorator.prepare(this.decorator.decorate(telemetry)))
             };
@@ -236,8 +238,8 @@ export class TelemetryServiceImpl implements TelemetryService {
                 })
                 .catch(error => {
                     reject(error);
-                })
-        })
+                });
+        });
 
     }
 

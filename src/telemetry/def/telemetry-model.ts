@@ -1,6 +1,6 @@
 export class Actor {
-    static readonly TYPE_SYSTEM = "System";
-    static readonly TYPE_USER = "User";
+    static readonly TYPE_SYSTEM = 'System';
+    static readonly TYPE_USER = 'User';
     id: string;
     type: string;
 }
@@ -23,17 +23,17 @@ export class Context {
 }
 
 export class DeviceSpecification {
-    os: string = "";
-    make: string = "";
-    id: string = "";
-    mem: number = -1.0;
-    idisk: number = -1.0;
-    edisk: number = -1.0;
-    scrn: number = -1.0;
+    os = '';
+    make = '';
+    id = '';
+    mem = -1.0;
+    idisk = -1.0;
+    edisk = -1.0;
+    scrn = -1.0;
     camera: string;
-    cpu: string = "";
-    sims: number = -1;
-    cap: Array<String> = [];
+    cpu = '';
+    sims = -1;
+    cap: Array<string> = [];
 }
 
 export class End {

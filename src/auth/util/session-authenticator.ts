@@ -1,18 +1,26 @@
-import {Authenticator} from "../../api/def/authenticator";
-import {ApiConfig, Connection, KEY_USER_TOKEN, Request, Response, RESPONSE_CODE_TYPE} from "../../api";
-import {AuthUtil} from "./auth-util";
+import {Authenticator} from '../../api/def/authenticator';
+import {
+    ApiConfig,
+    Connection,
+    KEY_USER_TOKEN,
+    Request,
+    Response,
+    RESPONSE_CODE_TYPE,
+    ResponseInterceptor
+} from '../../api';
+import {AuthUtil} from './auth-util';
 
-export class SessionAuthenticator implements Authenticator{
+export class SessionAuthenticator implements Authenticator, ResponseInterceptor {
 
     constructor(private apiConfig: ApiConfig) {
     }
 
     interceptRequest(request: Request): Request {
-        let sessionToken = localStorage.getItem(KEY_USER_TOKEN);
+        const sessionToken = localStorage.getItem(KEY_USER_TOKEN);
 
         if (sessionToken) {
-            let existingHeaders = request.headers;
-            existingHeaders["X-Authenticated-User-Token"] = sessionToken;
+            const existingHeaders = request.headers;
+            existingHeaders['X-Authenticated-User-Token'] = sessionToken;
             request.headers = existingHeaders;
         }
 
@@ -37,5 +45,4 @@ export class SessionAuthenticator implements Authenticator{
 
         return connection.invoke(request);
     }
-
 }

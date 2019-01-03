@@ -1,12 +1,12 @@
-import {TelemetryService} from "./telemetry";
-import {SdkConfig} from "./sdk.config";
-import {DbConfig, DbService} from "./db";
-import {DbServiceImpl} from "./db/impl/db-service-impl";
-import {TelemetryDecoratorImpl} from "./telemetry/impl/decorator.impl";
-import {TelemetryServiceImpl} from "./telemetry/impl/telemetry-service-impl";
-import {ApiConfig, ApiService} from "./api";
-import {AuthService} from "./auth";
-import {AuthServiceImpl} from "./auth/auth-service-impl";
+import {TelemetryService} from './telemetry';
+import {SdkConfig} from './sdk.config';
+import {DbConfig, DbService} from './db';
+import {DbServiceImpl} from './db/impl/db-service-impl';
+import {TelemetryDecoratorImpl} from './telemetry/impl/decorator.impl';
+import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
+import {ApiConfig, ApiService} from './api';
+import {AuthService} from './auth';
+import {AuthServiceImpl} from './auth/auth-service-impl';
 
 export class SunbirdSdk {
 

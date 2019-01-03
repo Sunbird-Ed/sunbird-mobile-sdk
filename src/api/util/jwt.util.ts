@@ -13,6 +13,6 @@ export class JWTUtil {
 
     public static parseUserTokenFromAccessToken(accessToken: string): string {
         // TODO
-        return ''
+        return '';
     }
 }

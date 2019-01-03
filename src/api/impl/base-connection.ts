@@ -1,5 +1,4 @@
-import {ApiConfig, Connection, HttpClient, Request, REQUEST_TYPE, Response, ResponseInterceptor} from "..";
-import {Authenticator} from "../def/authenticator";
+import {ApiConfig, Connection, HttpClient, Request, REQUEST_TYPE, Response} from '..';
 
 export class BaseConnection implements Connection {
 
@@ -8,11 +7,19 @@ export class BaseConnection implements Connection {
         this.addGlobalHeader();
     }
 
+    private static interceptRequest(request: Request): Request {
+        const authenticators = request.authenticators;
+        for (const authenticator of authenticators) {
+            request = authenticator.interceptRequest(request);
+        }
+        return request;
+    }
+
     protected addGlobalHeader() {
-        let header = {
-            "X-Channel-Id": this.apiConfig.api_authentication.channelId,
-            "X-App-Id": this.apiConfig.api_authentication.producerId,
-            "X-Device-Id": this.apiConfig.api_authentication.deviceId
+        const header = {
+            'X-Channel-Id': this.apiConfig.api_authentication.channelId,
+            'X-App-Id': this.apiConfig.api_authentication.producerId,
+            'X-Device-Id': this.apiConfig.api_authentication.deviceId
         };
         this.http.addHeaders(header);
     }
@@ -39,22 +46,14 @@ export class BaseConnection implements Connection {
         }
     }
 
-    private static interceptRequest(request: Request): Request {
-        const authenticators = request.authenticators;
-        for (let authenticator of authenticators) {
-            request = authenticator.interceptRequest(request);
-        }
-        return request;
-    }
-
     private async interceptResponse(request: Request, response: Response): Promise<Response> {
         const authenticators = request.authenticators;
-        for (let authenticator of authenticators) {
+        for (const authenticator of authenticators) {
             response = await authenticator.onResponse(request, response, this);
         }
 
         const interceptors = request.responseInterceptors;
-        for (let interceptor of interceptors) {
+        for (const interceptor of interceptors) {
             response = await interceptor.onResponse(request, response, this);
         }
         return response;

@@ -21,23 +21,27 @@ export class ApiTokenHandler {
     }
 
     private buildResetTokenAPIRequest(config: ApiConfig): Request {
-        return new Request(
-            `/consumer/${config.api_authentication.mobileAppConsumer}/credential/register`,
-            REQUEST_TYPE.POST,
-            {
+        return new Request.Builder()
+            .withPath(`/consumer/${config.api_authentication.mobileAppConsumer}/credential/register`)
+            .withType(REQUEST_TYPE.POST)
+            .withHeaders({
                 'Content-Encoding': 'gzip',
                 'Authorization': `Bearer ${this.generateMobileDeviceConsumerBearerToken()}`
-            }
-        )
+            })
+            .build();
     }
 
     private generateMobileDeviceConsumerBearerToken(): string {
         const mobileAppConsumerKey = this.config.api_authentication.mobileAppKey;
         const mobileAppConsumerSecret = this.config.api_authentication.mobileAppSecret;
-        const mobileDeviceConsumerKey = this.config.api_authentication.producerId + '-' + this.config.api_authentication.deviceId;
+        const mobileDeviceConsumerKey = this.config.api_authentication.producerId + '-' +
+            this.config.api_authentication.deviceId;
 
-        const mobileDeviceConsumerSecret = JWTUtil.createJWToken(mobileAppConsumerKey, mobileAppConsumerSecret, JWTokenType.HS256);
-        const mobileDeviceConsumerBearerToken = JWTUtil.createJWToken(mobileDeviceConsumerKey, mobileDeviceConsumerSecret, JWTokenType.HS256);
+        const mobileDeviceConsumerSecret =
+            JWTUtil.createJWToken(mobileAppConsumerKey, mobileAppConsumerSecret, JWTokenType.HS256);
+        // noinspection UnnecessaryLocalVariableJS
+        const mobileDeviceConsumerBearerToken =
+            JWTUtil.createJWToken(mobileDeviceConsumerKey, mobileDeviceConsumerSecret, JWTokenType.HS256);
 
         return mobileDeviceConsumerBearerToken;
     }

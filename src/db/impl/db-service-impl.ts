@@ -1,6 +1,4 @@
-import {DbService} from "..";
-import {InsertQuery, ReadQuery, UpdateQuery} from "..";
-import {DbConfig} from '..';
+import {DbConfig, DbService, InsertQuery, ReadQuery, UpdateQuery} from '..';
 
 declare var db: {
     init: (dbName, dbVersion, migrations, callback) => void,
@@ -24,10 +22,14 @@ declare var db: {
 export class DbServiceImpl implements DbService {
 
     private context: DbConfig;
-    private initialized: boolean = false;
+    private initialized = false;
 
     constructor(context: DbConfig) {
         this.context = context;
+    }
+
+    update(updateQuery: UpdateQuery): Promise<boolean> {
+        throw new Error('Method not implemented.');
     }
 
     private init() {
@@ -37,24 +39,12 @@ export class DbServiceImpl implements DbService {
             this.context.getDBVersion(),
             this.prepareMigrationList(),
             value => {
-                if (value.method === "onCreate") {
+                if (value.method === 'onCreate') {
                     this.onCreate();
-                } else if (value.method === "onUpgrade") {
+                } else if (value.method === 'onUpgrade') {
                     this.onUpgrade(value.oldVersion, value.newVersion);
                 }
             });
-    }
-
-    private prepareMigrationList(): any {
-        let migrationList = this.context.getAppMigrationList();
-        let migrations: Array<any> = [];
-        migrationList.forEach(migration => {
-            let m = {};
-            m["targetDbVersion"] = migration.targetDbVersion;
-            m["queryList"] = migration.queries();
-            migrations.push(m);
-        });
-        return migrations;
     }
 
     private onCreate() {
@@ -112,8 +102,16 @@ export class DbServiceImpl implements DbService {
         });
     }
 
-    update(updateQuery: UpdateQuery): Promise<boolean> {
-        throw new Error("Method not implemented.");
+    private prepareMigrationList(): any {
+        const migrationList = this.context.getAppMigrationList();
+        const migrations: Array<any> = [];
+        migrationList.forEach(migration => {
+            const m = {};
+            m['targetDbVersion'] = migration.targetDbVersion;
+            m['queryList'] = migration.queries();
+            migrations.push(m);
+        });
+        return migrations;
     }
 
 
@@ -129,6 +127,5 @@ export class DbServiceImpl implements DbService {
     endTransaction(isOperationSuccessful: boolean): void {
         db.endTransaction(isOperationSuccessful);
     }
-
 
 }

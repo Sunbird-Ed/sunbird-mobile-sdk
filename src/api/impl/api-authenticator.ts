@@ -1,8 +1,8 @@
-import {Authenticator} from "../def/authenticator";
-import {ApiTokenHandler} from "../util/api-token-handler";
-import {ApiConfig, Connection, KEY_API_TOKEN, Request, Response, RESPONSE_CODE_TYPE} from "..";
+import {Authenticator} from '../def/authenticator';
+import {ApiTokenHandler} from '../util/api-token-handler';
+import {ApiConfig, Connection, KEY_API_TOKEN, Request, Response, RESPONSE_CODE_TYPE} from '..';
 
-export class ApiAuthenticator implements Authenticator{
+export class ApiAuthenticator implements Authenticator {
 
     private apiTokenHandler: ApiTokenHandler;
 
@@ -11,11 +11,11 @@ export class ApiAuthenticator implements Authenticator{
     }
 
     interceptRequest(request: Request): Request {
-        let bearerToken = localStorage.getItem(KEY_API_TOKEN);
+        const bearerToken = localStorage.getItem(KEY_API_TOKEN);
 
         if (bearerToken) {
-            let existingHeaders = request.headers;
-            existingHeaders["Authorization"] = "Bearer " + bearerToken;
+            const existingHeaders = request.headers;
+            existingHeaders['Authorization'] = `Bearer ${bearerToken}`;
             request.headers = existingHeaders;
         }
         return request;
@@ -36,5 +36,4 @@ export class ApiAuthenticator implements Authenticator{
                 return connection.invoke(request);
             });
     }
-
 }

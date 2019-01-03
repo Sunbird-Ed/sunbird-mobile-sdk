@@ -1,8 +1,9 @@
-import {Migration} from "../def/migration";
+import {Migration} from '../def/migration';
 
-export abstract class DbConfig {
+export interface DbConfig {
+    getDBName(): string;
 
-    abstract getDBName(): string
-    abstract getDBVersion(): number
-    abstract getAppMigrationList(): Array<Migration>
+    getDBVersion(): number;
+
+    getAppMigrationList(): Array<Migration>;
 }

@@ -1,10 +1,10 @@
-import {AuthService} from "./def/auth-service";
-import {OauthSession} from "./def/oauth-session";
-import {ApiConfig} from "../api";
-import {OauthHandler} from "./handlers/oauth-handler";
-import {AuthUtil} from "./util/auth-util";
+import {AuthService} from './def/auth-service';
+import {OauthSession} from './def/oauth-session';
+import {ApiConfig} from '../api';
+import {OauthHandler} from './handlers/oauth-handler';
+import {AuthUtil} from './util/auth-util';
 
-export class AuthServiceImpl implements AuthService{
+export class AuthServiceImpl implements AuthService {
 
     constructor(private apiConfig: ApiConfig) {
 
