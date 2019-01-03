@@ -1,6 +1,6 @@
 import {SessionProvider} from '../def/session-provider';
 import {OauthSession} from '../def/oauth-session';
-import {ApiService, ApiConfig, Request, REQUEST_TYPE, Response, JWTUtil} from '../../api';
+import {ApiConfig, ApiService, JWTUtil, Request, REQUEST_TYPE, Response} from '../../api';
 
 export class KeycloakSessionProvider implements SessionProvider {
 

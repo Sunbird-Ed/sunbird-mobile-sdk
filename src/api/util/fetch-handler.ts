@@ -1,14 +1,14 @@
 import {HttpClientImpl} from '../impl/http-client-impl';
 import {BaseConnection} from '../impl/base-connection';
 import {ApiConfig, Connection, Request, Response} from '..';
-import {ApiAuthenticator} from "../impl/api-authenticator";
+import {ApiAuthenticator} from '../impl/api-authenticator';
 
 export class FetchHandler {
     private baseConnection: Connection;
 
     constructor(private request: Request,
                 private apiConfig: ApiConfig) {
-        let httpClient = new HttpClientImpl();
+        const httpClient = new HttpClientImpl();
         this.baseConnection = new BaseConnection(httpClient, this.apiConfig!);
     }
 
@@ -22,8 +22,7 @@ export class FetchHandler {
             return;
         }
 
-        this.request.authenticators.push(new ApiAuthenticator(this.apiConfig!))
-
+        this.request.authenticators.push(new ApiAuthenticator(this.apiConfig!));
     }
 
 }

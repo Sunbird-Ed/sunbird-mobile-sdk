@@ -57,6 +57,6 @@ export class AuthUtil {
             accessToken: localStorage.getItem(KEY_ACCESS_TOKEN)!,
             refreshToken: localStorage.getItem(KEY_REFRESH_TOKEN)!,
             userToken: localStorage.getItem(KEY_USER_TOKEN)!
-        }
+        };
     }
 }

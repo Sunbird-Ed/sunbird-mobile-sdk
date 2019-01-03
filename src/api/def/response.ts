@@ -24,7 +24,6 @@ export class Response {
     }
 
     success(): boolean {
-        return this.responseCode == 200;
+        return this.responseCode === 200;
     }
-
 }

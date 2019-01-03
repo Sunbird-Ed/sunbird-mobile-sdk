@@ -1,11 +1,10 @@
-export type ApiConfig = {
-
-    baseUrl: string,
+export interface ApiConfig {
+    baseUrl: string;
     user_authentication: {
         redirectUrl: string;
         logoutUrl: string;
         authUrl: string;
-    },
+    };
     api_authentication: {
         mobileAppKey: string,
         mobileAppSecret: string,
@@ -13,5 +12,5 @@ export type ApiConfig = {
         channelId: string,
         producerId: string,
         deviceId: string,
-    }
+    };
 }

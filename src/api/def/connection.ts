@@ -1,10 +1,8 @@
-import {Request} from "./request";
-import {Response} from "./response";
-import {ResponseInterceptor} from "./response-interceptor";
-import {Authenticator} from "./authenticator";
+import {Request} from './request';
+import {Response} from './response';
 
 export interface Connection {
 
-    invoke(request: Request): Promise<Response>
+    invoke(request: Request): Promise<Response>;
 
 }

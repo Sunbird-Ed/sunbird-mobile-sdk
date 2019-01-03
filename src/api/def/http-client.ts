@@ -1,4 +1,4 @@
-import {Response} from "./response";
+import {Response} from './response';
 
 export abstract class HttpClient {
 
@@ -6,10 +6,10 @@ export abstract class HttpClient {
 
     abstract addHeader(key: string, value: string);
 
-    abstract get(baseUrl: string, path: string, headers: any, parameters: any): Promise<Response>
+    abstract get(baseUrl: string, path: string, headers: any, parameters: any): Promise<Response>;
 
-    abstract post(baseUrl: string, path: string, headers: any, body: any): Promise<Response>
+    abstract post(baseUrl: string, path: string, headers: any, body: any): Promise<Response>;
 
-    abstract patch(baseUrl: string, path: string, headers: any, body: any): Promise<Response>
+    abstract patch(baseUrl: string, path: string, headers: any, body: any): Promise<Response>;
 
 }

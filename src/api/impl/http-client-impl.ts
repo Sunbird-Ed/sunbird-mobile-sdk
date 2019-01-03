@@ -1,5 +1,5 @@
-import {HttpClient} from "../def/http-client";
-import {Response} from "../def/response";
+import {HttpClient} from '../def/http-client';
+import {Response} from '../def/response';
 
 interface HttpResponse {
     status: number;
@@ -72,7 +72,7 @@ export class HttpClientImpl implements HttpClient {
                 } catch (e) {
                     throw e;
                 }
-            })
+            });
         });
     }
 }

@@ -1,4 +1,4 @@
-import {InsertQuery, ReadQuery, UpdateQuery} from "./query";
+import {InsertQuery, ReadQuery, UpdateQuery} from './query';
 
 export abstract class DbService {
 

@@ -1,8 +1,8 @@
 import {ApiConfig} from '../../api';
 import {GoogleSessionProvider} from '../providers/google-session-provider';
-import {AuthUtil} from "../util/auth-util";
-import {OauthSession} from "..";
-import {KeycloakSessionProvider} from "../providers/keycloak-session-provider";
+import {AuthUtil} from '../util/auth-util';
+import {OauthSession} from '..';
+import {KeycloakSessionProvider} from '../providers/keycloak-session-provider';
 
 declare var customtabs: {
     isAvailable: (success: () => void, error: (error: string) => void) => void;
@@ -49,18 +49,18 @@ export class OauthHandler {
                 customtabs.launchInBrowser(apiConfig.user_authentication.logoutUrl!!, async () => {
                     await AuthUtil.endSession();
                     resolve();
-                }, error => {
-                    reject(error);
+                }, e => {
+                    reject(e);
                 });
             });
         });
     }
 
     private static async resolveTokens(url: string, apiConfig: ApiConfig): Promise<OauthSession> {
-        let params = (new URL(url)).searchParams;
+        const params = (new URL(url)).searchParams;
 
         if (!params) {
-            throw "Unable to Authenticate, no params found";
+            throw new Error('Unable to Authenticate, no params found');
         }
 
         if (OauthHandler.isGoogleSignupCallBackUrl(url)) {
@@ -68,7 +68,7 @@ export class OauthHandler {
             await googleSessionProvider.createSession({
                 accessToken: params.get('access_token')!,
                 refreshToken: params.get('refresh_token')!
-            })
+            });
             return AuthUtil.getSessionData();
         } else {
             const keycloakSessionProvider = new KeycloakSessionProvider(apiConfig);

@@ -1,5 +1,5 @@
-export type OauthSession = {
-    accessToken: string,
-    userToken: string,
-    refreshToken: string
+export interface OauthSession {
+    accessToken: string;
+    userToken: string;
+    refreshToken: string;
 }

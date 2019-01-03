@@ -1,4 +1,4 @@
-import {OauthSession} from "./oauth-session";
+import {OauthSession} from './oauth-session';
 
 export interface AuthService {
 
