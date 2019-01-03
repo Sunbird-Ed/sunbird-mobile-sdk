@@ -1,6 +1,6 @@
 import {Authenticator} from '../def/authenticator';
 import {ApiTokenHandler} from '../util/api-token-handler';
-import {ApiConfig, Connection, KEY_API_TOKEN, Request, Response, RESPONSE_CODE_TYPE} from '..';
+import {ApiConfig, Connection, KEY_API_TOKEN, Request, Response, ResponseCode} from '..';
 
 export class ApiAuthenticator implements Authenticator {
 
@@ -22,7 +22,7 @@ export class ApiAuthenticator implements Authenticator {
     }
 
     onResponse(request: Request, response: Response, connection: Connection): Promise<Response> {
-        if (response.code() !== RESPONSE_CODE_TYPE.UNAUTHORISED) {
+        if (response.code() !== ResponseCode.HTTP_UNAUTHORISED) {
             return Promise.resolve(response);
         }
 

@@ -5,7 +5,7 @@ import {
     KEY_USER_TOKEN,
     Request,
     Response,
-    RESPONSE_CODE_TYPE,
+    ResponseCode,
     ResponseInterceptor
 } from '../../api';
 import {AuthUtil} from './auth-util';
@@ -28,7 +28,7 @@ export class SessionAuthenticator implements Authenticator, ResponseInterceptor 
     }
 
     onResponse(request: Request, response: Response, connection: Connection): Promise<Response> {
-        if (response.code() !== RESPONSE_CODE_TYPE.UNAUTHORISED) {
+        if (response.code() !== ResponseCode.HTTP_UNAUTHORISED) {
             return Promise.resolve(response);
         }
 

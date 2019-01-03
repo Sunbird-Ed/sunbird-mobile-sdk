@@ -1,4 +1,4 @@
-export enum RESPONSE_CODE_TYPE {
+export enum ResponseCode {
     HTTP_UNAUTHORISED = 401,
     HTTP_SUCCESS = 200,
     SUCCESS_GENERIC = 2000,
@@ -9,7 +9,7 @@ export enum RESPONSE_CODE_TYPE {
 
 export class Response<T> {
 
-    constructor(private responseCode: RESPONSE_CODE_TYPE,
+    constructor(private responseCode: ResponseCode,
                 private errorMesg: string,
                 private body: T) {
 
