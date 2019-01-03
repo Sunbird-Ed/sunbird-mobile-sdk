@@ -34,11 +34,14 @@ export class ApiTokenHandler {
     private generateMobileDeviceConsumerBearerToken(): string {
         const mobileAppConsumerKey = this.config.api_authentication.mobileAppKey;
         const mobileAppConsumerSecret = this.config.api_authentication.mobileAppSecret;
-        const mobileDeviceConsumerKey = this.config.api_authentication.producerId + '-' + this.config.api_authentication.deviceId;
+        const mobileDeviceConsumerKey = this.config.api_authentication.producerId + '-' +
+            this.config.api_authentication.deviceId;
 
-        const mobileDeviceConsumerSecret = JWTUtil.createJWToken(mobileAppConsumerKey, mobileAppConsumerSecret, JWTokenType.HS256);
+        const mobileDeviceConsumerSecret =
+            JWTUtil.createJWToken(mobileAppConsumerKey, mobileAppConsumerSecret, JWTokenType.HS256);
         // noinspection UnnecessaryLocalVariableJS
-        const mobileDeviceConsumerBearerToken = JWTUtil.createJWToken(mobileDeviceConsumerKey, mobileDeviceConsumerSecret, JWTokenType.HS256);
+        const mobileDeviceConsumerBearerToken =
+            JWTUtil.createJWToken(mobileDeviceConsumerKey, mobileDeviceConsumerSecret, JWTokenType.HS256);
 
         return mobileDeviceConsumerBearerToken;
     }

@@ -1,4 +1,3 @@
-
 export abstract class Migration {
 
     targetDbVersion: number;
@@ -6,7 +5,7 @@ export abstract class Migration {
     constructor(targetDbVersion: number) {
         this.targetDbVersion = targetDbVersion;
     }
-    
+
     abstract queries(): Array<string>;
 
     required(oldVersion: number, newVersion: number): boolean {

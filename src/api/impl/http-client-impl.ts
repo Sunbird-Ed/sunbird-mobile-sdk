@@ -1,5 +1,6 @@
 import {HttpClient} from '../def/http-client';
 import {Response} from '../def/response';
+import {REQUEST_TYPE} from '../def/request';
 
 interface HttpResponse {
     status: number;
@@ -26,7 +27,6 @@ declare var cordova: {
     }
 };
 
-
 export class HttpClientImpl implements HttpClient {
 
     private http = cordova.plugin.http;
@@ -35,7 +35,7 @@ export class HttpClientImpl implements HttpClient {
     }
 
     addHeaders(headers: any) {
-        for (var key in headers) {
+        for (const key in headers) {
             if (headers.hasOwnProperty(key)) {
                 this.http.setHeader('*', key, headers[key]);
             }
@@ -47,20 +47,21 @@ export class HttpClientImpl implements HttpClient {
     }
 
     get(baseUrl: string, path: string, headers: any, parameters: any): Promise<Response> {
-        return this.invokeRequest('get', baseUrl + path, parameters, headers);
+        return this.invokeRequest(REQUEST_TYPE.GET, baseUrl + path, parameters, headers);
     }
 
     patch(baseUrl: string, path: string, headers: any, body: any): Promise<Response> {
-        return this.invokeRequest('patch', baseUrl + path, body, headers);
+        return this.invokeRequest(REQUEST_TYPE.PATCH, baseUrl + path, body, headers);
     }
 
     post(baseUrl: string, path: string, headers: any, body: any): Promise<Response> {
-        return this.invokeRequest('patch', baseUrl + path, body, headers);
+        return this.invokeRequest(REQUEST_TYPE.POST, baseUrl + path, body, headers);
     }
 
-    private invokeRequest(type: 'get' | 'post' | 'patch', url: string, parametersOrData: any, headers: { [key: string]: string }): Promise<Response> {
+    private invokeRequest(type: REQUEST_TYPE, url: string, parametersOrData: any,
+                          headers: { [key: string]: string }): Promise<Response> {
         return new Promise((resolve, reject) => {
-            this.http[type](url, parametersOrData, headers, (response) => {
+            this.http[type.toLowerCase()](url, parametersOrData, headers, (response) => {
                 try {
                     resolve(new Response(response.status, response.error!!, JSON.parse(response.data)));
                 } catch (e) {

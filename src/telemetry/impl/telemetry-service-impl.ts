@@ -173,7 +173,8 @@ export class TelemetryServiceImpl implements TelemetryService {
 
     getTelemetryStat(): Promise<TelemetryStat> {
         const telemetryEventCountQuery = 'select count(*) from ' + TelemetryEntry.TABLE_NAME;
-        const processedTelemetryEventCountQuery = 'select sum(' + TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS + ') from ' + TelemetryProcessedEntry.TABLE_NAME;
+        const processedTelemetryEventCountQuery = 'select sum(' +
+            TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS + ') from ' + TelemetryProcessedEntry.TABLE_NAME;
         let telemetryEventCount = 0;
         let processedTelemetryEventCount = 0;
         const syncStat = new TelemetryStat();
