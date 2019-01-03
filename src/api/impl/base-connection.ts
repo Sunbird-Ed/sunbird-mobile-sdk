@@ -1,4 +1,4 @@
-import {ApiConfig, Connection, HttpClient, Request, REQUEST_TYPE, Response} from '..';
+import {ApiConfig, Connection, HttpClient, HttpRequestType, Request, Response} from '..';
 
 export class BaseConnection implements Connection {
 
@@ -31,15 +31,15 @@ export class BaseConnection implements Connection {
         request = BaseConnection.interceptRequest(request);
 
         switch (request.type) {
-            case REQUEST_TYPE.GET:
+            case HttpRequestType.GET:
                 response = await this.http.get(this.apiConfig.baseUrl, request.path, request.headers, request.parameters);
                 response = await this.interceptResponse(request, response);
                 return response;
-            case REQUEST_TYPE.PATCH:
+            case HttpRequestType.PATCH:
                 response = await this.http.patch(this.apiConfig.baseUrl, request.path, request.headers, request.parameters);
                 response = await this.interceptResponse(request, response);
                 return response;
-            case REQUEST_TYPE.POST:
+            case HttpRequestType.POST:
                 response = await this.http.post(this.apiConfig.baseUrl, request.path, request.headers, request.parameters);
                 response = await this.interceptResponse(request, response);
                 return response;

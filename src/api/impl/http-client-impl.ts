@@ -1,6 +1,6 @@
 import {HttpClient} from '../def/http-client';
 import {Response} from '../def/response';
-import {REQUEST_TYPE} from '../def/request';
+import {HttpRequestType} from '../def/request';
 
 interface HttpResponse {
     status: number;
@@ -47,18 +47,18 @@ export class HttpClientImpl implements HttpClient {
     }
 
     get(baseUrl: string, path: string, headers: any, parameters: any): Promise<Response> {
-        return this.invokeRequest(REQUEST_TYPE.GET, baseUrl + path, parameters, headers);
+        return this.invokeRequest(HttpRequestType.GET, baseUrl + path, parameters, headers);
     }
 
     patch(baseUrl: string, path: string, headers: any, body: any): Promise<Response> {
-        return this.invokeRequest(REQUEST_TYPE.PATCH, baseUrl + path, body, headers);
+        return this.invokeRequest(HttpRequestType.PATCH, baseUrl + path, body, headers);
     }
 
     post(baseUrl: string, path: string, headers: any, body: any): Promise<Response> {
-        return this.invokeRequest(REQUEST_TYPE.POST, baseUrl + path, body, headers);
+        return this.invokeRequest(HttpRequestType.POST, baseUrl + path, body, headers);
     }
 
-    private invokeRequest(type: REQUEST_TYPE, url: string, parametersOrData: any,
+    private invokeRequest(type: HttpRequestType, url: string, parametersOrData: any,
                           headers: { [key: string]: string }): Promise<Response> {
         return new Promise((resolve, reject) => {
             this.http[type.toLowerCase()](url, parametersOrData, headers, (response) => {
