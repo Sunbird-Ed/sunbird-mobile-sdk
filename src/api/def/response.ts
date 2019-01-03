@@ -7,7 +7,7 @@ export enum ResponseCode {
     ERROR_IO = 1002,
 }
 
-export class Response<T> {
+export class Response<T = any> {
 
     constructor(private responseCode: ResponseCode,
                 private errorMesg: string,
