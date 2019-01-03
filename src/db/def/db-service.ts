@@ -1,6 +1,6 @@
 import {InsertQuery, ReadQuery, UpdateQuery} from './query';
 
-export abstract class Service {
+export abstract class DbService {
 
     abstract execute(rawQuery: string): Promise<any>;
 

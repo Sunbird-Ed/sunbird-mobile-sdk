@@ -1,4 +1,4 @@
-import {DbSdk as DbSdk, InsertQuery, ReadQuery} from "../../db";
+import {DbService, InsertQuery, ReadQuery} from "../../db";
 import {TelemetryDecorator, TelemetryService, TelemetryStat, TelemetrySyncStat} from "..";
 import {TelemetryEntry, TelemetryProcessedEntry} from "./schema";
 import {
@@ -11,13 +11,13 @@ import {
     Rollup,
     Start,
     TelemetryObject
-} from "../def/telemetry.model";
+} from "../def/telemetry-model";
 
 export class TelemetryServiceImpl implements TelemetryService {
 
     private static readonly KEY_SYNC_TIME = "telemetry_sync_time";
 
-    constructor(private decorator: TelemetryDecorator) {
+    constructor(private dbService: DbService, private decorator: TelemetryDecorator) {
     }
 
     audit(): void {
@@ -179,10 +179,10 @@ export class TelemetryServiceImpl implements TelemetryService {
         let syncStat = new TelemetryStat();
 
         return new Promise<TelemetryStat>((resolve, reject) => {
-            DbSdk.instance.getService().execute(telemetryEventCountQuery)
+            this.dbService.execute(telemetryEventCountQuery)
                 .then(value => {
                     telemetryEventCount = value[0];
-                    return DbSdk.instance.getService().execute(processedTelemetryEventCountQuery);
+                    return this.dbService.execute(processedTelemetryEventCountQuery);
                 })
                 .then(value => {
                     processedTelemetryEventCount = value[0];
@@ -208,7 +208,7 @@ export class TelemetryServiceImpl implements TelemetryService {
         };
 
         //fetch events from telemetry table
-        DbSdk.instance.getService().read(readQuery,)
+        this.dbService.read(readQuery,)
             .then(value => {
 
             })
@@ -229,7 +229,7 @@ export class TelemetryServiceImpl implements TelemetryService {
                 modelJson: JSON.stringify(this.decorator.prepare(this.decorator.decorate(telemetry)))
             };
 
-            DbSdk.instance.getService().insert(insertQuery)
+            this.dbService.insert(insertQuery)
 
                 .then(numberOfRow => {
                     resolve(numberOfRow > 0);
