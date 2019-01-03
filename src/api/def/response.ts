@@ -3,11 +3,11 @@ export enum RESPONSE_CODE_TYPE {
     SUCCESS = 200
 }
 
-export class Response {
+export class Response<T> {
 
     constructor(private responseCode: RESPONSE_CODE_TYPE,
                 private errorMesg: string,
-                private body: any) {
+                private body: T) {
 
     }
 
@@ -19,7 +19,7 @@ export class Response {
         return new Error(this.errorMesg);
     }
 
-    response(): any {
+    response(): T {
         return this.body;
     }
 
