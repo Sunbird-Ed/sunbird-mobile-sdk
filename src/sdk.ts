@@ -1,5 +1,5 @@
 import {TelemetryService} from './telemetry';
-import {SdkConfig} from './sdk.config';
+import {SdkConfig} from './sdk-config';
 import {DbConfig, DbService} from './db';
 import {DbServiceImpl} from './db/impl/db-service-impl';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator.impl';

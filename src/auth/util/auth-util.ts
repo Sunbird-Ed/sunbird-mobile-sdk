@@ -1,12 +1,12 @@
 import {
     ApiService,
     Connection,
+    HttpRequestType,
     JWTUtil,
     KEY_ACCESS_TOKEN,
     KEY_REFRESH_TOKEN,
     KEY_USER_TOKEN,
     Request,
-    REQUEST_TYPE,
     Response
 } from '../../api';
 import {OauthSession} from '..';
@@ -17,7 +17,7 @@ export class AuthUtil {
 
         const request = new Request.Builder()
             .withPath(authUrl)
-            .withType(REQUEST_TYPE.POST)
+            .withType(HttpRequestType.POST)
             .withBody(JSON.stringify({
                 refresh_token: localStorage.getItem(KEY_REFRESH_TOKEN),
                 grant_type: 'refresh_token',

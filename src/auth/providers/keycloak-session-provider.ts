@@ -1,6 +1,6 @@
 import {SessionProvider} from '../def/session-provider';
 import {OauthSession} from '../def/oauth-session';
-import {ApiConfig, ApiService, JWTUtil, Request, REQUEST_TYPE, Response} from '../../api';
+import {ApiConfig, ApiService, HttpRequestType, JWTUtil, Request, Response} from '../../api';
 
 export class KeycloakSessionProvider implements SessionProvider {
 
@@ -11,8 +11,7 @@ export class KeycloakSessionProvider implements SessionProvider {
 
         const request: Request = new Request.Builder().
         withApiToken(false).
-        withPath(this.apiConfig.user_authentication.authUrl).
-        withType(REQUEST_TYPE.POST).
+        withPath(this.apiConfig.user_authentication.authUrl).withType(HttpRequestType.POST).
         withBody(JSON.stringify({
             redirect_uri: this.apiConfig.baseUrl + '/' + this.apiConfig.user_authentication.redirectUrl,
             code: JWTUtil.parseUserTokenFromAccessToken(accessToken),

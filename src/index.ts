@@ -6,4 +6,4 @@ export {Db};
 export {Api};
 export {Telemetry};
 export * from './sdk';
-export * from './sdk.config';
+export * from './sdk-config';

@@ -1,4 +1,4 @@
-import {ApiConfig, Connection, Request, REQUEST_TYPE, Response} from '..';
+import {ApiConfig, Connection, HttpRequestType, Request, Response} from '..';
 import {JWTokenType, JWTUtil} from './jwt.util';
 
 export class ApiTokenHandler {
@@ -23,7 +23,7 @@ export class ApiTokenHandler {
     private buildResetTokenAPIRequest(config: ApiConfig): Request {
         return new Request.Builder()
             .withPath(`/consumer/${config.api_authentication.mobileAppConsumer}/credential/register`)
-            .withType(REQUEST_TYPE.POST)
+            .withType(HttpRequestType.POST)
             .withHeaders({
                 'Content-Encoding': 'gzip',
                 'Authorization': `Bearer ${this.generateMobileDeviceConsumerBearerToken()}`

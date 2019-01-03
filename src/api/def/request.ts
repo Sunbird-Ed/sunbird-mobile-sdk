@@ -1,7 +1,7 @@
 import {ResponseInterceptor} from './response-interceptor';
 import {Authenticator} from './authenticator';
 
-export enum REQUEST_TYPE {
+export enum HttpRequestType {
     GET = 'GET',
     POST = 'POST',
     PATCH = 'PATCH'
@@ -21,7 +21,7 @@ export class Request {
             return this;
         }
 
-        withType(type: REQUEST_TYPE) {
+        withType(type: HttpRequestType) {
             this.request._type = type;
             return this;
         }
@@ -67,7 +67,7 @@ export class Request {
     };
 
     private _path: string;
-    private _type: REQUEST_TYPE;
+    private _type: HttpRequestType;
     private _requiredApiToken = true;
     private _responseInterceptors: ResponseInterceptor[] = [];
     private _authenticators: Authenticator[] = [];
@@ -91,8 +91,8 @@ export class Request {
         this._path = value;
     }
 
-    set type(value: REQUEST_TYPE) {
-        this._type = value;
+    get type(): HttpRequestType {
+        return this._type;
     }
 
     set requiredApiToken(value: boolean) {
@@ -119,8 +119,8 @@ export class Request {
         return this._path;
     }
 
-    get type(): REQUEST_TYPE {
-        return this._type;
+    set type(value: HttpRequestType) {
+        this._type = value;
     }
 
     get requiredApiToken(): boolean {
