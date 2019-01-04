@@ -14,6 +14,7 @@ export interface UpdateQuery {
     table: string;
     selection?: string;
     selectionArgs?: Array<string>;
+    modelJson: any;
 }
 
 export interface InsertQuery {
