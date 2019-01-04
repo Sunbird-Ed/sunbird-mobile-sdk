@@ -1,6 +1,6 @@
 import {DbService, InsertQuery, ReadQuery} from '../../db';
 import {TelemetryDecorator, TelemetryService, TelemetryStat, TelemetrySyncStat} from '..';
-import {TelemetryEntry, TelemetryProcessedEntry} from './schema';
+import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {
     CorrelationData,
     End,
