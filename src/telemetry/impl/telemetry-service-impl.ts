@@ -12,6 +12,7 @@ import {
     Start,
     TelemetryObject
 } from '../def/telemetry-model';
+import {Observable, Observer} from 'rxjs';
 
 export class TelemetryServiceImpl implements TelemetryService {
 
@@ -159,19 +160,19 @@ export class TelemetryServiceImpl implements TelemetryService {
         this.save(start);
     }
 
-    event(telemetry: any): Promise<boolean> {
-        return this.save(telemetry);
+    event(telemetry: any): Observable<boolean> {
+        return Observable.fromPromise(this.save(telemetry));
     }
 
-    import(sourcePath: string): Promise<boolean> {
+    import(sourcePath: string): Observable<boolean> {
         throw new Error('Method not implemented.');
     }
 
-    export(destPath: string): Promise<boolean> {
+    export(destPath: string): Observable<boolean> {
         throw new Error('Method not implemented.');
     }
 
-    getTelemetryStat(): Promise<TelemetryStat> {
+    getTelemetryStat(): Observable<TelemetryStat> {
         const telemetryEventCountQuery = 'select count(*) from ' + TelemetryEntry.TABLE_NAME;
         const processedTelemetryEventCountQuery = 'select sum(' +
             TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS + ') from ' + TelemetryProcessedEntry.TABLE_NAME;
@@ -179,7 +180,7 @@ export class TelemetryServiceImpl implements TelemetryService {
         let processedTelemetryEventCount = 0;
         const syncStat = new TelemetryStat();
 
-        return new Promise<TelemetryStat>((resolve, reject) => {
+        return Observable.create((observer: Observer<TelemetryStat>) => {
             this.dbService.execute(telemetryEventCountQuery)
                 .then(value => {
                     telemetryEventCount = value[0];
@@ -193,16 +194,17 @@ export class TelemetryServiceImpl implements TelemetryService {
                         syncStat.lastSyncTime = parseInt(syncTime, 10);
                     }
 
-                    resolve(syncStat);
+                    observer.next(syncStat);
+                    observer.complete();
                 })
                 .catch(error => {
-                    reject(error);
+                    observer.error(error);
                 });
         });
     }
 
 
-    sync(): Promise<TelemetrySyncStat> {
+    sync(): Observable<TelemetrySyncStat> {
 
         const readQuery: ReadQuery = {
             table: TelemetryEntry.TABLE_NAME,
