@@ -3,6 +3,7 @@ import {OauthSession} from './def/oauth-session';
 import {ApiConfig} from '../api';
 import {OauthHandler} from './handlers/oauth-handler';
 import {AuthUtil} from './util/auth-util';
+import {Observable} from 'rxjs';
 
 export class AuthServiceImpl implements AuthService {
 
@@ -10,15 +11,15 @@ export class AuthServiceImpl implements AuthService {
 
     }
 
-    getSession(): Promise<OauthSession> {
+    getSession(): Observable<OauthSession> {
         return AuthUtil.getSessionData();
     }
 
-    login(): Promise<OauthSession> {
+    login(): Observable<OauthSession> {
         return OauthHandler.doLogin(this.apiConfig);
     }
 
-    logout(): Promise<any> {
+    logout(): Observable<undefined> {
         return OauthHandler.doLogout(this.apiConfig);
     }
 

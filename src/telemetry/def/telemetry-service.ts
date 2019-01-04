@@ -1,6 +1,7 @@
 import {TelemetryStat} from './telemetry-stat';
 import {TelemetrySyncStat} from './telemetry-sync-stat';
 import {CorrelationData, Rollup, TelemetryObject} from './telemetry-model';
+import {Observable} from 'rxjs';
 
 
 export abstract class TelemetryService {
@@ -21,14 +22,14 @@ export abstract class TelemetryService {
 
     abstract error(env, errCode, errorType, pageId, stackTrace): void;
 
-    abstract event(telemetry: any): Promise<boolean>;
+    abstract event(telemetry: any): Observable<boolean>;
 
-    abstract import(sourcePath: string): Promise<boolean>;
+    abstract import(sourcePath: string): Observable<boolean>;
 
-    abstract export(destPath: string): Promise<boolean>;
+    abstract export(destPath: string): Observable<boolean>;
 
-    abstract getTelemetryStat(): Promise<TelemetryStat>;
+    abstract getTelemetryStat(): Observable<TelemetryStat>;
 
-    abstract sync(): Promise<TelemetrySyncStat>;
+    abstract sync(): Observable<TelemetrySyncStat>;
 
 }

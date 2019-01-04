@@ -1,29 +1,40 @@
-export enum RESPONSE_CODE_TYPE {
-    UNAUTHORISED = 401,
-    SUCCESS = 200
+export enum ResponseCode {
+    HTTP_UNAUTHORISED = 401,
+    HTTP_SUCCESS = 200,
+    SUCCESS_GENERIC = 2000,
+    ERROR_GENERIC = 1000,
+    ERROR_DB = 1001,
+    ERROR_IO = 1002,
 }
 
-export class Response {
+export class Response<T = any> {
 
-    constructor(private responseCode: RESPONSE_CODE_TYPE,
-                private errorMesg: string,
-                private body: any) {
+    private _responseCode: ResponseCode;
+    private _errorMesg: string;
+    private _body: T;
 
+
+    get responseCode(): ResponseCode {
+        return this._responseCode;
     }
 
-    code(): number {
-        return this.responseCode;
+    set responseCode(value: ResponseCode) {
+        this._responseCode = value;
     }
 
-    error(): Error {
-        return new Error(this.errorMesg);
+    get errorMesg(): string {
+        return this._errorMesg;
     }
 
-    response(): any {
-        return this.body;
+    set errorMesg(value: string) {
+        this._errorMesg = value;
     }
 
-    success(): boolean {
-        return this.responseCode === 200;
+    get body(): T {
+        return this._body;
+    }
+
+    set body(value: T) {
+        this._body = value;
     }
 }

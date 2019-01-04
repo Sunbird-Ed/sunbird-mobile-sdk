@@ -1,11 +1,12 @@
 import {OauthSession} from './oauth-session';
+import {Observable} from 'rxjs';
 
 export interface AuthService {
 
-    login(): Promise<OauthSession>;
+    login(): Observable<OauthSession>;
 
-    logout(): Promise<any>;
+    logout(): Observable<undefined>;
 
-    getSession(): Promise<OauthSession>;
+    getSession(): Observable<OauthSession>;
 
 }

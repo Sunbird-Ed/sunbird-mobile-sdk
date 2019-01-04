@@ -10,6 +10,7 @@ import {
     Response
 } from '../../api';
 import {OauthSession} from '..';
+import {Observable} from 'rxjs';
 
 export class AuthUtil {
 
@@ -26,9 +27,9 @@ export class AuthUtil {
             .build();
 
 
-        const response: Response = await ApiService.instance.fetch(request);
+        const response: Response = await ApiService.instance.fetch(request).toPromise();
 
-        const sessionData: OauthSession = JSON.parse(response.response());
+        const sessionData: OauthSession = JSON.parse(response.body());
 
         return {
             ...sessionData,
@@ -52,11 +53,11 @@ export class AuthUtil {
         return;
     }
 
-    public static async getSessionData(): Promise<OauthSession> {
-        return {
+    public static getSessionData(): Observable<OauthSession> {
+        return Observable.of({
             accessToken: localStorage.getItem(KEY_ACCESS_TOKEN)!,
             refreshToken: localStorage.getItem(KEY_REFRESH_TOKEN)!,
             userToken: localStorage.getItem(KEY_USER_TOKEN)!
-        };
+        });
     }
 }

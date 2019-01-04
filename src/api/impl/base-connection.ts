@@ -1,4 +1,5 @@
 import {ApiConfig, Connection, HttpClient, HttpRequestType, Request, Response} from '..';
+import {Observable} from 'rxjs';
 
 export class BaseConnection implements Connection {
 
@@ -24,37 +25,40 @@ export class BaseConnection implements Connection {
         this.http.addHeaders(header);
     }
 
-    async invoke(request: Request): Promise<Response> {
+    invoke(request: Request): Observable<Response> {
 
-        let response;
+        let response = (async () => {
+            request = BaseConnection.interceptRequest(request);
 
-        request = BaseConnection.interceptRequest(request);
+            switch (request.type) {
+                case HttpRequestType.GET:
+                    response = await this.http.get(this.apiConfig.baseUrl, request.path, request.headers, request.parameters);
+                    response = await this.interceptResponse(request, response);
+                    return response;
+                case HttpRequestType.PATCH:
+                    response = await this.http.patch(this.apiConfig.baseUrl, request.path, request.headers, request.parameters);
+                    response = await this.interceptResponse(request, response);
+                    return response;
+                case HttpRequestType.POST:
+                    response = await this.http.post(this.apiConfig.baseUrl, request.path, request.headers, request.parameters);
+                    response = await this.interceptResponse(request, response);
+                    return response;
+            }
+        })();
 
-        switch (request.type) {
-            case HttpRequestType.GET:
-                response = await this.http.get(this.apiConfig.baseUrl, request.path, request.headers, request.parameters);
-                response = await this.interceptResponse(request, response);
-                return response;
-            case HttpRequestType.PATCH:
-                response = await this.http.patch(this.apiConfig.baseUrl, request.path, request.headers, request.parameters);
-                response = await this.interceptResponse(request, response);
-                return response;
-            case HttpRequestType.POST:
-                response = await this.http.post(this.apiConfig.baseUrl, request.path, request.headers, request.parameters);
-                response = await this.interceptResponse(request, response);
-                return response;
-        }
+        return Observable.fromPromise(response);
+
     }
 
     private async interceptResponse(request: Request, response: Response): Promise<Response> {
         const authenticators = request.authenticators;
         for (const authenticator of authenticators) {
-            response = await authenticator.onResponse(request, response, this);
+            response = await authenticator.onResponse(request, response, this).toPromise();
         }
 
         const interceptors = request.responseInterceptors;
         for (const interceptor of interceptors) {
-            response = await interceptor.onResponse(request, response, this);
+            response = await interceptor.onResponse(request, response, this).toPromise();
         }
         return response;
     }

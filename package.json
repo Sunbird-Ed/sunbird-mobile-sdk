@@ -39,7 +39,8 @@
   },
   "dependencies": {
     "jsrsasign": "^8.0.12",
-    "moment": "^2.23.0"
+    "moment": "^2.23.0",
+    "rxjs": ">=5 <6"
   },
   "jest": {
     "browser": false,

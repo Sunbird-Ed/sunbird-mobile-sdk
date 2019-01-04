@@ -2,6 +2,7 @@ import {ApiConfig} from './config/api-config';
 import {Request} from './def/request';
 import {Response} from './def/response';
 import {FetchHandler} from './util/fetch-handler';
+import {Observable} from 'rxjs';
 
 export class ApiService {
 
@@ -29,7 +30,7 @@ export class ApiService {
      * @param request
      * @param fetchConfig - provide fetch configuration
      */
-    public async fetch(request: Request): Promise<Response> {
+    public fetch(request: Request): Observable<Response> {
         return new FetchHandler(request, this.apiConfig!).doFetch();
     }
 }

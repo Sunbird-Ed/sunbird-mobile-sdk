@@ -1,5 +1,6 @@
 import {ApiConfig, Connection, HttpRequestType, Request, Response} from '..';
 import {JWTokenType, JWTUtil} from './jwt.util';
+import {Observable, Subject} from 'rxjs';
 
 export class ApiTokenHandler {
 
@@ -9,15 +10,21 @@ export class ApiTokenHandler {
         this.config = config;
     }
 
-    public refreshAuthToken(connection: Connection): Promise<string> {
-        return connection.invoke(this.buildResetTokenAPIRequest(this.config)).then((r: Response) => {
+    public refreshAuthToken(connection: Connection): Observable<string> {
+
+        const observable = new Subject<string>();
+
+        connection.invoke(this.buildResetTokenAPIRequest(this.config)).subscribe((r: Response) => {
             try {
-                const bearerToken = r.response().result.secret;
-                return Promise.resolve(bearerToken);
+                const bearerToken = r.body.result.secret;
+                observable.next(bearerToken);
+                observable.complete();
             } catch (e) {
-                return Promise.reject(e);
+                observable.error(e);
             }
         });
+
+        return observable;
     }
 
     private buildResetTokenAPIRequest(config: ApiConfig): Request {
