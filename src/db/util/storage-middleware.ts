@@ -1,3 +1,17 @@
+export class ObjectMapper {
+    public static map(source: any, map: { [p: string]: string }) {
+        const result = {};
+
+        for (const key in map) {
+            if (map.hasOwnProperty(key)) {
+                result[key] = source[map[key]];
+            }
+        }
+
+        return result;
+    }
+}
+
 export class StorageMiddleware {
     public static toDb(obj: any): any {
         for (const prop in obj) {
