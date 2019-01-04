@@ -1,6 +1,7 @@
 import {Request} from './request';
 import {Response} from './response';
 import {Connection} from './connection';
+import {Observable} from 'rxjs';
 
 export interface ResponseInterceptor {
 
@@ -12,5 +13,5 @@ export interface ResponseInterceptor {
      * @param {Connection} connection - The connection used to establish the API
      * @return {Promise<Response>} The response after interceptor mutation
      */
-    onResponse(request: Request, response: Response, connection: Connection): Promise<Response>;
+    onResponse(request: Request, response: Response, connection: Connection): Observable<Response>;
 }

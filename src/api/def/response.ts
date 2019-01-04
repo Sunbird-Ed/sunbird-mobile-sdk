@@ -9,25 +9,32 @@ export enum ResponseCode {
 
 export class Response<T = any> {
 
-    constructor(private responseCode: ResponseCode,
-                private errorMesg: string,
-                private body: T) {
+    private _responseCode: ResponseCode;
+    private _errorMesg: string;
+    private _body: T;
 
+
+    get responseCode(): ResponseCode {
+        return this._responseCode;
     }
 
-    code(): number {
-        return this.responseCode;
+    set responseCode(value: ResponseCode) {
+        this._responseCode = value;
     }
 
-    error(): Error {
-        return new Error(this.errorMesg);
+    get errorMesg(): string {
+        return this._errorMesg;
     }
 
-    response(): T {
-        return this.body;
+    set errorMesg(value: string) {
+        this._errorMesg = value;
     }
 
-    success(): boolean {
-        return this.responseCode === 200;
+    get body(): T {
+        return this._body;
+    }
+
+    set body(value: T) {
+        this._body = value;
     }
 }

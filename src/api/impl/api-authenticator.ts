@@ -1,6 +1,7 @@
 import {Authenticator} from '../def/authenticator';
 import {ApiTokenHandler} from '../util/api-token-handler';
 import {ApiConfig, Connection, KEY_API_TOKEN, Request, Response, ResponseCode} from '..';
+import {Observable, Subject} from 'rxjs';
 
 export class ApiAuthenticator implements Authenticator {
 
@@ -21,19 +22,25 @@ export class ApiAuthenticator implements Authenticator {
         return request;
     }
 
-    onResponse(request: Request, response: Response, connection: Connection): Promise<Response> {
-        if (response.code() !== ResponseCode.HTTP_UNAUTHORISED) {
-            return Promise.resolve(response);
+    onResponse(request: Request, response: Response, connection: Connection): Observable<Response> {
+
+        const observable = new Subject<Response>();
+
+        if (response.responseCode !== ResponseCode.HTTP_UNAUTHORISED) {
+            observable.next(response);
+            observable.complete();
+        } else {
+            this.apiTokenHandler.refreshAuthToken(connection)
+                .subscribe((bearerToken: string) => {
+                    localStorage.setItem(KEY_API_TOKEN, bearerToken);
+                    connection.invoke(request).subscribe(v => {
+                        observable.next(v);
+                        observable.complete();
+                    });
+                });
         }
 
-        if (!response.response().message) {
-            return Promise.resolve(response);
-        }
 
-        return this.apiTokenHandler.refreshAuthToken(connection)
-            .then((bearerToken: string) => {
-                localStorage.setItem(KEY_API_TOKEN, bearerToken);
-                return connection.invoke(request);
-            });
+        return observable;
     }
 }

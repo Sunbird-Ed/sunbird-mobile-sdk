@@ -1,4 +1,5 @@
 import {DbConfig, DbService, InsertQuery, ReadQuery, UpdateQuery} from '..';
+import {Observable, Subject} from 'rxjs';
 
 declare var db: {
     init: (dbName, dbVersion, migrations, callback) => void,
@@ -28,7 +29,7 @@ export class DbServiceImpl implements DbService {
         this.context = context;
     }
 
-    update(updateQuery: UpdateQuery): Promise<boolean> {
+    update(updateQuery: UpdateQuery): Observable<boolean> {
         throw new Error('Method not implemented.');
     }
 
@@ -55,51 +56,62 @@ export class DbServiceImpl implements DbService {
 
     }
 
-    execute(query: string): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
-            db.execute(query, value => {
-                resolve(value);
-            }, error => {
-                reject(error);
+    execute(query: string): Observable<any> {
+
+        const observable = new Subject<any>();
+
+        db.execute(query, value => {
+            observable.next(value);
+            observable.complete();
+        }, error => {
+            observable.error(error);
+        });
+
+        return observable;
+    }
+
+    read(readQuery: ReadQuery): Observable<any[]> {
+
+        if (!this.initialized) {
+            this.init();
+        }
+
+        const observable = new Subject<any[]>();
+
+        db.read(readQuery.distinct!!,
+            readQuery.table,
+            readQuery.columns!!,
+            readQuery.selection!!,
+            readQuery.selectionArgs!!,
+            readQuery.groupBy!!,
+            readQuery.having!!,
+            readQuery.orderBy!!,
+            readQuery.limit!!, (json: any[]) => {
+                observable.next(json);
+                observable.complete();
+            }, (error: string) => {
+                observable.error(error);
             });
-        });
+
+        return observable;
     }
 
-    read(readQuery: ReadQuery): Promise<any[]> {
-
-        if (!this.initialized) {
-            this.init();
-        }
-        return new Promise<any[]>((resolve, reject) => {
-            db.read(readQuery.distinct!!,
-                readQuery.table,
-                readQuery.columns!!,
-                readQuery.selection!!,
-                readQuery.selectionArgs!!,
-                readQuery.groupBy!!,
-                readQuery.having!!,
-                readQuery.orderBy!!,
-                readQuery.limit!!, (json: any[]) => {
-                    resolve(json);
-                }, (error: string) => {
-                    reject(error);
-                });
-        });
-    }
-
-    insert(inserQuery: InsertQuery): Promise<number> {
+    insert(inserQuery: InsertQuery): Observable<number> {
         if (!this.initialized) {
             this.init();
         }
 
-        return new Promise<number>((resolve, reject) => {
-            db.insert(inserQuery.table,
-                inserQuery.modelJson, (number: number) => {
-                    resolve(number);
-                }, (error: string) => {
-                    reject(error);
-                });
-        });
+        const observable = new Subject<number>();
+
+        db.insert(inserQuery.table,
+            inserQuery.modelJson, (number: number) => {
+                observable.next(number);
+                observable.complete();
+            }, (error: string) => {
+                observable.error(error);
+            });
+
+        return observable;
     }
 
     private prepareMigrationList(): any {
@@ -115,13 +127,13 @@ export class DbServiceImpl implements DbService {
     }
 
 
-    delete(table: string, whereClause: string, whereArgs: string[]): Promise<number> {
+    delete(table: string, whereClause: string, whereArgs: string[]): Observable<number> {
         // TODO
         throw new Error('Method not implemented.');
     }
 
     beginTransaction(): void {
-       db.beginTransaction();
+        db.beginTransaction();
     }
 
     endTransaction(isOperationSuccessful: boolean): void {
