@@ -1,4 +1,4 @@
-import {StorageMiddleware} from './storage-middleware';
+import {ObjectMapper, StorageMiddleware} from './storage-middleware';
 
 describe('StorageMiddleware', () => {
     it('should convert into db', () => {
@@ -32,6 +32,24 @@ describe('StorageMiddleware', () => {
         expect(result).toEqual({
             prop: 'val',
             prop1: ['val1', 'val2']
+        });
+    });
+});
+
+describe('ObjectMapper', () => {
+    it('should', () => {
+        // arrange
+        const source = {
+            key1: 'val1',
+            key2: 'val2',
+            key3: 'val3'
+        };
+
+        const target = ObjectMapper.map(source, {myKey1: 'key1', myKey2: 'key2'});
+
+        expect(target).toEqual({
+            myKey1: 'val1',
+            myKey2: 'val2'
         });
     });
 });

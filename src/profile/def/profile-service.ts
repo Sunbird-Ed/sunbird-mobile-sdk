@@ -5,4 +5,6 @@ export interface ProfileService {
     createProfile(profile: Profile): Observable<Profile>;
 
     deleteProfile(uid: string): Observable<number>;
+
+    updateUserInfo(profile: Profile): Observable<Profile>;
 }
