@@ -3,6 +3,7 @@ import {GoogleSessionProvider} from '../providers/google-session-provider';
 import {AuthUtil} from '../util/auth-util';
 import {OauthSession} from '..';
 import {KeycloakSessionProvider} from '../providers/keycloak-session-provider';
+import {Observable, Observer} from 'rxjs';
 
 declare var customtabs: {
     isAvailable: (success: () => void, error: (error: string) => void) => void;
@@ -18,39 +19,42 @@ export class OauthHandler {
         return (url.indexOf('access_token') !== -1 && url.indexOf('refresh_token') !== -1);
     }
 
-    public static async doLogin(apiConfig: ApiConfig): Promise<OauthSession> {
-        return new Promise<OauthSession>((resolve, reject) => {
-            customtabs.isAvailable(() => {
+    public static doLogin(apiConfig: ApiConfig): Observable<OauthSession> {
+        return Observable.create((observer: Observer<OauthSession>) => {
+            customtabs.isAvailable(async () => {
                 customtabs.launch(apiConfig.user_authentication.authUrl, async callbackUrl => {
-                    resolve(OauthHandler.resolveTokens(callbackUrl, apiConfig));
+                    observer.next(await OauthHandler.resolveTokens(callbackUrl, apiConfig));
+                    observer.complete();
                 }, error => {
-                    reject(error);
+                    observer.error(error);
                 });
             }, () => {
                 customtabs.launchInBrowser(apiConfig.user_authentication.authUrl, async callbackUrl => {
-                    resolve(OauthHandler.resolveTokens(callbackUrl, apiConfig));
+                    observer.next(await OauthHandler.resolveTokens(callbackUrl, apiConfig));
                 }, error => {
-                    reject(error);
+                    observer.error(error);
                 });
             });
         });
     }
 
-    public static async doLogout(apiConfig: ApiConfig) {
-        return new Promise((resolve, reject) => {
+    public static doLogout(apiConfig: ApiConfig): Observable<undefined> {
+        return Observable.create((observer: Observer<undefined>) => {
             customtabs.isAvailable(() => {
                 customtabs.launch(apiConfig.user_authentication.logoutUrl!!, async () => {
                     await AuthUtil.endSession();
-                    resolve();
+                    observer.next(undefined);
+                    observer.complete();
                 }, error => {
-                    reject(error);
+                    observer.error(error);
                 });
             }, error => {
                 customtabs.launchInBrowser(apiConfig.user_authentication.logoutUrl!!, async () => {
                     await AuthUtil.endSession();
-                    resolve();
+                    observer.next(undefined);
+                    observer.complete();
                 }, e => {
-                    reject(e);
+                    observer.error(error);
                 });
             });
         });
@@ -69,11 +73,11 @@ export class OauthHandler {
                 accessToken: params.get('access_token')!,
                 refreshToken: params.get('refresh_token')!
             });
-            return AuthUtil.getSessionData();
+            return AuthUtil.getSessionData().toPromise();
         } else {
             const keycloakSessionProvider = new KeycloakSessionProvider(apiConfig);
             await keycloakSessionProvider.createSession(params.get('access_token')!);
-            return AuthUtil.getSessionData();
+            return AuthUtil.getSessionData().toPromise();
         }
     }
 }

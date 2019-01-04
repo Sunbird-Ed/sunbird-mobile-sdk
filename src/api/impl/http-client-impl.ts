@@ -1,6 +1,4 @@
-import {HttpClient} from '../def/http-client';
-import {Response} from '../def/response';
-import {HttpRequestType} from '../def/request';
+import {HttpClient, HttpRequestType, Response} from '..';
 import {Observable, Subject} from 'rxjs';
 
 interface HttpResponse {

@@ -1,14 +1,7 @@
 import {Authenticator} from '../../api/def/authenticator';
-import {
-    ApiConfig,
-    Connection,
-    KEY_USER_TOKEN,
-    Request,
-    Response,
-    ResponseCode,
-    ResponseInterceptor
-} from '../../api';
+import {ApiConfig, Connection, KEY_USER_TOKEN, Request, Response, ResponseCode, ResponseInterceptor} from '../../api';
 import {AuthUtil} from './auth-util';
+import {Observable, Observer} from 'rxjs';
 
 export class SessionAuthenticator implements Authenticator, ResponseInterceptor {
 
@@ -27,16 +20,19 @@ export class SessionAuthenticator implements Authenticator, ResponseInterceptor 
         return request;
     }
 
-    onResponse(request: Request, response: Response, connection: Connection): Promise<Response> {
-        if (response.code() !== ResponseCode.HTTP_UNAUTHORISED) {
-            return Promise.resolve(response);
-        }
+    onResponse(request: Request, response: Response, connection: Connection): Observable<Response> {
+        return Observable.create(async (observer: Observer<Response>) => {
+            if (response.responseCode !== ResponseCode.HTTP_UNAUTHORISED) {
+                observer.next(response);
+            }
 
-        if (response.response().message) {
-            return Promise.resolve(response);
-        }
+            if (response.body().message) {
+                observer.next(response);
+            }
 
-        return this.refreshToken(request, connection);
+            observer.next(await this.refreshToken(request, connection));
+            observer.complete();
+        });
     }
 
     private async refreshToken(request, connection): Promise<Response> {
