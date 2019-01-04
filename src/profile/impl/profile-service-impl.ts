@@ -1,18 +1,18 @@
 import {Profile, ProfileService} from '..';
-import {ObjectMapper, StorageMiddleware} from '../../db/util/storage-middleware';
-import {DbService, Table} from '../../db';
+import {DbService, ObjectMapper, NoSqlFormatter} from '../../db';
 import {Observable} from 'rxjs';
 import {ProfileEntry} from '../db/schema';
 import {Constant} from '../def/constant';
+import TABLE_NAME = ProfileEntry.TABLE_NAME;
 
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService) {
     }
 
     createProfile(profile: Profile): Observable<Profile> {
-        const saveToDb = StorageMiddleware.toDb(profile);
+        const saveToDb = NoSqlFormatter.toDb(profile);
         this.dbService.insert({
-            table: Table.PROFILES,
+            table: TABLE_NAME,
             modelJson: ObjectMapper.map(saveToDb, {
                 [Constant.BOARD]: saveToDb.board,
                 [Constant.GRADE]: saveToDb.Grade,
@@ -23,15 +23,15 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     deleteProfile(uid: string): Observable<number> {
-        return this.dbService.delete(Table.PROFILES, 'uid =? ', [uid]);
+        return this.dbService.delete(TABLE_NAME, 'uid =? ', [uid]);
     }
 
     updateUserInfo(profile: Profile): Observable<Profile> {
-        const profileId = this.dbService.read({table: Table.PROFILES, columns: [profile.uid]});
-        const saveToDb = StorageMiddleware.toDb(profile);
+        const profileId = this.dbService.read({table: TABLE_NAME, columns: [profile.uid]});
+        const saveToDb = NoSqlFormatter.toDb(profile);
         if (profileId !== null) {
             return this.dbService.update({
-                table: Table.PROFILES,
+                table: TABLE_NAME,
                 selection: `${ProfileEntry._ID} = ?`,
                 selectionArgs: [profile.uid],
                 modelJson: ObjectMapper.map(saveToDb, {

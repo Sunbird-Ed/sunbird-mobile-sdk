@@ -12,7 +12,7 @@ export class ObjectMapper {
     }
 }
 
-export class StorageMiddleware {
+export class NoSqlFormatter {
     public static toDb(obj: any): any {
         for (const prop in obj) {
             if (obj.hasOwnProperty(prop) && typeof obj[prop] === 'object') {

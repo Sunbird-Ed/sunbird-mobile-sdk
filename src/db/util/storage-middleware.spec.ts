@@ -1,6 +1,6 @@
-import {ObjectMapper, StorageMiddleware} from './storage-middleware';
+import {ObjectMapper, NoSqlFormatter} from './storage-middleware';
 
-describe('StorageMiddleware', () => {
+describe('NoSqlFormatter', () => {
     it('should convert into db', () => {
         // arrange
         const obj = {
@@ -9,7 +9,7 @@ describe('StorageMiddleware', () => {
         };
 
         // act
-        const result = StorageMiddleware.toDb(obj);
+        const result = NoSqlFormatter.toDb(obj);
 
         // assert
         expect(result).toEqual({
@@ -26,7 +26,7 @@ describe('StorageMiddleware', () => {
         };
 
         // act
-        const result = StorageMiddleware.fromDb(obj);
+        const result = NoSqlFormatter.fromDb(obj);
 
         // assert
         expect(result).toEqual({
