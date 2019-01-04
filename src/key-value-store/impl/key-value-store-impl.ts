@@ -35,7 +35,7 @@ export class KeyValueStoreImpl implements KeyValueStore {
                     return this.dbService.insert({
                         table: KeyValueStoreEntry.TABLE_NAME,
                         modelJson: {
-                            value
+                            [KeyValueStoreEntry.VALUE]: value
                         }
                     }).map(() => {
                         const res = new Response<boolean>();
@@ -48,8 +48,8 @@ export class KeyValueStoreImpl implements KeyValueStore {
                         selection: `${KeyValueStoreEntry.KEY} = ?`,
                         selectionArgs: [key],
                         modelJson: {
-                            key,
-                            value
+                            [KeyValueStoreEntry.KEY]: key,
+                            [KeyValueStoreEntry.VALUE]: value
                         }
                     }).map(() => {
                         const res = new Response<boolean>();
