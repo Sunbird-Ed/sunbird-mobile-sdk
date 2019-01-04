@@ -1,4 +1,4 @@
-import {UniqueId} from '../../db/utility/unique-id/unique-id';
+import {UniqueId} from '../../db/util/unique-id';
 
 export enum ProfileType {
     STUDENT = 'student',
