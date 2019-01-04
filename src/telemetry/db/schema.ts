@@ -1,4 +1,4 @@
-import {Constant} from '../../db';
+import {DbConstants} from '../../db';
 
 export namespace TelemetryEntry {
 
@@ -12,10 +12,10 @@ export namespace TelemetryEntry {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE ' + TelemetryEntry.TABLE_NAME + ' (' +
             TelemetryEntry._ID + ' INTEGER PRIMARY KEY,' +
-            TelemetryEntry.COLUMN_NAME_EVENT_TYPE + Constant.TEXT_TYPE + Constant.COMMA_SEP +
-            TelemetryEntry.COLUMN_NAME_EVENT + Constant.TEXT_TYPE + Constant.COMMA_SEP +
-            TelemetryEntry.COLUMN_NAME_TIMESTAMP + Constant.INT_TYPE + Constant.COMMA_SEP +
-            TelemetryEntry.COLUMN_NAME_PRIORITY + Constant.INT_TYPE +
+            TelemetryEntry.COLUMN_NAME_EVENT_TYPE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            TelemetryEntry.COLUMN_NAME_EVENT + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            TelemetryEntry.COLUMN_NAME_TIMESTAMP + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            TelemetryEntry.COLUMN_NAME_PRIORITY + DbConstants.INT_TYPE +
             ' )';
     };
 
@@ -38,10 +38,10 @@ export namespace TelemetryProcessedEntry {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE ' + TelemetryProcessedEntry.TABLE_NAME + ' (' +
             TelemetryProcessedEntry._ID + ' INTEGER PRIMARY KEY,' +
-            TelemetryProcessedEntry.COLUMN_NAME_MSG_ID + Constant.TEXT_TYPE + Constant.COMMA_SEP +
-            TelemetryProcessedEntry.COLUMN_NAME_DATA + Constant.TEXT_TYPE + Constant.COMMA_SEP +
-            TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS + Constant.INT_TYPE + Constant.COMMA_SEP +
-            TelemetryProcessedEntry.COLUMN_NAME_PRIORITY + Constant.INT_TYPE +
+            TelemetryProcessedEntry.COLUMN_NAME_MSG_ID + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            TelemetryProcessedEntry.COLUMN_NAME_DATA + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            TelemetryProcessedEntry.COLUMN_NAME_PRIORITY + DbConstants.INT_TYPE +
             ' )';
     };
 

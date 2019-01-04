@@ -1,4 +1,4 @@
-export * from './def/constants';
+export * from './def/db-constants';
 export * from './config/db-config';
 export * from './def/migration';
 export * from './def/query';
