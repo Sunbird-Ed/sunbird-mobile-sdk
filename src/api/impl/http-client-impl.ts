@@ -73,8 +73,7 @@ export class HttpClientImpl implements HttpClient {
             r.body = JSON.parse(response.data);
             r.responseCode = response.status;
             r.errorMesg = response.error;
-            observable.next(r);
-            observable.complete();
+            observable.error(r);
         });
 
         return observable;

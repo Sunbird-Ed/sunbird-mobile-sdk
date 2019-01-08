@@ -1,8 +1,10 @@
 import {Profile, ProfileService} from '..';
-import {DbService, ObjectMapper, NoSqlFormatter} from '../../db';
+import {DbService, NoSqlFormatter, ObjectMapper} from '../../db';
 import {Observable} from 'rxjs';
 import {ProfileEntry} from '../db/schema';
 import {Constant} from '../def/constant';
+import {UsersSearchCriteria} from '../def/users-search-criteria';
+import {User} from '../def/user';
 import TABLE_NAME = ProfileEntry.TABLE_NAME;
 
 export class ProfileServiceImpl implements ProfileService {
@@ -44,5 +46,10 @@ export class ProfileServiceImpl implements ProfileService {
             });
         }
         return Observable.of(profile);
+    }
+
+    getUsers(searchCriteria: UsersSearchCriteria): Observable<User[]> {
+        // TODO
+        return Observable.from([]);
     }
 }

@@ -1,5 +1,5 @@
-import {ApiConfig, Connection, HttpRequestType, Request, Response} from '..';
-import {JWTokenType, JWTUtil} from './jwt.util';
+import {ApiConfig, Connection, HttpRequestType, Request, Response} from '../index';
+import {JWTokenType, JWTUtil} from '../util/jwt.util';
 import {Observable, Subject} from 'rxjs';
 
 export class ApiTokenHandler {

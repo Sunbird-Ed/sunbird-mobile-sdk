@@ -1,5 +1,5 @@
 import {Authenticator} from '../def/authenticator';
-import {ApiTokenHandler} from '../util/api-token-handler';
+import {ApiTokenHandler} from '../handlers/api-token-handler';
 import {ApiConfig, Connection, KEY_API_TOKEN, Request, Response, ResponseCode} from '..';
 import {Observable, Subject} from 'rxjs';
 
