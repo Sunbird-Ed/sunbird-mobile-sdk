@@ -6,10 +6,21 @@ import {Constant} from '../def/constant';
 import {UsersSearchCriteria} from '../def/users-search-criteria';
 import {User} from '../def/user';
 import {UniqueId} from '../../db/util/unique-id';
+import {TenantInfo} from '../def/tenant-info';
+import {TenantInfoRequest} from '../def/tenant-info-request';
+import {TenantInfoHandler} from '../handler/tenant-info-handler';
+import {ApiService} from '../../api';
+import {KeyValueStore} from '../../key-value-store';
+import {TenantServiceConfig} from '../config/tenant-service-config';
+import {SessionAuthenticator} from '../../auth';
 import TABLE_NAME = ProfileEntry.TABLE_NAME;
 
 export class ProfileServiceImpl implements ProfileService {
-    constructor(private dbService: DbService) {
+    constructor(private dbService: DbService,
+                private apiService: ApiService,
+                private keyValueStore: KeyValueStore,
+                private tenantServiceConfig: TenantServiceConfig,
+                private sessionAuthenticator: SessionAuthenticator) {
     }
 
     createProfile(profile: Profile): Observable<Profile> {
@@ -66,5 +77,11 @@ export class ProfileServiceImpl implements ProfileService {
     getUsers(searchCriteria: UsersSearchCriteria): Observable<User[]> {
         // TODO
         return Observable.from([]);
+    }
+
+    getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo[]> {
+        // TODO
+        return new TenantInfoHandler(this.keyValueStore, this.apiService,
+            this.tenantServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
     }
 }

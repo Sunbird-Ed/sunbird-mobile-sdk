@@ -1,4 +1,3 @@
-import {UniqueId} from '../../db/util/unique-id';
 
 export enum ProfileType {
     STUDENT = 'student',
@@ -10,7 +9,7 @@ export enum ProfileSource {
     LOCAL = 'local'
 }
 
-export class Profile {
+export interface Profile {
     uid: string;
     handle: string;
     medium: string[];
@@ -22,22 +21,4 @@ export class Profile {
     gradeValueMap: { [key: string]: any };
     syllabus: string[];
     source: ProfileSource;
-
-
-    constructor(handle: string, medium: string[],
-                board: string[], profileType: ProfileType, subject: string[],
-                grade: string[], gradeValueMap: { [p: string]: any },
-                syllabus: string[], source: ProfileSource) {
-        this.handle = handle;
-        this.medium = medium;
-        this.board = board;
-        this.profileType = profileType;
-        this.subject = subject;
-        this.grade = grade;
-        this.gradeValueMap = gradeValueMap;
-        this.syllabus = syllabus;
-        this.source = source;
-        this.uid = UniqueId.generateUniqueId();
-        this.createdAt = Date.now();
-    }
 }
