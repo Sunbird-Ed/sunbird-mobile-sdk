@@ -1,10 +1,8 @@
-import {ApiRequestHandler} from '../def/api-request-handler';
-import {ApiService, HttpRequestType, Request} from '../../api';
-import {CourseServiceConfig} from '../config/course-service-config';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {Batch, CourseServiceConfig} from '..';
 import {SessionAuthenticator} from '../../auth';
 import {UpdateContentStateRequest} from '../def/request-types';
 import {Observable} from 'rxjs';
-import {Batch} from '../def/batch';
 
 export class UpdateContentStateHandler implements ApiRequestHandler<UpdateContentStateRequest, boolean> {
     private readonly UPDATE_CONTENT_STATE_ENDPOINT = 'content/state/update/';

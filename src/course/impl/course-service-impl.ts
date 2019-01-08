@@ -8,14 +8,12 @@ import {
     UpdateContentStateRequest
 } from '../def/request-types';
 import {ApiService} from '../../api';
-import {CourseServiceConfig} from '../config/course-service-config';
+import {Batch, Course, CourseServiceConfig} from '..';
 import {SessionAuthenticator} from '../../auth';
-import {Batch} from '../def/batch';
 import {ProfileService} from '../../profile';
 import {GetBatchDetailsHandler} from '../handlers/get-batch-details-handler';
 import {UpdateContentStateHandler} from '../handlers/update-content-state-handler';
 import {GetCourseBatchesHandler} from '../handlers/get-course-batches-handler';
-import {Course} from '../def/course';
 import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
 import {EnrollCourseHandler} from '../handlers/enroll-course-handler';
 import {KeyValueStore} from '../../key-value-store';

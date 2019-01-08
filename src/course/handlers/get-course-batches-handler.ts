@@ -1,11 +1,9 @@
-import {ApiRequestHandler} from '../def/api-request-handler';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {CourseBatchesRequest} from '../def/request-types';
-import {Batch} from '../def/batch';
+import {Batch, CourseServiceConfig} from '..';
 import {Observable} from 'rxjs';
-import {ApiService, HttpRequestType, Request} from '../../api';
 import {CourseBatchesResponse} from '../def/course-batches-response';
 import {User} from '../../profile/def/user';
-import {CourseServiceConfig} from '../config/course-service-config';
 import {SessionAuthenticator} from '../../auth';
 import {ProfileService} from '../../profile';
 
