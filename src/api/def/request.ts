@@ -46,7 +46,10 @@ export class Request {
             return this;
         }
 
-        withBody(body: string) {
+        withBody(body: string | object) {
+            if (typeof body === 'object') {
+                body = JSON.stringify(body);
+            }
             this.request._body = body;
             return this;
         }

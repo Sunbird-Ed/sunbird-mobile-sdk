@@ -1,7 +1,7 @@
 import {ApiConfig} from './config/api-config';
 import {Request} from './def/request';
 import {Response} from './def/response';
-import {FetchHandler} from './util/fetch-handler';
+import {FetchHandler} from './handlers/fetch-handler';
 import {Observable} from 'rxjs';
 
 export class ApiService {
@@ -30,7 +30,7 @@ export class ApiService {
      * @param request
      * @param fetchConfig - provide fetch configuration
      */
-    public fetch(request: Request): Observable<Response> {
+    public fetch<T = any>(request: Request): Observable<Response<T>> {
         return new FetchHandler(request, this.apiConfig!).doFetch();
     }
 }

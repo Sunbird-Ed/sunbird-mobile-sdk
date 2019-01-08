@@ -3,17 +3,14 @@ export interface FetchEnrolledCourseRequest {
 }
 
 export interface EnrollCourseRequest {
-
     userId: string;
     courseId: string;
     contentId: string;
     batchId: string;
-
 }
 
 
 export interface UpdateContentStateRequest {
-
     userId: string;
     courseId: string;
     contentId: string;
@@ -23,17 +20,13 @@ export interface UpdateContentStateRequest {
     result?: string;
     grade?: string;
     score?: string;
-
 }
 
 export interface CourseBatchesRequest {
-
     courseId: string[] | string;
-
+    filters: any;
 }
 
 export interface CourseBatchDetailsRequest {
-
     batchId: string;
-
 }
