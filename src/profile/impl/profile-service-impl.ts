@@ -5,6 +5,7 @@ import {ProfileEntry} from '../db/schema';
 import {Constant} from '../def/constant';
 import {UsersSearchCriteria} from '../def/users-search-criteria';
 import {User} from '../def/user';
+import {UniqueId} from '../../db/util/unique-id';
 import TABLE_NAME = ProfileEntry.TABLE_NAME;
 
 export class ProfileServiceImpl implements ProfileService {
@@ -18,7 +19,15 @@ export class ProfileServiceImpl implements ProfileService {
             modelJson: ObjectMapper.map(saveToDb, {
                 [Constant.BOARD]: saveToDb.board,
                 [Constant.GRADE]: saveToDb.Grade,
-                [Constant.HANDLE]: saveToDb.handle
+                [Constant.HANDLE]: saveToDb.handle,
+                [Constant.SYLLABUS]: saveToDb.syllabus,
+                [Constant.SOURCE]: saveToDb.source,
+                [Constant.MEDIUM]: saveToDb.medium,
+                [Constant.PROFILE_TYPE]: saveToDb.profileType,
+                [Constant.GRADE_VALUE]: saveToDb.gradeValue,
+                [Constant.SUBJECT]: saveToDb.subject,
+                [Constant.UID]: UniqueId.generateUniqueId(),
+                [Constant.CREATED_AT]: Date.now()
             })
         });
         return Observable.of(profile);
@@ -39,7 +48,13 @@ export class ProfileServiceImpl implements ProfileService {
                 modelJson: ObjectMapper.map(saveToDb, {
                     [Constant.BOARD]: saveToDb.board,
                     [Constant.GRADE]: saveToDb.Grade,
-                    [Constant.HANDLE]: saveToDb.handle
+                    [Constant.HANDLE]: saveToDb.handle,
+                    [Constant.SYLLABUS]: saveToDb.syllabus,
+                    [Constant.SOURCE]: saveToDb.source,
+                    [Constant.MEDIUM]: saveToDb.medium,
+                    [Constant.PROFILE_TYPE]: saveToDb.profileType,
+                    [Constant.GRADE_VALUE]: saveToDb.gradeValue,
+                    [Constant.SUBJECT]: saveToDb.subject
                 })
             }).map(() => {
                 return profile;
