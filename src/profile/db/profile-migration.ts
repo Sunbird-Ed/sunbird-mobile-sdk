@@ -10,13 +10,27 @@ export class ProfileEntryMigration extends Migration {
     queries(): Array<string> {
         return [ProfileEntry.createTable()];
     }
+}
 
-    groupProfileQueries(): Array<string> {
+export class GroupProfileEntryMigration extends Migration {
+
+    constructor() {
+        super(1);
+    }
+
+    queries(): Array<string> {
         return [GroupProfileEntry.createTable()];
     }
+}
 
-    groupQueries(): Array<string> {
-        return [GroupEntry.createTable()];
+export class GroupEntryMigration extends Migration {
+
+    constructor() {
+        super(1);
     }
 
+    queries(): Array<string> {
+        return [GroupEntry.createTable()];
+    }
 }
+
