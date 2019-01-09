@@ -17,26 +17,13 @@ export class UpdateServerProfileInfoHandler implements ApiRequestHandler<Upadate
 
     }
 
-    handle(request: UpadateServerProfileInfoRequest): Observable<Profile[]> {
-        return this.keyValueStore.getValue(this.STORED_UPDATE_SERVER_PROFILE_INFO_PREFIX + request.userId + request.frameWork)
-            .mergeMap((updateInfo: string | undefined) => {
-                if (updateInfo) {
-                    return Observable.of(JSON.parse(updateInfo));
-                }
-                return this.fetchFromServer(request)
-                    .do((updateUserInfo: Profile[]) => {
-                        this.keyValueStore.setValue(this.STORED_UPDATE_SERVER_PROFILE_INFO_PREFIX + request.userId + request.frameWork,
-                            JSON.stringify(updateUserInfo));
-                    });
-            });
-    }
-
-    private fetchFromServer(request: UpadateServerProfileInfoRequest): Observable<Profile[]> {
+    public handle(request: UpadateServerProfileInfoRequest): Observable<Profile[]> {
         const apiRequest: Request = new Request.Builder()
-            .withType(HttpRequestType.GET)
-            .withPath(this.updateUserInfoConfig.apiPath + this.GET_SERVER_PROFILE_INFO_API + request.userId + request.frameWork)
+            .withType(HttpRequestType.PATCH)
+            .withPath(this.updateUserInfoConfig.apiPath + this.GET_SERVER_PROFILE_INFO_API + request.userId + '/' + request.frameWork)
             .withApiToken(true)
             .withInterceptors([this.sessionAuthenticator])
+            .withBody({request})
             .build();
         return this.apiService.fetch <{ result: Profile[] }>(apiRequest).map((success) => {
             return success.body.result;
