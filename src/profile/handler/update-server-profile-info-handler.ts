@@ -8,7 +8,6 @@ import {Observable} from 'rxjs';
 
 export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpadateServerProfileInfoRequest, Profile[]> {
     private readonly GET_SERVER_PROFILE_INFO_API = '/api/user/v1/update';
-    private readonly STORED_UPDATE_SERVER_PROFILE_INFO_PREFIX = 'severProfileInfo_';
 
     constructor(private  keyValueStore: KeyValueStore,
                 private apiService: ApiService,
