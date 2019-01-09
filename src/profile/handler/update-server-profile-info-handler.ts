@@ -1,12 +1,12 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {UpadateServerProfileInfoRequest} from '../def/upadate-server-profile-info-request';
+import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-request';
 import {Profile} from '..';
 import {KeyValueStore} from '../../key-value-store';
 import {ProfileServiceConfig} from '../config/profile-service-config';
 import {SessionAuthenticator} from '../../auth';
 import {Observable} from 'rxjs';
 
-export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpadateServerProfileInfoRequest, Profile> {
+export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateServerProfileInfoRequest, Profile> {
     private readonly GET_SERVER_PROFILE_INFO_API = '/api/user/v1/update';
 
     constructor(private  keyValueStore: KeyValueStore,
@@ -16,7 +16,7 @@ export class UpdateServerProfileInfoHandler implements ApiRequestHandler<Upadate
 
     }
 
-    public handle(request: UpadateServerProfileInfoRequest): Observable<Profile> {
+    public handle(request: UpdateServerProfileInfoRequest): Observable<Profile> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.PATCH)
             .withPath(this.updateUserInfoConfig.apiPath + this.GET_SERVER_PROFILE_INFO_API + request.userId + '/' + request.frameWork)

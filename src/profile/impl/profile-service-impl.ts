@@ -13,7 +13,7 @@ import {ApiService} from '../../api';
 import {KeyValueStore} from '../../key-value-store';
 import {ProfileServiceConfig} from '../config/profile-service-config';
 import {SessionAuthenticator} from '../../auth';
-import {UpadateServerProfileInfoRequest} from '../def/upadate-server-profile-info-request';
+import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-request';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import TABLE_NAME = ProfileEntry.TABLE_NAME;
 
@@ -50,7 +50,7 @@ export class ProfileServiceImpl implements ProfileService {
         return this.dbService.delete(TABLE_NAME, 'uid =? ', [uid]);
     }
 
-    updateServerProfile(updateUserInfoRequest: UpadateServerProfileInfoRequest): Observable<Profile> {
+    updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<Profile> {
         // TODO
         return new UpdateServerProfileInfoHandler(this.keyValueStore, this.apiService,
             this.profileServiceConfig, this.sessionAuthenticator).handle(updateUserInfoRequest);
