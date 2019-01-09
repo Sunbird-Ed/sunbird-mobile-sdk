@@ -11,9 +11,9 @@ export interface ProfileService {
 
     deleteProfile(uid: string): Observable<number>;
 
-    updateServerProfile(updateServerProfileRequest: UpadateServerProfileInfoRequest): Observable<Profile[]>;
+    updateServerProfile(updateServerProfileRequest: UpadateServerProfileInfoRequest): Observable<Profile>;
 
-    getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo[]>;
+    getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo>;
 
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
 }

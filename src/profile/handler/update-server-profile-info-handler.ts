@@ -6,7 +6,7 @@ import {ProfileServiceConfig} from '../config/profile-service-config';
 import {SessionAuthenticator} from '../../auth';
 import {Observable} from 'rxjs';
 
-export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpadateServerProfileInfoRequest, Profile[]> {
+export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpadateServerProfileInfoRequest, Profile> {
     private readonly GET_SERVER_PROFILE_INFO_API = '/api/user/v1/update';
 
     constructor(private  keyValueStore: KeyValueStore,
@@ -16,7 +16,7 @@ export class UpdateServerProfileInfoHandler implements ApiRequestHandler<Upadate
 
     }
 
-    public handle(request: UpadateServerProfileInfoRequest): Observable<Profile[]> {
+    public handle(request: UpadateServerProfileInfoRequest): Observable<Profile> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.PATCH)
             .withPath(this.updateUserInfoConfig.apiPath + this.GET_SERVER_PROFILE_INFO_API + request.userId + '/' + request.frameWork)
@@ -24,7 +24,7 @@ export class UpdateServerProfileInfoHandler implements ApiRequestHandler<Upadate
             .withInterceptors([this.sessionAuthenticator])
             .withBody({request})
             .build();
-        return this.apiService.fetch <{ result: Profile[] }>(apiRequest).map((success) => {
+        return this.apiService.fetch <{ result: Profile }>(apiRequest).map((success) => {
             return success.body.result;
         });
     }

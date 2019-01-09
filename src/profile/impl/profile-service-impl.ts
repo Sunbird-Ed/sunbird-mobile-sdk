@@ -50,34 +50,7 @@ export class ProfileServiceImpl implements ProfileService {
         return this.dbService.delete(TABLE_NAME, 'uid =? ', [uid]);
     }
 
-    /*
-    updateUserInfo(profile: Profile): Observable<Profile> {
-        const profileId = this.dbService.read({table: TABLE_NAME, columns: [profile.uid]});
-        const saveToDb = NoSqlFormatter.toDb(profile);
-        if (profileId !== null) {
-            return this.dbService.update({
-                table: TABLE_NAME,
-                selection: `${ProfileEntry._ID} = ?`,
-                selectionArgs: [profile.uid],
-                modelJson: ObjectMapper.map(saveToDb, {
-                    [Constant.BOARD]: saveToDb.board,
-                    [Constant.GRADE]: saveToDb.Grade,
-                    [Constant.HANDLE]: saveToDb.handle,
-                    [Constant.SYLLABUS]: saveToDb.syllabus,
-                    [Constant.SOURCE]: saveToDb.source,
-                    [Constant.MEDIUM]: saveToDb.medium,
-                    [Constant.PROFILE_TYPE]: saveToDb.profileType,
-                    [Constant.GRADE_VALUE]: saveToDb.gradeValue,
-                    [Constant.SUBJECT]: saveToDb.subject
-                })
-            }).map(() => {
-                return profile;
-            });
-        }
-        return Observable.of(profile);
-    }
-    */
-    updateServerProfile(updateUserInfoRequest: UpadateServerProfileInfoRequest): Observable<Profile[]> {
+    updateServerProfile(updateUserInfoRequest: UpadateServerProfileInfoRequest): Observable<Profile> {
         // TODO
         return new UpdateServerProfileInfoHandler(this.keyValueStore, this.apiService,
             this.profileServiceConfig, this.sessionAuthenticator).handle(updateUserInfoRequest);
@@ -88,7 +61,7 @@ export class ProfileServiceImpl implements ProfileService {
         return Observable.from([]);
     }
 
-    getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo[]> {
+    getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo> {
         // TODO
         return new TenantInfoHandler(this.keyValueStore, this.apiService,
             this.profileServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
