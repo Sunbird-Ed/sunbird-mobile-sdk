@@ -3,7 +3,6 @@ export interface ContentDetailRequest {
     attachFeedback?: boolean;
     attachContentAccess?: boolean;
     attachContentMarker?: boolean;
-    returnCache?: boolean;
 }
 
 export interface ContentRequest {
@@ -84,12 +83,3 @@ export enum ContentImportStatus {
 export interface ContentExportResponse {
     exportedFilePath: string;
 }
-
-export enum DownloadAction {
-    RESUME = 0,
-    PAUSE = 1
-}
-
-
-
-
