@@ -3,7 +3,7 @@ import {CourseBatchesRequest} from '../def/request-types';
 import {Batch, CourseServiceConfig} from '..';
 import {Observable} from 'rxjs';
 import {CourseBatchesResponse} from '../def/course-batches-response';
-import {User} from '../../profile/def/user';
+import {ServerProfile} from '../../profile/def/server-profile';
 import {SessionAuthenticator} from '../../auth';
 import {ProfileService} from '../../profile';
 
@@ -29,11 +29,11 @@ export class GetCourseBatchesHandler implements ApiRequestHandler<CourseBatchesR
             .map((response) =>
                 Array.from<Batch>(new Set(response.body.result.response.content)))
             .switchMap((batches: Batch[]) => {
-                return this.profileService.getUsers({
+                return this.profileService.getServerProfiles({
                     limit: batches.length,
                     identifiers: new Set(batches.map(batch => batch.createdBy)),
                     fields: ['firstName', 'lastName', 'identifier']
-                }).map((users: User[]) => {
+                }).map((users: ServerProfile[]) => {
                     batches.forEach((batch) => {
                         batch.creatorFirstName = users.find(u => u.identifier === batch.createdBy)!.firstName;
                         batch.creatorLastName = users.find(u => u.identifier === batch.createdBy)!.lastName;

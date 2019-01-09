@@ -1,7 +1,7 @@
 import {Profile} from './profile';
 import {Observable} from 'rxjs';
-import {UsersSearchCriteria} from './users-search-criteria';
-import {User} from './user';
+import {ServerProfileSearchCriteria} from './server-profile-search-criteria';
+import {ServerProfile} from './server-profile';
 
 export interface ProfileService {
     createProfile(profile: Profile): Observable<Profile>;
@@ -10,6 +10,6 @@ export interface ProfileService {
 
     updateUserInfo(profile: Profile): Observable<Profile>;
 
-    getUsers(searchCriteria: UsersSearchCriteria): Observable<User[]>;
+    getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
 }
 
