@@ -13,9 +13,9 @@ import {ApiService} from '../../api';
 import {KeyValueStore} from '../../key-value-store';
 import {ProfileServiceConfig} from '../config/profile-service-config';
 import {SessionAuthenticator} from '../../auth';
+import {UpadateServerProfileInfoRequest} from '../def/upadate-server-profile-info-request';
+import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import TABLE_NAME = ProfileEntry.TABLE_NAME;
-import {UpdateUserInfoRequest} from '../def/update-userInfo-request';
-import {UpdateUserInfoHandler} from '../handler/update-userInfo-handler';
 
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService,
@@ -77,9 +77,9 @@ export class ProfileServiceImpl implements ProfileService {
         return Observable.of(profile);
     }
     */
-    updateUserInfo(updateUserInfoRequest: UpdateUserInfoRequest): Observable<Profile[]> {
+    updateServerProfile(updateUserInfoRequest: UpadateServerProfileInfoRequest): Observable<Profile[]> {
         // TODO
-        return new UpdateUserInfoHandler(this.keyValueStore, this.apiService,
+        return new UpdateServerProfileInfoHandler(this.keyValueStore, this.apiService,
             this.profileServiceConfig, this.sessionAuthenticator).handle(updateUserInfoRequest);
     }
 

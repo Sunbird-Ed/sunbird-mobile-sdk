@@ -1,14 +1,14 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {UpdateUserInfoRequest} from '../def/update-userInfo-request';
+import {UpadateServerProfileInfoRequest} from '../def/upadate-server-profile-info-request';
 import {Profile} from '..';
 import {KeyValueStore} from '../../key-value-store';
 import {ProfileServiceConfig} from '../config/profile-service-config';
 import {SessionAuthenticator} from '../../auth';
 import {Observable} from 'rxjs';
 
-export class UpdateUserInfoHandler implements ApiRequestHandler<UpdateUserInfoRequest, Profile[]> {
-    private readonly GET_UPDATE_USERINFO_ENDPOINT = '/api/user/v1/update';
-    private readonly STORED_UPDATE_USERINFO_PREFIX = 'updateUserInfo_';
+export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpadateServerProfileInfoRequest, Profile[]> {
+    private readonly GET_SERVER_PROFILE_INFO_API = '/api/user/v1/update';
+    private readonly STORED_UPDATE_SERVER_PROFILE_INFO_PREFIX = 'severProfileInfo_';
 
     constructor(private  keyValueStore: KeyValueStore,
                 private apiService: ApiService,
@@ -17,24 +17,24 @@ export class UpdateUserInfoHandler implements ApiRequestHandler<UpdateUserInfoRe
 
     }
 
-    handle(request: UpdateUserInfoRequest): Observable<Profile[]> {
-        return this.keyValueStore.getValue(this.STORED_UPDATE_USERINFO_PREFIX + request.userId + request.frameWork)
+    handle(request: UpadateServerProfileInfoRequest): Observable<Profile[]> {
+        return this.keyValueStore.getValue(this.STORED_UPDATE_SERVER_PROFILE_INFO_PREFIX + request.userId + request.frameWork)
             .mergeMap((updateInfo: string | undefined) => {
                 if (updateInfo) {
                     return Observable.of(JSON.parse(updateInfo));
                 }
                 return this.fetchFromServer(request)
                     .do((updateUserInfo: Profile[]) => {
-                        this.keyValueStore.setValue(this.STORED_UPDATE_USERINFO_PREFIX + request.userId + request.frameWork,
+                        this.keyValueStore.setValue(this.STORED_UPDATE_SERVER_PROFILE_INFO_PREFIX + request.userId + request.frameWork,
                             JSON.stringify(updateUserInfo));
                     });
             });
     }
 
-    private fetchFromServer(request: UpdateUserInfoRequest): Observable<Profile[]> {
+    private fetchFromServer(request: UpadateServerProfileInfoRequest): Observable<Profile[]> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath(this.updateUserInfoConfig.apiPath + this.GET_UPDATE_USERINFO_ENDPOINT + request.userId + request.frameWork)
+            .withPath(this.updateUserInfoConfig.apiPath + this.GET_SERVER_PROFILE_INFO_API + request.userId + request.frameWork)
             .withApiToken(true)
             .withInterceptors([this.sessionAuthenticator])
             .build();

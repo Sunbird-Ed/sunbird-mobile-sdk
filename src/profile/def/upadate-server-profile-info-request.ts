@@ -1,4 +1,4 @@
-export interface UpdateUserInfoRequest {
+export interface UpadateServerProfileInfoRequest {
     userId: string;
     frameWork: { [key: string]: any };
     /*
