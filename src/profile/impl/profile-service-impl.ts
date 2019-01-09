@@ -17,9 +17,6 @@ import {SessionAuthenticator} from '../../auth';
 import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-request';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import TABLE_NAME = ProfileEntry.TABLE_NAME;
-import { ProfileRequest } from '../def/profile-request';
-import { ProfileSource } from '../def/profile';
-import { filter } from 'rxjs/operator/filter';
 
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService,
@@ -70,37 +67,5 @@ export class ProfileServiceImpl implements ProfileService {
         return new TenantInfoHandler(this.keyValueStore, this.apiService,
             this.profileServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
         }
-    getAllProfile(profileRequest?: ProfileRequest): Observable<Profile[]> {
-        if (profileRequest) {
-            if (profileRequest.local) {
-                this.dbService.read({
-                    table: TABLE_NAME,
-                    columns: [ProfileConstant.UID, ProfileConstant.SOURCE],
-                    selection: '? = ?',
-                    selectionArgs: [ProfileConstant.SOURCE, ProfileSource.LOCAL]
-                });
-            } else if (profileRequest.server) {
-                this.dbService.read({
-                    table: TABLE_NAME,
-                    columns: [ProfileConstant.UID, ProfileConstant.SOURCE],
-                    selection: '? = ?',
-                    selectionArgs: [ProfileConstant.SOURCE, ProfileSource.SERVER]
-                });
 
-            }
-
-
-            // const localUserFilter = this.dbService.read({ table: TABLE_NAME, columns: [ProfileConstant.UID, ProfileConstant.SOURCE] });
-            // // const localUserFilter = `${ProfileConstant.SOURCE} = ${ProfileSource.LOCAL}`;
-
-            // const serverUserFilter = this.dbService.read({ table: TABLE_NAME, columns: [ProfileConstant.UID, ProfileConstant.SOURCE] });
-
-            // const groupFilter = `${localUserFilter} OR ${serverUserFilter}`;
-
-            // const userProfileModel = this.dbService.read({ table: TABLE_NAME, columns: [ProfileConstant.UID, groupFilter] });
-        }
-
-       
-        return Observable.from([]);
-    }
 }
