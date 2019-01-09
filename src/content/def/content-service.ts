@@ -14,7 +14,7 @@ import {Content} from './content';
 
 export interface ContentService {
 
-    getContentDetails(request: ContentDetailRequest): Observable<Response>;
+    getContentDetails(request: ContentDetailRequest): Observable<Response<Content>>;
 
     getContents(criteria: ContentRequest): Observable<Response>;
 
@@ -30,7 +30,7 @@ export interface ContentService {
 
     importContent(contentImportRequest: ContentImportRequest): Observable<Response>;
 
-    sunbscribeForImportStatus(contentId: string): Observable<Response>;
+    subscribeForImportStatus(contentId: string): Observable<Response>;
 
     cancelImport(contentId: string);
 
