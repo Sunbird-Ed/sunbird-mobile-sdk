@@ -1,5 +1,5 @@
 import {Migration} from '../../db';
-import {ProfileEntry} from './schema';
+import {ProfileEntry, GroupProfileEntry, GroupEntry} from './schema';
 
 export class ProfileEntryMigration extends Migration {
 
@@ -10,4 +10,13 @@ export class ProfileEntryMigration extends Migration {
     queries(): Array<string> {
         return [ProfileEntry.createTable()];
     }
+
+    groupProfileQueries(): Array<string> {
+        return [GroupProfileEntry.createTable()];
+    }
+
+    groupQueries(): Array<string> {
+        return [GroupEntry.createTable()];
+    }
+
 }
