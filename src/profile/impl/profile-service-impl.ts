@@ -3,23 +3,25 @@ import {DbService, NoSqlFormatter, ObjectMapper} from '../../db';
 import {Observable} from 'rxjs';
 import {ProfileEntry} from '../db/schema';
 import {Constant} from '../def/constant';
-import {UsersSearchCriteria} from '../def/users-search-criteria';
-import {User} from '../def/user';
+import {ServerProfileSearchCriteria} from '../def/server-profile-search-criteria';
+import {ServerProfile} from '../def/server-profile';
 import {UniqueId} from '../../db/util/unique-id';
 import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoRequest} from '../def/tenant-info-request';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
 import {ApiService} from '../../api';
 import {KeyValueStore} from '../../key-value-store';
-import {TenantServiceConfig} from '../config/tenant-service-config';
+import {ProfileServiceConfig} from '../config/profile-service-config';
 import {SessionAuthenticator} from '../../auth';
 import TABLE_NAME = ProfileEntry.TABLE_NAME;
+import {UpdateUserInfoRequest} from '../def/update-userInfo-request';
+import {UpdateUserInfoHandler} from '../handler/update-userInfo-handler';
 
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService,
                 private apiService: ApiService,
                 private keyValueStore: KeyValueStore,
-                private tenantServiceConfig: TenantServiceConfig,
+                private profileServiceConfig: ProfileServiceConfig,
                 private sessionAuthenticator: SessionAuthenticator) {
     }
 
@@ -48,6 +50,7 @@ export class ProfileServiceImpl implements ProfileService {
         return this.dbService.delete(TABLE_NAME, 'uid =? ', [uid]);
     }
 
+    /*
     updateUserInfo(profile: Profile): Observable<Profile> {
         const profileId = this.dbService.read({table: TABLE_NAME, columns: [profile.uid]});
         const saveToDb = NoSqlFormatter.toDb(profile);
@@ -73,8 +76,14 @@ export class ProfileServiceImpl implements ProfileService {
         }
         return Observable.of(profile);
     }
+    */
+    updateUserInfo(updateUserInfoRequest: UpdateUserInfoRequest): Observable<Profile[]> {
+        // TODO
+        return new UpdateUserInfoHandler(this.keyValueStore, this.apiService,
+            this.profileServiceConfig, this.sessionAuthenticator).handle(updateUserInfoRequest);
+    }
 
-    getUsers(searchCriteria: UsersSearchCriteria): Observable<User[]> {
+    getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]> {
         // TODO
         return Observable.from([]);
     }
@@ -82,6 +91,6 @@ export class ProfileServiceImpl implements ProfileService {
     getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo[]> {
         // TODO
         return new TenantInfoHandler(this.keyValueStore, this.apiService,
-            this.tenantServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
+            this.profileServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
     }
 }

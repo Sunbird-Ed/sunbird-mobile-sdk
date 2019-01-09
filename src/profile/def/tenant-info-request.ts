@@ -1,3 +1,3 @@
 export interface TenantInfoRequest {
-    _slug: string;
+    slug: string;
 }

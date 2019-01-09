@@ -1,4 +1,4 @@
-export interface UsersSearchCriteria {
+export interface ServerProfileSearchCriteria {
     query?: string;
     offset?: number;
     limit?: number;

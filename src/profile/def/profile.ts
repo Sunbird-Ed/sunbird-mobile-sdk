@@ -1,3 +1,4 @@
+import {ServerProfile} from './server-profile';
 
 export enum ProfileType {
     STUDENT = 'student',
@@ -21,4 +22,6 @@ export interface Profile {
     gradeValueMap: { [key: string]: any };
     syllabus: string[];
     source: ProfileSource;
+    serverProfile?: ServerProfile;
 }
+
