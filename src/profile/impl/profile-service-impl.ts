@@ -1,8 +1,9 @@
-import {Profile, ProfileService} from '..';
-import {DbService, NoSqlFormatter, ObjectMapper} from '../../db';
-import {Observable} from 'rxjs';
-import {ProfileEntry} from '../db/schema';
-import {Constant} from '../def/constant';
+
+import { Profile, ProfileService } from '..';
+import { DbService, NoSqlFormatter, ObjectMapper } from '../../db';
+import { Observable } from 'rxjs';
+import { ProfileEntry } from '../db/schema';
+import { ProfileConstant } from '../def/constant';
 import {ServerProfileSearchCriteria} from '../def/server-profile-search-criteria';
 import {ServerProfile} from '../def/server-profile';
 import {UniqueId} from '../../db/util/unique-id';
@@ -30,17 +31,17 @@ export class ProfileServiceImpl implements ProfileService {
         this.dbService.insert({
             table: TABLE_NAME,
             modelJson: ObjectMapper.map(saveToDb, {
-                [Constant.BOARD]: saveToDb.board,
-                [Constant.GRADE]: saveToDb.Grade,
-                [Constant.HANDLE]: saveToDb.handle,
-                [Constant.SYLLABUS]: saveToDb.syllabus,
-                [Constant.SOURCE]: saveToDb.source,
-                [Constant.MEDIUM]: saveToDb.medium,
-                [Constant.PROFILE_TYPE]: saveToDb.profileType,
-                [Constant.GRADE_VALUE]: saveToDb.gradeValue,
-                [Constant.SUBJECT]: saveToDb.subject,
-                [Constant.UID]: UniqueId.generateUniqueId(),
-                [Constant.CREATED_AT]: Date.now()
+                [ProfileConstant.BOARD]: saveToDb.board,
+                [ProfileConstant.GRADE]: saveToDb.Grade,
+                [ProfileConstant.HANDLE]: saveToDb.handle,
+                [ProfileConstant.SYLLABUS]: saveToDb.syllabus,
+                [ProfileConstant.SOURCE]: saveToDb.source,
+                [ProfileConstant.MEDIUM]: saveToDb.medium,
+                [ProfileConstant.PROFILE_TYPE]: saveToDb.profileType,
+                [ProfileConstant.GRADE_VALUE]: saveToDb.gradeValue,
+                [ProfileConstant.SUBJECT]: saveToDb.subject,
+                [ProfileConstant.UID]: UniqueId.generateUniqueId(),
+                [ProfileConstant.CREATED_AT]: Date.now()
             })
         });
         return Observable.of(profile);
@@ -65,5 +66,6 @@ export class ProfileServiceImpl implements ProfileService {
         // TODO
         return new TenantInfoHandler(this.keyValueStore, this.apiService,
             this.profileServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
-    }
+        }
+
 }
