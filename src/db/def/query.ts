@@ -7,7 +7,7 @@ export interface ReadQuery {
     groupBy?: string;
     having?: string;
     orderBy?: string;
-    limit?: string;
+    limit?: number;
 }
 
 export interface UpdateQuery {
