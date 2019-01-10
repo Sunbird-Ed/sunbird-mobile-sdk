@@ -25,10 +25,9 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 }
 
                 return this.fetchFromServer(request)
-                    .mergeMap((contentData: ContentData) => {
-                        return this.insertContentIntoDB(ContentMapper.mapContentDataToContentDBEntry(contentData));
-                    }).mergeMap(() => {
-                        return this.handle(request);
+                    .map((contentData: ContentData) => {
+                        return ContentMapper.mapContentDBEntryToContent(ContentMapper.mapContentDataToContentDBEntry(contentData));
+                        // return this.insertContentIntoDB(ContentMapper.mapContentDataToContentDBEntry(contentData));
                     });
             });
     }
