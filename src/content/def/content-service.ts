@@ -14,7 +14,7 @@ import {Content} from './content';
 
 export interface ContentService {
 
-    getContentDetails(request: ContentDetailRequest): Observable<Response<Content>>;
+    getContentDetails(request: ContentDetailRequest): Observable<Content>;
 
     getContents(criteria: ContentRequest): Observable<Response>;
 

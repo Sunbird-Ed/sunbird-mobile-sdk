@@ -23,6 +23,20 @@ export namespace ContentEntry {
     export const COLUMN_NAME_UID = 'uid';   // list of comma separated uid
     export const COLUMN_NAME_SIZE_ON_DEVICE = 'size_on_device';   // list of comma separated uid
 
+    export interface SchemaMap {
+        [_ID]: string;
+        [COLUMN_NAME_IDENTIFIER]: string;
+        [COLUMN_NAME_SERVER_DATA]: string;
+        [COLUMN_NAME_LOCAL_DATA]: string;
+        [COLUMN_NAME_MIME_TYPE]: string;
+        [COLUMN_NAME_PATH]: string;
+        [COLUMN_NAME_INDEX]: string;
+        [COLUMN_NAME_VISIBILITY]: string;
+        [COLUMN_NAME_SERVER_LAST_UPDATED_ON]: string;
+        [COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: string;
+        [COLUMN_NAME_MANIFEST_VERSION]: string;
+    }
+
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
             ContentEntry._ID + ' INTEGER PRIMARY KEY,' +
