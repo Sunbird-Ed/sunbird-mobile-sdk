@@ -7,6 +7,7 @@ import {ContentEntry} from '../db/schema';
 import {ContentMapper} from '../def/ContentMapper';
 import {ContentServiceConfig} from '../config/content-config';
 import {SessionAuthenticator} from '../../auth';
+import {QueryBuilder} from '../../db/util/query-builder';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
     private readonly GET_CONTENT_DETAILS_ENDPOINT = 'read/';
@@ -27,7 +28,6 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 return this.fetchFromServer(request)
                     .map((contentData: ContentData) => {
                         return ContentMapper.mapContentDBEntryToContent(ContentMapper.mapContentDataToContentDBEntry(contentData));
-                        // return this.insertContentIntoDB(ContentMapper.mapContentDataToContentDBEntry(contentData));
                     });
             });
     }
@@ -35,18 +35,21 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
     private readContentFromDB(contentId: string): Observable<ContentEntry.SchemaMap[]> {
         return this.dbService.read({
             table: ContentEntry.TABLE_NAME,
-            selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
-            selectionArgs: [contentId],
+            selection: new QueryBuilder()
+                .where('? = ?')
+                .args([ContentEntry.COLUMN_NAME_IDENTIFIER, contentId])
+                .end()
+                .build(),
             limit: 1
         });
     }
 
-    private insertContentIntoDB(contentDBEntry: ContentEntry.SchemaMap): Observable<number> {
-        return this.dbService.insert({
-            table: ContentEntry.TABLE_NAME,
-            modelJson: contentDBEntry
-        });
-    }
+    // private insertContentIntoDB(contentDBEntry: ContentEntry.SchemaMap): Observable<number> {
+    //     return this.dbService.insert({
+    //         table: ContentEntry.TABLE_NAME,
+    //         modelJson: contentDBEntry
+    //     });
+    // }
 
     private fetchFromServer(request: ContentDetailRequest): Observable<ContentData> {
         return this.apiService.fetch<{ result: ContentData }>(new Request.Builder()
