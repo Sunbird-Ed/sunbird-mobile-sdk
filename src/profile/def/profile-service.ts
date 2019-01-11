@@ -28,5 +28,5 @@ export interface ProfileService {
 
     getAllGroup(getAllGroupRequest: GetAllGroupRequest): Observable<Group[]>;
 
-    addProfilesToGroup(updateProfileRequest: ProfilesToGroupRequest): Observable<number>;
+    addProfilesToGroup(profilesToGroupRequest: ProfilesToGroupRequest): Observable<number>;
 }

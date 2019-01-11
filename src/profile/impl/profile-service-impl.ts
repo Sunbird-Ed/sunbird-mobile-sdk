@@ -49,11 +49,14 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     deleteProfile(uid: string): Observable<number> {
-        return this.dbService.delete(ProfileEntry.TABLE_NAME, `${ProfileConstant.UID} = ?`, [`"${uid}"`]);
+        return this.dbService.delete({
+            table: ProfileEntry.TABLE_NAME,
+            selection: `${ProfileConstant.UID} = ?`,
+            selectionArgs: [`"${uid}"`]
+        });
     }
 
     updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<Profile> {
-        // TODO
         return new UpdateServerProfileInfoHandler(this.keyValueStore, this.apiService,
             this.profileServiceConfig, this.sessionAuthenticator).handle(updateUserInfoRequest);
     }
@@ -64,7 +67,6 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo> {
-        // TODO
         return new TenantInfoHandler(this.keyValueStore, this.apiService,
             this.profileServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
     }
@@ -90,9 +92,16 @@ export class ProfileServiceImpl implements ProfileService {
 
     deleteGroup(gid: string): Observable<number> {
         this.dbService.beginTransaction();
-        return Observable.zip(
-            this.dbService.delete(GroupEntry.TABLE_NAME, `${GroupsConstant.GID} = ?`, [`"${gid}"`]),
-            this.dbService.delete(GroupProfileEntry.TABLE_NAME, `${GroupProfileConstant.GID} = ?`, [`"${gid}"`])
+        return Observable.zip(this.dbService.delete({
+                table: GroupEntry.TABLE_NAME,
+                selection: `${GroupsConstant.GID} = ?`,
+                selectionArgs: [`"${gid}"`]
+            }),
+            this.dbService.delete({
+                table: GroupProfileEntry.TABLE_NAME,
+                selection: `${GroupProfileConstant.GID} = ?`,
+                selectionArgs: [`"${gid}"`]
+            })
         ).map(() => {
             this.dbService.endTransaction(true);
             return 1;
@@ -124,6 +133,29 @@ export class ProfileServiceImpl implements ProfileService {
         });
     }
 
-    addProfilesToGroup(updateProfileRequest: ProfilesToGroupRequest): Observable<number> {
+    addProfilesToGroup(profileToGroupRequest: ProfilesToGroupRequest): Observable<number> {
+        return this.dbService.delete({
+            table: GroupProfileEntry.TABLE_NAME,
+            selection: `${GroupProfileConstant.GID} = (?)`,
+            selectionArgs: [`"${profileToGroupRequest.groupId}"`]
+        }).do(() => {
+            this.dbService.beginTransaction();
+        }).switchMap(() => {
+            return Observable.from(profileToGroupRequest.uidList)
+                .mergeMap((uid: string) => {
+                    return this.dbService.insert({
+                        table: GroupProfileEntry.TABLE_NAME,
+                        modelJson: {
+                            [GroupProfileConstant.GID]: profileToGroupRequest.groupId,
+                            [GroupProfileConstant.UID]: uid
+                        }
+                    });
+                });
+        }).do(() => {
+            this.dbService.endTransaction(true);
+        }).catch((e) => {
+            this.dbService.endTransaction(false);
+            return Observable.throw(e);
+        });
     }
 }
