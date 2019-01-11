@@ -1,4 +1,4 @@
-import {DbConfig, DbService, InsertQuery, ReadQuery, UpdateQuery} from '..';
+import {DbConfig, DbService, DeleteQuery, InsertQuery, ReadQuery, UpdateQuery} from '..';
 import {Observable, Subject} from 'rxjs';
 
 declare var db: {
@@ -86,7 +86,7 @@ export class DbServiceImpl implements DbService {
             readQuery.groupBy!!,
             readQuery.having!!,
             readQuery.orderBy!!,
-            readQuery.limit!!, (json: any[]) => {
+            readQuery.limit!! + '', (json: any[]) => {
                 observable.next(json);
                 observable.complete();
             }, (error: string) => {
@@ -127,7 +127,7 @@ export class DbServiceImpl implements DbService {
     }
 
 
-    delete(table: string, whereClause: string, whereArgs: string[]): Observable<number> {
+    delete(deleteQuery: DeleteQuery): Observable<number> {
         // TODO
         throw new Error('Method not implemented.');
     }

@@ -1,6 +1,9 @@
-export interface ReadQuery {
-    distinct?: boolean;
+export interface BaseQuery {
     table: string;
+}
+
+export interface ReadQuery extends BaseQuery {
+    distinct?: boolean;
     columns?: Array<string>;
     selection?: string;
     selectionArgs?: Array<string>;
@@ -10,14 +13,17 @@ export interface ReadQuery {
     limit?: number;
 }
 
-export interface UpdateQuery {
-    table: string;
+export interface UpdateQuery extends BaseQuery {
     selection?: string;
     selectionArgs?: Array<string>;
     modelJson: any;
 }
 
-export interface InsertQuery {
-    table: string;
+export interface InsertQuery extends BaseQuery {
     modelJson: any;
+}
+
+export interface DeleteQuery extends BaseQuery {
+    selection: string;
+    selectionArgs: Array<string>;
 }
