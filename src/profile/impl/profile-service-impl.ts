@@ -2,7 +2,7 @@ import {Profile, ProfileService} from '..';
 import {DbService, NoSqlFormatter, ObjectMapper} from '../../db';
 import {Observable} from 'rxjs';
 import {GroupEntry, GroupProfileEntry, ProfileEntry} from '../db/schema';
-import {GroupsConstant, ProfileConstant} from '../def/constant';
+import {GroupProfileConstant, GroupsConstant, ProfileConstant} from '../def/constant';
 import {ServerProfileSearchCriteria} from '../def/server-profile-search-criteria';
 import {ServerProfile} from '../def/server-profile';
 import {UniqueId} from '../../db/util/unique-id';
@@ -16,7 +16,8 @@ import {SessionAuthenticator} from '../../auth';
 import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-request';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {Group} from '../def/group';
-import {GroupRequest} from '../def/group-request';
+import {GetAllGroupRequest} from '../def/get-all-group-request';
+import {ProfilesToGroupRequest} from '../def/profiles-to-group-request';
 
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService,
@@ -48,7 +49,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     deleteProfile(uid: string): Observable<number> {
-        return this.dbService.delete(ProfileEntry.TABLE_NAME, 'uid =? ', [uid]);
+        return this.dbService.delete(ProfileEntry.TABLE_NAME, `${ProfileConstant.UID} = ?`, [`"${uid}"`]);
     }
 
     updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<Profile> {
@@ -73,7 +74,7 @@ export class ProfileServiceImpl implements ProfileService {
         if (group !== undefined) {
             this.dbService.insert({
                 table: GroupEntry.TABLE_NAME,
-                modelJson: ObjectMapper.map(saveGroupToDb, {
+                modelJson: {
                     [GroupsConstant.GID]: UniqueId.generateUniqueId(),
                     [GroupsConstant.NAME]: saveGroupToDb.groupName,
                     [GroupsConstant.CREATED_AT]: Date.now(),
@@ -81,7 +82,7 @@ export class ProfileServiceImpl implements ProfileService {
                     [GroupsConstant.GRADE_VALUE]: saveGroupToDb.gradeValue,
                     [GroupsConstant.SYLLABUS]: saveGroupToDb.syllabus,
                     [GroupsConstant.UPDATED_AT]: Date.now()
-                })
+                }
             });
         }
         return Observable.of(group);
@@ -89,11 +90,13 @@ export class ProfileServiceImpl implements ProfileService {
 
     deleteGroup(gid: string): Observable<number> {
         this.dbService.beginTransaction();
-        const transaction = Observable.merge
-        (this.dbService.delete(GroupProfileEntry.TABLE_NAME, 'gid =?', [gid]),
-            this.dbService.delete(GroupProfileEntry.TABLE_NAME, 'gid =?', [gid]));
-        this.dbService.endTransaction(true);
-        return transaction;
+        return Observable.zip(
+            this.dbService.delete(GroupEntry.TABLE_NAME, `${GroupsConstant.GID} = ?`, [`"${gid}"`]),
+            this.dbService.delete(GroupProfileEntry.TABLE_NAME, `${GroupProfileConstant.GID} = ?`, [`"${gid}"`])
+        ).map(() => {
+            this.dbService.endTransaction(true);
+            return 1;
+        });
     }
 
     updateGroup(group: Group): Observable<Group> {
@@ -102,26 +105,25 @@ export class ProfileServiceImpl implements ProfileService {
             this.dbService.update({
                 table: GroupEntry.TABLE_NAME,
                 selection: 'gid =?',
-                modelJson: ObjectMapper.map(updateToDb, {
+                modelJson: {
                     [GroupsConstant.NAME]: updateToDb.name,
                     [GroupsConstant.SYLLABUS]: updateToDb.syllabus,
                     [GroupsConstant.UPDATED_AT]: Date.now(),
                     [GroupsConstant.GRADE]: updateToDb.grade,
                     [GroupsConstant.GRADE_VALUE]: updateToDb.gradeValue
-                })
+                }
             });
         }
         return Observable.of(group);
     }
 
-    getAllGroup(groupRequest: GroupRequest): Observable<Group[]> {
-        const groupList = this.dbService.read({
+    getAllGroup(groupRequest: GetAllGroupRequest): Observable<Group[]> {
+        return this.dbService.read({
             table: GroupEntry.TABLE_NAME,
-            columns: ['gid']
+            columns: []
         });
-        if (groupList === undefined) {
-            this.getAllGroup(groupRequest);
-        }
-        return Observable.from(groupList);
+    }
+
+    addProfilesToGroup(updateProfileRequest: ProfilesToGroupRequest): Observable<number> {
     }
 }

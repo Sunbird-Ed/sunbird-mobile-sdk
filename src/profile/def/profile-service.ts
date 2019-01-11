@@ -6,7 +6,8 @@ import {ServerProfileSearchCriteria} from './server-profile-search-criteria';
 import {ServerProfile} from './server-profile';
 import {UpdateServerProfileInfoRequest} from './update-server-profile-info-request';
 import {Group} from './group';
-import {GroupRequest} from './group-request';
+import {GetAllGroupRequest} from './get-all-group-request';
+import {ProfilesToGroupRequest} from './profiles-to-group-request';
 
 export interface ProfileService {
     createProfile(profile: Profile): Observable<Profile>;
@@ -25,5 +26,7 @@ export interface ProfileService {
 
     updateGroup(group: Group): Observable<Group>;
 
-    getAllGroup(groupRequest: GroupRequest): Observable<Group[]>;
+    getAllGroup(getAllGroupRequest: GetAllGroupRequest): Observable<Group[]>;
+
+    addProfilesToGroup(updateProfileRequest: ProfilesToGroupRequest): Observable<number>;
 }
