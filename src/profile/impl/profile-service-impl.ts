@@ -70,7 +70,38 @@ export class ProfileServiceImpl implements ProfileService {
         return new TenantInfoHandler(this.keyValueStore, this.apiService,
             this.profileServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
     }
+    }
+    getAllProfile(profileRequest?: ProfileRequest): Observable<Profile[]> {
+       if (!profileRequest) {
+           return this.dbService.read({
+               table: ProfileEntry.TABLE_NAME,
+               columns: []
+           });
+       }
 
+       if (!profileRequest.groupId) {
+            return this.dbService.read({
+                table: ProfileEntry.TABLE_NAME,
+                selection: `${ProfileConstant.SOURCE} = ?`,
+                selectionArgs: [profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER],
+                columns: []
+            });
+       }
+
+
+       if (profileRequest.groupId && (profileRequest.local || profileRequest.server)) {
+        return this.dbService.execute(`
+            SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
+            ${GroupProfileConstant.GID} = "${profileRequest.groupId}" AND
+            ${ProfileConstant.SOURCE} = "${profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER}"
+        `);
+       }
+
+       return this.dbService.execute(`
+            SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
+            ${GroupProfileConstant.GID} = "${profileRequest.groupId}"
+        `);
+    }
     createGroup(group: Group): Observable<Group> {
         const saveGroupToDb = NoSqlFormatter.toDb(group);
         if (group !== undefined) {

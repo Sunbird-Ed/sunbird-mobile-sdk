@@ -5,6 +5,7 @@ import {TenantInfo} from './tenant-info';
 import {ServerProfileSearchCriteria} from './server-profile-search-criteria';
 import {ServerProfile} from './server-profile';
 import {UpdateServerProfileInfoRequest} from './update-server-profile-info-request';
+import { ProfileRequest } from './profile-request';
 import {Group} from './group';
 import {GetAllGroupRequest} from './get-all-group-request';
 import {ProfilesToGroupRequest} from './profiles-to-group-request';
@@ -19,6 +20,8 @@ export interface ProfileService {
     getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo>;
 
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
+
+    getAllProfile(profileRequest?: ProfileRequest): Observable<Profile[]>;
 
     createGroup(group: Group): Observable<Group>;
 
