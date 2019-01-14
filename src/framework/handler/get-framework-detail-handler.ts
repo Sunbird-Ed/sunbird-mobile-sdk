@@ -1,10 +1,11 @@
+import { FRAMEWORK_DETAILS_API_EXPIRATION_KEY } from './../def/framework-constants';
 import { KeyValueStore } from './../../key-value-store/def/key-value-store';
 import { FrameworkDetailsRequest } from './../def/request-types';
-import { Framework } from './../def/framework';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
 import { SessionAuthenticator } from 'src/auth';
-import { FrameworkServiceConfig } from '../config/framework-service-config';
+import { FrameworkServiceConfig, Framework} from '..';
+
 
 export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {
     private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = 'framework/read';
@@ -21,7 +22,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
                 if (v) {
                     return Observable.of(JSON.parse(v));
                 }
-                // TODO need to check expiration time before fetching from server 
+                // TODO need to check expiration time before fetching from server
                 return this.fetchFromServer(request)
                     .do((framework: Framework) => {
                         this.keyValueStore.setValue(
@@ -46,4 +47,14 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
         // TODO
         // if no/error response from server read from file and send back and save to db
     }
+
+    // private saveFrameWorkExpirationTime(frameworkDetail: Framework) {
+    //     const expirationTime: number = new Date().getTime() + configTime;
+    //     const expirationKey = FRAMEWORK_DETAILS_API_EXPIRATION_KEY + '-' + frameworkDetail.framework.identifier;
+    //     this.keyValueStore.setValue(expirationKey, JSON.stringify(expirationTime));
+    // }
+
+    // private hasExpired(expirationTime: number): boolean {
+    //     return new Date().getTime() > expirationTime;
+    // }
 }

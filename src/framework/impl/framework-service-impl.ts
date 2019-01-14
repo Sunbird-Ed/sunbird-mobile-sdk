@@ -1,7 +1,4 @@
-import { Framework } from './../def/framework';
-import { FrameworkConfig } from './../config/framework-config';
-import { Channel } from './../def/channel';
-import { FrameworkServiceConfig } from './../config/framework-service-config';
+import { FrameworkConfig, FrameworkServiceConfig, Channel, Framework} from '..';
 import { GetChannelDetailsHandler } from './../handler/get-channel-detail-handler';
 import { FileService } from './../../util/file/def/file-service';
 import { KeyValueStore } from '../../key-value-store';

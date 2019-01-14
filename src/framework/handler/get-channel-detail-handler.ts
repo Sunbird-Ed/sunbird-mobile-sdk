@@ -1,10 +1,10 @@
 import { KeyValueStore } from './../../key-value-store/def/key-value-store';
 import { ChannelDetailsRequest } from './../def/request-types';
-import { Channel } from './../def/channel';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
 import { SessionAuthenticator } from 'src/auth';
-import { FrameworkServiceConfig } from '../config/framework-service-config';
+import { FrameworkServiceConfig, Channel} from '..';
+
 
 export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetailsRequest, Channel> {
     private readonly GET_CHANNEL_DETAILS_ENDPOINT = 'channel/read';
