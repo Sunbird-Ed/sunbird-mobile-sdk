@@ -4,7 +4,7 @@ import {Content, ContentData} from '../def/content';
 import {Observable} from 'rxjs';
 import {DbService} from '../../db';
 import {ContentEntry} from '../db/schema';
-import {ContentMapper} from '../def/ContentMapper';
+import {ContentMapper} from '../def/content-mapper';
 import {ContentServiceConfig} from '../config/content-config';
 import {SessionAuthenticator} from '../../auth';
 import {QueryBuilder} from '../../db/util/query-builder';
@@ -22,13 +22,14 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
         return this.readContentFromDB(request.contentId)
             .mergeMap((rows: ContentEntry.SchemaMap[] | undefined) => {
                 if (rows && rows[0]) {
-                    return Observable.of(ContentMapper.mapContentDBEntryToContent(rows[0]));
+                    return ContentMapper.mapContentDBEntryToContent(rows[0]);
                 }
 
                 return this.fetchFromServer(request)
-                    .map((contentData: ContentData) => {
-                        return ContentMapper.mapContentDBEntryToContent(ContentMapper.mapContentDataToContentDBEntry(contentData));
-                    });
+                    .mergeMap((contentData: ContentData) =>
+                        ContentMapper.mapContentDataToContentDBEntry(contentData)
+                            .mergeMap((entry) => ContentMapper.mapContentDBEntryToContent(entry))
+                    );
             });
     }
 
@@ -40,16 +41,9 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 .args([ContentEntry.COLUMN_NAME_IDENTIFIER, contentId])
                 .end()
                 .build(),
-            limit: 1
+            limit: '1'
         });
     }
-
-    // private insertContentIntoDB(contentDBEntry: ContentEntry.SchemaMap): Observable<number> {
-    //     return this.dbService.insert({
-    //         table: ContentEntry.TABLE_NAME,
-    //         modelJson: contentDBEntry
-    //     });
-    // }
 
     private fetchFromServer(request: ContentDetailRequest): Observable<ContentData> {
         return this.apiService.fetch<{ result: ContentData }>(new Request.Builder()
