@@ -4,7 +4,7 @@ import {Content, ContentData} from '../def/content';
 import {Observable} from 'rxjs';
 import {DbService} from '../../db';
 import {ContentEntry} from '../db/schema';
-import {ContentMapper} from '../def/ContentMapper';
+import {ContentMapper} from '../def/content-mapper';
 import {ContentServiceConfig} from '../config/content-config';
 import {SessionAuthenticator} from '../../auth';
 import {QueryBuilder} from '../../db/util/query-builder';
