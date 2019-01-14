@@ -18,6 +18,7 @@ import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-i
 import {Group} from '../def/group';
 import {ProfilesToGroupRequest} from '../def/profiles-to-group-request';
 import {ProfileRequest} from '../def/profile-request';
+import {GetAllGroupRequest} from '../def/get-all-group-request';
 
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService,
@@ -158,7 +159,6 @@ export class ProfileServiceImpl implements ProfileService {
         return Observable.of(group);
     }
 
-    /*
     getAllGroup(groupRequest: GetAllGroupRequest): Observable<Group[]> {
         if (!groupRequest.uid) {
             return this.dbService.read({
@@ -166,13 +166,13 @@ export class ProfileServiceImpl implements ProfileService {
                 columns: []
             });
         } else {
-            return this.dbService.execute({`
+            return this.dbService.execute(`
             SELECT * FROM ${GroupEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
-            ${GetAllGroupRequest.GID} = "${profileRequest.groupId}"
-        `});
+            ${GroupsConstant.GID} = ${GroupProfileConstant.GID} WHERE
+            ${GroupProfileConstant.UID} = "${groupRequest.uid}
+        `);
         }
     }
-    */
 
 
     addProfilesToGroup(profileToGroupRequest: ProfilesToGroupRequest): Observable<number> {
