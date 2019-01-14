@@ -18,12 +18,13 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
     }
 
     handle(request: ChannelDetailsRequest): Observable<Channel> {
+        // read
         return this.keyValueStore.getValue(this.DB_KEY_CHANNEL_DETAILS + request.channelId)
             .mergeMap((v: string | undefined) => {
                 if (v) {
                     return Observable.of(JSON.parse(v));
                 }
-
+                // TODO need to check expiration time before fetching from server
                 return this.fetchFromServer(request)
                     .do((channel: Channel) => {
                         this.keyValueStore.setValue(
@@ -45,5 +46,7 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
         return this.apiService.fetch<{ result: { response: Channel } }>(apiRequest).map((response) => {
             return response.body.result.response;
         });
+        // TODO
+        //  if no/error response from server read from file and send back and save to db
     }
 }

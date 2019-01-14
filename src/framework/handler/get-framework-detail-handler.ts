@@ -21,7 +21,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
                 if (v) {
                     return Observable.of(JSON.parse(v));
                 }
-
+                // TODO need to check expiration time before fetching from server 
                 return this.fetchFromServer(request)
                     .do((framework: Framework) => {
                         this.keyValueStore.setValue(
@@ -43,5 +43,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
         return this.apiService.fetch<{ result: { response: Framework } }>(apiRequest).map((response) => {
             return response.body.result.response;
         });
+        // TODO
+        // if no/error response from server read from file and send back and save to db
     }
 }
