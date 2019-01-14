@@ -13,7 +13,9 @@
   "author": "",
   "license": "ISC",
   "peerDependencies": {
-    "cordova-plugin-advanced-http": "^2.0.2"
+    "cordova-plugin-advanced-http": "^2.0.2",
+    "sb-cordova-plugin-customtabs": "git+https://github.com/souvikmondal/cordova-plugin-customtabs.git",
+    "sb-cordova-plugin-db": "https://github.com/Sunbird-Ed/sb-cordova-plugin-db.git"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",
@@ -26,7 +28,8 @@
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^23.4.0",
     "cordova-plugin-advanced-http": "^2.0.2",
-    "cordova-plugin-customtabs": "git+https://github.com/souvikmondal/cordova-plugin-customtabs.git",
+    "sb-cordova-plugin-customtabs": "https://github.com/Sunbird-Ed/sb-cordova-plugin-customtabs.git",
+    "sb-cordova-plugin-db": "https://github.com/Sunbird-Ed/sb-cordova-plugin-db.git",
     "jest": "^23.6.0",
     "ts-loader": "^5.3.2",
     "ts-node": ">=3.2.0 <8",

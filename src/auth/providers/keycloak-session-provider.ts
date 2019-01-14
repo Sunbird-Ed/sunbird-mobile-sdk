@@ -20,9 +20,9 @@ export class KeycloakSessionProvider implements SessionProvider {
         })).build();
 
 
-        const response: Response = await ApiService.instance.fetch(request);
+        const response: Response = await ApiService.instance.fetch(request).toPromise();
 
-        const sessionData = JSON.parse(response.response());
+        const sessionData = response.body();
 
         return sessionData;
     }

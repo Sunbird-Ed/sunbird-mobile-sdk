@@ -182,6 +182,7 @@ export class TelemetryServiceImpl implements TelemetryService {
 
         return Observable.create((observer: Observer<TelemetryStat>) => {
             this.dbService.execute(telemetryEventCountQuery)
+                .toPromise()
                 .then(value => {
                     telemetryEventCount = value[0];
                     return this.dbService.execute(processedTelemetryEventCountQuery);
@@ -213,6 +214,7 @@ export class TelemetryServiceImpl implements TelemetryService {
 
         // fetch events from telemetry table
         this.dbService.read(readQuery)
+            .toPromise()
             .then(value => {
 
             })
@@ -234,7 +236,7 @@ export class TelemetryServiceImpl implements TelemetryService {
             };
 
             this.dbService.insert(insertQuery)
-
+                .toPromise()
                 .then(numberOfRow => {
                     resolve(numberOfRow > 0);
                 })
