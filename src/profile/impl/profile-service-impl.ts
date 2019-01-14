@@ -1,4 +1,4 @@
-import {Profile, ProfileService} from '..';
+import {Profile, ProfileService, ProfileSource} from '..';
 import {DbService, NoSqlFormatter, ObjectMapper} from '../../db';
 import {Observable} from 'rxjs';
 import {GroupEntry, GroupProfileEntry, ProfileEntry} from '../db/schema';
@@ -16,8 +16,8 @@ import {SessionAuthenticator} from '../../auth';
 import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-request';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {Group} from '../def/group';
-import {GetAllGroupRequest} from '../def/get-all-group-request';
 import {ProfilesToGroupRequest} from '../def/profiles-to-group-request';
+import {ProfileRequest} from '../def/profile-request';
 
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService,
@@ -70,38 +70,39 @@ export class ProfileServiceImpl implements ProfileService {
         return new TenantInfoHandler(this.keyValueStore, this.apiService,
             this.profileServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
     }
-    }
-    getAllProfile(profileRequest?: ProfileRequest): Observable<Profile[]> {
-       if (!profileRequest) {
-           return this.dbService.read({
-               table: ProfileEntry.TABLE_NAME,
-               columns: []
-           });
-       }
 
-       if (!profileRequest.groupId) {
+    getAllProfile(profileRequest?: ProfileRequest): Observable<Profile[]> {
+        if (!profileRequest) {
+            return this.dbService.read({
+                table: ProfileEntry.TABLE_NAME,
+                columns: []
+            });
+        }
+
+        if (!profileRequest.groupId) {
             return this.dbService.read({
                 table: ProfileEntry.TABLE_NAME,
                 selection: `${ProfileConstant.SOURCE} = ?`,
                 selectionArgs: [profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER],
                 columns: []
             });
-       }
+        }
 
 
-       if (profileRequest.groupId && (profileRequest.local || profileRequest.server)) {
-        return this.dbService.execute(`
+        if (profileRequest.groupId && (profileRequest.local || profileRequest.server)) {
+            return this.dbService.execute(`
             SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
             ${GroupProfileConstant.GID} = "${profileRequest.groupId}" AND
             ${ProfileConstant.SOURCE} = "${profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER}"
         `);
-       }
+        }
 
-       return this.dbService.execute(`
+        return this.dbService.execute(`
             SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
             ${GroupProfileConstant.GID} = "${profileRequest.groupId}"
         `);
     }
+
     createGroup(group: Group): Observable<Group> {
         const saveGroupToDb = NoSqlFormatter.toDb(group);
         if (group !== undefined) {
@@ -157,12 +158,21 @@ export class ProfileServiceImpl implements ProfileService {
         return Observable.of(group);
     }
 
+    /*
     getAllGroup(groupRequest: GetAllGroupRequest): Observable<Group[]> {
-        return this.dbService.read({
-            table: GroupEntry.TABLE_NAME,
-            columns: []
-        });
+        if (!groupRequest.uid) {
+            return this.dbService.read({
+                table: GroupEntry.TABLE_NAME,
+                columns: []
+            });
+        } else {
+            return this.dbService.execute({`
+            SELECT * FROM ${GroupEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
+            ${GroupProfileConstant.GID} = "${profileRequest.groupId}"
+        `});
+        }
     }
+    */
 
     addProfilesToGroup(profileToGroupRequest: ProfilesToGroupRequest): Observable<number> {
         return this.dbService.delete({

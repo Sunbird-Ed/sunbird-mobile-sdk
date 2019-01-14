@@ -1,4 +1,4 @@
-import {ObjectMapper, NoSqlFormatter} from './storage-middleware';
+import {NoSqlFormatter, ObjectMapper} from './formatter';
 
 describe('NoSqlFormatter', () => {
     it('should convert into db', () => {
