@@ -168,11 +168,12 @@ export class ProfileServiceImpl implements ProfileService {
         } else {
             return this.dbService.execute({`
             SELECT * FROM ${GroupEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
-            ${GroupProfileConstant.GID} = "${profileRequest.groupId}"
+            ${GetAllGroupRequest.GID} = "${profileRequest.groupId}"
         `});
         }
     }
     */
+
 
     addProfilesToGroup(profileToGroupRequest: ProfilesToGroupRequest): Observable<number> {
         return this.dbService.delete({

@@ -5,9 +5,8 @@ import {TenantInfo} from './tenant-info';
 import {ServerProfileSearchCriteria} from './server-profile-search-criteria';
 import {ServerProfile} from './server-profile';
 import {UpdateServerProfileInfoRequest} from './update-server-profile-info-request';
-import { ProfileRequest } from './profile-request';
+import {ProfileRequest} from './profile-request';
 import {Group} from './group';
-import {GetAllGroupRequest} from './get-all-group-request';
 import {ProfilesToGroupRequest} from './profiles-to-group-request';
 
 export interface ProfileService {
@@ -29,7 +28,7 @@ export interface ProfileService {
 
     updateGroup(group: Group): Observable<Group>;
 
-    getAllGroup(getAllGroupRequest: GetAllGroupRequest): Observable<Group[]>;
+    // getAllGroup(getAllGroupRequest: GetAllGroupRequest): Observable<Group[]>;
 
     addProfilesToGroup(profilesToGroupRequest: ProfilesToGroupRequest): Observable<number>;
 }
