@@ -40,16 +40,9 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 .args([ContentEntry.COLUMN_NAME_IDENTIFIER, contentId])
                 .end()
                 .build(),
-            limit: 1
+            limit: '1'
         });
     }
-
-    // private insertContentIntoDB(contentDBEntry: ContentEntry.SchemaMap): Observable<number> {
-    //     return this.dbService.insert({
-    //         table: ContentEntry.TABLE_NAME,
-    //         modelJson: contentDBEntry
-    //     });
-    // }
 
     private fetchFromServer(request: ContentDetailRequest): Observable<ContentData> {
         return this.apiService.fetch<{ result: ContentData }>(new Request.Builder()
