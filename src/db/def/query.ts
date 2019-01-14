@@ -10,7 +10,7 @@ export interface ReadQuery extends BaseQuery {
     groupBy?: string;
     having?: string;
     orderBy?: string;
-    limit?: number;
+    limit?: string;
 }
 
 export interface UpdateQuery extends BaseQuery {
