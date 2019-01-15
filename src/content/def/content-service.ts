@@ -4,27 +4,30 @@ import {
     ContentDetailRequest,
     ContentExportResponse,
     ContentImportRequest,
-    ContentRequest,
+    ContentRequest, ContentSearchCriteria,
     EcarImportRequest
 } from './requests';
 import {Response} from '../../api';
 import {Observable} from 'rxjs';
-import {Content} from './content';
+import {Content, HierarchyInfo} from './content';
+import {ContentDeleteResponse, ContentSearchResult} from './response';
 
 
 export interface ContentService {
 
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
 
-    getContents(criteria: ContentRequest): Observable<Response>;
+    // getContents(criteria: ContentRequest): Observable<Response>;
 
-    getChildContents(childContentRequest: ChildContentRequest): Observable<Response>;
+    getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
 
-    deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<Response>;
+    searchContent(criteria: ContentSearchCriteria): Observable<ContentSearchResult>;
 
-    prevContent(request: ChildContentRequest): Observable<Response<Content>>;
+    deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
 
-    nextContent(request: ChildContentRequest): Observable<Response<Content>>;
+    prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
+
+    nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
 
     importEcar(ecarImportRequest: EcarImportRequest): Observable<Response>;
 

@@ -8,13 +8,13 @@ export interface Content {
     lastUpdatedTime: number;
     isAvailableLocally: boolean;
     isUpdateAvailable: boolean;
-    contentFeedback: Feedback;
-    contentAccess: Access;
-    children: Content[];
-    hierarchyInfo: HierarchyInfo[];
+    contentFeedback?: Feedback;
+    contentAccess?: Access;
+    children?: Content[];
+    hierarchyInfo?: HierarchyInfo[];
     sizeOnDevice: number;
     lastUsedTime: number;
-    rollup: Rollup;
+    rollup?: Rollup;
 }
 
 export interface ContentData {
@@ -61,6 +61,11 @@ export interface ContentData {
     attributions: string[];
     dialcodes: string[];
     childNodes: string[];
+    previewUrl: string;
+    framework: string;
+    creators: string;
+    contributors: string;
+    streamingUrl: string;
 }
 
 export interface Feedback {
