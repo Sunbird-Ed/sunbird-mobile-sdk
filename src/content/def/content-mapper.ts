@@ -1,15 +1,14 @@
 import {ContentEntry} from '../db/schema';
 import {Content, ContentData} from './content';
-import {Observable} from 'rxjs';
 
 export class ContentMapper {
-    public static mapContentDataToContentDBEntry(contentData: ContentData): Observable<ContentEntry.SchemaMap> {
+    public static mapContentDataToContentDBEntry(contentData: ContentData): ContentEntry.SchemaMap {
         // TODO Swajanjit
-        throw new Error('Not Implemented');
+        return {} as any;
     }
 
-    public static mapContentDBEntryToContent(contentEntry: ContentEntry.SchemaMap): Observable<Content> {
+    public static mapContentDBEntryToContent(contentEntry: ContentEntry.SchemaMap): Content {
         // TODO Swajanjit
-        throw new Error('Not Implemented');
+        return {} as any;
     }
 }

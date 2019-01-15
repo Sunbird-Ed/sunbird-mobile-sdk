@@ -22,14 +22,13 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
         return this.readContentFromDB(request.contentId)
             .mergeMap((rows: ContentEntry.SchemaMap[] | undefined) => {
                 if (rows && rows[0]) {
-                    return ContentMapper.mapContentDBEntryToContent(rows[0]);
+                    return Observable.of(ContentMapper.mapContentDBEntryToContent(rows[0]));
                 }
 
                 return this.fetchFromServer(request)
-                    .mergeMap((contentData: ContentData) =>
-                        ContentMapper.mapContentDataToContentDBEntry(contentData)
-                            .mergeMap((entry) => ContentMapper.mapContentDBEntryToContent(entry))
-                    );
+                    .map((contentData: ContentData) => {
+                        return ContentMapper.mapContentDBEntryToContent(ContentMapper.mapContentDataToContentDBEntry(contentData));
+                    });
             });
     }
 

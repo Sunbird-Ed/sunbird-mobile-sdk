@@ -1,7 +1,12 @@
 import {Observable} from 'rxjs';
+import {DirectoryEntry, FileEntry, Flags} from '../index';
 
 export interface FileService {
+    readAsText(path: string, file: string): Observable<string>;
 
-    read(path: string): Observable<any>;
+    getFile(directoryEntry: DirectoryEntry, fileName: string, flags: Flags): Observable<FileEntry>;
 
+    createDir(path: string, dirName: string, replace: boolean): Observable<DirectoryEntry>;
+
+    resolveDirectoryUrl(directoryUrl: string): Observable<DirectoryEntry>;
 }
