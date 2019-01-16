@@ -1,36 +1,33 @@
-import { FRAMEWORK_DETAILS_API_EXPIRATION_KEY } from './../def/framework-constants';
-import { KeyValueStore } from './../../key-value-store/def/key-value-store';
+import { CachedItemStore } from './../../key-value-store/def/cached-item-store';
+import { Path } from './../../util/file/util/path';
+import { FileService } from './../../util/file/def/file-service';
 import { FrameworkDetailsRequest } from './../def/request-types';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
 import { SessionAuthenticator } from 'src/auth';
-import { FrameworkServiceConfig, Framework} from '..';
+import { FrameworkServiceConfig, Framework } from '..';
 
 
 export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {
     private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = 'framework/read';
-    private readonly DB_KEY_FRAMEWORK_DETAILS = 'framework_details_key-';
+    private readonly DB_KEY_FRAMEWORK_DETAILS = 'framework_details_key';
+    private readonly FRAMEWORK_DETAILS_API_EXPIRATION_KEY = 'FRAMEWORK_DETAILS_API_EXPIRATION_KEY';
 
-    constructor(private keyValueStore: KeyValueStore,
-                private apiService: ApiService,
+
+    constructor(private apiService: ApiService,
                 private frameworkServiceConfig: FrameworkServiceConfig,
-                private sessionAuthenticator: SessionAuthenticator) {
+                private sessionAuthenticator: SessionAuthenticator,
+                private fileservice: FileService,
+                private cachedItemStore: CachedItemStore<Framework>) {
     }
     handle(request: FrameworkDetailsRequest): Observable<Framework> {
-        return this.keyValueStore.getValue(this.DB_KEY_FRAMEWORK_DETAILS + request.frameworkId)
-            .mergeMap((v: string | undefined) => {
-                if (v) {
-                    return Observable.of(JSON.parse(v));
-                }
-                // TODO need to check expiration time before fetching from server
-                return this.fetchFromServer(request)
-                    .do((framework: Framework) => {
-                        this.keyValueStore.setValue(
-                            this.DB_KEY_FRAMEWORK_DETAILS + request.frameworkId,
-                            JSON.stringify(framework)
-                        );
-                    });
-            });
+        return this.cachedItemStore.getCached(
+            request.frameworkId,
+            this.DB_KEY_FRAMEWORK_DETAILS,
+            this.FRAMEWORK_DETAILS_API_EXPIRATION_KEY,
+            () => this.fetchFromServer(request),
+            () => this.fetchFromFile()
+        );
     }
 
     private fetchFromServer(request: FrameworkDetailsRequest): Observable<Framework> {
@@ -44,17 +41,15 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
         return this.apiService.fetch<{ result: { response: Framework } }>(apiRequest).map((response) => {
             return response.body.result.response;
         });
-        // TODO
-        // if no/error response from server read from file and send back and save to db
     }
 
-    // private saveFrameWorkExpirationTime(frameworkDetail: Framework) {
-    //     const expirationTime: number = new Date().getTime() + configTime;
-    //     const expirationKey = FRAMEWORK_DETAILS_API_EXPIRATION_KEY + '-' + frameworkDetail.framework.identifier;
-    //     this.keyValueStore.setValue(expirationKey, JSON.stringify(expirationTime));
-    // }
+    private fetchFromFile(): Observable<Framework> {
+        const fileDirPath = Path.dirPathFromFilePath(this.frameworkServiceConfig.frameworkConfigFilePaths);
+        const filePath = Path.fileNameFromFilePath(this.frameworkServiceConfig.frameworkConfigFilePaths);
+        return this.fileservice.readAsText(fileDirPath, filePath)
+        .map( (filecontent: string) => {
+            return JSON.parse(filecontent);
+        });
+    }
 
-    // private hasExpired(expirationTime: number): boolean {
-    //     return new Date().getTime() > expirationTime;
-    // }
 }
