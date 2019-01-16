@@ -2,13 +2,15 @@
   "name": "sunbird-sdk",
   "version": "1.0.0",
   "description": "Heart of the sunbird mobile app. Holds the imporatnat business logic including api calls and db operations.",
-  "main": "src/index.ts",
+  "main": "dist/bundle.js",
   "scripts": {
-    "build": "webpack",
     "build:dev": "webpack --mode=development",
     "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "bundle": "NODE_ENV=production webpack --output-file index.js",
+    "copy": "cp package.json dist/ && cp README.md dist/",
+    "build": "npm run bundle && npm run copy && npm pack ./dist"
   },
   "author": "",
   "license": "ISC",
