@@ -12,6 +12,6 @@ export interface FrameworkService {
 
     getFrameworkDetails(request: FrameworkDetailsRequest): Observable<Framework>;
 
-    persistFrameworkDetails(request: string): void;
+    persistFrameworkDetails(request: Framework): Observable<boolean>;
 
 }
