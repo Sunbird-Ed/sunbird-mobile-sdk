@@ -1,4 +1,4 @@
-class LinkedList<T> {
+export class LinkedList<T> {
     private head: LinkedNode<T> | null = null;
     private len = 0;
 
@@ -22,7 +22,7 @@ class LinkedList<T> {
         this.len++;
     }
 
-    isEmpty() {
+    public isEmpty() {
         return this.len;
     }
 
@@ -61,8 +61,8 @@ class LinkedList<T> {
 
 }
 
-class LinkedNode<T> {
-    private _elem: T;
+export class LinkedNode<T> {
+    private readonly _elem: T;
     public next: LinkedNode<T> | null;
 
     constructor(elem: T) {
