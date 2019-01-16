@@ -22,8 +22,8 @@ import {ContentDeleteResponse, ContentDeleteStatus, ContentSearchResult} from '.
 import {ChildContentsHandler} from '../handlers/get-child-contents-handler';
 import {ContentEntry} from '../db/schema';
 import {ContentUtil} from '../util/content-util';
-import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import {DeleteContentHandler} from '../handlers/delete-content-handler';
+import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 
 export class ContentServiceImpl implements ContentService {
     constructor(private apiService: ApiService,
@@ -132,6 +132,7 @@ export class ContentServiceImpl implements ContentService {
 
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {
         const childContentHandler = new ChildContentsHandler(this.dbService);
+
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);

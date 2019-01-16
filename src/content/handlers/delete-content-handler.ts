@@ -97,7 +97,8 @@ export class DeleteContentHandler {
                     // File contentRootFolder = new File(contentRootPath);
                     //
                     // if (FileUtil.doesFileExists(contentRootFolder.getPath())) {
-                    //     appContext.getKeyValueStore().putLong(ServiceConstants.PreferenceKey.KEY_LAST_MODIFIED, contentRootFolder.lastModified());
+                    //     appContext.getKeyValueStore().putLong(ServiceConstants.PreferenceKey.KEY_LAST_MODIFIED,
+                    //  contentRootFolder.lastModified());
                     // }
                 }
             }

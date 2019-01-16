@@ -1,3 +1,17 @@
+export class LinkedNode<T> {
+    public next: LinkedNode<T> | null;
+    private readonly _elem: T;
+
+    constructor(elem: T) {
+        this._elem = elem;
+        this.next = null;
+    }
+
+    get elem(): T {
+        return this._elem;
+    }
+}
+
 export class LinkedList<T> {
     private head: LinkedNode<T> | null = null;
     private len = 0;
@@ -59,18 +73,4 @@ export class LinkedList<T> {
         }
     }
 
-}
-
-export class LinkedNode<T> {
-    private readonly _elem: T;
-    public next: LinkedNode<T> | null;
-
-    constructor(elem: T) {
-        this._elem = elem;
-        this.next = null;
-    }
-
-    get elem(): T {
-        return this._elem;
-    }
 }

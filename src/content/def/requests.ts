@@ -1,3 +1,5 @@
+import {SearchType} from '../util/content-constants';
+
 export interface ContentDetailRequest {
     contentId: string;
     attachFeedback?: boolean;
