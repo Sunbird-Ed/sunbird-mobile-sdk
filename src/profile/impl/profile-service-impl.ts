@@ -10,7 +10,6 @@ import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoRequest} from '../def/tenant-info-request';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
 import {ApiService} from '../../api';
-import {KeyValueStore} from '../../key-value-store';
 import {ProfileServiceConfig} from '../config/profile-service-config';
 import {SessionAuthenticator} from '../../auth';
 import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-request';
@@ -26,7 +25,6 @@ import { GetUserProfileDetailsHandler } from '../handler/get-user-profile-detail
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService,
                 private apiService: ApiService,
-                private keyValueStore: KeyValueStore,
                 private profileServiceConfig: ProfileServiceConfig,
                 private sessionAuthenticator: SessionAuthenticator) {
     }
@@ -61,7 +59,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<Profile> {
-        return new UpdateServerProfileInfoHandler(this.keyValueStore, this.apiService,
+        return new UpdateServerProfileInfoHandler(this.apiService,
             this.profileServiceConfig, this.sessionAuthenticator).handle(updateUserInfoRequest);
     }
 
@@ -71,7 +69,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo> {
-        return new TenantInfoHandler(this.keyValueStore, this.apiService,
+        return new TenantInfoHandler(this.apiService,
             this.profileServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
     }
 

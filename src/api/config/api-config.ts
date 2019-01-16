@@ -13,4 +13,7 @@ export interface ApiConfig {
         producerId: string,
         deviceId: string,
     };
+    cached_requests: {
+        timeToLive: number
+    };
 }

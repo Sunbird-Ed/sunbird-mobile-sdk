@@ -33,6 +33,7 @@ $RECYCLE.BIN/
 Thumbs.db
 UserInterfaceState.xcuserstate
 
+sunbird-sdk-*.tgz
 /buildConfig/build.json
 /buildConfig/gk.jks
 /buildConfig/secret.gradle
