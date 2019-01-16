@@ -20,9 +20,13 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
                     return this.isItemTTLExpired()
                         .mergeMap((isItemTTLExpired: boolean) => {
                             if (isItemTTLExpired) {
-                                return fromServer()
-                                    .switchMap((item: T) => {
-                                        return this.saveItem(id, timeToLiveKey, noSqlkey, item);
+                                return this.keyValueStore.getValue(noSqlkey + '-' + id)
+                                    .map((v) => JSON.parse(v!))
+                                    .do(() => {
+                                        fromServer().switchMap((item: T) => {
+                                            return this.saveItem(id, timeToLiveKey, noSqlkey, item);
+                                        }).subscribe(() => {
+                                        });
                                     });
                             } else {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id)
