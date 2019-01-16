@@ -1,14 +1,12 @@
-import { CachedItemStore } from './../../key-value-store/def/cached-item-store';
-import { FrameworkServiceConfig, Channel, Framework } from '..';
-import { GetChannelDetailsHandler } from './../handler/get-channel-detail-handler';
+import { CachedItemStore } from '../../key-value-store';
+import { FrameworkServiceConfig, Channel, Framework, ChannelDetailsRequest, FrameworkDetailsRequest, GetChannelDetailsHandler,
+     GetFrameworkDetailsHandler, FrameworkService } from '..';
 import { FileService } from './../../util/file/def/file-service';
 import { KeyValueStore } from '../../key-value-store';
 import { Observable } from 'rxjs';
-import { ChannelDetailsRequest, FrameworkDetailsRequest } from './../def/request-types';
-import { FrameworkService } from '../def/framework-service';
+// import { FrameworkService } from '../def/framework-service';
 import { SessionAuthenticator } from 'src/auth';
 import { ApiService } from 'src/api';
-import { GetFrameworkDetailsHandler } from '../handler/get-framework-detail-handler';
 
 
 
