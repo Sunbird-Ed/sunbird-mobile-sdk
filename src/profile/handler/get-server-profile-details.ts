@@ -1,11 +1,11 @@
 import { ApiRequestHandler, ApiService, HttpRequestType, Request } from '../../api';
-import { UserProfileDetailsRequest } from '../def/user-profile-details-request';
-import { UserProfile } from '../def/user-profile';
+import { ServerProfileDetailsRequest } from '../def/server-profile-details-request';
+import { ServerProfileDetails } from '../def/server-profile-details';
 import { ProfileServiceConfig } from '../config/profile-service-config';
 import { SessionAuthenticator } from '../../auth';
 import { Observable } from 'rxjs';
 
-export class GetUserProfileDetailsHandler implements ApiRequestHandler<UserProfileDetailsRequest, UserProfile> {
+export class GetServerProfileDetails implements ApiRequestHandler<ServerProfileDetailsRequest, ServerProfileDetails> {
     public readonly GET_USER_PROFILE_DETAILS_ENDPOINT = 'read';
 
     constructor(
@@ -14,7 +14,7 @@ export class GetUserProfileDetailsHandler implements ApiRequestHandler<UserProfi
         private sessionAuthenticator: SessionAuthenticator) {
     }
 
-    public handle(request: UserProfileDetailsRequest): Observable<UserProfile> {
+    public handle(request: ServerProfileDetailsRequest): Observable<ServerProfileDetails> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
             .withPath(this.profileServiceConfig.apiPath + this.GET_USER_PROFILE_DETAILS_ENDPOINT + request.userId)
@@ -22,7 +22,7 @@ export class GetUserProfileDetailsHandler implements ApiRequestHandler<UserProfi
             .withInterceptors([this.sessionAuthenticator])
             .build();
 
-        return this.apiService.fetch<{ result: UserProfile } >(apiRequest).map((success) => {
+        return this.apiService.fetch<{ result: ServerProfileDetails } >(apiRequest).map((success) => {
             return success.body.result;
         });
 

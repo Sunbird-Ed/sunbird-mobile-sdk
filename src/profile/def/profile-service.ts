@@ -9,8 +9,8 @@ import {ProfileRequest} from './profile-request';
 import {Group} from './group';
 import {ProfilesToGroupRequest} from './profiles-to-group-request';
 import {GetAllGroupRequest} from './get-all-group-request';
-import { UserProfileDetailsRequest } from './user-profile-details-request';
-import { UserProfile } from './user-profile';
+import { ServerProfileDetailsRequest } from './server-profile-details-request';
+import { ServerProfileDetails } from './server-profile-details';
 
 
 export interface ProfileService {
@@ -36,6 +36,6 @@ export interface ProfileService {
 
     addProfilesToGroup(profilesToGroupRequest: ProfilesToGroupRequest): Observable<number>;
 
-    getUserProfileDetails(detailsRequest: UserProfileDetailsRequest): Observable<UserProfile>;
+    getServerProfilesDetails(detailsRequest: ServerProfileDetailsRequest): Observable<ServerProfileDetails>;
 
 }

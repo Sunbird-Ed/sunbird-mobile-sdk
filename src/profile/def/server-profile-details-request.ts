@@ -1,4 +1,4 @@
-export interface UserProfileDetailsRequest {
+export interface ServerProfileDetailsRequest {
     userId: string;
     requiredFields: string[];
     refreshUserProfileDetails: boolean;

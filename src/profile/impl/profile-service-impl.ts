@@ -18,9 +18,9 @@ import {Group} from '../def/group';
 import {ProfilesToGroupRequest} from '../def/profiles-to-group-request';
 import {ProfileRequest} from '../def/profile-request';
 import {GetAllGroupRequest} from '../def/get-all-group-request';
-import { UserProfileDetailsRequest } from '../def/user-profile-details-request';
-import { UserProfile } from '../def/user-profile';
-import { GetUserProfileDetailsHandler } from '../handler/get-user-profile-details-handler';
+import { ServerProfileDetailsRequest } from '../def/server-profile-details-request';
+import { ServerProfileDetails } from '../def/server-profile-details';
+import { GetServerProfileDetails } from '../handler/get-server-profile-details';
 
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService,
@@ -202,8 +202,8 @@ export class ProfileServiceImpl implements ProfileService {
         });
     }
 
-    getUserProfileDetails(userProfileDetailsRequest: UserProfileDetailsRequest): Observable<UserProfile> {
-        return new GetUserProfileDetailsHandler(this.apiService, this.profileServiceConfig, this.sessionAuthenticator)
-            .handle(userProfileDetailsRequest);
+    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfileDetails> {
+        return new GetServerProfileDetails(this.apiService, this.profileServiceConfig, this.sessionAuthenticator)
+            .handle(serverProfileDetailsRequest);
     }
 }
