@@ -9,10 +9,10 @@ export class KeyValueStoreImpl implements KeyValueStore {
 
     getValue(key: string): Observable<string | undefined> {
         return this.dbService.read({
-            table: '',
-            columns: [KeyValueStoreEntry._ID, KeyValueStoreEntry.KEY, KeyValueStoreEntry.VALUE],
+            table: KeyValueStoreEntry.TABLE_NAME,
+            columns: [],
             selection: `${KeyValueStoreEntry.KEY} = ?`,
-            selectionArgs: [key]
+            selectionArgs: [`"${key}"`]
         }).map(value => value[0]);
     }
 
@@ -23,7 +23,7 @@ export class KeyValueStoreImpl implements KeyValueStore {
                     return this.dbService.update({
                         table: KeyValueStoreEntry.TABLE_NAME,
                         selection: `${KeyValueStoreEntry.KEY} = ?`,
-                        selectionArgs: [key],
+                        selectionArgs: [`"${key}"`],
                         modelJson: {
                             [KeyValueStoreEntry.KEY]: key,
                             [KeyValueStoreEntry.VALUE]: value
