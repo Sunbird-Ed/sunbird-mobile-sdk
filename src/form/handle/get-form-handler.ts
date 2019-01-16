@@ -25,8 +25,8 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     handle(request: FormRequest): Observable<{ [key: string]: {} }> {
         return this.cachedItemStore.getCached(
             this.getIdForRequest(request),
-            this.STORED_FORM + this.getIdForRequest(request),
-            this.getIdForRequest(request),
+            this.STORED_FORM,
+            this.STORED_FORM,
             () => this.fetchFormServer(request),
             () => this.fetchFilePath()
         );
