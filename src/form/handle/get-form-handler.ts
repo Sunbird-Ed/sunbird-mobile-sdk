@@ -25,15 +25,15 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     handle(request: FormRequest): Observable<{ [key: string]: {} }> {
         return this.cachedItemStore.getCached(
             this.getIdForRequest(request),
-            this.STORED_FORM + this.getIdForRequest(request),
-            this.getIdForRequest(request),
+            this.STORED_FORM,
+            this.STORED_FORM,
             () => this.fetchFormServer(request),
             () => this.fetchFilePath()
         );
     }
 
     private getIdForRequest(request: FormRequest): string {
-        let key;
+        let key = '';
         key += request.type + request.subType + request.rootOrgId;
         if (!request.frameWork) {
             key += false;
