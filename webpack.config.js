@@ -1,4 +1,5 @@
 const path = require('path');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 const config = {
     entry: './src/index.ts',
@@ -18,6 +19,12 @@ const config = {
     output: {
         filename: 'index.js',
         path: path.resolve(__dirname, 'dist')
+    },
+    optimization: {
+        minimizer: [new UglifyJsPlugin()],
+    },
+    performance: {
+        hints: false
     }
 };
 
