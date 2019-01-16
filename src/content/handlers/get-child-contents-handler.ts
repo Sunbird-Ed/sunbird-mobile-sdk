@@ -6,6 +6,7 @@ import {CotentMapper} from '../def/cotent-mapper';
 import {ContentEntry} from '../db/schema';
 import {ChildContents, MimeType, State} from '../util/content-constants';
 import {GetContentDetailsHandler} from './get-content-details-handler';
+import {Stack} from '../util/stack';
 import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
 
 export class ChildContentsHandler {
@@ -178,7 +179,7 @@ export class ChildContentsHandler {
     getNextContentIdentifier(hierarchyInfoList: HierarchyInfo[],
                              currentIdentifier: string,
                              contentKeyList: string[]): string {
-        let currentIdentifiers;
+        let currentIdentifiers = '';
         let nextContentIdentifier;
         hierarchyInfoList.forEach((hierarchyItem) => {
             if (!currentIdentifiers) {

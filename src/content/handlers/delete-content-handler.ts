@@ -4,6 +4,7 @@ import {ContentUtil} from '../util/content-util';
 import {QueryBuilder} from '../../db/util/query-builder';
 import {MimeType, State, Visibility} from '../util/content-constants';
 import {Observable} from 'rxjs';
+import {Stack} from '../util/stack';
 import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON;
 import COLUMN_NAME_LOCAL_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON;
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
