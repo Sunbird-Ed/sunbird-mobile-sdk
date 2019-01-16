@@ -21,7 +21,7 @@ export interface ServerProfile {
     // "id": "3c43a5d4-1ceb-435a-ae7c-aa6c707514e7",
     // "tempPassword": null,
     // "email": "",
-    // "phoneverified": null,
+    // "phoneVerified": null,
     // "thumbnail": null,
     // "address": [],
     // "jobProfile": [],
