@@ -11,8 +11,8 @@ export class KeyValueStoreImpl implements KeyValueStore {
         return this.dbService.read({
             table: KeyValueStoreEntry.TABLE_NAME,
             columns: [],
-            selection: `${KeyValueStoreEntry.KEY} = "?"`,
-            selectionArgs: [key]
+            selection: `${KeyValueStoreEntry.KEY} = ?`,
+            selectionArgs: [`"${key}"`]
         }).map(value => value[0]);
     }
 
@@ -22,8 +22,8 @@ export class KeyValueStoreImpl implements KeyValueStore {
                 if (response) {
                     return this.dbService.update({
                         table: KeyValueStoreEntry.TABLE_NAME,
-                        selection: `${KeyValueStoreEntry.KEY} = "?"`,
-                        selectionArgs: [key],
+                        selection: `${KeyValueStoreEntry.KEY} = ?`,
+                        selectionArgs: [`"${key}"`],
                         modelJson: {
                             [KeyValueStoreEntry.KEY]: key,
                             [KeyValueStoreEntry.VALUE]: value
