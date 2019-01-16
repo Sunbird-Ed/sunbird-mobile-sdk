@@ -1,10 +1,12 @@
 import {CachedItemStore} from '../def/cached-item-store';
 import {Observable} from 'rxjs';
 import {KeyValueStore} from '..';
+import {ApiConfig} from '../../api';
 
 export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
 
-    constructor(private keyValueStore: KeyValueStore) {
+    constructor(private keyValueStore: KeyValueStore,
+                private apiConfig: ApiConfig) {
     }
 
     public getCached(
@@ -12,12 +14,13 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
         noSqlkey: string,
         timeToLiveKey: string,
         fromServer: () => Observable<T>,
-        initial?: () => Observable<T>
+        initial?: () => Observable<T>,
+        timeToLive?: number
     ): Observable<T> {
         return this.isItemCachedInDb(timeToLiveKey, id)
             .mergeMap((isItemCachedInDb: boolean) => {
                 if (isItemCachedInDb) {
-                    return this.isItemTTLExpired()
+                    return this.isItemTTLExpired(timeToLiveKey, id, timeToLive || this.apiConfig.cached_requests.timeToLive)
                         .mergeMap((isItemTTLExpired: boolean) => {
                             if (isItemTTLExpired) {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id)
@@ -56,9 +59,15 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
         return Observable.of(false);
     }
 
-    private isItemTTLExpired(): Observable<boolean> {
-        // TODO
-        return Observable.of(false);
+    private isItemTTLExpired(timeToLiveKey: string, id: string, timeToLive: number): Observable<boolean> {
+        const savedTimestamp: number = Number(localStorage.getItem(timeToLiveKey + '-' + id)!);
+        const nowTimeStamp: number = Date.now();
+
+        if (nowTimeStamp - savedTimestamp > timeToLive) {
+            return Observable.of(false);
+        } else {
+            return Observable.of(true);
+        }
     }
 
     private saveItem(id: string, timeToLiveKey: string, noSqlkey: string, item: T) {
