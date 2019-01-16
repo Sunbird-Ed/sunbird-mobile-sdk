@@ -2,15 +2,15 @@ import {DbService} from '../../db';
 import {ContentEntry} from '../db/schema';
 import {ContentUtil} from '../util/content-util';
 import {QueryBuilder} from '../../db/util/query-builder';
+import {MimeType, State, Visibility} from '../util/content-constants';
+import {Observable} from 'rxjs';
 import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON;
 import COLUMN_NAME_LOCAL_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON;
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
-import {Visibility, MimeType, State} from '../util/content-constats';
 import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
-import {Observable} from 'rxjs';
 
 export class DeleteContentHandler {
 

@@ -1,19 +1,12 @@
-import {AppConfig} from '../../api/config/app-config';
-import {ContentServiceConfig} from '../config/content-config';
-import {SessionAuthenticator} from '../../auth';
 import {Content, HierarchyInfo} from '../def/content';
 import {ChildContent} from '../def/response';
-import {QueryBuilder} from '../../db/util/query-builder';
 import {DbService} from '../../db';
 import {ContentUtil} from '../util/content-util';
 import {CotentMapper} from '../def/cotent-mapper';
-import {Observable} from 'rxjs';
 import {ContentEntry} from '../db/schema';
-import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
-import {Queue} from '../../util/queue/queue';
-import {ChildContents, State, MimeType} from '../util/content-constats';
-import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
+import {ChildContents, MimeType, State} from '../util/content-constants';
 import {GetContentDetailsHandler} from './get-content-details-handler';
+import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
 
 export class ChildContentsHandler {
 

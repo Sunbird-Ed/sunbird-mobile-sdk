@@ -1,5 +1,5 @@
 import {ContentData, HierarchyInfo, Rollup} from '../def/content';
-import {State} from './content-constats';
+import {State} from './content-constants';
 import {ChildContent} from '../def/response';
 
 export class ContentUtil {

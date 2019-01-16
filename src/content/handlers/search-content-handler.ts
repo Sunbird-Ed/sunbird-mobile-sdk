@@ -1,17 +1,9 @@
-import {
-    ContentDetailRequest,
-    ContentSearchCriteria,
-    ContentSearchFilter,
-    ContentSortCriteria, FilterValue,
-    SortOrder
-} from '../def/requests';
+import {ContentSearchCriteria, ContentSearchFilter, ContentSortCriteria, FilterValue, SortOrder} from '../def/requests';
 import {ContentServiceConfig} from '../config/content-config';
 import {SessionAuthenticator} from '../../auth';
-import {ApiService, HttpRequestType, Request} from '../../api';
+import {HttpRequestType, Request} from '../../api';
 import {AppConfig} from '../../api/config/app-config';
-import {ContentData} from '../def/content';
-import {ContentSearchResult} from '../def/response';
-import {SearchType} from '../util/content-constats';
+import {SearchType} from '../util/content-constants';
 
 export class SearchContentHandler {
 
