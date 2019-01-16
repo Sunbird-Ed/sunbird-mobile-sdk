@@ -26,7 +26,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
             this.DB_KEY_FRAMEWORK_DETAILS,
             this.FRAMEWORK_DETAILS_API_EXPIRATION_KEY,
             () => this.fetchFromServer(request),
-            () => this.fetchFromFile()
+            () => this.fetchFromFile(request)
         );
     }
 
@@ -43,9 +43,15 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
         });
     }
 
-    private fetchFromFile(): Observable<Framework> {
-        const fileDirPath = Path.dirPathFromFilePath(this.frameworkServiceConfig.frameworkConfigFilePaths);
-        const filePath = Path.fileNameFromFilePath(this.frameworkServiceConfig.frameworkConfigFilePaths);
+    private fetchFromFile(request: FrameworkDetailsRequest): Observable<Framework> {
+        const file = this.frameworkServiceConfig.frameworkConfigFilePaths.find( (val) => {
+            return (val.indexOf(request.frameworkId) !== -1);
+        });
+        if (!file) {
+            throw(new Error());
+        }
+        const fileDirPath = Path.dirPathFromFilePath(file);
+        const filePath = Path.fileNameFromFilePath(file);
         return this.fileservice.readAsText(fileDirPath, filePath)
         .map( (filecontent: string) => {
             return JSON.parse(filecontent);
