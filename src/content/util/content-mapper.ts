@@ -1,5 +1,5 @@
 import {ContentEntry} from '../db/schema';
-import {Content, ContentData} from './content';
+import {Content, ContentData} from '../def/content';
 
 export class ContentMapper {
     public static mapContentDataToContentDBEntry(contentData: ContentData): ContentEntry.SchemaMap {

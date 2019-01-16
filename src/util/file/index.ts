@@ -80,7 +80,8 @@ export interface Entry {
 
     /**
      * Move an entry to a different location on the file system. It is an error to try to:
-     *     move a directory inside itself or to any child at any depth;move an entry into its parent if a name different from its current one isn't provided;
+     *     move a directory inside itself or to any child at any depth;move an entry into its parent if a name different
+     *     from its current one isn't provided;
      *     move a file to a path occupied by a directory;
      *     move a directory to a path occupied by a file;
      *     move any element to a path occupied by a directory which is not empty.
@@ -130,7 +131,8 @@ export interface Entry {
     toInternalURL(): string;
 
     /**
-     * Deletes a file or directory. It is an error to attempt to delete a directory that is not empty. It is an error to attempt to delete the root directory of a filesystem.
+     * Deletes a file or directory. It is an error to attempt to delete a directory that is not empty. It is an error to attempt to delete
+     * the root directory of a filesystem.
      * @param successCallback A callback that is called on success.
      * @param errorCallback   A callback that is called when errors happen.
      */
@@ -167,7 +169,8 @@ export interface DirectoryEntry extends Entry {
      *                to the file to be looked up or created.
      *                It is an error to attempt to create a file whose immediate parent does not yet exist.
      * @param options If create and exclusive are both true, and the path already exists, getFile must fail.
-     *                If create is true, the path doesn't exist, and no other error occurs, getFile must create it as a zero-length file and return a corresponding FileEntry.
+     *                If create is true, the path doesn't exist, and no other error occurs, getFile must create it as a zero-length file
+     *                and return a corresponding FileEntry.
      *                If create is not true and the path doesn't exist, getFile must fail.
      *                If create is not true and the path exists, but is a directory, getFile must fail.
      *                Otherwise, if no other error occurs, getFile must return a FileEntry corresponding to path.
@@ -184,7 +187,8 @@ export interface DirectoryEntry extends Entry {
      *                to the directory to be looked up or created.
      *                It is an error to attempt to create a directory whose immediate parent does not yet exist.
      * @param options If create and exclusive are both true and the path already exists, getDirectory must fail.
-     *                If create is true, the path doesn't exist, and no other error occurs, getDirectory must create and return a corresponding DirectoryEntry.
+     *                If create is true, the path doesn't exist, and no other error occurs, getDirectory must create and return a
+     *                corresponding DirectoryEntry.
      *                If create is not true and the path doesn't exist, getDirectory must fail.
      *                If create is not true and the path exists, but is a file, getDirectory must fail.
      *                Otherwise, if no other error occurs, getDirectory must return a DirectoryEntry corresponding to path.
@@ -213,7 +217,8 @@ export interface DirectoryEntry extends Entry {
 export interface Flags {
     /** Used to indicate that the user wants to create a file or directory if it was not previously there. */
     create?: boolean;
-    /** By itself, exclusive must have no effect. Used with create, it must cause getFile and getDirectory to fail if the target path already exists. */
+    /** By itself, exclusive must have no effect. Used with create, it must cause getFile and getDirectory to fail if the target path
+     * already exists. */
     exclusive?: boolean;
 }
 
@@ -386,7 +391,7 @@ interface Cordova {
         documentsDirectory: string;
         /* BlackBerry10: Files globally available to all apps */
         sharedDirectory: string
-    }
+    };
 }
 
 
