@@ -18,9 +18,10 @@ import {Group} from '../def/group';
 import {ProfilesToGroupRequest} from '../def/profiles-to-group-request';
 import {ProfileRequest} from '../def/profile-request';
 import {GetAllGroupRequest} from '../def/get-all-group-request';
-import { ServerProfileDetailsRequest } from '../def/server-profile-details-request';
-import { ServerProfileDetails } from '../def/server-profile-details';
-import { GetServerProfileDetails } from '../handler/get-server-profile-details';
+import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
+import {ServerProfileDetailsRequest} from '../def/server-profile-details-request';
+import {ServerProfileDetails} from '../def/server-profile-details';
+import {GetServerProfileDetails} from '../handler/get-server-profile-details';
 
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService,
@@ -64,8 +65,8 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]> {
-        // TODO
-        return Observable.from([]);
+        return new SearchServerProfileHandler(this.apiService, this.profileServiceConfig,
+            this.sessionAuthenticator).handle(searchCriteria);
     }
 
     getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo> {
