@@ -9,9 +9,9 @@ export class KeyValueStoreImpl implements KeyValueStore {
 
     getValue(key: string): Observable<string | undefined> {
         return this.dbService.read({
-            table: '',
-            columns: [KeyValueStoreEntry._ID, KeyValueStoreEntry.KEY, KeyValueStoreEntry.VALUE],
-            selection: `${KeyValueStoreEntry.KEY} = ?`,
+            table: KeyValueStoreEntry.TABLE_NAME,
+            columns: [],
+            selection: `${KeyValueStoreEntry.KEY} = "?"`,
             selectionArgs: [key]
         }).map(value => value[0]);
     }
@@ -22,7 +22,7 @@ export class KeyValueStoreImpl implements KeyValueStore {
                 if (response) {
                     return this.dbService.update({
                         table: KeyValueStoreEntry.TABLE_NAME,
-                        selection: `${KeyValueStoreEntry.KEY} = ?`,
+                        selection: `${KeyValueStoreEntry.KEY} = "?"`,
                         selectionArgs: [key],
                         modelJson: {
                             [KeyValueStoreEntry.KEY]: key,
