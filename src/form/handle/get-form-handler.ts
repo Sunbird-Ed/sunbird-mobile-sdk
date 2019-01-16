@@ -33,7 +33,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     }
 
     private getIdForRequest(request: FormRequest): string {
-        let key;
+        let key = '';
         key += request.type + request.subType + request.rootOrgId;
         if (!request.frameWork) {
             key += false;
