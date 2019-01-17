@@ -21,13 +21,17 @@ import {GetAllGroupRequest} from '../def/get-all-group-request';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {ServerProfileDetailsRequest} from '../def/server-profile-details-request';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
-import {CachedItemStore} from '../../key-value-store';
+import {CachedItemStore, KeyValueStore} from '../../key-value-store';
+import {ProfileSession} from '../def/profile-session';
 
 export class ProfileServiceImpl implements ProfileService {
+    private static readonly KEY_USER_SESSION = 'session';
+
     constructor(private profileServiceConfig: ProfileServiceConfig,
                 private dbService: DbService,
                 private apiService: ApiService,
                 private cachedItemStore: CachedItemStore<ServerProfile>,
+                private keyValueStore: KeyValueStore,
                 private sessionAuthenticator: SessionAuthenticator) {
     }
 
@@ -75,7 +79,7 @@ export class ProfileServiceImpl implements ProfileService {
             this.profileServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
     }
 
-    getAllProfile(profileRequest?: ProfileRequest): Observable<Profile[]> {
+    getAllProfiles(profileRequest?: ProfileRequest): Observable<Profile[]> {
         if (!profileRequest) {
             return this.dbService.read({
                 table: ProfileEntry.TABLE_NAME,
@@ -206,5 +210,34 @@ export class ProfileServiceImpl implements ProfileService {
         return new GetServerProfileDetailsHandler(this.apiService, this.profileServiceConfig,
             this.sessionAuthenticator, this.cachedItemStore)
             .handle(serverProfileDetailsRequest);
+    }
+
+    getCurrentProfile(): Observable<Profile> {
+        return this.getCurrentProfileSession()
+            .mergeMap((profileSession: ProfileSession) => {
+                return this.dbService.read({
+                    table: GroupProfileEntry.TABLE_NAME,
+                    selection: `${ProfileConstant.UID} = ?`,
+                    selectionArgs: [`"${profileSession.uid}"`]
+                }).map((rows) => rows && rows[0]);
+            });
+    }
+
+    setCurrentProfile(uid: string): Observable<boolean> {
+        return this.dbService
+            .read({
+                table: GroupProfileEntry.TABLE_NAME,
+                selection: `${ProfileConstant.UID} = ?`,
+                selectionArgs: [`"${uid}"`]
+            }).map((rows) => rows && rows[0])
+            .mergeMap((profile: Profile) => {
+                const profileSession = new ProfileSession(profile.uid);
+                return this.keyValueStore.setValue(ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify(profileSession));
+            });
+    }
+
+    getCurrentProfileSession(): Observable<ProfileSession> {
+        return this.keyValueStore.getValue(ProfileServiceImpl.KEY_USER_SESSION)
+            .map((value) => JSON.parse(value!));
     }
 }

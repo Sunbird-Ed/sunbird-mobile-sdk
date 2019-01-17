@@ -10,6 +10,7 @@ import {Group} from './group';
 import {ProfilesToGroupRequest} from './profiles-to-group-request';
 import {GetAllGroupRequest} from './get-all-group-request';
 import {ServerProfileDetailsRequest} from './server-profile-details-request';
+import {ProfileSession} from './profile-session';
 
 
 export interface ProfileService {
@@ -23,7 +24,7 @@ export interface ProfileService {
 
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
 
-    getAllProfile(profileRequest?: ProfileRequest): Observable<Profile[]>;
+    getAllProfiles(profileRequest?: ProfileRequest): Observable<Profile[]>;
 
     createGroup(group: Group): Observable<Group>;
 
@@ -37,4 +38,11 @@ export interface ProfileService {
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile>;
 
+    getCurrentProfile(): Observable<Profile>;
+
+    getCurrentProfile(): Observable<Profile>;
+
+    setCurrentProfile(uid: string): Observable<boolean>;
+
+    getCurrentProfileSession(): Observable<ProfileSession>;
 }
