@@ -43,7 +43,7 @@ export class QueryBuilder {
 
     private query = '';
 
-    where(condition: string) {
+    where(condition: string): any {
         this.query += condition.trim();
 
         return new QueryBuilder.WhereDecorator(this);

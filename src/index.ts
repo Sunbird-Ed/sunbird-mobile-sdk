@@ -1,9 +1,11 @@
-import * as Db from './db/index';
-import * as Api from './api/index';
-import * as Telemetry from './telemetry/index';
-
-export {Db};
-export {Api};
-export {Telemetry};
+export * from './db';
+export * from './api';
+export * from './telemetry';
+export * from './auth';
+export * from './course';
+export * from './framework';
+export * from './form';
+export * from './content';
+export * from './profile';
 export * from './sdk';
 export * from './sdk-config';

@@ -1,6 +1,7 @@
-import {ContentData, HierarchyInfo, Rollup} from '../def/content';
+import {ContentData, HierarchyInfo} from '../def/content';
 import {State} from './content-constants';
 import {ChildContent} from '../def/response';
+import {Rollup} from '../../telemetry';
 
 export class ContentUtil {
     private static DEFAULT_PACKAGE_VERSION = -1;

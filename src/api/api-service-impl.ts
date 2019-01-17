@@ -3,25 +3,13 @@ import {Request} from './def/request';
 import {Response} from './def/response';
 import {FetchHandler} from './handlers/fetch-handler';
 import {Observable} from 'rxjs';
+import {ApiService} from './def/api-service';
 
-export class ApiService {
+export class ApiServiceImpl implements ApiService {
 
-    private static readonly _instance?: ApiService;
-    private apiConfig?: ApiConfig;
+    private apiConfig: ApiConfig;
 
-    public static get instance(): ApiService {
-        if (!ApiService._instance) {
-            return new ApiService();
-        }
-
-        return ApiService._instance;
-    }
-
-    /**
-     * Instantiate SDK
-     * @param apiConfig - provide configuration
-     */
-    public init(apiConfig: ApiConfig) {
+    constructor(apiConfig: ApiConfig) {
         this.apiConfig = apiConfig;
     }
 

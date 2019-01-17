@@ -1,8 +1,9 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
 import {EnrollCourseRequest} from '../def/request-types';
 import {Observable} from 'rxjs';
 import {CourseServiceConfig} from '..';
 import {SessionAuthenticator} from '../../auth';
+import {ApiService} from '../../api/def/api-service';
 
 export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseRequest, boolean> {
 

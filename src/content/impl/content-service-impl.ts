@@ -11,7 +11,6 @@ import {
     EcarImportRequest
 } from '../def/requests';
 import {Content, HierarchyInfo} from '../def/content';
-import {ApiService} from '../../api';
 import {ProfileService} from '../../profile';
 import {KeyValueStore} from '../../key-value-store';
 import {SessionAuthenticator} from '../../auth';
@@ -24,12 +23,13 @@ import {ContentEntry} from '../db/schema';
 import {ContentUtil} from '../util/content-util';
 import {DeleteContentHandler} from '../handlers/delete-content-handler';
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
+import {ApiService} from '../../api/def/api-service';
 
 export class ContentServiceImpl implements ContentService {
-    constructor(private apiService: ApiService,
+    constructor(private contentServiceConfig: ContentServiceConfig,
+                private apiService: ApiService,
                 private dbService: DbService,
                 private profileService: ProfileService,
-                private contentServiceConfig: ContentServiceConfig,
                 private keyValueStore: KeyValueStore,
                 private sessionAuthenticator: SessionAuthenticator) {
     }

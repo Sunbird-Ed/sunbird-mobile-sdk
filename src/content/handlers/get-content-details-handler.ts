@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
 import {ContentDetailRequest} from '../def/requests';
 import {Content, ContentData} from '../def/content';
 import {Observable} from 'rxjs';
@@ -8,6 +8,7 @@ import {ContentMapper} from '../util/content-mapper';
 import {ContentServiceConfig} from '../config/content-config';
 import {SessionAuthenticator} from '../../auth';
 import {QueryBuilder} from '../../db/util/query-builder';
+import {ApiService} from '../../api/def/api-service';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
     private readonly GET_CONTENT_DETAILS_ENDPOINT = 'read/';

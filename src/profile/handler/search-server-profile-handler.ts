@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
 import {ServerProfileSearchCriteria} from '../def/server-profile-search-criteria';
 import {ServerProfile} from '../def/server-profile';
 import {ProfileServiceConfig} from '../config/profile-service-config';
@@ -8,7 +8,7 @@ import {Observable} from 'rxjs';
 export class SearchServerProfileHandler implements ApiRequestHandler<ServerProfileSearchCriteria, ServerProfile[]> {
     private readonly GET_SEARCH_USER_ENDPOINT = 'search';
 
-    constructor(private apiService: ApiService,
+    constructor(private apiService: ApiServiceImpl,
                 private searchServiceConfig: ProfileServiceConfig,
                 private sessionAuthenticator: SessionAuthenticator) {
     }

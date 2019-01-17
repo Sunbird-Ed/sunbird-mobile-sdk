@@ -4,23 +4,28 @@ import {ApiConfig} from '../api';
 import {OauthHandler} from './handlers/oauth-handler';
 import {AuthUtil} from './util/auth-util';
 import {Observable} from 'rxjs';
+import {ApiService} from '../api/def/api-service';
 
 export class AuthServiceImpl implements AuthService {
 
-    constructor(private apiConfig: ApiConfig) {
+    private authUtil: AuthUtil;
+    private oauthHandler: OauthHandler
 
+    constructor(private apiConfig: ApiConfig, private apiService: ApiService) {
+        this.authUtil = new AuthUtil(this.apiService);
+        this.oauthHandler = new OauthHandler(this.apiService);
     }
 
     getSession(): Observable<OauthSession> {
-        return AuthUtil.getSessionData();
+        return this.authUtil.getSessionData();
     }
 
     login(): Observable<OauthSession> {
-        return OauthHandler.doLogin(this.apiConfig);
+        return this.oauthHandler.doLogin(this.apiConfig);
     }
 
     logout(): Observable<undefined> {
-        return OauthHandler.doLogout(this.apiConfig);
+        return this.oauthHandler.doLogout(this.apiConfig);
     }
 
 }
