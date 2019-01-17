@@ -1,10 +1,12 @@
 import {SessionProvider} from '../def/session-provider';
 import {OauthSession} from '../def/oauth-session';
-import {ApiConfig, ApiServiceImpl, HttpRequestType, JWTUtil, Request, Response} from '../../api';
+import {ApiConfig, HttpRequestType, JWTUtil, Request, Response} from '../../api';
+import {ApiService} from '../../api/def/api-service';
 
 export class KeycloakSessionProvider implements SessionProvider {
 
-    constructor(private apiConfig: ApiConfig) {
+    constructor(private apiConfig: ApiConfig,
+                private apiService: ApiService) {
     }
 
     public async createSession(accessToken: string): Promise<OauthSession> {
@@ -20,7 +22,7 @@ export class KeycloakSessionProvider implements SessionProvider {
         })).build();
 
 
-        const response: Response = await ApiServiceImpl.instance.fetch(request).toPromise();
+        const response: Response = await this.apiService.fetch(request).toPromise();
 
         const sessionData = response.body();
 
