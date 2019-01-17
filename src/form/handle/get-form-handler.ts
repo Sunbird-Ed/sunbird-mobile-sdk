@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
 import {FormRequest} from '../def/form-request';
 import {Observable} from 'rxjs';
 import {CachedItemStore} from '../../key-value-store';
@@ -7,6 +7,7 @@ import {SessionAuthenticator} from '../../auth';
 import {DbService} from '../../db';
 import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
+import {ApiService} from '../../api/def/api-service';
 
 export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: string]: {} }> {
     private readonly GET_FORM_REQUEST_ENDPOINT = '/api/data/v1';

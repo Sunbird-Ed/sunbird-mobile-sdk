@@ -9,7 +9,7 @@ import {UniqueId} from '../../db/util/unique-id';
 import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoRequest} from '../def/tenant-info-request';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
-import {ApiService} from '../../api';
+import {ApiServiceImpl} from '../../api';
 import {ProfileServiceConfig} from '../config/profile-service-config';
 import {SessionAuthenticator} from '../../auth';
 import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-request';
@@ -25,7 +25,7 @@ import {CachedItemStore} from '../../key-value-store';
 
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService,
-                private apiService: ApiService,
+                private apiService: ApiServiceImpl,
                 private profileServiceConfig: ProfileServiceConfig,
                 private cachedItemStore: CachedItemStore<ServerProfile>,
                 private sessionAuthenticator: SessionAuthenticator) {

@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
 import {ServerProfileDetailsRequest} from '../def/server-profile-details-request';
 import {ProfileServiceConfig} from '../config/profile-service-config';
 import {SessionAuthenticator} from '../../auth';
@@ -11,7 +11,7 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<ServerP
     private readonly USER_PROFILE_DETAILS_KEY_PREFIX = 'serverProfileDetails';
 
     constructor(
-        private apiService: ApiService,
+        private apiService: ApiServiceImpl,
         private profileServiceConfig: ProfileServiceConfig,
         private sessionAuthenticator: SessionAuthenticator,
         private cachedItemStore: CachedItemStore<ServerProfile>) {

@@ -2,10 +2,11 @@ import { CachedItemStore } from './../../key-value-store/def/cached-item-store';
 import { Path } from './../../util/file/util/path';
 import { FileService } from './../../util/file/def/file-service';
 import { FrameworkDetailsRequest } from './../def/request-types';
-import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
 import { SessionAuthenticator } from 'src/auth';
 import { FrameworkServiceConfig, Framework } from '..';
+import {ApiService} from '../../api/def/api-service';
 
 
 export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {

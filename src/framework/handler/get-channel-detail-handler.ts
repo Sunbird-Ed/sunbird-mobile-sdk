@@ -3,10 +3,11 @@ import { FileService } from './../../util/file/def/file-service';
 import { Path } from './../../util/file/util/path';
 import { KeyValueStore } from './../../key-value-store/def/key-value-store';
 import { ChannelDetailsRequest } from './../def/request-types';
-import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
 import { SessionAuthenticator } from 'src/auth';
 import { FrameworkServiceConfig, Channel } from '..';
+import {ApiService} from '../../api/def/api-service';
 
 
 export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetailsRequest, Channel> {

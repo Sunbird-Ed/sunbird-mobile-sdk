@@ -1,7 +1,7 @@
 // definitions
-import {ApiConfig, ApiService} from './api';
+import {ApiConfig, ApiServiceImpl} from './api';
 import {DbConfig, DbService} from './db';
-import {AuthService} from './auth';
+import {AuthService, SessionAuthenticator} from './auth';
 import {TelemetryService} from './telemetry';
 // config
 import {SdkConfig} from './sdk-config';
@@ -10,6 +10,20 @@ import {DbServiceImpl} from './db/impl/db-service-impl';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/auth-service-impl';
+import {ContentService} from './content/def/content-service';
+import {CourseService} from './course/def/course-service';
+import {FormService} from './form/def/form-service';
+import {FrameworkService} from './framework/def/framework-service';
+import {ContentServiceImpl} from './content/impl/content-service-impl';
+import {ProfileService} from './profile';
+import {CachedItemStore, KeyValueStore} from './key-value-store';
+import {ApiService} from './api/def/api-service';
+import {KeyValueStoreImpl} from './key-value-store/impl/key-value-store-impl';
+import {CourseServiceConfig, CourseServiceImpl} from './course';
+import {FormServiceImpl} from './form/impl/form-service-impl';
+import {FileService} from './util/file/def/file-service';
+import {CachedItemStoreImpl} from './key-value-store/impl/cached-item-store-impl';
+import {Channel, Framework, FrameworkServiceConfig, FrameworkServiceImpl} from './framework';
 
 export class SunbirdSdk {
 
@@ -26,43 +40,102 @@ export class SunbirdSdk {
     private _dbService: DbService;
     private _telemetryService: TelemetryService;
     private _authService: AuthService;
+    private _apiService: ApiService;
+    private _keyValueStore: KeyValueStore;
+    private _profileService: ProfileService;
+    private _contentService: ContentService;
+    private _courseService: CourseService;
+    private _formService: FormService;
+    private _frameworkService: FrameworkService;
 
     public init(sdkConfig: SdkConfig) {
-        this.initDbService(sdkConfig.dbContext);
-        this.initTelemetryService();
-        this.initApiService(sdkConfig);
+        this._dbService = new DbServiceImpl(sdkConfig.dbContext);
+
+        this._telemetryService = new TelemetryServiceImpl(this._dbService, new TelemetryDecoratorImpl());
+
+        this._authService = new AuthServiceImpl(sdkConfig.apiConfig);
+
+        this._apiService = new ApiServiceImpl(sdkConfig.apiConfig);
+
+        this._keyValueStore = new KeyValueStoreImpl(this._dbService);
+
+        const sessionAuthenticator = new SessionAuthenticator(sdkConfig.apiConfig);
+        const fileService: FileService = {} as any;
+
+        this._contentService = new ContentServiceImpl(
+            sdkConfig.contentServiceConfig,
+            this._apiService,
+            this._dbService,
+            this._profileService,
+            this._keyValueStore,
+            sessionAuthenticator
+        );
+
+        this._courseService = new CourseServiceImpl(
+            sdkConfig.courseServiceConfig,
+            this._apiService,
+            this._profileService,
+            this._keyValueStore,
+            sessionAuthenticator
+        );
+
+        this._formService = new FormServiceImpl(
+            sdkConfig.formServiceConfig,
+            this._apiService,
+            this._dbService,
+            fileService,
+            new CachedItemStoreImpl<{ [key: string]: {} }>(this._keyValueStore, sdkConfig.apiConfig),
+            sessionAuthenticator
+        );
+
+        this._frameworkService = new FrameworkServiceImpl(
+            sdkConfig.frameworkServiceConfig,
+            this._keyValueStore,
+            fileService,
+            this._apiService,
+            new CachedItemStoreImpl<Channel>(this._keyValueStore, sdkConfig.apiConfig),
+            new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig),
+            sessionAuthenticator
+        );
     }
 
-    private initAuthService(apiConfig: ApiConfig) {
-        this._authService = new AuthServiceImpl(apiConfig);
-    }
-
-    private initApiService(sdkConfig: SdkConfig) {
-        ApiService.instance.init(sdkConfig.apiConfig);
-    }
-
-    private initTelemetryService() {
-        const decorator = new TelemetryDecoratorImpl();
-        this._telemetryService = new TelemetryServiceImpl(this._dbService, decorator);
-    }
-
-    private initDbService(dbConfig: DbConfig) {
-        this._dbService = new DbServiceImpl(dbConfig);
-    }
-
-    public getDbService(): DbService {
+    get dbService(): DbService {
         return this._dbService;
     }
 
-    public getTelemetryService(): TelemetryService {
+    get telemetryService(): TelemetryService {
         return this._telemetryService;
     }
 
-    public getApiService(): ApiService {
-        return ApiService.instance;
+    get authService(): AuthService {
+        return this._authService;
     }
 
-    public getAuthService(): AuthService {
-        return this._authService;
+    get apiService(): ApiService {
+        return this._apiService;
+    }
+
+    get keyValueStore(): KeyValueStore {
+        return this._keyValueStore;
+    }
+
+    get profileService(): ProfileService {
+        return this._profileService;
+    }
+
+    get contentService(): ContentService {
+        return this._contentService;
+    }
+
+    get courseService(): CourseService {
+        return this._courseService;
+    }
+
+    get formService(): FormService {
+        return this._formService;
+    }
+
+    get frameworkService(): FrameworkService {
+        return this._frameworkService;
     }
 }

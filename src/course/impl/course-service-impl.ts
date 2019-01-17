@@ -7,7 +7,6 @@ import {
     FetchEnrolledCourseRequest,
     UpdateContentStateRequest
 } from '../def/request-types';
-import {ApiService} from '../../api';
 import {Batch, Course, CourseServiceConfig} from '..';
 import {SessionAuthenticator} from '../../auth';
 import {ProfileService} from '../../profile';
@@ -17,12 +16,13 @@ import {GetCourseBatchesHandler} from '../handlers/get-course-batches-handler';
 import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
 import {EnrollCourseHandler} from '../handlers/enroll-course-handler';
 import {KeyValueStore} from '../../key-value-store';
+import {ApiService} from '../../api/def/api-service';
 
 export class CourseServiceImpl implements CourseService {
 
-    constructor(private apiService: ApiService,
+    constructor(private courseServiceConfig: CourseServiceConfig,
+                private apiService: ApiService,
                 private profileService: ProfileService,
-                private courseServiceConfig: CourseServiceConfig,
                 private keyValueStore: KeyValueStore,
                 private sessionAuthenticator: SessionAuthenticator) {
     }

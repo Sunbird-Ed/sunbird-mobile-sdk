@@ -1,15 +1,15 @@
-import { CachedItemStore } from './../../key-value-store/def/cached-item-store';
-import { FrameworkServiceConfig, Channel, Framework } from '..';
-import { GetChannelDetailsHandler } from './../handler/get-channel-detail-handler';
-import { FileService } from './../../util/file/def/file-service';
-import { KeyValueStore } from '../../key-value-store';
-import { Observable } from 'rxjs';
-import { ChannelDetailsRequest, FrameworkDetailsRequest } from './../def/request-types';
-import { FrameworkService } from '../def/framework-service';
-import { SessionAuthenticator } from 'src/auth';
-import { ApiService } from 'src/api';
-import { GetFrameworkDetailsHandler } from '../handler/get-framework-detail-handler';
-
+import {CachedItemStore} from './../../key-value-store/def/cached-item-store';
+import {FrameworkServiceConfig, Channel, Framework} from '..';
+import {GetChannelDetailsHandler} from './../handler/get-channel-detail-handler';
+import {FileService} from './../../util/file/def/file-service';
+import {KeyValueStore} from '../../key-value-store';
+import {Observable} from 'rxjs';
+import {ChannelDetailsRequest, FrameworkDetailsRequest} from './../def/request-types';
+import {FrameworkService} from '../def/framework-service';
+import {SessionAuthenticator} from 'src/auth';
+import {ApiServiceImpl} from 'src/api';
+import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
+import {ApiService} from '../../api/def/api-service';
 
 
 export class FrameworkServiceImpl implements FrameworkService {
@@ -17,13 +17,13 @@ export class FrameworkServiceImpl implements FrameworkService {
     DB_KEY_CHANNEL_DETAILS = 'channel_details_key-';
     DB_KEY_FRAMEWORK_DETAILS = 'framework_details_key-';
 
-    constructor(private keyValueStore: KeyValueStore,
-        private fileService: FileService,
-        private frameworkServiceConfig: FrameworkServiceConfig,
-        private sessionAuthenticator: SessionAuthenticator,
-        private apiService: ApiService,
-        private cachedChannelItemStore: CachedItemStore<Channel>,
-        private cachedFrameworkItemStore: CachedItemStore<Framework>) {
+    constructor(private frameworkServiceConfig: FrameworkServiceConfig,
+                private keyValueStore: KeyValueStore,
+                private fileService: FileService,
+                private apiService: ApiService,
+                private cachedChannelItemStore: CachedItemStore<Channel>,
+                private cachedFrameworkItemStore: CachedItemStore<Framework>,
+                private sessionAuthenticator: SessionAuthenticator) {
     }
 
 

@@ -1,6 +1,6 @@
 import {SessionProvider} from '../def/session-provider';
 import {OauthSession} from '../def/oauth-session';
-import {ApiConfig, ApiService, HttpRequestType, JWTUtil, Request, Response} from '../../api';
+import {ApiConfig, ApiServiceImpl, HttpRequestType, JWTUtil, Request, Response} from '../../api';
 
 export class KeycloakSessionProvider implements SessionProvider {
 
@@ -20,7 +20,7 @@ export class KeycloakSessionProvider implements SessionProvider {
         })).build();
 
 
-        const response: Response = await ApiService.instance.fetch(request).toPromise();
+        const response: Response = await ApiServiceImpl.instance.fetch(request).toPromise();
 
         const sessionData = response.body();
 

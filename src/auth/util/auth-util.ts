@@ -1,5 +1,5 @@
 import {
-    ApiService,
+    ApiServiceImpl,
     Connection,
     HttpRequestType,
     JWTUtil,
@@ -27,7 +27,7 @@ export class AuthUtil {
             .build();
 
 
-        const response: Response = await ApiService.instance.fetch(request).toPromise();
+        const response: Response = await ApiServiceImpl.instance.fetch(request).toPromise();
 
         const sessionData: OauthSession = JSON.parse(response.body());
 
