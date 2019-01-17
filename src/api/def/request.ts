@@ -8,7 +8,7 @@ export enum HttpRequestType {
 }
 
 export class Request {
-    static Builder = class Builder {
+    static Builder: any = class Builder {
 
         protected request: Request;
 

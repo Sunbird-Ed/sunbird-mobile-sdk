@@ -3,6 +3,11 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 const config = {
     entry: './src/index.ts',
+    output: {
+        filename: 'index.js',
+        path: path.resolve(__dirname, 'dist'),
+        libraryTarget: 'umd'
+    },
     mode: 'production',
     module: {
         rules: [
@@ -16,12 +21,10 @@ const config = {
     resolve: {
         extensions: ['.tsx', '.ts', '.js']
     },
-    output: {
-        filename: 'index.js',
-        path: path.resolve(__dirname, 'dist')
-    },
     optimization: {
-        minimizer: [new UglifyJsPlugin()],
+        minimizer: [new UglifyJsPlugin({
+            sourceMap: true
+        })],
     },
     performance: {
         hints: false
