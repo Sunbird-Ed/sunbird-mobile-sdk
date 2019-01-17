@@ -1,12 +1,10 @@
-import { CachedItemStore } from './../../key-value-store/def/cached-item-store';
-import { Path } from './../../util/file/util/path';
+import { CachedItemStore } from '../../key-value-store';
+import { Path } from '../../util/file/util/path';
 import { FileService } from './../../util/file/def/file-service';
-import { FrameworkDetailsRequest } from './../def/request-types';
-import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
 import { SessionAuthenticator } from 'src/auth';
-import { FrameworkServiceConfig, Framework } from '..';
-import {ApiService} from '../../api/def/api-service';
+import { FrameworkServiceConfig, Framework, FrameworkDetailsRequest } from '..';
 
 
 export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {
@@ -49,7 +47,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
             return (val.indexOf(request.frameworkId) !== -1);
         });
         if (!file) {
-            throw(new Error());
+            throw(new Error('File path does not exist'));
         }
         const fileDirPath = Path.dirPathFromFilePath(file);
         const filePath = Path.fileNameFromFilePath(file);
