@@ -19,11 +19,16 @@ import {ProfilesToGroupRequest} from '../def/profiles-to-group-request';
 import {ProfileRequest} from '../def/profile-request';
 import {GetAllGroupRequest} from '../def/get-all-group-request';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
+import { ServerProfileDetailsRequest } from '../def/server-profile-details-request';
+import { ServerProfileDetails } from '../def/server-profile-details';
+import { GetServerProfileDetailsHandler } from '../handler/get-server-profile-details-handler';
+import {CachedItemStore} from '../../key-value-store';
 
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService,
                 private apiService: ApiService,
                 private profileServiceConfig: ProfileServiceConfig,
+                private cachedItemStore: CachedItemStore<ServerProfileDetails>,
                 private sessionAuthenticator: SessionAuthenticator) {
     }
 
@@ -198,5 +203,11 @@ export class ProfileServiceImpl implements ProfileService {
             this.dbService.endTransaction(false);
             return Observable.throw(e);
         });
+    }
+
+    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfileDetails> {
+        return new GetServerProfileDetailsHandler(this.apiService, this.profileServiceConfig,
+            this.sessionAuthenticator, this.cachedItemStore)
+            .handle(serverProfileDetailsRequest);
     }
 }
