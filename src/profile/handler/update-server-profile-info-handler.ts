@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-request';
 import {Profile} from '..';
 import {ProfileServiceConfig} from '../config/profile-service-config';
@@ -9,9 +9,9 @@ export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateS
     private readonly GET_SERVER_PROFILE_INFO_API = 'update';
 
     constructor(
-                private apiService: ApiServiceImpl,
-                private updateUserInfoConfig: ProfileServiceConfig,
-                private sessionAuthenticator: SessionAuthenticator) {
+        private apiService: ApiService,
+        private updateUserInfoConfig: ProfileServiceConfig,
+        private sessionAuthenticator: SessionAuthenticator) {
 
     }
 

@@ -1,9 +1,10 @@
 import {ApiConfig} from './api';
 import {DbConfig} from './db';
-import {ContentServiceConfig} from './content/config/content-config';
+import {ContentServiceConfig} from './content';
 import {CourseServiceConfig} from './course';
-import {FormServiceConfig} from './form/config/form-service-config';
+import {FormServiceConfig} from './form';
 import {FrameworkServiceConfig} from './framework';
+import {ProfileServiceConfig} from './profile';
 
 export interface SdkConfig {
     apiConfig: ApiConfig;
@@ -12,4 +13,5 @@ export interface SdkConfig {
     courseServiceConfig: CourseServiceConfig;
     formServiceConfig: FormServiceConfig;
     frameworkServiceConfig: FrameworkServiceConfig;
+    profileServiceConfig: ProfileServiceConfig;
 }

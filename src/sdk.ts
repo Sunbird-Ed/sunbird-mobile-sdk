@@ -15,7 +15,7 @@ import {CourseService} from './course/def/course-service';
 import {FormService} from './form/def/form-service';
 import {FrameworkService} from './framework/def/framework-service';
 import {ContentServiceImpl} from './content/impl/content-service-impl';
-import {ProfileService} from './profile';
+import {ProfileService, ProfileServiceImpl} from './profile';
 import {KeyValueStore} from './key-value-store';
 import {ApiService} from './api/def/api-service';
 import {KeyValueStoreImpl} from './key-value-store/impl/key-value-store-impl';
@@ -24,6 +24,7 @@ import {FormServiceImpl} from './form/impl/form-service-impl';
 import {FileService} from './util/file/def/file-service';
 import {CachedItemStoreImpl} from './key-value-store/impl/cached-item-store-impl';
 import {Channel, Framework, FrameworkServiceImpl} from './framework';
+import {ServerProfile} from './profile/def/server-profile';
 
 export class SunbirdSdk {
 
@@ -61,6 +62,14 @@ export class SunbirdSdk {
 
         const sessionAuthenticator = new SessionAuthenticator(sdkConfig.apiConfig, this._apiService);
         const fileService: FileService = {} as any;
+
+        this._profileService = new ProfileServiceImpl(
+            sdkConfig.profileServiceConfig,
+            this._dbService,
+            this._apiService,
+            new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig),
+            sessionAuthenticator
+        );
 
         this._contentService = new ContentServiceImpl(
             sdkConfig.contentServiceConfig,
