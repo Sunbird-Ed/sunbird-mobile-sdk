@@ -1,4 +1,6 @@
 import {SearchType} from '../util/content-constants';
+import {HierarchyInfo} from './content';
+import {CorrelationData} from '../../telemetry';
 
 export interface ContentDetailRequest {
     contentId: string;
@@ -37,10 +39,6 @@ export interface ChildContentRequest {
     level: number;
 }
 
-export interface HierarchyInfo {
-    identifier: string;
-    contentType: string;
-}
 
 export interface ContentDeleteRequest {
     contentDeleteList: ContentDelete[];
@@ -58,10 +56,6 @@ export interface EcarImportRequest {
     correlationData: CorrelationData[];
 }
 
-export interface CorrelationData {
-    type: string;
-    id: string;
-}
 
 export interface ContentImportRequest {
     contentImportMap?: { [index: string]: any };

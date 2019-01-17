@@ -1,3 +1,5 @@
+import {Rollup} from '../../telemetry';
+
 export interface Content {
     identifier: string;
     contentData: ContentData;
@@ -8,7 +10,7 @@ export interface Content {
     lastUpdatedTime: number;
     isAvailableLocally: boolean;
     isUpdateAvailable: boolean;
-    contentFeedback?: Feedback;
+    contentFeedback?: ContentFeedback;
     contentAccess?: Access;
     children?: Content[];
     hierarchyInfo?: HierarchyInfo[];
@@ -68,7 +70,7 @@ export interface ContentData {
     streamingUrl: string;
 }
 
-export interface Feedback {
+export interface ContentFeedback {
     contentId: string;
     rating: number;
     comments: string;
@@ -90,13 +92,6 @@ export interface LearnerState {
 export interface HierarchyInfo {
     identifier: string;
     contentType: string;
-}
-
-export interface Rollup {
-    l1: string;
-    l2: string;
-    l3: string;
-    l4: string;
 }
 
 

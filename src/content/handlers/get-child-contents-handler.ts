@@ -2,7 +2,7 @@ import {Content, HierarchyInfo} from '../def/content';
 import {ChildContent} from '../def/response';
 import {DbService} from '../../db';
 import {ContentUtil} from '../util/content-util';
-import {CotentMapper} from '../def/cotent-mapper';
+import {CotentMapper} from '../util/cotent-mapper';
 import {ContentEntry} from '../db/schema';
 import {ChildContents, MimeType, State} from '../util/content-constants';
 import {GetContentDetailsHandler} from './get-content-details-handler';

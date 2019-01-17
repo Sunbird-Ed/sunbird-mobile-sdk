@@ -1,7 +1,7 @@
 import {ContentEntry} from '../db/schema';
-import {Content, ContentData} from './content';
+import {Content, ContentData} from '../def/content';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
-import {ContentUtil} from '../util/content-util';
+import {ContentUtil} from './content-util';
 
 export class CotentMapper {
     public static mapContentDataToContentDBEntry(contentData: ContentData): ContentEntry.SchemaMap {
