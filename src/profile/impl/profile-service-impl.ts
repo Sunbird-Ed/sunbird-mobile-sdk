@@ -19,16 +19,15 @@ import {ProfilesToGroupRequest} from '../def/profiles-to-group-request';
 import {ProfileRequest} from '../def/profile-request';
 import {GetAllGroupRequest} from '../def/get-all-group-request';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
-import { ServerProfileDetailsRequest } from '../def/server-profile-details-request';
-import { ServerProfileDetails } from '../def/server-profile-details';
-import { GetServerProfileDetailsHandler } from '../handler/get-server-profile-details-handler';
+import {ServerProfileDetailsRequest} from '../def/server-profile-details-request';
+import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
 import {CachedItemStore} from '../../key-value-store';
 
 export class ProfileServiceImpl implements ProfileService {
     constructor(private dbService: DbService,
                 private apiService: ApiService,
                 private profileServiceConfig: ProfileServiceConfig,
-                private cachedItemStore: CachedItemStore<ServerProfileDetails>,
+                private cachedItemStore: CachedItemStore<ServerProfile>,
                 private sessionAuthenticator: SessionAuthenticator) {
     }
 
@@ -146,20 +145,18 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     updateGroup(group: Group): Observable<Group> {
-        const updateToDb = NoSqlFormatter.toDb(group);
-        if (group! === undefined) {
-            this.dbService.update({
-                table: GroupEntry.TABLE_NAME,
-                selection: 'gid =?',
-                modelJson: {
-                    [GroupsConstant.NAME]: updateToDb.name,
-                    [GroupsConstant.SYLLABUS]: updateToDb.syllabus,
-                    [GroupsConstant.UPDATED_AT]: Date.now(),
-                    [GroupsConstant.GRADE]: updateToDb.grade,
-                    [GroupsConstant.GRADE_VALUE]: updateToDb.gradeValue
-                }
-            });
-        }
+        const updateToDb: Group = NoSqlFormatter.toDb(group);
+        this.dbService.update({
+            table: GroupEntry.TABLE_NAME,
+            selection: 'gid = ?',
+            modelJson: {
+                [GroupsConstant.NAME]: updateToDb.name,
+                [GroupsConstant.SYLLABUS]: updateToDb.syllabus,
+                [GroupsConstant.UPDATED_AT]: Date.now(),
+                [GroupsConstant.GRADE]: updateToDb.grade,
+                [GroupsConstant.GRADE_VALUE]: updateToDb.gradeValueMap
+            }
+        });
         return Observable.of(group);
     }
 
@@ -182,7 +179,7 @@ export class ProfileServiceImpl implements ProfileService {
     addProfilesToGroup(profileToGroupRequest: ProfilesToGroupRequest): Observable<number> {
         return this.dbService.delete({
             table: GroupProfileEntry.TABLE_NAME,
-            selection: `${GroupProfileConstant.GID} = (?)`,
+            selection: `${GroupProfileConstant.GID} = ?`,
             selectionArgs: [`"${profileToGroupRequest.groupId}"`]
         }).do(() => {
             this.dbService.beginTransaction();
@@ -205,7 +202,7 @@ export class ProfileServiceImpl implements ProfileService {
         });
     }
 
-    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfileDetails> {
+    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {
         return new GetServerProfileDetailsHandler(this.apiService, this.profileServiceConfig,
             this.sessionAuthenticator, this.cachedItemStore)
             .handle(serverProfileDetailsRequest);
