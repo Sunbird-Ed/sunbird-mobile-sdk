@@ -1,5 +1,6 @@
 export * from './config/api-config';
 
+export * from './def/api-service';
 export * from './def/response';
 export * from './def/connection';
 export * from './def/constants';
