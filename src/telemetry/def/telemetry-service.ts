@@ -1,11 +1,9 @@
-import { TelemetryStat } from './telemetry-stat';
-import { TelemetrySyncStat } from './telemetry-sync-stat';
-import { CorrelationData, Rollup, TelemetryObject } from './telemetry-model';
-import { Observable } from 'rxjs';
-import {
-    Environment, ObjectType, Mode, PageId, ImpressionType, LogType, LogLevel, ImpressionSubtype,
-    InteractType, InteractSubtype, ErrorCode, ErrorType
-} from '..';
+import {TelemetryStat} from './telemetry-stat';
+import {TelemetrySyncStat} from './telemetry-sync-stat';
+import {CorrelationData, Rollup, TelemetryObject} from './telemetry-model';
+import {Observable} from 'rxjs';
+import {Environment, ErrorCode, ErrorType, InteractSubtype, InteractType, PageId, LogType, LogLevel, Mode,
+    ImpressionType, ImpressionSubtype} from './telemetry-constants';
 
 
 export abstract class TelemetryService {
@@ -13,8 +11,12 @@ export abstract class TelemetryService {
     abstract start(pageId: PageId, env: Environment, mode: Mode, object?: TelemetryObject,
          rollup?: Rollup, corRelationList?: Array<CorrelationData>): void;
 
-    abstract interact(interactType: InteractType, subType: InteractSubtype, env: Environment, pageId: PageId,
-         object?: TelemetryObject, values?: Map<any, any>, rollup?: Rollup, corRelationList?: Array<CorrelationData>): void;
+    abstract interact(interactType: InteractType,
+                      subType: InteractSubtype,
+                      env: Environment,
+                      pageId: PageId,
+                      object?: TelemetryObject, values?: Map<any, any>,
+                      rollup?: Rollup, corRelationList?: Array<CorrelationData>): void;
 
     abstract impression(type: ImpressionType, subtype: ImpressionSubtype, pageid: PageId, env: Environment, objectId?: string,
         objectType?: string, objectVersion?: string, rollup?: Rollup, corRelationList?: Array<CorrelationData>): void;
@@ -26,7 +28,11 @@ export abstract class TelemetryService {
 
     abstract log(logLevel: LogLevel, message, env: Environment, type: LogType, params: Array<any>): void;
 
-    abstract error(env: Environment, errCode, errorType, pageId: PageId, stackTrace): void;
+    abstract error(env: Environment,
+                   errCode: ErrorCode,
+                   errorType: ErrorType,
+                   pageId: PageId,
+                   stackTrace: string): void;
 
     abstract event(telemetry: any): Observable<boolean>;
 

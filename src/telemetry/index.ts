@@ -5,3 +5,7 @@ export * from './def/telemetry-stat';
 export * from './def/telemetry-sync-stat';
 export * from './db/telemetry-migration';
 export * from './def/telemetry-constants';
+export * from './def/requests';
+export * from './def/telemetry-error';
+export * from './decorators/generate-error-telemetry-decorators';
+export * from './decorators/generate-interact-telemetry-decorators';
