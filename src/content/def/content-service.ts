@@ -4,7 +4,7 @@ import {
     ContentDetailRequest,
     ContentExportResponse,
     ContentImportRequest,
-    ContentRequest, ContentSearchCriteria,
+    ContentSearchCriteria,
     EcarImportRequest
 } from './requests';
 import {Response} from '../../api';
@@ -41,4 +41,5 @@ export interface ContentService {
 
     getDownloadState(): Promise<Response>;
 
+    cancelDownload(contentId: string): Observable<undefined>;
 }

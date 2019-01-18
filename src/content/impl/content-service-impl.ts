@@ -22,8 +22,8 @@ import {ChildContentsHandler} from '../handlers/get-child-contents-handler';
 import {ContentEntry} from '../db/schema';
 import {ContentUtil} from '../util/content-util';
 import {DeleteContentHandler} from '../handlers/delete-content-handler';
-import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import {ApiService} from '../../api/def/api-service';
+import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 
 export class ContentServiceImpl implements ContentService {
     constructor(private contentServiceConfig: ContentServiceConfig,
@@ -149,6 +149,11 @@ export class ContentServiceImpl implements ContentService {
     }
 
     searchContent(criteria: ContentSearchCriteria): Observable<ContentSearchResult> {
+        // TODO
+        throw new Error('Not Implemented yet');
+    }
+
+    cancelDownload(contentId: string): Observable<undefined> {
         // TODO
         throw new Error('Not Implemented yet');
     }
