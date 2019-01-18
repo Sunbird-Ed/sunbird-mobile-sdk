@@ -7,5 +7,6 @@ export * from './framework';
 export * from './form';
 export * from './content';
 export * from './profile';
+export * from './page';
 export * from './sdk';
 export * from './sdk-config';
