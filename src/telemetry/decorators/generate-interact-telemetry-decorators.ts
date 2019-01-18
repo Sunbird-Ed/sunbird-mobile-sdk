@@ -1,4 +1,4 @@
-import {TelemetryInteractRequest} from '../def/requests';
+import {TelemetryInteractRequest} from '..';
 import {SunbirdSdk} from '../../sdk';
 import {
     afterMethodFactory,
