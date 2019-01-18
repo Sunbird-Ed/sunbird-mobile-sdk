@@ -2,13 +2,18 @@ import {TelemetryStat} from './telemetry-stat';
 import {TelemetrySyncStat} from './telemetry-sync-stat';
 import {CorrelationData, Rollup, TelemetryObject} from './telemetry-model';
 import {Observable} from 'rxjs';
+import {Environment, ErrorCode, ErrorType, InteractSubtype, InteractType, PageId} from './telemetry-constants';
 
 
 export abstract class TelemetryService {
 
     abstract start(pageId, env, mode, object?: TelemetryObject, rollup?: Rollup, corRelationList?: Array<CorrelationData>): void;
 
-    abstract interact(interactType, subType, env, pageId, object?: TelemetryObject, values?: Map<any, any>,
+    abstract interact(interactType: InteractType,
+                      subType: InteractSubtype,
+                      env: Environment,
+                      pageId: PageId,
+                      object?: TelemetryObject, values?: Map<any, any>,
                       rollup?: Rollup, corRelationList?: Array<CorrelationData>): void;
 
     abstract impression(type, subtype, pageid, env, objectId?: string, objectType?: string,
@@ -20,7 +25,11 @@ export abstract class TelemetryService {
 
     abstract log(logLevel, message, env, type, params: Array<any>): void;
 
-    abstract error(env, errCode, errorType, pageId, stackTrace): void;
+    abstract error(env: Environment,
+                   errCode: ErrorCode,
+                   errorType: ErrorType,
+                   pageId: PageId,
+                   stackTrace: string): void;
 
     abstract event(telemetry: any): Observable<boolean>;
 

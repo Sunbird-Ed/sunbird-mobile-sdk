@@ -65,6 +65,7 @@ export class SunbirdSdk {
             this._dbService,
             this._apiService,
             new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig),
+            this._keyValueStore,
             sessionAuthenticator
         );
 
