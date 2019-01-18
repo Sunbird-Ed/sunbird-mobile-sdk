@@ -1,4 +1,4 @@
-export class PageAssembleFilter {
+export interface PageAssembleFilter {
     subject?: Array<string>;
     board?: Array<string>;
     domain?: Array<string>;
@@ -13,7 +13,7 @@ export class PageAssembleFilter {
 }
 
 
-export class PageAssembleCriteria {
+export interface PageAssembleCriteria {
     name: string;
     source?: string;
     mode?: string;
