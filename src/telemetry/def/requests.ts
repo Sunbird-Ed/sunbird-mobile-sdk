@@ -16,3 +16,8 @@ export interface TelemetryErrorRequest {
     env: Environment;
     pageId: PageId;
 }
+
+export interface TelemetryImpressionRequest {
+    // TODO
+    some_value: string;
+}
