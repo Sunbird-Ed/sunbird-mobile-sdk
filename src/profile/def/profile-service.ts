@@ -40,8 +40,6 @@ export interface ProfileService {
 
     getCurrentProfile(): Observable<Profile>;
 
-    getCurrentProfile(): Observable<Profile>;
-
     setCurrentProfile(uid: string): Observable<boolean>;
 
     getCurrentProfileSession(): Observable<ProfileSession>;

@@ -1,6 +1,15 @@
-import {Environment, InteractSubtype, InteractType, PageId, ImpressionType,
-     ImpressionSubtype, Mode, LogLevel, LogType} from './telemetry-constants';
-import {CorrelationData, Rollup, TelemetryObject} from './telemetry-model';
+import {
+    Environment,
+    InteractSubtype,
+    InteractType,
+    PageId,
+    ImpressionType,
+    ImpressionSubtype,
+    Mode,
+    LogLevel,
+    LogType
+} from './telemetry-constants';
+import { CorrelationData, Rollup, TelemetryObject } from './telemetry-model';
 
 export interface TelemetryInteractRequest {
     interactType: InteractType;
@@ -29,29 +38,28 @@ export interface TelemetryImpressionRequest {
     rollup?: Rollup;
     corRelationList?: Array<CorrelationData>;
 }
-    export interface TelemetryStartRequest {
-        pageId: PageId;
-        env: Environment;
-        mode: Mode;
-        object?: TelemetryObject;
-        rollup?: Rollup;
-        corRelationList?: Array<CorrelationData>;
-    }
+export interface TelemetryStartRequest {
+    pageId: PageId;
+    env: Environment;
+    mode: Mode;
+    object?: TelemetryObject;
+    rollup?: Rollup;
+    corRelationList?: Array<CorrelationData>;
+}
+export interface TelemetryEndRequest {
+    objectType: string;
+    mode: Mode;
+    pageId: PageId;
+    env: Environment;
+    object?: TelemetryObject;
+    rollup?: Rollup;
+    corRelationList?: Array<CorrelationData>;
+}
+export interface TelemetryLogRequest {
+    logLevel: LogLevel;
+    message: string;
+    env: Environment;
+    type: LogType;
+    params: Array<any>;
+}
 
-    export interface TelemetryEndRequest {
-        objectType: string;
-        mode: Mode;
-        pageId: PageId;
-        env: Environment;
-        object?: TelemetryObject;
-        rollup?: Rollup;
-        corRelationList?: Array<CorrelationData>;
-    }
-
-    export interface TelemetryLogRequest {
-        logLevel: LogLevel;
-        message: string;
-        env: Environment;
-        type: LogType;
-        params: Array<any>;
-    }
