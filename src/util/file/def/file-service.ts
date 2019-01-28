@@ -1,5 +1,5 @@
 import {Observable} from 'rxjs';
-import {DirectoryEntry, FileEntry, Flags} from '../index';
+import {DirectoryEntry, FileEntry, Flags} from '..';
 
 export interface FileService {
     readAsText(path: string, file: string): Observable<string>;
