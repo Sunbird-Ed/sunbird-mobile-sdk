@@ -5,6 +5,7 @@ import {CourseServiceConfig} from './course';
 import {FormServiceConfig} from './form';
 import {FrameworkServiceConfig} from './framework';
 import {ProfileServiceConfig} from './profile';
+import {PageServiceConfig} from './page/config/page-service-config';
 
 export interface SdkConfig {
     apiConfig: ApiConfig;
@@ -14,4 +15,5 @@ export interface SdkConfig {
     formServiceConfig: FormServiceConfig;
     frameworkServiceConfig: FrameworkServiceConfig;
     profileServiceConfig: ProfileServiceConfig;
+    pageServiceConfig: PageServiceConfig;
 }

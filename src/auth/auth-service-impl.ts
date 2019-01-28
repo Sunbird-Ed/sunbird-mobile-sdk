@@ -9,7 +9,7 @@ import {ApiService} from '../api/def/api-service';
 export class AuthServiceImpl implements AuthService {
 
     private authUtil: AuthUtil;
-    private oauthHandler: OauthHandler
+    private oauthHandler: OauthHandler;
 
     constructor(private apiConfig: ApiConfig, private apiService: ApiService) {
         this.authUtil = new AuthUtil(this.apiService);

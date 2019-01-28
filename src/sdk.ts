@@ -22,6 +22,9 @@ import {FormServiceImpl} from './form/impl/form-service-impl';
 import {FileService} from './util/file/def/file-service';
 import {CachedItemStoreImpl} from './key-value-store/impl/cached-item-store-impl';
 import {ServerProfile} from './profile/def/server-profile';
+import {PageAssembleService} from './page';
+import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
+import {PageAssemble} from './page/def/page-assemble';
 
 export class SunbirdSdk {
 
@@ -45,6 +48,51 @@ export class SunbirdSdk {
     private _courseService: CourseService;
     private _formService: FormService;
     private _frameworkService: FrameworkService;
+    private _pageAssembleService: PageAssembleService;
+
+    get pageAssembleService(): PageAssembleService {
+        return this._pageAssembleService;
+    }
+
+    get dbService(): DbService {
+        return this._dbService;
+    }
+
+    get telemetryService(): TelemetryService {
+        return this._telemetryService;
+    }
+
+    get authService(): AuthService {
+        return this._authService;
+    }
+
+    get apiService(): ApiService {
+        return this._apiService;
+    }
+
+    get keyValueStore(): KeyValueStore {
+        return this._keyValueStore;
+    }
+
+    get profileService(): ProfileService {
+        return this._profileService;
+    }
+
+    get contentService(): ContentService {
+        return this._contentService;
+    }
+
+    get courseService(): CourseService {
+        return this._courseService;
+    }
+
+    get formService(): FormService {
+        return this._formService;
+    }
+
+    get frameworkService(): FrameworkService {
+        return this._frameworkService;
+    }
 
     public init(sdkConfig: SdkConfig) {
         this._dbService = new DbServiceImpl(sdkConfig.dbContext);
@@ -89,7 +137,6 @@ export class SunbirdSdk {
         this._formService = new FormServiceImpl(
             sdkConfig.formServiceConfig,
             this._apiService,
-            this._dbService,
             fileService,
             new CachedItemStoreImpl<{ [key: string]: {} }>(this._keyValueStore, sdkConfig.apiConfig),
             sessionAuthenticator
@@ -104,45 +151,13 @@ export class SunbirdSdk {
             new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig),
             sessionAuthenticator
         );
-    }
 
-    get dbService(): DbService {
-        return this._dbService;
-    }
-
-    get telemetryService(): TelemetryService {
-        return this._telemetryService;
-    }
-
-    get authService(): AuthService {
-        return this._authService;
-    }
-
-    get apiService(): ApiService {
-        return this._apiService;
-    }
-
-    get keyValueStore(): KeyValueStore {
-        return this._keyValueStore;
-    }
-
-    get profileService(): ProfileService {
-        return this._profileService;
-    }
-
-    get contentService(): ContentService {
-        return this._contentService;
-    }
-
-    get courseService(): CourseService {
-        return this._courseService;
-    }
-
-    get formService(): FormService {
-        return this._formService;
-    }
-
-    get frameworkService(): FrameworkService {
-        return this._frameworkService;
+        this._pageAssembleService = new PageAssembleServiceImpl(
+            this._apiService,
+            sdkConfig.pageServiceConfig,
+            fileService,
+            sessionAuthenticator,
+            new CachedItemStoreImpl<PageAssemble>(this._keyValueStore, sdkConfig.apiConfig)
+        );
     }
 }
