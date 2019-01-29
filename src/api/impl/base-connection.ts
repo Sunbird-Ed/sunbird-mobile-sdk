@@ -1,5 +1,6 @@
 import {ApiConfig, Connection, HttpClient, HttpRequestType, Request, Response} from '..';
 import {Observable} from 'rxjs';
+import * as SHA1 from 'crypto-js/sha1';
 
 export class BaseConnection implements Connection {
 
@@ -20,7 +21,7 @@ export class BaseConnection implements Connection {
         const header = {
             'X-Channel-Id': this.apiConfig.api_authentication.channelId,
             'X-App-Id': this.apiConfig.api_authentication.producerId,
-            'X-Device-Id': this.apiConfig.api_authentication.deviceId
+            'X-Device-Id': SHA1(this.apiConfig.api_authentication.deviceId)
         };
         this.http.addHeaders(header);
     }
