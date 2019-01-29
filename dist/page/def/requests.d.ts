@@ -12,8 +12,13 @@ export interface PageAssembleFilter {
     dialcodes?: string;
 }
 export interface PageAssembleCriteria {
-    name: string;
+    name: PageName;
     source?: string;
-    mode?: string;
+    mode?: 'soft' | 'hard';
     filters?: PageAssembleFilter;
+}
+export declare enum PageName {
+    RESOURCE = "Resource",
+    COURSE = "Course",
+    DIAL_CODE = "DIAL Code Consumption"
 }
