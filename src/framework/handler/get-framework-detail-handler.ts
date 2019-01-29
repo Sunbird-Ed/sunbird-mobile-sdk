@@ -1,10 +1,10 @@
-import { CachedItemStore } from '../../key-value-store';
-import { Path } from '../../util/file/util/path';
-import { FileService } from './../../util/file/def/file-service';
+import {CachedItemStore} from '../../key-value-store';
+import {Path} from '../../util/file/util/path';
+import {FileService} from '../../util/file/def/file-service';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
-import { SessionAuthenticator } from 'src/auth';
-import { FrameworkServiceConfig, Framework, FrameworkDetailsRequest } from '..';
+import {Framework, FrameworkDetailsRequest, FrameworkServiceConfig} from '..';
+import {SessionAuthenticator} from '../../auth';
 
 
 export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {
@@ -19,6 +19,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
                 private fileservice: FileService,
                 private cachedItemStore: CachedItemStore<Framework>) {
     }
+
     handle(request: FrameworkDetailsRequest): Observable<Framework> {
         return this.cachedItemStore.getCached(
             request.frameworkId,
@@ -43,7 +44,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
     }
 
     private fetchFromFile(request: FrameworkDetailsRequest): Observable<Framework> {
-        const file = this.frameworkServiceConfig.frameworkConfigFilePaths.find( (val) => {
+        const file = this.frameworkServiceConfig.frameworkConfigFilePaths.find((val) => {
             return (val.indexOf(request.frameworkId) !== -1);
         });
         if (!file) {
@@ -52,9 +53,9 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
         const fileDirPath = Path.dirPathFromFilePath(file);
         const filePath = Path.fileNameFromFilePath(file);
         return this.fileservice.readAsText(fileDirPath, filePath)
-        .map( (filecontent: string) => {
-            return JSON.parse(filecontent);
-        });
+            .map((filecontent: string) => {
+                return JSON.parse(filecontent);
+            });
     }
 
 }

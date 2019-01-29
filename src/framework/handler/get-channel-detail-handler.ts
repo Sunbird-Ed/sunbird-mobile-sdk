@@ -1,12 +1,10 @@
-import { CachedItemStore } from './../../key-value-store/def/cached-item-store';
-import { FileService } from './../../util/file/def/file-service';
-import { Path } from './../../util/file/util/path';
-import { ChannelDetailsRequest } from './../def/request-types';
-import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
+import {CachedItemStore} from '../../key-value-store';
+import {FileService} from '../../util/file/def/file-service';
+import {Path} from '../../util/file/util/path';
+import {Channel, ChannelDetailsRequest, FrameworkServiceConfig} from '..';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
-import { SessionAuthenticator } from 'src/auth';
-import { FrameworkServiceConfig, Channel } from '..';
-import {ApiService} from '../../api/def/api-service';
+import {SessionAuthenticator} from '../../auth';
 
 
 export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetailsRequest, Channel> {
@@ -49,9 +47,9 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
         const fileDirPath = Path.dirPathFromFilePath(this.frameworkServiceConfig.channelConfigFilePath);
         const filePath = Path.fileNameFromFilePath(this.frameworkServiceConfig.channelConfigFilePath);
         return this.fileservice.readAsText(fileDirPath, filePath)
-        .map( (filecontent) => {
-            return JSON.parse(filecontent);
-        });
+            .map((filecontent) => {
+                return JSON.parse(filecontent);
+            });
     }
 
 }

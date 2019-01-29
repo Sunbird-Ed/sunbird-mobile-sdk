@@ -1,12 +1,18 @@
-import { CachedItemStore } from '../../key-value-store';
-import { FrameworkServiceConfig, Channel, Framework, ChannelDetailsRequest, FrameworkDetailsRequest, GetChannelDetailsHandler,
-     GetFrameworkDetailsHandler, FrameworkService } from '..';
-import { FileService } from './../../util/file/def/file-service';
-import { KeyValueStore } from '../../key-value-store';
-import { Observable } from 'rxjs';
-import { SessionAuthenticator } from 'src/auth';
-import { ApiService } from 'src/api';
-
+import {CachedItemStore, KeyValueStore} from '../../key-value-store';
+import {
+    Channel,
+    ChannelDetailsRequest,
+    Framework,
+    FrameworkDetailsRequest,
+    FrameworkService,
+    FrameworkServiceConfig,
+    GetChannelDetailsHandler,
+    GetFrameworkDetailsHandler
+} from '..';
+import {FileService} from '../../util/file/def/file-service';
+import {Observable} from 'rxjs';
+import {ApiService} from '../../api';
+import {SessionAuthenticator} from '../../auth';
 
 
 export class FrameworkServiceImpl implements FrameworkService {
