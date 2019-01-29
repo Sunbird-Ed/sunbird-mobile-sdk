@@ -10,3 +10,5 @@ export * from './profile';
 export * from './page';
 export * from './sdk';
 export * from './sdk-config';
+
+export const test = 'test';
