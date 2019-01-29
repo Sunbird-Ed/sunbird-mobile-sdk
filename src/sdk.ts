@@ -3,6 +3,7 @@ import {ApiService, ApiServiceImpl} from './api';
 import {DbService} from './db';
 import {AuthService, SessionAuthenticator} from './auth';
 import {TelemetryService} from './telemetry';
+import {SharedPreference} from './util/shared-preference';
 // config
 import {SdkConfig} from './sdk-config';
 // implementations
@@ -25,6 +26,7 @@ import {ServerProfile} from './profile/def/server-profile';
 import {PageAssembleService} from './page';
 import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
 import {PageAssemble} from './page/def/page-assemble';
+import {SharedPreferenceImpl} from './util/shared-preference/impl/shared-preference-impl';
 
 export class SunbirdSdk {
 
@@ -49,6 +51,7 @@ export class SunbirdSdk {
     private _formService: FormService;
     private _frameworkService: FrameworkService;
     private _pageAssembleService: PageAssembleService;
+    private _sharedPreference: SharedPreference;
 
     get pageAssembleService(): PageAssembleService {
         return this._pageAssembleService;
@@ -94,7 +97,13 @@ export class SunbirdSdk {
         return this._frameworkService;
     }
 
+    get sharedPreference(): SharedPreference {
+        return this._sharedPreference;
+    }
+
     public init(sdkConfig: SdkConfig) {
+        this._sharedPreference = new SharedPreferenceImpl();
+
         this._dbService = new DbServiceImpl(sdkConfig.dbContext);
 
         this._telemetryService = new TelemetryServiceImpl(this._dbService, new TelemetryDecoratorImpl());
