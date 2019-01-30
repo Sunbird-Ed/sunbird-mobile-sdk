@@ -9,7 +9,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
-    "outDir": "./dist",
+    "outDir": "./tmp",
     "baseUrl": "./",
     "allowSyntheticDefaultImports": true,
     "preserveSymlinks": true,
@@ -27,7 +27,8 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "tmp"
   ],
   "angularCompilerOptions": {
     "genDir": "aot"

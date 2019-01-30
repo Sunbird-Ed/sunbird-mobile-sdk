@@ -6,12 +6,12 @@
   "scripts": {
     "preversion": "rm -rf dist",
     "version": "npm run build:prod && git add -A dist && git commit -m \"RELEASE\"",
-    "postversion": "git push && git push --tags && rm -rf dist",
+    "postversion": "git push && git push --tags",
     "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "build:prod": "NODE_ENV=production rm -rf dist && webpack --output-file index.js",
-    "build:dev": "rm -rf dist && webpack --output-file index.js"
+    "build:dev": "rm -rf tmp && mkdir tmp && cp ./package-tmp.json ./tmp/package.json && tsc -w"
   },
   "author": "",
   "license": "ISC",
