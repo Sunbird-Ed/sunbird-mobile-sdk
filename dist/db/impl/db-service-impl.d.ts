@@ -5,7 +5,7 @@ export declare class DbServiceImpl implements DbService {
     private initialized;
     constructor(context: DbConfig);
     update(updateQuery: UpdateQuery): Observable<boolean>;
-    private init;
+    init(): void;
     private onCreate;
     private onUpgrade;
     execute(query: string): Observable<any>;
