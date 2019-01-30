@@ -10,8 +10,8 @@
     "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "build:prod": "NODE_ENV=production rm -rf dist && webpack --output-file index.js",
-    "build:dev": "rm -rf tmp && mkdir tmp && cp ./package-tmp.json ./tmp/package.json && tsc -w"
+    "build:prod": "rm -rf dist && NODE_ENV=production webpack --output-file index.js",
+    "build:dev": "rm -rf tmp && mkdir tmp && cp ./package-dev.json ./tmp/package.json && tsc -w --outDir ./tmp"
   },
   "author": "",
   "license": "ISC",
