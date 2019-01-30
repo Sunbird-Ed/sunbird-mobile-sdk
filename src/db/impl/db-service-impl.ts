@@ -33,9 +33,8 @@ export class DbServiceImpl implements DbService {
         throw new Error('Method not implemented.');
     }
 
-    private init() {
+    public init() {
         this.initialized = true;
-
         db.init(this.context.getDBName(),
             this.context.getDBVersion(),
             this.prepareMigrationList(),
@@ -57,7 +56,6 @@ export class DbServiceImpl implements DbService {
     }
 
     execute(query: string): Observable<any> {
-
         const observable = new Subject<any>();
 
         db.execute(query, value => {
