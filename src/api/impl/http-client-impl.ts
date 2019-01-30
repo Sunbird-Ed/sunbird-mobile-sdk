@@ -12,7 +12,8 @@ interface HttpResponse {
 declare var cordova: {
     plugin: {
         http: {
-            setHeader: (hostname: string, header: string, value: string) => void;
+            setDataSerializer: (string) => void;
+            setHeader: (host: string, header: string, value: string) => void;
             get: (url: string, parameters: any, headers: { [key: string]: string },
                   successCallback: (response: HttpResponse) => void,
                   errorCallback: (response: HttpResponse) => void) => void;
@@ -33,7 +34,7 @@ export class HttpClientImpl implements HttpClient {
     constructor() {
     }
 
-    addHeaders(headers: any) {
+    addHeaders(headers: { [key: string]: string }) {
         for (const key in headers) {
             if (headers.hasOwnProperty(key)) {
                 this.http.setHeader('*', key, headers[key]);
@@ -61,7 +62,11 @@ export class HttpClientImpl implements HttpClient {
                           headers: { [key: string]: string }): Observable<Response> {
         const observable = new Subject<Response>();
 
-        this.http[type.toLowerCase()](url, parametersOrData, headers, (response) => {
+        this.http.setDataSerializer('json');
+        this.http.setHeader('*', 'Accept', 'application/json');
+        this.http.setHeader('*', 'Content-Type', 'application/json');
+
+        this.http[type.toLowerCase()](url, JSON.parse(parametersOrData), headers, (response) => {
             const r = new Response();
             r.body = JSON.parse(response.data);
             r.responseCode = response.status;

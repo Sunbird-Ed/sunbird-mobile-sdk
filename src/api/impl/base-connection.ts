@@ -17,15 +17,6 @@ export class BaseConnection implements Connection {
         return request;
     }
 
-    protected addGlobalHeader() {
-        const header = {
-            'X-Channel-Id': this.apiConfig.api_authentication.channelId,
-            'X-App-Id': this.apiConfig.api_authentication.producerId,
-            'X-Device-Id': SHA1(this.apiConfig.api_authentication.deviceId)
-        };
-        this.http.addHeaders(header);
-    }
-
     invoke(request: Request): Observable<Response> {
 
         let response = (async () => {
@@ -33,15 +24,15 @@ export class BaseConnection implements Connection {
 
             switch (request.type) {
                 case HttpRequestType.GET:
-                    response = await this.http.get(this.apiConfig.baseUrl, request.path, request.headers, request.parameters);
+                    response = await this.http.get(this.apiConfig.baseUrl, request.path, request.headers, request.parameters || '{}');
                     response = await this.interceptResponse(request, response);
                     return response;
                 case HttpRequestType.PATCH:
-                    response = await this.http.patch(this.apiConfig.baseUrl, request.path, request.headers, request.parameters);
+                    response = await this.http.patch(this.apiConfig.baseUrl, request.path, request.headers, request.body || '{}');
                     response = await this.interceptResponse(request, response);
                     return response;
                 case HttpRequestType.POST:
-                    response = await this.http.post(this.apiConfig.baseUrl, request.path, request.headers, request.parameters);
+                    response = await this.http.post(this.apiConfig.baseUrl, request.path, request.headers, request.body || '{}');
                     response = await this.interceptResponse(request, response);
                     return response;
             }
@@ -49,6 +40,15 @@ export class BaseConnection implements Connection {
 
         return Observable.fromPromise(response);
 
+    }
+
+    protected addGlobalHeader() {
+        const header = {
+            'X-Channel-Id': this.apiConfig.api_authentication.channelId,
+            'X-App-Id': this.apiConfig.api_authentication.producerId,
+            'X-Device-Id': SHA1(this.apiConfig.api_authentication.deviceId).toString()
+        };
+        this.http.addHeaders(header);
     }
 
     private async interceptResponse(request: Request, response: Response): Promise<Response> {

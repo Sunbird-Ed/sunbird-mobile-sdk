@@ -3,7 +3,7 @@ import {Observable} from 'rxjs';
 
 export abstract class HttpClient {
 
-    abstract addHeaders(headers: any);
+    abstract addHeaders(headers: { [key: string]: string });
 
     abstract addHeader(key: string, value: string);
 

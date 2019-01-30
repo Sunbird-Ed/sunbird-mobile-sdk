@@ -54,7 +54,10 @@ export class Request {
             return this;
         }
 
-        withParameters(parameters: string) {
+        withParameters(parameters: string | object) {
+            if (typeof parameters === 'object') {
+                parameters = JSON.stringify(parameters);
+            }
             this.request._parameters = parameters;
             return this;
         }
