@@ -3,7 +3,7 @@ import {ApiService, ApiServiceImpl} from './api';
 import {DbService} from './db';
 import {AuthService, SessionAuthenticator} from './auth';
 import {TelemetryService} from './telemetry';
-import {SharedPreference} from './util/shared-preference';
+import {SharedPreferences} from './util/shared-preferences';
 // config
 import {SdkConfig} from './sdk-config';
 // implementations
@@ -26,7 +26,7 @@ import {ServerProfile} from './profile/def/server-profile';
 import {PageAssembleService} from './page';
 import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
 import {PageAssemble} from './page/def/page-assemble';
-import {SharedPreferenceImpl} from './util/shared-preference/impl/shared-preference-impl';
+import {SharedPreferencesImpl} from './util/shared-preferences/impl/shared-preferences-impl';
 import {KeyValueStoreMigration} from './key-value-store/db/key-value-store-migration';
 import {GroupEntryMigration, GroupProfileEntryMigration, ProfileEntryMigration} from './profile/db/profile-migration';
 
@@ -53,7 +53,7 @@ export class SunbirdSdk {
     private _formService: FormService;
     private _frameworkService: FrameworkService;
     private _pageAssembleService: PageAssembleService;
-    private _sharedPreference: SharedPreference;
+    private _sharedPreferences: SharedPreferences;
 
     get pageAssembleService(): PageAssembleService {
         return this._pageAssembleService;
@@ -99,12 +99,12 @@ export class SunbirdSdk {
         return this._frameworkService;
     }
 
-    get sharedPreference(): SharedPreference {
-        return this._sharedPreference;
+    get sharedPreferences(): SharedPreferences {
+        return this._sharedPreferences;
     }
 
     public init(sdkConfig: SdkConfig) {
-        this._sharedPreference = new SharedPreferenceImpl();
+        this._sharedPreferences = new SharedPreferencesImpl();
 
         this._dbService = new DbServiceImpl(
             sdkConfig.dbConfig,

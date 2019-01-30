@@ -1,4 +1,4 @@
-export interface SharedPreference {
+export interface SharedPreferences {
     getString(key: string): Promise<string | null>;
 
     /**

@@ -1,6 +1,6 @@
-import {SharedPreference} from '../def/shared-preference';
+import {SharedPreferences} from '..';
 
-export class SharedPreferenceImpl implements SharedPreference {
+export class SharedPreferencesImpl implements SharedPreferences {
     public async getString(key: string): Promise<string | null> {
         return localStorage.getItem(key);
     }
