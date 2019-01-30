@@ -27,6 +27,8 @@ import {PageAssembleService} from './page';
 import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
 import {PageAssemble} from './page/def/page-assemble';
 import {SharedPreferenceImpl} from './util/shared-preference/impl/shared-preference-impl';
+import {KeyValueStoreMigration} from './key-value-store/db/key-value-store-migration';
+import {GroupEntryMigration, GroupProfileEntryMigration, ProfileEntryMigration} from './profile/db/profile-migration';
 
 export class SunbirdSdk {
 
@@ -104,7 +106,16 @@ export class SunbirdSdk {
     public init(sdkConfig: SdkConfig) {
         this._sharedPreference = new SharedPreferenceImpl();
 
-        this._dbService = new DbServiceImpl(sdkConfig.dbContext);
+        this._dbService = new DbServiceImpl(
+            sdkConfig.dbConfig,
+            20,
+            [
+                new KeyValueStoreMigration(),
+                new ProfileEntryMigration(),
+                new GroupEntryMigration(),
+                new GroupProfileEntryMigration()
+            ]
+        );
 
         this._telemetryService = new TelemetryServiceImpl(this._dbService, new TelemetryDecoratorImpl());
 
