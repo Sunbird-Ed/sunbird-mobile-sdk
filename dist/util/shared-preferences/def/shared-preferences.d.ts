@@ -1,5 +1,4 @@
-import { SharedPreference } from '../def/shared-preference';
-export declare class SharedPreferenceImpl implements SharedPreference {
+export interface SharedPreferences {
     getString(key: string): Promise<string | null>;
     /**
      * @Deprecated

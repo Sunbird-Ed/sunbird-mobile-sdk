@@ -2,7 +2,7 @@ import { ApiService } from './api';
 import { DbService } from './db';
 import { AuthService } from './auth';
 import { TelemetryService } from './telemetry';
-import { SharedPreference } from './util/shared-preference';
+import { SharedPreferences } from './util/shared-preferences';
 import { SdkConfig } from './sdk-config';
 import { ContentService } from './content';
 import { CourseService } from './course';
@@ -25,7 +25,7 @@ export declare class SunbirdSdk {
     private _formService;
     private _frameworkService;
     private _pageAssembleService;
-    private _sharedPreference;
+    private _sharedPreferences;
     readonly pageAssembleService: PageAssembleService;
     readonly dbService: DbService;
     readonly telemetryService: TelemetryService;
@@ -37,6 +37,6 @@ export declare class SunbirdSdk {
     readonly courseService: CourseService;
     readonly formService: FormService;
     readonly frameworkService: FrameworkService;
-    readonly sharedPreference: SharedPreference;
+    readonly sharedPreferences: SharedPreferences;
     init(sdkConfig: SdkConfig): void;
 }

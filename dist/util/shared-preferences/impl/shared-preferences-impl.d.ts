@@ -1,4 +1,5 @@
-export interface SharedPreference {
+import { SharedPreferences } from '..';
+export declare class SharedPreferencesImpl implements SharedPreferences {
     getString(key: string): Promise<string | null>;
     /**
      * @Deprecated

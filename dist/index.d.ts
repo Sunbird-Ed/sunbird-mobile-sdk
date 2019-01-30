@@ -10,3 +10,4 @@ export * from './profile';
 export * from './page';
 export * from './sdk';
 export * from './sdk-config';
+export * from './util/shared-preferences';
