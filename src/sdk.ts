@@ -30,11 +30,11 @@ import {SharedPreferenceImpl} from './util/shared-preference/impl/shared-prefere
 
 export class SunbirdSdk {
 
-    private static readonly _instance?: SunbirdSdk;
+    private static _instance?: SunbirdSdk;
 
     public static get instance(): SunbirdSdk {
         if (!SunbirdSdk._instance) {
-            return new SunbirdSdk();
+            SunbirdSdk._instance = new SunbirdSdk();
         }
 
         return SunbirdSdk._instance;
