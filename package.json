@@ -4,10 +4,14 @@
   "description": "Heart of the sunbird mobile app. Holds the imporatnat business logic including api calls and db operations.",
   "main": "dist/index.js",
   "scripts": {
+    "preversion": "rm -rf dist",
+    "version": "npm run build:prod && git add -A dist && git commit -m \"RELEASE\"",
+    "postversion": "git push && git push --tags && rm -rf dist",
     "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "build": "NODE_ENV=production webpack --output-file index.js"
+    "build:prod": "NODE_ENV=production rm -rf dist && webpack --output-file index.js",
+    "build:dev": "rm -rf dist && webpack --output-file index.js"
   },
   "author": "",
   "license": "ISC",
