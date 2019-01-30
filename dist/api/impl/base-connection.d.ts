@@ -5,7 +5,7 @@ export declare class BaseConnection implements Connection {
     protected apiConfig: ApiConfig;
     constructor(http: HttpClient, apiConfig: ApiConfig);
     private static interceptRequest;
-    protected addGlobalHeader(): void;
     invoke(request: Request): Observable<Response>;
+    protected addGlobalHeader(): void;
     private interceptResponse;
 }
