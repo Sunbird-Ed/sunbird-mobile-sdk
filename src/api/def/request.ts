@@ -46,18 +46,12 @@ export class Request {
             return this;
         }
 
-        withBody(body: string | object) {
-            if (typeof body === 'object') {
-                body = JSON.stringify(body);
-            }
+        withBody(body: {}) {
             this.request._body = body;
             return this;
         }
 
-        withParameters(parameters: string | object) {
-            if (typeof parameters === 'object') {
-                parameters = JSON.stringify(parameters);
-            }
+        withParameters(parameters: { [key: string]: string }) {
             this.request._parameters = parameters;
             return this;
         }
@@ -78,8 +72,11 @@ export class Request {
     private _responseInterceptors: ResponseInterceptor[] = [];
     private _authenticators: Authenticator[] = [];
     private _headers?: { [key: string]: string };
-    private _body?: string;
-    private _parameters?: string;
+    private _body?: {};
+
+    get body(): {} {
+        return this._body!;
+    }
 
     protected constructor() {
 
@@ -113,13 +110,11 @@ export class Request {
         this._headers = value;
     }
 
-    set body(value: string) {
+    set body(value: {}) {
         this._body = value;
     }
 
-    set parameters(value: string) {
-        this._parameters = value;
-    }
+    private _parameters?: { [key: string]: string };
 
     get path(): string {
         return this._path;
@@ -141,11 +136,11 @@ export class Request {
         return this._headers!;
     }
 
-    get body(): string {
-        return this._body!;
+    get parameters(): { [key: string]: string } {
+        return this._parameters!;
     }
 
-    get parameters(): string {
-        return this._parameters!;
+    set parameters(value: { [key: string]: string }) {
+        this._parameters = value;
     }
 }

@@ -32,6 +32,7 @@ export class HttpClientImpl implements HttpClient {
     private http = cordova.plugin.http;
 
     constructor() {
+        this.http.setDataSerializer('json');
     }
 
     addHeaders(headers: { [key: string]: string }) {
@@ -46,25 +47,21 @@ export class HttpClientImpl implements HttpClient {
         this.http.setHeader('*', key, value);
     }
 
-    get(baseUrl: string, path: string, headers: any, parameters: any): Observable<Response> {
+    get(baseUrl: string, path: string, headers: any, parameters: { [key: string]: string }): Observable<Response> {
         return this.invokeRequest(HttpRequestType.GET, baseUrl + path, parameters, headers);
     }
 
-    patch(baseUrl: string, path: string, headers: any, body: any): Observable<Response> {
+    patch(baseUrl: string, path: string, headers: any, body: {}): Observable<Response> {
         return this.invokeRequest(HttpRequestType.PATCH, baseUrl + path, body, headers);
     }
 
-    post(baseUrl: string, path: string, headers: any, body: any): Observable<Response> {
+    post(baseUrl: string, path: string, headers: any, body: {}): Observable<Response> {
         return this.invokeRequest(HttpRequestType.POST, baseUrl + path, body, headers);
     }
 
     private invokeRequest(type: HttpRequestType, url: string, parametersOrData: any,
                           headers: { [key: string]: string }): Observable<Response> {
         const observable = new Subject<Response>();
-
-        this.http.setDataSerializer('json');
-        this.http.setHeader('*', 'Accept', 'application/json');
-        this.http.setHeader('*', 'Content-Type', 'application/json');
 
         this.http[type.toLowerCase()](url, JSON.parse(parametersOrData), headers, (response) => {
             const r = new Response();
