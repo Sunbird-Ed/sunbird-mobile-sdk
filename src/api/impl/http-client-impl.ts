@@ -12,7 +12,8 @@ interface HttpResponse {
 declare var cordova: {
     plugin: {
         http: {
-            setHeader: (hostname: string, header: string, value: string) => void;
+            setDataSerializer: (string) => void;
+            setHeader: (host: string, header: string, value: string) => void;
             get: (url: string, parameters: any, headers: { [key: string]: string },
                   successCallback: (response: HttpResponse) => void,
                   errorCallback: (response: HttpResponse) => void) => void;
@@ -31,9 +32,10 @@ export class HttpClientImpl implements HttpClient {
     private http = cordova.plugin.http;
 
     constructor() {
+        this.http.setDataSerializer('json');
     }
 
-    addHeaders(headers: any) {
+    addHeaders(headers: { [key: string]: string }) {
         for (const key in headers) {
             if (headers.hasOwnProperty(key)) {
                 this.http.setHeader('*', key, headers[key]);
@@ -45,15 +47,15 @@ export class HttpClientImpl implements HttpClient {
         this.http.setHeader('*', key, value);
     }
 
-    get(baseUrl: string, path: string, headers: any, parameters: any): Observable<Response> {
+    get(baseUrl: string, path: string, headers: any, parameters: { [key: string]: string }): Observable<Response> {
         return this.invokeRequest(HttpRequestType.GET, baseUrl + path, parameters, headers);
     }
 
-    patch(baseUrl: string, path: string, headers: any, body: any): Observable<Response> {
+    patch(baseUrl: string, path: string, headers: any, body: {}): Observable<Response> {
         return this.invokeRequest(HttpRequestType.PATCH, baseUrl + path, body, headers);
     }
 
-    post(baseUrl: string, path: string, headers: any, body: any): Observable<Response> {
+    post(baseUrl: string, path: string, headers: any, body: {}): Observable<Response> {
         return this.invokeRequest(HttpRequestType.POST, baseUrl + path, body, headers);
     }
 
