@@ -63,7 +63,7 @@ export class HttpClientImpl implements HttpClient {
                           headers: { [key: string]: string }): Observable<Response> {
         const observable = new Subject<Response>();
 
-        this.http[type.toLowerCase()](url, JSON.parse(parametersOrData), headers, (response) => {
+        this.http[type.toLowerCase()](url, parametersOrData, headers, (response) => {
             const r = new Response();
             r.body = JSON.parse(response.data);
             r.responseCode = response.status;
