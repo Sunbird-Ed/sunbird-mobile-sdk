@@ -3,6 +3,7 @@ import {ApiService, ApiServiceImpl} from './api';
 import {DbService} from './db';
 import {AuthService, SessionAuthenticator} from './auth';
 import {TelemetryService} from './telemetry';
+import {SharedPreferences} from './util/shared-preferences';
 // config
 import {SdkConfig} from './sdk-config';
 // implementations
@@ -25,14 +26,17 @@ import {ServerProfile} from './profile/def/server-profile';
 import {PageAssembleService} from './page';
 import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
 import {PageAssemble} from './page/def/page-assemble';
+import {SharedPreferencesImpl} from './util/shared-preferences/impl/shared-preferences-impl';
+import {KeyValueStoreMigration} from './key-value-store/db/key-value-store-migration';
+import {GroupEntryMigration, GroupProfileEntryMigration, ProfileEntryMigration} from './profile/db/profile-migration';
 
 export class SunbirdSdk {
 
-    private static readonly _instance?: SunbirdSdk;
+    private static _instance?: SunbirdSdk;
 
     public static get instance(): SunbirdSdk {
         if (!SunbirdSdk._instance) {
-            return new SunbirdSdk();
+            SunbirdSdk._instance = new SunbirdSdk();
         }
 
         return SunbirdSdk._instance;
@@ -49,6 +53,7 @@ export class SunbirdSdk {
     private _formService: FormService;
     private _frameworkService: FrameworkService;
     private _pageAssembleService: PageAssembleService;
+    private _sharedPreferences: SharedPreferences;
 
     get pageAssembleService(): PageAssembleService {
         return this._pageAssembleService;
@@ -94,8 +99,23 @@ export class SunbirdSdk {
         return this._frameworkService;
     }
 
+    get sharedPreferences(): SharedPreferences {
+        return this._sharedPreferences;
+    }
+
     public init(sdkConfig: SdkConfig) {
-        this._dbService = new DbServiceImpl(sdkConfig.dbContext);
+        this._sharedPreferences = new SharedPreferencesImpl();
+
+        this._dbService = new DbServiceImpl(
+            sdkConfig.dbConfig,
+            20,
+            [
+                new KeyValueStoreMigration(),
+                new ProfileEntryMigration(),
+                new GroupEntryMigration(),
+                new GroupProfileEntryMigration()
+            ]
+        );
 
         this._telemetryService = new TelemetryServiceImpl(this._dbService, new TelemetryDecoratorImpl());
 

@@ -9,7 +9,7 @@ import {PageServiceConfig} from './page/config/page-service-config';
 
 export interface SdkConfig {
     apiConfig: ApiConfig;
-    dbContext: DbConfig;
+    dbConfig: DbConfig;
     contentServiceConfig: ContentServiceConfig;
     courseServiceConfig: CourseServiceConfig;
     formServiceConfig: FormServiceConfig;

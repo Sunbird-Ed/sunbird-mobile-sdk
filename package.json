@@ -1,16 +1,17 @@
 {
   "name": "sunbird-sdk",
-  "version": "1.0.0",
+  "version": "1.14.9",
   "description": "Heart of the sunbird mobile app. Holds the imporatnat business logic including api calls and db operations.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build:dev": "webpack --mode=development",
+    "preversion": "rm -rf dist",
+    "version": "npm run build:prod && git add -A dist && git commit -m \"RELEASE\"",
+    "postversion": "git push && git push --tags",
     "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "bundle": "NODE_ENV=production webpack --output-file index.js",
-    "copy": "cp package.json dist/ && cp README.md dist/",
-    "build": "npm run bundle && npm run copy && npm pack ./dist"
+    "build:prod": "rm -rf dist && NODE_ENV=production webpack --output-file index.js",
+    "build:dev": "rm -rf tmp && mkdir tmp && cp ./package-dev.json ./tmp/package.json && tsc -w --outDir ./tmp"
   },
   "author": "",
   "license": "ISC",
@@ -48,6 +49,7 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
+    "crypto-js": "^3.1.9-1",
     "jsrsasign": "^8.0.12",
     "moment": "^2.23.0",
     "uuid": "^3.3.2"
