@@ -71,8 +71,9 @@ export class Request {
     private _requiredApiToken = true;
     private _responseInterceptors: ResponseInterceptor[] = [];
     private _authenticators: Authenticator[] = [];
-    private _headers?: { [key: string]: string };
-    private _body?: {};
+    private _headers?: { [key: string]: string } = {};
+    private _body?: {} = {};
+    private _parameters?: { [key: string]: string } = {};
 
     get body(): {} {
         return this._body!;
@@ -113,8 +114,6 @@ export class Request {
     set body(value: {}) {
         this._body = value;
     }
-
-    private _parameters?: { [key: string]: string };
 
     get path(): string {
         return this._path;
