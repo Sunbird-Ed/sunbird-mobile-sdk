@@ -24,15 +24,15 @@ export class BaseConnection implements Connection {
 
             switch (request.type) {
                 case HttpRequestType.GET:
-                    response = await this.http.get(this.apiConfig.baseUrl, request.path, request.headers, request.parameters || {});
+                    response = await this.http.get(this.apiConfig.baseUrl, request.path, request.headers, request.parameters).toPromise();
                     response = await this.interceptResponse(request, response);
                     return response;
                 case HttpRequestType.PATCH:
-                    response = await this.http.patch(this.apiConfig.baseUrl, request.path, request.headers, request.body || {});
+                    response = await this.http.patch(this.apiConfig.baseUrl, request.path, request.headers, request.body).toPromise();
                     response = await this.interceptResponse(request, response);
                     return response;
                 case HttpRequestType.POST:
-                    response = await this.http.post(this.apiConfig.baseUrl, request.path, request.headers, request.body || {});
+                    response = await this.http.post(this.apiConfig.baseUrl, request.path, request.headers, request.body).toPromise();
                     response = await this.interceptResponse(request, response);
                     return response;
             }
@@ -48,7 +48,8 @@ export class BaseConnection implements Connection {
             'X-App-Id': this.apiConfig.api_authentication.producerId,
             'X-Device-Id': SHA1(this.apiConfig.api_authentication.deviceId).toString(),
             'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
         };
         this.http.addHeaders(header);
     }
@@ -63,6 +64,7 @@ export class BaseConnection implements Connection {
         for (const interceptor of interceptors) {
             response = await interceptor.onResponse(request, response, this).toPromise();
         }
+
         return response;
     }
 
