@@ -30,6 +30,7 @@
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-typescript": "^7.1.0",
     "@types/jest": "^23.3.9",
+    "axios": "^0.18.0",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^23.4.0",
     "cordova-plugin-advanced-http": "^2.0.2",
@@ -50,7 +51,7 @@
   },
   "dependencies": {
     "crypto-js": "^3.1.9-1",
-    "jsrsasign": "^8.0.12",
+    "jsonwebtoken": "^8.4.0",
     "moment": "^2.23.0",
     "uuid": "^3.3.2"
   },
