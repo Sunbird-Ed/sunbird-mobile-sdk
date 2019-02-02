@@ -11,27 +11,35 @@ import {
     EcarImportRequest
 } from '../def/requests';
 import {Content, HierarchyInfo} from '../def/content';
+import {ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {KeyValueStore} from '../../key-value-store';
 import {SessionAuthenticator} from '../../auth';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
 import {DbService} from '../../db';
 import {ContentServiceConfig} from '../config/content-config';
-import {ContentDeleteResponse, ContentDeleteStatus, ContentSearchResult} from '../def/response';
+import {ContentDeleteResponse, ContentDeleteStatus, ContentImportResponse, ContentSearchResult, SearchResponse} from '../def/response';
 import {ChildContentsHandler} from '../handlers/get-child-contents-handler';
 import {ContentEntry} from '../db/schema';
 import {ContentUtil} from '../util/content-util';
 import {DeleteContentHandler} from '../handlers/delete-content-handler';
-import {ApiService} from '../../api/def/api-service';
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
+import {SearchContentHandler} from '../handlers/search-content-handler';
+import {AppConfig} from '../../api/config/app-config';
+import {FileService} from '../../util/file/def/file-service';
+import {FileEntry} from '../../util/file';
+import {FileUtil} from '../../util/file/util/file-util';
+import {ErrorCode, FileExtension} from '../util/content-constants';
 
 export class ContentServiceImpl implements ContentService {
     constructor(private contentServiceConfig: ContentServiceConfig,
                 private apiService: ApiService,
                 private dbService: DbService,
                 private profileService: ProfileService,
+                private appConfig: AppConfig,
                 private keyValueStore: KeyValueStore,
-                private sessionAuthenticator: SessionAuthenticator) {
+                private sessionAuthenticator: SessionAuthenticator,
+                private fileService: FileService) {
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
@@ -113,8 +121,24 @@ export class ContentServiceImpl implements ContentService {
         throw new Error('Not Implemented yet');
     }
 
-    importEcar(ecarImportRequest: EcarImportRequest): Observable<any> {
-        // TODO
+    importEcar(ecarImportRequest: EcarImportRequest): Observable<Response<ContentImportResponse>> {
+
+        this.fileService.exists(ecarImportRequest.sourceFilePath).then((fileEntry: FileEntry) => {
+            if (FileUtil.getFileExtension(ecarImportRequest.sourceFilePath) !== FileExtension.CONTENT) {
+                const  response: Response = new Response();
+                response.errorMesg = ErrorCode.ECAR_NOT_FOUND.valueOf();
+                return Observable.of(response);
+            } else {
+                this.fileService.getFreeDiskSpace()
+                // TODO Add device memory check before import
+
+            }
+
+        }).catch((error) => {
+
+        });
+
+
         throw new Error('Not Implemented yet');
     }
 
@@ -132,7 +156,6 @@ export class ContentServiceImpl implements ContentService {
 
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {
         const childContentHandler = new ChildContentsHandler(this.dbService);
-
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
@@ -148,9 +171,18 @@ export class ContentServiceImpl implements ContentService {
         throw new Error('Not Implemented yet');
     }
 
-    searchContent(criteria: ContentSearchCriteria): Observable<ContentSearchResult> {
-        // TODO
-        throw new Error('Not Implemented yet');
+
+    searchContent(request: ContentSearchCriteria): Observable<ContentSearchResult> {
+        const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
+            this.contentServiceConfig,
+            this.sessionAuthenticator);
+        const searchRequest = searchHandler.getSearchRequest(request);
+        const httpRequest = searchHandler.getRequest(searchRequest, request.framework, request.languageCode);
+        return this.apiService.fetch<SearchResponse>(httpRequest)
+            .mergeMap((response: Response<SearchResponse>) => {
+                return Observable.of(searchHandler.mapSearchResponse(response.body));
+            });
+
     }
 
     cancelDownload(contentId: string): Observable<undefined> {

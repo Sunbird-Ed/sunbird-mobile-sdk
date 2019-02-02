@@ -1,5 +1,6 @@
 import {ContentSearchCriteria, ContentSearchFilter, FilterValue} from './requests';
 import {ContentData} from './content';
+import {ContentImportStatus} from '../util/content-constants';
 
 export interface ContentSearchResult {
     id: string;
@@ -24,6 +25,11 @@ export interface ChildContent {
     objectType: string;
     relation: string;
     index: number;
+}
+
+export interface ContentImportResponse {
+    identifier: string;
+    status: ContentImportStatus;
 }
 
 export interface ContentDeleteResponse {

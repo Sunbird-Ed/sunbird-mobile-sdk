@@ -45,7 +45,7 @@ interface Window {
 }
 
 /** This interface represents a file system. */
-interface FileSystem {
+export interface FileSystem {
     /* The name of the file system, unique across the list of exposed file systems. */
     name: string;
     /** The root directory of the file system. */
@@ -149,7 +149,7 @@ export interface Entry {
 }
 
 /** This interface supplies information about the state of a file or directory. */
-interface Metadata {
+export interface Metadata {
     /** This is the time at which the file or directory was last modified. */
     modificationTime: Date;
     /** The size of the file, in bytes. This must return 0 for directories. */
@@ -341,10 +341,25 @@ declare var FileWriter: {
     DONE: number
 };
 
-interface FileError {
+export interface FileError {
     /** Error code */
     code: number;
 }
+
+export interface RemoveResult {
+    success: boolean;
+    fileRemoved: Entry;
+}
+
+/**
+ * When an error occurs, the following callback is made.
+ */
+export type ErrorCallback = (err: FileError) => void;
+
+/**
+ * This export interface is the callback used to look up Entry objects.
+ */
+export type EntryCallback = (entry: Entry) => void;
 
 declare var FileError: {
     new(code: number): FileError;
@@ -395,7 +410,7 @@ interface Cordova {
 }
 
 
-declare enum LocalFileSystem {
+export enum LocalFileSystem {
     PERSISTENT = 1,
     TEMPORARY = 0
 }
