@@ -1,9 +1,10 @@
 import { DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery } from '..';
 import { Observable } from 'rxjs';
-export declare class DbServiceImpl implements DbService {
+export declare class DbWebSqlService implements DbService {
     private context;
     private dBVersion;
     private appMigrationList;
+    webSqlDB: any;
     private initialized;
     constructor(context: DbConfig, dBVersion: number, appMigrationList: Migration[]);
     update(updateQuery: UpdateQuery): Observable<boolean>;
