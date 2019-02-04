@@ -46,6 +46,11 @@ export class DbCordovaService implements DbService {
 
                     resolve();
                 });
+
+            try {
+                this.execute("").toPromise();
+            } catch (e) {
+            }
         }));
     }
 

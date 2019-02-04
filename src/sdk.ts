@@ -29,6 +29,10 @@ import {PageAssemble} from './page/def/page-assemble';
 import {SharedPreferencesImpl} from './util/shared-preferences/impl/shared-preferences-impl';
 import {FileServiceImpl} from './util/file/impl/file-service-impl';
 import {DbWebSqlService} from './db/impl/db-web-sql-service';
+import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migration';
+import {GroupProfileMigration} from './db/migrations/group-profile-migration';
+import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
+import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
 
 export class SunbirdSdk {
 
@@ -111,13 +115,23 @@ export class SunbirdSdk {
             this._dbService = new DbWebSqlService(
                 sdkConfig.dbConfig,
                 20,
-                []
+                [
+                    new ProfileSyllabusMigration(),
+                    new GroupProfileMigration(),
+                    new MillisecondsToSecondsMigration(),
+                    new ContentMarkerMigration()
+                ]
             );
         } else {
             this._dbService = new DbCordovaService(
                 sdkConfig.dbConfig,
                 20,
-                []
+                [
+                    new ProfileSyllabusMigration(),
+                    new GroupProfileMigration(),
+                    new MillisecondsToSecondsMigration(),
+                    new ContentMarkerMigration()
+                ]
             );
         }
 
