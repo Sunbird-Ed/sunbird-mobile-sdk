@@ -1,17 +1,12 @@
 import {DbService, Migration} from '..';
-import {
-    EventPriorityEntry,
-    TelemetryEntry,
-    TelemetryProcessedEntry,
-    TelemetryTagEntry
-} from '../../telemetry/db/schema';
-import {
-    ImportedMetadataEntry,
-    LearnerAssessmentsEntry,
-    LearnerSummaryEntry,
-    ProfileEntry,
-    UserEntry
-} from '../../profile/db/schema';
+import {EventPriorityEntry, TelemetryEntry, TelemetryProcessedEntry, TelemetryTagEntry} from '../../telemetry/db/schema';
+import {ImportedMetadataEntry,
+        ProfileEntry,
+        UserEntry,
+        LearnerAssessmentsEntry,
+        LearnerSummaryEntry,
+        GroupEntry,
+        GroupProfileEntry} from '../../profile/db/schema';
 import {PartnerEntry} from '../../partner/db/schema';
 import {ContentAccessEntry, ContentEntry, ContentFeedbackEntry} from '../../content/db/schema';
 import {NotificationEntry} from '../../notification/db/schema';
@@ -42,7 +37,9 @@ export class InitialMigration extends Migration {
             LearnerSummaryEntry.getCreateEntry(),
             ContentAccessEntry.getCreateEntry(),
             ContentFeedbackEntry.getCreateEntry(),
-            NotificationEntry.getCreateEntry()
+            NotificationEntry.getCreateEntry(),
+            GroupEntry.getCreateEntry(),
+            GroupProfileEntry.getCreateEntry()
         ];
     }
 
