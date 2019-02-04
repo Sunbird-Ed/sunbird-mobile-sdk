@@ -1,6 +1,7 @@
 import { DeleteQuery, InsertQuery, ReadQuery, UpdateQuery } from './query';
 import { Observable } from 'rxjs';
 export declare abstract class DbService {
+    abstract init(): any;
     abstract execute(rawQuery: string): Observable<any>;
     abstract read(readQuery: ReadQuery): Observable<any[]>;
     abstract insert(insertQuery: InsertQuery): Observable<number>;
