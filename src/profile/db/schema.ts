@@ -32,19 +32,19 @@ export namespace ProfileEntry {
     }
 
     export const getCreateEntry: () => string = () => {
-        return 'CREATE TABLE' + TABLE_NAME + '(' +
-        ProfileEntry._ID + 'INTEGER PRIMARY KEY,' +
-        COLUMN_NAME_UID + DbConstants.TEXT_TYPE + 'UNIQUE NOT NULL' + DbConstants.COMMA_SEP +
-        COLUMN_NAME_HANDLE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_CREATED_AT + DbConstants.DATE_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_MEDIUM + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_BOARD + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_SUBJECT + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_PROFILE_TYPE + DbConstants.TEXT_TYPE + 'DEFAULT "teacher"' + DbConstants.COMMA_SEP +
-        COLUMN_NAME_GRADE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_SYLLABUS + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_SOURCE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_GRADE_VALUE + DbConstants.TEXT_TYPE +
+        return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + '(' +
+        ProfileEntry._ID + DbConstants.SPACE + 'INTEGER PRIMARY KEY,' +
+        COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' UNIQUE NOT NULL' + DbConstants.COMMA_SEP +
+        COLUMN_NAME_HANDLE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_CREATED_AT + DbConstants.SPACE + DbConstants.DATE_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_MEDIUM + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_BOARD + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_SUBJECT + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_PROFILE_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT "teacher"' + DbConstants.COMMA_SEP +
+        COLUMN_NAME_GRADE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_SYLLABUS + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_SOURCE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_GRADE_VALUE + DbConstants.SPACE + DbConstants.TEXT_TYPE +
         ')';
     };
     export const deleteTable: (() => string) = () => {
@@ -53,7 +53,8 @@ export namespace ProfileEntry {
     };
 
     export const getAlterEntryForProfileSyllabus: (() => string) = () => {
-        return 'ALTER TABLE ' + TABLE_NAME + ' ADD COLUMN ' + ProfileEntry.COLUMN_NAME_SYLLABUS + DbConstants.TEXT_TYPE + '  DEFAULT \'\';';
+        return 'ALTER TABLE ' + TABLE_NAME + ' ADD COLUMN ' + DbConstants.SPACE +
+            ProfileEntry.COLUMN_NAME_SYLLABUS + DbConstants.TEXT_TYPE + '  DEFAULT \'\';';
 
     };
 }
@@ -67,7 +68,7 @@ export namespace UserEntry {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE ' + UserEntry.TABLE_NAME + ' (' +
             UserEntry._ID + ' INTEGER PRIMARY KEY,' +
-            UserEntry.COLUMN_NAME_UID + DbConstants.TEXT_TYPE +
+            UserEntry.COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE +
             ' )';
     };
 
@@ -128,9 +129,9 @@ export namespace ImportedMetadataEntry {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + ImportedMetadataEntry.TABLE_NAME + ' (' +
             ImportedMetadataEntry._ID + ' INTEGER PRIMARY KEY,' +
-            ImportedMetadataEntry.COLUMN_NAME_IMPORTED_ID + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            ImportedMetadataEntry.COLUMN_NAME_DEVICE_ID + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            ImportedMetadataEntry.COLUMN_NAME_COUNT + DbConstants.INT_TYPE +
+            ImportedMetadataEntry.COLUMN_NAME_IMPORTED_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            ImportedMetadataEntry.COLUMN_NAME_DEVICE_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            ImportedMetadataEntry.COLUMN_NAME_COUNT + DbConstants.SPACE + DbConstants.INT_TYPE +
             ' )';
     };
 
@@ -161,19 +162,19 @@ export namespace LearnerAssessmentsEntry {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
             _ID + ' INTEGER PRIMARY KEY,' +
-            COLUMN_NAME_UID + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CONTENT_ID + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_QID + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_Q_INDEX + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CORRECT + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_SCORE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_MAX_SCORE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_TIME_SPENT + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_RES + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_TIMESTAMP + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_Q_DESC + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_Q_TITLE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_HIERARCHY_DATA + DbConstants.TEXT_TYPE + '  DEFAULT \'\' ' +
+            COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CONTENT_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_QID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_Q_INDEX + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CORRECT + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_SCORE + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_MAX_SCORE + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_TIME_SPENT + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_RES + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_TIMESTAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_Q_DESC + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_Q_TITLE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_HIERARCHY_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\' ' +
             ' )';
     };
 
@@ -198,14 +199,14 @@ export namespace LearnerSummaryEntry {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
             _ID + ' INTEGER PRIMARY KEY,' +
-            COLUMN_NAME_UID + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CONTENT_ID + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_AVG_TS + DbConstants.REAL_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_SESSIONS + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_TOTAL_TS + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_LAST_UPDATED_ON + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_HIERARCHY_DATA + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            ' UNIQUE (' + COLUMN_NAME_UID + DbConstants.COMMA_SEP + COLUMN_NAME_CONTENT_ID
+            COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CONTENT_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_AVG_TS + DbConstants.SPACE + DbConstants.REAL_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_SESSIONS + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_TOTAL_TS + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_LAST_UPDATED_ON + DbConstants.SPACE + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_HIERARCHY_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            ' UNIQUE (' + COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.COMMA_SEP + COLUMN_NAME_CONTENT_ID
             + DbConstants.COMMA_SEP + COLUMN_NAME_HIERARCHY_DATA + ') ON CONFLICT REPLACE' +
             ' )';
     };

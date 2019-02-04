@@ -14,12 +14,12 @@ export namespace NotificationEntry {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
             _ID + ' INTEGER PRIMARY KEY,' +
-            COLUMN_NAME_MESSAGE_ID + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_EXPIRY_TIME + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_NOTIFICATION_DISPLAY_TIME + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_NOTIFICATION_RECEIVED_AT + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_NOTIFICATION_JSON + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_IS_READ + DbConstants.INT_TYPE +
+            COLUMN_NAME_MESSAGE_ID + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_EXPIRY_TIME + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_NOTIFICATION_DISPLAY_TIME + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_NOTIFICATION_RECEIVED_AT + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_NOTIFICATION_JSON + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_IS_READ + DbConstants.SPACE + DbConstants.INT_TYPE +
             ' )';
     };
 

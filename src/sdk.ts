@@ -116,17 +116,17 @@ export class SunbirdSdk {
             this._dbService = new DbWebSqlService(
                 sdkConfig.dbConfig,
                 20,
-                [new InitialMigration(),
+                [
                     new ProfileSyllabusMigration(),
                     new GroupProfileMigration(),
                     new MillisecondsToSecondsMigration(),
                     new ContentMarkerMigration()]
-            )
+            );
         } else {
             this._dbService = new DbCordovaService(
                 sdkConfig.dbConfig,
                 20,
-                [new InitialMigration(),
+                [
                     new ProfileSyllabusMigration(),
                     new GroupProfileMigration(),
                     new MillisecondsToSecondsMigration(),
