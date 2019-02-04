@@ -31,7 +31,7 @@ export namespace ProfileEntry {
         [COLUMN_NAME_GRADE_VALUE]: string;
     }
 
-    export const createTable: () => string = () => {
+    export const getCreateEntry: () => string = () => {
         return 'CREATE TABLE' + TABLE_NAME + '(' +
         ProfileEntry._ID + 'INTEGER PRIMARY KEY,' +
         COLUMN_NAME_UID + DbConstants.TEXT_TYPE + 'UNIQUE NOT NULL' + DbConstants.COMMA_SEP +
