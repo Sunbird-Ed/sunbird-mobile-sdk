@@ -40,7 +40,12 @@ export class DbWebSqlService implements DbService {
                 console.log('migration', migration);
                 migration.queries().forEach(query => {
                     console.log('query', query);
-                    tx.executeSql(query);
+                    tx.executeSql(query,
+                        [], (sqlTransaction, sqlResultSet) => {
+                            console.log('sqlResultSet', sqlResultSet);
+                        }, (sqlTransaction, sqlError) => {
+                            console.log('sqlError', sqlError);
+                        });
                 });
             });
         });
@@ -107,8 +112,9 @@ export class DbWebSqlService implements DbService {
             return mixin;
         };
 
-        const query = squel.select()
-            .from(readQuery.table);
+        const query = squel.select({
+            autoQuoteFieldNames: false
+        }).from(readQuery.table);
 
         attachFields(query, readQuery.columns);
         if (readQuery.groupBy) {
@@ -130,10 +136,10 @@ export class DbWebSqlService implements DbService {
         if (readQuery.selection && readQuery.selectionArgs) {
             query.where(readQuery.selection, ...readQuery.selectionArgs);
         }
-        query.toString();
+
 
         this.webSqlDB.transaction((tx) => {
-            tx.executeSql(query,
+            tx.executeSql(query.toString(),
                 [], (sqlTransaction, sqlResultSet) => {
                     observable.next(sqlResultSet);
                     observable.complete();
@@ -146,7 +152,7 @@ export class DbWebSqlService implements DbService {
     }
 
     insert(inserQuery: InsertQuery): Observable<number> {
-        this.onCreate();
+        // this.onCreate();
         if (!this.initialized) {
             this.init();
         }
@@ -161,20 +167,19 @@ export class DbWebSqlService implements DbService {
         //         observable.error(error);
         //     });
 
-        // const query = squel.insert()
-        //     .into(inserQuery.table)
-        //     .setFields(inserQuery.modelJson)
-        //     .toString();
-
-        // this.webSqlDB.transaction((tx) => {
-        //     tx.executeSql(query,
-        //         [], (sqlTransaction, sqlResultSet) => {
-        //             observable.next(sqlResultSet);
-        //             observable.complete();
-        //         }, (sqlTransaction, sqlError) => {
-        //             observable.error(sqlError);
-        //         });
-        // });
+        const query = squel.insert()
+            .into(inserQuery.table)
+            .setFields(inserQuery.modelJson)
+            .toString();
+        this.webSqlDB.transaction((tx) => {
+            tx.executeSql(query,
+                [], (sqlTransaction, sqlResultSet) => {
+                    observable.next(sqlResultSet);
+                    observable.complete();
+                }, (sqlTransaction, sqlError) => {
+                    observable.error(sqlError);
+                });
+        });
         return observable;
     }
 
