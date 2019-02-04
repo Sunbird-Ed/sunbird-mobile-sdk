@@ -1,8 +1,5 @@
 import {DbService, Migration} from '..';
-import {EventPriorityEntry, TelemetryEntry, TelemetryProcessedEntry, TelemetryTagEntry} from '../../telemetry/db/schema';
-import {GroupEntry, GroupProfileEntry, ImportedMetadataEntry, ProfileEntry, UserEntry} from '../../profile/db/schema';
-import {PartnerEntry} from '../../partner/db/schema';
-import {ContentEntry} from '../../content/db/schema';
+import {GroupEntry, GroupProfileEntry} from '../../profile/db/schema';
 
 export class GroupProfileMigration extends Migration {
 
@@ -10,10 +7,12 @@ export class GroupProfileMigration extends Migration {
         super(3, 18);
     }
 
-    apply(dbService: DbService) {
+    public async apply(dbService: DbService) {
         this.queries().forEach(async (query) => {
             await dbService.execute(query);
         });
+
+        return undefined;
     }
 
     queries(): Array<string> {
