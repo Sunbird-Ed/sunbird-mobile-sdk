@@ -3,6 +3,8 @@ import {Observable} from 'rxjs';
 
 export abstract class DbService {
 
+    abstract init();
+
     abstract execute(rawQuery: string): Observable<any>;
 
     abstract read(readQuery: ReadQuery): Observable<any[]>;
