@@ -17,7 +17,24 @@ export class DbWebSqlService implements DbService {
     }
 
     update(updateQuery: UpdateQuery): Observable<boolean> {
-        throw new Error('Method not implemented.');
+        const observable = new Subject<boolean>();
+        const query = squel.update()
+            .table(updateQuery.table)
+            .where(updateQuery.selection!, ...updateQuery.selectionArgs!)
+            .setFields(updateQuery.modelJson);
+
+
+            this.webSqlDB.transaction((tx) => {
+                tx.executeSql(query.toString(),
+                    [], (sqlTransaction, sqlResultSet) => {
+                        observable.next(true);
+                        observable.complete();
+                    }, (sqlTransaction, sqlError) => {
+                        observable.next(false);
+                        observable.complete();
+                    });
+            });
+        return observable;
     }
 
     public init() {
