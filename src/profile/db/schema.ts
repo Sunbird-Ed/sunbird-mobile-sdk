@@ -1,25 +1,51 @@
-import { ProfileConstant, GroupProfileConstant, GroupsConstant } from '../def/constant';
-import { DbConstants } from '../../db';
+import {GroupProfileConstant, GroupsConstant} from '../def/constant';
+import {DbConstants} from '../../db';
 
 export namespace ProfileEntry {
 
     export const _ID = '_id';
     export const TABLE_NAME = 'profiles';
+    export const COLUMN_NAME_UID = 'uid';
+    export const COLUMN_NAME_HANDLE = 'handle';
+    export const COLUMN_NAME_CREATED_AT = 'created_at';
+    export const COLUMN_NAME_MEDIUM = 'medium';
+    export const COLUMN_NAME_BOARD = 'board';
+    export const COLUMN_NAME_SUBJECT = 'subject';
+    export const COLUMN_NAME_PROFILE_TYPE = 'profile_type'; // default TEACHER
+    export const COLUMN_NAME_GRADE = 'grade';
+    export const COLUMN_NAME_SYLLABUS = 'syllabus';
+    export const COLUMN_NAME_SOURCE = 'source';
+    export const COLUMN_NAME_GRADE_VALUE = 'grade_value';
 
-    export const getCreateEntry: (() => string) = () => {
-        return `CREATE TABLE ${TABLE_NAME} (
-            ${_ID} INTEGER PRIMARY KEY,
-            ${ProfileConstant.UID} TEXT,
-            ${ProfileConstant.HANDLE} TEXT,
-            ${ProfileConstant.CREATED_AT} INTEGER,
-            ${ProfileConstant.MEDIUM} TEXT DEFAULT '',
-            ${ProfileConstant.BOARD} TEXT DEFAULT '',
-            ${ProfileConstant.SUBJECT} TEXT DEFAULT '',
-            ${ProfileConstant.PROFILE_TYPE} TEXT DEFAULT 'teacher',
-            ${ProfileConstant.GRADE} TEXT DEFAULT '',
-            ${ProfileConstant.SYLLABUS} TEXT DEFAULT '',
-            ${ProfileConstant.SOURCE} TEXT DEFAULT '',
-            ${ProfileConstant.GRADE_VALUE} TEXT DEFAULT '')`;
+    export interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_HANDLE]: string;
+        [COLUMN_NAME_CREATED_AT]: number;
+        [COLUMN_NAME_MEDIUM]: string;
+        [COLUMN_NAME_BOARD]: string;
+        [COLUMN_NAME_SUBJECT]: string;
+        [COLUMN_NAME_PROFILE_TYPE]: string;
+        [COLUMN_NAME_GRADE]: string;
+        [COLUMN_NAME_SYLLABUS]: string;
+        [COLUMN_NAME_SOURCE]: string;
+        [COLUMN_NAME_GRADE_VALUE]: string;
+    }
+
+    export const createTable: () => string = () => {
+        return 'CREATE TABLE' + TABLE_NAME + '(' +
+        ProfileEntry._ID + 'INTEGER PRIMARY KEY,' +
+        COLUMN_NAME_UID + DbConstants.TEXT_TYPE + 'UNIQUE NOT NULL' + DbConstants.COMMA_SEP +
+        COLUMN_NAME_HANDLE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_CREATED_AT + DbConstants.DATE_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_MEDIUM + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_BOARD + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_SUBJECT + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_PROFILE_TYPE + DbConstants.TEXT_TYPE + 'DEFAULT "teacher"' + DbConstants.COMMA_SEP +
+        COLUMN_NAME_GRADE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_SYLLABUS + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_SOURCE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+        COLUMN_NAME_GRADE_VALUE + DbConstants.TEXT_TYPE +
+        ')';
     };
     export const deleteTable: (() => string) = () => {
         return 'DROP TABLE IF EXISTS ' + ProfileEntry.TABLE_NAME;
@@ -27,7 +53,7 @@ export namespace ProfileEntry {
     };
 
     export const getAlterEntryForProfileSyllabus: (() => string) = () => {
-        return 'ALTER TABLE ' + TABLE_NAME + ' ADD COLUMN ' + ProfileConstant.SYLLABUS + DbConstants.TEXT_TYPE + '  DEFAULT \'\';';
+        return 'ALTER TABLE ' + TABLE_NAME + ' ADD COLUMN ' + ProfileEntry.COLUMN_NAME_SYLLABUS + DbConstants.TEXT_TYPE + '  DEFAULT \'\';';
 
     };
 }
