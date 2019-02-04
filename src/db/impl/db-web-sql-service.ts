@@ -22,11 +22,28 @@ export class DbWebSqlService implements DbService {
 
     public init() {
         this.initialized = true;
-        this.webSqlDB = window.openDatabase('this.context.dbName', 'this.dBVersion', 'Genie web sql DB', 2 * 1024 * 1024);
+        this.webSqlDB = window.openDatabase(
+            this.context.dbName,
+            this.dBVersion + '',
+            'Genie web sql DB',
+            2 * 1024 * 1024,
+            (database) => {
+                console.log('db created');
+                this.onCreate();
+            });
     }
 
-    private onCreate() {
-
+    private async onCreate() {
+        console.log('oncreate');
+        this.webSqlDB.transaction((tx) => {
+            this.appMigrationList.forEach((migration: Migration) => {
+                console.log('migration', migration);
+                migration.queries().forEach(query => {
+                    console.log('query', query);
+                    tx.executeSql(query);
+                });
+            });
+        });
     }
 
     private onUpgrade(oldVersion: number, newVersion: number) {
@@ -34,6 +51,7 @@ export class DbWebSqlService implements DbService {
     }
 
     execute(query: string): Observable<any> {
+        console.log('execute query', query);
         const observable = new Subject<any>();
 
         // db.execute(query, value => {
@@ -46,9 +64,11 @@ export class DbWebSqlService implements DbService {
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query,
                 [], (sqlTransaction, sqlResultSet) => {
+                    console.log('sqlResultSet', sqlResultSet);
                     observable.next(sqlResultSet);
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
+                    console.log('sqlError', sqlError);
                     observable.error(sqlError);
                 });
         });
@@ -112,21 +132,21 @@ export class DbWebSqlService implements DbService {
         }
         query.toString();
 
-        this.webSqlDB.
-            this.webSqlDB.transaction((tx) => {
-                tx.executeSql(query,
-                    [], (sqlTransaction, sqlResultSet) => {
-                        observable.next(sqlResultSet);
-                        observable.complete();
-                    }, (sqlTransaction, sqlError) => {
-                        observable.error(sqlError);
-                    });
-            });
+        this.webSqlDB.transaction((tx) => {
+            tx.executeSql(query,
+                [], (sqlTransaction, sqlResultSet) => {
+                    observable.next(sqlResultSet);
+                    observable.complete();
+                }, (sqlTransaction, sqlError) => {
+                    observable.error(sqlError);
+                });
+        });
 
         return observable;
     }
 
     insert(inserQuery: InsertQuery): Observable<number> {
+        this.onCreate();
         if (!this.initialized) {
             this.init();
         }
@@ -141,36 +161,22 @@ export class DbWebSqlService implements DbService {
         //         observable.error(error);
         //     });
 
-        const query = squel.insert()
-            .into(inserQuery.table)
-            .setFields(inserQuery.modelJson)
-            .toString();
+        // const query = squel.insert()
+        //     .into(inserQuery.table)
+        //     .setFields(inserQuery.modelJson)
+        //     .toString();
 
-        this.webSqlDB.
-            this.webSqlDB.transaction((tx) => {
-                tx.executeSql(query,
-                    [], (sqlTransaction, sqlResultSet) => {
-                        observable.next(sqlResultSet);
-                        observable.complete();
-                    }, (sqlTransaction, sqlError) => {
-                        observable.error(sqlError);
-                    });
-            });
+        // this.webSqlDB.transaction((tx) => {
+        //     tx.executeSql(query,
+        //         [], (sqlTransaction, sqlResultSet) => {
+        //             observable.next(sqlResultSet);
+        //             observable.complete();
+        //         }, (sqlTransaction, sqlError) => {
+        //             observable.error(sqlError);
+        //         });
+        // });
         return observable;
     }
-
-    private prepareMigrationList(): any {
-        const migrationList = this.appMigrationList;
-        const migrations: Array<any> = [];
-        migrationList.forEach(migration => {
-            const m = {};
-            m['targetDbVersion'] = migration.targetDbVersion;
-            m['queryList'] = migration.queries();
-            migrations.push(m);
-        });
-        return migrations;
-    }
-
 
     delete(deleteQuery: DeleteQuery): Observable<number> {
         // TODO
@@ -186,5 +192,6 @@ export class DbWebSqlService implements DbService {
         // db.endTransaction(isOperationSuccessful);
         throw new Error('Method not implemented.');
     }
+
 
 }
