@@ -1,12 +1,12 @@
-import {ImportContentContext} from '..';
-import {Response} from '../../api';
-import {ContentImportStatus, ErrorCode, Visibility} from '../util/content-constants';
-import {FileService} from '../../util/file/def/file-service';
-import {ContentUtil} from '../util/content-util';
-import {AppConfig} from '../../api/config/app-config';
-import {DbService} from '../../db';
-import {GetContentDetailsHandler} from './get-content-details-handler';
-import {ContentEntry} from '../db/schema';
+import {ImportContentContext} from '../..';
+import {Response} from '../../../api';
+import {ContentImportStatus, ErrorCode, Visibility} from '../../util/content-constants';
+import {FileService} from '../../../util/file/def/file-service';
+import {ContentUtil} from '../../util/content-util';
+import {AppConfig} from '../../../api/config/app-config';
+import {DbService} from '../../../db';
+import {GetContentDetailsHandler} from '../get-content-details-handler';
+import {ContentEntry} from '../../db/schema';
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class ValidateEcar {
