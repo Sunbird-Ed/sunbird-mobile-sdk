@@ -1,5 +1,4 @@
-import {GroupProfileConstant, GroupsConstant} from '../def/constant';
-import {DbConstants} from '../../db';
+import { DbConstants } from '../../db';
 
 export namespace ProfileEntry {
 
@@ -33,19 +32,19 @@ export namespace ProfileEntry {
 
     export const getCreateEntry: () => string = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + '(' +
-        ProfileEntry._ID + DbConstants.SPACE + 'INTEGER PRIMARY KEY,' +
-        COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' UNIQUE NOT NULL' + DbConstants.COMMA_SEP +
-        COLUMN_NAME_HANDLE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_CREATED_AT + DbConstants.SPACE + DbConstants.DATE_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_MEDIUM + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_BOARD + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_SUBJECT + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_PROFILE_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT "teacher"' + DbConstants.COMMA_SEP +
-        COLUMN_NAME_GRADE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_SYLLABUS + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_SOURCE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-        COLUMN_NAME_GRADE_VALUE + DbConstants.SPACE + DbConstants.TEXT_TYPE +
-        ')';
+            ProfileEntry._ID + DbConstants.SPACE + 'INTEGER PRIMARY KEY,' +
+            COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' UNIQUE NOT NULL' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_HANDLE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CREATED_AT + DbConstants.SPACE + DbConstants.DATE_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_MEDIUM + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_BOARD + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_SUBJECT + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_PROFILE_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT "teacher"' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_GRADE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_SYLLABUS + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_SOURCE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_GRADE_VALUE + DbConstants.SPACE + DbConstants.TEXT_TYPE +
+            ')';
     };
     export const deleteTable: (() => string) = () => {
         return 'DROP TABLE IF EXISTS ' + ProfileEntry.TABLE_NAME;
@@ -80,14 +79,21 @@ export namespace UserEntry {
 
 export namespace GroupProfileEntry {
 
-    export const _ID = '_id';
     export const TABLE_NAME = 'group_profile';
+    export const _ID = '_id';
+    export const COLUMN_NAME_UID = 'uid';
+    export const COLUMN_NAME_GID = 'gid';
+
+    export interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_GID]: string;
+    }
 
     export const getCreateEntry: (() => string) = () => {
-        return `CREATE TABLE ${TABLE_NAME} (
-            ${_ID} INTEGER PRIMARY KEY,
-            ${GroupProfileConstant.UID} TEXT,
-            ${GroupProfileConstant.GID} TEXT )`;
+        return 'CREATE TABLE IF NOT EXISTS ' + GroupProfileEntry.TABLE_NAME + ' (' +
+            GroupProfileEntry._ID + ' INTEGER PRIMARY KEY' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_GID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' )';
     };
     export const deleteTable: (() => string) = () => {
         return 'DROP TABLE IF EXISTS' + GroupProfileEntry.TABLE_NAME;
@@ -97,20 +103,36 @@ export namespace GroupProfileEntry {
 
 export namespace GroupEntry {
 
-    export const _ID = '_id';
     export const TABLE_NAME = 'groups';
+    export const _ID = '_id';
+    export const COLUMN_NAME_GID = 'gid';
+    export const COLUMN_NAME_NAME = 'name';
+    export const COLUMN_NAME_SYLLABUS = 'syllabus';
+    export const COLUMN_NAME_GRADE = 'grade';
+    export const COLUMN_NAME_GRADE_VALUE = 'grade_value';
+    export const COLUMN_NAME_CREATED_AT = 'created_at';
+    export const COLUMN_NAME_UPDATED_AT = 'updated_at';
+
+    export interface SchemaMap {
+        [COLUMN_NAME_GID]: string;
+        [COLUMN_NAME_NAME]: string;
+        [COLUMN_NAME_SYLLABUS]: string;
+        [COLUMN_NAME_GRADE]: string;
+        [COLUMN_NAME_GRADE_VALUE]: string;
+        [COLUMN_NAME_CREATED_AT]: number;
+        [COLUMN_NAME_UPDATED_AT]: number;
+    }
 
     export const getCreateEntry: (() => string) = () => {
-        return `CREATE TABLE ${TABLE_NAME} (
-            ${_ID} INTEGER PRIMARY KEY,
-            ${GroupsConstant.GID} TEXT,
-            ${GroupsConstant.NAME} TEXT,
-            ${GroupsConstant.SYLLABUS} TEXT DEFAULT '',
-            ${GroupsConstant.GRADE} TEXT DEFAULT '',
-            ${GroupsConstant.GRADE_VALUE} TEXT DEFAULT '',
-            ${GroupsConstant.CREATED_AT}  INTEGER,
-            ${GroupsConstant.UPDATED_AT} INTEGER
-        )`;
+        return 'CREATE TABLE IF NOT EXISTS ' + GroupEntry.TABLE_NAME + ' (' +
+            GroupEntry._ID + ' INTEGER PRIMARY KEY' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_GID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_NAME + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_SYLLABUS + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT ""' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_GRADE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT ""' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_GRADE_VALUE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT ""' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CREATED_AT + ' INTEGER' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_UPDATED_AT + ' INTEGER' + ' )';
     };
     export const deleteTable: (() => string) = () => {
         return 'DROP TABLE IF EXISTS' + GroupEntry.TABLE_NAME;
