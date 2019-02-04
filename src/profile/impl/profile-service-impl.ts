@@ -2,7 +2,6 @@ import {Profile, ProfileService, ProfileSource} from '..';
 import {DbService, NoSqlFormatter} from '../../db';
 import {Observable} from 'rxjs';
 import {GroupEntry, GroupProfileEntry, ProfileEntry} from '../db/schema';
-import {GroupProfileConstant, GroupsConstant} from '../def/constant';
 import {ServerProfileSearchCriteria} from '../def/server-profile-search-criteria';
 import {ServerProfile} from '../def/server-profile';
 import {UniqueId} from '../../db/util/unique-id';
@@ -90,14 +89,14 @@ export class ProfileServiceImpl implements ProfileService {
         if (profileRequest.groupId && (profileRequest.local || profileRequest.server)) {
             return this.dbService.execute(`
             SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
-            ${GroupProfileConstant.GID} = "${profileRequest.groupId}" AND
+            ${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}" AND
             ${ProfileEntry.COLUMN_NAME_SOURCE} = "${profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER}"
         `);
         }
 
         return this.dbService.execute(`
             SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
-            ${GroupProfileConstant.GID} = "${profileRequest.groupId}"
+            ${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}"
         `);
     }
 
@@ -107,13 +106,13 @@ export class ProfileServiceImpl implements ProfileService {
             this.dbService.insert({
                 table: GroupEntry.TABLE_NAME,
                 modelJson: {
-                    [GroupsConstant.GID]: UniqueId.generateUniqueId(),
-                    [GroupsConstant.NAME]: saveGroupToDb.groupName,
-                    [GroupsConstant.CREATED_AT]: Date.now(),
-                    [GroupsConstant.GRADE]: saveGroupToDb.grade,
-                    [GroupsConstant.GRADE_VALUE]: saveGroupToDb.gradeValue,
-                    [GroupsConstant.SYLLABUS]: saveGroupToDb.syllabus,
-                    [GroupsConstant.UPDATED_AT]: Date.now()
+                    [GroupEntry.COLUMN_NAME_GID]: UniqueId.generateUniqueId(),
+                    [GroupEntry.COLUMN_NAME_NAME]: saveGroupToDb.groupName,
+                    [GroupEntry.COLUMN_NAME_CREATED_AT]: Date.now(),
+                    [GroupEntry.COLUMN_NAME_GRADE]: saveGroupToDb.grade,
+                    [GroupEntry.COLUMN_NAME_GRADE_VALUE]: saveGroupToDb.gradeValue,
+                    [GroupEntry.COLUMN_NAME_SYLLABUS]: saveGroupToDb.syllabus,
+                    [GroupEntry.COLUMN_NAME_UPDATED_AT]: Date.now()
                 }
             });
         }
@@ -124,12 +123,12 @@ export class ProfileServiceImpl implements ProfileService {
         this.dbService.beginTransaction();
         return Observable.zip(this.dbService.delete({
                 table: GroupEntry.TABLE_NAME,
-                selection: `${GroupsConstant.GID} = ?`,
+                selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
                 selectionArgs: [`"${gid}"`]
             }),
             this.dbService.delete({
                 table: GroupProfileEntry.TABLE_NAME,
-                selection: `${GroupProfileConstant.GID} = ?`,
+                selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ?`,
                 selectionArgs: [`"${gid}"`]
             })
         ).map(() => {
@@ -144,11 +143,11 @@ export class ProfileServiceImpl implements ProfileService {
             table: GroupEntry.TABLE_NAME,
             selection: 'gid = ?',
             modelJson: {
-                [GroupsConstant.NAME]: updateToDb.name,
-                [GroupsConstant.SYLLABUS]: updateToDb.syllabus,
-                [GroupsConstant.UPDATED_AT]: Date.now(),
-                [GroupsConstant.GRADE]: updateToDb.grade,
-                [GroupsConstant.GRADE_VALUE]: updateToDb.gradeValueMap
+                [GroupEntry.COLUMN_NAME_NAME]: updateToDb.name,
+                [GroupEntry.COLUMN_NAME_SYLLABUS]: updateToDb.syllabus,
+                [GroupEntry.COLUMN_NAME_UPDATED_AT]: Date.now(),
+                [GroupEntry.COLUMN_NAME_GRADE]: updateToDb.grade,
+                [GroupEntry.COLUMN_NAME_GRADE_VALUE]: updateToDb.gradeValueMap
             }
         });
         return Observable.of(group);
@@ -163,8 +162,8 @@ export class ProfileServiceImpl implements ProfileService {
         } else {
             return this.dbService.execute(`
             SELECT * FROM ${GroupEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
-            ${GroupsConstant.GID} = ${GroupProfileConstant.GID} WHERE
-            ${GroupProfileConstant.UID} = "${groupRequest.uid}
+            ${GroupEntry.COLUMN_NAME_GID} = ${GroupProfileEntry.COLUMN_NAME_GID} WHERE
+            ${GroupProfileEntry.COLUMN_NAME_UID} = "${groupRequest.uid}
         `);
         }
     }
@@ -173,7 +172,7 @@ export class ProfileServiceImpl implements ProfileService {
     addProfilesToGroup(profileToGroupRequest: ProfilesToGroupRequest): Observable<number> {
         return this.dbService.delete({
             table: GroupProfileEntry.TABLE_NAME,
-            selection: `${GroupProfileConstant.GID} = ?`,
+            selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ?`,
             selectionArgs: [`"${profileToGroupRequest.groupId}"`]
         }).do(() => {
             this.dbService.beginTransaction();
@@ -183,8 +182,8 @@ export class ProfileServiceImpl implements ProfileService {
                     return this.dbService.insert({
                         table: GroupProfileEntry.TABLE_NAME,
                         modelJson: {
-                            [GroupProfileConstant.GID]: profileToGroupRequest.groupId,
-                            [GroupProfileConstant.UID]: uid
+                            [GroupProfileEntry.COLUMN_NAME_GID]: profileToGroupRequest.groupId,
+                            [GroupProfileEntry.COLUMN_NAME_UID]: uid
                         }
                     });
                 });
