@@ -1,5 +1,6 @@
 import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery} from '..';
 import {Observable, Subject} from 'rxjs';
+import {InitialMigration} from '../migrations/initial-migration';
 
 declare var db: {
     init: (dbName, dbVersion, migrations, callback) => void,
@@ -27,9 +28,8 @@ export class DbCordovaService implements DbService {
     constructor(private context: DbConfig,
                 private dBVersion: number,
                 private appMigrationList: Migration[]
-    ) {
-        this.init();
-    }
+    ) {}
+
 
     update(updateQuery: UpdateQuery): Observable<boolean> {
         throw new Error('Method not implemented.');
@@ -39,7 +39,7 @@ export class DbCordovaService implements DbService {
         this.initialized = true;
         db.init(this.context.dbName,
             this.dBVersion,
-            this.prepareMigrationList(),
+            [],
             value => {
                 if (value.method === 'onCreate') {
                     this.onCreate();
@@ -50,10 +50,7 @@ export class DbCordovaService implements DbService {
     }
 
     private onCreate() {
-        console.log('onCreate');
-        this.appMigrationList.forEach( (migration) => {
-          migration.apply(this);
-        });
+        new InitialMigration().apply(this);
 
     }
 
