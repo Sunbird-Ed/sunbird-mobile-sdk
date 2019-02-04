@@ -19,7 +19,8 @@
       "es2015"
     ],
     "types": [
-      "jest"
+      "jest",
+      "websql"
     ],
     "moduleResolution": "node"
   },
