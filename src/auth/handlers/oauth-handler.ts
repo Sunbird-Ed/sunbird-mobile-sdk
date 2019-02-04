@@ -22,7 +22,7 @@ export class OauthHandler {
 
     public doLogin(apiConfig: ApiConfig): Observable<OauthSession> {
         return Observable.create((observer: Observer<OauthSession>) => {
-            customtabs.isAvailable(async () => {
+            customtabs.isAvailable(() => {
                 customtabs.launch(apiConfig.user_authentication.authUrl, async callbackUrl => {
                     observer.next(await this.resolveTokens(callbackUrl, apiConfig));
                     observer.complete();

@@ -22,9 +22,6 @@ declare var db: {
 };
 
 export class DbCordovaService implements DbService {
-
-    private initialized = false;
-
     constructor(private context: DbConfig,
                 private dBVersion: number,
                 private appMigrationList: Migration[]
@@ -35,32 +32,32 @@ export class DbCordovaService implements DbService {
         throw new Error('Method not implemented.');
     }
 
-    public init() {
-        this.initialized = true;
-        db.init(this.context.dbName,
-            this.dBVersion,
-            [],
-            value => {
-                if (value.method === 'onCreate') {
-                    this.onCreate();
-                } else if (value.method === 'onUpgrade') {
-                    this.onUpgrade(value.oldVersion, value.newVersion);
-                }
-            });
+    public async init(): Promise<undefined> {
+        return new Promise<undefined>(((resolve, reject) => {
+            db.init(this.context.dbName,
+                this.dBVersion,
+                [],
+                async (value) => {
+                    if (value.method === 'onCreate') {
+                        await this.onCreate();
+                    } else if (value.method === 'onUpgrade') {
+                        await this.onUpgrade(value.oldVersion, value.newVersion);
+                    }
+
+                    resolve();
+                });
+        }));
     }
 
-    private onCreate() {
-        new InitialMigration().apply(this);
-
+    private async onCreate() {
+        return new InitialMigration().apply(this);
     }
 
-    private onUpgrade(oldVersion: number, newVersion: number) {
-        console.log('onUpgrade');
-        this.appMigrationList.forEach( (migration) => {
+    private async onUpgrade(oldVersion: number, newVersion: number) {
+        this.appMigrationList.forEach(async (migration) => {
             if (migration.required(oldVersion, newVersion)) {
-                migration.apply(this);
+                await migration.apply(this);
             }
-
         });
     }
 
@@ -78,11 +75,6 @@ export class DbCordovaService implements DbService {
     }
 
     read(readQuery: ReadQuery): Observable<any[]> {
-
-        if (!this.initialized) {
-            this.init();
-        }
-
         const observable = new Subject<any[]>();
 
         db.read(readQuery.distinct!!,
@@ -104,10 +96,6 @@ export class DbCordovaService implements DbService {
     }
 
     insert(inserQuery: InsertQuery): Observable<number> {
-        if (!this.initialized) {
-            this.init();
-        }
-
         const observable = new Subject<number>();
 
         db.insert(inserQuery.table,

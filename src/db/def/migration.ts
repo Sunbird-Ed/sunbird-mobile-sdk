@@ -5,12 +5,12 @@ export abstract class Migration {
     targetDbVersion: number;
     migrationNumber: number;
 
-    constructor(migrationNumber: number, targetDbVersion: number) {
+    protected constructor(migrationNumber: number, targetDbVersion: number) {
         this.targetDbVersion = targetDbVersion;
         this.migrationNumber = migrationNumber;
     }
 
-    abstract apply(dbService: DbService);
+    abstract apply(dbService: DbService): Promise<undefined>;
     abstract queries(): Array<string>;
 
     required(oldVersion: number, newVersion: number): boolean {
