@@ -1,6 +1,7 @@
 import { SearchType } from '../util/content-constants';
 import { HierarchyInfo } from './content';
 import { CorrelationData } from '../../telemetry';
+import { ContentImportResponse } from './response';
 export interface ContentDetailRequest {
     contentId: string;
     attachFeedback?: boolean;
@@ -112,4 +113,15 @@ export interface FilterValue {
 export interface ContentSortCriteria {
     sortAttribute: string;
     sortOrder: SortOrder;
+}
+export interface ImportContentContext {
+    isChildContent: boolean;
+    ecarFilePath: string;
+    destinationFolder: string;
+    metadata: any;
+    manifestVersion: string;
+    skippedItemsIdentifier: string[];
+    items: any[];
+    identifiers: string[];
+    contentImportResponseList: ContentImportResponse[];
 }

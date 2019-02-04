@@ -52,7 +52,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
         }
         const fileDirPath = Path.dirPathFromFilePath(file);
         const filePath = Path.fileNameFromFilePath(file);
-        return this.fileservice.readAsText(fileDirPath, filePath)
+        return Observable.fromPromise(this.fileservice.readAsText(fileDirPath, filePath))
             .map((filecontent: string) => {
                 return JSON.parse(filecontent);
             });

@@ -4,6 +4,7 @@ import {SessionAuthenticator} from '../../auth';
 import {HttpRequestType, Request} from '../../api';
 import {AppConfig} from '../../api/config/app-config';
 import {SearchType} from '../util/content-constants';
+import {ContentSearchResult} from '../def/response';
 
 export class SearchContentHandler {
 
@@ -116,16 +117,16 @@ export class SearchContentHandler {
 
     createFiilterCriteria(previouscriteria: ContentSearchCriteria, facets: ContentSearchFilter[], filters) {
 
-        // return {
-        //     'query': previouscriteria.query,
-        //     'limit': previouscriteria.limit,
-        //     'offset': previouscriteria.offset,
-        //     'facets': previouscriteria.facets,
-        //     'sort': previouscriteria.sortCriteria && previouscriteria.sortCriteria.length > 0
-        //         ? previouscriteria.sortCriteria : [],
-        //     'mode': previouscriteria.mode === 'soft' ? 'soft' : 'hard',
-        //     'facetFilters': []
-        // };
+        return {
+            'query': previouscriteria.query,
+            'limit': previouscriteria.limit,
+            'offset': previouscriteria.offset,
+            'facets': previouscriteria.facets,
+            'sort': previouscriteria.sortCriteria && previouscriteria.sortCriteria.length > 0
+                ? previouscriteria.sortCriteria : [],
+            'mode': previouscriteria.mode === 'soft' ? 'soft' : 'hard',
+            'facetFilters': []
+        };
     }
 
     addFilterValue(facets: ContentSearchFilter[], filters) {
@@ -149,13 +150,13 @@ export class SearchContentHandler {
         return facetValues;
     }
 
-    // mapSearchResponse(searchResponse): ContentSearchResult {
-    //     // return {
-    //     //     'id': searchResponse.id,
-    //     //     'responseMessageId': searchResponse.params ? searchResponse.params.resmsgid : '',
-    //     //     'contentDataList': searchResponse.result.content ? searchResponse.result.content : [],
-    //     //     'facets': searchResponse.result ? searchResponse.result.facets : [],
-    //     //
-    //     // };
-    // }
+    mapSearchResponse(searchResponse): ContentSearchResult {
+        return {
+            id: searchResponse.id,
+            responseMessageId: searchResponse.params ? searchResponse.params.resmsgid : '',
+            contentDataList: searchResponse.result.content ? searchResponse.result.content : [],
+            filterCriteria: searchResponse.result ? searchResponse.result.facets : [],
+
+        };
+    }
 }

@@ -1,5 +1,5 @@
 /** This interface represents a file system. */
-interface FileSystem {
+export interface FileSystem {
     name: string;
     /** The root directory of the file system. */
     root: DirectoryEntry;
@@ -83,7 +83,7 @@ export interface Entry {
     getParent(successCallback: (entry: Entry) => void, errorCallback?: (error: FileError) => void): void;
 }
 /** This interface supplies information about the state of a file or directory. */
-interface Metadata {
+export interface Metadata {
     /** This is the time at which the file or directory was last modified. */
     modificationTime: Date;
     /** The size of the file, in bytes. This must return 0 for directories. */
@@ -248,23 +248,24 @@ declare var FileWriter: {
     WRITING: number;
     DONE: number;
 };
-interface FileError {
+export interface FileError {
     /** Error code */
     code: number;
 }
-declare var FileError: {
-    new (code: number): FileError;
-    NOT_FOUND_ERR: number;
-    SECURITY_ERR: number;
-    ABORT_ERR: number;
-    NOT_READABLE_ERR: number;
-    ENCODING_ERR: number;
-    NO_MODIFICATION_ALLOWED_ERR: number;
-    INVALID_STATE_ERR: number;
-    SYNTAX_ERR: number;
-    INVALID_MODIFICATION_ERR: number;
-    QUOTA_EXCEEDED_ERR: number;
-    TYPE_MISMATCH_ERR: number;
-    PATH_EXISTS_ERR: number;
-};
+export interface RemoveResult {
+    success: boolean;
+    fileRemoved: Entry;
+}
+/**
+ * When an error occurs, the following callback is made.
+ */
+export declare type ErrorCallback = (err: FileError) => void;
+/**
+ * This export interface is the callback used to look up Entry objects.
+ */
+export declare type EntryCallback = (entry: Entry) => void;
+export declare enum LocalFileSystem {
+    PERSISTENT = 1,
+    TEMPORARY = 0
+}
 export {};

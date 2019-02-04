@@ -26,6 +26,7 @@ export declare class SunbirdSdk {
     private _frameworkService;
     private _pageAssembleService;
     private _sharedPreferences;
+    private _fileService;
     readonly pageAssembleService: PageAssembleService;
     readonly dbService: DbService;
     readonly telemetryService: TelemetryService;

@@ -56,8 +56,8 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     private fetchFilePath(): Observable<{ [key: string]: {} }> {
         const fileDirPath = Path.dirPathFromFilePath(this.formServiceConfig.formFilePath);
         const filePath = Path.fileNameFromFilePath(this.formServiceConfig.formFilePath);
-        return this.fileService.readAsText(fileDirPath, filePath).map((fileContent: string) => {
-            return JSON.parse(fileContent);
+        return Observable.fromPromise(this.fileService.readAsText(fileDirPath, filePath)).map((fileContent: string) => {
+            return Observable.of(JSON.parse(fileContent));
         });
     }
 }
