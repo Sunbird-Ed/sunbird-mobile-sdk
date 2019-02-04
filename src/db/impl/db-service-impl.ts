@@ -1,5 +1,8 @@
 import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery} from '..';
 import {Observable, Subject} from 'rxjs';
+import {ContentEntry} from '../../content/db/schema';
+import {ContentDeleteStatus} from '../../content';
+import {ContentUtil} from '../../content/util/content-util';
 
 declare var db: {
     init: (dbName, dbVersion, migrations, callback) => void,
@@ -28,6 +31,7 @@ export class DbServiceImpl implements DbService {
                 private dBVersion: number,
                 private appMigrationList: Migration[]
     ) {
+        this.init();
     }
 
     update(updateQuery: UpdateQuery): Observable<boolean> {
@@ -49,11 +53,21 @@ export class DbServiceImpl implements DbService {
     }
 
     private onCreate() {
+        console.log('onCreate');
+        this.appMigrationList.forEach( (migration) => {
+          migration.apply(this);
+        });
 
     }
 
     private onUpgrade(oldVersion: number, newVersion: number) {
+        console.log('onUpgrade');
+        this.appMigrationList.forEach( (migration) => {
+            if (migration.required(oldVersion, newVersion)) {
+                migration.apply(this);
+            }
 
+        });
     }
 
     execute(query: string): Observable<any> {

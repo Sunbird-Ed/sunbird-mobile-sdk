@@ -1,8 +1,12 @@
-import {ApiConfig, Connection, HttpRequestType, Request, Response} from '../index';
-import {JWTokenType, JWTUtil} from '../util/jwt.util';
-import {Observable, Subject} from 'rxjs';
+import {ApiConfig, Connection, HttpRequestType, JWTokenType, JWTUtil, Request} from '..';
+import {Observable} from 'rxjs';
+import * as moment from 'moment';
+import * as SHA1 from 'crypto-js/sha1';
 
 export class ApiTokenHandler {
+
+    private static readonly VERSION = '1.0';
+    private static readonly ID = 'ekstep.genie.device.register';
 
     private config: ApiConfig;
 
@@ -11,45 +15,46 @@ export class ApiTokenHandler {
     }
 
     public refreshAuthToken(connection: Connection): Observable<string> {
-
-        const observable = new Subject<string>();
-
-        connection.invoke(this.buildResetTokenAPIRequest(this.config)).subscribe((r: Response) => {
-            try {
-                const bearerToken = r.body.result.secret;
-                observable.next(bearerToken);
-                observable.complete();
-            } catch (e) {
-                observable.error(e);
-            }
+        return Observable.fromPromise(
+            this.getMobileDeviceConsumerSecret(connection)
+        ).map((mobileDeviceConsumerSecret: string) => {
+            return JWTUtil.createJWToken({iss: this.getMobileDeviceConsumerKey()}, mobileDeviceConsumerSecret, JWTokenType.HS256);
         });
-
-        return observable;
     }
 
-    private buildResetTokenAPIRequest(config: ApiConfig): Request {
+    private getMobileDeviceConsumerKey() {
+        return this.config.api_authentication.producerId + '-' +
+            SHA1(this.config.api_authentication.deviceId).toString();
+    }
+
+    private buildGetMobileDeviceConsumerSecretAPIRequest(): Request {
         return new Request.Builder()
-            .withPath(`/consumer/${config.api_authentication.mobileAppConsumer}/credential/register`)
+            .withPath(`/api-manager/v1/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`)
             .withType(HttpRequestType.POST)
             .withHeaders({
                 'Content-Encoding': 'gzip',
-                'Authorization': `Bearer ${this.generateMobileDeviceConsumerBearerToken()}`
+                'Authorization': `Bearer ${this.generateMobileAppConsumerBearerToken()}`
+            })
+            .withBody({
+                id: ApiTokenHandler.ID,
+                ver: ApiTokenHandler.VERSION,
+                ts: moment().format(),
+                request: {
+                    key: this.getMobileDeviceConsumerKey()
+                }
             })
             .build();
     }
 
-    private generateMobileDeviceConsumerBearerToken(): string {
+    private async getMobileDeviceConsumerSecret(connection: Connection): Promise<string> {
+        return connection.invoke(this.buildGetMobileDeviceConsumerSecretAPIRequest()).toPromise()
+            .then((res) => res.body.result.secret);
+    }
+
+    private generateMobileAppConsumerBearerToken(): string {
         const mobileAppConsumerKey = this.config.api_authentication.mobileAppKey;
         const mobileAppConsumerSecret = this.config.api_authentication.mobileAppSecret;
-        const mobileDeviceConsumerKey = this.config.api_authentication.producerId + '-' +
-            this.config.api_authentication.deviceId;
 
-        const mobileDeviceConsumerSecret =
-            JWTUtil.createJWToken(mobileAppConsumerKey, mobileAppConsumerSecret, JWTokenType.HS256);
-        // noinspection UnnecessaryLocalVariableJS
-        const mobileDeviceConsumerBearerToken =
-            JWTUtil.createJWToken(mobileDeviceConsumerKey, mobileDeviceConsumerSecret, JWTokenType.HS256);
-
-        return mobileDeviceConsumerBearerToken;
+        return JWTUtil.createJWToken({iss: mobileAppConsumerKey}, mobileAppConsumerSecret, JWTokenType.HS256);
     }
 }

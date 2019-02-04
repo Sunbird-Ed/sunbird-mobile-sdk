@@ -4,11 +4,11 @@ import {Content, ContentData} from '../def/content';
 import {Observable} from 'rxjs';
 import {DbService, ReadQuery} from '../../db';
 import {ContentEntry} from '../db/schema';
-import {ContentMapper} from '../util/content-mapper';
 import {ContentServiceConfig} from '../config/content-config';
 import {SessionAuthenticator} from '../../auth';
 import {QueryBuilder} from '../../db/util/query-builder';
 import {ApiService} from '../../api/def/api-service';
+import {ContentMapper} from '../util/content-mapper';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
     private readonly GET_CONTENT_DETAILS_ENDPOINT = 'read/';

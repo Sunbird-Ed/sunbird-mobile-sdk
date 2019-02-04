@@ -27,8 +27,12 @@ import {PageAssembleService} from './page';
 import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
 import {PageAssemble} from './page/def/page-assemble';
 import {SharedPreferencesImpl} from './util/shared-preferences/impl/shared-preferences-impl';
-import {KeyValueStoreMigration} from './key-value-store/db/key-value-store-migration';
-import {GroupEntryMigration, GroupProfileEntryMigration, ProfileEntryMigration} from './profile/db/profile-migration';
+import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
+import {InitialMigration} from './db/migrations/initial-migration';
+import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migration';
+import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
+import {GroupProfileMigration} from './db/migrations/group-profile-migration';
+import {FileServiceImpl} from './util/file/impl/file-service-impl';
 
 export class SunbirdSdk {
 
@@ -54,6 +58,7 @@ export class SunbirdSdk {
     private _frameworkService: FrameworkService;
     private _pageAssembleService: PageAssembleService;
     private _sharedPreferences: SharedPreferences;
+    private _fileService: FileService;
 
     get pageAssembleService(): PageAssembleService {
         return this._pageAssembleService;
@@ -109,12 +114,11 @@ export class SunbirdSdk {
         this._dbService = new DbServiceImpl(
             sdkConfig.dbConfig,
             20,
-            [
-                new KeyValueStoreMigration(),
-                new ProfileEntryMigration(),
-                new GroupEntryMigration(),
-                new GroupProfileEntryMigration()
-            ]
+            [new InitialMigration(),
+                new ProfileSyllabusMigration(),
+                new GroupProfileMigration(),
+                new MillisecondsToSecondsMigration(),
+                new ContentMarkerMigration()]
         );
 
         this._telemetryService = new TelemetryServiceImpl(this._dbService, new TelemetryDecoratorImpl());
@@ -124,9 +128,8 @@ export class SunbirdSdk {
         this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService);
 
         this._keyValueStore = new KeyValueStoreImpl(this._dbService);
-
+        this._fileService = new FileServiceImpl();
         const sessionAuthenticator = new SessionAuthenticator(sdkConfig.apiConfig, this._apiService);
-        const fileService: FileService = {} as any;
 
         this._profileService = new ProfileServiceImpl(
             sdkConfig.profileServiceConfig,
@@ -142,8 +145,10 @@ export class SunbirdSdk {
             this._apiService,
             this._dbService,
             this._profileService,
+            sdkConfig.appConfig,
             this._keyValueStore,
-            sessionAuthenticator
+            sessionAuthenticator,
+            this._fileService
         );
 
         this._courseService = new CourseServiceImpl(
@@ -157,7 +162,7 @@ export class SunbirdSdk {
         this._formService = new FormServiceImpl(
             sdkConfig.formServiceConfig,
             this._apiService,
-            fileService,
+            this._fileService,
             new CachedItemStoreImpl<{ [key: string]: {} }>(this._keyValueStore, sdkConfig.apiConfig),
             sessionAuthenticator
         );
@@ -165,7 +170,7 @@ export class SunbirdSdk {
         this._frameworkService = new FrameworkServiceImpl(
             sdkConfig.frameworkServiceConfig,
             this._keyValueStore,
-            fileService,
+            this._fileService,
             this._apiService,
             new CachedItemStoreImpl<Channel>(this._keyValueStore, sdkConfig.apiConfig),
             new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig),
@@ -175,7 +180,7 @@ export class SunbirdSdk {
         this._pageAssembleService = new PageAssembleServiceImpl(
             this._apiService,
             sdkConfig.pageServiceConfig,
-            fileService,
+            this._fileService,
             sessionAuthenticator,
             new CachedItemStoreImpl<PageAssemble>(this._keyValueStore, sdkConfig.apiConfig)
         );

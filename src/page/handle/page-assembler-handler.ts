@@ -52,7 +52,7 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
     private fetchFromFilePath(): Observable<PageAssemble> {
         const fileDirPath = Path.dirPathFromFilePath(this.pageApiServiceConfig.filePath);
         const filePath = Path.fileNameFromFilePath(this.pageApiServiceConfig.filePath);
-        return this.fileService.readAsText(fileDirPath, filePath).map((fileContent: string) => {
+        return Observable.fromPromise(this.fileService.readAsText(fileDirPath, filePath)).map((fileContent: string) => {
             return JSON.parse(fileContent);
         });
     }
