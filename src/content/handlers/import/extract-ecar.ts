@@ -1,9 +1,9 @@
-import {ImportContentContext} from '..';
-import {Response} from '../../api';
-import {FileUtil} from '../../util/file/util/file-util';
-import {ErrorCode} from '../util/content-constants';
-import {FileService} from '../../util/file/def/file-service';
-import {ZipService} from '../../util/zip/def/zip-service';
+import {ImportContentContext} from '../..';
+import {Response} from '../../../api';
+import {FileUtil} from '../../../util/file/util/file-util';
+import {ErrorCode} from '../../util/content-constants';
+import {FileService} from '../../../util/file/def/file-service';
+import {ZipService} from '../../../util/zip/def/zip-service';
 
 export class ExtractEcar {
     private readonly FILE_SIZE = 'FILE_SIZE';
