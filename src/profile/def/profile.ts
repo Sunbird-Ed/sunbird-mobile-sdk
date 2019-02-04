@@ -13,15 +13,15 @@ export enum ProfileSource {
 export interface Profile {
     uid: string;
     handle: string;
+    created_at: number;
     medium: string[];
     board: string[];
-    createdAt: number;
-    profileType: ProfileType;
     subject: string[];
+    profile_type: ProfileType;
     grade: string[];
-    gradeValueMap: { [key: string]: any };
     syllabus: string[];
     source: ProfileSource;
+    grade_value: { [key: string]: any };
     serverProfile?: ServerProfile;
 }
 
