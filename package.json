@@ -15,12 +15,18 @@
   },
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "crypto-js": "^3.1.9-1",
+    "jsonwebtoken": "^8.4.0",
+    "moment": "^2.23.0",
+    "uuid": "^3.3.2"
+  },
   "peerDependencies": {
     "rxjs": ">=5 < 6",
     "cordova-plugin-advanced-http": "^2.0.2",
     "cordova-plugin-file": "^6.0.1",
-    "sb-cordova-plugin-customtabs": "git+https://github.com/souvikmondal/cordova-plugin-customtabs.git",
-    "sb-cordova-plugin-db": "https://github.com/Sunbird-Ed/sb-cordova-plugin-db.git"
+    "sb-cordova-plugin-customtabs": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-customtabs.git",
+    "sb-cordova-plugin-db": "git+https://github.com/swayangjit/sb-cordova-plugin-db.git"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",
@@ -37,8 +43,6 @@
     "cordova-plugin-file": "^6.0.1",
     "jest": "^23.6.0",
     "rxjs": ">=5 < 6",
-    "sb-cordova-plugin-customtabs": "https://github.com/Sunbird-Ed/sb-cordova-plugin-customtabs.git",
-    "sb-cordova-plugin-db": "https://github.com/Sunbird-Ed/sb-cordova-plugin-db.git",
     "ts-loader": "^5.3.2",
     "ts-node": ">=3.2.0 <8",
     "tsickle": "^0.27.2",
@@ -48,12 +52,6 @@
     "uglifyjs-webpack-plugin": "^2.1.1",
     "webpack": "^4.28.3",
     "webpack-cli": "^3.1.2"
-  },
-  "dependencies": {
-    "crypto-js": "^3.1.9-1",
-    "jsonwebtoken": "^8.4.0",
-    "moment": "^2.23.0",
-    "uuid": "^3.3.2"
   },
   "jest": {
     "browser": false,
