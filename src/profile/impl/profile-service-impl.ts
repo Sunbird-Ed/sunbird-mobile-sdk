@@ -1,8 +1,8 @@
 import {Profile, ProfileService, ProfileSource} from '..';
-import {DbService, NoSqlFormatter, ObjectMapper} from '../../db';
+import {DbService, NoSqlFormatter} from '../../db';
 import {Observable} from 'rxjs';
 import {GroupEntry, GroupProfileEntry, ProfileEntry} from '../db/schema';
-import {GroupProfileConstant, GroupsConstant, ProfileConstant} from '../def/constant';
+import {GroupProfileConstant, GroupsConstant} from '../def/constant';
 import {ServerProfileSearchCriteria} from '../def/server-profile-search-criteria';
 import {ServerProfile} from '../def/server-profile';
 import {UniqueId} from '../../db/util/unique-id';
@@ -23,6 +23,7 @@ import {ServerProfileDetailsRequest} from '../def/server-profile-details-request
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {ProfileSession} from '../def/profile-session';
+import {ProfileMapper} from '../util/profile-mapper';
 
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = 'session';
@@ -36,30 +37,19 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     createProfile(profile: Profile): Observable<Profile> {
-        const saveToDb = NoSqlFormatter.toDb(profile);
+
         this.dbService.insert({
             table: ProfileEntry.TABLE_NAME,
-            modelJson: ObjectMapper.map(saveToDb, {
-                [ProfileConstant.BOARD]: saveToDb.board,
-                [ProfileConstant.GRADE]: saveToDb.Grade,
-                [ProfileConstant.HANDLE]: saveToDb.handle,
-                [ProfileConstant.SYLLABUS]: saveToDb.syllabus,
-                [ProfileConstant.SOURCE]: saveToDb.source,
-                [ProfileConstant.MEDIUM]: saveToDb.medium,
-                [ProfileConstant.PROFILE_TYPE]: saveToDb.profileType,
-                [ProfileConstant.GRADE_VALUE]: saveToDb.gradeValue,
-                [ProfileConstant.SUBJECT]: saveToDb.subject,
-                [ProfileConstant.UID]: UniqueId.generateUniqueId(),
-                [ProfileConstant.CREATED_AT]: Date.now()
-            })
+            modelJson: ProfileMapper.mapProfileToProfileDBEntry(profile)
         });
+
         return Observable.of(profile);
     }
 
     deleteProfile(uid: string): Observable<number> {
         return this.dbService.delete({
             table: ProfileEntry.TABLE_NAME,
-            selection: `${ProfileConstant.UID} = ?`,
+            selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
             selectionArgs: [`"${uid}"`]
         });
     }
@@ -90,7 +80,7 @@ export class ProfileServiceImpl implements ProfileService {
         if (!profileRequest.groupId) {
             return this.dbService.read({
                 table: ProfileEntry.TABLE_NAME,
-                selection: `${ProfileConstant.SOURCE} = ?`,
+                selection: `${ProfileEntry.COLUMN_NAME_SOURCE} = ?`,
                 selectionArgs: [profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER],
                 columns: []
             });
@@ -101,7 +91,7 @@ export class ProfileServiceImpl implements ProfileService {
             return this.dbService.execute(`
             SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
             ${GroupProfileConstant.GID} = "${profileRequest.groupId}" AND
-            ${ProfileConstant.SOURCE} = "${profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER}"
+            ${ProfileEntry.COLUMN_NAME_SOURCE} = "${profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER}"
         `);
         }
 
@@ -217,7 +207,7 @@ export class ProfileServiceImpl implements ProfileService {
             .mergeMap((profileSession: ProfileSession) => {
                 return this.dbService.read({
                     table: GroupProfileEntry.TABLE_NAME,
-                    selection: `${ProfileConstant.UID} = ?`,
+                    selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
                     selectionArgs: [`"${profileSession.uid}"`]
                 }).map((rows) => rows && rows[0]);
             });
@@ -227,7 +217,7 @@ export class ProfileServiceImpl implements ProfileService {
         return this.dbService
             .read({
                 table: GroupProfileEntry.TABLE_NAME,
-                selection: `${ProfileConstant.UID} = ?`,
+                selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
                 selectionArgs: [`"${uid}"`]
             }).map((rows) => rows && rows[0])
             .mergeMap((profile: Profile) => {
