@@ -17,11 +17,9 @@ export class InitialMigration extends Migration {
         super(1, 16);
     }
 
-    apply(dbService: DbService) {
-        this.queries().forEach(async (query) => {
-            console.log('query', query);
-            await dbService.execute(query);
-        });
+    public async apply(dbService: DbService): Promise<undefined> {
+        await Promise.all(this.queries().map((query) => dbService.execute(query).toPromise()));
+        return;
     }
 
     queries(): Array<string> {

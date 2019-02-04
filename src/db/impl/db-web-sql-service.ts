@@ -1,8 +1,6 @@
-import { DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery } from '..';
-import { Observable, Subject } from 'rxjs';
+import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery} from '..';
+import {Observable, Subject} from 'rxjs';
 import * as squel from 'squel';
-
-
 
 
 export class DbWebSqlService implements DbService {
@@ -20,9 +18,10 @@ export class DbWebSqlService implements DbService {
         throw new Error('Method not implemented.');
     }
 
-    public init() {
+    public async init(): Promise<undefined> {
         this.initialized = true;
         this.webSqlDB = window.openDatabase('this.context.dbName', 'this.dBVersion', 'Genie web sql DB', 2 * 1024 * 1024);
+        return;
     }
 
     private onCreate() {
