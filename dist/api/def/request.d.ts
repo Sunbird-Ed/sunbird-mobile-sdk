@@ -15,6 +15,7 @@ export declare class Request {
     private _headers?;
     private _body?;
     private _parameters?;
+    body: {};
     protected constructor();
     addAuthenticator(authenticator: Authenticator): void;
     readonly authenticators: Authenticator[];
@@ -25,6 +26,7 @@ export declare class Request {
     headers: {
         [p: string]: string;
     };
-    body: string;
-    parameters: string;
+    parameters: {
+        [key: string]: string;
+    };
 }

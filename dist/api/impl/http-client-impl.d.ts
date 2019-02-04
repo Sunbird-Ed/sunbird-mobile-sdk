@@ -7,8 +7,10 @@ export declare class HttpClientImpl implements HttpClient {
         [key: string]: string;
     }): void;
     addHeader(key: string, value: string): void;
-    get(baseUrl: string, path: string, headers: any, parameters: any): Observable<Response>;
-    patch(baseUrl: string, path: string, headers: any, body: any): Observable<Response>;
-    post(baseUrl: string, path: string, headers: any, body: any): Observable<Response>;
+    get(baseUrl: string, path: string, headers: any, parameters: {
+        [key: string]: string;
+    }): Observable<Response>;
+    patch(baseUrl: string, path: string, headers: any, body: {}): Observable<Response>;
+    post(baseUrl: string, path: string, headers: any, body: {}): Observable<Response>;
     private invokeRequest;
 }

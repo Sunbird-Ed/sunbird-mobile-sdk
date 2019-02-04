@@ -3,6 +3,7 @@ import { ContentServiceConfig } from '../config/content-config';
 import { SessionAuthenticator } from '../../auth';
 import { Request } from '../../api';
 import { AppConfig } from '../../api/config/app-config';
+import { ContentSearchResult } from '../def/response';
 export declare class SearchContentHandler {
     private appConfig;
     private contentServiceConfig;
@@ -19,7 +20,16 @@ export declare class SearchContentHandler {
     getSortByRequest(sortCriteria: ContentSortCriteria[]): any;
     getCompatibilityLevelFilter(): any;
     getRequest(request: any, framework: string, langCode: string): Request;
-    createFiilterCriteria(previouscriteria: ContentSearchCriteria, facets: ContentSearchFilter[], filters: any): void;
+    createFiilterCriteria(previouscriteria: ContentSearchCriteria, facets: ContentSearchFilter[], filters: any): {
+        'query': string;
+        'limit': number;
+        'offset': number;
+        'facets': string[];
+        'sort': ContentSortCriteria[];
+        'mode': string;
+        'facetFilters': never[];
+    };
     addFilterValue(facets: ContentSearchFilter[], filters: any): void;
     getFilterValuesWithAppliedFilter(facetValues: FilterValue[], appliedFilter: string[]): FilterValue[];
+    mapSearchResponse(searchResponse: any): ContentSearchResult;
 }

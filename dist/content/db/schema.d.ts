@@ -32,12 +32,42 @@ export declare namespace ContentEntry {
         [COLUMN_NAME_MANIFEST_VERSION]: string;
     }
     const getCreateEntry: (() => string);
-    const getAlterEntryForRefCount: (() => string);
-    const getAlterEntryForContentState: (() => string);
-    const getAlterEntryForContentType: (() => string);
-    const getAlterEntryForAudience: (() => string);
-    const getAlterEntryForUid: (() => string);
     const getDeleteEntry: (() => string);
     const getAlterEntryForContentSize: (() => string);
     const getAlterEntryForPragma: (() => string);
+}
+export declare namespace ContentAccessEntry {
+    const _ID = "_id";
+    const TABLE_NAME = "content_marker";
+    const COLUMN_NAME_UID = "uid";
+    const COLUMN_NAME_CONTENT_IDENTIFIER = "identifier";
+    const COLUMN_NAME_EPOCH_TIMESTAMP = "epoch_timestamp";
+    const COLUMN_NAME_DATA = "data";
+    const COLUMN_NAME_EXTRA_INFO = "extra_info";
+    const COLUMN_NAME_MARKER = "marker";
+    const getCreateEntry: (() => string);
+    const deleteTable: (() => string);
+}
+export declare namespace ContentFeedbackEntry {
+    const _ID = "_id";
+    const TABLE_NAME = "feedback";
+    const COLUMN_NAME_CONTENT_ID = "identifier";
+    const COLUMN_NAME_UID = "uid";
+    const COLUMN_NAME_RATING = "rating";
+    const COLUMN_NAME_COMMENTS = "comments";
+    const COLUMN_NAME_CREATED_AT = "created_at";
+    const getCreateEntry: (() => string);
+    const deleteTable: (() => string);
+}
+export declare namespace ContentMarkerEntry {
+    const _ID = "_id";
+    const TABLE_NAME = "content_marker";
+    const COLUMN_NAME_UID = "uid";
+    const COLUMN_NAME_CONTENT_IDENTIFIER = "identifier";
+    const COLUMN_NAME_EPOCH_TIMESTAMP = "epoch_timestamp";
+    const COLUMN_NAME_DATA = "data";
+    const COLUMN_NAME_EXTRA_INFO = "extra_info";
+    const COLUMN_NAME_MARKER = "marker";
+    const getCreateEntry: (() => string);
+    const deleteTable: (() => string);
 }
