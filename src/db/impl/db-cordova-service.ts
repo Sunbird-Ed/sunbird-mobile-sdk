@@ -39,7 +39,7 @@ export class DbCordovaService implements DbService {
         this.initialized = true;
         db.init(this.context.dbName,
             this.dBVersion,
-            this.prepareMigrationList(),
+            [],
             value => {
                 if (value.method === 'onCreate') {
                     this.onCreate();
