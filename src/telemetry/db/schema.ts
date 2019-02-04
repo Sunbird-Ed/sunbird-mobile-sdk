@@ -11,11 +11,11 @@ export namespace TelemetryEntry {
 
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE ' + TelemetryEntry.TABLE_NAME + ' (' +
-            TelemetryEntry._ID + ' INTEGER PRIMARY KEY,' +
-            TelemetryEntry.COLUMN_NAME_EVENT_TYPE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            TelemetryEntry.COLUMN_NAME_EVENT + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            TelemetryEntry.COLUMN_NAME_TIMESTAMP + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            TelemetryEntry.COLUMN_NAME_PRIORITY + DbConstants.INT_TYPE +
+            TelemetryEntry._ID + DbConstants.SPACE + ' INTEGER PRIMARY KEY,' +
+            TelemetryEntry.COLUMN_NAME_EVENT_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            TelemetryEntry.COLUMN_NAME_EVENT + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            TelemetryEntry.COLUMN_NAME_TIMESTAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            TelemetryEntry.COLUMN_NAME_PRIORITY + DbConstants.SPACE + DbConstants.INT_TYPE +
             ' )';
     };
 
@@ -38,10 +38,10 @@ export namespace TelemetryProcessedEntry {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE ' + TelemetryProcessedEntry.TABLE_NAME + ' (' +
             TelemetryProcessedEntry._ID + ' INTEGER PRIMARY KEY,' +
-            TelemetryProcessedEntry.COLUMN_NAME_MSG_ID + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            TelemetryProcessedEntry.COLUMN_NAME_DATA + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            TelemetryProcessedEntry.COLUMN_NAME_PRIORITY + DbConstants.INT_TYPE +
+            TelemetryProcessedEntry.COLUMN_NAME_MSG_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            TelemetryProcessedEntry.COLUMN_NAME_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            TelemetryProcessedEntry.COLUMN_NAME_PRIORITY + DbConstants.SPACE + DbConstants.INT_TYPE +
             ' )';
     };
 
@@ -61,8 +61,8 @@ export namespace EventPriorityEntry  {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE ' + EventPriorityEntry.TABLE_NAME + ' (' +
             EventPriorityEntry._ID + ' INTEGER PRIMARY KEY,' +
-            EventPriorityEntry.COLUMN_NAME_EVENT + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            EventPriorityEntry.COLUMN_NAME_PRIORITY + DbConstants.INT_TYPE +
+            EventPriorityEntry.COLUMN_NAME_EVENT + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            EventPriorityEntry.COLUMN_NAME_PRIORITY + DbConstants.SPACE  + DbConstants.INT_TYPE +
             ' )';
     };
 
@@ -84,17 +84,17 @@ export namespace TelemetryTagEntry  {
 
 
     export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE ' + EventPriorityEntry.TABLE_NAME + ' (' +
-            TelemetryTagEntry._ID + ' INTEGER PRIMARY KEY,' +
-            TelemetryTagEntry.COLUMN_NAME_NAME + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            TelemetryTagEntry.COLUMN_NAME_HASH + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            TelemetryTagEntry.COLUMN_NAME_DESCRIPTION + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            TelemetryTagEntry.COLUMN_NAME_START_DATE + DbConstants.DATE_TYPE + DbConstants.COMMA_SEP +
-            TelemetryTagEntry.COLUMN_NAME_END_DATE + DbConstants.DATE_TYPE +
+        return 'CREATE TABLE ' + TABLE_NAME + ' (' +
+            _ID + ' INTEGER PRIMARY KEY,' +
+            COLUMN_NAME_NAME + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_HASH + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_DESCRIPTION + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_START_DATE + DbConstants.SPACE + DbConstants.DATE_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_END_DATE + DbConstants.SPACE + DbConstants.DATE_TYPE +
             ' )';
     };
 
     export const getDeleteEntry: (() => string) = () => {
-        return 'DROP TABLE IF EXISTS ' + TelemetryTagEntry.TABLE_NAME;
+        return 'DROP TABLE IF EXISTS ' + TABLE_NAME;
     };
 }

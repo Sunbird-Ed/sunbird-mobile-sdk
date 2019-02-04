@@ -1,8 +1,8 @@
-import {FileService} from '../../util/file/def/file-service';
-import {ContentImportResponse, ImportContentContext} from '..';
-import {FileUtil} from '../../util/file/util/file-util';
-import {Response} from '../../api';
-import {ErrorCode} from '../util/content-constants';
+import {FileService} from '../../../util/file/def/file-service';
+import {ContentImportResponse, ImportContentContext} from '../..';
+import {FileUtil} from '../../../util/file/util/file-util';
+import {Response} from '../../../api';
+import {ErrorCode} from '../../util/content-constants';
 
 export class DeviceMemoryCheck {
     freeDiskSpace: number;

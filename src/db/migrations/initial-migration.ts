@@ -13,6 +13,7 @@ export class InitialMigration extends Migration {
 
     apply(dbService: DbService) {
         this.queries().forEach(async (query) => {
+            console.log('query', query);
             await dbService.execute(query);
         });
     }
