@@ -34,12 +34,9 @@ export class DbWebSqlService implements DbService {
     }
 
     private async onCreate() {
-        console.log('oncreate');
         this.webSqlDB.transaction((tx) => {
             this.appMigrationList.forEach((migration: Migration) => {
-                console.log('migration', migration);
                 migration.queries().forEach(query => {
-                    console.log('query', query);
                     tx.executeSql(query,
                         [], (sqlTransaction, sqlResultSet) => {
                             console.log('sqlResultSet', sqlResultSet);
@@ -56,7 +53,6 @@ export class DbWebSqlService implements DbService {
     }
 
     execute(query: string): Observable<any> {
-        console.log('execute query', query);
         const observable = new Subject<any>();
 
         // db.execute(query, value => {
