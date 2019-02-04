@@ -5,7 +5,7 @@ import * as squel from 'squel';
 
 
 
-export class DbServiceWebSql implements DbService {
+export class DbWebSqlService implements DbService {
 
     webSqlDB: any;
     private initialized = false;

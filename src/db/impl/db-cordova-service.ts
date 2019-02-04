@@ -1,8 +1,5 @@
 import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery} from '..';
 import {Observable, Subject} from 'rxjs';
-import {ContentEntry} from '../../content/db/schema';
-import {ContentDeleteStatus} from '../../content';
-import {ContentUtil} from '../../content/util/content-util';
 
 declare var db: {
     init: (dbName, dbVersion, migrations, callback) => void,
@@ -23,7 +20,7 @@ declare var db: {
     endTransaction: (isOperationSuccessful: boolean) => void
 };
 
-export class DbServiceImpl implements DbService {
+export class DbCordovaService implements DbService {
 
     private initialized = false;
 

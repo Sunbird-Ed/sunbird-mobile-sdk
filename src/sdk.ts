@@ -7,7 +7,7 @@ import {SharedPreferences} from './util/shared-preferences';
 // config
 import {SdkConfig} from './sdk-config';
 // implementations
-import {DbServiceImpl} from './db/impl/db-service-impl';
+import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/auth-service-impl';
@@ -111,7 +111,7 @@ export class SunbirdSdk {
     public init(sdkConfig: SdkConfig) {
         this._sharedPreferences = new SharedPreferencesImpl();
 
-        this._dbService = new DbServiceImpl(
+        this._dbService = new DbCordovaService(
             sdkConfig.dbConfig,
             20,
             [new InitialMigration(),
