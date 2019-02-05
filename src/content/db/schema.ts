@@ -80,7 +80,7 @@ export namespace ContentAccessEntry {
 
 
     export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE IF NOT EXISTS' + ContentMarkerEntry.TABLE_NAME + ' (' +
+        return 'CREATE TABLE IF NOT EXISTS ' + ContentMarkerEntry.TABLE_NAME + ' (' +
             ContentMarkerEntry._ID + ' INTEGER PRIMARY KEY,' +
             COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
             COLUMN_NAME_CONTENT_IDENTIFIER + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
@@ -109,7 +109,7 @@ export namespace ContentFeedbackEntry {
 
 
     export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE IF NOT EXISTS' + TABLE_NAME + ' (' +
+        return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
             _ID + ' INTEGER PRIMARY KEY,' +
             COLUMN_NAME_CONTENT_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
             COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +

@@ -46,6 +46,7 @@ export class DbWebSqlService implements DbService {
                 console.log('db created');
                 this.onCreate();
             });
+        return;
     }
 
     private async onCreate() {
