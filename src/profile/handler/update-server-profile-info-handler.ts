@@ -1,7 +1,7 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-request';
+import {UpdateServerProfileInfoRequest} from '..';
 import {Profile} from '..';
-import {ProfileServiceConfig} from '../config/profile-service-config';
+import {ProfileServiceConfig} from '..';
 import {SessionAuthenticator} from '../../auth';
 import {Observable} from 'rxjs';
 
@@ -18,7 +18,7 @@ export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateS
     public handle(request: UpdateServerProfileInfoRequest): Observable<Profile> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.PATCH)
-            .withPath(this.updateUserInfoConfig.apiPath + this.GET_SERVER_PROFILE_INFO_API + request.userId + '/' + request.phone)
+            .withPath(this.updateUserInfoConfig.apiPath + this.GET_SERVER_PROFILE_INFO_API)
             .withApiToken(true)
             .withInterceptors([this.sessionAuthenticator])
             .withBody({request})
