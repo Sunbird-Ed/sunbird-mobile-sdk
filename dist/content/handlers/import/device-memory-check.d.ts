@@ -1,6 +1,6 @@
-import { FileService } from '../../util/file/def/file-service';
-import { ImportContentContext } from '..';
-import { Response } from '../../api';
+import { FileService } from '../../../util/file/def/file-service';
+import { ImportContentContext } from '../..';
+import { Response } from '../../../api';
 export declare class DeviceMemoryCheck {
     private fileService;
     freeDiskSpace: number;
