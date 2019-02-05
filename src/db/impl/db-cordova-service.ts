@@ -53,6 +53,10 @@ export class DbCordovaService implements DbService {
         }));
     }
 
+    private hasInitialized(): Observable<undefined> {
+        return this.execute('DROP TABLE IF EXISTS dummy_init_table');
+    }
+
     delete(deleteQuery: DeleteQuery): Observable<undefined> {
         const query = `
             DELETE FROM ${deleteQuery.table}
@@ -129,10 +133,6 @@ export class DbCordovaService implements DbService {
             });
 
         return observable;
-    }
-
-    private hasInitialized(): Observable<undefined> {
-        return this.execute('DROP TABLE IF EXISTS dummy_init_table');
     }
 
     beginTransaction(): void {
