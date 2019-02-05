@@ -5,8 +5,8 @@ import {ImportedMetadataEntry,
         UserEntry,
         LearnerAssessmentsEntry,
         LearnerSummaryEntry,
-        GroupEntry,
-        GroupProfileEntry} from '../../profile/db/schema';
+       } from '../../profile/db/schema';
+import {GroupEntry, GroupProfileEntry} from '../../group/db/schema';
 import {PartnerEntry} from '../../partner/db/schema';
 import {ContentAccessEntry, ContentEntry, ContentFeedbackEntry} from '../../content/db/schema';
 import {NotificationEntry} from '../../notification/db/schema';

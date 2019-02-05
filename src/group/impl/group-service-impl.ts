@@ -7,28 +7,19 @@ import {Group} from '../def/group';
 import {ProfilesToGroupRequest} from '../def/profiles-to-group-request';
 import {GetAllGroupRequest} from '../def/get-all-group-request';
 import {GroupService} from '../def/group-service';
+import {GroupMapper} from '../util/group-mapper';
 
 export class GroupServiceImpl implements GroupService {
 
     constructor(private dbService: DbService) {
     }
-
     createGroup(group: Group): Observable<Group> {
-        const saveGroupToDb = NoSqlFormatter.toDb(group);
-        if (group !== undefined) {
-            this.dbService.insert({
-                table: GroupEntry.TABLE_NAME,
-                modelJson: {
-                    [GroupEntry.COLUMN_NAME_GID]: UniqueId.generateUniqueId(),
-                    [GroupEntry.COLUMN_NAME_NAME]: saveGroupToDb.groupName,
-                    [GroupEntry.COLUMN_NAME_CREATED_AT]: Date.now(),
-                    [GroupEntry.COLUMN_NAME_GRADE]: saveGroupToDb.grade,
-                    [GroupEntry.COLUMN_NAME_GRADE_VALUE]: saveGroupToDb.gradeValue,
-                    [GroupEntry.COLUMN_NAME_SYLLABUS]: saveGroupToDb.syllabus,
-                    [GroupEntry.COLUMN_NAME_UPDATED_AT]: Date.now()
-                }
-            });
-        }
+        group.createdAt = Date.now();
+        group.updatedAt = Date.now();
+        this.dbService.insert({
+            table: GroupEntry.TABLE_NAME,
+            modelJson: GroupMapper.mapGroupToGroupDBEntry(group)
+        });
         return Observable.of(group);
     }
 
@@ -39,12 +30,12 @@ export class GroupServiceImpl implements GroupService {
             this.dbService.delete({
                 table: GroupEntry.TABLE_NAME,
                 selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
-                selectionArgs: [`"${gid}"`]
+                selectionArgs: [gid]
             }),
             this.dbService.delete({
                 table: GroupProfileEntry.TABLE_NAME,
                 selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ?`,
-                selectionArgs: [`"${gid}"`]
+                selectionArgs: [gid]
             })
         ).do(() => {
             this.dbService.endTransaction(true);
@@ -79,7 +70,7 @@ export class GroupServiceImpl implements GroupService {
             return this.dbService.execute(`
             SELECT * FROM ${GroupEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
             ${GroupEntry.COLUMN_NAME_GID} = ${GroupProfileEntry.COLUMN_NAME_GID} WHERE
-            ${GroupProfileEntry.COLUMN_NAME_UID} = "${groupRequest.uid}
+            ${GroupProfileEntry.COLUMN_NAME_UID} = ${groupRequest.uid}
         `);
         }
     }
