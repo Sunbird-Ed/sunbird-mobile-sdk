@@ -103,15 +103,16 @@ export class DbCordovaService implements DbService {
     read(readQuery: ReadQuery): Observable<any[]> {
         const observable = new Subject<any[]>();
 
-        db.read(readQuery.distinct!!,
+        db.read(!!readQuery.distinct,
             readQuery.table,
-            readQuery.columns!!,
-            readQuery.selection!!,
-            readQuery.selectionArgs!!,
-            readQuery.groupBy!!,
-            readQuery.having!!,
-            readQuery.orderBy!!,
-            readQuery.limit!! + '', (json: any[]) => {
+            readQuery.columns || [],
+            readQuery.selection || '',
+            readQuery.selectionArgs || [],
+            readQuery.groupBy || '',
+            readQuery.having || '',
+            readQuery.orderBy || '',
+            readQuery.limit || '',
+            (json: any[]) => {
                 observable.next(json);
                 observable.complete();
             }, (error: string) => {
