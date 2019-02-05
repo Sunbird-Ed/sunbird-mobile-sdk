@@ -37,6 +37,9 @@ export class QueryBuilder {
         }
 
         interpolate(arg: string) {
+            if (isNaN(arg as any)) {
+                arg = '"' + arg + '"';
+            }
             this.queryBuilder.query = this.queryBuilder.query.replace('?', arg);
         }
     };

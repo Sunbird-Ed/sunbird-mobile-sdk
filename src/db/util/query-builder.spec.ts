@@ -3,17 +3,17 @@ import {QueryBuilder} from './query-builder';
 describe('QueryBuilder', () => {
     it('should build a query string', () => {
         const q = new QueryBuilder()
-            .where('? = ?')
-            .args(['a', 'b'])
+            .where('a = ?')
+            .args(['A'])
             .and()
-            .where('? = ?')
-            .args(['a', 'b'])
+            .where('b = ?')
+            .args([2])
             .or()
-            .where('? = ?')
-            .args(['a', 'b'])
+            .where('c = ?')
+            .args(['c'])
             .end()
             .build();
 
-        expect(q).toEqual('a = b AND a = b OR a = b');
+        expect(q).toEqual('a = "A" AND b = 2 OR c = "c"');
     });
 });

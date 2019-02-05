@@ -39,5 +39,5 @@ export declare class SunbirdSdk {
     readonly formService: FormService;
     readonly frameworkService: FrameworkService;
     readonly sharedPreferences: SharedPreferences;
-    init(sdkConfig: SdkConfig): void;
+    init(sdkConfig: SdkConfig): Promise<void>;
 }
