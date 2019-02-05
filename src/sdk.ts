@@ -1,4 +1,3 @@
-import { TestMigration } from './db/migrations/test-migration';
 // definitions
 import {ApiService, ApiServiceImpl} from './api';
 import {DbService} from './db';
@@ -117,11 +116,10 @@ export class SunbirdSdk {
                 sdkConfig.dbConfig,
                 20,
                 [
-                    // new ProfileSyllabusMigration(),
-                    // new GroupProfileMigration(),
-                    // new MillisecondsToSecondsMigration(),
-                    // new ContentMarkerMigration()
-                    new TestMigration()
+                    new ProfileSyllabusMigration(),
+                    new GroupProfileMigration(),
+                    new MillisecondsToSecondsMigration(),
+                    new ContentMarkerMigration()
                 ]
             );
         } else {

@@ -2,19 +2,19 @@ import { DbConstants } from '../../db';
 
 export namespace ProfileEntry {
 
-    export const _ID = ' _id';
-    export const TABLE_NAME = ' profiles';
-    export const COLUMN_NAME_UID = ' uid';
-    export const COLUMN_NAME_HANDLE = ' handle';
-    export const COLUMN_NAME_CREATED_AT = ' created_at';
-    export const COLUMN_NAME_MEDIUM = ' medium';
-    export const COLUMN_NAME_BOARD = ' board';
-    export const COLUMN_NAME_SUBJECT = ' subject';
-    export const COLUMN_NAME_PROFILE_TYPE = ' profile_type'; // default TEACHER
-    export const COLUMN_NAME_GRADE = ' grade';
-    export const COLUMN_NAME_SYLLABUS = ' syllabus';
-    export const COLUMN_NAME_SOURCE = ' source';
-    export const COLUMN_NAME_GRADE_VALUE = ' grade_value';
+    export const _ID = '_id';
+    export const TABLE_NAME = 'profiles';
+    export const COLUMN_NAME_UID = 'uid';
+    export const COLUMN_NAME_HANDLE = 'handle';
+    export const COLUMN_NAME_CREATED_AT = 'created_at';
+    export const COLUMN_NAME_MEDIUM = 'medium';
+    export const COLUMN_NAME_BOARD = 'board';
+    export const COLUMN_NAME_SUBJECT = 'subject';
+    export const COLUMN_NAME_PROFILE_TYPE = 'profile_type'; // default TEACHER
+    export const COLUMN_NAME_GRADE = 'grade';
+    export const COLUMN_NAME_SYLLABUS = 'syllabus';
+    export const COLUMN_NAME_SOURCE = 'source';
+    export const COLUMN_NAME_GRADE_VALUE = 'grade_value';
 
     export interface SchemaMap {
         [COLUMN_NAME_UID]: string;

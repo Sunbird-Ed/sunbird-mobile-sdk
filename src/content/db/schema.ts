@@ -154,27 +154,4 @@ export namespace ContentMarkerEntry {
         return 'DROP TABLE IF EXISTS ' + TABLE_NAME;
 
     };
-
-}
-export namespace TestEntry {
-
-    export const _ID = '_id';
-    export const TABLE_NAME = 'test';
-    export const COLUMN_NAME_EMAIl = ' email ';
-    export const COLUMN_NAME_FULLNAME = 'fullName ';
-    export const COLUMN_NAME_PHONE = 'phone ';
-
-
-    export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE IF NOT EXISTS ' + TestEntry.TABLE_NAME + ' (' +
-            TestEntry._ID + ' INTEGER PRIMARY KEY,' +
-            COLUMN_NAME_EMAIl + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_FULLNAME + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP + COLUMN_NAME_PHONE + DbConstants.INT_TYPE +
-            ' )';
-    };
-
-    export const deleteTable: (() => string) = () => {
-        return 'DROP TABLE IF EXISTS ' + TABLE_NAME;
-
-    };
 }
