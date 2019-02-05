@@ -1,3 +1,4 @@
+import { TestMigration } from './db/migrations/test-migration';
 // definitions
 import {ApiService, ApiServiceImpl} from './api';
 import {DbService} from './db';
@@ -27,13 +28,12 @@ import {PageAssembleService} from './page';
 import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
 import {PageAssemble} from './page/def/page-assemble';
 import {SharedPreferencesImpl} from './util/shared-preferences/impl/shared-preferences-impl';
-import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
-import {InitialMigration} from './db/migrations/initial-migration';
-import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migration';
-import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
-import {GroupProfileMigration} from './db/migrations/group-profile-migration';
 import {FileServiceImpl} from './util/file/impl/file-service-impl';
 import {DbWebSqlService} from './db/impl/db-web-sql-service';
+import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migration';
+import {GroupProfileMigration} from './db/migrations/group-profile-migration';
+import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
+import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
 
 export class SunbirdSdk {
 
@@ -109,7 +109,7 @@ export class SunbirdSdk {
         return this._sharedPreferences;
     }
 
-    public init(sdkConfig: SdkConfig) {
+    public async init(sdkConfig: SdkConfig) {
         this._sharedPreferences = new SharedPreferencesImpl();
 
         if (sdkConfig.dbConfig.debugMode === true) {
@@ -117,10 +117,12 @@ export class SunbirdSdk {
                 sdkConfig.dbConfig,
                 20,
                 [
-                    new ProfileSyllabusMigration(),
-                    new GroupProfileMigration(),
-                    new MillisecondsToSecondsMigration(),
-                    new ContentMarkerMigration()]
+                    // new ProfileSyllabusMigration(),
+                    // new GroupProfileMigration(),
+                    // new MillisecondsToSecondsMigration(),
+                    // new ContentMarkerMigration()
+                    new TestMigration()
+                ]
             );
         } else {
             this._dbService = new DbCordovaService(
@@ -130,11 +132,12 @@ export class SunbirdSdk {
                     new ProfileSyllabusMigration(),
                     new GroupProfileMigration(),
                     new MillisecondsToSecondsMigration(),
-                    new ContentMarkerMigration()]
+                    new ContentMarkerMigration()
+                ]
             );
         }
 
-        this._dbService.init();
+        await this._dbService.init();
 
         this._telemetryService = new TelemetryServiceImpl(this._dbService, new TelemetryDecoratorImpl());
 

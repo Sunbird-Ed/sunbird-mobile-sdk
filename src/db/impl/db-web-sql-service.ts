@@ -1,8 +1,6 @@
-import { DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery } from '..';
-import { Observable, Subject } from 'rxjs';
+import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery} from '..';
+import {Observable, Subject} from 'rxjs';
 import * as squel from 'squel';
-
-
 
 
 export class DbWebSqlService implements DbService {
@@ -37,7 +35,7 @@ export class DbWebSqlService implements DbService {
         return observable;
     }
 
-    public init() {
+    public async init(): Promise<undefined> {
         this.initialized = true;
         this.webSqlDB = window.openDatabase(
             this.context.dbName,

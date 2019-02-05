@@ -1,8 +1,5 @@
 import {DbService, Migration} from '..';
-import {EventPriorityEntry, TelemetryEntry, TelemetryProcessedEntry, TelemetryTagEntry} from '../../telemetry/db/schema';
-import {ImportedMetadataEntry, ProfileEntry, UserEntry} from '../../profile/db/schema';
-import {PartnerEntry} from '../../partner/db/schema';
-import {ContentEntry, ContentMarkerEntry} from '../../content/db/schema';
+import {ContentMarkerEntry} from '../../content/db/schema';
 
 export class ContentMarkerMigration extends Migration {
 
@@ -10,10 +7,12 @@ export class ContentMarkerMigration extends Migration {
         super(5, 20);
     }
 
-    apply(dbService: DbService) {
+    public async apply(dbService: DbService) {
         this.queries().forEach(async (query) => {
             await dbService.execute(query);
         });
+
+        return undefined;
     }
 
     queries(): Array<string> {
