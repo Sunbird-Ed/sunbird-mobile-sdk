@@ -1,11 +1,11 @@
 export interface UpdateServerProfileInfoRequest {
     userId: string;
-    frameWork: { [key: string]: any };
+    phone?: string;
+    // frameWork: { [key: string]: any };
     /*
     firstName?: string;
     lastName?: string;
     language?: Array<string>;
-    phone?: string;
     phoneVerified?: boolean;
     profileSummary?: string;
     subject?: Array<string>;
