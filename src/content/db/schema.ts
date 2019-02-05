@@ -40,16 +40,16 @@ export namespace ContentEntry {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
             ContentEntry._ID + ' INTEGER PRIMARY KEY,' +
-            COLUMN_NAME_IDENTIFIER + DbConstants.TEXT_TYPE + ' UNIQUE NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_SERVER_DATA + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_LOCAL_DATA + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_MIME_TYPE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_PATH + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_INDEX + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_VISIBILITY + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_SERVER_LAST_UPDATED_ON + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_LOCAL_LAST_UPDATED_ON + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_MANIFEST_VERSION + DbConstants.TEXT_TYPE +
+            COLUMN_NAME_IDENTIFIER + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' UNIQUE NOT NULL' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_SERVER_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_LOCAL_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_MIME_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_PATH + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_INDEX + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_VISIBILITY + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_SERVER_LAST_UPDATED_ON + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_LOCAL_LAST_UPDATED_ON + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_MANIFEST_VERSION + DbConstants.SPACE + DbConstants.TEXT_TYPE +
             ' )';
     };
 
@@ -80,14 +80,14 @@ export namespace ContentAccessEntry {
 
 
     export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE IF NOT EXISTS' + ContentMarkerEntry.TABLE_NAME + ' (' +
+        return 'CREATE TABLE IF NOT EXISTS ' + ContentMarkerEntry.TABLE_NAME + ' (' +
             ContentMarkerEntry._ID + ' INTEGER PRIMARY KEY,' +
-            COLUMN_NAME_UID + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CONTENT_IDENTIFIER + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_DATA + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_EXTRA_INFO + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_MARKER + DbConstants.INT_TYPE +
+            COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CONTENT_IDENTIFIER + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_EXTRA_INFO + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_MARKER + DbConstants.SPACE + DbConstants.INT_TYPE +
             ' )';
     };
 
@@ -109,13 +109,13 @@ export namespace ContentFeedbackEntry {
 
 
     export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE IF NOT EXISTS' + TABLE_NAME + ' (' +
+        return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
             _ID + ' INTEGER PRIMARY KEY,' +
-            COLUMN_NAME_CONTENT_ID + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_UID + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_RATING + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_COMMENTS + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CREATED_AT + DbConstants.INT_TYPE +
+            COLUMN_NAME_CONTENT_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_RATING + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_COMMENTS + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CREATED_AT + DbConstants.SPACE + DbConstants.INT_TYPE +
             ' )';
     };
 
@@ -139,14 +139,14 @@ export namespace ContentMarkerEntry {
 
 
     export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE IF NOT EXISTS' + ContentMarkerEntry.TABLE_NAME + ' (' +
+        return 'CREATE TABLE IF NOT EXISTS ' + ContentMarkerEntry.TABLE_NAME + ' (' +
             ContentMarkerEntry._ID + ' INTEGER PRIMARY KEY,' +
-            COLUMN_NAME_UID + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CONTENT_IDENTIFIER + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_DATA + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_EXTRA_INFO + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_MARKER + DbConstants.INT_TYPE +
+            COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CONTENT_IDENTIFIER + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_EXTRA_INFO + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_MARKER + DbConstants.SPACE + DbConstants.INT_TYPE +
             ' )';
     };
 
