@@ -93,8 +93,8 @@ export class DbWebSqlService implements DbService {
 
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query,
-                [], (sqlTransaction, sqlResultSet) => {
-                    observable.next(sqlResultSet);
+                [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
+                    observable.next(sqlResultSet.rowsAffected);
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
                     observable.error(sqlError);
@@ -110,7 +110,7 @@ export class DbWebSqlService implements DbService {
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query,
                 [], (sqlTransaction, sqlResultSet) => {
-                    observable.next(sqlResultSet);
+                    observable.next(Array.from(sqlResultSet.rows));
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
                     observable.error(sqlError);
@@ -140,8 +140,8 @@ export class DbWebSqlService implements DbService {
 
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query.toString(),
-                [], (sqlTransaction, sqlResultSet) => {
-                    observable.next(sqlResultSet);
+                [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
+                    observable.next(!!sqlResultSet.rowsAffected);
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
                     observable.error(sqlError);
@@ -161,8 +161,8 @@ export class DbWebSqlService implements DbService {
 
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query,
-                [], (sqlTransaction, sqlResultSet) => {
-                    observable.next(sqlResultSet);
+                [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
+                    observable.next(undefined);
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
                     observable.error(sqlError);
