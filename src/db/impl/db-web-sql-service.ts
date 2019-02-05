@@ -178,7 +178,7 @@ export class DbWebSqlService implements DbService {
         return observable;
     }
 
-    delete(deleteQuery: DeleteQuery): Observable<number> {
+    delete(deleteQuery: DeleteQuery): Observable<undefined> {
         // TODO
         throw new Error('Method not implemented.');
     }

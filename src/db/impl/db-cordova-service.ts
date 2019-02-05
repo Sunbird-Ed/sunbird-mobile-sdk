@@ -1,6 +1,7 @@
 import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery} from '..';
 import {Observable, Subject} from 'rxjs';
 import {InitialMigration} from '../migrations/initial-migration';
+import {QueryBuilder} from '../util/query-builder';
 
 declare var db: {
     init: (dbName, dbVersion, migrations, callback) => void,
@@ -43,13 +44,31 @@ export class DbCordovaService implements DbService {
                     } else if (value.method === 'onUpgrade') {
                         await this.onUpgrade(value.oldVersion, value.newVersion);
                     }
-
-                    resolve();
                 });
 
 
-            this.execute('DROP TABLE IF EXISTS dummy_init_table').toPromise();
+            this.hasInitialized().subscribe(() => {
+                resolve();
+            });
         }));
+    }
+
+    delete(deleteQuery: DeleteQuery): Observable<undefined> {
+        const query = `
+            DELETE FROM ${deleteQuery.table}
+            WHERE ${new QueryBuilder().where(deleteQuery.selection).args(deleteQuery.selectionArgs).end().build()}
+        `;
+
+        const observable = new Subject<any>();
+
+        db.execute(query, value => {
+            observable.next(value);
+            observable.complete();
+        }, error => {
+            observable.error(error);
+        });
+
+        return observable;
     }
 
     private async onCreate() {
@@ -112,22 +131,8 @@ export class DbCordovaService implements DbService {
         return observable;
     }
 
-    private prepareMigrationList(): any {
-        const migrationList = this.appMigrationList;
-        const migrations: Array<any> = [];
-        migrationList.forEach(migration => {
-            const m = {};
-            m['targetDbVersion'] = migration.targetDbVersion;
-            m['queryList'] = migration.queries();
-            migrations.push(m);
-        });
-        return migrations;
-    }
-
-
-    delete(deleteQuery: DeleteQuery): Observable<number> {
-        // TODO
-        throw new Error('Method not implemented.');
+    private hasInitialized(): Observable<undefined> {
+        return this.execute('DROP TABLE IF EXISTS dummy_init_table');
     }
 
     beginTransaction(): void {

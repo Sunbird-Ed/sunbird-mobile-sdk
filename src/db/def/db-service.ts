@@ -13,7 +13,7 @@ export abstract class DbService {
 
     abstract update(updateQuery: UpdateQuery): Observable<boolean>;
 
-    abstract delete(deleteQuery: DeleteQuery): Observable<number>;
+    abstract delete(deleteQuery: DeleteQuery): Observable<undefined>;
 
     abstract beginTransaction(): void;
 
