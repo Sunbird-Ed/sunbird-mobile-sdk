@@ -33,7 +33,7 @@ export class DbCordovaService implements DbService {
     }
 
     public async init(): Promise<undefined> {
-        return new Promise<undefined>(((resolve, reject) => {
+        return new Promise<undefined>(((resolve) => {
             db.init(this.context.dbName,
                 this.dBVersion,
                 [],
@@ -47,10 +47,8 @@ export class DbCordovaService implements DbService {
                     resolve();
                 });
 
-            try {
-                this.execute("").toPromise();
-            } catch (e) {
-            }
+
+            this.execute('DROP TABLE IF EXISTS dummy_init_table').toPromise();
         }));
     }
 
