@@ -20,7 +20,7 @@ import {SessionAuthenticator} from '../../auth';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {Group} from '../def/group';
 import {ProfilesToGroupRequest} from '../def/profiles-to-group-request';
-import {GetAllProfileRequest} from '../def/get-all-profile-request';
+import {GetAllProfileRequest} from '..';
 import {GetAllGroupRequest} from '../def/get-all-group-request';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {ServerProfileDetailsRequest} from '../def/server-profile-details-request';
@@ -40,7 +40,8 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     createProfile(profile: Profile): Observable<Profile> {
-
+        profile.uid = UniqueId.generateUniqueId();
+        profile.created_at = Date.now();
         this.dbService.insert({
             table: ProfileEntry.TABLE_NAME,
             modelJson: ProfileMapper.mapProfileToProfileDBEntry(profile)
@@ -53,7 +54,7 @@ export class ProfileServiceImpl implements ProfileService {
         return this.dbService.delete({
             table: ProfileEntry.TABLE_NAME,
             selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
-            selectionArgs: [`"${uid}"`]
+            selectionArgs: [uid]
         });
     }
 
