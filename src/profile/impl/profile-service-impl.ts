@@ -1,4 +1,11 @@
-import {Profile, ProfileService, ProfileSource} from '..';
+import {
+    Profile,
+    ProfileService,
+    ProfileServiceConfig,
+    ProfileSession,
+    ProfileSource,
+    UpdateServerProfileInfoRequest
+} from '..';
 import {DbService, NoSqlFormatter} from '../../db';
 import {Observable} from 'rxjs';
 import {GroupEntry, GroupProfileEntry, ProfileEntry} from '../db/schema';
@@ -9,19 +16,16 @@ import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoRequest} from '../def/tenant-info-request';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
 import {ApiService} from '../../api';
-import {ProfileServiceConfig} from '../config/profile-service-config';
 import {SessionAuthenticator} from '../../auth';
-import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-request';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {Group} from '../def/group';
 import {ProfilesToGroupRequest} from '../def/profiles-to-group-request';
-import {ProfileRequest} from '../def/profile-request';
+import {GetAllProfileRequest} from '../def/get-all-profile-request';
 import {GetAllGroupRequest} from '../def/get-all-group-request';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {ServerProfileDetailsRequest} from '../def/server-profile-details-request';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
-import {ProfileSession} from '../def/profile-session';
 import {ProfileMapper} from '../util/profile-mapper';
 
 export class ProfileServiceImpl implements ProfileService {
@@ -45,7 +49,7 @@ export class ProfileServiceImpl implements ProfileService {
         return Observable.of(profile);
     }
 
-    deleteProfile(uid: string): Observable<number> {
+    deleteProfile(uid: string): Observable<undefined> {
         return this.dbService.delete({
             table: ProfileEntry.TABLE_NAME,
             selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
@@ -68,7 +72,7 @@ export class ProfileServiceImpl implements ProfileService {
             this.profileServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
     }
 
-    getAllProfiles(profileRequest?: ProfileRequest): Observable<Profile[]> {
+    getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]> {
         if (!profileRequest) {
             return this.dbService.read({
                 table: ProfileEntry.TABLE_NAME,
@@ -119,9 +123,11 @@ export class ProfileServiceImpl implements ProfileService {
         return Observable.of(group);
     }
 
-    deleteGroup(gid: string): Observable<number> {
+    deleteGroup(gid: string): Observable<undefined> {
         this.dbService.beginTransaction();
-        return Observable.zip(this.dbService.delete({
+
+        return Observable.zip(
+            this.dbService.delete({
                 table: GroupEntry.TABLE_NAME,
                 selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
                 selectionArgs: [`"${gid}"`]
@@ -131,9 +137,10 @@ export class ProfileServiceImpl implements ProfileService {
                 selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ?`,
                 selectionArgs: [`"${gid}"`]
             })
-        ).map(() => {
+        ).do(() => {
             this.dbService.endTransaction(true);
-            return 1;
+        }).map(() => {
+            return undefined;
         });
     }
 
