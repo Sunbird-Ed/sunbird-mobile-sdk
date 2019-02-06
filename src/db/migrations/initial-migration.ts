@@ -10,6 +10,7 @@ import {GroupEntry, GroupProfileEntry} from '../../group/db/schema';
 import {PartnerEntry} from '../../partner/db/schema';
 import {ContentAccessEntry, ContentEntry, ContentFeedbackEntry} from '../../content/db/schema';
 import {NotificationEntry} from '../../notification/db/schema';
+import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 
 export class InitialMigration extends Migration {
 
@@ -39,7 +40,8 @@ export class InitialMigration extends Migration {
             ContentFeedbackEntry.getCreateEntry(),
             NotificationEntry.getCreateEntry(),
             GroupEntry.getCreateEntry(),
-            GroupProfileEntry.getCreateEntry()
+            GroupProfileEntry.getCreateEntry(),
+            KeyValueStoreEntry.getCreateEntry()
         ];
     }
 

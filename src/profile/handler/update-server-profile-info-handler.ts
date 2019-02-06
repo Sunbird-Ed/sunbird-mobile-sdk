@@ -2,7 +2,6 @@ import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api
 import {UpdateServerProfileInfoRequest} from '..';
 import {Profile} from '..';
 import {ProfileServiceConfig} from '..';
-import {SessionAuthenticator} from '../../auth';
 import {Observable} from 'rxjs';
 
 export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateServerProfileInfoRequest, Profile> {
@@ -10,8 +9,7 @@ export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateS
 
     constructor(
         private apiService: ApiService,
-        private updateUserInfoConfig: ProfileServiceConfig,
-        private sessionAuthenticator: SessionAuthenticator) {
+        private updateUserInfoConfig: ProfileServiceConfig) {
 
     }
 
@@ -20,7 +18,7 @@ export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateS
             .withType(HttpRequestType.PATCH)
             .withPath(this.updateUserInfoConfig.apiPath + this.GET_SERVER_PROFILE_INFO_API)
             .withApiToken(true)
-            .withResponseInterceptor([this.sessionAuthenticator])
+            .withSessionToken(true)
             .withBody({request})
             .build();
         return this.apiService.fetch <{ result: Profile }>(apiRequest).map((success) => {

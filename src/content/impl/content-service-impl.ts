@@ -129,7 +129,7 @@ export class ContentServiceImpl implements ContentService {
                 response.errorMesg = ErrorCode.ECAR_NOT_FOUND.valueOf();
                 return Observable.of(response);
             } else {
-                this.fileService.getFreeDiskSpace()
+                this.fileService.getFreeDiskSpace();
                 // TODO Add device memory check before import
 
             }

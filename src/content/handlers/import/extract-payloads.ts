@@ -75,7 +75,8 @@ export class ExtractPayloads {
     //                 if (artifactUrl) {
     //                     if (!contentDisposition || !contentEncoding ||
     //                         (contentDisposition === ContentDisposition.INLINE.valueOf()
-    //                             && contentEncoding === ContentEncoding.GZIP.valueOf())) { // Content with artifact without zip i.e. pfd, mp4
+    //                             && contentEncoding === ContentEncoding.GZIP.valueOf()))
+    //                             { //Content with artifact without zip i.e. pfd, mp4
     //                         const payload = tempLocationPath.concat('/', artifactUrl);
     //                         isUnzippingSuccessfull = !Boolean(await this.zipService.unzip(payload, payloadDestination.toURL()));
     //

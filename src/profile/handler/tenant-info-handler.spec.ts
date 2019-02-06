@@ -1,15 +1,14 @@
 import { TenantInfoHandler } from './tenant-info-handler';
 import {
     apiServiceMock,
-    profileServiceConfigMock,
-    sessionAuthenticatorMock
+    profileServiceConfigMock
 } from '../../__test__/mocks';
 import { Observable } from 'rxjs';
 
 describe.only('TenantInfoHandler', () => {
     let tenentInfoHandler: TenantInfoHandler;
     beforeEach(() => {
-        tenentInfoHandler = new TenantInfoHandler(apiServiceMock as any, profileServiceConfigMock, sessionAuthenticatorMock);
+        tenentInfoHandler = new TenantInfoHandler(apiServiceMock as any, profileServiceConfigMock);
     });
     it('can load instance', () => {
         // arrange
