@@ -1,4 +1,4 @@
-import { DbConstants } from '../../db';
+import {DbConstants} from '../../db';
 
 export namespace KeyValueStoreEntry {
 
@@ -14,8 +14,6 @@ export namespace KeyValueStoreEntry {
             COLUMN_NAME_VALUE + DbConstants.SPACE + DbConstants.TEXT_TYPE +
             ' )';
     };
-    export const deleteTable: (() => string) = () => {
-        return 'DROP TABLE IF EXISTS ' + KeyValueStoreEntry.TABLE_NAME;
 
     export const getDeleteEntry: (() => string) = () => {
         return 'DROP TABLE IF EXISTS ' + TABLE_NAME;
