@@ -33,6 +33,8 @@ import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migrati
 import {GroupProfileMigration} from './db/migrations/group-profile-migration';
 import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
 import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
+import {GroupService} from './group/def/group-service';
+import {GroupServiceImpl} from './group/impl/group-service-impl';
 
 export class SunbirdSdk {
 
@@ -52,6 +54,7 @@ export class SunbirdSdk {
     private _apiService: ApiService;
     private _keyValueStore: KeyValueStore;
     private _profileService: ProfileService;
+    private _groupService: GroupService;
     private _contentService: ContentService;
     private _courseService: CourseService;
     private _formService: FormService;
@@ -86,6 +89,10 @@ export class SunbirdSdk {
 
     get profileService(): ProfileService {
         return this._profileService;
+    }
+
+    get groupService(): GroupService {
+        return this._groupService;
     }
 
     get contentService(): ContentService {
@@ -156,6 +163,8 @@ export class SunbirdSdk {
             this._keyValueStore,
             sessionAuthenticator
         );
+
+        this._groupService = new GroupServiceImpl(this._dbService);
 
         this._contentService = new ContentServiceImpl(
             sdkConfig.contentServiceConfig,
