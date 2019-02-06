@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
 import {EnrollCourseRequest} from '../def/request-types';
 import {Observable} from 'rxjs';
 import {CourseServiceConfig} from '..';
@@ -19,7 +19,7 @@ export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseReques
             .withType(HttpRequestType.POST)
             .withPath(this.courseServiceConfig.apiPath + this.ENROL_ENDPOINT)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .withBody({request})
             .build();
 

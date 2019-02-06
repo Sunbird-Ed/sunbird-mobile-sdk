@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
 import {Batch, CourseServiceConfig} from '..';
 import {SessionAuthenticator} from '../../auth';
 import {UpdateContentStateRequest} from '../def/request-types';
@@ -19,7 +19,7 @@ export class UpdateContentStateHandler implements ApiRequestHandler<UpdateConten
             .withType(HttpRequestType.PATCH)
             .withPath(this.courseServiceConfig.apiPath + this.UPDATE_CONTENT_STATE_ENDPOINT)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .withBody({request})
             .build();
 

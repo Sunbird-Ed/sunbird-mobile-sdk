@@ -35,7 +35,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
             .withType(HttpRequestType.GET)
             .withPath(this.frameworkServiceConfig.apiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + request.frameworkId)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .build();
 
         return this.apiService.fetch<{ result: { response: Framework } }>(apiRequest).map((response) => {

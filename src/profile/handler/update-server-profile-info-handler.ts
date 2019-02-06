@@ -20,7 +20,7 @@ export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateS
             .withType(HttpRequestType.PATCH)
             .withPath(this.updateUserInfoConfig.apiPath + this.GET_SERVER_PROFILE_INFO_API + request.userId + '/' + request.phone)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .withBody({request})
             .build();
         return this.apiService.fetch <{ result: Profile }>(apiRequest).map((success) => {

@@ -1,4 +1,5 @@
 import {ResponseInterceptor} from './response-interceptor';
+import {RequestInterceptor} from './request-interceptor';
 import {Authenticator} from './authenticator';
 
 export enum HttpRequestType {
@@ -26,18 +27,18 @@ export class Request {
             return this;
         }
 
-        withApiToken(requiredApiToken: boolean) {
-            this.request._requiredApiToken = requiredApiToken;
-            return this;
-        }
-
-        withInterceptors(responseInterceptors: Array<ResponseInterceptor>) {
-            this.request._responseInterceptors = responseInterceptors;
-            return this;
-        }
-
         withAuthenticator(authenticator: Authenticator) {
             this.request._authenticators.push(authenticator);
+            return this;
+        }
+
+        withResponseInterceptor(responseInterceptor: ResponseInterceptor) {
+            this.request._responseInterceptors.push(responseInterceptor);
+            return this;
+        }
+
+        withRequestInterceptor(requestInterceptor: RequestInterceptor) {
+            this.request._requestInterceptors.push(requestInterceptor);
             return this;
         }
 
@@ -56,6 +57,16 @@ export class Request {
             return this;
         }
 
+        withApiToken(required: boolean) {
+            this.request.withApiToken = required;
+            return this;
+        }
+
+        withSessionToken(required: boolean) {
+            this.request.withSessionToken = required;
+            return this;
+        }
+
         build(): Request {
 
             if (!this.request._path || !this.request._type) {
@@ -65,12 +76,20 @@ export class Request {
         }
 
     };
+    private _responseInterceptors: ResponseInterceptor[] = [];
 
+    private _withApiToken = false;
     private _path: string;
     private _type: HttpRequestType;
-    private _requiredApiToken = true;
-    private _responseInterceptors: ResponseInterceptor[] = [];
     private _authenticators: Authenticator[] = [];
+
+    get withApiToken(): boolean {
+        return this._withApiToken;
+    }
+
+    set withApiToken(value: boolean) {
+        this._withApiToken = value;
+    }
     private _headers?: { [key: string]: string } = {};
     private _body?: {} = {};
     private _parameters?: { [key: string]: string } = {};
@@ -83,13 +102,7 @@ export class Request {
 
     }
 
-    addAuthenticator(authenticator: Authenticator) {
-        this._authenticators.push(authenticator);
-    }
-
-    get authenticators(): Authenticator[] {
-        return this._authenticators;
-    }
+    private _withSessionToken = false;
 
     set path(value: string) {
         this._path = value;
@@ -97,10 +110,6 @@ export class Request {
 
     get type(): HttpRequestType {
         return this._type;
-    }
-
-    set requiredApiToken(value: boolean) {
-        this._requiredApiToken = value;
     }
 
     set responseInterceptors(value: Array<ResponseInterceptor>) {
@@ -123,10 +132,6 @@ export class Request {
         this._type = value;
     }
 
-    get requiredApiToken(): boolean {
-        return this._requiredApiToken;
-    }
-
     get responseInterceptors(): Array<ResponseInterceptor> {
         return this._responseInterceptors;
     }
@@ -141,5 +146,27 @@ export class Request {
 
     set parameters(value: { [key: string]: string }) {
         this._parameters = value;
+    }
+
+    get withSessionToken(): boolean {
+        return this._withSessionToken;
+    }
+
+    set withSessionToken(value: boolean) {
+        this._withSessionToken = value;
+    }
+
+    private _requestInterceptors: RequestInterceptor[] = [];
+
+    get requestInterceptors(): RequestInterceptor[] {
+        return this._requestInterceptors;
+    }
+
+    get authenticators(): Authenticator[] {
+        return this._authenticators;
+    }
+
+    set authenticators(value: Authenticator[]) {
+        this._authenticators = value;
     }
 }

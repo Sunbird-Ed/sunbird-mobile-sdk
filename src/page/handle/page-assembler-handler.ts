@@ -42,7 +42,7 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
             .withPath(this.pageApiServiceConfig.apiPath + this.PAGE_ASSEMBLE_ENDPOINST + this.getIdForDb(request))
             .withApiToken(true)
             .withBody(request)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .build();
         return this.apiService.fetch<{ result: PageAssemble }>(apiRequest).map((success) => {
             return success.body.result;

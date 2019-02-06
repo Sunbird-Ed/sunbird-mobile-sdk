@@ -35,7 +35,7 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
             .withType(HttpRequestType.GET)
             .withPath(this.frameworkServiceConfig.apiPath + this.GET_CHANNEL_DETAILS_ENDPOINT + request.channelId)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .build();
 
         return this.apiService.fetch<{ result: { response: Channel } }>(apiRequest).map((response) => {

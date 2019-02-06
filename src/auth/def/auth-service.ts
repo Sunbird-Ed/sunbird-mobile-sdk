@@ -1,12 +1,13 @@
 import {OauthSession} from './oauth-session';
 import {Observable} from 'rxjs';
+import {SessionProvider} from './session-provider';
 
 export interface AuthService {
-
-    login(): Observable<OauthSession>;
-
-    logout(): Observable<undefined>;
+    setSession(sessionProvider: SessionProvider): Observable<undefined>;
 
     getSession(): Observable<OauthSession>;
 
+    resignSession(): Observable<undefined>;
+
+    refreshSession(): Observable<undefined>;
 }

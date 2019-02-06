@@ -1,7 +1,7 @@
 // definitions
 import {ApiService, ApiServiceImpl} from './api';
 import {DbService} from './db';
-import {AuthService, SessionAuthenticator} from './auth';
+import {AuthService} from './auth';
 import {TelemetryService} from './telemetry';
 import {SharedPreferences} from './util/shared-preferences';
 // config
@@ -10,7 +10,7 @@ import {SdkConfig} from './sdk-config';
 import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
-import {AuthServiceImpl} from './auth/auth-service-impl';
+import {AuthServiceImpl} from './auth/impl/auth-service-impl';
 import {ContentService} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
@@ -145,7 +145,8 @@ export class SunbirdSdk {
 
         this._keyValueStore = new KeyValueStoreImpl(this._dbService);
         this._fileService = new FileServiceImpl();
-        const sessionAuthenticator = new SessionAuthenticator(sdkConfig.apiConfig, this._apiService);
+
+        const sessionAuthenticator = {} as any;
 
         this._profileService = new ProfileServiceImpl(
             sdkConfig.profileServiceConfig,

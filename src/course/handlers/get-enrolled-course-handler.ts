@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
 import {FetchEnrolledCourseRequest} from '../def/request-types';
 import {Course, CourseServiceConfig} from '..';
 import {Observable} from 'rxjs';
@@ -39,7 +39,7 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
             .withType(HttpRequestType.GET)
             .withPath(this.courseServiceConfig.apiPath + this.GET_ENROLLED_COURSES_ENDPOINT + request.userId)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .build();
 
         return this.apiService.fetch<{ result: Course[] }>(apiRequest).map((response) => {
