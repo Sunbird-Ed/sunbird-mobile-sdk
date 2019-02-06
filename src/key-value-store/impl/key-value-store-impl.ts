@@ -11,7 +11,7 @@ export class KeyValueStoreImpl implements KeyValueStore {
         return this.dbService.read({
             table: KeyValueStoreEntry.TABLE_NAME,
             columns: [],
-            selection: `${KeyValueStoreEntry.KEY} = ?`,
+            selection: `${KeyValueStoreEntry.COLUMN_NAME_KEY} = ?`,
             selectionArgs: [`"${key}"`]
         }).map(value => value[0]);
     }
@@ -22,11 +22,11 @@ export class KeyValueStoreImpl implements KeyValueStore {
                 if (response) {
                     return this.dbService.update({
                         table: KeyValueStoreEntry.TABLE_NAME,
-                        selection: `${KeyValueStoreEntry.KEY} = ?`,
+                        selection: `${KeyValueStoreEntry.COLUMN_NAME_KEY} = ?`,
                         selectionArgs: [`"${key}"`],
                         modelJson: {
-                            [KeyValueStoreEntry.KEY]: key,
-                            [KeyValueStoreEntry.VALUE]: value
+                            [KeyValueStoreEntry.COLUMN_NAME_KEY]: key,
+                            [KeyValueStoreEntry.COLUMN_NAME_VALUE]: value
                         }
                     });
 
@@ -34,7 +34,7 @@ export class KeyValueStoreImpl implements KeyValueStore {
                     return this.dbService.insert({
                         table: KeyValueStoreEntry.TABLE_NAME,
                         modelJson: {
-                            [KeyValueStoreEntry.VALUE]: value
+                            [KeyValueStoreEntry.COLUMN_NAME_VALUE]: value
                         }
                     }).map(v => v > 0);
                 }
