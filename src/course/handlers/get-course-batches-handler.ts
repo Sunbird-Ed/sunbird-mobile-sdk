@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
 import {CourseBatchesRequest} from '../def/request-types';
 import {Batch, CourseServiceConfig} from '..';
 import {Observable} from 'rxjs';
@@ -22,7 +22,7 @@ export class GetCourseBatchesHandler implements ApiRequestHandler<CourseBatchesR
             .withType(HttpRequestType.POST)
             .withPath(this.courseServiceConfig.apiPath + this.GET_COURSE_BATCHES)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .withBody({request})
             .build();
 

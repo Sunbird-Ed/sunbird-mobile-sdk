@@ -53,6 +53,10 @@ export class DbCordovaService implements DbService {
         }));
     }
 
+    private hasInitialized(): Observable<undefined> {
+        return this.execute('DROP TABLE IF EXISTS dummy_init_table');
+    }
+
     delete(deleteQuery: DeleteQuery): Observable<undefined> {
         const query = `
             DELETE FROM ${deleteQuery.table}
@@ -99,15 +103,16 @@ export class DbCordovaService implements DbService {
     read(readQuery: ReadQuery): Observable<any[]> {
         const observable = new Subject<any[]>();
 
-        db.read(readQuery.distinct!!,
+        db.read(!!readQuery.distinct,
             readQuery.table,
-            readQuery.columns!!,
-            readQuery.selection!!,
-            readQuery.selectionArgs!!,
-            readQuery.groupBy!!,
-            readQuery.having!!,
-            readQuery.orderBy!!,
-            readQuery.limit!! + '', (json: any[]) => {
+            readQuery.columns || [],
+            readQuery.selection || '',
+            readQuery.selectionArgs || [],
+            readQuery.groupBy || '',
+            readQuery.having || '',
+            readQuery.orderBy || '',
+            readQuery.limit || '',
+            (json: any[]) => {
                 observable.next(json);
                 observable.complete();
             }, (error: string) => {
@@ -129,10 +134,6 @@ export class DbCordovaService implements DbService {
             });
 
         return observable;
-    }
-
-    private hasInitialized(): Observable<undefined> {
-        return this.execute('DROP TABLE IF EXISTS dummy_init_table');
     }
 
     beginTransaction(): void {

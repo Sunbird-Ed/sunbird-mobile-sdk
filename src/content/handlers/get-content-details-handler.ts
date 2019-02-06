@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
 import {ContentDetailRequest} from '../def/requests';
 import {Content, ContentData} from '../def/content';
 import {Observable} from 'rxjs';
@@ -74,7 +74,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             .withType(HttpRequestType.GET)
             .withPath(this.contentServiceConfig!.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + request.contentId)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator!])
+            .withResponseInterceptor([this.sessionAuthenticator!])
             .build())
             .map((response) => {
                 return response.body.result;

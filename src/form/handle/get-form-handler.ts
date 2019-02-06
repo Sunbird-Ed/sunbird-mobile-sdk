@@ -46,7 +46,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
             .withPath(this.formServiceConfig.apiPath + this.GET_FORM_REQUEST_ENDPOINT + this.getIdForRequest(request))
             .withApiToken(true)
             .withBody(request)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .build();
         return this.apiService.fetch <{ result: { [key: string]: {} } }>(apiRequest).map((success) => {
             return success.body.result;

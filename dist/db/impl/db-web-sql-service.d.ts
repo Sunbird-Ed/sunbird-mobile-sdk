@@ -5,17 +5,15 @@ export declare class DbWebSqlService implements DbService {
     private dBVersion;
     private appMigrationList;
     webSqlDB: any;
-    private initialized;
     constructor(context: DbConfig, dBVersion: number, appMigrationList: Migration[]);
-    update(updateQuery: UpdateQuery): Observable<boolean>;
-    init(): void;
-    private onCreate;
-    private onUpgrade;
-    execute(query: string): Observable<any>;
+    init(): Promise<undefined>;
     read(readQuery: ReadQuery): Observable<any[]>;
     insert(inserQuery: InsertQuery): Observable<number>;
-    private prepareMigrationList;
-    delete(deleteQuery: DeleteQuery): Observable<number>;
+    execute(query: string): Observable<any>;
+    update(updateQuery: UpdateQuery): Observable<boolean>;
+    delete(deleteQuery: DeleteQuery): Observable<undefined>;
     beginTransaction(): void;
     endTransaction(isOperationSuccessful: boolean): void;
+    private hasInitialized;
+    private onCreate;
 }

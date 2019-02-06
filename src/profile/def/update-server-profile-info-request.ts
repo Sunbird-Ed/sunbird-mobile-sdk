@@ -1,6 +1,7 @@
 export interface UpdateServerProfileInfoRequest {
     userId: string;
     phone?: string;
+    emailId?: string;
     // frameWork: { [key: string]: any };
     /*
     firstName?: string;

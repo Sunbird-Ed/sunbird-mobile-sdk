@@ -1,7 +1,7 @@
 // definitions
 import {ApiService, ApiServiceImpl} from './api';
 import {DbService} from './db';
-import {AuthService, SessionAuthenticator} from './auth';
+import {AuthService} from './auth';
 import {TelemetryService} from './telemetry';
 import {SharedPreferences} from './util/shared-preferences';
 // config
@@ -10,7 +10,7 @@ import {SdkConfig} from './sdk-config';
 import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
-import {AuthServiceImpl} from './auth/auth-service-impl';
+import {AuthServiceImpl} from './auth/impl/auth-service-impl';
 import {ContentService} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
@@ -33,6 +33,8 @@ import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migrati
 import {GroupProfileMigration} from './db/migrations/group-profile-migration';
 import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
 import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
+import {GroupService} from './group/def/group-service';
+import {GroupServiceImpl} from './group/impl/group-service-impl';
 
 export class SunbirdSdk {
 
@@ -52,6 +54,7 @@ export class SunbirdSdk {
     private _apiService: ApiService;
     private _keyValueStore: KeyValueStore;
     private _profileService: ProfileService;
+    private _groupService: GroupService;
     private _contentService: ContentService;
     private _courseService: CourseService;
     private _formService: FormService;
@@ -86,6 +89,10 @@ export class SunbirdSdk {
 
     get profileService(): ProfileService {
         return this._profileService;
+    }
+
+    get groupService(): GroupService {
+        return this._groupService;
     }
 
     get contentService(): ContentService {
@@ -145,7 +152,8 @@ export class SunbirdSdk {
 
         this._keyValueStore = new KeyValueStoreImpl(this._dbService);
         this._fileService = new FileServiceImpl();
-        const sessionAuthenticator = new SessionAuthenticator(sdkConfig.apiConfig, this._apiService);
+
+        const sessionAuthenticator = {} as any;
 
         this._profileService = new ProfileServiceImpl(
             sdkConfig.profileServiceConfig,
@@ -155,6 +163,8 @@ export class SunbirdSdk {
             this._keyValueStore,
             sessionAuthenticator
         );
+
+        this._groupService = new GroupServiceImpl(this._dbService);
 
         this._contentService = new ContentServiceImpl(
             sdkConfig.contentServiceConfig,

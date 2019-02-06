@@ -17,7 +17,7 @@ export class TenantInfoHandler implements ApiRequestHandler<TenantInfoRequest, T
         const apiRequest: Request = new Request.Builder().withType(HttpRequestType.GET)
             .withPath(this.tenantServiceConfig.apiPath + this.GET_TENANT_INFO_ENDPOINT + request.slug)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .build();
         return this.apiService.fetch <{ result: TenantInfo }>(apiRequest).map((success) => {
             return success.body.result;

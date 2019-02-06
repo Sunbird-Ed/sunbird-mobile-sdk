@@ -33,7 +33,7 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<ServerP
             .withType(HttpRequestType.GET)
             .withPath(this.profileServiceConfig.apiPath + this.GET_SERVER_PROFILE_DETAILS_ENDPOINT + request.userId)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .build();
 
         return this.apiService.fetch<{ result: ServerProfile }>(apiRequest).map((success) => {

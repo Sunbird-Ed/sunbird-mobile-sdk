@@ -17,7 +17,7 @@ export class SearchServerProfileHandler implements ApiRequestHandler<ServerProfi
         const apiRequest: Request = new Request.Builder().withType(HttpRequestType.POST)
             .withPath(this.searchServiceConfig.searchProfilePath + this.GET_SEARCH_USER_ENDPOINT + request.identifiers)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .withBody({request})
             .build();
         return this.apiService.fetch<{ result: ServerProfile[] }>(apiRequest).map((success) => {

@@ -1,7 +1,31 @@
 export declare namespace ProfileEntry {
     const _ID = "_id";
     const TABLE_NAME = "profiles";
-    const getCreateEntry: (() => string);
+    const COLUMN_NAME_UID = "uid";
+    const COLUMN_NAME_HANDLE = "handle";
+    const COLUMN_NAME_CREATED_AT = "created_at";
+    const COLUMN_NAME_MEDIUM = "medium";
+    const COLUMN_NAME_BOARD = "board";
+    const COLUMN_NAME_SUBJECT = "subject";
+    const COLUMN_NAME_PROFILE_TYPE = "profile_type";
+    const COLUMN_NAME_GRADE = "grade";
+    const COLUMN_NAME_SYLLABUS = "syllabus";
+    const COLUMN_NAME_SOURCE = "source";
+    const COLUMN_NAME_GRADE_VALUE = "grade_value";
+    interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_HANDLE]: string;
+        [COLUMN_NAME_CREATED_AT]: number;
+        [COLUMN_NAME_MEDIUM]: string;
+        [COLUMN_NAME_BOARD]: string;
+        [COLUMN_NAME_SUBJECT]: string;
+        [COLUMN_NAME_PROFILE_TYPE]: string;
+        [COLUMN_NAME_GRADE]: string;
+        [COLUMN_NAME_SYLLABUS]: string;
+        [COLUMN_NAME_SOURCE]: string;
+        [COLUMN_NAME_GRADE_VALUE]: string;
+    }
+    const getCreateEntry: () => string;
     const deleteTable: (() => string);
     const getAlterEntryForProfileSyllabus: (() => string);
 }
@@ -13,14 +37,36 @@ export declare namespace UserEntry {
     const deleteTable: (() => string);
 }
 export declare namespace GroupProfileEntry {
-    const _ID = "_id";
     const TABLE_NAME = "group_profile";
+    const _ID = "_id";
+    const COLUMN_NAME_UID = "uid";
+    const COLUMN_NAME_GID = "gid";
+    interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_GID]: string;
+    }
     const getCreateEntry: (() => string);
     const deleteTable: (() => string);
 }
 export declare namespace GroupEntry {
-    const _ID = "_id";
     const TABLE_NAME = "groups";
+    const _ID = "_id";
+    const COLUMN_NAME_GID = "gid";
+    const COLUMN_NAME_NAME = "name";
+    const COLUMN_NAME_SYLLABUS = "syllabus";
+    const COLUMN_NAME_GRADE = "grade";
+    const COLUMN_NAME_GRADE_VALUE = "grade_value";
+    const COLUMN_NAME_CREATED_AT = "created_at";
+    const COLUMN_NAME_UPDATED_AT = "updated_at";
+    interface SchemaMap {
+        [COLUMN_NAME_GID]: string;
+        [COLUMN_NAME_NAME]: string;
+        [COLUMN_NAME_SYLLABUS]: string;
+        [COLUMN_NAME_GRADE]: string;
+        [COLUMN_NAME_GRADE_VALUE]: string;
+        [COLUMN_NAME_CREATED_AT]: number;
+        [COLUMN_NAME_UPDATED_AT]: number;
+    }
     const getCreateEntry: (() => string);
     const deleteTable: (() => string);
 }

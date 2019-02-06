@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiServiceImpl, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
 import {Batch, CourseServiceConfig} from '..';
 import {SessionAuthenticator} from '../../auth';
@@ -19,7 +19,7 @@ export class GetBatchDetailsHandler implements ApiRequestHandler<CourseBatchDeta
             .withType(HttpRequestType.GET)
             .withPath(this.courseServiceConfig.apiPath + this.GET_BATCH_DETAILS_ENDPOINT + request.batchId)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .build();
 
         return this.apiService.fetch<{ result: { response: Batch } }>(apiRequest).map((response) => {

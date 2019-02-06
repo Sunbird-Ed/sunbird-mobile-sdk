@@ -1,7 +1,7 @@
-import { FileService } from '../../util/file/def/file-service';
-import { DbService } from '../../db';
-import { ZipService } from '../../util/zip/def/zip-service';
-import { AppConfig } from '../../api/config/app-config';
+import { FileService } from '../../../util/file/def/file-service';
+import { DbService } from '../../../db';
+import { ZipService } from '../../../util/zip/def/zip-service';
+import { AppConfig } from '../../../api/config/app-config';
 export declare class ExtractPayloads {
     private fileService;
     private zipService;

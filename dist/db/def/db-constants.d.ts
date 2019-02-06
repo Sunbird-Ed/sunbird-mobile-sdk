@@ -4,6 +4,7 @@ export declare class DbConstants {
     static INT_TYPE: string;
     static REAL_TYPE: string;
     static COMMA_SEP: string;
+    static SPACE: string;
     static MAX_NUM_OF_EVENTS: number;
     static MAX_NUM_OF_PROCESSED_EVENTS: number;
     static ERROR: string;

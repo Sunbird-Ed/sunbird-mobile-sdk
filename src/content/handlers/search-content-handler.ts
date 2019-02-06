@@ -110,7 +110,7 @@ export class SearchContentHandler {
             .withType(HttpRequestType.POST)
             .withPath(this.contentServiceConfig.apiPath + this.SEARCH_ENDPOINT + '/' + '?framework=' + framework + '&lang=' + langCode)
             .withApiToken(true)
-            .withInterceptors([this.sessionAuthenticator])
+            .withResponseInterceptor([this.sessionAuthenticator])
             .withBody(request)
             .build();
     }

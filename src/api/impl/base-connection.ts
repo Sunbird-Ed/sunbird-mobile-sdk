@@ -1,6 +1,10 @@
-import {ApiConfig, Connection, HttpClient, HttpRequestType, Request, Response} from '..';
+import {ApiConfig, HttpClient, HttpRequestType, Request, Response} from '..';
 import {Observable} from 'rxjs';
 import * as SHA1 from 'crypto-js/sha1';
+import {Connection} from '../def/connection';
+import {Authenticator} from '../def/authenticator';
+import {ApiAuthenticator} from './api-authenticator';
+import {SessionAuthenticator} from '../../auth';
 
 export class BaseConnection implements Connection {
 
@@ -9,33 +13,26 @@ export class BaseConnection implements Connection {
         this.addGlobalHeader();
     }
 
-    private static interceptRequest(request: Request): Request {
-        const authenticators = request.authenticators;
-        for (const authenticator of authenticators) {
-            request = authenticator.interceptRequest(request);
-        }
-        return request;
-    }
+    public invoke(request: Request): Observable<Response> {
+        this.buildInterceptorsFromAuthenticators(request);
 
-    invoke(request: Request): Observable<Response> {
+        request = this.interceptRequest(request);
 
         let response = (async () => {
-            request = BaseConnection.interceptRequest(request);
-
             switch (request.type) {
                 case HttpRequestType.GET:
                     response = await this.http.get(this.apiConfig.baseUrl, request.path, request.headers, request.parameters).toPromise();
-                    response = await this.interceptResponse(request, response);
-                    return response;
+                    break;
                 case HttpRequestType.PATCH:
                     response = await this.http.patch(this.apiConfig.baseUrl, request.path, request.headers, request.body).toPromise();
-                    response = await this.interceptResponse(request, response);
-                    return response;
+                    break;
                 case HttpRequestType.POST:
                     response = await this.http.post(this.apiConfig.baseUrl, request.path, request.headers, request.body).toPromise();
-                    response = await this.interceptResponse(request, response);
-                    return response;
+                    break;
             }
+
+            response = await this.interceptResponse(request, response);
+            return response;
         })();
 
         return Observable.fromPromise(response);
@@ -54,15 +51,33 @@ export class BaseConnection implements Connection {
         this.http.addHeaders(header);
     }
 
-    private async interceptResponse(request: Request, response: Response): Promise<Response> {
-        const authenticators = request.authenticators;
-        for (const authenticator of authenticators) {
-            response = await authenticator.onResponse(request, response, this).toPromise();
+    private buildInterceptorsFromAuthenticators(request: Request) {
+        if (request.withApiToken) {
+            request.authenticators.push(new ApiAuthenticator(this.apiConfig, this));
         }
 
+        if (request.withSessionToken) {
+            request.authenticators.push(new SessionAuthenticator(this.apiConfig, this));
+        }
+
+        request.authenticators.forEach((authenticator: Authenticator) => {
+            request.requestInterceptors.push(authenticator);
+            request.responseInterceptors.push(authenticator);
+        });
+    }
+
+    private interceptRequest(request: Request): Request {
+        const interceptors = request.requestInterceptors;
+        for (const interceptor of interceptors) {
+            request = interceptor.interceptRequest(request);
+        }
+        return request;
+    }
+
+    private async interceptResponse(request: Request, response: Response): Promise<Response> {
         const interceptors = request.responseInterceptors;
         for (const interceptor of interceptors) {
-            response = await interceptor.onResponse(request, response, this).toPromise();
+            response = await interceptor.interceptResponse(request, response).toPromise();
         }
 
         return response;

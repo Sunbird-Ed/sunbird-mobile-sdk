@@ -1,120 +1,39 @@
 import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery} from '..';
 import {Observable, Subject} from 'rxjs';
 import * as squel from 'squel';
+import {InitialMigration} from '../migrations/initial-migration';
 
 
 export class DbWebSqlService implements DbService {
 
     webSqlDB: any;
-    private initialized = false;
 
     constructor(private context: DbConfig,
-        private dBVersion: number,
-        private appMigrationList: Migration[],
+                private dBVersion: number,
+                private appMigrationList: Migration[],
     ) {
     }
 
-    update(updateQuery: UpdateQuery): Observable<boolean> {
-        const observable = new Subject<boolean>();
-        const query = squel.update()
-            .table(updateQuery.table)
-            .where(updateQuery.selection!, ...updateQuery.selectionArgs!)
-            .setFields(updateQuery.modelJson);
-
-
-            this.webSqlDB.transaction((tx) => {
-                tx.executeSql(query.toString(),
-                    [], (sqlTransaction, sqlResultSet) => {
-                        observable.next(true);
-                        observable.complete();
-                    }, (sqlTransaction, sqlError) => {
-                        observable.next(false);
-                        observable.complete();
-                    });
-            });
-        return observable;
-    }
-
     public async init(): Promise<undefined> {
-        this.initialized = true;
-        this.webSqlDB = window.openDatabase(
-            this.context.dbName,
-            this.dBVersion + '',
-            'Genie web sql DB',
-            2 * 1024 * 1024,
-            (database) => {
-                console.log('db created');
-                this.onCreate();
-            });
-        return;
-    }
-
-    private async onCreate() {
-        this.webSqlDB.transaction((tx) => {
-            this.appMigrationList.forEach((migration: Migration) => {
-                migration.queries().forEach(query => {
-                    tx.executeSql(query,
-                        [], (sqlTransaction, sqlResultSet) => {
-                            console.log('sqlResultSet', sqlResultSet);
-                        }, (sqlTransaction, sqlError) => {
-                            console.log('sqlError', sqlError);
-                        });
+        return new Promise<undefined>(((resolve) => {
+            this.webSqlDB = window.openDatabase(
+                this.context.dbName,
+                this.dBVersion + '',
+                'Genie web sql DB',
+                2 * 1024 * 1024,
+                async (database) => {
+                    await this.onCreate();
+                    resolve();
                 });
+
+            this.hasInitialized().subscribe(() => {
+                resolve();
             });
-        });
-    }
-
-    private onUpgrade(oldVersion: number, newVersion: number) {
-
-    }
-
-    execute(query: string): Observable<any> {
-        const observable = new Subject<any>();
-
-        // db.execute(query, value => {
-        //     observable.next(value);
-        //     observable.complete();
-        // }, error => {
-        //     observable.error(error);
-        // });
-
-        this.webSqlDB.transaction((tx) => {
-            tx.executeSql(query,
-                [], (sqlTransaction, sqlResultSet) => {
-                    console.log('sqlResultSet', sqlResultSet);
-                    observable.next(sqlResultSet);
-                    observable.complete();
-                }, (sqlTransaction, sqlError) => {
-                    console.log('sqlError', sqlError);
-                    observable.error(sqlError);
-                });
-        });
-
-        return observable;
+        }));
     }
 
     read(readQuery: ReadQuery): Observable<any[]> {
-
-        if (!this.initialized) {
-            this.init();
-        }
-
         const observable = new Subject<any[]>();
-
-        // db.read(readQuery.distinct!!,
-        //     readQuery.table,
-        //     readQuery.columns!,
-        //     readQuery.selection!,
-        //     readQuery.selectionArgs!,
-        //     readQuery.groupBy!,
-        //     readQuery.having!!,
-        //     readQuery.orderBy!!,
-        //     readQuery.limit!! + '', (json: any[]) => {
-        //         observable.next(json);
-        //         observable.complete();
-        //     }, (error: string) => {
-        //         observable.error(error);
-        //     });
 
         const attachFields = (mixin, fields: string[] = []) => {
             fields.forEach((field) => {
@@ -129,10 +48,11 @@ export class DbWebSqlService implements DbService {
         }).from(readQuery.table);
 
         attachFields(query, readQuery.columns);
+
         if (readQuery.groupBy) {
             query.group(readQuery.groupBy);
         }
-        // need to check syntax
+
         if (readQuery.having) {
             query.having(readQuery.having);
         }
@@ -152,8 +72,8 @@ export class DbWebSqlService implements DbService {
 
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query.toString(),
-                [], (sqlTransaction, sqlResultSet) => {
-                    observable.next(sqlResultSet);
+                [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
+                    observable.next(Array.from(sqlResultSet.rows));
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
                     observable.error(sqlError);
@@ -164,50 +84,108 @@ export class DbWebSqlService implements DbService {
     }
 
     insert(inserQuery: InsertQuery): Observable<number> {
-        // this.onCreate();
-        if (!this.initialized) {
-            this.init();
-        }
-
         const observable = new Subject<number>();
-
-        // db.insert(inserQuery.table,
-        //     inserQuery.modelJson, (number: number) => {
-        //         observable.next(number);
-        //         observable.complete();
-        //     }, (error: string) => {
-        //         observable.error(error);
-        //     });
 
         const query = squel.insert()
             .into(inserQuery.table)
             .setFields(inserQuery.modelJson)
             .toString();
+
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query,
-                [], (sqlTransaction, sqlResultSet) => {
-                    observable.next(sqlResultSet);
+                [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
+                    observable.next(sqlResultSet.rowsAffected);
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
                     observable.error(sqlError);
                 });
         });
+
+        return observable;
+    }
+
+    execute(query: string): Observable<any> {
+        const observable = new Subject<any>();
+
+        this.webSqlDB.transaction((tx) => {
+            tx.executeSql(query,
+                [], (sqlTransaction, sqlResultSet) => {
+                    observable.next(Array.from(sqlResultSet.rows));
+                    observable.complete();
+                }, (sqlTransaction, sqlError) => {
+                    observable.error(sqlError);
+                });
+        });
+
+        return observable;
+    }
+
+    update(updateQuery: UpdateQuery): Observable<boolean> {
+        const observable = new Subject<boolean>();
+
+        const query = squel.update()
+            .table(updateQuery.table);
+
+        if (updateQuery.selection && updateQuery.selectionArgs) {
+            query.where(updateQuery.selection, ...updateQuery.selectionArgs);
+        }
+
+        const setFields = (mixin, fields: { [key: string]: any }) => {
+            Object.keys(fields).forEach((field) => {
+                query.set(field, fields[field]);
+            });
+        };
+
+        setFields(query, updateQuery.modelJson);
+
+        this.webSqlDB.transaction((tx) => {
+            tx.executeSql(query.toString(),
+                [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
+                    observable.next(!!sqlResultSet.rowsAffected);
+                    observable.complete();
+                }, (sqlTransaction, sqlError) => {
+                    observable.error(sqlError);
+                });
+        });
+
         return observable;
     }
 
     delete(deleteQuery: DeleteQuery): Observable<undefined> {
-        // TODO
-        throw new Error('Method not implemented.');
+        const observable = new Subject<undefined>();
+
+        const query = squel.delete()
+            .from(deleteQuery.table)
+            .where(deleteQuery.selection, ...deleteQuery.selectionArgs)
+            .toString();
+
+        this.webSqlDB.transaction((tx) => {
+            tx.executeSql(query,
+                [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
+                    observable.next(undefined);
+                    observable.complete();
+                }, (sqlTransaction, sqlError) => {
+                    observable.error(sqlError);
+                });
+        });
+
+        return observable;
     }
 
     beginTransaction(): void {
-        // db.beginTransaction();
-        throw new Error('Method not implemented.');
+        // TODO
     }
 
     endTransaction(isOperationSuccessful: boolean): void {
-        // db.endTransaction(isOperationSuccessful);
-        throw new Error('Method not implemented.');
+        // TODO
+    }
+
+    private hasInitialized(): Observable<undefined> {
+        return this.execute('DROP TABLE IF EXISTS dummy_init_table');
+    }
+
+    private async onCreate() {
+        return new InitialMigration().apply(this);
     }
 
 
