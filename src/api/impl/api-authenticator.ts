@@ -1,7 +1,8 @@
 import {Authenticator} from '../def/authenticator';
 import {ApiTokenHandler} from '../handlers/api-token-handler';
-import {ApiConfig, Connection, KEY_API_TOKEN, Request, Response, ResponseCode} from '..';
+import {ApiConfig, Connection, Request, Response, ResponseCode} from '..';
 import {Observable} from 'rxjs';
+import {ApiKeys} from '../../app-config';
 
 export class ApiAuthenticator implements Authenticator {
 
@@ -12,7 +13,7 @@ export class ApiAuthenticator implements Authenticator {
     }
 
     interceptRequest(request: Request): Request {
-        const bearerToken = localStorage.getItem(KEY_API_TOKEN);
+        const bearerToken = localStorage.getItem(ApiKeys.KEY_API_TOKEN);
 
         if (bearerToken) {
             const existingHeaders = request.headers;
@@ -26,7 +27,7 @@ export class ApiAuthenticator implements Authenticator {
         if (response.responseCode === ResponseCode.HTTP_UNAUTHORISED &&
             response.body.message === 'Unauthorized') {
             return this.apiTokenHandler.refreshAuthToken(connection)
-                .do((bearerToken) => localStorage.setItem(KEY_API_TOKEN, bearerToken))
+                .do((bearerToken) => localStorage.setItem(ApiKeys.KEY_API_TOKEN, bearerToken))
                 .mergeMap(() => connection.invoke(request));
         }
 

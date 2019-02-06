@@ -1,8 +1,8 @@
 import {Authenticator} from '../../api/def/authenticator';
-import {ApiConfig, Connection, KEY_USER_TOKEN, Request, Response, ResponseCode, ResponseInterceptor} from '../../api';
+import {ApiConfig, ApiService, Connection, Request, Response, ResponseCode, ResponseInterceptor} from '../../api';
 import {AuthUtil} from './auth-util';
 import {Observable, Observer} from 'rxjs';
-import {ApiService} from '../../api/def/api-service';
+import {ApiKeys} from '../../app-config';
 
 export class SessionAuthenticator implements Authenticator, ResponseInterceptor {
 
@@ -11,7 +11,7 @@ export class SessionAuthenticator implements Authenticator, ResponseInterceptor 
     }
 
     interceptRequest(request: Request): Request {
-        const sessionToken = localStorage.getItem(KEY_USER_TOKEN);
+        const sessionToken = localStorage.getItem(ApiKeys.KEY_USER_TOKEN);
 
         if (sessionToken) {
             const existingHeaders = request.headers;

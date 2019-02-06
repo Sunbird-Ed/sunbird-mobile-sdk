@@ -5,7 +5,7 @@ import {CourseServiceConfig} from './course';
 import {FormServiceConfig} from './form';
 import {FrameworkServiceConfig} from './framework';
 import {ProfileServiceConfig} from './profile';
-import {PageServiceConfig} from './page/config/page-service-config';
+import {PageServiceConfig} from './page';
 import {AppConfig} from './api/config/app-config';
 
 export interface SdkConfig {
