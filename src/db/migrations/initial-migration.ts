@@ -1,3 +1,4 @@
+import { KeyValueStoreEntry } from '../../key-value-store/db/schema';
 import {DbService, Migration} from '..';
 import {EventPriorityEntry, TelemetryEntry, TelemetryProcessedEntry, TelemetryTagEntry} from '../../telemetry/db/schema';
 import {ImportedMetadataEntry,
