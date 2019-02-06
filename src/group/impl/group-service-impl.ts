@@ -1,13 +1,13 @@
 
-import {DbService, NoSqlFormatter} from '../../db';
-import {Observable} from 'rxjs';
-import {GroupEntry, GroupProfileEntry} from '../db/schema';
-import {UniqueId} from '../../db/util/unique-id';
-import {Group} from '../def/group';
-import {ProfilesToGroupRequest} from '../def/profiles-to-group-request';
-import {GetAllGroupRequest} from '../def/get-all-group-request';
-import {GroupService} from '../def/group-service';
-import {GroupMapper} from '../util/group-mapper';
+import { DbService, NoSqlFormatter } from '../../db';
+import { Observable } from 'rxjs';
+import { GroupEntry, GroupProfileEntry } from '../db/schema';
+import { Group } from '../def/group';
+import { ProfilesToGroupRequest } from '../def/profiles-to-group-request';
+import { GetAllGroupRequest } from '../def/get-all-group-request';
+import { GroupService } from '../def/group-service';
+import { GroupMapper } from '../util/group-mapper';
+
 
 export class GroupServiceImpl implements GroupService {
 
@@ -69,8 +69,8 @@ export class GroupServiceImpl implements GroupService {
         } else {
             return this.dbService.execute(`
             SELECT * FROM ${GroupEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
-            ${GroupEntry.COLUMN_NAME_GID} = ${GroupProfileEntry.COLUMN_NAME_GID} WHERE
-            ${GroupProfileEntry.COLUMN_NAME_UID} = ${groupRequest.uid}
+            ${GroupEntry.TABLE_NAME}.${GroupEntry.COLUMN_NAME_GID} = ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_GID}
+            WHERE ${GroupProfileEntry.COLUMN_NAME_UID} = "${groupRequest.uid}"
         `);
         }
     }
