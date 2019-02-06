@@ -1,3 +1,3 @@
 export interface GetAllGroupRequest {
-    uid?: string;
+    uid: string;
 }
