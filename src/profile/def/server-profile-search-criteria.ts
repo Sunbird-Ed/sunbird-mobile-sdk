@@ -2,6 +2,6 @@ export interface ServerProfileSearchCriteria {
     query?: string;
     offset?: number;
     limit?: number;
-    identifiers?: string[];
+    identifiers?: Set<string>;
     fields?: string[];
 }

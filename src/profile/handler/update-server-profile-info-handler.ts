@@ -5,7 +5,7 @@ import {ProfileServiceConfig} from '..';
 import {Observable} from 'rxjs';
 
 export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateServerProfileInfoRequest, Profile> {
-    private readonly GET_SERVER_PROFILE_INFO_API = 'update';
+    private readonly GET_SERVER_PROFILE_INFO_API = '/user/v1/update';
 
     constructor(
         private apiService: ApiService,
