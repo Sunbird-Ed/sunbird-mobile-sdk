@@ -75,6 +75,7 @@ export class Request {
 
         withSerializer(serializer: HttpSerializer) {
             this.request._serializer = serializer;
+            return this;
         }
 
         build(): Request {
