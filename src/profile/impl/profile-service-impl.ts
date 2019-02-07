@@ -5,12 +5,12 @@ import {
     ProfileServiceConfig,
     ProfileSession,
     ProfileSource,
+    ServerProfileSearchCriteria,
     UpdateServerProfileInfoRequest
 } from '..';
 import {DbService} from '../../db';
 import {Observable} from 'rxjs';
 import {GroupProfileEntry, ProfileEntry} from '../db/schema';
-import {ServerProfileSearchCriteria} from '../def/server-profile-search-criteria';
 import {ServerProfile} from '../def/server-profile';
 import {UniqueId} from '../../db/util/unique-id';
 import {TenantInfo} from '../def/tenant-info';
@@ -38,12 +38,11 @@ export class ProfileServiceImpl implements ProfileService {
     createProfile(profile: Profile): Observable<Profile> {
         profile.uid = UniqueId.generateUniqueId();
         profile.createdAt = Date.now();
-        this.dbService.insert({
+
+        return this.dbService.insert({
             table: ProfileEntry.TABLE_NAME,
             modelJson: ProfileMapper.mapProfileToProfileDBEntry(profile)
-        });
-
-        return Observable.of(profile);
+        }).mergeMap(() => Observable.of(profile));
     }
 
     deleteProfile(uid: string): Observable<undefined> {
