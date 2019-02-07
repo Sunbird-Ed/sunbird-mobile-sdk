@@ -31,15 +31,20 @@ export class OAuthDelegate {
 
     doOAuthStepOne(): Promise<OauthSession> {
         return new Promise((resolve, reject) => {
+            const launchUrl = this.apiConfig.host +
+                this.apiConfig.user_authentication.authUrl + '?redirect_uri=' +
+                this.apiConfig.user_authentication.redirectUrl + '&response_type=code&scope=offline_access&client_id=android&version=2';
+
             customtabs.isAvailable(() => {
                 // customTabs available
-                customtabs.launch(this.apiConfig.user_authentication.authUrl, params => {
+                // https://staging.ntp.net.in/auth/realms/sunbird/protocol/openid-connect/auth?redirect_uri=staging.diksha.app://mobile&response_type=code&scope=offline_access&client_id=android&version=1
+                customtabs.launch(launchUrl, params => {
                     resolve(this.doOAuthStepTwo(params));
                 }, error => {
                     reject(error);
                 });
             }, () => {
-                customtabs.launchInBrowser(this.apiConfig.user_authentication.authUrl, params => {
+                customtabs.launchInBrowser(launchUrl, params => {
                     resolve(this.doOAuthStepTwo(params));
                 }, error => {
                     reject(error);
