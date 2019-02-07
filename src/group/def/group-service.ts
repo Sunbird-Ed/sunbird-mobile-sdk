@@ -12,7 +12,7 @@ export interface GroupService {
 
     updateGroup(group: Group): Observable<Group>;
 
-    getAllGroup(getAllGroupRequest: GetAllGroupRequest): Observable<Group[]>;
+    getAllGroups(getAllGroupRequest?: GetAllGroupRequest): Observable<Group[]>;
 
     addProfilesToGroup(profilesToGroupRequest: ProfilesToGroupRequest): Observable<number>;
 
