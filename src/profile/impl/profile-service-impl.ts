@@ -145,18 +145,23 @@ export class ProfileServiceImpl implements ProfileService {
             })
             .mergeMap((profile: Profile) => {
                 const profileSession = new ProfileSession(profile.uid);
-                return this.keyValueStore.setValue(ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify(profileSession));
+                return this.keyValueStore.setValue(ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify({
+                    uid: profileSession.uid,
+                    sid: profileSession.sid,
+                    createdTime: profileSession.createdTime
+                }));
             });
     }
 
     getCurrentProfileSession(): Observable<ProfileSession | undefined> {
         return this.keyValueStore.getValue(ProfileServiceImpl.KEY_USER_SESSION)
-            .map((value) => {
-                if (!value) {
+            .map((response) => {
+                if (!response) {
                     return undefined;
                 }
 
-                return JSON.parse(value);
+                return JSON.parse(response);
+
             });
     }
 

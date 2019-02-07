@@ -13,7 +13,7 @@ export class KeyValueStoreImpl implements KeyValueStore {
             columns: [],
             selection: `${KeyValueStoreEntry.COLUMN_NAME_KEY} = ?`,
             selectionArgs: [key]
-        }).map(value => value[0]);
+        }).map((res: { key: string, value: string }[]) => res[0] && res[0].value);
     }
 
     setValue(key: string, value: string): Observable<boolean> {
