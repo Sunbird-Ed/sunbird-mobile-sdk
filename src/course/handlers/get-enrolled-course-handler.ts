@@ -1,10 +1,9 @@
 import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
-import {FetchEnrolledCourseRequest} from '../def/request-types';
+import {FetchEnrolledCourseRequest} from '..';
 import {Course, CourseServiceConfig} from '..';
 import {Observable} from 'rxjs';
 import {KeyValueStore} from '../../key-value-store';
-import {SessionAuthenticator} from '../../auth';
-import {ApiService} from '../../api/def/api-service';
+import {ApiService} from '../../api';
 
 export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolledCourseRequest, Course[]> {
 
@@ -13,8 +12,7 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
 
     constructor(private keyValueStore: KeyValueStore,
                 private apiService: ApiService,
-                private courseServiceConfig: CourseServiceConfig,
-                private sessionAuthenticator: SessionAuthenticator) {
+                private courseServiceConfig: CourseServiceConfig) {
     }
 
     handle(request: FetchEnrolledCourseRequest): Observable<Course[]> {
@@ -39,7 +37,7 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
             .withType(HttpRequestType.GET)
             .withPath(this.courseServiceConfig.apiPath + this.GET_ENROLLED_COURSES_ENDPOINT + request.userId)
             .withApiToken(true)
-            .withResponseInterceptor([this.sessionAuthenticator])
+            .withSessionToken(true)
             .build();
 
         return this.apiService.fetch<{ result: Course[] }>(apiRequest).map((response) => {

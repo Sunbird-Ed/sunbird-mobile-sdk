@@ -17,7 +17,6 @@ import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoRequest} from '../def/tenant-info-request';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
 import {ApiService} from '../../api';
-import {SessionAuthenticator} from '../../auth';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {ServerProfileDetailsRequest} from '../def/server-profile-details-request';
@@ -33,13 +32,12 @@ export class ProfileServiceImpl implements ProfileService {
                 private dbService: DbService,
                 private apiService: ApiService,
                 private cachedItemStore: CachedItemStore<ServerProfile>,
-                private keyValueStore: KeyValueStore,
-                private sessionAuthenticator: SessionAuthenticator) {
+                private keyValueStore: KeyValueStore) {
     }
 
     createProfile(profile: Profile): Observable<Profile> {
         profile.uid = UniqueId.generateUniqueId();
-        profile.created_at = Date.now();
+        profile.createdAt = Date.now();
         this.dbService.insert({
             table: ProfileEntry.TABLE_NAME,
             modelJson: ProfileMapper.mapProfileToProfileDBEntry(profile)
@@ -58,17 +56,16 @@ export class ProfileServiceImpl implements ProfileService {
 
     updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<Profile> {
         return new UpdateServerProfileInfoHandler(this.apiService,
-            this.profileServiceConfig, this.sessionAuthenticator).handle(updateUserInfoRequest);
+            this.profileServiceConfig).handle(updateUserInfoRequest);
     }
 
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]> {
-        return new SearchServerProfileHandler(this.apiService, this.profileServiceConfig,
-            this.sessionAuthenticator).handle(searchCriteria);
+        return new SearchServerProfileHandler(this.apiService, this.profileServiceConfig).handle(searchCriteria);
     }
 
     getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo> {
         return new TenantInfoHandler(this.apiService,
-            this.profileServiceConfig, this.sessionAuthenticator).handle(tenantInfoRequest);
+            this.profileServiceConfig).handle(tenantInfoRequest);
     }
 
     getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]> {
@@ -112,8 +109,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {
-        return new GetServerProfileDetailsHandler(this.apiService, this.profileServiceConfig,
-            this.sessionAuthenticator, this.cachedItemStore)
+        return new GetServerProfileDetailsHandler(this.apiService, this.profileServiceConfig, this.cachedItemStore)
             .handle(serverProfileDetailsRequest);
     }
 
@@ -121,9 +117,9 @@ export class ProfileServiceImpl implements ProfileService {
         return this.getCurrentProfileSession()
             .mergeMap((profileSession: ProfileSession) => {
                 return this.dbService.read({
-                    table: GroupProfileEntry.TABLE_NAME,
+                    table: ProfileEntry.TABLE_NAME,
                     selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
-                    selectionArgs: [`"${profileSession.uid}"`]
+                    selectionArgs: [profileSession.uid]
                 }).map((rows) => rows && rows[0]);
             });
     }
@@ -131,9 +127,9 @@ export class ProfileServiceImpl implements ProfileService {
     setCurrentProfile(uid: string): Observable<boolean> {
         return this.dbService
             .read({
-                table: GroupProfileEntry.TABLE_NAME,
+                table: ProfileEntry.TABLE_NAME,
                 selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
-                selectionArgs: [`"${uid}"`]
+                selectionArgs: [uid]
             }).map((rows) => rows && rows[0])
             .mergeMap((profile: Profile) => {
                 const profileSession = new ProfileSession(profile.uid);
@@ -143,6 +139,6 @@ export class ProfileServiceImpl implements ProfileService {
 
     getCurrentProfileSession(): Observable<ProfileSession> {
         return this.keyValueStore.getValue(ProfileServiceImpl.KEY_USER_SESSION)
-            .map((value) => JSON.parse(value!));
+            .map((value) => value ? JSON.parse(value) : (error: any) => console.log('No session available', error));
     }
 }

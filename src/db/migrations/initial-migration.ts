@@ -1,4 +1,3 @@
-import { KeyValueStoreEntry } from '../../key-value-store/db/schema';
 import {DbService, Migration} from '..';
 import {EventPriorityEntry, TelemetryEntry, TelemetryProcessedEntry, TelemetryTagEntry} from '../../telemetry/db/schema';
 import {ImportedMetadataEntry,
@@ -11,6 +10,7 @@ import {GroupEntry, GroupProfileEntry} from '../../group/db/schema';
 import {PartnerEntry} from '../../partner/db/schema';
 import {ContentAccessEntry, ContentEntry, ContentFeedbackEntry} from '../../content/db/schema';
 import {NotificationEntry} from '../../notification/db/schema';
+import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 
 export class InitialMigration extends Migration {
 

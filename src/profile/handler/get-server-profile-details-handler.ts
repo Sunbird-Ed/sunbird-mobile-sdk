@@ -1,7 +1,6 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {ServerProfileDetailsRequest} from '../def/server-profile-details-request';
-import {ProfileServiceConfig} from '../config/profile-service-config';
-import {SessionAuthenticator} from '../../auth';
+import {ProfileServiceConfig} from '..';
 import {CachedItemStore} from '../../key-value-store';
 import {Observable} from 'rxjs';
 import {ServerProfile} from '../def/server-profile';
@@ -13,7 +12,6 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<ServerP
     constructor(
         private apiService: ApiService,
         private profileServiceConfig: ProfileServiceConfig,
-        private sessionAuthenticator: SessionAuthenticator,
         private cachedItemStore: CachedItemStore<ServerProfile>) {
     }
 
@@ -33,7 +31,7 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<ServerP
             .withType(HttpRequestType.GET)
             .withPath(this.profileServiceConfig.apiPath + this.GET_SERVER_PROFILE_DETAILS_ENDPOINT + request.userId)
             .withApiToken(true)
-            .withResponseInterceptor([this.sessionAuthenticator])
+            .withSessionToken(true)
             .build();
 
         return this.apiService.fetch<{ result: ServerProfile }>(apiRequest).map((success) => {

@@ -1,3 +1,3 @@
-export class CreateContentImportManifest{
+export class CreateContentImportManifest {
 
 }

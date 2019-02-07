@@ -1,17 +1,15 @@
 import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
-import {EnrollCourseRequest} from '../def/request-types';
+import {EnrollCourseRequest} from '..';
 import {Observable} from 'rxjs';
 import {CourseServiceConfig} from '..';
-import {SessionAuthenticator} from '../../auth';
-import {ApiService} from '../../api/def/api-service';
+import {ApiService} from '../../api';
 
 export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseRequest, boolean> {
 
     private readonly ENROL_ENDPOINT = 'enrol/';
 
     constructor(private apiService: ApiService,
-                private courseServiceConfig: CourseServiceConfig,
-                private sessionAuthenticator: SessionAuthenticator) {
+                private courseServiceConfig: CourseServiceConfig) {
     }
 
     handle(request: EnrollCourseRequest): Observable<boolean> {
@@ -19,7 +17,7 @@ export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseReques
             .withType(HttpRequestType.POST)
             .withPath(this.courseServiceConfig.apiPath + this.ENROL_ENDPOINT)
             .withApiToken(true)
-            .withResponseInterceptor([this.sessionAuthenticator])
+            .withSessionToken(true)
             .withBody({request})
             .build();
 

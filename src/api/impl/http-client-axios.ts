@@ -46,7 +46,7 @@ export class HttpClientAxios implements HttpClient {
                 .catch(async (e: AxiosError) => {
                     if (e.response) {
                         const sunbirdResponse = new Response<any>();
-                        sunbirdResponse.errorMesg = 'NETWORK ERROR'
+                        sunbirdResponse.errorMesg = 'NETWORK ERROR';
                         sunbirdResponse.responseCode = e.response.status;
                         sunbirdResponse.body = e.response.data;
                         return sunbirdResponse;

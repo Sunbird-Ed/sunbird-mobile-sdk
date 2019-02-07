@@ -1,4 +1,4 @@
-import {CourseService} from '../def/course-service';
+import {CourseService} from '..';
 import {Observable} from 'rxjs';
 import {
     CourseBatchDetailsRequest,
@@ -6,9 +6,8 @@ import {
     EnrollCourseRequest,
     FetchEnrolledCourseRequest,
     UpdateContentStateRequest
-} from '../def/request-types';
+} from '..';
 import {Batch, Course, CourseServiceConfig} from '..';
-import {SessionAuthenticator} from '../../auth';
 import {ProfileService} from '../../profile';
 import {GetBatchDetailsHandler} from '../handlers/get-batch-details-handler';
 import {UpdateContentStateHandler} from '../handlers/update-content-state-handler';
@@ -23,34 +22,32 @@ export class CourseServiceImpl implements CourseService {
     constructor(private courseServiceConfig: CourseServiceConfig,
                 private apiService: ApiService,
                 private profileService: ProfileService,
-                private keyValueStore: KeyValueStore,
-                private sessionAuthenticator: SessionAuthenticator) {
+                private keyValueStore: KeyValueStore) {
     }
 
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch> {
-        return new GetBatchDetailsHandler(this.apiService, this.courseServiceConfig, this.sessionAuthenticator)
+        return new GetBatchDetailsHandler(this.apiService, this.courseServiceConfig)
             .handle(request);
     }
 
     updateContentState(request: UpdateContentStateRequest): Observable<boolean> {
-        return new UpdateContentStateHandler(this.apiService, this.courseServiceConfig, this.sessionAuthenticator)
+        return new UpdateContentStateHandler(this.apiService, this.courseServiceConfig)
             .handle(request);
     }
 
     getCourseBatches(request: CourseBatchesRequest): Observable<Batch[]> {
         return new GetCourseBatchesHandler(
-            this.apiService, this.courseServiceConfig, this.sessionAuthenticator, this.profileService)
+            this.apiService, this.courseServiceConfig, this.profileService)
             .handle(request);
     }
 
     getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]> {
         return new GetEnrolledCourseHandler(
-            this.keyValueStore, this.apiService, this.courseServiceConfig, this.sessionAuthenticator
-        ).handle(request);
+            this.keyValueStore, this.apiService, this.courseServiceConfig).handle(request);
     }
 
     enrollCourse(request: EnrollCourseRequest): Observable<boolean> {
-        return new EnrollCourseHandler(this.apiService, this.courseServiceConfig, this.sessionAuthenticator)
+        return new EnrollCourseHandler(this.apiService, this.courseServiceConfig)
             .handle(request);
     }
 }

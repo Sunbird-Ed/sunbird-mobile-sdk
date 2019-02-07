@@ -105,7 +105,7 @@ export namespace ContentFeedbackEntry {
     export const COLUMN_NAME_UID = 'uid';
     export const COLUMN_NAME_RATING = 'rating';
     export const COLUMN_NAME_COMMENTS = 'comments';
-    export const COLUMN_NAME_CREATED_AT = 'created_at';
+    export const COLUMN_NAME_CREATED_AT = 'createdAt';
 
 
     export const getCreateEntry: (() => string) = () => {

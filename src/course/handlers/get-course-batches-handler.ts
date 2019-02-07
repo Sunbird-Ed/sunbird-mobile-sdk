@@ -1,19 +1,17 @@
 import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
-import {CourseBatchesRequest} from '../def/request-types';
+import {CourseBatchesRequest} from '..';
 import {Batch, CourseServiceConfig} from '..';
 import {Observable} from 'rxjs';
 import {CourseBatchesResponse} from '../def/course-batches-response';
 import {ServerProfile} from '../../profile/def/server-profile';
-import {SessionAuthenticator} from '../../auth';
 import {ProfileService} from '../../profile';
-import {ApiService} from '../../api/def/api-service';
+import {ApiService} from '../../api';
 
 export class GetCourseBatchesHandler implements ApiRequestHandler<CourseBatchesRequest, Batch[]> {
     private readonly GET_COURSE_BATCHES = 'batch/list/';
 
     constructor(private apiService: ApiService,
                 private courseServiceConfig: CourseServiceConfig,
-                private sessionAuthenticator: SessionAuthenticator,
                 private profileService: ProfileService) {
     }
 
@@ -22,7 +20,7 @@ export class GetCourseBatchesHandler implements ApiRequestHandler<CourseBatchesR
             .withType(HttpRequestType.POST)
             .withPath(this.courseServiceConfig.apiPath + this.GET_COURSE_BATCHES)
             .withApiToken(true)
-            .withResponseInterceptor([this.sessionAuthenticator])
+            .withSessionToken(true)
             .withBody({request})
             .build();
 

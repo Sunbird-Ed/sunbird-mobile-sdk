@@ -1,3 +1,3 @@
-export class UpdateSizeOnDevice{
+export class UpdateSizeOnDevice {
 
 }

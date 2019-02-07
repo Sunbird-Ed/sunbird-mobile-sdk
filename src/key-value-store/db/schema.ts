@@ -1,4 +1,4 @@
-import { DbConstants } from '../../db';
+import {DbConstants} from '../../db';
 
 export namespace KeyValueStoreEntry {
 

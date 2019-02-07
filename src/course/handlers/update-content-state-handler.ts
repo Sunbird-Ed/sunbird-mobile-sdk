@@ -1,17 +1,15 @@
 import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
 import {Batch, CourseServiceConfig} from '..';
-import {SessionAuthenticator} from '../../auth';
-import {UpdateContentStateRequest} from '../def/request-types';
+import {UpdateContentStateRequest} from '..';
 import {Observable} from 'rxjs';
-import {ApiService} from '../../api/def/api-service';
+import {ApiService} from '../../api';
 
 export class UpdateContentStateHandler implements ApiRequestHandler<UpdateContentStateRequest, boolean> {
     private readonly UPDATE_CONTENT_STATE_ENDPOINT = 'content/state/update/';
 
 
     constructor(private apiService: ApiService,
-                private courseServiceConfig: CourseServiceConfig,
-                private sessionAuthenticator: SessionAuthenticator) {
+                private courseServiceConfig: CourseServiceConfig) {
     }
 
     public handle(request: UpdateContentStateRequest): Observable<boolean> {
@@ -19,7 +17,7 @@ export class UpdateContentStateHandler implements ApiRequestHandler<UpdateConten
             .withType(HttpRequestType.PATCH)
             .withPath(this.courseServiceConfig.apiPath + this.UPDATE_CONTENT_STATE_ENDPOINT)
             .withApiToken(true)
-            .withResponseInterceptor([this.sessionAuthenticator])
+            .withSessionToken(true)
             .withBody({request})
             .build();
 

@@ -2,19 +2,16 @@ import { GetServerProfileDetailsHandler } from './get-server-profile-details-han
 import {
     apiServiceMock,
     profileServiceConfigMock,
-    sessionAuthenticatorMock,
     cachedItemStoreMock
 
 } from '../../__test__/mocks';
-import { ServerProfile } from '../def/server-profile';
-import { CachedItemStoreImpl } from 'src/key-value-store/impl/cached-item-store-impl';
 import { Observable } from 'rxjs';
 
 describe.only('GetServerProfileDetailsHandler', () => {
     let getServerProfileDetailsHandler: GetServerProfileDetailsHandler;
     beforeEach(() => {
         getServerProfileDetailsHandler = new GetServerProfileDetailsHandler(apiServiceMock as any,
-            profileServiceConfigMock, sessionAuthenticatorMock, cachedItemStoreMock as any);
+            profileServiceConfigMock, cachedItemStoreMock as any);
     });
     it('can load instance', () => {
         expect(getServerProfileDetailsHandler).toBeTruthy();
