@@ -6,8 +6,8 @@ export class GroupMapper {
         return {
             gid: groupEntry[GroupEntry.COLUMN_NAME_GID],
             name: groupEntry[GroupEntry.COLUMN_NAME_NAME],
-            syllabus: JSON.parse(groupEntry[GroupEntry.COLUMN_NAME_SYLLABUS]),
-            grade: JSON.parse(groupEntry[GroupEntry.COLUMN_NAME_GRADE]),
+            syllabus: groupEntry[GroupEntry.COLUMN_NAME_SYLLABUS].split(','),
+            grade: groupEntry[GroupEntry.COLUMN_NAME_GRADE].split(','),
             gradeValueMap: JSON.parse(groupEntry[GroupEntry.COLUMN_NAME_GRADE_VALUE]),
             createdAt: groupEntry[GroupEntry.COLUMN_NAME_CREATED_AT],
             updatedAt: groupEntry[GroupEntry.COLUMN_NAME_UPDATED_AT]
@@ -17,9 +17,9 @@ export class GroupMapper {
     public static mapGroupToGroupDBEntry(group: Group): GroupEntry.SchemaMap {
         return {
             [GroupEntry.COLUMN_NAME_GID]: group.gid,
-            [GroupEntry.COLUMN_NAME_NAME]: group.name,
             [GroupEntry.COLUMN_NAME_SYLLABUS]: (group.syllabus ? group.syllabus.join(',') : ''),
             [GroupEntry.COLUMN_NAME_GRADE]: (group.grade ? group.grade.join(',') : ''),
+            [GroupEntry.COLUMN_NAME_NAME]: group.name,
             [GroupEntry.COLUMN_NAME_GRADE_VALUE]: JSON.stringify(group.gradeValueMap),
             [GroupEntry.COLUMN_NAME_CREATED_AT]: group.createdAt,
             [GroupEntry.COLUMN_NAME_UPDATED_AT]: group.updatedAt
