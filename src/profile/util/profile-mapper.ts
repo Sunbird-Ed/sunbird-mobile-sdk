@@ -1,6 +1,5 @@
 import {ProfileEntry} from '../db/schema';
-import {Profile} from '..';
-import {ProfileType, ProfileSource} from '..';
+import {Profile, ProfileSource, ProfileType} from '..';
 
 export class ProfileMapper {
     public static mapProfileDBEntryToProfile(profileEntry: ProfileEntry.SchemaMap): Profile {
@@ -8,12 +7,12 @@ export class ProfileMapper {
             uid: profileEntry[ProfileEntry.COLUMN_NAME_UID],
             handle: profileEntry[ProfileEntry.COLUMN_NAME_HANDLE],
             created_at: profileEntry[ProfileEntry.COLUMN_NAME_CREATED_AT],
-            medium: JSON.parse(profileEntry[ProfileEntry.COLUMN_NAME_MEDIUM]),
-            board: JSON.parse(profileEntry[ProfileEntry.COLUMN_NAME_BOARD]),
-            subject: JSON.parse(profileEntry[ProfileEntry.COLUMN_NAME_SUBJECT]),
+            medium: profileEntry[ProfileEntry.COLUMN_NAME_MEDIUM].split(','),
+            board: profileEntry[ProfileEntry.COLUMN_NAME_BOARD].split(','),
+            subject: profileEntry[ProfileEntry.COLUMN_NAME_SUBJECT].split(','),
             profile_type: profileEntry[ProfileEntry.COLUMN_NAME_PROFILE_TYPE] as ProfileType,
-            grade: JSON.parse(profileEntry[ProfileEntry.COLUMN_NAME_GRADE]),
-            syllabus: JSON.parse(profileEntry[ProfileEntry.COLUMN_NAME_SYLLABUS]),
+            grade: profileEntry[ProfileEntry.COLUMN_NAME_GRADE].split(','),
+            syllabus: profileEntry[ProfileEntry.COLUMN_NAME_SYLLABUS].split(','),
             source: profileEntry[ProfileEntry.COLUMN_NAME_SOURCE] as ProfileSource,
             grade_value: JSON.parse(profileEntry[ProfileEntry.COLUMN_NAME_GRADE_VALUE])
         };
