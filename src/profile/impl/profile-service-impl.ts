@@ -17,7 +17,6 @@ import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoRequest} from '../def/tenant-info-request';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
 import {ApiService} from '../../api';
-import {SessionAuthenticator} from '../../auth';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {ServerProfileDetailsRequest} from '../def/server-profile-details-request';

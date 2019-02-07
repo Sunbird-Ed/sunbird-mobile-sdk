@@ -7,11 +7,11 @@ export class ProfileMapper {
         return {
             uid: profileEntry[ProfileEntry.COLUMN_NAME_UID],
             handle: profileEntry[ProfileEntry.COLUMN_NAME_HANDLE],
-            created_at: profileEntry[ProfileEntry.COLUMN_NAME_CREATED_AT],
+            createdAt: profileEntry[ProfileEntry.COLUMN_NAME_CREATED_AT],
             medium: profileEntry[ProfileEntry.COLUMN_NAME_MEDIUM].split(','),
             board: profileEntry[ProfileEntry.COLUMN_NAME_BOARD].split(','),
             subject: profileEntry[ProfileEntry.COLUMN_NAME_SUBJECT].split(','),
-            profile_type: profileEntry[ProfileEntry.COLUMN_NAME_PROFILE_TYPE] as ProfileType,
+            profileType: profileEntry[ProfileEntry.COLUMN_NAME_PROFILE_TYPE] as ProfileType,
             grade: profileEntry[ProfileEntry.COLUMN_NAME_GRADE].split(','),
             syllabus: profileEntry[ProfileEntry.COLUMN_NAME_SYLLABUS].split(','),
             source: profileEntry[ProfileEntry.COLUMN_NAME_SOURCE] as ProfileSource,

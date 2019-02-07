@@ -187,8 +187,7 @@ export class SunbirdSdk {
             sdkConfig.courseServiceConfig,
             this._apiService,
             this._profileService,
-            this._keyValueStore,
-            sessionAuthenticator
+            this._keyValueStore
         );
 
         this._formService = new FormServiceImpl(
