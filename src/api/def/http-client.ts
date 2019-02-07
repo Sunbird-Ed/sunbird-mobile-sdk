@@ -1,7 +1,10 @@
 import {Response} from './response';
 import {Observable} from 'rxjs';
+import {HttpSerializer} from './request';
 
 export abstract class HttpClient {
+
+    abstract setSerializer(httpSerializer: HttpSerializer);
 
     abstract addHeaders(headers: { [key: string]: string });
 

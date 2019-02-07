@@ -1,4 +1,4 @@
-import {HttpClient, HttpRequestType, Response} from '..';
+import {HttpClient, HttpRequestType, HttpSerializer, Response} from '..';
 import {Observable, Subject} from 'rxjs';
 
 interface HttpResponse {
@@ -32,7 +32,10 @@ export class HttpClientImpl implements HttpClient {
     private http = cordova.plugin.http;
 
     constructor() {
-        this.http.setDataSerializer('json');
+    }
+
+    setSerializer(httpSerializer: HttpSerializer) {
+        this.http.setDataSerializer(httpSerializer);
     }
 
     addHeaders(headers: { [key: string]: string }) {

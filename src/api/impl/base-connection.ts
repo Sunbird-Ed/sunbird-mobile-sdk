@@ -64,6 +64,8 @@ export class BaseConnection implements Connection {
             request.requestInterceptors.push(authenticator);
             request.responseInterceptors.push(authenticator);
         });
+
+        this.http.setSerializer(request.serializer);
     }
 
     private interceptRequest(request: Request): Request {

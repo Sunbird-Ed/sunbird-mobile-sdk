@@ -1,5 +1,5 @@
 import {OauthSession, SessionProvider} from '..';
-import {ApiConfig, ApiService, HttpRequestType, JWTUtil, Request, Response} from '../../api';
+import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../api';
 
 export class KeycloakSessionProvider implements SessionProvider {
     constructor(private params: string,
@@ -17,6 +17,7 @@ export class KeycloakSessionProvider implements SessionProvider {
                 grant_type: 'authorization_code',
                 client_id: 'android'
             })
+            .withSerializer(HttpSerializer.URLENCODED)
             .withApiToken(false)
             .withSessionToken(false)
             .build();

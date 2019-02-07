@@ -1,4 +1,4 @@
-import {HttpClient, Response} from '..';
+import {HttpClient, HttpSerializer, Response} from '..';
 import {Observable} from 'rxjs';
 import * as axios from 'axios';
 import {AxiosError, AxiosResponse, AxiosStatic} from 'axios';
@@ -10,6 +10,9 @@ export class HttpClientAxios implements HttpClient {
 
     constructor() {
         this.axios = axios.default;
+    }
+
+    setSerializer(httpSerializer: HttpSerializer) {
     }
 
     addHeader(key: string, value: string) {

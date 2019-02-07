@@ -2,6 +2,12 @@ import {ResponseInterceptor} from './response-interceptor';
 import {RequestInterceptor} from './request-interceptor';
 import {Authenticator} from './authenticator';
 
+export enum HttpSerializer {
+    JSON = 'json',
+    URLENCODED = 'urlencoded',
+    UTF8 = 'utf8'
+}
+
 export enum HttpRequestType {
     GET = 'GET',
     POST = 'POST',
@@ -67,6 +73,10 @@ export class Request {
             return this;
         }
 
+        withSerializer(serializer: HttpSerializer) {
+            this.request._serializer = serializer;
+        }
+
         build(): Request {
 
             if (!this.request._path || !this.request._type) {
@@ -76,12 +86,21 @@ export class Request {
         }
 
     };
-    private _responseInterceptors: ResponseInterceptor[] = [];
 
+    private _serializer: HttpSerializer = HttpSerializer.JSON;
+    private _responseInterceptors: ResponseInterceptor[] = [];
     private _withApiToken = false;
     private _path: string;
     private _type: HttpRequestType;
     private _authenticators: Authenticator[] = [];
+
+    get serializer(): HttpSerializer {
+        return this._serializer;
+    }
+
+    set serializer(value: HttpSerializer) {
+        this._serializer = value;
+    }
 
     get withApiToken(): boolean {
         return this._withApiToken;
