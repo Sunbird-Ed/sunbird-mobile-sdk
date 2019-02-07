@@ -10,7 +10,8 @@ export class JWTUtil {
     }
 
     public static parseUserTokenFromAccessToken(accessToken: string): string {
-        // TODO
-        return '';
+        let uid = accessToken.substring(accessToken.indexOf('.') + 1, accessToken.lastIndexOf('.'));
+        uid = decodeURIComponent(escape(atob(uid)));
+        return JSON.parse(uid).sub;
     }
 }

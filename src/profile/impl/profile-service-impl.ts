@@ -1,4 +1,5 @@
 import {
+    GetAllProfileRequest,
     Profile,
     ProfileService,
     ProfileServiceConfig,
@@ -16,8 +17,8 @@ import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoRequest} from '../def/tenant-info-request';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
 import {ApiService} from '../../api';
+import {SessionAuthenticator} from '../../auth';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
-import {GetAllProfileRequest} from '..';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {ServerProfileDetailsRequest} from '../def/server-profile-details-request';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
@@ -73,7 +74,9 @@ export class ProfileServiceImpl implements ProfileService {
             return this.dbService.read({
                 table: ProfileEntry.TABLE_NAME,
                 columns: []
-            });
+            }).map((profiles: ProfileEntry.SchemaMap[]) =>
+                profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile))
+            );
         }
 
         if (!profileRequest.groupId) {
@@ -82,22 +85,28 @@ export class ProfileServiceImpl implements ProfileService {
                 selection: `${ProfileEntry.COLUMN_NAME_SOURCE} = ?`,
                 selectionArgs: [profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER],
                 columns: []
-            });
+            }).map((profiles: ProfileEntry.SchemaMap[]) =>
+                profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile))
+            );
         }
 
 
         if (profileRequest.groupId && (profileRequest.local || profileRequest.server)) {
             return this.dbService.execute(`
-            SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
-            ${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}" AND
-            ${ProfileEntry.COLUMN_NAME_SOURCE} = "${profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER}"
-        `);
+                SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
+                ${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}" AND
+                ${ProfileEntry.COLUMN_NAME_SOURCE} = "${profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER}"
+            `).map((profiles: ProfileEntry.SchemaMap[]) =>
+                profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile))
+            );
         }
 
         return this.dbService.execute(`
             SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
             ${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}"
-        `);
+        `).map((profiles: ProfileEntry.SchemaMap[]) =>
+            profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile))
+        );
     }
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {

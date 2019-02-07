@@ -33,7 +33,7 @@ import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migrati
 import {GroupProfileMigration} from './db/migrations/group-profile-migration';
 import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
 import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
-import {GroupService} from './group/def/group-service';
+import {GroupService} from './group';
 import {GroupServiceImpl} from './group/impl/group-service-impl';
 
 export class SunbirdSdk {
@@ -62,6 +62,11 @@ export class SunbirdSdk {
     private _pageAssembleService: PageAssembleService;
     private _sharedPreferences: SharedPreferences;
     private _fileService: FileService;
+    private _sdkConfig: SdkConfig;
+
+    get sdkConfig(): SdkConfig {
+        return this._sdkConfig;
+    }
 
     get pageAssembleService(): PageAssembleService {
         return this._pageAssembleService;
@@ -116,6 +121,8 @@ export class SunbirdSdk {
     }
 
     public async init(sdkConfig: SdkConfig) {
+        this._sdkConfig = Object.freeze(sdkConfig);
+
         this._sharedPreferences = new SharedPreferencesImpl();
 
         if (sdkConfig.dbConfig.debugMode === true) {

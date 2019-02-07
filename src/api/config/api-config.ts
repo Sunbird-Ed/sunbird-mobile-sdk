@@ -1,5 +1,6 @@
 export interface ApiConfig {
     debugMode: boolean;
+    host: string;
     baseUrl: string;
     user_authentication: {
         redirectUrl: string;

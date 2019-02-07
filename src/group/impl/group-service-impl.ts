@@ -60,7 +60,7 @@ export class GroupServiceImpl implements GroupService {
         return Observable.of(group);
     }
 
-    getAllGroup(groupRequest?: GetAllGroupRequest): Observable<Group[]> {
+    getAllGroups(groupRequest?: GetAllGroupRequest): Observable<Group[]> {
         if (!groupRequest) {
             return this.dbService.read({
                 table: GroupEntry.TABLE_NAME,
