@@ -1,5 +1,7 @@
-import {ApiConfig, ApiService, JWTUtil} from '../../api';
+import {ApiConfig, ApiService} from '../../api';
 import {OauthSession} from '..';
+import {GoogleSessionProvider} from './google-session-provider';
+import {KeycloakSessionProvider} from './keycloak-session-provider';
 
 declare var customtabs: {
     isAvailable: (success: () => void, error: (error: string) => void) => void;
@@ -8,7 +10,7 @@ declare var customtabs: {
     close: (success: () => void, error: (error: string) => void) => void;
 };
 
-export class OAuthService {
+export class OAuthDelegate {
     constructor(
         private apiConfig: ApiConfig,
         private apiService: ApiService
@@ -47,29 +49,14 @@ export class OAuthService {
     }
 
     private async doOAuthStepTwo(params: string): Promise<OauthSession> {
-        if (OAuthService.isGoogleSignup(params)) {
-            // return {
-            //     accessToken: this.getQueryParam(params, 'access_token'),
-            //     refreshToken: this.getQueryParam(params, 'refresh_token'),
-            //     userToken: JWTUtil.parseUserTokenFromAccessToken(this.getQueryParam(params, 'access_token'))
-            // };
-            throw new Error('to be implemented');
-        } else if (OAuthService.isKeyCloakSignup(params)) {
+        if (OAuthDelegate.isGoogleSignup(params)) {
+            return new GoogleSessionProvider(params).provide();
+        } else if (OAuthDelegate.isKeyCloakSignup(params)) {
+            return new KeycloakSessionProvider(params, this.apiConfig, this.apiService).provide();
+        } else if (OAuthDelegate.isStateLogin(params)) {
             throw new Error('to be implemented');
         }
 
         throw new Error('to be implemented');
-    }
-
-    private getQueryParam(query: string, param: string): string {
-        const paramsArray = query.split('&');
-        let paramValue = '';
-        paramsArray.forEach((item) => {
-            const pair = item.split('=');
-            if (pair[0] === param) {
-                paramValue = pair[1];
-            }
-        });
-        return paramValue;
     }
 }
