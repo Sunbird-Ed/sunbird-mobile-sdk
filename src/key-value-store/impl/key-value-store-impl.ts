@@ -34,6 +34,7 @@ export class KeyValueStoreImpl implements KeyValueStore {
                     return this.dbService.insert({
                         table: KeyValueStoreEntry.TABLE_NAME,
                         modelJson: {
+                            [KeyValueStoreEntry.COLUMN_NAME_KEY]: key,
                             [KeyValueStoreEntry.COLUMN_NAME_VALUE]: value
                         }
                     }).map(v => v > 0);
