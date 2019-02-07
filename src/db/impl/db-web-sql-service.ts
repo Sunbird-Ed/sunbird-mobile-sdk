@@ -69,6 +69,7 @@ export class DbWebSqlService implements DbService {
             query.where(readQuery.selection, ...readQuery.selectionArgs);
         }
 
+        console.log(query.toString());
 
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query.toString(),
@@ -91,6 +92,8 @@ export class DbWebSqlService implements DbService {
             .setFields(inserQuery.modelJson)
             .toString();
 
+        console.log(query);
+
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query,
                 [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
@@ -106,6 +109,8 @@ export class DbWebSqlService implements DbService {
 
     execute(query: string): Observable<any> {
         const observable = new Subject<any>();
+
+        console.log(query);
 
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query,
@@ -138,6 +143,8 @@ export class DbWebSqlService implements DbService {
 
         setFields(query, updateQuery.modelJson);
 
+        console.log(query.toString());
+
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query.toString(),
                 [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
@@ -158,6 +165,8 @@ export class DbWebSqlService implements DbService {
             .from(deleteQuery.table)
             .where(deleteQuery.selection, ...deleteQuery.selectionArgs)
             .toString();
+
+        console.log(query);
 
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query,
