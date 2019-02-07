@@ -7,7 +7,7 @@ import {
     Response,
     ResponseCode,
     ResponseInterceptor
-} from '../../api/index';
+} from '../../api';
 import {Observable} from 'rxjs';
 import {ApiKeys} from '../../app-config';
 import {Connection} from '../../api/def/connection';
