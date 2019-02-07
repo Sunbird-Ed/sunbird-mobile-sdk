@@ -18,7 +18,7 @@ export class OAuthDelegate {
     }
 
     private static isKeyCloakSignup(params: string): boolean {
-        return params.hasOwnProperty('code');
+        return params.indexOf('code') !== -1;
     }
 
     private static isGoogleSignup(params: string): boolean {
