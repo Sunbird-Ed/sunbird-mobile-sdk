@@ -12,7 +12,7 @@ export class KeyValueStoreImpl implements KeyValueStore {
             table: KeyValueStoreEntry.TABLE_NAME,
             columns: [],
             selection: `${KeyValueStoreEntry.COLUMN_NAME_KEY} = ?`,
-            selectionArgs: [`"${key}"`]
+            selectionArgs: [key]
         }).map(value => value[0]);
     }
 
@@ -23,7 +23,7 @@ export class KeyValueStoreImpl implements KeyValueStore {
                     return this.dbService.update({
                         table: KeyValueStoreEntry.TABLE_NAME,
                         selection: `${KeyValueStoreEntry.COLUMN_NAME_KEY} = ?`,
-                        selectionArgs: [`"${key}"`],
+                        selectionArgs: [key],
                         modelJson: {
                             [KeyValueStoreEntry.COLUMN_NAME_KEY]: key,
                             [KeyValueStoreEntry.COLUMN_NAME_VALUE]: value
