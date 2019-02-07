@@ -72,9 +72,7 @@ export class ProfileServiceImpl implements ProfileService {
             return this.dbService.read({
                 table: ProfileEntry.TABLE_NAME,
                 columns: []
-            }).map((profiles: ProfileEntry.SchemaMap[]) =>
-                profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile))
-            );
+            }).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriestoProfiles(profiles));
         }
 
         if (!profileRequest.groupId) {
@@ -83,28 +81,24 @@ export class ProfileServiceImpl implements ProfileService {
                 selection: `${ProfileEntry.COLUMN_NAME_SOURCE} = ?`,
                 selectionArgs: [profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER],
                 columns: []
-            }).map((profiles: ProfileEntry.SchemaMap[]) =>
-                profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile))
-            );
+            }).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriestoProfiles(profiles));
         }
-
 
         if (profileRequest.groupId && (profileRequest.local || profileRequest.server)) {
             return this.dbService.execute(`
-                SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
-                ${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}" AND
+                SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME}
+                ON ${ProfileEntry.TABLE_NAME}.${ProfileEntry.COLUMN_NAME_UID} =
+                ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_UID}
+                WHERE ${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}" AND
                 ${ProfileEntry.COLUMN_NAME_SOURCE} = "${profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER}"
-            `).map((profiles: ProfileEntry.SchemaMap[]) =>
-                profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile))
-            );
+            `).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriestoProfiles(profiles));
         }
+
 
         return this.dbService.execute(`
             SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
             ${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}"
-        `).map((profiles: ProfileEntry.SchemaMap[]) =>
-            profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile))
-        );
+        `).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriestoProfiles(profiles));
     }
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {
@@ -139,5 +133,9 @@ export class ProfileServiceImpl implements ProfileService {
     getCurrentProfileSession(): Observable<ProfileSession> {
         return this.keyValueStore.getValue(ProfileServiceImpl.KEY_USER_SESSION)
             .map((value) => value ? JSON.parse(value) : (error: any) => console.log('No session available', error));
+    }
+
+    private mapDbProfileEntriestoProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
+        return profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile));
     }
 }
