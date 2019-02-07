@@ -6,9 +6,6 @@ import {ServerProfileSearchCriteria} from './server-profile-search-criteria';
 import {ServerProfile} from './server-profile';
 import {UpdateServerProfileInfoRequest} from './update-server-profile-info-request';
 import {GetAllProfileRequest} from './get-all-profile-request';
-import {Group} from './group';
-import {ProfilesToGroupRequest} from './profiles-to-group-request';
-import {GetAllGroupRequest} from './get-all-group-request';
 import {ServerProfileDetailsRequest} from './server-profile-details-request';
 import {ProfileSession} from './profile-session';
 
@@ -32,5 +29,5 @@ export interface ProfileService {
 
     setCurrentProfile(uid: string): Observable<boolean>;
 
-    getCurrentProfileSession(): Observable<ProfileSession>;
+    getCurrentProfileSession(): Observable<ProfileSession | undefined>;
 }

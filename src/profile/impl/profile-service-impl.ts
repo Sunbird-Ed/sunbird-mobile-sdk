@@ -1,5 +1,7 @@
 import {
     GetAllProfileRequest,
+    NoActiveSessionError,
+    NoProfileFoundError,
     Profile,
     ProfileService,
     ProfileServiceConfig,
@@ -108,6 +110,13 @@ export class ProfileServiceImpl implements ProfileService {
 
     getCurrentProfile(): Observable<Profile> {
         return this.getCurrentProfileSession()
+            .map((profileSession: ProfileSession | undefined) => {
+                if (!profileSession) {
+                    throw new NoActiveSessionError('No active session available');
+                }
+
+                return profileSession;
+            })
             .mergeMap((profileSession: ProfileSession) => {
                 return this.dbService.read({
                     table: ProfileEntry.TABLE_NAME,
@@ -123,16 +132,32 @@ export class ProfileServiceImpl implements ProfileService {
                 table: ProfileEntry.TABLE_NAME,
                 selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
                 selectionArgs: [uid]
-            }).map((rows) => rows && rows[0])
+            })
+            .map((rows: ProfileEntry.SchemaMap[]) =>
+                rows && rows[0] && ProfileMapper.mapProfileDBEntryToProfile(rows[0])
+            )
+            .map((profile: Profile | undefined) => {
+                if (!profile) {
+                    throw new NoProfileFoundError('No Profile found');
+                }
+
+                return profile;
+            })
             .mergeMap((profile: Profile) => {
                 const profileSession = new ProfileSession(profile.uid);
                 return this.keyValueStore.setValue(ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify(profileSession));
             });
     }
 
-    getCurrentProfileSession(): Observable<ProfileSession> {
+    getCurrentProfileSession(): Observable<ProfileSession | undefined> {
         return this.keyValueStore.getValue(ProfileServiceImpl.KEY_USER_SESSION)
-            .map((value) => value ? JSON.parse(value) : (error: any) => console.log('No session available', error));
+            .map((value) => {
+                if (!value) {
+                    return undefined;
+                }
+
+                return JSON.parse(value);
+            });
     }
 
     private mapDbProfileEntriestoProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
