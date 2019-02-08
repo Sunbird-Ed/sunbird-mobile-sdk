@@ -2,7 +2,7 @@ import {OauthSession, SessionProvider} from '..';
 import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../api';
 
 export class KeycloakSessionProvider implements SessionProvider {
-    constructor(private params: string,
+    constructor(private paramsObj: { [key: string]: string },
                 private apiConfig: ApiConfig,
                 private apiService: ApiService) {
     }
@@ -10,12 +10,15 @@ export class KeycloakSessionProvider implements SessionProvider {
     public async provide(): Promise<OauthSession> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
-            .withPath(this.apiConfig.host + this.apiConfig.user_authentication.authUrl)
+            .withPath(this.apiConfig.user_authentication.authUrl + '/token')
             .withBody({
-                redirect_uri: this.apiConfig.host + this.apiConfig.user_authentication.redirectUrl,
-                code: this.getQueryParam(this.params, 'code'),
+                redirect_uri: this.apiConfig.user_authentication.redirectUrl,
+                code: this.paramsObj.code,
                 grant_type: 'authorization_code',
                 client_id: 'android'
+            })
+            .withHeaders({
+                'Content-Type': 'application/x-www-form-urlencoded'
             })
             .withSerializer(HttpSerializer.URLENCODED)
             .withApiToken(false)
@@ -30,18 +33,10 @@ export class KeycloakSessionProvider implements SessionProvider {
                     refreshToken: response.body.refresh_token,
                     userToken: JWTUtil.parseUserTokenFromAccessToken(response.body.access_token)
                 };
-            });
-    }
+            }).catch(e => {
+                console.log(e);
 
-    private getQueryParam(query: string, param: string): string {
-        const paramsArray = query.split('&');
-        let paramValue = '';
-        paramsArray.forEach((item) => {
-            const pair = item.split('=');
-            if (pair[0] === param) {
-                paramValue = pair[1];
-            }
-        });
-        return paramValue;
+                throw e;
+            });
     }
 }

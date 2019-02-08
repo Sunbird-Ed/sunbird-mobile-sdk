@@ -1,12 +1,10 @@
-import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
-import {EnrollCourseRequest} from '..';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {CourseServiceConfig, EnrollCourseRequest} from '..';
 import {Observable} from 'rxjs';
-import {CourseServiceConfig} from '..';
-import {ApiService} from '../../api';
 
 export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseRequest, boolean> {
 
-    private readonly ENROL_ENDPOINT = '/course/v1/enrol';
+    private readonly ENROL_ENDPOINT = '/api/course/v1/enrol';
 
     constructor(private apiService: ApiService,
                 private courseServiceConfig: CourseServiceConfig) {

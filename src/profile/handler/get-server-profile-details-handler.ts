@@ -6,8 +6,8 @@ import {Observable} from 'rxjs';
 import {ServerProfile} from '../def/server-profile';
 
 export class GetServerProfileDetailsHandler implements ApiRequestHandler<ServerProfileDetailsRequest, ServerProfile> {
-    private readonly GET_SERVER_PROFILE_DETAILS_ENDPOINT = 'read';
-    private readonly USER_PROFILE_DETAILS_KEY_PREFIX = 'serverProfileDetails';
+    private readonly GET_SERVER_PROFILE_DETAILS_ENDPOINT = '/api/read';
+    private readonly USER_PROFILE_DETAILS_KEY_PREFIX = '/api/serverProfileDetails';
 
     constructor(
         private apiService: ApiService,

@@ -5,7 +5,7 @@ import {ProfileServiceConfig} from '..';
 import {Observable} from 'rxjs';
 
 export class TenantInfoHandler implements ApiRequestHandler<TenantInfoRequest, TenantInfo> {
-    private readonly GET_TENANT_INFO_ENDPOINT = 'tenant/info';
+    private readonly GET_TENANT_INFO_ENDPOINT = '/api/tenant/info';
 
     constructor(private apiService: ApiService,
                 private tenantServiceConfig: ProfileServiceConfig) {

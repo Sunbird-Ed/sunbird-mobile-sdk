@@ -8,8 +8,8 @@ import {SessionAuthenticator} from '../../auth';
 
 
 export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {
-    private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = 'framework/read';
-    private readonly DB_KEY_FRAMEWORK_DETAILS = 'framework_details_key';
+    private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = '/api/framework/read';
+    private readonly DB_KEY_FRAMEWORK_DETAILS = '/api/framework_details_key';
     private readonly FRAMEWORK_DETAILS_API_EXPIRATION_KEY = 'FRAMEWORK_DETAILS_API_EXPIRATION_KEY';
 
 

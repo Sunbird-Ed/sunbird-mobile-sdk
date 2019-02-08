@@ -2,6 +2,7 @@ import {ApiConfig, ApiService} from '../../api';
 import {OauthSession} from '..';
 import {GoogleSessionProvider} from './google-session-provider';
 import {KeycloakSessionProvider} from './keycloak-session-provider';
+import * as qs from 'qs';
 
 declare var customtabs: {
     isAvailable: (success: () => void, error: (error: string) => void) => void;
@@ -17,22 +18,22 @@ export class OAuthDelegate {
     ) {
     }
 
-    private static isKeyCloakSignup(params: string): boolean {
-        return params.indexOf('code') !== -1;
+    private static isKeyCloakSignup(paramsObject): boolean {
+        return !!paramsObject.code;
     }
 
-    private static isGoogleSignup(params: string): boolean {
-        return (params.indexOf('access_token') !== -1 && params.indexOf('refresh_token') !== -1);
+    private static isGoogleSignup(paramsObject): boolean {
+        return paramsObject.access_token && paramsObject.refresh_token;
     }
 
-    private static isStateLogin(params: string): boolean {
-        return (params.indexOf('ssoUrl') !== -1);
+    private static isStateLogin(paramsObject): boolean {
+        return !!paramsObject.ssoUrl;
     }
 
     doOAuthStepOne(): Promise<OauthSession> {
         return new Promise((resolve, reject) => {
             const launchUrl = this.apiConfig.host +
-                this.apiConfig.user_authentication.authUrl + '?redirect_uri=' +
+                this.apiConfig.user_authentication.authUrl + '/auth' + '?redirect_uri=' +
                 this.apiConfig.user_authentication.redirectUrl + '&response_type=code&scope=offline_access&client_id=android&version=2';
 
             customtabs.isAvailable(() => {
@@ -54,11 +55,13 @@ export class OAuthDelegate {
     }
 
     private async doOAuthStepTwo(params: string): Promise<OauthSession> {
-        if (OAuthDelegate.isGoogleSignup(params)) {
-            return new GoogleSessionProvider(params).provide();
-        } else if (OAuthDelegate.isKeyCloakSignup(params)) {
-            return new KeycloakSessionProvider(params, this.apiConfig, this.apiService).provide();
-        } else if (OAuthDelegate.isStateLogin(params)) {
+        const paramsObject: { [key: string]: string } = qs.parse(params.split('?')[1]);
+
+        if (OAuthDelegate.isGoogleSignup(paramsObject)) {
+            return new GoogleSessionProvider(paramsObject).provide();
+        } else if (OAuthDelegate.isKeyCloakSignup(paramsObject)) {
+            return new KeycloakSessionProvider(paramsObject, this.apiConfig, this.apiService).provide();
+        } else if (OAuthDelegate.isStateLogin(paramsObject)) {
             throw new Error('to be implemented');
         }
 

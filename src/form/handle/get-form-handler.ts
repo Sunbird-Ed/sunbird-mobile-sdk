@@ -9,7 +9,7 @@ import {Path} from '../../util/file/util/path';
 import {ApiService} from '../../api/def/api-service';
 
 export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: string]: {} }> {
-    private readonly GET_FORM_REQUEST_ENDPOINT = 'form/read';
+    private readonly GET_FORM_REQUEST_ENDPOINT = '/api/form/read';
     private readonly STORED_FORM = 'form-';
 
     constructor(

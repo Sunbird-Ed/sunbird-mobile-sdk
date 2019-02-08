@@ -48,7 +48,7 @@ export class SessionAuthenticator implements RequestInterceptor, ResponseInterce
 
     private async invokeRefreshSessionTokenApi() {
         const request = new Request.Builder()
-            .withPath(this.apiConfig.user_authentication.authUrl)
+            .withPath('/api' + this.apiConfig.user_authentication.authUrl)
             .withType(HttpRequestType.POST)
             .withBody({
                 refresh_token: localStorage.getItem(ApiKeys.KEY_REFRESH_TOKEN),
