@@ -5,7 +5,7 @@ import {KeyValueStore} from '../../key-value-store';
 
 export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolledCourseRequest, Course[]> {
 
-    private readonly GET_ENROLLED_COURSES_ENDPOINT = '/api/user/enrollment/list/';
+    private readonly GET_ENROLLED_COURSES_ENDPOINT = '/api/course/v1/user/enrollment/list/';
     private readonly STORED_ENROLLED_COURSES_PREFIX = 'enrolledCourses_';
 
     constructor(private keyValueStore: KeyValueStore,

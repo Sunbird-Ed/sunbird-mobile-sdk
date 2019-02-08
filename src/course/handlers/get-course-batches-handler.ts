@@ -6,7 +6,7 @@ import {ServerProfile} from '../../profile/def/server-profile';
 import {ProfileService} from '../../profile';
 
 export class GetCourseBatchesHandler implements ApiRequestHandler<CourseBatchesRequest, Batch[]> {
-    private readonly GET_COURSE_BATCHES = '/api/batch/list/';
+    private readonly GET_COURSE_BATCHES = '/api/course/v1/batch/list';
 
     constructor(private apiService: ApiService,
                 private courseServiceConfig: CourseServiceConfig,

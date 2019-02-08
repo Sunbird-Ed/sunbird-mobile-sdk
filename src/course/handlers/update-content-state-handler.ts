@@ -3,7 +3,7 @@ import {Batch, CourseServiceConfig, UpdateContentStateRequest} from '..';
 import {Observable} from 'rxjs';
 
 export class UpdateContentStateHandler implements ApiRequestHandler<UpdateContentStateRequest, boolean> {
-    private readonly UPDATE_CONTENT_STATE_ENDPOINT = '/api/content/state/update/';
+    private readonly UPDATE_CONTENT_STATE_ENDPOINT = '/api/course/v1/content/state/update';
 
 
     constructor(private apiService: ApiService,
