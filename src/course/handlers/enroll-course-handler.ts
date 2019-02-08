@@ -6,7 +6,7 @@ import {ApiService} from '../../api';
 
 export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseRequest, boolean> {
 
-    private readonly ENROL_ENDPOINT = 'enrol/';
+    private readonly ENROL_ENDPOINT = '/course/v1/enrol';
 
     constructor(private apiService: ApiService,
                 private courseServiceConfig: CourseServiceConfig) {

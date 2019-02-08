@@ -5,7 +5,7 @@ import {Observable} from 'rxjs';
 import {ApiService} from '../../api';
 
 export class UpdateContentStateHandler implements ApiRequestHandler<UpdateContentStateRequest, boolean> {
-    private readonly UPDATE_CONTENT_STATE_ENDPOINT = 'content/state/update/';
+    private readonly UPDATE_CONTENT_STATE_ENDPOINT = '/course/v1/content/state/update';
 
 
     constructor(private apiService: ApiService,

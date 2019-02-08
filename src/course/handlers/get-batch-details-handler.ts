@@ -5,7 +5,7 @@ import {CourseBatchDetailsRequest} from '..';
 import {ApiService} from '../../api';
 
 export class GetBatchDetailsHandler implements ApiRequestHandler<CourseBatchDetailsRequest, Batch> {
-    public readonly GET_BATCH_DETAILS_ENDPOINT = 'batch/read/';
+    public readonly GET_BATCH_DETAILS_ENDPOINT = '/course/v1/batch/read/';
 
 
     constructor(private apiService: ApiService,

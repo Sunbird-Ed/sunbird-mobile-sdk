@@ -7,7 +7,7 @@ import {ApiService} from '../../api';
 
 export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolledCourseRequest, Course[]> {
 
-    private readonly GET_ENROLLED_COURSES_ENDPOINT = 'user/enrollment/list/';
+    private readonly GET_ENROLLED_COURSES_ENDPOINT = '/course/v1/user/enrollment/list/';
     private readonly STORED_ENROLLED_COURSES_PREFIX = 'enrolledCourses_';
 
     constructor(private keyValueStore: KeyValueStore,

@@ -8,7 +8,7 @@ import {ProfileService} from '../../profile';
 import {ApiService} from '../../api';
 
 export class GetCourseBatchesHandler implements ApiRequestHandler<CourseBatchesRequest, Batch[]> {
-    private readonly GET_COURSE_BATCHES = 'batch/list/';
+    private readonly GET_COURSE_BATCHES = '/course/v1/batch/list';
 
     constructor(private apiService: ApiService,
                 private courseServiceConfig: CourseServiceConfig,
