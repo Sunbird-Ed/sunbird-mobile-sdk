@@ -1,11 +1,9 @@
-import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
-import {Batch, CourseServiceConfig} from '..';
-import {CourseBatchDetailsRequest} from '..';
-import {ApiService} from '../../api';
+import {Batch, CourseBatchDetailsRequest, CourseServiceConfig} from '..';
 
 export class GetBatchDetailsHandler implements ApiRequestHandler<CourseBatchDetailsRequest, Batch> {
-    public readonly GET_BATCH_DETAILS_ENDPOINT = '/course/v1/batch/read/';
+    public readonly GET_BATCH_DETAILS_ENDPOINT = '/api/course/v1/batch/read/';
 
 
     constructor(private apiService: ApiService,
