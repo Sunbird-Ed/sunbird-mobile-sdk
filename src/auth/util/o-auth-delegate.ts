@@ -2,6 +2,7 @@ import {ApiConfig, ApiService} from '../../api';
 import {OauthSession} from '..';
 import {GoogleSessionProvider} from './google-session-provider';
 import {KeycloakSessionProvider} from './keycloak-session-provider';
+import {StateLoginSessionProvider} from './state-login-session-provider';
 import * as qs from 'qs';
 
 declare var customtabs: {
@@ -10,6 +11,13 @@ declare var customtabs: {
     launchInBrowser: (url: string, success: (callbackUrl: string) => void, error: (error: string) => void) => void;
     close: (success: () => void, error: (error: string) => void) => void;
 };
+
+export interface StepOneCallbackType {
+    code?: string;
+    access_token?: string;
+    refresh_token?: string;
+    ssoUrl?: string;
+}
 
 export class OAuthDelegate {
     constructor(
@@ -38,7 +46,6 @@ export class OAuthDelegate {
 
             customtabs.isAvailable(() => {
                 // customTabs available
-                // https://staging.ntp.net.in/auth/realms/sunbird/protocol/openid-connect/auth?redirect_uri=staging.diksha.app://mobile&response_type=code&scope=offline_access&client_id=android&version=1
                 customtabs.launch(launchUrl, params => {
                     resolve(this.doOAuthStepTwo(params));
                 }, error => {
@@ -55,16 +62,17 @@ export class OAuthDelegate {
     }
 
     private async doOAuthStepTwo(params: string): Promise<OauthSession> {
-        const paramsObject: { [key: string]: string } = qs.parse(params.split('?')[1]);
+        const paramsObject: StepOneCallbackType = qs.parse(params.split('?')[1]);
 
         if (OAuthDelegate.isGoogleSignup(paramsObject)) {
             return new GoogleSessionProvider(paramsObject).provide();
         } else if (OAuthDelegate.isKeyCloakSignup(paramsObject)) {
             return new KeycloakSessionProvider(paramsObject, this.apiConfig, this.apiService).provide();
         } else if (OAuthDelegate.isStateLogin(paramsObject)) {
-            throw new Error('to be implemented');
+            return new StateLoginSessionProvider(paramsObject, this.apiConfig, this.apiService).provide();
         }
 
         throw new Error('to be implemented');
     }
 }
+

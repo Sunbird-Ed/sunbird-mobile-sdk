@@ -1,8 +1,9 @@
 import {OauthSession, SessionProvider} from '..';
 import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../api';
+import {StepOneCallbackType} from './o-auth-delegate';
 
 export class KeycloakSessionProvider implements SessionProvider {
-    constructor(private paramsObj: { [key: string]: string },
+    constructor(private paramsObj: StepOneCallbackType,
                 private apiConfig: ApiConfig,
                 private apiService: ApiService) {
     }
