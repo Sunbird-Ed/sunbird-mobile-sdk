@@ -30,6 +30,7 @@ export class DbCordovaService implements DbService {
 
 
     update(updateQuery: UpdateQuery): Observable<boolean> {
+        console.log('updateQuery', updateQuery);
         throw new Error('Method not implemented.');
     }
 
@@ -101,6 +102,7 @@ export class DbCordovaService implements DbService {
     }
 
     read(readQuery: ReadQuery): Observable<any[]> {
+        console.log('read query', readQuery);
         const observable = new Subject<any[]>();
 
         db.read(!!readQuery.distinct,
@@ -113,9 +115,11 @@ export class DbCordovaService implements DbService {
             readQuery.orderBy || '',
             readQuery.limit || '',
             (json: any[]) => {
+                console.log('db read sucess', json);
                 observable.next(json);
                 observable.complete();
             }, (error: string) => {
+                console.log('db.read err', error);
                 observable.error(error);
             });
 
@@ -123,13 +127,16 @@ export class DbCordovaService implements DbService {
     }
 
     insert(inserQuery: InsertQuery): Observable<number> {
+        console.log('insert query', inserQuery);
         const observable = new Subject<number>();
 
         db.insert(inserQuery.table,
             inserQuery.modelJson, (number: number) => {
+                console.log('insert success', number);
                 observable.next(number);
                 observable.complete();
             }, (error: string) => {
+                console.log('insert err', error);
                 observable.error(error);
             });
 

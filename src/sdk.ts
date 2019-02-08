@@ -145,6 +145,7 @@ export class SunbirdSdk {
                     new GroupProfileMigration(),
                     new MillisecondsToSecondsMigration(),
                     new ContentMarkerMigration()
+                    // new TestMigration()
                 ]
             );
         }

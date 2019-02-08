@@ -35,11 +35,10 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
             .withType(HttpRequestType.GET)
             .withPath(this.frameworkServiceConfig.apiPath + this.GET_CHANNEL_DETAILS_ENDPOINT + request.channelId)
             .withApiToken(true)
-            .withResponseInterceptor([this.sessionAuthenticator])
             .build();
 
-        return this.apiService.fetch<{ result: { response: Channel } }>(apiRequest).map((response) => {
-            return response.body.result.response;
+        return this.apiService.fetch<{ result: { channel: Channel } }>(apiRequest).map((response) => {
+            return response.body.result.channel;
         });
     }
 
@@ -48,7 +47,8 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
         const filePath = Path.fileNameFromFilePath(this.frameworkServiceConfig.channelConfigFilePath);
         return Observable.fromPromise(this.fileservice.readAsText(fileDirPath, filePath))
             .map((filecontent) => {
-                return JSON.parse(filecontent);
+                const result = JSON.parse(filecontent);
+                return (result.result.channel);
             });
     }
 

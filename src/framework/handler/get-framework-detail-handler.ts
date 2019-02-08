@@ -8,8 +8,8 @@ import {SessionAuthenticator} from '../../auth';
 
 
 export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {
-    private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = '/api/framework/read';
     private readonly DB_KEY_FRAMEWORK_DETAILS = '/api/framework_details_key';
+    private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = '/api/framework/v1/read/';
     private readonly FRAMEWORK_DETAILS_API_EXPIRATION_KEY = 'FRAMEWORK_DETAILS_API_EXPIRATION_KEY';
 
 
@@ -35,11 +35,10 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
             .withType(HttpRequestType.GET)
             .withPath(this.frameworkServiceConfig.apiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + request.frameworkId)
             .withApiToken(true)
-            .withResponseInterceptor([this.sessionAuthenticator])
             .build();
 
-        return this.apiService.fetch<{ result: { response: Framework } }>(apiRequest).map((response) => {
-            return response.body.result.response;
+        return this.apiService.fetch<{ result: { framework: Framework } }>(apiRequest).map((response) => {
+            return response.body.result.framework;
         });
     }
 

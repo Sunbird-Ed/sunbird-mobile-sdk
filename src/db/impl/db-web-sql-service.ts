@@ -148,9 +148,11 @@ export class DbWebSqlService implements DbService {
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query.toString(),
                 [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
+                    console.log('update query succ', sqlResultSet);
                     observable.next(!!sqlResultSet.rowsAffected);
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
+                    console.log('update query fail', sqlError);
                     observable.error(sqlError);
                 });
         });

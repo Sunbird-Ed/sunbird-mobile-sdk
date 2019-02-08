@@ -22,7 +22,7 @@ export class BaseConnection implements Connection {
         let response = (async () => {
             switch (request.type) {
                 case HttpRequestType.GET:
-                    response = await this.http.get(this.apiConfig.host, request.path, request.headers, request.parameters).toPromise();
+                    response = await this.http.get(this.apiConfig.baseUrl, request.path, request.headers, request.parameters).toPromise();
                     break;
                 case HttpRequestType.PATCH:
                     response = await this.http.patch(this.apiConfig.host, request.path, request.headers, request.body).toPromise();
