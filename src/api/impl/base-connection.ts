@@ -1,10 +1,11 @@
-import {ApiConfig, HttpClient, HttpRequestType, Request, Response} from '..';
+import {ApiConfig, HttpClient, HttpRequestType, HttpSerializer, Request, Response} from '..';
 import {Observable} from 'rxjs';
 import * as SHA1 from 'crypto-js/sha1';
 import {Connection} from '../def/connection';
 import {Authenticator} from '../def/authenticator';
 import {ApiAuthenticator} from './api-authenticator';
 import {SessionAuthenticator} from '../../auth';
+import * as qs from 'qs';
 
 export class BaseConnection implements Connection {
 
@@ -21,13 +22,13 @@ export class BaseConnection implements Connection {
         let response = (async () => {
             switch (request.type) {
                 case HttpRequestType.GET:
-                    response = await this.http.get(this.apiConfig.baseUrl, request.path, request.headers, request.parameters).toPromise();
+                    response = await this.http.get(this.apiConfig.host, request.path, request.headers, request.parameters).toPromise();
                     break;
                 case HttpRequestType.PATCH:
-                    response = await this.http.patch(this.apiConfig.baseUrl, request.path, request.headers, request.body).toPromise();
+                    response = await this.http.patch(this.apiConfig.host, request.path, request.headers, request.body).toPromise();
                     break;
                 case HttpRequestType.POST:
-                    response = await this.http.post(this.apiConfig.baseUrl, request.path, request.headers, request.body).toPromise();
+                    response = await this.http.post(this.apiConfig.host, request.path, request.headers, request.body).toPromise();
                     break;
             }
 
@@ -64,6 +65,10 @@ export class BaseConnection implements Connection {
             request.requestInterceptors.push(authenticator);
             request.responseInterceptors.push(authenticator);
         });
+
+        if (this.http.setSerializer(request.serializer) === HttpSerializer.URLENCODED) {
+            request.body = qs.stringify(request.body);
+        }
 
         this.http.setSerializer(request.serializer);
     }

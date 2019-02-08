@@ -10,7 +10,7 @@ import {Path} from '../../util/file/util/path';
 
 export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private readonly KEY_PAGE_ASSEMBLE = 'pageAssemble-';
-    private readonly PAGE_ASSEMBLE_ENDPOINST = 'page/assemble';
+    private readonly PAGE_ASSEMBLE_ENDPOINST = '/api/page/assemble';
 
     constructor(private apiService: ApiService,
                 private pageApiServiceConfig: PageServiceConfig,

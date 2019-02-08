@@ -11,7 +11,7 @@ import {ApiService} from '../../api/def/api-service';
 import {ContentMapper} from '../util/content-mapper';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
-    private readonly GET_CONTENT_DETAILS_ENDPOINT = 'read/';
+    private readonly GET_CONTENT_DETAILS_ENDPOINT = '/api/read/';
 
     constructor(private dbService: DbService,
                 private contentServiceConfig?: ContentServiceConfig,

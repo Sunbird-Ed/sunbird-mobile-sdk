@@ -10,7 +10,7 @@ export class SearchContentHandler {
 
     public static readonly AUDIENCE_LEARNER = ['learner'];
     public static readonly AUDIENCE_INSTRUCTOR = ['instructor'];
-    private readonly SEARCH_ENDPOINT = 'search';
+    private readonly SEARCH_ENDPOINT = '/api/search';
 
     constructor(private appConfig: AppConfig,
                 private contentServiceConfig: ContentServiceConfig,

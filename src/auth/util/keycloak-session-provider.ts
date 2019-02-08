@@ -10,12 +10,15 @@ export class KeycloakSessionProvider implements SessionProvider {
     public async provide(): Promise<OauthSession> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
-            .withPath(this.apiConfig.host + this.apiConfig.user_authentication.authUrl + '/token')
+            .withPath(this.apiConfig.user_authentication.authUrl + '/token')
             .withBody({
                 redirect_uri: this.apiConfig.user_authentication.redirectUrl,
                 code: this.paramsObj.code,
                 grant_type: 'authorization_code',
                 client_id: 'android'
+            })
+            .withHeaders({
+                'Content-Type': 'application/x-www-form-urlencoded'
             })
             .withSerializer(HttpSerializer.URLENCODED)
             .withApiToken(false)

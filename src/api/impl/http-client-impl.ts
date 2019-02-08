@@ -68,7 +68,14 @@ export class HttpClientImpl implements HttpClient {
 
         this.http[type.toLowerCase()](url, parametersOrData, headers, (response) => {
             const r = new Response();
-            r.body = JSON.parse(response.data);
+
+            try {
+                r.body = JSON.parse(response.data);
+            } catch (e) {
+                console.error(response, e);
+                throw e;
+            }
+
             r.responseCode = response.status;
             r.errorMesg = response.error;
             observable.next(r);
@@ -79,7 +86,7 @@ export class HttpClientImpl implements HttpClient {
             try {
                 r.body = JSON.parse(response.error);
             } catch (e) {
-                console.error(e);
+                console.error(response, e);
                 throw e;
             }
 

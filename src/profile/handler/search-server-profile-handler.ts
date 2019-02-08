@@ -5,7 +5,7 @@ import {ProfileServiceConfig} from '..';
 import {Observable} from 'rxjs';
 
 export class SearchServerProfileHandler implements ApiRequestHandler<ServerProfileSearchCriteria, ServerProfile[]> {
-    private readonly GET_SEARCH_USER_ENDPOINT = '/user/v1/search';
+    private readonly GET_SEARCH_USER_ENDPOINT = '/api/user/v1/search';
 
     constructor(private apiService: ApiService,
                 private searchServiceConfig: ProfileServiceConfig) {

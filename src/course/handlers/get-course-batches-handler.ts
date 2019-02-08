@@ -1,14 +1,12 @@
-import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
-import {CourseBatchesRequest} from '..';
-import {Batch, CourseServiceConfig} from '..';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {Batch, CourseBatchesRequest, CourseServiceConfig} from '..';
 import {Observable} from 'rxjs';
 import {CourseBatchesResponse} from '../def/course-batches-response';
 import {ServerProfile} from '../../profile/def/server-profile';
 import {ProfileService} from '../../profile';
-import {ApiService} from '../../api';
 
 export class GetCourseBatchesHandler implements ApiRequestHandler<CourseBatchesRequest, Batch[]> {
-    private readonly GET_COURSE_BATCHES = 'batch/list/';
+    private readonly GET_COURSE_BATCHES = '/api/batch/list/';
 
     constructor(private apiService: ApiService,
                 private courseServiceConfig: CourseServiceConfig,

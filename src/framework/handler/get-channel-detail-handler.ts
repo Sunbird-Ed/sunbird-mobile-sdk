@@ -8,7 +8,7 @@ import {SessionAuthenticator} from '../../auth';
 
 
 export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetailsRequest, Channel> {
-    private readonly GET_CHANNEL_DETAILS_ENDPOINT = 'channel/read';
+    private readonly GET_CHANNEL_DETAILS_ENDPOINT = '/api/channel/read';
     private readonly DB_KEY_CHANNEL_DETAILS = 'channel_details_key';
     private readonly CHANNEL_DETAILS_API_EXPIRATION_KEY = 'CHANNEL_DETAILS_API_EXPIRATION_KEY';
 

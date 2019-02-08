@@ -1,13 +1,11 @@
-import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
-import {FetchEnrolledCourseRequest} from '..';
-import {Course, CourseServiceConfig} from '..';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {Course, CourseServiceConfig, FetchEnrolledCourseRequest} from '..';
 import {Observable} from 'rxjs';
 import {KeyValueStore} from '../../key-value-store';
-import {ApiService} from '../../api';
 
 export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolledCourseRequest, Course[]> {
 
-    private readonly GET_ENROLLED_COURSES_ENDPOINT = 'user/enrollment/list/';
+    private readonly GET_ENROLLED_COURSES_ENDPOINT = '/api/user/enrollment/list/';
     private readonly STORED_ENROLLED_COURSES_PREFIX = 'enrolledCourses_';
 
     constructor(private keyValueStore: KeyValueStore,
