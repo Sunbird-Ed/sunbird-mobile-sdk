@@ -75,7 +75,14 @@ export class HttpClientImpl implements HttpClient {
             observable.complete();
         }, (response) => {
             const r = new Response();
-            r.body = JSON.parse(response.error);
+
+            try {
+                r.body = JSON.parse(response.error);
+            } catch (e) {
+                console.error(e);
+                throw e;
+            }
+
             r.responseCode = response.status;
             r.errorMesg = 'NETWORK ERROR';
             observable.next(r);
