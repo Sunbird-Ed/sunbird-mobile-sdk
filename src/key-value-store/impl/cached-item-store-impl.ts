@@ -25,7 +25,7 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
                         .mergeMap((isItemTTLExpired: boolean) => {
                             if (isItemTTLExpired) {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id)
-                                    .map((v) => v)
+                                    .map((v) => JSON.parse(v!))
                                     .do(() => {
                                         fromServer().switchMap((item: T) => {
                                             return this.saveItem(id, timeToLiveKey, noSqlkey, item);
