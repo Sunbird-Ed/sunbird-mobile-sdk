@@ -210,7 +210,6 @@ export class SunbirdSdk {
             this._apiService,
             sdkConfig.pageServiceConfig,
             this._fileService,
-            sessionAuthenticator,
             new CachedItemStoreImpl<PageAssemble>(this._keyValueStore, sdkConfig.apiConfig)
         );
     }
