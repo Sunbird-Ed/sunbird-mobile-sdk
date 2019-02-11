@@ -7,7 +7,7 @@ import {Observable} from 'rxjs';
 
 
 export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetailsRequest, Channel> {
-    private readonly GET_CHANNEL_DETAILS_ENDPOINT = '/api/channel/read';
+    private readonly GET_CHANNEL_DETAILS_ENDPOINT = '/read';
     private readonly DB_KEY_CHANNEL_DETAILS = 'channel_details_key';
     private readonly CHANNEL_DETAILS_API_EXPIRATION_KEY = 'CHANNEL_DETAILS_API_EXPIRATION_KEY';
 
@@ -31,7 +31,7 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
     private fetchFromServer(request: ChannelDetailsRequest): Observable<Channel> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath(this.frameworkServiceConfig.apiPath + this.GET_CHANNEL_DETAILS_ENDPOINT + request.channelId)
+            .withPath(this.frameworkServiceConfig.channelApiPath + this.GET_CHANNEL_DETAILS_ENDPOINT + '/' +  request.channelId)
             .withApiToken(true)
             .build();
 
@@ -46,6 +46,7 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
         return Observable.fromPromise(this.fileservice.readAsText(fileDirPath, filePath))
             .map((filecontent) => {
                 const result = JSON.parse(filecontent);
+                console.log('fetchFromFile channel', result);
                 return (result.result.channel);
             });
     }
