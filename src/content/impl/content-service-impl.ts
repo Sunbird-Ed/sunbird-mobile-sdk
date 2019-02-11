@@ -1,35 +1,39 @@
-import {ContentService} from '../def/content-service';
-import {Observable} from 'rxjs';
 import {
     ChildContentRequest,
+    Content,
     ContentDeleteRequest,
+    ContentDeleteResponse,
+    ContentDeleteStatus,
     ContentDetailRequest,
     ContentExportResponse,
     ContentImportRequest,
+    ContentImportResponse,
     ContentRequest,
     ContentSearchCriteria,
-    EcarImportRequest
-} from '../def/requests';
-import {Content, HierarchyInfo} from '../def/content';
+    ContentSearchResult,
+    ContentService,
+    ContentServiceConfig,
+    EcarImportRequest,
+    HierarchyInfo,
+    SearchResponse
+} from '..';
+import {Observable} from 'rxjs';
 import {ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {KeyValueStore} from '../../key-value-store';
-import {SessionAuthenticator} from '../../auth';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
 import {DbService} from '../../db';
-import {ContentServiceConfig} from '../config/content-config';
-import {ContentDeleteResponse, ContentDeleteStatus, ContentImportResponse, ContentSearchResult, SearchResponse} from '../def/response';
 import {ChildContentsHandler} from '../handlers/get-child-contents-handler';
 import {ContentEntry} from '../db/schema';
 import {ContentUtil} from '../util/content-util';
 import {DeleteContentHandler} from '../handlers/delete-content-handler';
-import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import {SearchContentHandler} from '../handlers/search-content-handler';
 import {AppConfig} from '../../api/config/app-config';
 import {FileService} from '../../util/file/def/file-service';
 import {FileEntry} from '../../util/file';
 import {FileUtil} from '../../util/file/util/file-util';
 import {ErrorCode, FileExtension} from '../util/content-constants';
+import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 
 export class ContentServiceImpl implements ContentService {
     constructor(private contentServiceConfig: ContentServiceConfig,
@@ -38,13 +42,12 @@ export class ContentServiceImpl implements ContentService {
                 private profileService: ProfileService,
                 private appConfig: AppConfig,
                 private keyValueStore: KeyValueStore,
-                private sessionAuthenticator: SessionAuthenticator,
                 private fileService: FileService) {
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
         return new GetContentDetailsHandler(
-            this.dbService, this.contentServiceConfig, this.sessionAuthenticator, this.apiService).handle(request);
+            this.dbService, this.contentServiceConfig, this.apiService).handle(request);
     }
 
     cancelImport(contentId: string) {
@@ -174,8 +177,7 @@ export class ContentServiceImpl implements ContentService {
 
     searchContent(request: ContentSearchCriteria): Observable<ContentSearchResult> {
         const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
-            this.contentServiceConfig,
-            this.sessionAuthenticator);
+            this.contentServiceConfig);
         const searchRequest = searchHandler.getSearchRequest(request);
         const httpRequest = searchHandler.getRequest(searchRequest, request.framework, request.languageCode);
         return this.apiService.fetch<SearchResponse>(httpRequest)

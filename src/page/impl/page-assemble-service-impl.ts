@@ -1,9 +1,8 @@
-import {PageAssembleCriteria, PageAssembleService} from '..';
+import {PageAssembleCriteria, PageAssembleService, PageServiceConfig} from '..';
 import {PageAssemble} from '../def/page-assemble';
 import {Observable} from 'rxjs';
 import {PageAssemblerHandler} from '../handle/page-assembler-handler';
 import {ApiService} from '../../api';
-import {PageServiceConfig} from '../config/page-service-config';
 import {FileService} from '../../util/file/def/file-service';
 import {CachedItemStore} from '../../key-value-store';
 

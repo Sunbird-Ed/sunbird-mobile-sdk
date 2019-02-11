@@ -1,10 +1,15 @@
-import {ContentSearchCriteria, ContentSearchFilter, ContentSortCriteria, FilterValue, SortOrder} from '../def/requests';
-import {ContentServiceConfig} from '../config/content-config';
-import {SessionAuthenticator} from '../../auth';
+import {
+    ContentSearchCriteria,
+    ContentSearchFilter,
+    ContentSearchResult,
+    ContentServiceConfig,
+    ContentSortCriteria,
+    FilterValue,
+    SortOrder
+} from '..';
 import {HttpRequestType, Request} from '../../api';
 import {AppConfig} from '../../api/config/app-config';
 import {SearchType} from '../util/content-constants';
-import {ContentSearchResult} from '../def/response';
 
 export class SearchContentHandler {
 
@@ -13,8 +18,7 @@ export class SearchContentHandler {
     private readonly SEARCH_ENDPOINT = '/api/search';
 
     constructor(private appConfig: AppConfig,
-                private contentServiceConfig: ContentServiceConfig,
-                private sessionAuthenticator: SessionAuthenticator) {
+                private contentServiceConfig: ContentServiceConfig) {
     }
 
     getSearchContentRequest(criteria: ContentSearchCriteria): any {
@@ -110,7 +114,7 @@ export class SearchContentHandler {
             .withType(HttpRequestType.POST)
             .withPath(this.contentServiceConfig.apiPath + this.SEARCH_ENDPOINT + '/' + '?framework=' + framework + '&lang=' + langCode)
             .withApiToken(true)
-            .withResponseInterceptor([this.sessionAuthenticator])
+            .withSessionToken(true)
             .withBody(request)
             .build();
     }

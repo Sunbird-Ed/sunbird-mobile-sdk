@@ -1,7 +1,6 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {PageAssembleCriteria} from '..';
+import {PageAssembleCriteria, PageServiceConfig} from '..';
 import {PageAssemble} from '../def/page-assemble';
-import {PageServiceConfig} from '../config/page-service-config';
 import {FileService} from '../../util/file/def/file-service';
 import {CachedItemStore} from '../../key-value-store';
 import {Observable} from 'rxjs';
