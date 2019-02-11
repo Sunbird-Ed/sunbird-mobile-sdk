@@ -3,7 +3,7 @@ import {Observable} from 'rxjs';
 import {Batch, CourseBatchDetailsRequest, CourseServiceConfig} from '..';
 
 export class GetBatchDetailsHandler implements ApiRequestHandler<CourseBatchDetailsRequest, Batch> {
-    public readonly GET_BATCH_DETAILS_ENDPOINT = '/api/course/v1/batch/read/';
+    public readonly GET_BATCH_DETAILS_ENDPOINT = '/batch/read/';
 
 
     constructor(private apiService: ApiService,
