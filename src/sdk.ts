@@ -194,8 +194,7 @@ export class SunbirdSdk {
             sdkConfig.formServiceConfig,
             this._apiService,
             this._fileService,
-            new CachedItemStoreImpl<{ [key: string]: {} }>(this._keyValueStore, sdkConfig.apiConfig),
-            sessionAuthenticator
+            new CachedItemStoreImpl<{ [key: string]: {} }>(this._keyValueStore, sdkConfig.apiConfig)
         );
 
         this._frameworkService = new FrameworkServiceImpl(
@@ -205,7 +204,6 @@ export class SunbirdSdk {
             this._apiService,
             new CachedItemStoreImpl<Channel>(this._keyValueStore, sdkConfig.apiConfig),
             new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig),
-            sessionAuthenticator
         );
 
         this._pageAssembleService = new PageAssembleServiceImpl(

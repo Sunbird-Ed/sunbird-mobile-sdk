@@ -4,7 +4,6 @@ import {Path} from '../../util/file/util/path';
 import {Channel, ChannelDetailsRequest, FrameworkServiceConfig} from '..';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
-import {SessionAuthenticator} from '../../auth';
 
 
 export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetailsRequest, Channel> {
@@ -15,7 +14,6 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
 
     constructor(private apiService: ApiService,
                 private frameworkServiceConfig: FrameworkServiceConfig,
-                private sessionAuthenticator: SessionAuthenticator,
                 private fileservice: FileService,
                 private cachedItemStore: CachedItemStore<Channel>) {
     }

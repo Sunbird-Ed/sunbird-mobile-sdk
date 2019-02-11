@@ -12,12 +12,10 @@ import {
 import {FileService} from '../../util/file/def/file-service';
 import {Observable} from 'rxjs';
 import {ApiService} from '../../api';
-import {SessionAuthenticator} from '../../auth';
 
 
 export class FrameworkServiceImpl implements FrameworkService {
 
-    DB_KEY_CHANNEL_DETAILS = 'channel_details_key-';
     DB_KEY_FRAMEWORK_DETAILS = 'framework_details_key-';
 
     constructor(private frameworkServiceConfig: FrameworkServiceConfig,
@@ -25,8 +23,7 @@ export class FrameworkServiceImpl implements FrameworkService {
                 private fileService: FileService,
                 private apiService: ApiService,
                 private cachedChannelItemStore: CachedItemStore<Channel>,
-                private cachedFrameworkItemStore: CachedItemStore<Framework>,
-                private sessionAuthenticator: SessionAuthenticator) {
+                private cachedFrameworkItemStore: CachedItemStore<Framework>) {
     }
 
 
@@ -34,7 +31,6 @@ export class FrameworkServiceImpl implements FrameworkService {
         return new GetChannelDetailsHandler(
             this.apiService,
             this.frameworkServiceConfig,
-            this.sessionAuthenticator,
             this.fileService,
             this.cachedChannelItemStore,
         ).handle(request);
@@ -44,7 +40,6 @@ export class FrameworkServiceImpl implements FrameworkService {
         return new GetFrameworkDetailsHandler(
             this.apiService,
             this.frameworkServiceConfig,
-            this.sessionAuthenticator,
             this.fileService,
             this.cachedFrameworkItemStore,
         ).handle(request);

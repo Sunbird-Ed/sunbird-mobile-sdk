@@ -4,7 +4,6 @@ import {FileService} from '../../util/file/def/file-service';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
 import {Framework, FrameworkDetailsRequest, FrameworkServiceConfig} from '..';
-import {SessionAuthenticator} from '../../auth';
 
 
 export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {
@@ -15,7 +14,6 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
 
     constructor(private apiService: ApiService,
                 private frameworkServiceConfig: FrameworkServiceConfig,
-                private sessionAuthenticator: SessionAuthenticator,
                 private fileservice: FileService,
                 private cachedItemStore: CachedItemStore<Framework>) {
     }

@@ -3,7 +3,6 @@ import {FormRequest} from '../def/form-request';
 import {Observable} from 'rxjs';
 import {CachedItemStore} from '../../key-value-store';
 import {FormServiceConfig} from '../config/form-service-config';
-import {SessionAuthenticator} from '../../auth';
 import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
 import {ApiService} from '../../api/def/api-service';
@@ -16,7 +15,6 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
         private apiService: ApiService,
         private formServiceConfig: FormServiceConfig,
         private fileService: FileService,
-        private sessionAuthenticator: SessionAuthenticator,
         private cachedItemStore: CachedItemStore<{ [key: string]: {} }>
     ) {
     }
@@ -46,7 +44,6 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
             .withPath(this.formServiceConfig.apiPath + this.GET_FORM_REQUEST_ENDPOINT + this.getIdForRequest(request))
             .withApiToken(true)
             .withBody(request)
-            .withResponseInterceptor([this.sessionAuthenticator])
             .build();
         return this.apiService.fetch <{ result: { [key: string]: {} } }>(apiRequest).map((success) => {
             return success.body.result;
