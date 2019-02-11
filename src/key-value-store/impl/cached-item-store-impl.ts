@@ -2,6 +2,7 @@ import {CachedItemStore} from '../def/cached-item-store';
 import {Observable} from 'rxjs';
 import {KeyValueStore} from '..';
 import {ApiConfig} from '../../api';
+import { NoFileFoundError } from '../../util/file/errors/no-file-found';
 
 export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
 
@@ -38,9 +39,9 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
                         });
                 } else {
                     if (initial) {
-                        return initial().switchMap((item: T) => {
-                            return this.saveItem(id, timeToLiveKey, noSqlkey, item);
-                        });
+                            return initial().switchMap((item: T) => {
+                                return this.saveItem(id, timeToLiveKey, noSqlkey, item);
+                            });
                     } else {
                         return fromServer()
                             .switchMap((item: T) => {
@@ -63,7 +64,7 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
         const savedTimestamp: number = Number(localStorage.getItem(timeToLiveKey + '-' + id)!);
         const nowTimeStamp: number = Date.now();
 
-        if (nowTimeStamp - savedTimestamp > timeToLive) {
+        if (nowTimeStamp - savedTimestamp < timeToLive) {
             return Observable.of(false);
         } else {
             return Observable.of(true);
@@ -86,6 +87,6 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
     }
 
     private saveItemToDb(id: string, noSqlkey: string, item): Observable<boolean> {
-        return this.keyValueStore.setValue(noSqlkey + '-' + id, item);
+        return this.keyValueStore.setValue(noSqlkey + '-' + id, JSON.stringify(item));
     }
 }

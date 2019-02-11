@@ -4,7 +4,6 @@ export interface ChannelDetailsRequest {
 
 export interface FrameworkDetailsRequest {
     frameworkId: string;
-    refreshFrameworkDetails: boolean;
 }
 
 
