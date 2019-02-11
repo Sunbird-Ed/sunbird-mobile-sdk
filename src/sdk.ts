@@ -179,7 +179,6 @@ export class SunbirdSdk {
             this._profileService,
             sdkConfig.appConfig,
             this._keyValueStore,
-            sessionAuthenticator,
             this._fileService
         );
 

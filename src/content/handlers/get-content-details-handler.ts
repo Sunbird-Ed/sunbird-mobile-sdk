@@ -1,13 +1,9 @@
-import {ApiRequestHandler, HttpRequestType, Request} from '../../api';
-import {ContentDetailRequest} from '../def/requests';
-import {Content, ContentData} from '../def/content';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {Content, ContentData, ContentDetailRequest, ContentServiceConfig} from '..';
 import {Observable} from 'rxjs';
 import {DbService, ReadQuery} from '../../db';
 import {ContentEntry} from '../db/schema';
-import {ContentServiceConfig} from '../config/content-config';
-import {SessionAuthenticator} from '../../auth';
 import {QueryBuilder} from '../../db/util/query-builder';
-import {ApiService} from '../../api/def/api-service';
 import {ContentMapper} from '../util/content-mapper';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
@@ -15,7 +11,6 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
 
     constructor(private dbService: DbService,
                 private contentServiceConfig?: ContentServiceConfig,
-                private sessionAuthenticator?: SessionAuthenticator,
                 private apiService?: ApiService) {
     }
 
@@ -74,7 +69,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             .withType(HttpRequestType.GET)
             .withPath(this.contentServiceConfig!.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + request.contentId)
             .withApiToken(true)
-            .withResponseInterceptor([this.sessionAuthenticator!])
+            .withSessionToken(true)
             .build())
             .map((response) => {
                 return response.body.result;
