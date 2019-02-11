@@ -7,8 +7,8 @@ import {Framework, FrameworkDetailsRequest, FrameworkServiceConfig} from '..';
 
 
 export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {
-    private readonly DB_KEY_FRAMEWORK_DETAILS = '/api/framework_details_key';
-    private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = '/api/framework/v1/read/';
+    private readonly DB_KEY_FRAMEWORK_DETAILS = 'framework_details_key';
+    private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = '/read';
     private readonly FRAMEWORK_DETAILS_API_EXPIRATION_KEY = 'FRAMEWORK_DETAILS_API_EXPIRATION_KEY';
 
 
@@ -31,7 +31,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
     private fetchFromServer(request: FrameworkDetailsRequest): Observable<Framework> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath(this.frameworkServiceConfig.apiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + request.frameworkId)
+            .withPath(this.frameworkServiceConfig.frameworkApiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + '/' + request.frameworkId)
             .withApiToken(true)
             .build();
 
@@ -51,7 +51,8 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
         const filePath = Path.fileNameFromFilePath(file);
         return Observable.fromPromise(this.fileservice.readAsText(fileDirPath, filePath))
             .map((filecontent: string) => {
-                return JSON.parse(filecontent);
+                const result = JSON.parse(filecontent);
+                return (result.result.framework);
             });
     }
 
