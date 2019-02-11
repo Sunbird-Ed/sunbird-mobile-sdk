@@ -1,11 +1,9 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {PageAssembleCriteria} from '..';
+import {PageAssembleCriteria, PageServiceConfig} from '..';
 import {PageAssemble} from '../def/page-assemble';
-import {PageServiceConfig} from '../config/page-service-config';
 import {FileService} from '../../util/file/def/file-service';
 import {CachedItemStore} from '../../key-value-store';
 import {Observable} from 'rxjs';
-import {SessionAuthenticator} from '../../auth';
 import {Path} from '../../util/file/util/path';
 
 export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
@@ -15,8 +13,7 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
     constructor(private apiService: ApiService,
                 private pageApiServiceConfig: PageServiceConfig,
                 private fileService: FileService,
-                private cachedItemStore: CachedItemStore<PageAssemble>,
-                private sessionAuthenticator: SessionAuthenticator
+                private cachedItemStore: CachedItemStore<PageAssemble>
     ) {
     }
 
@@ -42,7 +39,6 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
             .withPath(this.pageApiServiceConfig.apiPath + this.PAGE_ASSEMBLE_ENDPOINST + this.getIdForDb(request))
             .withApiToken(true)
             .withBody(request)
-            .withResponseInterceptor([this.sessionAuthenticator])
             .build();
         return this.apiService.fetch<{ result: PageAssemble }>(apiRequest).map((success) => {
             return success.body.result;

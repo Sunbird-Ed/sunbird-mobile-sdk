@@ -160,8 +160,6 @@ export class SunbirdSdk {
         this._keyValueStore = new KeyValueStoreImpl(this._dbService);
         this._fileService = new FileServiceImpl();
 
-        const sessionAuthenticator = {} as any;
-
         this._profileService = new ProfileServiceImpl(
             sdkConfig.profileServiceConfig,
             this._dbService,
@@ -209,7 +207,6 @@ export class SunbirdSdk {
             this._apiService,
             sdkConfig.pageServiceConfig,
             this._fileService,
-            sessionAuthenticator,
             new CachedItemStoreImpl<PageAssemble>(this._keyValueStore, sdkConfig.apiConfig)
         );
     }
