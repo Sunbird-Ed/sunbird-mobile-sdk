@@ -1,4 +1,4 @@
-import { LinkedFramework } from './linked-framework';
+import { SuggestedFramework } from './suggested-framework';
 
 export interface Channel {
     identifier: string;
@@ -6,7 +6,7 @@ export interface Channel {
     consumerId: string;
     channel: string;
     description: string;
-    frameworks: LinkedFramework[];
+    suggested_frameworks: SuggestedFramework[];
     createdOn: string;
     versionKey: string;
     appId: string;

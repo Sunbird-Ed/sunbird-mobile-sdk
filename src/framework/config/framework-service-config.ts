@@ -1,5 +1,6 @@
 export interface FrameworkServiceConfig {
-    apiPath: string;
+    channelApiPath: string;
+    frameworkApiPath: string;
     frameworkConfigFilePaths: string[];
     channelConfigFilePath: string;
 }

@@ -46,7 +46,7 @@ export class FrameworkServiceImpl implements FrameworkService {
     }
 
     persistFrameworkDetails(request: Framework): Observable<boolean> {
-        const frameworkId = request.framework.identifier;
+        const frameworkId = request.identifier;
         const key = this.DB_KEY_FRAMEWORK_DETAILS + frameworkId;
         return this.keyValueStore.setValue(key, JSON.stringify(request));
     }
