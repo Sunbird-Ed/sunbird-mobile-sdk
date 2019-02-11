@@ -27,7 +27,7 @@ export class ApiTokenHandler {
 
     private buildGetMobileDeviceConsumerSecretAPIRequest(): Request {
         return new Request.Builder()
-            .withPath(`/api-manager/v1/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`)
+            .withPath(`/api/api-manager/v1/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`)
             .withType(HttpRequestType.POST)
             .withHeaders({
                 'Content-Encoding': 'gzip',
