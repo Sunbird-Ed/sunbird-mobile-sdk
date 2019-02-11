@@ -4,7 +4,7 @@ import {Observable} from 'rxjs';
 
 export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseRequest, boolean> {
 
-    private readonly ENROL_ENDPOINT = '/api/course/v1/enrol';
+    private readonly ENROL_ENDPOINT = '/enrol';
 
     constructor(private apiService: ApiService,
                 private courseServiceConfig: CourseServiceConfig) {
