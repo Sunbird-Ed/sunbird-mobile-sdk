@@ -5,7 +5,7 @@ import {AxiosError, AxiosResponse, AxiosStatic} from 'axios';
 
 export class HttpClientAxios implements HttpClient {
 
-    private headers: { [key: string]: string };
+    private headers: { [key: string]: string } = {};
     private axios: AxiosStatic;
 
     constructor() {
