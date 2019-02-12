@@ -1,4 +1,4 @@
-import {ApiConfig, HttpClient, HttpRequestType, HttpSerializer, Request, Response} from '..';
+import {ApiConfig, HttpClient, HttpRequestType, HttpSerializer, Request, Response, ResponseCode} from '..';
 import {Observable} from 'rxjs';
 import * as SHA1 from 'crypto-js/sha1';
 import {Connection} from '../def/connection';
@@ -78,6 +78,7 @@ export class BaseConnection implements Connection {
         for (const interceptor of interceptors) {
             request = interceptor.interceptRequest(request);
         }
+
         return request;
     }
 
@@ -85,6 +86,10 @@ export class BaseConnection implements Connection {
         const interceptors = request.responseInterceptors;
         for (const interceptor of interceptors) {
             response = await interceptor.interceptResponse(request, response).toPromise();
+        }
+
+        if (response.responseCode !== ResponseCode.HTTP_SUCCESS) {
+            throw response;
         }
 
         return response;
