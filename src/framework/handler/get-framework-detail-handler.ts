@@ -7,12 +7,13 @@ import {Framework, FrameworkDetailsRequest, FrameworkServiceConfig} from '..';
 
 
 export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {
-    private readonly DB_KEY_FRAMEWORK_DETAILS = 'framework_details_key';
+    private readonly FRAMEWORK_FILE_KEY_PREFIX = 'framework-';
+    private readonly FRAMEWORK_LOCAL_KEY = 'framework-';
     private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = '/read';
-    private readonly FRAMEWORK_DETAILS_API_EXPIRATION_KEY = 'FRAMEWORK_DETAILS_API_EXPIRATION_KEY';
 
 
-    constructor(private apiService: ApiService,
+    constructor(
+        private apiService: ApiService,
                 private frameworkServiceConfig: FrameworkServiceConfig,
                 private fileservice: FileService,
                 private cachedItemStore: CachedItemStore<Framework>) {
@@ -21,8 +22,8 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
     handle(request: FrameworkDetailsRequest): Observable<Framework> {
         return this.cachedItemStore.getCached(
             request.frameworkId,
-            this.DB_KEY_FRAMEWORK_DETAILS,
-            this.FRAMEWORK_DETAILS_API_EXPIRATION_KEY,
+            this.FRAMEWORK_LOCAL_KEY,
+            this.FRAMEWORK_LOCAL_KEY,
             () => this.fetchFromServer(request),
             () => this.fetchFromFile(request)
         );
@@ -41,15 +42,10 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
     }
 
     private fetchFromFile(request: FrameworkDetailsRequest): Observable<Framework> {
-        const file = this.frameworkServiceConfig.frameworkConfigFilePaths.find((val) => {
-            return (val.indexOf(request.frameworkId) !== -1);
-        });
-        if (!file) {
-            throw(new Error('File path does not exist'));
-        }
-        const fileDirPath = Path.dirPathFromFilePath(file);
-        const filePath = Path.fileNameFromFilePath(file);
-        return Observable.fromPromise(this.fileservice.readAsText(fileDirPath, filePath))
+        const dir = Path.ASSETS_PATH + this.frameworkServiceConfig.frameworkConfigDirPath;
+        const file = this.FRAMEWORK_FILE_KEY_PREFIX + request.frameworkId;
+
+        return Observable.fromPromise(this.fileservice.readAsText(dir, file))
             .map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
                 return (result.result.framework);

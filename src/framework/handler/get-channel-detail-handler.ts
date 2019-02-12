@@ -7,9 +7,9 @@ import {Observable} from 'rxjs';
 
 
 export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetailsRequest, Channel> {
-    private readonly GET_CHANNEL_DETAILS_ENDPOINT = '/read';
-    private readonly DB_KEY_CHANNEL_DETAILS = 'channel_details_key';
-    private readonly CHANNEL_DETAILS_API_EXPIRATION_KEY = 'CHANNEL_DETAILS_API_EXPIRATION_KEY';
+    private readonly CHANNEL_FILE_KEY_PREFIX = 'channel-';
+    private readonly CHANNEL_LOCAL_KEY = 'channel-';
+    private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = '/read';
 
 
     constructor(private apiService: ApiService,
@@ -21,17 +21,17 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
     handle(request: ChannelDetailsRequest): Observable<Channel> {
         return this.cachedItemStore.getCached(
             request.channelId,
-            this.DB_KEY_CHANNEL_DETAILS,
-            this.CHANNEL_DETAILS_API_EXPIRATION_KEY,
+            this.CHANNEL_LOCAL_KEY,
+            this.CHANNEL_LOCAL_KEY,
             () => this.fetchFromServer(request),
-            () => this.fetchFromFile()
+            () => this.fetchFromFile(request)
         );
     }
 
     private fetchFromServer(request: ChannelDetailsRequest): Observable<Channel> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath(this.frameworkServiceConfig.channelApiPath + this.GET_CHANNEL_DETAILS_ENDPOINT + '/' +  request.channelId)
+            .withPath(this.frameworkServiceConfig.channelApiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + '/' + request.channelId)
             .withApiToken(true)
             .build();
 
@@ -40,13 +40,13 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
         });
     }
 
-    private fetchFromFile(): Observable<Channel> {
-        const fileDirPath = Path.dirPathFromFilePath(this.frameworkServiceConfig.channelConfigFilePath);
-        const filePath = Path.fileNameFromFilePath(this.frameworkServiceConfig.channelConfigFilePath);
-        return Observable.fromPromise(this.fileservice.readAsText(fileDirPath, filePath))
-            .map((filecontent) => {
+    private fetchFromFile(request: ChannelDetailsRequest): Observable<Channel> {
+        const dir = Path.ASSETS_PATH + this.frameworkServiceConfig.channelConfigDirPath;
+        const file = this.CHANNEL_FILE_KEY_PREFIX + request.channelId;
+
+        return Observable.fromPromise(this.fileservice.readAsText(dir, file))
+            .map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
-                console.log('fetchFromFile channel', result);
                 return (result.result.channel);
             });
     }
