@@ -1,13 +1,13 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {ServerProfileDetailsRequest} from '../def/server-profile-details-request';
+import {ServerProfileDetailsRequest} from '..';
 import {ProfileServiceConfig} from '..';
 import {CachedItemStore} from '../../key-value-store';
 import {Observable} from 'rxjs';
 import {ServerProfile} from '../def/server-profile';
 
 export class GetServerProfileDetailsHandler implements ApiRequestHandler<ServerProfileDetailsRequest, ServerProfile> {
-    private readonly GET_SERVER_PROFILE_DETAILS_ENDPOINT = '/api/read';
-    private readonly USER_PROFILE_DETAILS_KEY_PREFIX = '/api/serverProfileDetails';
+    private readonly GET_SERVER_PROFILE_DETAILS_ENDPOINT = '/read';
+    private readonly USER_PROFILE_DETAILS_KEY_PREFIX = 'userProfileDetails';
 
     constructor(
         private apiService: ApiService,
@@ -29,9 +29,10 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<ServerP
     private fetchFormServer(request: ServerProfileDetailsRequest): Observable<ServerProfile> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath(this.profileServiceConfig.apiPath + this.GET_SERVER_PROFILE_DETAILS_ENDPOINT + request.userId)
+            .withPath(this.profileServiceConfig.profileApiPath + this.GET_SERVER_PROFILE_DETAILS_ENDPOINT)
             .withApiToken(true)
             .withSessionToken(true)
+            .withBody(request)
             .build();
 
         return this.apiService.fetch<{ result: ServerProfile }>(apiRequest).map((success) => {

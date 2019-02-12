@@ -1,5 +1,5 @@
 export interface ProfileServiceConfig {
-    apiPath: string;
-    searchProfilePath: string;
+    profileApiPath: string;
+    tenantApiPath: string;
 }
 

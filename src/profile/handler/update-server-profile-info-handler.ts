@@ -3,7 +3,7 @@ import {Profile, ProfileServiceConfig, UpdateServerProfileInfoRequest} from '..'
 import {Observable} from 'rxjs';
 
 export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateServerProfileInfoRequest, Profile> {
-    private readonly GET_SERVER_PROFILE_INFO_API = '/api/user/v1/update';
+    private readonly GET_SERVER_PROFILE_INFO_API = '/update';
 
     constructor(
         private apiService: ApiService,
@@ -14,7 +14,7 @@ export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateS
     public handle(request: UpdateServerProfileInfoRequest): Observable<Profile> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.PATCH)
-            .withPath(this.updateUserInfoConfig.apiPath + this.GET_SERVER_PROFILE_INFO_API)
+            .withPath(this.updateUserInfoConfig.profileApiPath + this.GET_SERVER_PROFILE_INFO_API)
             .withApiToken(true)
             .withSessionToken(true)
             .withBody({request})

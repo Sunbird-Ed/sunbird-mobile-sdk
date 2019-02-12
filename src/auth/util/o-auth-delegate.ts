@@ -41,7 +41,7 @@ export class OAuthDelegate {
     doOAuthStepOne(): Promise<OauthSession> {
         return new Promise((resolve, reject) => {
             const launchUrl = this.apiConfig.host +
-                this.apiConfig.user_authentication.authUrl + '/auth' + '?redirect_uri=' +
+                this.apiConfig.user_authentication.authUrl + '?redirect_uri=' +
                 this.apiConfig.user_authentication.redirectUrl + '&response_type=code&scope=offline_access&client_id=android&version=2';
 
             customtabs.isAvailable(() => {
