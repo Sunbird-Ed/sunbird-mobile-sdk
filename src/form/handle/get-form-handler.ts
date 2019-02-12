@@ -37,7 +37,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
             .withType(HttpRequestType.POST)
             .withPath(this.formServiceConfig.apiPath + this.GET_FORM_DETAILS_ENDPOINT)
             .withApiToken(true)
-            .withBody(request)
+            .withBody({request})
             .build();
         return this.apiService.fetch <{ result: { [key: string]: {} } }>(apiRequest).map((success) => {
             return success.body.result;
@@ -51,7 +51,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
         return Observable.fromPromise(this.fileService.readAsText(dir, file))
             .map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
-                return (result.result.channel);
+                return (result.result.form);
             });
     }
 }
