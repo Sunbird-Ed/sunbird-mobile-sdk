@@ -7,10 +7,12 @@ import {FrameworkServiceConfig} from './framework';
 import {ProfileServiceConfig} from './profile';
 import {PageServiceConfig} from './page';
 import {AppConfig} from './api/config/app-config';
+import {FileConfig} from './util/file/config/file-config';
 
 export interface SdkConfig {
     apiConfig: ApiConfig;
     dbConfig: DbConfig;
+    fileConfig: FileConfig;
     contentServiceConfig: ContentServiceConfig;
     courseServiceConfig: CourseServiceConfig;
     formServiceConfig: FormServiceConfig;

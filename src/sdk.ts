@@ -35,6 +35,7 @@ import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-se
 import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
 import {GroupService} from './group';
 import {GroupServiceImpl} from './group/impl/group-service-impl';
+import {DebugPromptFileService} from './util/file/impl/debug-prompt-file-service';
 
 export class SunbirdSdk {
 
@@ -158,7 +159,12 @@ export class SunbirdSdk {
         this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService);
 
         this._keyValueStore = new KeyValueStoreImpl(this._dbService);
-        this._fileService = new FileServiceImpl();
+
+        if (sdkConfig.fileConfig.debugMode === true) {
+            this._fileService = new DebugPromptFileService();
+        } else {
+            this._fileService = new FileServiceImpl();
+        }
 
         this._profileService = new ProfileServiceImpl(
             sdkConfig.profileServiceConfig,
