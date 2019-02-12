@@ -8,7 +8,7 @@ import {Path} from '../../util/file/util/path';
 
 export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private readonly KEY_PAGE_ASSEMBLE = 'pageAssemble-';
-    private readonly PAGE_ASSEMBLE_ENDPOINST = '/api/page/assemble';
+    private readonly PAGE_ASSEMBLE_ENDPOINST = '/page/assemble';
 
     constructor(private apiService: ApiService,
                 private pageApiServiceConfig: PageServiceConfig,
@@ -22,26 +22,26 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
             this.getIdForDb(request),
             this.KEY_PAGE_ASSEMBLE,
             this.KEY_PAGE_ASSEMBLE,
-            () => this.fetchFromServer(request),
-            () => this.fetchFromFilePath()
+            () => this.fetchFromServer(request)
+            // () => this.fetchFromFilePath()
         );
     }
 
     private getIdForDb(request: PageAssembleCriteria): string {
         let key = '';
-        key += request.name + request.mode + request.filters;
+        key += request.name + request.mode + JSON.stringify(request.filters);
         return key;
     }
 
     private fetchFromServer(request: PageAssembleCriteria): Observable<PageAssemble> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
-            .withPath(this.pageApiServiceConfig.apiPath + this.PAGE_ASSEMBLE_ENDPOINST + this.getIdForDb(request))
+            .withPath(this.pageApiServiceConfig.apiPath + this.PAGE_ASSEMBLE_ENDPOINST)
             .withApiToken(true)
-            .withBody(request)
+            .withBody({request})
             .build();
-        return this.apiService.fetch<{ result: PageAssemble }>(apiRequest).map((success) => {
-            return success.body.result;
+        return this.apiService.fetch<{ result: {response: PageAssemble }}>(apiRequest).map((success) => {
+            return success.body.result.response;
         });
     }
 
