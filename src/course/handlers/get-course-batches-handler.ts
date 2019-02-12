@@ -28,7 +28,9 @@ export class GetCourseBatchesHandler implements ApiRequestHandler<CourseBatchesR
             .switchMap((batches: Batch[]) => {
                 return this.profileService.getServerProfiles({
                     limit: batches.length,
-                    identifiers: new Set(batches.map(batch => batch.createdBy)),
+                    filters: {
+                        identifier: new Set(batches.map(batch => batch.createdBy))
+                    },
                     fields: ['firstName', 'lastName', 'identifier']
                 }).map((users: ServerProfile[]) => {
                     batches.forEach((batch) => {
