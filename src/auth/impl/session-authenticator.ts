@@ -1,6 +1,7 @@
 import {
     ApiConfig,
     HttpRequestType,
+    HttpSerializer,
     JWTUtil,
     Request,
     RequestInterceptor,
@@ -48,8 +49,9 @@ export class SessionAuthenticator implements RequestInterceptor, ResponseInterce
 
     private async invokeRefreshSessionTokenApi() {
         const request = new Request.Builder()
-            .withPath('/api' + this.apiConfig.user_authentication.authUrl)
+            .withPath(this.apiConfig.user_authentication.tokenRefreshUrl)
             .withType(HttpRequestType.POST)
+            .withSerializer(HttpSerializer.URLENCODED)
             .withBody({
                 refresh_token: localStorage.getItem(ApiKeys.KEY_REFRESH_TOKEN),
                 grant_type: 'refresh_token',
