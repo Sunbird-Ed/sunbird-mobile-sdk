@@ -1,6 +1,5 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {ServerProfileDetailsRequest} from '..';
-import {ProfileServiceConfig} from '..';
+import {ProfileServiceConfig, ServerProfileDetailsRequest} from '..';
 import {CachedItemStore} from '../../key-value-store';
 import {Observable} from 'rxjs';
 import {ServerProfile} from '../def/server-profile';
@@ -29,7 +28,8 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<ServerP
     private fetchFormServer(request: ServerProfileDetailsRequest): Observable<ServerProfile> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath(this.profileServiceConfig.profileApiPath + this.GET_SERVER_PROFILE_DETAILS_ENDPOINT)
+            .withPath(this.profileServiceConfig.profileApiPath + this.GET_SERVER_PROFILE_DETAILS_ENDPOINT + '/' + request.userId)
+            .withParameters({'fields': request.requiredFields.join(',')})
             .withApiToken(true)
             .withSessionToken(true)
             .withBody(request)

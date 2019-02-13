@@ -6,6 +6,7 @@ export interface ApiConfig {
         redirectUrl: string;
         logoutUrl: string;
         authUrl: string;
+        tokenRefreshUrl: string;
     };
     api_authentication: {
         mobileAppKey: string,

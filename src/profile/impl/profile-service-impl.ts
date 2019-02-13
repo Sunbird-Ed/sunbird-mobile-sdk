@@ -7,6 +7,7 @@ import {
     ProfileServiceConfig,
     ProfileSession,
     ProfileSource,
+    ServerProfileDetailsRequest,
     ServerProfileSearchCriteria,
     UpdateServerProfileInfoRequest
 } from '..';
@@ -16,12 +17,10 @@ import {GroupProfileEntry, ProfileEntry} from '../db/schema';
 import {ServerProfile} from '../def/server-profile';
 import {UniqueId} from '../../db/util/unique-id';
 import {TenantInfo} from '../def/tenant-info';
-import {TenantInfoRequest} from '../def/tenant-info-request';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
 import {ApiService} from '../../api';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
-import {ServerProfileDetailsRequest} from '../def/server-profile-details-request';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {ProfileMapper} from '../util/profile-mapper';
@@ -64,9 +63,9 @@ export class ProfileServiceImpl implements ProfileService {
         return new SearchServerProfileHandler(this.apiService, this.profileServiceConfig).handle(searchCriteria);
     }
 
-    getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo> {
+    getTenantInfo(): Observable<TenantInfo> {
         return new TenantInfoHandler(this.apiService,
-            this.profileServiceConfig).handle(tenantInfoRequest);
+            this.profileServiceConfig).handle();
     }
 
     getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]> {

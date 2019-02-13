@@ -1,16 +1,28 @@
-import {ApiConfig, ApiService, HttpRequestType, JWTUtil, Request, Response} from '../../api';
+import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../api';
 import {OauthSession} from '..';
 import {ApiKeys} from '../../app-config';
+import {NoActiveSessionError} from '../../profile';
+
+declare var customtabs: {
+    isAvailable: (success: () => void, error: (error: string) => void) => void;
+    launch: (url: string, success: (callbackUrl: string) => void, error: (error: string) => void) => void;
+    launchInBrowser: (url: string, success: (callbackUrl: string) => void, error: (error: string) => void) => void;
+    close: (success: () => void, error: (error: string) => void) => void;
+};
 
 export class AuthUtil {
     constructor(private apiConfig: ApiConfig, private apiService: ApiService) {
     }
 
     public async refreshSession(): Promise<undefined> {
+        if (!this.hasExistingSession()) {
+            throw new NoActiveSessionError('No Active Sessions found');
+        }
 
         const request = new Request.Builder()
-            .withPath('/api' + this.apiConfig.user_authentication.authUrl)
+            .withPath(this.apiConfig.user_authentication.tokenRefreshUrl)
             .withType(HttpRequestType.POST)
+            .withSerializer(HttpSerializer.URLENCODED)
             .withBody({
                 refresh_token: localStorage.getItem(ApiKeys.KEY_REFRESH_TOKEN),
                 grant_type: 'refresh_token',
@@ -34,20 +46,52 @@ export class AuthUtil {
     public startSession(sessionData: OauthSession) {
         localStorage.setItem(ApiKeys.KEY_ACCESS_TOKEN, sessionData.accessToken);
         localStorage.setItem(ApiKeys.KEY_REFRESH_TOKEN, sessionData.refreshToken);
-        localStorage.setItem(ApiKeys.KEY_USER_TOKEN, sessionData.userToken);
+        localStorage.setItem(ApiKeys.KEY_USER_ID, sessionData.userToken);
     }
 
-    public endSession() {
-        localStorage.removeItem(ApiKeys.KEY_ACCESS_TOKEN);
-        localStorage.removeItem(ApiKeys.KEY_REFRESH_TOKEN);
-        localStorage.removeItem(ApiKeys.KEY_USER_TOKEN);
+    public async endSession(): Promise<undefined> {
+        return new Promise<undefined>(((resolve, reject) => {
+            const launchUrl = this.apiConfig.host +
+                this.apiConfig.user_authentication.logoutUrl + '?redirect_uri=' +
+                this.apiConfig.user_authentication.redirectUrl;
+
+            customtabs.isAvailable(() => {
+                customtabs.launch(launchUrl!!, success => {
+                    localStorage.removeItem(ApiKeys.KEY_ACCESS_TOKEN);
+                    localStorage.removeItem(ApiKeys.KEY_REFRESH_TOKEN);
+                    localStorage.removeItem(ApiKeys.KEY_USER_ID);
+                    resolve();
+                }, error => {
+                    reject(error);
+                });
+            }, error => {
+                customtabs.launchInBrowser(launchUrl!!, callbackUrl => {
+                    localStorage.removeItem(ApiKeys.KEY_ACCESS_TOKEN);
+                    localStorage.removeItem(ApiKeys.KEY_REFRESH_TOKEN);
+                    localStorage.removeItem(ApiKeys.KEY_USER_ID);
+                    resolve();
+                }, err => {
+                    reject(err);
+                });
+            });
+        }));
     }
 
-    public async getSessionData(): Promise<OauthSession> {
+    public async getSessionData(): Promise<OauthSession | undefined> {
+        if (!this.hasExistingSession()) {
+            return undefined;
+        }
+
         return {
             accessToken: localStorage.getItem(ApiKeys.KEY_ACCESS_TOKEN)!,
             refreshToken: localStorage.getItem(ApiKeys.KEY_REFRESH_TOKEN)!,
-            userToken: localStorage.getItem(ApiKeys.KEY_USER_TOKEN)!
+            userToken: localStorage.getItem(ApiKeys.KEY_USER_ID)!
         };
+    }
+
+    private hasExistingSession(): boolean {
+        return !!(localStorage.getItem(ApiKeys.KEY_ACCESS_TOKEN) &&
+            localStorage.getItem(ApiKeys.KEY_REFRESH_TOKEN) &&
+            localStorage.getItem(ApiKeys.KEY_USER_ID));
     }
 }

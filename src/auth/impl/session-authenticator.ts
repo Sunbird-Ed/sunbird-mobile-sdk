@@ -1,6 +1,7 @@
 import {
     ApiConfig,
     HttpRequestType,
+    HttpSerializer,
     JWTUtil,
     Request,
     RequestInterceptor,
@@ -38,7 +39,7 @@ export class SessionAuthenticator implements RequestInterceptor, ResponseInterce
             return Observable.of(response);
         }
 
-        if (response.body().message) {
+        if (response.body.message) {
             return Observable.of(response);
         }
 
@@ -48,8 +49,9 @@ export class SessionAuthenticator implements RequestInterceptor, ResponseInterce
 
     private async invokeRefreshSessionTokenApi() {
         const request = new Request.Builder()
-            .withPath('/api' + this.apiConfig.user_authentication.authUrl)
+            .withPath(this.apiConfig.user_authentication.tokenRefreshUrl)
             .withType(HttpRequestType.POST)
+            .withSerializer(HttpSerializer.URLENCODED)
             .withBody({
                 refresh_token: localStorage.getItem(ApiKeys.KEY_REFRESH_TOKEN),
                 grant_type: 'refresh_token',
@@ -72,7 +74,7 @@ export class SessionAuthenticator implements RequestInterceptor, ResponseInterce
     private async startSession(sessionData: OauthSession): Promise<undefined> {
         localStorage.setItem(ApiKeys.KEY_ACCESS_TOKEN, sessionData.accessToken);
         localStorage.setItem(ApiKeys.KEY_REFRESH_TOKEN, sessionData.refreshToken);
-        localStorage.setItem(ApiKeys.KEY_USER_TOKEN, sessionData.userToken);
+        localStorage.setItem(ApiKeys.KEY_USER_ID, sessionData.userToken);
 
         return;
     }

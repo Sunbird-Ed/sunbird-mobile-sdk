@@ -18,14 +18,12 @@ export class AuthServiceImpl implements AuthService {
         }));
     }
 
-    getSession(): Observable<OauthSession> {
+    getSession(): Observable<OauthSession | undefined> {
         return Observable.fromPromise(this.authUtil.getSessionData());
     }
 
     resignSession(): Observable<undefined> {
-        this.authUtil.endSession();
-
-        return Observable.of(undefined);
+        return Observable.fromPromise(this.authUtil.endSession());
     }
 
     refreshSession(): Observable<undefined> {

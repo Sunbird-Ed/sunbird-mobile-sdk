@@ -1,21 +1,18 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {TenantInfoRequest} from '../def/tenant-info-request';
 import {TenantInfo} from '../def/tenant-info';
 import {ProfileServiceConfig} from '..';
 import {Observable} from 'rxjs';
 
-export class TenantInfoHandler implements ApiRequestHandler<TenantInfoRequest, TenantInfo> {
+export class TenantInfoHandler implements ApiRequestHandler<undefined, TenantInfo> {
     private readonly GET_TENANT_INFO_ENDPOINT = '/info';
 
     constructor(private apiService: ApiService,
                 private tenantServiceConfig: ProfileServiceConfig) {
     }
 
-    public handle(request: TenantInfoRequest): Observable<TenantInfo> {
+    public handle(): Observable<TenantInfo> {
         const apiRequest: Request = new Request.Builder().withType(HttpRequestType.GET)
-            .withPath(this.tenantServiceConfig.tenantApiPath + this.GET_TENANT_INFO_ENDPOINT + '/' + request.slug)
-            .withApiToken(true)
-            .withSessionToken(true)
+            .withPath(this.tenantServiceConfig.tenantApiPath + this.GET_TENANT_INFO_ENDPOINT)
             .build();
         return this.apiService.fetch <{ result: TenantInfo }>(apiRequest).map((success) => {
             return success.body.result;

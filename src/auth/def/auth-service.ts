@@ -5,7 +5,7 @@ import {SessionProvider} from './session-provider';
 export interface AuthService {
     setSession(sessionProvider: SessionProvider): Observable<undefined>;
 
-    getSession(): Observable<OauthSession>;
+    getSession(): Observable<OauthSession | undefined>;
 
     resignSession(): Observable<undefined>;
 
