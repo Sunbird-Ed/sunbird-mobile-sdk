@@ -34,20 +34,20 @@ export class AuthUtil {
     public startSession(sessionData: OauthSession) {
         localStorage.setItem(ApiKeys.KEY_ACCESS_TOKEN, sessionData.accessToken);
         localStorage.setItem(ApiKeys.KEY_REFRESH_TOKEN, sessionData.refreshToken);
-        localStorage.setItem(ApiKeys.KEY_USER_TOKEN, sessionData.userToken);
+        localStorage.setItem(ApiKeys.KEY_USER_ID, sessionData.userToken);
     }
 
     public endSession() {
         localStorage.removeItem(ApiKeys.KEY_ACCESS_TOKEN);
         localStorage.removeItem(ApiKeys.KEY_REFRESH_TOKEN);
-        localStorage.removeItem(ApiKeys.KEY_USER_TOKEN);
+        localStorage.removeItem(ApiKeys.KEY_USER_ID);
     }
 
     public async getSessionData(): Promise<OauthSession> {
         return {
             accessToken: localStorage.getItem(ApiKeys.KEY_ACCESS_TOKEN)!,
             refreshToken: localStorage.getItem(ApiKeys.KEY_REFRESH_TOKEN)!,
-            userToken: localStorage.getItem(ApiKeys.KEY_USER_TOKEN)!
+            userToken: localStorage.getItem(ApiKeys.KEY_USER_ID)!
         };
     }
 }
