@@ -1,6 +1,5 @@
 import {Profile} from './profile';
 import {Observable} from 'rxjs';
-import {TenantInfoRequest} from './tenant-info-request';
 import {TenantInfo} from './tenant-info';
 import {ServerProfileSearchCriteria} from './server-profile-search-criteria';
 import {ServerProfile} from './server-profile';
@@ -17,7 +16,7 @@ export interface ProfileService {
 
     updateServerProfile(updateServerProfileRequest: UpdateServerProfileInfoRequest): Observable<Profile>;
 
-    getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo>;
+    getTenantInfo(): Observable<TenantInfo>;
 
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
 
