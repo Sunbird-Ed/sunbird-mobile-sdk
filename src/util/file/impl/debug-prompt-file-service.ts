@@ -1,5 +1,5 @@
 import {FileService} from '../def/file-service';
-import {DirectoryEntry, Entry, FileEntry, Flags, Metadata, RemoveResult} from '../index';
+import {DirectoryEntry, Entry, FileEntry, Flags, IWriteOptions, Metadata, RemoveResult} from '../index';
 
 export class DebugPromptFileService implements FileService {
     copyDir(path: string, dirName: string, newPath: string, newDirName: string): Promise<Entry> {
@@ -10,7 +10,7 @@ export class DebugPromptFileService implements FileService {
         throw new Error('To be Implemented');
     }
 
-    createDir(path: string, dirName: string, replace: boolean): Promise<DirectoryEntry> {
+    createDir(path: string, replace: boolean): Promise<DirectoryEntry> {
         throw new Error('To be Implemented');
     }
 
@@ -58,7 +58,15 @@ export class DebugPromptFileService implements FileService {
         throw new Error('To be Implemented');
     }
 
-    removeRecursively(path: string, dirName: string): Promise<RemoveResult> {
+    removeRecursively(path: string): Promise<RemoveResult> {
+        throw new Error('To be Implemented');
+    }
+
+    listDir(directoryPath: string): Promise<Entry[]> {
+        throw new Error('To be Implemented');
+    }
+
+    writeFile(path: string, fileName: string, text: string, options: IWriteOptions): Promise<string> {
         throw new Error('To be Implemented');
     }
 }

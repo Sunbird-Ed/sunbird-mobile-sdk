@@ -18,4 +18,10 @@ export namespace KeyValueStoreEntry {
     export const getDeleteEntry: (() => string) = () => {
         return 'DROP TABLE IF EXISTS ' + TABLE_NAME;
     };
+
+    export interface SchemaMap {
+        [_ID]: string;
+        [COLUMN_NAME_KEY]: string;
+        [COLUMN_NAME_VALUE]: string;
+    }
 }

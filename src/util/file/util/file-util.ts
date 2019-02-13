@@ -12,6 +12,10 @@ export class FileUtil {
         return filePath.substring(filePath.lastIndexOf('/') + 1);
     }
 
+    public static getParentDir(directoryPath: string): string {
+        return directoryPath.substr(0, directoryPath.lastIndexOf('/') + 1);
+    }
+
     public static getTempDirPath(externalFilesDir: string): string {
         return externalFilesDir + '/tmp';
     }
@@ -22,5 +26,9 @@ export class FileUtil {
             BUFFER_SIZE = bufferSize;
         }
         return deviceAvailableFreeSpace > 0 && deviceAvailableFreeSpace > (fileSpace + BUFFER_SIZE);
+    }
+
+    public static getDirecory(path: string): string {
+        return path.substr(0, path.lastIndexOf('/'));
     }
 }

@@ -11,7 +11,10 @@ import {
     FileError,
     EntryCallback,
     ErrorCallback,
-    RemoveResult
+    RemoveResult,
+    FileWriter,
+    IWriteOptions,
+    DirectoryReader
 } from '../index';
 import {FileUtil} from '../util/file-util';
 
@@ -70,6 +73,26 @@ export class FileServiceImpl implements FileService {
 
     readAsText(path: string, filePath: string): Promise<string> {
         return this.readFile<string>(path, filePath, 'Text');
+    }
+
+    writeFile(
+        path: string,
+        fileName: string,
+        text: string,
+        options: IWriteOptions = {}
+    ): Promise<any> {
+        const getFileOpts: Flags = {
+            create: !options.append,
+            exclusive: !options.replace
+        };
+
+        return this.resolveDirectoryUrl(path)
+            .then((directoryEntry: DirectoryEntry) => {
+                return this.getFile(directoryEntry, fileName, getFileOpts);
+            })
+            .then((fileEntry: FileEntry) => {
+                return this.writeFileEntry(fileEntry, text, options);
+            });
     }
 
     /**
@@ -139,7 +162,6 @@ export class FileServiceImpl implements FileService {
 
     createDir(
         path: string,
-        dirName: string,
         replace: boolean
     ): Promise<DirectoryEntry> {
 
@@ -150,10 +172,32 @@ export class FileServiceImpl implements FileService {
         if (!replace) {
             options.exclusive = true;
         }
-
+        const parentDir = FileUtil.getParentDir(path);
+        const dirName = FileUtil.getFileName(path).replace('/', '');
         return this.resolveDirectoryUrl(path).then(fse => {
             return this.getDirectory(fse, dirName, options);
         });
+    }
+
+    /**
+     * List files and directory from a given path.
+     *
+     * @param {string} directoryPath. Please refer to the iOS and Android filesystems above
+     * @returns {Promise<Entry[]>} Returns a Promise that resolves to an array of Entry objects or rejects with an error.
+     */
+    listDir(directoryPath: string): Promise<Entry[]> {
+
+        return this.resolveDirectoryUrl(FileUtil.getDirecory(directoryPath))
+            .then(fse => {
+                return this.getDirectory(fse, FileUtil.getFileName(directoryPath), {
+                    create: false,
+                    exclusive: false
+                });
+            })
+            .then(de => {
+                const reader = de.createReader();
+                return this.readEntries(reader);
+            });
     }
 
 
@@ -174,8 +218,10 @@ export class FileServiceImpl implements FileService {
      * @param {string} dirName Name of directory
      * @returns {Promise<RemoveResult>} Returns a Promise that resolves with a RemoveResult or rejects with an error.
      */
-    removeRecursively(path: string, dirName: string): Promise<RemoveResult> {
-        return this.resolveDirectoryUrl(path)
+    removeRecursively(path: string): Promise<RemoveResult> {
+        const parentDir = FileUtil.getParentDir(path);
+        const dirName = FileUtil.getFileName(path).replace('/', '');
+        return this.resolveDirectoryUrl(parentDir)
             .then(fse => {
                 return this.getDirectory(fse, dirName, {create: false});
             })
@@ -240,23 +286,33 @@ export class FileServiceImpl implements FileService {
     }
 
 
-    exists(path: string): Promise<FileEntry> {
-        return this.resolveDirectoryUrl(path)
-            .then((directoryEntry: DirectoryEntry) => {
-                return this.getFile(directoryEntry, FileUtil.getFileName(path), {});
-            });
+    exists(path: string): Promise<Entry> {
+        return this.resolveLocalFilesystemUrl(path);
     }
 
     getTempLocation(destinationPath: string): Promise<DirectoryEntry> {
         return this.resolveDirectoryUrl(destinationPath)
             .then((directoryEntry: DirectoryEntry) => {
-                return this.createDir(destinationPath, 'tmp', false);
+                return this.createDir(destinationPath.concat('/', 'tmp'), false);
             });
     }
 
     getFreeDiskSpace(): Promise<number> {
         return new Promise<any>((resolve, reject) => {
             cordova.exec(resolve, reject, 'File', 'getFreeDiskSpace', []);
+        });
+    }
+
+    private readEntries(dr: DirectoryReader): Promise<Entry[]> {
+        return new Promise<Entry[]>((resolve, reject) => {
+            dr.readEntries(
+                entries => {
+                    resolve(entries);
+                },
+                err => {
+                    reject(err);
+                }
+            );
         });
     }
 
@@ -430,6 +486,64 @@ export class FileServiceImpl implements FileService {
                     reject(err);
                 }
             );
+        });
+    }
+
+    private createWriter(fe: FileEntry): Promise<FileWriter> {
+        return new Promise<FileWriter>((resolve, reject) => {
+            fe.createWriter(
+                writer => {
+                    resolve(writer);
+                },
+                err => {
+                    reject(err);
+                }
+            );
+        });
+    }
+
+    /**
+     * Write content to FileEntry.
+     * @hidden
+     * Write to an existing file.
+     * @param {FileEntry} fe file entry object
+     * @param {string | Blob | ArrayBuffer} text text content or blob to write
+     * @param {IWriteOptions} options replace file if set to true. See WriteOptions for more information.
+     * @returns {Promise<FileEntry>}  Returns a Promise that resolves to updated file entry or rejects with an error.
+     */
+    private writeFileEntry(
+        fe: FileEntry,
+        text: string,
+        options: IWriteOptions
+    ) {
+        return this.createWriter(fe)
+            .then(writer => {
+                if (options.append) {
+                    writer.seek(writer.length);
+                }
+
+                if (options.truncate) {
+                    writer.truncate(options.truncate);
+                }
+
+                return this.write(writer, text);
+            })
+            .then(() => fe);
+    }
+
+    private write(
+        writer: FileWriter,
+        gu: string
+    ): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            writer.onwriteend = evt => {
+                if (writer.error) {
+                    reject(writer.error);
+                } else {
+                    resolve(evt);
+                }
+            };
+            writer.write(gu);
         });
     }
 
