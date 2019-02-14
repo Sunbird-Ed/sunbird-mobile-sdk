@@ -4,9 +4,7 @@ export interface ApiConfig {
     baseUrl: string;
     user_authentication: {
         redirectUrl: string;
-        logoutUrl: string;
         authUrl: string;
-        tokenRefreshUrl: string;
     };
     api_authentication: {
         mobileAppKey: string,
