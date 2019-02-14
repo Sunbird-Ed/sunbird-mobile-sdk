@@ -318,5 +318,4 @@ export class ContentUtil {
         return JSON.stringify(dialcodeMapping);
     }
 
-
 }

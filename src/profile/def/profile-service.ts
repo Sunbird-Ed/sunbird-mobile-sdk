@@ -7,6 +7,8 @@ import {UpdateServerProfileInfoRequest} from './update-server-profile-info-reque
 import {GetAllProfileRequest} from './get-all-profile-request';
 import {ServerProfileDetailsRequest} from './server-profile-details-request';
 import {ProfileSession} from './profile-session';
+import {ContentAccessFilterCriteria} from './content-access-filter-criteria';
+import {ContentAccess} from './content-access';
 
 
 export interface ProfileService {
@@ -29,4 +31,6 @@ export interface ProfileService {
     setCurrentProfile(uid: string): Observable<boolean>;
 
     getCurrentProfileSession(): Observable<ProfileSession | undefined>;
+
+    getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]>;
 }

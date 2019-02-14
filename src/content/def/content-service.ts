@@ -3,7 +3,7 @@ import {
     ContentDeleteRequest,
     ContentDetailRequest,
     ContentExportResponse,
-    ContentImportRequest,
+    ContentImportRequest, ContentRequest,
     ContentSearchCriteria,
     EcarImportRequest
 } from './requests';
@@ -17,7 +17,7 @@ export interface ContentService {
 
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
 
-    // getContents(criteria: ContentRequest): Observable<Response>;
+    getContents(criteria: ContentRequest): Observable<Content>;
 
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
 

@@ -137,7 +137,7 @@ export class ExtractPayloads {
             const iconSrc = tempLocationPath.concat('/', asset);
             const iconDestination = payloadDestinationPath.concat(asset);
             const folderContainingFile = asset.substring(0, asset.lastIndexOf('/'));
-            await this.fileService.createDir(payloadDestinationPath, folderContainingFile, false);
+            await this.fileService.createDir(payloadDestinationPath.concat('/', folderContainingFile), false);
             // If source icon is not available then copy assets is failing and throwing exception.
             await this.fileService.copyFile(iconSrc, folderContainingFile, iconDestination, folderContainingFile);
         }

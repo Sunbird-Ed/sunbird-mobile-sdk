@@ -24,6 +24,10 @@ import {SearchServerProfileHandler} from '../handler/search-server-profile-handl
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {ProfileMapper} from '../util/profile-mapper';
+import {ContentAccessFilterCriteria} from '../def/content-access-filter-criteria';
+import {ContentAccess} from '../def/content-access';
+import {ContentAccessEntry} from '../../content/db/schema';
+import {ProfileHandler} from '../handler/profile-handler';
 
 
 export class ProfileServiceImpl implements ProfileService {
@@ -166,5 +170,32 @@ export class ProfileServiceImpl implements ProfileService {
 
     private mapDbProfileEntriestoProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
         return profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile));
+    }
+
+    getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]> {
+        let userFilter = '';
+        let contentFilter = '';
+        if (criteria) {
+            if (criteria.uid) {
+                userFilter = `${ContentAccessEntry.COLUMN_NAME_UID} = '${criteria.uid}'`;
+            }
+            if (criteria.contentId) {
+                contentFilter = `${ContentAccessEntry.COLUMN_NAME_CONTENT_IDENTIFIER} = '${criteria.contentId}'`;
+            }
+        }
+        let filter = '';
+        if (userFilter && contentFilter) {
+            filter = filter.concat(` where ${userFilter} AND ${contentFilter}`);
+        } else if (contentFilter) {
+            filter = filter.concat(` where ${contentFilter}`);
+        } else if (userFilter) {
+            filter = filter.concat(` where ${userFilter}`);
+        }
+        const query = `SELECT * FROM ${ContentAccessEntry.TABLE_NAME} ${filter}`;
+        return this.dbService.execute(filter).map((contentAccessList: ContentAccessEntry.SchemaMap[]) => {
+            return contentAccessList.map((contentAccess: ContentAccessEntry.SchemaMap) =>
+            ProfileHandler.mapDBEntryToContenetAccess(contentAccess));
+        });
+
     }
 }

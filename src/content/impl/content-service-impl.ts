@@ -24,16 +24,19 @@ import {KeyValueStore} from '../../key-value-store';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
 import {DbService} from '../../db';
 import {ChildContentsHandler} from '../handlers/get-child-contents-handler';
-import {ContentEntry} from '../db/schema';
+import {ContentAccessEntry, ContentEntry} from '../db/schema';
 import {ContentUtil} from '../util/content-util';
 import {DeleteContentHandler} from '../handlers/delete-content-handler';
 import {SearchContentHandler} from '../handlers/search-content-handler';
 import {AppConfig} from '../../api/config/app-config';
 import {FileService} from '../../util/file/def/file-service';
-import {FileEntry} from '../../util/file';
+import {Entry} from '../../util/file';
 import {FileUtil} from '../../util/file/util/file-util';
 import {ErrorCode, FileExtension} from '../util/content-constants';
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
+import {GetContentsHandler} from '../handlers/get-contents-handler';
+import {ProfileHandler} from '../../profile/handler/profile-handler';
+import {ContentMapper} from '../util/content-mapper';
 
 export class ContentServiceImpl implements ContentService {
     constructor(private contentServiceConfig: ContentServiceConfig,
@@ -48,6 +51,14 @@ export class ContentServiceImpl implements ContentService {
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
         return new GetContentDetailsHandler(
             this.dbService, this.contentServiceConfig, this.apiService).handle(request);
+    }
+
+    getContents(request: ContentRequest): Observable<Content> {
+        const query = new GetContentsHandler().getAllLocalContentQuery(request);
+        return this.dbService.execute(query).mergeMap((contentsInDb: ContentEntry.SchemaMap[]) => {
+            return contentsInDb.map((contentInDb: ContentEntry.SchemaMap) =>
+                ContentMapper.mapContentDBEntryToContent(contentInDb));
+        });
     }
 
     cancelImport(contentId: string) {
@@ -66,8 +77,6 @@ export class ContentServiceImpl implements ContentService {
                     identifier: contentDelete.contentId,
                     status: ContentDeleteStatus.DELETED_SUCCESSFULLY
                 });
-                if (ContentUtil.hasPreRequisites(contentInDb[0][COLUMN_NAME_LOCAL_DATA])) {
-                }
 
                 if (ContentUtil.hasChildren(contentInDb[0][COLUMN_NAME_LOCAL_DATA])) {
                     await deleteContentHandler.deleteAllChildren(contentInDb[0], contentDelete.isChildContent);
@@ -109,11 +118,6 @@ export class ContentServiceImpl implements ContentService {
             });
     }
 
-    getContents(criteria: ContentRequest): Observable<any> {
-        // TODO
-        throw new Error('Not Implemented yet');
-    }
-
     getDownloadState(): Promise<any> {
         // TODO
         throw new Error('Not Implemented yet');
@@ -126,9 +130,9 @@ export class ContentServiceImpl implements ContentService {
 
     importEcar(ecarImportRequest: EcarImportRequest): Observable<Response<ContentImportResponse>> {
 
-        this.fileService.exists(ecarImportRequest.sourceFilePath).then((fileEntry: FileEntry) => {
+        this.fileService.exists(ecarImportRequest.sourceFilePath).then((entry: Entry) => {
             if (FileUtil.getFileExtension(ecarImportRequest.sourceFilePath) !== FileExtension.CONTENT) {
-                const  response: Response = new Response();
+                const response: Response = new Response();
                 response.errorMesg = ErrorCode.ECAR_NOT_FOUND.valueOf();
                 return Observable.of(response);
             } else {
