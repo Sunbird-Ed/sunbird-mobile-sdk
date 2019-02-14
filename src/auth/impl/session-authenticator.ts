@@ -49,7 +49,7 @@ export class SessionAuthenticator implements RequestInterceptor, ResponseInterce
 
     private async invokeRefreshSessionTokenApi() {
         const request = new Request.Builder()
-            .withPath(this.apiConfig.user_authentication.tokenRefreshUrl)
+            .withPath(this.apiConfig.user_authentication.authUrl + '/token')
             .withType(HttpRequestType.POST)
             .withSerializer(HttpSerializer.URLENCODED)
             .withBody({

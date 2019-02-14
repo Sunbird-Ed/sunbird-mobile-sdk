@@ -2,6 +2,7 @@ import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request
 import {OauthSession} from '..';
 import {ApiKeys} from '../../app-config';
 import {NoActiveSessionError} from '../../profile';
+import {AuthEndPoints} from '../def/auth-end-points';
 
 declare var customtabs: {
     isAvailable: (success: () => void, error: (error: string) => void) => void;
@@ -20,7 +21,7 @@ export class AuthUtil {
         }
 
         const request = new Request.Builder()
-            .withPath(this.apiConfig.user_authentication.tokenRefreshUrl)
+            .withPath(this.apiConfig.user_authentication.authUrl + AuthEndPoints.REFRESH)
             .withType(HttpRequestType.POST)
             .withSerializer(HttpSerializer.URLENCODED)
             .withBody({
@@ -52,7 +53,7 @@ export class AuthUtil {
     public async endSession(): Promise<undefined> {
         return new Promise<undefined>(((resolve, reject) => {
             const launchUrl = this.apiConfig.host +
-                this.apiConfig.user_authentication.logoutUrl + '?redirect_uri=' +
+                this.apiConfig.user_authentication.authUrl + AuthEndPoints.LOGOUT + '?redirect_uri=' +
                 this.apiConfig.user_authentication.redirectUrl;
 
             customtabs.isAvailable(() => {

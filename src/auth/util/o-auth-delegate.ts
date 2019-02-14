@@ -4,6 +4,7 @@ import {GoogleSessionProvider} from './google-session-provider';
 import {KeycloakSessionProvider} from './keycloak-session-provider';
 import {StateLoginSessionProvider} from './state-login-session-provider';
 import * as qs from 'qs';
+import {AuthEndPoints} from '../def/auth-end-points';
 
 declare var customtabs: {
     isAvailable: (success: () => void, error: (error: string) => void) => void;
@@ -41,7 +42,7 @@ export class OAuthDelegate {
     doOAuthStepOne(): Promise<OauthSession> {
         return new Promise((resolve, reject) => {
             const launchUrl = this.apiConfig.host +
-                this.apiConfig.user_authentication.authUrl + '?redirect_uri=' +
+                this.apiConfig.user_authentication.authUrl + AuthEndPoints.LOGIN + '?redirect_uri=' +
                 this.apiConfig.user_authentication.redirectUrl + '&response_type=code&scope=offline_access&client_id=android&version=2';
 
             customtabs.isAvailable(() => {

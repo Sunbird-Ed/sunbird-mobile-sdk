@@ -1,8 +1,7 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {ProfileServiceConfig, ServerProfileDetailsRequest} from '..';
+import {ProfileServiceConfig, ServerProfile, ServerProfileDetailsRequest} from '..';
 import {CachedItemStore} from '../../key-value-store';
 import {Observable} from 'rxjs';
-import {ServerProfile} from '../def/server-profile';
 
 export class GetServerProfileDetailsHandler implements ApiRequestHandler<ServerProfileDetailsRequest, ServerProfile> {
     private readonly GET_SERVER_PROFILE_DETAILS_ENDPOINT = '/read';
@@ -35,8 +34,8 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<ServerP
             .withBody(request)
             .build();
 
-        return this.apiService.fetch<{ result: ServerProfile }>(apiRequest).map((success) => {
-            return success.body.result;
+        return this.apiService.fetch<{ result: { response: ServerProfile } }>(apiRequest).map((success) => {
+            return success.body.result.response;
         });
     }
 }
