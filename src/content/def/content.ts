@@ -79,6 +79,11 @@ export interface ContentFeedback {
     contentVersion: string;
 }
 
+export interface ContentFeedbackFilterCriteria {
+    uid: string;
+    contentId: string;
+}
+
 export interface Access {
     status: number;
     contentId: string;

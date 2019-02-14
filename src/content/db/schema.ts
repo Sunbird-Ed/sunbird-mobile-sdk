@@ -1,5 +1,6 @@
 import {DbConstants} from '../../db';
 
+
 export namespace ContentEntry {
     export const TABLE_NAME = 'content';
     export const _ID = '_id';
@@ -70,24 +71,33 @@ export namespace ContentEntry {
 export namespace ContentAccessEntry {
 
     export const _ID = '_id';
-    export const TABLE_NAME = 'content_marker';
+    export const TABLE_NAME = 'content_access';
     export const COLUMN_NAME_UID = 'uid';
     export const COLUMN_NAME_CONTENT_IDENTIFIER = 'identifier';
     export const COLUMN_NAME_EPOCH_TIMESTAMP = 'epoch_timestamp';
-    export const COLUMN_NAME_DATA = 'data';
-    export const COLUMN_NAME_EXTRA_INFO = 'extra_info';
-    export const COLUMN_NAME_MARKER = 'marker';
+    export const COLUMN_NAME_STATUS = 'status'; // viewed = 1, partiallyPlayed = 2, fullyPlayed = 3
+    export const COLUMN_NAME_CONTENT_TYPE = 'content_type';
+    export const COLUMN_NAME_LEARNER_STATE = 'learner_state';
+
+    export interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_CONTENT_IDENTIFIER]: string;
+        [COLUMN_NAME_EPOCH_TIMESTAMP]: number;
+        [COLUMN_NAME_STATUS]: string;
+        [COLUMN_NAME_CONTENT_TYPE]: string;
+        [COLUMN_NAME_LEARNER_STATE]: string;
+    }
 
 
     export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE IF NOT EXISTS ' + ContentMarkerEntry.TABLE_NAME + ' (' +
-            ContentMarkerEntry._ID + ' INTEGER PRIMARY KEY,' +
-            COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CONTENT_IDENTIFIER + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_EXTRA_INFO + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_MARKER + DbConstants.SPACE + DbConstants.INT_TYPE +
+        return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
+            _ID + ' INTEGER PRIMARY KEY,' +
+            COLUMN_NAME_UID + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CONTENT_IDENTIFIER + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_STATUS + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CONTENT_TYPE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_LEARNER_STATE + DbConstants.BLOB_TYPE +
             ' )';
     };
 
@@ -106,6 +116,14 @@ export namespace ContentFeedbackEntry {
     export const COLUMN_NAME_RATING = 'rating';
     export const COLUMN_NAME_COMMENTS = 'comments';
     export const COLUMN_NAME_CREATED_AT = 'createdAt';
+
+    export interface SchemaMap {
+        [COLUMN_NAME_CONTENT_ID]: string;
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_RATING]: string;
+        [COLUMN_NAME_COMMENTS]: string;
+        [COLUMN_NAME_CREATED_AT]: number;
+    }
 
 
     export const getCreateEntry: (() => string) = () => {
