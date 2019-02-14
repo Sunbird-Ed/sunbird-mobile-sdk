@@ -1,4 +1,5 @@
 import {
+    AcceptTermsConditionRequest,
     GetAllProfileRequest,
     NoActiveSessionError,
     NoProfileFoundError,
@@ -26,8 +27,9 @@ import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {ProfileMapper} from '../util/profile-mapper';
 import {ContentAccessFilterCriteria} from '../def/content-access-filter-criteria';
 import {ContentAccess} from '../def/content-access';
-import {ContentAccessEntry} from '../../content/db/schema';
+import {AcceptTermConditionHandler} from '../handler/accept-term-condition-handler';
 import {ProfileHandler} from '../handler/profile-handler';
+import {ContentAccessEntry} from '../../content/db/schema';
 
 
 export class ProfileServiceImpl implements ProfileService {
@@ -77,7 +79,7 @@ export class ProfileServiceImpl implements ProfileService {
             return this.dbService.read({
                 table: ProfileEntry.TABLE_NAME,
                 columns: []
-            }).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriestoProfiles(profiles));
+            }).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriesToProfiles(profiles));
         }
 
         if (!profileRequest.groupId) {
@@ -86,7 +88,7 @@ export class ProfileServiceImpl implements ProfileService {
                 selection: `${ProfileEntry.COLUMN_NAME_SOURCE} = ?`,
                 selectionArgs: [profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER],
                 columns: []
-            }).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriestoProfiles(profiles));
+            }).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriesToProfiles(profiles));
         }
 
         if (profileRequest.groupId && (profileRequest.local || profileRequest.server)) {
@@ -96,14 +98,14 @@ export class ProfileServiceImpl implements ProfileService {
                 ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_UID}
                 WHERE ${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}" AND
                 ${ProfileEntry.COLUMN_NAME_SOURCE} = "${profileRequest.local ? ProfileSource.LOCAL : ProfileSource.SERVER}"
-            `).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriestoProfiles(profiles));
+            `).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriesToProfiles(profiles));
         }
 
 
         return this.dbService.execute(`
             SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
             ${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}"
-        `).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriestoProfiles(profiles));
+        `).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriesToProfiles(profiles));
     }
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {
@@ -168,8 +170,8 @@ export class ProfileServiceImpl implements ProfileService {
             });
     }
 
-    private mapDbProfileEntriestoProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
-        return profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile));
+    acceptTermsAndConditions(acceptTermsConditions: AcceptTermsConditionRequest): Observable<boolean> {
+        return new AcceptTermConditionHandler(this.apiService, this.profileServiceConfig).handle(acceptTermsConditions);
     }
 
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]> {
@@ -194,8 +196,12 @@ export class ProfileServiceImpl implements ProfileService {
         const query = `SELECT * FROM ${ContentAccessEntry.TABLE_NAME} ${filter}`;
         return this.dbService.execute(filter).map((contentAccessList: ContentAccessEntry.SchemaMap[]) => {
             return contentAccessList.map((contentAccess: ContentAccessEntry.SchemaMap) =>
-            ProfileHandler.mapDBEntryToContenetAccess(contentAccess));
+                ProfileHandler.mapDBEntryToContenetAccess(contentAccess));
         });
 
+    }
+
+    private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
+        return profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile));
     }
 }

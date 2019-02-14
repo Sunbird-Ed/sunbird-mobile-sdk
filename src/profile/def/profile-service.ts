@@ -9,6 +9,7 @@ import {ServerProfileDetailsRequest} from './server-profile-details-request';
 import {ProfileSession} from './profile-session';
 import {ContentAccessFilterCriteria} from './content-access-filter-criteria';
 import {ContentAccess} from './content-access';
+import {AcceptTermsConditionRequest} from './accept-terms-condition-request';
 
 
 export interface ProfileService {
@@ -33,4 +34,6 @@ export interface ProfileService {
     getCurrentProfileSession(): Observable<ProfileSession | undefined>;
 
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]>;
+
+    acceptTermsAndConditions(acceptTermsConditions: AcceptTermsConditionRequest): Observable<boolean>;
 }
