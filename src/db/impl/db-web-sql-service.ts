@@ -18,7 +18,7 @@ export class DbWebSqlService implements DbService {
         return new Promise<undefined>(((resolve) => {
             this.webSqlDB = window.openDatabase(
                 this.context.dbName,
-                this.dBVersion + '',
+                '',
                 'Genie web sql DB',
                 2 * 1024 * 1024,
                 async (database) => {
