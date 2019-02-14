@@ -1,7 +1,6 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {AcceptTermsConditionRequest} from '..';
+import {AcceptTermsConditionRequest, ProfileServiceConfig} from '..';
 import {Observable} from 'rxjs';
-import {ProfileServiceConfig} from '..';
 
 export class AcceptTermConditionHandler implements ApiRequestHandler<AcceptTermsConditionRequest, boolean> {
     private readonly GET_ACCEPT_TERM_CONDITIONS_ENDPOINT = '/tnc/accept';
@@ -19,8 +18,8 @@ export class AcceptTermConditionHandler implements ApiRequestHandler<AcceptTerms
             .withBody({request})
             .build();
 
-        return this.apiService.fetch<{ result: boolean }>(apiRequest).map((success) => {
-            return !!success.body.result;
+        return this.apiService.fetch<{ result: { response: string } }>(apiRequest).map((success) => {
+            return success.body.result.response === 'SUCCESS';
         });
     }
 }
