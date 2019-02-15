@@ -1,11 +1,12 @@
 export interface Framework {
-    identifier: string;
-    code: string;
     name: string;
-    description: string;
-    type: string;
-    objectType: string;
-    categories: Array<FrameworkCategories>;
+    identifier: string;
+    index?: number;
+    code?: string;
+    description?: string;
+    type?: string;
+    objectType?: string;
+    categories?: Array<FrameworkCategories>;
 }
 
 export interface FrameworkCategories {
