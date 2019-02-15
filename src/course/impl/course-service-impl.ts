@@ -15,7 +15,9 @@ import {GetCourseBatchesHandler} from '../handlers/get-course-batches-handler';
 import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
 import {EnrollCourseHandler} from '../handlers/enroll-course-handler';
 import {KeyValueStore} from '../../key-value-store';
-import {ApiService} from '../../api/def/api-service';
+import {ApiService} from '../../api';
+import {UnenrollCourseRequest} from '../def/unenrollCourseRequest';
+import {UnenrollCourseHandler} from '../handlers/unenroll-course-handler';
 
 export class CourseServiceImpl implements CourseService {
 
@@ -50,4 +52,9 @@ export class CourseServiceImpl implements CourseService {
         return new EnrollCourseHandler(this.apiService, this.courseServiceConfig)
             .handle(request);
     }
+
+    unenrollCourse(unenrollCourseRequest: UnenrollCourseRequest): Observable<boolean> {
+        return new UnenrollCourseHandler(this.apiService, this.courseServiceConfig).handle(unenrollCourseRequest);
+    }
+
 }
