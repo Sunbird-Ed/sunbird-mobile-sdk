@@ -33,6 +33,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
             .withPath(this.frameworkServiceConfig.frameworkApiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + '/' + request.frameworkId)
+            .withParameters({categories: request.categories.join(',')})
             .withApiToken(true)
             .build();
 
