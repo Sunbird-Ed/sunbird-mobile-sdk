@@ -113,8 +113,8 @@ export class ProfileServiceImpl implements ProfileService {
             .handle(serverProfileDetailsRequest);
     }
 
-    getCurrentProfile(): Observable<Profile> {
-        return this.getCurrentProfileSession()
+    getActiveSessionProfile(): Observable<Profile> {
+        return this.getActiveProfileSession()
             .map((profileSession: ProfileSession | undefined) => {
                 if (!profileSession) {
                     throw new NoActiveSessionError('No active session available');
@@ -131,12 +131,12 @@ export class ProfileServiceImpl implements ProfileService {
             });
     }
 
-    setCurrentProfile(uid: string): Observable<boolean> {
+    setActiveSessionForProfile(profileUid: string): Observable<boolean> {
         return this.dbService
             .read({
                 table: ProfileEntry.TABLE_NAME,
                 selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
-                selectionArgs: [uid]
+                selectionArgs: [profileUid]
             })
             .map((rows: ProfileEntry.SchemaMap[]) =>
                 rows && rows[0] && ProfileMapper.mapProfileDBEntryToProfile(rows[0])
@@ -158,7 +158,7 @@ export class ProfileServiceImpl implements ProfileService {
             });
     }
 
-    getCurrentProfileSession(): Observable<ProfileSession | undefined> {
+    getActiveProfileSession(): Observable<ProfileSession | undefined> {
         return this.keyValueStore.getValue(ProfileServiceImpl.KEY_USER_SESSION)
             .map((response) => {
                 if (!response) {

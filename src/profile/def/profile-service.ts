@@ -27,11 +27,11 @@ export interface ProfileService {
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile>;
 
-    getCurrentProfile(): Observable<Profile>;
+    getActiveSessionProfile(): Observable<Profile>;
 
-    setCurrentProfile(uid: string): Observable<boolean>;
+    setActiveSessionForProfile(profileUid: string): Observable<boolean>;
 
-    getCurrentProfileSession(): Observable<ProfileSession | undefined>;
+    getActiveProfileSession(): Observable<ProfileSession | undefined>;
 
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]>;
 
