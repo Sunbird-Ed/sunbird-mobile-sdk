@@ -1,5 +1,4 @@
-import { Request } from './request';
+import { RequestInterceptor } from './request-interceptor';
 import { ResponseInterceptor } from './response-interceptor';
-export interface Authenticator extends ResponseInterceptor {
-    interceptRequest(request: Request): Request;
+export interface Authenticator extends RequestInterceptor, ResponseInterceptor {
 }

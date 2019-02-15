@@ -1,6 +1,8 @@
 import { Response } from './response';
 import { Observable } from 'rxjs';
+import { HttpSerializer } from './request';
 export declare abstract class HttpClient {
+    abstract setSerializer(httpSerializer: HttpSerializer): any;
     abstract addHeaders(headers: {
         [key: string]: string;
     }): any;

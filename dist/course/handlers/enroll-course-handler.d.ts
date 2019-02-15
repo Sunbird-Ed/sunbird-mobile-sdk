@@ -1,14 +1,10 @@
-import { ApiRequestHandler } from '../../api';
-import { EnrollCourseRequest } from '../def/request-types';
+import { ApiRequestHandler, ApiService } from '../../api';
+import { CourseServiceConfig, EnrollCourseRequest } from '..';
 import { Observable } from 'rxjs';
-import { CourseServiceConfig } from '..';
-import { SessionAuthenticator } from '../../auth';
-import { ApiService } from '../../api/def/api-service';
 export declare class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseRequest, boolean> {
     private apiService;
     private courseServiceConfig;
-    private sessionAuthenticator;
     private readonly ENROL_ENDPOINT;
-    constructor(apiService: ApiService, courseServiceConfig: CourseServiceConfig, sessionAuthenticator: SessionAuthenticator);
+    constructor(apiService: ApiService, courseServiceConfig: CourseServiceConfig);
     handle(request: EnrollCourseRequest): Observable<boolean>;
 }

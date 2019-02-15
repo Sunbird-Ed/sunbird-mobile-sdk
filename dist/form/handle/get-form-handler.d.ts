@@ -1,28 +1,25 @@
-import { ApiRequestHandler } from '../../api';
-import { FormRequest } from '../def/form-request';
+import { ApiRequestHandler, ApiService } from '../../api';
+import { FormRequest, FormServiceConfig } from '..';
 import { Observable } from 'rxjs';
 import { CachedItemStore } from '../../key-value-store';
-import { FormServiceConfig } from '../config/form-service-config';
-import { SessionAuthenticator } from '../../auth';
 import { FileService } from '../../util/file/def/file-service';
-import { ApiService } from '../../api/def/api-service';
 export declare class GetFormHandler implements ApiRequestHandler<FormRequest, {
     [key: string]: {};
 }> {
     private apiService;
     private formServiceConfig;
     private fileService;
-    private sessionAuthenticator;
     private cachedItemStore;
-    private readonly GET_FORM_REQUEST_ENDPOINT;
-    private readonly STORED_FORM;
-    constructor(apiService: ApiService, formServiceConfig: FormServiceConfig, fileService: FileService, sessionAuthenticator: SessionAuthenticator, cachedItemStore: CachedItemStore<{
+    private readonly FORM_FILE_KEY_PREFIX;
+    private readonly FORM_LOCAL_KEY;
+    private readonly GET_FORM_DETAILS_ENDPOINT;
+    constructor(apiService: ApiService, formServiceConfig: FormServiceConfig, fileService: FileService, cachedItemStore: CachedItemStore<{
         [key: string]: {};
     }>);
+    private static getIdForRequest;
     handle(request: FormRequest): Observable<{
         [key: string]: {};
     }>;
-    private getIdForRequest;
     private fetchFormServer;
-    private fetchFilePath;
+    private fetchFromFile;
 }

@@ -13,7 +13,7 @@ export interface PageAssembleFilter {
 }
 export interface PageAssembleCriteria {
     name: PageName;
-    source?: string;
+    source?: 'app' | 'web';
     mode?: 'soft' | 'hard';
     filters?: PageAssembleFilter;
 }

@@ -1,10 +1,11 @@
 import { FileService } from '../def/file-service';
-import { DirectoryEntry, Entry, FileEntry, Flags, Metadata, RemoveResult } from '../index';
+import { DirectoryEntry, Entry, FileEntry, Flags, Metadata, RemoveResult, IWriteOptions } from '../index';
 export declare class FileServiceImpl implements FileService {
     private fileSystem;
     private initialized;
     init(): void;
     readAsText(path: string, filePath: string): Promise<string>;
+    writeFile(path: string, fileName: string, text: string, options?: IWriteOptions): Promise<any>;
     /**
      * Creates a new file in the specific path.
      * The replace boolean value determines whether to replace an existing file with the same name.
@@ -25,7 +26,14 @@ export declare class FileServiceImpl implements FileService {
      * @returns {Promise<RemoveResult>} Returns a Promise that resolves to a RemoveResult or rejects with an error.
      */
     removeFile(path: string, fileName: string): Promise<RemoveResult>;
-    createDir(path: string, dirName: string, replace: boolean): Promise<DirectoryEntry>;
+    createDir(path: string, replace: boolean): Promise<DirectoryEntry>;
+    /**
+     * List files and directory from a given path.
+     *
+     * @param {string} directoryPath. Please refer to the iOS and Android filesystems above
+     * @returns {Promise<Entry[]>} Returns a Promise that resolves to an array of Entry objects or rejects with an error.
+     */
+    listDir(directoryPath: string): Promise<Entry[]>;
     removeDir(path: string, dirName: string): Promise<RemoveResult>;
     /**
      * Removes all files and the directory from a desired location.
@@ -34,7 +42,7 @@ export declare class FileServiceImpl implements FileService {
      * @param {string} dirName Name of directory
      * @returns {Promise<RemoveResult>} Returns a Promise that resolves with a RemoveResult or rejects with an error.
      */
-    removeRecursively(path: string, dirName: string): Promise<RemoveResult>;
+    removeRecursively(path: string): Promise<RemoveResult>;
     /**
      * Copy a directory in various methods. If destination directory exists, will fail to copy.
      *
@@ -55,9 +63,10 @@ export declare class FileServiceImpl implements FileService {
      * @returns {Promise<Entry>} Returns a Promise that resolves to an Entry or rejects with an error.
      */
     copyFile(path: string, fileName: string, newPath: string, newFileName: string): Promise<Entry>;
-    exists(path: string): Promise<FileEntry>;
+    exists(path: string): Promise<Entry>;
     getTempLocation(destinationPath: string): Promise<DirectoryEntry>;
     getFreeDiskSpace(): Promise<number>;
+    private readEntries;
     private readFile;
     private resolveDirectoryUrl;
     /**
@@ -71,5 +80,17 @@ export declare class FileServiceImpl implements FileService {
     private copy;
     private getDirectory;
     private rimraf;
+    private createWriter;
+    /**
+     * Write content to FileEntry.
+     * @hidden
+     * Write to an existing file.
+     * @param {FileEntry} fe file entry object
+     * @param {string | Blob | ArrayBuffer} text text content or blob to write
+     * @param {IWriteOptions} options replace file if set to true. See WriteOptions for more information.
+     * @returns {Promise<FileEntry>}  Returns a Promise that resolves to updated file entry or rejects with an error.
+     */
+    private writeFileEntry;
+    private write;
     getExternalApplicationStorageDirectory(): string;
 }

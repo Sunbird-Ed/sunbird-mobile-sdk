@@ -1,14 +1,9 @@
-import { ContentService } from '../def/content-service';
+import { ChildContentRequest, Content, ContentDeleteRequest, ContentDeleteResponse, ContentDetailRequest, ContentExportResponse, ContentImportRequest, ContentImportResponse, ContentRequest, ContentSearchCriteria, ContentSearchResult, ContentService, ContentServiceConfig, EcarImportRequest, HierarchyInfo } from '..';
 import { Observable } from 'rxjs';
-import { ChildContentRequest, ContentDeleteRequest, ContentDetailRequest, ContentExportResponse, ContentImportRequest, ContentRequest, ContentSearchCriteria, EcarImportRequest } from '../def/requests';
-import { Content, HierarchyInfo } from '../def/content';
 import { ApiService, Response } from '../../api';
 import { ProfileService } from '../../profile';
 import { KeyValueStore } from '../../key-value-store';
-import { SessionAuthenticator } from '../../auth';
 import { DbService } from '../../db';
-import { ContentServiceConfig } from '../config/content-config';
-import { ContentDeleteResponse, ContentImportResponse, ContentSearchResult } from '../def/response';
 import { AppConfig } from '../../api/config/app-config';
 import { FileService } from '../../util/file/def/file-service';
 export declare class ContentServiceImpl implements ContentService {
@@ -18,15 +13,14 @@ export declare class ContentServiceImpl implements ContentService {
     private profileService;
     private appConfig;
     private keyValueStore;
-    private sessionAuthenticator;
     private fileService;
-    constructor(contentServiceConfig: ContentServiceConfig, apiService: ApiService, dbService: DbService, profileService: ProfileService, appConfig: AppConfig, keyValueStore: KeyValueStore, sessionAuthenticator: SessionAuthenticator, fileService: FileService);
+    constructor(contentServiceConfig: ContentServiceConfig, apiService: ApiService, dbService: DbService, profileService: ProfileService, appConfig: AppConfig, keyValueStore: KeyValueStore, fileService: FileService);
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
+    getContents(request: ContentRequest): Observable<Content>;
     cancelImport(contentId: string): void;
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
     exportContent(contentExportRequest: ContentExportResponse): void;
     getChildContents(childContentRequest: ChildContentRequest): Observable<any>;
-    getContents(criteria: ContentRequest): Observable<any>;
     getDownloadState(): Promise<any>;
     importContent(contentImportRequest: ContentImportRequest): Observable<any>;
     importEcar(ecarImportRequest: EcarImportRequest): Observable<Response<ContentImportResponse>>;

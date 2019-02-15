@@ -1,10 +1,12 @@
-import { Authenticator } from '../def/authenticator';
-import { ApiConfig, Connection, Request, Response } from '..';
+import { ApiConfig, Request, Response } from '..';
 import { Observable } from 'rxjs';
+import { Authenticator } from '../def/authenticator';
+import { Connection } from '../def/connection';
 export declare class ApiAuthenticator implements Authenticator {
     private apiConfig;
+    private connection;
     private apiTokenHandler;
-    constructor(apiConfig: ApiConfig);
+    constructor(apiConfig: ApiConfig, connection: Connection);
     interceptRequest(request: Request): Request;
-    onResponse(request: Request, response: Response, connection: Connection): Observable<Response>;
+    interceptResponse(request: Request, response: Response): Observable<Response>;
 }

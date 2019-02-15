@@ -1,9 +1,10 @@
-import { HttpClient, Response } from '..';
+import { HttpClient, HttpSerializer, Response } from '..';
 import { Observable } from 'rxjs';
 export declare class HttpClientAxios implements HttpClient {
     private headers;
     private axios;
     constructor();
+    setSerializer(httpSerializer: HttpSerializer): void;
     addHeader(key: string, value: string): void;
     addHeaders(headers: {
         [p: string]: string;

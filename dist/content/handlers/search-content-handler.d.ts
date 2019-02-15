@@ -1,17 +1,13 @@
-import { ContentSearchCriteria, ContentSearchFilter, ContentSortCriteria, FilterValue } from '../def/requests';
-import { ContentServiceConfig } from '../config/content-config';
-import { SessionAuthenticator } from '../../auth';
+import { ContentSearchCriteria, ContentSearchFilter, ContentSearchResult, ContentServiceConfig, ContentSortCriteria, FilterValue } from '..';
 import { Request } from '../../api';
 import { AppConfig } from '../../api/config/app-config';
-import { ContentSearchResult } from '../def/response';
 export declare class SearchContentHandler {
     private appConfig;
     private contentServiceConfig;
-    private sessionAuthenticator;
     static readonly AUDIENCE_LEARNER: string[];
     static readonly AUDIENCE_INSTRUCTOR: string[];
     private readonly SEARCH_ENDPOINT;
-    constructor(appConfig: AppConfig, contentServiceConfig: ContentServiceConfig, sessionAuthenticator: SessionAuthenticator);
+    constructor(appConfig: AppConfig, contentServiceConfig: ContentServiceConfig);
     getSearchContentRequest(criteria: ContentSearchCriteria): any;
     getSearchFilter(criteria: ContentSearchCriteria): any;
     getFilterRequest(criteria: ContentSearchCriteria): any;

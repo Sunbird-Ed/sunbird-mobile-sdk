@@ -2,6 +2,7 @@ import { CourseBatchDetailsRequest, CourseBatchesRequest, EnrollCourseRequest, F
 import { Observable } from 'rxjs';
 import { Batch } from './batch';
 import { Course } from './course';
+import { UnenrollCourseRequest } from './unenrollCourseRequest';
 export interface CourseService {
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
     updateContentState(request: UpdateContentStateRequest): Observable<boolean>;
@@ -20,4 +21,11 @@ export interface CourseService {
      * @return
      */
     enrollCourse(request: EnrollCourseRequest): Observable<boolean>;
+    /**
+     * This api is used to un-enroll the course.
+     *
+     * @param unenrollCourseRequest {@link UnenrollCourseRequest}
+     * @return
+     */
+    unenrollCourse(unenrollCourseRequest: UnenrollCourseRequest): Observable<boolean>;
 }

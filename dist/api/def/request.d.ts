@@ -1,5 +1,11 @@
 import { ResponseInterceptor } from './response-interceptor';
+import { RequestInterceptor } from './request-interceptor';
 import { Authenticator } from './authenticator';
+export declare enum HttpSerializer {
+    JSON = "json",
+    URLENCODED = "urlencoded",
+    UTF8 = "utf8"
+}
 export declare enum HttpRequestType {
     GET = "GET",
     POST = "POST",
@@ -7,21 +13,22 @@ export declare enum HttpRequestType {
 }
 export declare class Request {
     static Builder: any;
+    private _serializer;
+    private _responseInterceptors;
+    private _withApiToken;
     private _path;
     private _type;
-    private _requiredApiToken;
-    private _responseInterceptors;
     private _authenticators;
+    serializer: HttpSerializer;
+    withApiToken: boolean;
     private _headers?;
     private _body?;
     private _parameters?;
     body: {};
     protected constructor();
-    addAuthenticator(authenticator: Authenticator): void;
-    readonly authenticators: Authenticator[];
+    private _withSessionToken;
     path: string;
     type: HttpRequestType;
-    requiredApiToken: boolean;
     responseInterceptors: Array<ResponseInterceptor>;
     headers: {
         [p: string]: string;
@@ -29,4 +36,8 @@ export declare class Request {
     parameters: {
         [key: string]: string;
     };
+    withSessionToken: boolean;
+    private _requestInterceptors;
+    readonly requestInterceptors: RequestInterceptor[];
+    authenticators: Authenticator[];
 }

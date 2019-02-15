@@ -6,4 +6,6 @@ export declare class KeyValueStoreImpl implements KeyValueStore {
     constructor(dbService: DbService);
     getValue(key: string): Observable<string | undefined>;
     setValue(key: string, value: string): Observable<boolean>;
+    private utf8_to_b64;
+    private b64_to_utf8;
 }

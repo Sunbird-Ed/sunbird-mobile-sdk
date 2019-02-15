@@ -1,12 +1,12 @@
-import { Connection } from '../../api';
+import { ApiConfig, ApiService } from '../../api';
 import { OauthSession } from '..';
-import { Observable } from 'rxjs';
-import { ApiService } from '../../api/def/api-service';
 export declare class AuthUtil {
+    private apiConfig;
     private apiService;
-    constructor(apiService: ApiService);
-    refreshSession(connection: Connection, authUrl: string): Promise<OauthSession>;
-    startSession(sessionData: OauthSession): Promise<undefined>;
+    constructor(apiConfig: ApiConfig, apiService: ApiService);
+    refreshSession(): Promise<undefined>;
+    startSession(sessionData: OauthSession): void;
     endSession(): Promise<undefined>;
-    getSessionData(): Observable<OauthSession>;
+    getSessionData(): Promise<OauthSession | undefined>;
+    private hasExistingSession;
 }

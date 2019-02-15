@@ -6,5 +6,4 @@ export declare class FetchHandler {
     private baseConnection;
     constructor(request: Request, apiConfig: ApiConfig);
     doFetch(): Observable<Response>;
-    private handleBearerToken;
 }

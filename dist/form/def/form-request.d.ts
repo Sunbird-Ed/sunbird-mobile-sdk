@@ -4,6 +4,4 @@ export interface FormRequest {
     action: string;
     rootOrgId: string;
     frameWork: string;
-    filePath: string;
-    defaultTtl: number;
 }

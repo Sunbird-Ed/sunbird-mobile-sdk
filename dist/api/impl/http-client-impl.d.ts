@@ -1,8 +1,9 @@
-import { HttpClient, Response } from '..';
+import { HttpClient, HttpSerializer, Response } from '..';
 import { Observable } from 'rxjs';
 export declare class HttpClientImpl implements HttpClient {
     private http;
     constructor();
+    setSerializer(httpSerializer: HttpSerializer): void;
     addHeaders(headers: {
         [key: string]: string;
     }): void;

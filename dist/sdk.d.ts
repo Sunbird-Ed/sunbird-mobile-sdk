@@ -11,6 +11,8 @@ import { FrameworkService } from './framework';
 import { ProfileService } from './profile';
 import { KeyValueStore } from './key-value-store';
 import { PageAssembleService } from './page';
+import { GroupService } from './group';
+import { SystemSettingsService } from './system-settings/def/system-settings-service';
 export declare class SunbirdSdk {
     private static _instance?;
     static readonly instance: SunbirdSdk;
@@ -20,6 +22,7 @@ export declare class SunbirdSdk {
     private _apiService;
     private _keyValueStore;
     private _profileService;
+    private _groupService;
     private _contentService;
     private _courseService;
     private _formService;
@@ -27,6 +30,9 @@ export declare class SunbirdSdk {
     private _pageAssembleService;
     private _sharedPreferences;
     private _fileService;
+    private _systemSettingsService;
+    private _sdkConfig;
+    readonly sdkConfig: SdkConfig;
     readonly pageAssembleService: PageAssembleService;
     readonly dbService: DbService;
     readonly telemetryService: TelemetryService;
@@ -34,10 +40,12 @@ export declare class SunbirdSdk {
     readonly apiService: ApiService;
     readonly keyValueStore: KeyValueStore;
     readonly profileService: ProfileService;
+    readonly groupService: GroupService;
     readonly contentService: ContentService;
     readonly courseService: CourseService;
     readonly formService: FormService;
     readonly frameworkService: FrameworkService;
     readonly sharedPreferences: SharedPreferences;
+    readonly systemSettingsService: SystemSettingsService;
     init(sdkConfig: SdkConfig): Promise<void>;
 }

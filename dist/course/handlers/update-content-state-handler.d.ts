@@ -1,14 +1,10 @@
-import { ApiRequestHandler } from '../../api';
-import { CourseServiceConfig } from '..';
-import { SessionAuthenticator } from '../../auth';
-import { UpdateContentStateRequest } from '../def/request-types';
+import { ApiRequestHandler, ApiService } from '../../api';
+import { CourseServiceConfig, UpdateContentStateRequest } from '..';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../api/def/api-service';
 export declare class UpdateContentStateHandler implements ApiRequestHandler<UpdateContentStateRequest, boolean> {
     private apiService;
     private courseServiceConfig;
-    private sessionAuthenticator;
     private readonly UPDATE_CONTENT_STATE_ENDPOINT;
-    constructor(apiService: ApiService, courseServiceConfig: CourseServiceConfig, sessionAuthenticator: SessionAuthenticator);
+    constructor(apiService: ApiService, courseServiceConfig: CourseServiceConfig);
     handle(request: UpdateContentStateRequest): Observable<boolean>;
 }

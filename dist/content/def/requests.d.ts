@@ -2,6 +2,7 @@ import { SearchType } from '../util/content-constants';
 import { HierarchyInfo } from './content';
 import { CorrelationData } from '../../telemetry';
 import { ContentImportResponse } from './response';
+import { ContentEntry } from '../db/schema';
 export interface ContentDetailRequest {
     contentId: string;
     attachFeedback?: boolean;
@@ -124,4 +125,13 @@ export interface ImportContentContext {
     items: any[];
     identifiers: string[];
     contentImportResponseList: ContentImportResponse[];
+}
+export interface ExportContentContext {
+    ecarFilePath: string;
+    tmpLocationPath: string;
+    destinationFolder: string;
+    items: any[];
+    contentModelsToExport: ContentEntry.SchemaMap[];
+    metadata: any;
+    manifest: any;
 }

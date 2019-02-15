@@ -154,7 +154,7 @@ export interface Flags {
  *     If not all entries have been returned, the array produced by readEntries must not be empty.
  *     The entries produced by readEntries must not include the directory itself ["."] or its parent [".."].
  */
-interface DirectoryReader {
+export interface DirectoryReader {
     /**
      * Read the next block of entries from this directory.
      * @param successCallback Called once per successful call to readEntries to deliver the next
@@ -214,7 +214,7 @@ interface FileSaver extends EventTarget {
  * This interface expands on the FileSaver interface to allow for multiple write
  * actions, rather than just saving a single Blob.
  */
-interface FileWriter extends FileSaver {
+export interface FileWriter extends FileSaver {
     /**
      * The byte offset at which the next write to the file will occur. This always less or equal than length.
      * A newly-created FileWriter will have position set to 0.
@@ -243,11 +243,6 @@ interface FileWriter extends FileSaver {
      */
     truncate(size: number): void;
 }
-declare var FileWriter: {
-    INIT: number;
-    WRITING: number;
-    DONE: number;
-};
 export interface FileError {
     /** Error code */
     code: number;
@@ -267,5 +262,10 @@ export declare type EntryCallback = (entry: Entry) => void;
 export declare enum LocalFileSystem {
     PERSISTENT = 1,
     TEMPORARY = 0
+}
+export interface IWriteOptions {
+    replace?: boolean;
+    append?: boolean;
+    truncate?: number;
 }
 export {};

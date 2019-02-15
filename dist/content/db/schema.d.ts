@@ -38,13 +38,21 @@ export declare namespace ContentEntry {
 }
 export declare namespace ContentAccessEntry {
     const _ID = "_id";
-    const TABLE_NAME = "content_marker";
+    const TABLE_NAME = "content_access";
     const COLUMN_NAME_UID = "uid";
     const COLUMN_NAME_CONTENT_IDENTIFIER = "identifier";
     const COLUMN_NAME_EPOCH_TIMESTAMP = "epoch_timestamp";
-    const COLUMN_NAME_DATA = "data";
-    const COLUMN_NAME_EXTRA_INFO = "extra_info";
-    const COLUMN_NAME_MARKER = "marker";
+    const COLUMN_NAME_STATUS = "status";
+    const COLUMN_NAME_CONTENT_TYPE = "content_type";
+    const COLUMN_NAME_LEARNER_STATE = "learner_state";
+    interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_CONTENT_IDENTIFIER]: string;
+        [COLUMN_NAME_EPOCH_TIMESTAMP]: number;
+        [COLUMN_NAME_STATUS]: string;
+        [COLUMN_NAME_CONTENT_TYPE]: string;
+        [COLUMN_NAME_LEARNER_STATE]: string;
+    }
     const getCreateEntry: (() => string);
     const deleteTable: (() => string);
 }
@@ -55,7 +63,14 @@ export declare namespace ContentFeedbackEntry {
     const COLUMN_NAME_UID = "uid";
     const COLUMN_NAME_RATING = "rating";
     const COLUMN_NAME_COMMENTS = "comments";
-    const COLUMN_NAME_CREATED_AT = "created_at";
+    const COLUMN_NAME_CREATED_AT = "createdAt";
+    interface SchemaMap {
+        [COLUMN_NAME_CONTENT_ID]: string;
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_RATING]: string;
+        [COLUMN_NAME_COMMENTS]: string;
+        [COLUMN_NAME_CREATED_AT]: number;
+    }
     const getCreateEntry: (() => string);
     const deleteTable: (() => string);
 }
