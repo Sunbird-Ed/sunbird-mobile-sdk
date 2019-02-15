@@ -1,4 +1,3 @@
-import { SystemSettingsConfig } from '..';
 import {ApiConfig} from './api';
 import {DbConfig} from './db';
 import {ContentServiceConfig} from './content';
@@ -9,6 +8,7 @@ import {ProfileServiceConfig} from './profile';
 import {PageServiceConfig} from './page';
 import {AppConfig} from './api/config/app-config';
 import {FileConfig} from './util/file/config/file-config';
+import {SystemSettingsConfig} from './system-settings';
 
 export interface SdkConfig {
     apiConfig: ApiConfig;
@@ -21,5 +21,5 @@ export interface SdkConfig {
     profileServiceConfig: ProfileServiceConfig;
     pageServiceConfig: PageServiceConfig;
     appConfig: AppConfig;
-    systeSettingsConfig: SystemSettingsConfig;
+    systemSettingsConfig: SystemSettingsConfig;
 }

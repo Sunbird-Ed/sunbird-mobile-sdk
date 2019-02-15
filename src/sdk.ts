@@ -1,4 +1,3 @@
-
 // definitions
 import {ApiService, ApiServiceImpl} from './api';
 import {DbService} from './db';
@@ -37,9 +36,9 @@ import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
 import {GroupService} from './group';
 import {GroupServiceImpl} from './group/impl/group-service-impl';
 import {DebugPromptFileService} from './util/file/impl/debug-prompt-file-service';
-import { SystemSettingsServiceImpl } from './system-settings/impl/system-settings-service-impl';
-import { SystemSettingsService } from './system-settings/def/system-settings-service';
-import { SystemSettings } from './system-settings/def/system-settings';
+import {SystemSettingsServiceImpl} from './system-settings/impl/system-settings-service-impl';
+import {SystemSettingsService} from './system-settings/def/system-settings-service';
+import {SystemSettings} from './system-settings/def/system-settings';
 
 export class SunbirdSdk {
 
@@ -226,7 +225,7 @@ export class SunbirdSdk {
         );
 
         this._systemSettingsService = new SystemSettingsServiceImpl(
-            sdkConfig.systeSettingsConfig,
+            sdkConfig.systemSettingsConfig,
             this._apiService,
             this._fileService,
             new CachedItemStoreImpl<SystemSettings>(this._keyValueStore, sdkConfig.apiConfig),
