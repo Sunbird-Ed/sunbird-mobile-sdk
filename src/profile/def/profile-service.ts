@@ -1,4 +1,4 @@
-import {Profile} from './profile';
+import {Profile, ProfileSource} from './profile';
 import {Observable} from 'rxjs';
 import {TenantInfo} from './tenant-info';
 import {ServerProfileSearchCriteria} from './server-profile-search-criteria';
@@ -13,7 +13,7 @@ import {AcceptTermsConditionRequest} from './accept-terms-condition-request';
 
 
 export interface ProfileService {
-    createProfile(profile: Profile): Observable<Profile>;
+    createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
 
     deleteProfile(uid: string): Observable<undefined>;
 

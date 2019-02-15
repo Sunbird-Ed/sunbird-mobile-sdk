@@ -8,6 +8,7 @@ import {
     ProfileServiceConfig,
     ProfileSession,
     ProfileSource,
+    ServerProfile,
     ServerProfileDetailsRequest,
     ServerProfileSearchCriteria,
     UpdateServerProfileInfoRequest
@@ -15,8 +16,6 @@ import {
 import {DbService} from '../../db';
 import {Observable} from 'rxjs';
 import {GroupProfileEntry, ProfileEntry} from '../db/schema';
-import {ServerProfile} from '../def/server-profile';
-import {UniqueId} from '../../db/util/unique-id';
 import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
 import {ApiService} from '../../api';
@@ -30,6 +29,8 @@ import {ContentAccess} from '../def/content-access';
 import {AcceptTermConditionHandler} from '../handler/accept-term-condition-handler';
 import {ProfileHandler} from '../handler/profile-handler';
 import {ContentAccessEntry} from '../../content/db/schema';
+import {InvalidProfileError} from '../errors/invalid-profile-error';
+import {UniqueId} from '../../db/util/unique-id';
 
 
 export class ProfileServiceImpl implements ProfileService {
@@ -42,8 +43,33 @@ export class ProfileServiceImpl implements ProfileService {
                 private keyValueStore: KeyValueStore) {
     }
 
-    createProfile(profile: Profile): Observable<Profile> {
-        profile.uid = UniqueId.generateUniqueId();
+    createProfile(profile: Profile, profileSource: ProfileSource = ProfileSource.LOCAL): Observable<Profile> {
+        switch (profileSource) {
+            case ProfileSource.LOCAL: {
+                if (profile.source !== ProfileSource.LOCAL) {
+                    throw new InvalidProfileError(`Invalid value supplied for field 'source': ${profile.source}`);
+                } else if (profile.serverProfile) {
+                    throw new InvalidProfileError(`Invalid value supplied for field 'serverProfile': ${profile.serverProfile}`);
+                }
+
+                profile.uid = UniqueId.generateUniqueId();
+
+                break;
+            }
+
+            case ProfileSource.SERVER: {
+                if (profile.source !== ProfileSource.SERVER) {
+                    throw new InvalidProfileError(`Invalid value supplied for field 'source': ${profile.source}`);
+                } else if (!profile.serverProfile) {
+                    throw new InvalidProfileError(`Invalid value supplied for field 'serverProfile': ${profile.serverProfile}`);
+                } else if (!profile.uid) {
+                    throw new InvalidProfileError(`Invalid value supplied for field 'uid': ${profile.uid}`);
+                }
+
+                break;
+            }
+        }
+
         profile.createdAt = Date.now();
 
         return this.dbService.insert({
