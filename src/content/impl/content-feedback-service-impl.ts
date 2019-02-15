@@ -43,7 +43,7 @@ export class ContentFeedbackServiceImpl implements ContentFeedbackService {
 
     sendFeedback(contentFeedback: ContentFeedback): Observable<any> {
         // TODO generate feedback event
-        return this.profileService.getCurrentProfileSession()
+        return this.profileService.getActiveProfileSession()
             .mergeMap((response: ProfileSession | undefined) => {
                 const readQuery: ReadQuery = {
                     table: ContentFeedbackEntry.TABLE_NAME,
