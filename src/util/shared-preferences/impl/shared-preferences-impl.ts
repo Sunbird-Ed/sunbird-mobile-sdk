@@ -5,14 +5,7 @@ export class SharedPreferencesImpl implements SharedPreferences {
         return localStorage.getItem(key);
     }
 
-    /**
-     * @Deprecated
-     * */
-    getStringWithoutPrefix(key: string): Promise<string> {
-        throw new Error('Deprecated');
-    }
-
-    putString(key: string, value: string): void {
+    public putString(key: string, value: string): void {
         return localStorage.setItem(key, value);
     }
 }
