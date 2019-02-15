@@ -1,3 +1,4 @@
+
 // definitions
 import {ApiService, ApiServiceImpl} from './api';
 import {DbService} from './db';
@@ -36,6 +37,9 @@ import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
 import {GroupService} from './group';
 import {GroupServiceImpl} from './group/impl/group-service-impl';
 import {DebugPromptFileService} from './util/file/impl/debug-prompt-file-service';
+import { SystemSettingsServiceImpl } from './system-settings/impl/system-settings-service-impl';
+import { SystemSettingsService } from './system-settings/def/system-settings-service';
+import { SystemSettings } from './system-settings/def/system-settings';
 
 export class SunbirdSdk {
 
@@ -63,6 +67,7 @@ export class SunbirdSdk {
     private _pageAssembleService: PageAssembleService;
     private _sharedPreferences: SharedPreferences;
     private _fileService: FileService;
+    private _systemSettingsService: SystemSettingsService;
     private _sdkConfig: SdkConfig;
 
     get sdkConfig(): SdkConfig {
@@ -119,6 +124,10 @@ export class SunbirdSdk {
 
     get sharedPreferences(): SharedPreferences {
         return this._sharedPreferences;
+    }
+
+    get systemSettingsService(): SystemSettingsService {
+        return this._systemSettingsService;
     }
 
     public async init(sdkConfig: SdkConfig) {
@@ -214,6 +223,13 @@ export class SunbirdSdk {
             sdkConfig.pageServiceConfig,
             this._fileService,
             new CachedItemStoreImpl<PageAssemble>(this._keyValueStore, sdkConfig.apiConfig)
+        );
+
+        this._systemSettingsService = new SystemSettingsServiceImpl(
+            sdkConfig.systeSettingsConfig,
+            this._apiService,
+            this._fileService,
+            new CachedItemStoreImpl<SystemSettings>(this._keyValueStore, sdkConfig.apiConfig),
         );
     }
 }

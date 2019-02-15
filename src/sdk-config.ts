@@ -1,3 +1,4 @@
+import { SystemSettingsConfig } from '..';
 import {ApiConfig} from './api';
 import {DbConfig} from './db';
 import {ContentServiceConfig} from './content';
@@ -20,4 +21,5 @@ export interface SdkConfig {
     profileServiceConfig: ProfileServiceConfig;
     pageServiceConfig: PageServiceConfig;
     appConfig: AppConfig;
+    systeSettingsConfig: SystemSettingsConfig;
 }
