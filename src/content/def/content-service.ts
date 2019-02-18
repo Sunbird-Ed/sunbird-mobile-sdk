@@ -1,9 +1,9 @@
 import {
     ChildContentRequest,
     ContentDeleteRequest,
-    ContentDetailRequest,
+    ContentDetailRequest, ContentExportRequest,
     ContentExportResponse,
-    ContentImportRequest, ContentRequest,
+    ContentImportRequest, ContentMarkerRequest, ContentRequest,
     ContentSearchCriteria,
     EcarImportRequest
 } from './requests';
@@ -37,9 +37,11 @@ export interface ContentService {
 
     cancelImport(contentId: string);
 
-    exportContent(contentExportRequest: ContentExportResponse);
+    exportContent(contentExportRequest: ContentExportRequest): Observable<Response>;
 
     getDownloadState(): Promise<Response>;
 
     cancelDownload(contentId: string): Observable<undefined>;
+
+    setContentMarker(contentMarkerRequest: ContentMarkerRequest): Observable<boolean>;
 }
