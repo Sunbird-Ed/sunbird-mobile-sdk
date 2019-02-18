@@ -4,6 +4,7 @@ import {FileService} from '../../util/file/def/file-service';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
 import {Framework, FrameworkDetailsRequest, FrameworkServiceConfig} from '..';
+import {FrameworkMapper} from '../util/framework-mapper';
 
 
 export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {
@@ -37,9 +38,13 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
             .withApiToken(true)
             .build();
 
-        return this.apiService.fetch<{ result: { framework: Framework } }>(apiRequest).map((response) => {
-            return response.body.result.framework;
-        });
+        return this.apiService.fetch<{ result: { framework: Framework } }>(apiRequest)
+            .map((response) => {
+                return response.body.result.framework;
+            })
+            .map((framework: Framework) => {
+                return FrameworkMapper.prepareCategoryAssociations(framework);
+            });
     }
 
     private fetchFromFile(request: FrameworkDetailsRequest): Observable<Framework> {
