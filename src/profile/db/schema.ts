@@ -179,6 +179,51 @@ export namespace LearnerAssessmentsEntry {
     export const COLUMN_NAME_Q_DESC = 'qdesc';
     export const COLUMN_NAME_Q_TITLE = 'qtitle';
     export const COLUMN_NAME_HIERARCHY_DATA = 'h_data';
+    export const COLUMN_NAME_TOTAL_TS = 'total_ts';
+    export const COLUMN_NAME_MARKS = 'marks';
+    export const COLUMN_NAME_COUNT = 'count';
+    export const COLUMN_NAME_TOTAL_MAX_SCORE = 'maxscore';
+    export const COLUMN_NAME_USERS_COUNT = 'users_count';
+    export const COLUMN_NAME_HANDLE = 'handle';
+
+
+    export interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_CONTENT_ID]: string;
+        [COLUMN_NAME_QID]: string;
+        [COLUMN_NAME_Q_INDEX]: number;
+        [COLUMN_NAME_CORRECT]: number;
+        [COLUMN_NAME_SCORE]: number;
+        [COLUMN_NAME_MAX_SCORE]: number;
+        [COLUMN_NAME_TIME_SPENT]: number;
+        [COLUMN_NAME_RES]: string;
+        [COLUMN_NAME_TIMESTAMP]: number;
+        [COLUMN_NAME_Q_DESC]: string;
+        [COLUMN_NAME_Q_TITLE]: string;
+        [COLUMN_NAME_HIERARCHY_DATA]: string;
+        [COLUMN_NAME_TOTAL_TS]: number;
+    }
+
+    export interface QuestionReportsSchema extends SchemaMap {
+        [COLUMN_NAME_MARKS]: number;
+        [COLUMN_NAME_COUNT]: number;
+        [COLUMN_NAME_TOTAL_MAX_SCORE]: number;
+    }
+
+    export interface AccuracySchema {
+        [COLUMN_NAME_QID]: string;
+        [COLUMN_NAME_USERS_COUNT]: number;
+    }
+
+    export interface UserReportSchema {
+        [COLUMN_NAME_TOTAL_TS]: number;
+        [COLUMN_NAME_SCORE]: number;
+        [COLUMN_NAME_HIERARCHY_DATA]: string;
+        [COLUMN_NAME_CONTENT_ID]: string;
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_HANDLE]: string;
+        [COLUMN_NAME_TIME_SPENT]: number;
+    }
 
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
@@ -216,6 +261,25 @@ export namespace LearnerSummaryEntry {
     export const COLUMN_NAME_TOTAL_TS = 'total_ts';
     export const COLUMN_NAME_LAST_UPDATED_ON = 'last_updated_on';
     export const COLUMN_NAME_HIERARCHY_DATA = 'h_data';
+    export const COLUMN_NAME_NO_OF_QUESTIONS = 'no_of_questions';
+    export const COLUMN_NAME_CORRECT_ANSWERS = 'correct_answers';
+    export const COLUMN_NAME_TOTAL_TIME_SPENT = 'total_time_spent';
+    export const COLUMN_NAME_TOTAL_MAX_SCORE = 'total_max_score';
+    export const COLUMN_NAME_TOTAL_SCORE = 'total_score';
+
+
+    export interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_CONTENT_ID]: string;
+        [COLUMN_NAME_CONTENT_ID]: string;
+        [COLUMN_NAME_NO_OF_QUESTIONS]: number;
+        [COLUMN_NAME_CORRECT_ANSWERS]: number;
+        [COLUMN_NAME_TOTAL_TIME_SPENT]: number;
+        [COLUMN_NAME_HIERARCHY_DATA]: string;
+        [COLUMN_NAME_TOTAL_MAX_SCORE]: number;
+        [COLUMN_NAME_TOTAL_SCORE]: number;
+    }
+
 
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +

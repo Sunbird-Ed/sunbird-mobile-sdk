@@ -6,6 +6,7 @@ import {ContentUtil} from '../../util/content-util';
 import {DeviceInfo} from '../../../util/device/def/device-info';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import {Visibility} from '../../util/content-constants';
+import {Response} from '../../../api';
 import moment from 'moment';
 
 export class CreateContentExportManifest {
@@ -17,10 +18,11 @@ export class CreateContentExportManifest {
                 private deviceInfo: DeviceInfo) {
     }
 
-    execute(exportContentContext: ExportContentContext): Promise<ExportContentContext> {
+    execute(exportContentContext: ExportContentContext): Promise<Response> {
         const allContentsIdentifier: string[] = [];
         let childIdentifiers: string[] = [];
         const contentIndex: { [key: string]: any } = {};
+        const response: Response = new Response();
         exportContentContext.contentModelsToExport.forEach((contentInDb) => {
             // item local data
             const item = JSON.parse(contentInDb[COLUMN_NAME_LOCAL_DATA]);
@@ -41,12 +43,12 @@ export class CreateContentExportManifest {
             if (childIdentifiers.indexOf(identifier) !== -1) {
                 contentData['visibility'] = Visibility.PARENT.valueOf();
             }
-            exportContentContext.items.push(contentData);
+            exportContentContext.items!.push(contentData);
         });
 
         const archive: { [key: string]: any } = {};
         archive.ttl = 24;
-        archive.count = exportContentContext.items.length;
+        archive.count = exportContentContext.items!.length;
         archive.items = exportContentContext.items;
 
         // Initialize manifest
@@ -54,7 +56,8 @@ export class CreateContentExportManifest {
         exportContentContext.manifest['ver'] = CreateContentExportManifest.SUPPORTED_MANIFEST_VERSION;
         exportContentContext.manifest['ts'] = moment().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'');
         exportContentContext.manifest['archive'] = archive;
-        return Promise.resolve(exportContentContext);
+        response.body = exportContentContext;
+        return Promise.resolve(response);
     }
 
 }

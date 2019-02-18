@@ -7,11 +7,13 @@ import {ContentEntry} from '../db/schema';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
+import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 
 export class ContentUtil {
     private static DEFAULT_PACKAGE_VERSION = -1;
     public static defaultCompatibilityLevel = 1;
     private static INITIAL_VALUE_FOR_TRANSFER_COUNT = 0;
+    private static readonly MAX_CONTENT_NAME = 30;
 
     public static isAvailableLocally(contentState: number): boolean {
         return contentState === State.ARTIFACT_AVAILABLE;
@@ -295,6 +297,11 @@ export class ContentUtil {
             && ContentEncoding.IDENTITY === contentEncoding;
     }
 
+    public static isOnlineContent(contentData): boolean {
+        const contentDisposition = contentData.contentDisposition;
+        return contentDisposition && ContentDisposition.ONLINE.valueOf() === contentDisposition;
+    }
+
     public static addOrUpdateDialcodeMapping(jsonStr: string, identifier: string, rootNodeIdentifier: string) {
         let dialcodeMapping;
         if (jsonStr) {
@@ -316,6 +323,46 @@ export class ContentUtil {
         rootNodes.add(rootNodeIdentifier);
         dialcodeMapping['rootNodes'] = rootNodes;
         return JSON.stringify(dialcodeMapping);
+    }
+
+    public static deDupe<T>(array: T[], property): T[] {
+        return array.filter((obj, pos, arr) => {
+            return arr.map(mapObj => mapObj[property]).indexOf(obj[property]) === pos;
+        });
+    }
+
+    public static getExportedFileName(contentsInDb: ContentEntry.SchemaMap[]) {
+        let fileName = 'blank.ecar';
+        let firstContent: ContentEntry.SchemaMap;
+        let rootContents = 0;
+
+        if (contentsInDb.length > 0) {
+            firstContent = contentsInDb[0];
+        }
+
+        const appendName = '';
+        contentsInDb.forEach((contentInDb) => {
+            if (Visibility.DEFAULT.valueOf() === contentInDb[COLUMN_NAME_VISIBILITY]) {
+                rootContents++;
+            }
+        });
+
+        if (rootContents > 1) {
+            appendName.concat((rootContents - 1).toString());
+        }
+
+        if (firstContent!) {
+            const localData = JSON.parse(firstContent![COLUMN_NAME_LOCAL_DATA]);
+            let name = localData.name;
+            if (name && name.length > ContentUtil.MAX_CONTENT_NAME) {
+                name = name.substring(0, ContentUtil.MAX_CONTENT_NAME - 3) + '...';
+            }
+
+            const pkgVersion = localData.pkgVersion;
+            fileName = `${name}-v${pkgVersion}${appendName}`;
+        }
+
+        return fileName;
     }
 
 }

@@ -155,6 +155,14 @@ export namespace ContentMarkerEntry {
     export const COLUMN_NAME_EXTRA_INFO = 'extra_info';
     export const COLUMN_NAME_MARKER = 'marker';
 
+    export interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_CONTENT_IDENTIFIER]: string;
+        [COLUMN_NAME_EPOCH_TIMESTAMP]: number;
+        [COLUMN_NAME_DATA]: string;
+        [COLUMN_NAME_EXTRA_INFO]: string;
+        [COLUMN_NAME_MARKER]: number;
+    }
 
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + ContentMarkerEntry.TABLE_NAME + ' (' +

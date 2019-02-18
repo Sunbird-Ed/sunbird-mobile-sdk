@@ -14,9 +14,9 @@ export class EcarBundle {
 
     execute(exportContentContext: ExportContentContext): Promise<Response> {
         const response: Response = new Response();
-        return this.zipService.zip(exportContentContext.tmpLocationPath, exportContentContext.ecarFilePath).then(() => {
+        return this.zipService.zip(exportContentContext.tmpLocationPath!, exportContentContext.ecarFilePath!).then(() => {
 
-            return this.fileService.getMetaData(exportContentContext.ecarFilePath);
+            return this.fileService.getMetaData(exportContentContext.ecarFilePath!);
         }).then((metaData) => {
             exportContentContext.metadata[EcarBundle.FILE_SIZE] = metaData.size;
             response.body = exportContentContext;

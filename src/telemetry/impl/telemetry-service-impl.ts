@@ -232,7 +232,7 @@ export class TelemetryServiceImpl implements TelemetryService {
 
             const insertQuery: InsertQuery = {
                 table: TelemetryEntry.TABLE_NAME,
-                modelJson: JSON.stringify(this.decorator.prepare(this.decorator.decorate(telemetry)))
+                modelJson: this.decorator.prepare(this.decorator.decorate(telemetry))
             };
 
             this.dbService.insert(insertQuery)

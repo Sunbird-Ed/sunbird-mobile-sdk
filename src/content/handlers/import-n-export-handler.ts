@@ -7,12 +7,18 @@ import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import {DeviceInfo} from '../../util/device/def/device-info';
 import moment from 'moment';
 import {FileService} from '../../util/file/def/file-service';
+import COLUMN_NAME_LOCAL_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON;
+import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON;
+import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
+import {DbService} from '../../db';
+import {Observable} from 'rxjs';
 
 export class ImportNExportHandler {
     private static readonly EKSTEP_CONTENT_ARCHIVE = 'ekstep.content.archive';
     private static readonly SUPPORTED_MANIFEST_VERSION = '1.1';
 
-    constructor(private deviceInfo: DeviceInfo) {
+    constructor(private deviceInfo: DeviceInfo,
+                private dbService?: DbService) {
 
     }
 
@@ -47,6 +53,32 @@ export class ImportNExportHandler {
         return items;
     }
 
+    async getContentExportDBModeltoExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {
+        const queue: Queue<ContentEntry.SchemaMap> = new Queue();
+
+        let contentWithAllChildren: ContentEntry.SchemaMap[] = [];
+        const contentsInDb: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(contentIds);
+        contentsInDb.forEach((contentInDb) => {
+            queue.add(contentInDb);
+        });
+        let node: ContentEntry.SchemaMap;
+        while (!queue.isEmpty()) {
+            node = queue.dequeue()!;
+            if (ContentUtil.hasChildren(node[COLUMN_NAME_LOCAL_DATA])) {
+                const childContentsIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(node[COLUMN_NAME_LOCAL_DATA]);
+                const contentModelListInDB: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(
+                    childContentsIdentifiers);
+                if (contentModelListInDB) {
+                    contentModelListInDB.forEach((contentModelInDb) => {
+                        queue.add(contentModelInDb);
+                    });
+                    contentWithAllChildren = {...contentWithAllChildren, ...contentModelListInDB};
+                }
+            }
+        }
+        return Promise.resolve(ContentUtil.deDupe(contentWithAllChildren, 'identifier'));
+    }
+
     generateManifestForArchive(items: any[]): { [key: string]: any } {
         const manifest: { [key: string]: any } = {};
         const archive: { [key: string]: any } = {};
@@ -60,5 +92,13 @@ export class ImportNExportHandler {
         manifest['ts'] = moment().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'');
         manifest['archive'] = archive;
         return manifest;
+    }
+
+    findAllContentsWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
+        const identifiersStr = identifiers.join(',');
+        const orderby = ` order by ${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} desc, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} desc`;
+        const filter = ` where ${COLUMN_NAME_IDENTIFIER} in ('${identifiersStr}') AND ${COLUMN_NAME_REF_COUNT} > 0`;
+        const query = `select * from ${ContentEntry.TABLE_NAME} ${filter} ${orderby}`;
+        return this.dbService!.execute(query).toPromise();
     }
 }
