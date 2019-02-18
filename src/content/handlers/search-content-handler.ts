@@ -23,14 +23,14 @@ export class SearchContentHandler {
 
     getSearchContentRequest(criteria: ContentSearchCriteria): any {
         return {
-            'query': criteria.query,
-            'offset': criteria.offset,
-            'limit': criteria.limit,
-            'mode': criteria.mode,
-            'exists': (criteria.exists && criteria.exists.length > 0) ? criteria.exists : [],
-            'facets': (criteria.facets && criteria.facets.length > 0) ? criteria.facets : [],
-            'sort_by': this.getSortByRequest(criteria.sortCriteria),
-            'filters': this.getSearchFilter(criteria)
+            query: criteria.query,
+            offset: criteria.offset,
+            limit: criteria.limit,
+            mode: criteria.mode,
+            exists: (criteria.exists && criteria.exists.length > 0) ? criteria.exists : [],
+            facets: (criteria.facets && criteria.facets.length > 0) ? criteria.facets : [],
+            sort_by: this.getSortByRequest(criteria.sortCriteria),
+            filters: this.getSearchFilter(criteria)
         };
     }
 
@@ -81,17 +81,22 @@ export class SearchContentHandler {
 
     getSearchRequest(criteria: ContentSearchCriteria): any {
         return {
-            'compatibilityLevel': this.getCompatibilityLevelFilter(),
-            'status': criteria.contentStatusArray,
-            'objectType': ['Content'],
-            'contentType': (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : [],
-            'keywords': (criteria.keywords && criteria.keywords.length > 0) ? criteria.keywords : [],
-            'createdBy': (criteria.createdBy && criteria.createdBy.length > 0) ? criteria.createdBy : [],
-            'gradeLevel': (criteria.grade && criteria.grade.length > 0) ? criteria.grade : [],
-            'medium': (criteria.medium && criteria.medium.length > 0) ? criteria.medium : [],
-            'board': (criteria.board && criteria.board.length > 0) ? criteria.board : [],
-            'language': (criteria.language && criteria.language.length > 0) ? criteria.language : [],
-            'audience': ['instructor'], // TODO add Audience and pragma
+            compatibilityLevel: this.getCompatibilityLevelFilter(),
+            status: criteria.contentStatusArray,
+            objectType: ['Content'],
+            contentType: (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : [],
+            keywords: (criteria.keywords && criteria.keywords.length > 0) ? criteria.keywords : [],
+            dialcodes: (criteria.dialCodes && criteria.dialCodes.length > 0) ? criteria.dialCodes : [],
+            createdBy: (criteria.createdBy && criteria.createdBy.length > 0) ? criteria.createdBy : [],
+            gradeLevel: (criteria.grade && criteria.grade.length > 0) ? criteria.grade : [],
+            medium: (criteria.medium && criteria.medium.length > 0) ? criteria.medium : [],
+            board: (criteria.board && criteria.board.length > 0) ? criteria.board : [],
+            language: (criteria.language && criteria.language.length > 0) ? criteria.language : [],
+            topic: (criteria.topic && criteria.topic.length > 0) ? criteria.topic : [],
+            purpose: (criteria.purpose && criteria.purpose.length > 0) ? criteria.purpose : [],
+            channel: (criteria.channel && criteria.channel.length > 0) ? criteria.channel : [],
+            audience: ['instructor'],
+
             // TODO Revisit on inclusion and exclusion filters
         };
     }
@@ -120,16 +125,16 @@ export class SearchContentHandler {
     }
 
     createFiilterCriteria(previouscriteria: ContentSearchCriteria, facets: ContentSearchFilter[], filters) {
-
+        const facetsFilter: ContentSearchFilter[] = [];
         return {
-            'query': previouscriteria.query,
-            'limit': previouscriteria.limit,
-            'offset': previouscriteria.offset,
-            'facets': previouscriteria.facets,
-            'sort': previouscriteria.sortCriteria && previouscriteria.sortCriteria.length > 0
+            query: previouscriteria.query,
+            limit: previouscriteria.limit,
+            offset: previouscriteria.offset,
+            facets: previouscriteria.facets,
+            sort: previouscriteria.sortCriteria && previouscriteria.sortCriteria.length > 0
                 ? previouscriteria.sortCriteria : [],
-            'mode': previouscriteria.mode === 'soft' ? 'soft' : 'hard',
-            'facetFilters': []
+            mode: previouscriteria.mode === 'soft' ? 'soft' : 'hard',
+            facetFilters: []
         };
     }
 
@@ -145,22 +150,54 @@ export class SearchContentHandler {
 
     getFilterValuesWithAppliedFilter(facetValues: FilterValue[], appliedFilter: string[]): FilterValue[] {
         facetValues.forEach(facetValue => {
-            let applied = false;
+            let isApplied = false;
             if (appliedFilter && appliedFilter.indexOf(name) > -1) {
-                applied = true;
+                isApplied = true;
             }
-            facetValue.apply = applied;
+            facetValue.apply = isApplied;
         });
         return facetValues;
     }
 
-    mapSearchResponse(searchResponse): ContentSearchResult {
+    mapSearchResponse(searchResponse, searchRequest): ContentSearchResult {
+        const result = searchResponse.result;
         return {
             id: searchResponse.id,
-            responseMessageId: searchResponse.params ? searchResponse.params.resmsgid : '',
-            contentDataList: searchResponse.result.content ? searchResponse.result.content : [],
-            filterCriteria: searchResponse.result ? searchResponse.result.facets : [],
-
+            responseMessageId: searchResponse.params.resmsgid ? searchResponse.params.resmsgid : '',
+            contentDataList: result.content ? result.content : [],
+            filterCriteria: new class implements ContentSearchCriteria {
+                age: number;
+                audience: string[];
+                board: string[];
+                channel: string[];
+                contentStatusArray: string[];
+                contentTypes: string[];
+                createdBy: string[];
+                dialCodes: string[];
+                exclPragma: string[];
+                exists: string[];
+                facetFilters: ContentSearchFilter[];
+                facets: string[];
+                framework: string;
+                grade: string[];
+                impliedFilters: ContentSearchFilter[];
+                impliedFiltersMap: Array<any>;
+                keywords: string[];
+                language: string[];
+                languageCode: string;
+                limit: number;
+                medium: string[];
+                mode: string;
+                offlineSearch: boolean;
+                offset: number;
+                pragma: string[];
+                purpose: string[];
+                query: string;
+                searchType: SearchType;
+                sortCriteria: ContentSortCriteria[];
+                topic: string[];
+            },
+            request: searchRequest
         };
     }
 }
