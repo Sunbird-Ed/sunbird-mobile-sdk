@@ -3,4 +3,5 @@ export interface FrameworkServiceConfig {
     frameworkApiPath: string;
     frameworkConfigDirPath: string;
     channelConfigDirPath: string;
+    searchOrganizationApiPath: string;
 }

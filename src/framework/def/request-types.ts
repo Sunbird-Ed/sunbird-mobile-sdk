@@ -9,4 +9,11 @@ export interface FrameworkDetailsRequest {
     categories: FrameworkCategory[];
 }
 
+export interface OrganizationSearchCriteria<T> {
+    filters: {
+        isRootOrg: boolean;
+    };
+    fields: (keyof T)[];
+}
+
 
