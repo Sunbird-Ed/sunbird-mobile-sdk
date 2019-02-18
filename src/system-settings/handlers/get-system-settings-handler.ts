@@ -7,8 +7,8 @@ import {Observable} from 'rxjs';
 
 
 export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSettingsRequest, SystemSettings> {
-    private readonly SYSTEM_SETTINGS_FILE_KEY_PREFIX = 'system-setings-';
-    private readonly SYSTEM_SETTINGS_LOCAL_KEY = 'system-setings-';
+    private readonly SYSTEM_SETTINGS_FILE_KEY_PREFIX = 'system-settings-';
+    private readonly SYSTEM_SETTINGS_LOCAL_KEY = 'system-settings-';
     private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = '/system/settings/get';
 
 
@@ -35,19 +35,18 @@ export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSett
             .withApiToken(true)
             .build();
 
-        return this.apiService.fetch<{ result: { channel: SystemSettings } }>(apiRequest).map((response) => {
-            return response.body.result.channel;
+        return this.apiService.fetch<{ result: { response: SystemSettings } }>(apiRequest).map((response) => {
+            return response.body.result.response;
         });
     }
 
     private fetchFromFile(request: GetSystemSettingsRequest): Observable<SystemSettings> {
         const dir = Path.ASSETS_PATH + this.systemSettingsConfig.systemSettingsDirPath;
         const file = this.SYSTEM_SETTINGS_FILE_KEY_PREFIX + request.id + '.json';
-
         return Observable.fromPromise(this.fileservice.readAsText(dir, file))
             .map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
-                return (result.result.channel);
+                return (result.result.response);
             });
     }
 
