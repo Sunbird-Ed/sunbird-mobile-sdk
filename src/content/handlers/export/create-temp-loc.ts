@@ -8,7 +8,7 @@ export class CreateTempLoc {
 
     execute(exportContext: ExportContentContext): Promise<Response> {
         const response: Response = new Response();
-        return this.fileService.createDir(exportContext.tmpLocationPath, true).then(() => {
+        return this.fileService.createDir(exportContext.tmpLocationPath!, true).then(() => {
             return Promise.resolve(response);
         }).catch(() => {
             return Promise.reject(response);

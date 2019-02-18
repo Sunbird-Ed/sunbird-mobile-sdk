@@ -19,7 +19,7 @@ export class WriteManifest {
                 response.errorMesg = ErrorCode.EXPORT_FAILED_COPY_ASSET;
                 return Promise.reject(response);
             }
-            return this.fileService.writeFile(exportContentContext.tmpLocationPath,
+            return this.fileService.writeFile(exportContentContext.tmpLocationPath!,
                 WriteManifest.MANIFEST_FILE_NAME,
                 JSON.stringify(exportContentContext.manifest),
                 {replace: true});

@@ -39,6 +39,10 @@ import {DebugPromptFileService} from './util/file/impl/debug-prompt-file-service
 import {SystemSettingsServiceImpl} from './system-settings/impl/system-settings-service-impl';
 import {SystemSettingsService} from './system-settings/def/system-settings-service';
 import {SystemSettings} from './system-settings/def/system-settings';
+import {ZipService} from './util/zip/def/zip-service';
+import {DeviceInfo} from './util/device/def/device-info';
+import {ZipServiceImpl} from './util/zip/impl/zip-service-impl';
+import {DeviceInfoImpl} from './util/device/impl/device-info-impl';
 
 export class SunbirdSdk {
 
@@ -67,6 +71,8 @@ export class SunbirdSdk {
     private _sharedPreferences: SharedPreferences;
     private _fileService: FileService;
     private _systemSettingsService: SystemSettingsService;
+    private _zipService: ZipService;
+    private _deviceInfo: DeviceInfo;
     private _sdkConfig: SdkConfig;
 
     get sdkConfig(): SdkConfig {
@@ -128,7 +134,6 @@ export class SunbirdSdk {
     get systemSettingsService(): SystemSettingsService {
         return this._systemSettingsService;
     }
-
     public async init(sdkConfig: SdkConfig) {
         this._sdkConfig = Object.freeze(sdkConfig);
 
@@ -183,6 +188,8 @@ export class SunbirdSdk {
         );
 
         this._groupService = new GroupServiceImpl(this._dbService);
+        this._zipService = new ZipServiceImpl();
+        this._deviceInfo = new DeviceInfoImpl();
 
         this._contentService = new ContentServiceImpl(
             sdkConfig.contentServiceConfig,
@@ -191,7 +198,9 @@ export class SunbirdSdk {
             this._profileService,
             sdkConfig.appConfig,
             this._keyValueStore,
-            this._fileService
+            this._fileService,
+            this._zipService,
+            this._deviceInfo
         );
 
         this._courseService = new CourseServiceImpl(
