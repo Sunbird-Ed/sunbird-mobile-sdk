@@ -7,6 +7,7 @@ export interface Framework {
     type?: string;
     objectType?: string;
     categories?: FrameworkCategory[];
+    translations?: string;
 }
 
 export interface FrameworkCategory {
@@ -16,13 +17,18 @@ export interface FrameworkCategory {
         associations: CategoryAssociation[]
         identifier: string;
         code: string;
-        translations?: null;
+        translations?: string;
         name: string;
         description?: string;
         index: number;
         category: string;
         status: string;
     }[];
+    translations?: string;
+    name: string;
+    description: string;
+    index: number;
+    status: string;
 }
 
 export interface CategoryAssociation {
