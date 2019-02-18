@@ -31,6 +31,16 @@ import {ProfileHandler} from '../handler/profile-handler';
 import {ContentAccessEntry} from '../../content/db/schema';
 import {InvalidProfileError} from '../errors/invalid-profile-error';
 import {UniqueId} from '../../db/util/unique-id';
+import {ProfileExistsResponse} from '../def/profile-exists-response';
+import {IsProfileAlreadyInUseRequest} from '..';
+import {IsProfileAlreadyInUseHandler} from '../handler/is-profile-already-in-use-handler';
+import {GenerateOtpRequest} from '..';
+import {GenerateOtpHandler} from '../handler/generate-otp-handler';
+import {VerifyOtpRequest} from '..';
+import {VerifyOtpHandler} from '../handler/verify-otp-handler';
+import {LocationSearchCriteria} from '..';
+import {LocationSearchResult} from '../def/location-search-result';
+import {SearchLocationHandler} from '../handler/search-location-handler';
 
 
 export class ProfileServiceImpl implements ProfileService {
@@ -198,6 +208,22 @@ export class ProfileServiceImpl implements ProfileService {
 
     acceptTermsAndConditions(acceptTermsConditions: AcceptTermsConditionRequest): Observable<boolean> {
         return new AcceptTermConditionHandler(this.apiService, this.profileServiceConfig).handle(acceptTermsConditions);
+    }
+
+    isProfileAlreadyInUse(isProfileAlreadyInUseRequest: IsProfileAlreadyInUseRequest): Observable<ProfileExistsResponse> {
+        return new IsProfileAlreadyInUseHandler(this.apiService, this.profileServiceConfig).handle(isProfileAlreadyInUseRequest);
+    }
+
+    generateOTP(generateOtpRequest: GenerateOtpRequest): Observable<boolean> {
+        return new GenerateOtpHandler(this.apiService, this.profileServiceConfig).handle(generateOtpRequest);
+    }
+
+    verifyOTP(verifyOTPRequest: VerifyOtpRequest): Observable<boolean> {
+        return new VerifyOtpHandler(this.apiService, this.profileServiceConfig).handle(verifyOTPRequest);
+    }
+
+    searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult> {
+        return new SearchLocationHandler(this.apiService, this.profileServiceConfig).handle(locationSearchCriteria);
     }
 
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]> {

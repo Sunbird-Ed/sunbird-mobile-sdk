@@ -10,6 +10,12 @@ import {ProfileSession} from './profile-session';
 import {ContentAccessFilterCriteria} from './content-access-filter-criteria';
 import {ContentAccess} from './content-access';
 import {AcceptTermsConditionRequest} from './accept-terms-condition-request';
+import {IsProfileAlreadyInUseRequest} from './is-profile-already-in-use-request';
+import {ProfileExistsResponse} from './profile-exists-response';
+import {GenerateOtpRequest} from './generate-otp-request';
+import {VerifyOtpRequest} from './verify-otp-request';
+import {LocationSearchCriteria} from './location-search-criteria';
+import {LocationSearchResult} from './location-search-result';
 
 
 export interface ProfileService {
@@ -36,4 +42,12 @@ export interface ProfileService {
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]>;
 
     acceptTermsAndConditions(acceptTermsConditions: AcceptTermsConditionRequest): Observable<boolean>;
+
+    isProfileAlreadyInUse(isProfileAlreadyInUseRequest: IsProfileAlreadyInUseRequest): Observable<ProfileExistsResponse>;
+
+    generateOTP(generateOtpRequest: GenerateOtpRequest): Observable<boolean>;
+
+    verifyOTP(verifyOTPRequest: VerifyOtpRequest): Observable<boolean>;
+
+    searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult>;
 }

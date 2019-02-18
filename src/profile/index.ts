@@ -11,3 +11,7 @@ export * from './errors/no-active-session-error';
 export * from './errors/no-profile-found-error';
 export * from './def/server-profile-details-request';
 export * from './def/accept-terms-condition-request';
+export * from './def/is-profile-already-in-use-request';
+export * from './def/location-search-criteria';
+export * from './def/generate-otp-request';
+export * from './def/verify-otp-request';
