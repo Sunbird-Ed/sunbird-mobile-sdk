@@ -156,7 +156,6 @@ export class TelemetryServiceImpl implements TelemetryService {
         if (corRelationList !== undefined) {
             start.correlationData = corRelationList;
         }
-        console.log('start is', start);
         this.save(start);
     }
 
@@ -228,7 +227,6 @@ export class TelemetryServiceImpl implements TelemetryService {
 
 
     private save(telemetry: any): Promise<boolean> {
-        console.log('hi');
         return new Promise<boolean>((resolve, reject) => {
 
             const insertQuery: InsertQuery = {
@@ -239,7 +237,6 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.dbService.insert(insertQuery)
                 .toPromise()
                 .then(numberOfRow => {
-                    console.log('no of rows', numberOfRow);
                     resolve(numberOfRow > 0);
                 })
                 .catch(error => {
