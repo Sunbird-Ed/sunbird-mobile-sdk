@@ -1,14 +1,19 @@
 import {DbService} from '../../db';
 import {Observable} from 'rxjs';
 import {GroupEntry, GroupProfileEntry} from '../db/schema';
-import {GetAllGroupRequest, Group, GroupService, ProfilesToGroupRequest} from '..';
+import {GetAllGroupRequest, Group, GroupService, ProfilesToGroupRequest, GroupSession} from '..';
 import {GroupMapper} from '../util/group-mapper';
 import {UniqueId} from '../../db/util/unique-id';
+import {KeyValueStore} from '../../key-value-store';
+import {NoGroupFoundError} from '../error/no-group-found-error';
+import {NoActiveGroupSessionError} from '../error/no-active-group-session-error';
 
 
 export class GroupServiceImpl implements GroupService {
+    private static readonly KEY_GROUP_SESSION = 'group_session';
 
-    constructor(private dbService: DbService) {
+    constructor(private dbService: DbService,
+        private keyValueStore: KeyValueStore) {
 
     }
 
@@ -59,6 +64,62 @@ export class GroupServiceImpl implements GroupService {
         });
         return Observable.of(group);
     }
+
+    getActiveSessionGroup(): Observable<Group> {
+        return this.getActiveGroupSession()
+        .map((profileSession: GroupSession | undefined) => {
+            if (!profileSession) {
+                throw new NoActiveGroupSessionError('No active session available');
+            }
+
+            return profileSession;
+        })
+        .mergeMap((profileSession: GroupSession) => {
+            return this.dbService.read({
+                table: GroupEntry.TABLE_NAME,
+                selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
+                selectionArgs: [profileSession.gid]
+            }).map((rows) => rows && rows[0]);
+        });
+    }
+
+    setActiveSessionForGroup(gid: string): Observable<boolean> {
+        return this.dbService
+            .read({
+                table: GroupEntry.TABLE_NAME,
+                selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
+                selectionArgs: [gid]
+            })
+            .map((rows: GroupEntry.SchemaMap[]) =>
+                rows && rows[0] && GroupMapper.mapGroupDBEntryToGroup(rows[0])
+            )
+            .map((group: Group | undefined) => {
+                if (!group) {
+                    throw new NoGroupFoundError('No Profile found');
+                }
+
+                return group;
+            })
+            .mergeMap((group: Group) => {
+                const groupSession = new GroupSession(group.gid);
+                return this.keyValueStore.setValue(GroupServiceImpl.KEY_GROUP_SESSION, JSON.stringify({
+                    gid: groupSession.gid,
+                    sid: groupSession.sid,
+                    createdTime: groupSession.createdTime
+                }));
+            });
+    }
+
+        getActiveGroupSession(): Observable<GroupSession | undefined> {
+            return this.keyValueStore.getValue(GroupServiceImpl.KEY_GROUP_SESSION)
+                .map((response) => {
+                    if (!response) {
+                        return undefined;
+                    }
+                    return JSON.parse(response);
+
+                });
+        }
 
     getAllGroups(groupRequest?: GetAllGroupRequest): Observable<Group[]> {
         if (!groupRequest) {
