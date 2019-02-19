@@ -1,7 +1,7 @@
 import {CategoryAssociation, Framework, FrameworkCategory} from '..';
 
 export class FrameworkMapper {
-    public static prepareCategoryAssociations(framework: Framework): Framework {
+    public static prepareFrameworkCategoryAssociations(framework: Framework): Framework {
         if (!framework.categories) {
             return framework;
         }
@@ -29,5 +29,55 @@ export class FrameworkMapper {
         });
 
         return {...framework};
+    }
+
+    public static prepareFrameworkTranslations(framework: Framework, language: string): Framework {
+        framework.name = FrameworkMapper.getTranslatedValue(framework.translations, language, framework.name);
+
+        if (framework.categories) {
+            framework.categories = framework.categories
+                .map((category: FrameworkCategory) => {
+                    category.name = FrameworkMapper.getTranslatedValue(category.translations, language, category.name);
+
+                    if (category.terms) {
+                        category.terms = category.terms
+                            .map((term) => {
+                                term.name = FrameworkMapper.getTranslatedValue(term.translations, language, term.name);
+
+                                return term;
+                            });
+                    }
+
+                    return category;
+                });
+
+        }
+
+        return framework;
+    }
+
+    public static prepareFrameworkCategoryTranslations(frameworkCategory: FrameworkCategory, language: string): FrameworkCategory {
+        frameworkCategory.name = FrameworkMapper.getTranslatedValue(frameworkCategory.translations, language, frameworkCategory.name);
+
+        if (frameworkCategory.terms) {
+            frameworkCategory.terms = frameworkCategory.terms
+                .map((term) => {
+                    term.name = FrameworkMapper.getTranslatedValue(term.translations, language, term.name);
+
+                    return term;
+                });
+        }
+
+        return frameworkCategory;
+    }
+
+    private static getTranslatedValue(translations: string | undefined, language: string, defaultTranslation: string): string {
+        if (!translations) {
+            return defaultTranslation;
+        }
+
+        const translationsObj = JSON.parse(translations);
+
+        return translationsObj[language] || defaultTranslation;
     }
 }
