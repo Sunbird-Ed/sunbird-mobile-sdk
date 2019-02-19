@@ -6,8 +6,9 @@ export interface ContentSearchResult {
     id: string;
     responseMessageId: string;
     filterCriteria: ContentSearchCriteria;
-    request?: { [index: string]: any };
+    request?: { [key: string]: any };
     contentDataList: ContentData[];
+    collectionDataList?: ContentData[];
 }
 
 export interface SearchResponse {
