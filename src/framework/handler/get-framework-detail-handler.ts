@@ -34,7 +34,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
             .withPath(this.frameworkServiceConfig.frameworkApiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + '/' + request.frameworkId)
-            .withParameters({categories: request.categories.join(',')})
+            .withParameters({categories: request.requiredCategories.join(',')})
             .withApiToken(true)
             .build();
 
@@ -43,7 +43,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
                 return response.body.result.framework;
             })
             .map((framework: Framework) => {
-                return FrameworkMapper.prepareCategoryAssociations(framework);
+                return FrameworkMapper.prepareFrameworkCategoryAssociations(framework);
             });
     }
 
@@ -54,7 +54,10 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
         return Observable.fromPromise(this.fileservice.readAsText(dir, file))
             .map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
-                return (result.result.framework);
+                return result.result.framework;
+            })
+            .map((framework: Framework) => {
+                return FrameworkMapper.prepareFrameworkCategoryAssociations(framework);
             });
     }
 
