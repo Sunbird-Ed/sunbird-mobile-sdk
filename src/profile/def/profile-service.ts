@@ -23,6 +23,8 @@ export interface ProfileService {
 
     deleteProfile(uid: string): Observable<undefined>;
 
+    updateProfile(profile: Profile): Observable<Profile>;
+
     updateServerProfile(updateServerProfileRequest: UpdateServerProfileInfoRequest): Observable<Profile>;
 
     getTenantInfo(): Observable<TenantInfo>;
