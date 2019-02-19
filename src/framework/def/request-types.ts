@@ -1,4 +1,4 @@
-import {FrameworkCategory} from './framework-category';
+import {FrameworkCategoryCode} from './framework-category-code';
 
 export interface ChannelDetailsRequest {
     channelId: string;
@@ -6,7 +6,5 @@ export interface ChannelDetailsRequest {
 
 export interface FrameworkDetailsRequest {
     frameworkId: string;
-    categories: FrameworkCategory[];
+    requiredCategories: FrameworkCategoryCode[];
 }
-
-
