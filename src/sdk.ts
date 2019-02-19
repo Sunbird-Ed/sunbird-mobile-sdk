@@ -184,7 +184,7 @@ export class SunbirdSdk {
             new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig),
             this._keyValueStore
         );
-        this._groupService = new GroupServiceImpl(this._dbService);
+        this._groupService = new GroupServiceImpl(this._dbService, this._keyValueStore);
         this._deviceInfo = new DeviceInfoImpl();
         this._telemetryService = new TelemetryServiceImpl(this._dbService,
             new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo), this._profileService, this._groupService);
