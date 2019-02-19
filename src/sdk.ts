@@ -196,6 +196,15 @@ export class SunbirdSdk {
             this._fileService = new FileServiceImpl();
         }
 
+        this._profileService = new ProfileServiceImpl(
+            sdkConfig.profileServiceConfig,
+            this._dbService,
+            this._apiService,
+            new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig),
+            this._keyValueStore
+        );
+
+        this._groupService = new GroupServiceImpl(this._dbService, this._keyValueStore);
         this._zipService = new ZipServiceImpl();
         this._contentService = new ContentServiceImpl(
             sdkConfig.contentServiceConfig,
