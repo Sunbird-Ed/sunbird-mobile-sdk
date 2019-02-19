@@ -1,4 +1,4 @@
-import { ChildContentRequest, ContentDeleteRequest, ContentDetailRequest, ContentExportResponse, ContentImportRequest, ContentRequest, ContentSearchCriteria, EcarImportRequest } from './requests';
+import { ChildContentRequest, ContentDeleteRequest, ContentDetailRequest, ContentExportRequest, ContentImportRequest, ContentMarkerRequest, ContentRequest, ContentSearchCriteria, EcarImportRequest } from './requests';
 import { Response } from '../../api';
 import { Observable } from 'rxjs';
 import { Content, HierarchyInfo } from './content';
@@ -15,7 +15,8 @@ export interface ContentService {
     importContent(contentImportRequest: ContentImportRequest): Observable<Response>;
     subscribeForImportStatus(contentId: string): Observable<Response>;
     cancelImport(contentId: string): any;
-    exportContent(contentExportRequest: ContentExportResponse): any;
+    exportContent(contentExportRequest: ContentExportRequest): Observable<Response>;
     getDownloadState(): Promise<Response>;
     cancelDownload(contentId: string): Observable<undefined>;
+    setContentMarker(contentMarkerRequest: ContentMarkerRequest): Observable<boolean>;
 }

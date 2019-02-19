@@ -95,6 +95,46 @@ export declare namespace LearnerAssessmentsEntry {
     const COLUMN_NAME_Q_DESC = "qdesc";
     const COLUMN_NAME_Q_TITLE = "qtitle";
     const COLUMN_NAME_HIERARCHY_DATA = "h_data";
+    const COLUMN_NAME_TOTAL_TS = "total_ts";
+    const COLUMN_NAME_MARKS = "marks";
+    const COLUMN_NAME_COUNT = "count";
+    const COLUMN_NAME_TOTAL_MAX_SCORE = "maxscore";
+    const COLUMN_NAME_USERS_COUNT = "users_count";
+    const COLUMN_NAME_HANDLE = "handle";
+    interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_CONTENT_ID]: string;
+        [COLUMN_NAME_QID]: string;
+        [COLUMN_NAME_Q_INDEX]: number;
+        [COLUMN_NAME_CORRECT]: number;
+        [COLUMN_NAME_SCORE]: number;
+        [COLUMN_NAME_MAX_SCORE]: number;
+        [COLUMN_NAME_TIME_SPENT]: number;
+        [COLUMN_NAME_RES]: string;
+        [COLUMN_NAME_TIMESTAMP]: number;
+        [COLUMN_NAME_Q_DESC]: string;
+        [COLUMN_NAME_Q_TITLE]: string;
+        [COLUMN_NAME_HIERARCHY_DATA]: string;
+        [COLUMN_NAME_TOTAL_TS]: number;
+    }
+    interface QuestionReportsSchema extends SchemaMap {
+        [COLUMN_NAME_MARKS]: number;
+        [COLUMN_NAME_COUNT]: number;
+        [COLUMN_NAME_TOTAL_MAX_SCORE]: number;
+    }
+    interface AccuracySchema {
+        [COLUMN_NAME_QID]: string;
+        [COLUMN_NAME_USERS_COUNT]: number;
+    }
+    interface UserReportSchema {
+        [COLUMN_NAME_TOTAL_TS]: number;
+        [COLUMN_NAME_SCORE]: number;
+        [COLUMN_NAME_HIERARCHY_DATA]: string;
+        [COLUMN_NAME_CONTENT_ID]: string;
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_HANDLE]: string;
+        [COLUMN_NAME_TIME_SPENT]: number;
+    }
     const getCreateEntry: (() => string);
     const getDeleteEntry: (() => string);
 }
@@ -108,6 +148,22 @@ export declare namespace LearnerSummaryEntry {
     const COLUMN_NAME_TOTAL_TS = "total_ts";
     const COLUMN_NAME_LAST_UPDATED_ON = "last_updated_on";
     const COLUMN_NAME_HIERARCHY_DATA = "h_data";
+    const COLUMN_NAME_NO_OF_QUESTIONS = "no_of_questions";
+    const COLUMN_NAME_CORRECT_ANSWERS = "correct_answers";
+    const COLUMN_NAME_TOTAL_TIME_SPENT = "total_time_spent";
+    const COLUMN_NAME_TOTAL_MAX_SCORE = "total_max_score";
+    const COLUMN_NAME_TOTAL_SCORE = "total_score";
+    interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_CONTENT_ID]: string;
+        [COLUMN_NAME_CONTENT_ID]: string;
+        [COLUMN_NAME_NO_OF_QUESTIONS]: number;
+        [COLUMN_NAME_CORRECT_ANSWERS]: number;
+        [COLUMN_NAME_TOTAL_TIME_SPENT]: number;
+        [COLUMN_NAME_HIERARCHY_DATA]: string;
+        [COLUMN_NAME_TOTAL_MAX_SCORE]: number;
+        [COLUMN_NAME_TOTAL_SCORE]: number;
+    }
     const getCreateEntry: (() => string);
     const getDeleteEntry: (() => string);
 }
