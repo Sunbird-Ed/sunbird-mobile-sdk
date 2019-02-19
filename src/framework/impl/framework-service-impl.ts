@@ -10,13 +10,14 @@ import {
     GetFrameworkDetailsHandler
 } from '..';
 import {FileService} from '../../util/file/def/file-service';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {ApiService} from '../../api';
 
 
 export class FrameworkServiceImpl implements FrameworkService {
-
-    DB_KEY_FRAMEWORK_DETAILS = 'framework_details_key-';
+    public activeChannel$: Observable<Channel | undefined>;
+    private activeChannelSource: Subject<Channel | undefined>;
+    private readonly DB_KEY_FRAMEWORK_DETAILS = 'framework_details_key-';
 
     constructor(private frameworkServiceConfig: FrameworkServiceConfig,
                 private keyValueStore: KeyValueStore,
@@ -24,6 +25,8 @@ export class FrameworkServiceImpl implements FrameworkService {
                 private apiService: ApiService,
                 private cachedChannelItemStore: CachedItemStore<Channel>,
                 private cachedFrameworkItemStore: CachedItemStore<Framework>) {
+        this.activeChannelSource = new BehaviorSubject<Channel | undefined>(undefined);
+        this.activeChannel$ = this.activeChannelSource.asObservable();
     }
 
 
@@ -51,4 +54,7 @@ export class FrameworkServiceImpl implements FrameworkService {
         return this.keyValueStore.setValue(key, JSON.stringify(request));
     }
 
+    setActiveChannel(channel: Channel) {
+        this.activeChannelSource.next(channel);
+    }
 }
