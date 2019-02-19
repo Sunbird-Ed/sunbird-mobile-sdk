@@ -7,9 +7,28 @@ import {ContentFeedbackService} from '../def/content-feedback-service';
 import {ProfileService} from '../../profile';
 
 export class ContentMapper {
-    public static mapContentDataToContentDBEntry(contentData: ContentData): ContentEntry.SchemaMap {
-        // TODO Swajanjit
-        return {} as any;
+    public static mapContentDataToContentDBEntry(contentData, manifestVersion: string): ContentEntry.SchemaMap {
+        let serverLastUpdatedOn;
+        let serverData;
+        let localData;
+        if (!manifestVersion) {
+            serverLastUpdatedOn = contentData.lastUpdatedOn;
+            serverData = contentData;
+        } else {
+            localData = contentData;
+        }
+        return {
+            [ContentEntry.COLUMN_NAME_IDENTIFIER]: contentData.identifier,
+            [ContentEntry.COLUMN_NAME_SERVER_DATA]: serverData,
+            [ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON]: serverLastUpdatedOn,
+            [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: manifestVersion,
+            [ContentEntry.COLUMN_NAME_LOCAL_DATA]: localData,
+            [ContentEntry.COLUMN_NAME_MIME_TYPE]: contentData.mimeType,
+            [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: ContentUtil.readContentType(contentData),
+            [ContentEntry.COLUMN_NAME_VISIBILITY]: ContentUtil.readVisibility(contentData),
+            [ContentEntry.COLUMN_NAME_AUDIENCE]: ContentUtil.readAudience(contentData),
+            [ContentEntry.COLUMN_NAME_PRAGMA]: ContentUtil.readPragma(contentData),
+        };
     }
 
     public static mapContentDBEntryToContent(contentEntry: ContentEntry.SchemaMap, request?: ContentRequest,
@@ -23,7 +42,7 @@ export class ContentMapper {
 
         if (serverData) {
 
-            if (!localData || !ContentUtil.isAvailableLocally(contentEntry[ContentEntry.COLUMN_NAME_CONTENT_STATE])) {
+            if (!localData || !ContentUtil.isAvailableLocally(contentEntry[ContentEntry.COLUMN_NAME_CONTENT_STATE]!)) {
                 contentData = serverData;
             } else {
                 if (!localData.streamingUrl) {
@@ -59,9 +78,9 @@ export class ContentMapper {
             contentData: contentData,
             isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
             mimeType: contentEntry[ContentEntry.COLUMN_NAME_MIME_TYPE],
-            basePath: contentEntry[ContentEntry.COLUMN_NAME_PATH],
+            basePath: contentEntry[ContentEntry.COLUMN_NAME_PATH]!,
             contentType: contentEntry[ContentEntry.COLUMN_NAME_CONTENT_TYPE],
-            isAvailableLocally: ContentUtil.isAvailableLocally(contentEntry[ContentEntry.COLUMN_NAME_CONTENT_STATE]),
+            isAvailableLocally: ContentUtil.isAvailableLocally(contentEntry[ContentEntry.COLUMN_NAME_CONTENT_STATE]!),
             referenceCount: Number(contentEntry[ContentEntry.COLUMN_NAME_IDENTIFIER]),
             sizeOnDevice: Number(contentEntry[ContentEntry.COLUMN_NAME_IDENTIFIER]),
             lastUsedTime: contentEntry[ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP],

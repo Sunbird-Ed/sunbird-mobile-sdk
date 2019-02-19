@@ -25,17 +25,22 @@ export namespace ContentEntry {
     export const COLUMN_NAME_SIZE_ON_DEVICE = 'size_on_device';   // list of comma separated uid
 
     export interface SchemaMap {
-        [_ID]: string;
         [COLUMN_NAME_IDENTIFIER]: string;
         [COLUMN_NAME_SERVER_DATA]: string;
         [COLUMN_NAME_LOCAL_DATA]: string;
         [COLUMN_NAME_MIME_TYPE]: string;
-        [COLUMN_NAME_PATH]: string;
-        [COLUMN_NAME_INDEX]: string;
-        [COLUMN_NAME_VISIBILITY]: string;
+        [COLUMN_NAME_PATH]?: string;
+        [COLUMN_NAME_INDEX]?: string;
+        [COLUMN_NAME_VISIBILITY]?: string;
         [COLUMN_NAME_SERVER_LAST_UPDATED_ON]: string;
-        [COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: string;
+        [COLUMN_NAME_LOCAL_LAST_UPDATED_ON]?: string;
         [COLUMN_NAME_MANIFEST_VERSION]: string;
+        [COLUMN_NAME_REF_COUNT]?: number;
+        [COLUMN_NAME_CONTENT_STATE]?: number;
+        [COLUMN_NAME_CONTENT_TYPE]: string;
+        [COLUMN_NAME_AUDIENCE]?: string;
+        [COLUMN_NAME_PRAGMA]?: string;
+        [COLUMN_NAME_SIZE_ON_DEVICE]?: number;
     }
 
     export const getCreateEntry: (() => string) = () => {
@@ -50,6 +55,12 @@ export namespace ContentEntry {
             COLUMN_NAME_VISIBILITY + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_SERVER_LAST_UPDATED_ON + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_LOCAL_LAST_UPDATED_ON + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_REF_COUNT + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT 1' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CONTENT_STATE + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT 2' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CONTENT_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_AUDIENCE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT \'Learner\'' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_SIZE_ON_DEVICE + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT 0' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_PRAGMA + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
             COLUMN_NAME_MANIFEST_VERSION + DbConstants.SPACE + DbConstants.TEXT_TYPE +
             ' )';
     };

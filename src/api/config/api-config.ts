@@ -12,6 +12,7 @@ export interface ApiConfig {
         mobileAppConsumer: string,
         channelId: string,
         producerId: string,
+        producerUniqueId: string,
         deviceId: string,
     };
     cached_requests: {

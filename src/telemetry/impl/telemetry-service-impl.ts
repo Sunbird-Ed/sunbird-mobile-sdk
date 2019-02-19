@@ -15,12 +15,16 @@ import {
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {Observable, Observer} from 'rxjs';
 import Telemetry = TelemetryEvents.Telemetry;
+import {ProfileService, ProfileSession} from '../../profile';
+import {GroupService} from '../../group';
 
 export class TelemetryServiceImpl implements TelemetryService {
 
     private static readonly KEY_SYNC_TIME = 'telemetry_sync_time';
 
-    constructor(private dbService: DbService, private decorator: TelemetryDecorator) {
+    constructor(private dbService: DbService, private decorator: TelemetryDecorator,
+                private profileService: ProfileService,
+                private groupService: GroupService) {
     }
 
     end({
@@ -143,13 +147,29 @@ export class TelemetryServiceImpl implements TelemetryService {
         throw new Error('Method not implemented.');
     }
 
-    private save(telemetry: Telemetry): Observable<boolean> {
-        const insertQuery: InsertQuery = {
-            table: TelemetryEntry.TABLE_NAME,
-            modelJson: this.decorator.prepare(this.decorator.decorate(telemetry))
-        };
+    private save(telemetry: any): Observable<boolean> {
+        return Observable.zip(
+            this.getCurrentProfileSession(),
+            this.getCurrentProfileSession()
+        ).mergeMap((r) => {
+            const profileSession: ProfileSession | undefined = r[0];
+            const groupSession: ProfileSession | undefined = r[1];
 
-        return this.dbService.insert(insertQuery).map((count) => count > 1);
+            const insertQuery: InsertQuery = {
+                table: TelemetryEntry.TABLE_NAME,
+                modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!, groupSession!))
+            };
+
+            return this.dbService.insert(insertQuery).map((count) => count > 1);
+        });
+    }
+
+    private getCurrentProfileSession(): Promise<ProfileSession | undefined> {
+        return this.profileService.getActiveProfileSession().toPromise();
+    }
+
+    private getCurrentGroupSession(): Promise<ProfileSession | undefined> {
+        return this.profileService.getActiveProfileSession().toPromise();
     }
 
 }
