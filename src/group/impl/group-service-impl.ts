@@ -6,7 +6,7 @@ import {GroupMapper} from '../util/group-mapper';
 import {UniqueId} from '../../db/util/unique-id';
 import {KeyValueStore} from '../../key-value-store';
 import {NoGroupFoundError} from '../error/no-group-found-error';
-import {NoActiveSessionError} from '../error/no-active-session-error';
+import {NoActiveGroupSessionError} from '../error/no-active-group-session-error';
 
 
 export class GroupServiceImpl implements GroupService {
@@ -65,11 +65,11 @@ export class GroupServiceImpl implements GroupService {
         return Observable.of(group);
     }
 
-    getCurrentGroup(): Observable<Group> {
+    getActiveSessionGroup(): Observable<Group> {
         return this.getActiveGroupSession()
         .map((profileSession: GroupSession | undefined) => {
             if (!profileSession) {
-                throw new NoActiveSessionError('No active session available');
+                throw new NoActiveGroupSessionError('No active session available');
             }
 
             return profileSession;
@@ -83,7 +83,7 @@ export class GroupServiceImpl implements GroupService {
         });
     }
 
-    setCurrentGroup(gid: string): Observable<boolean> {
+    setActiveSessionForGroup(gid: string): Observable<boolean> {
         return this.dbService
             .read({
                 table: GroupEntry.TABLE_NAME,

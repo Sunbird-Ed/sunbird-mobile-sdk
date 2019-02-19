@@ -13,9 +13,9 @@ export interface GroupService {
 
     updateGroup(group: Group): Observable<Group>;
 
-    getCurrentGroup(): Observable<Group>;
+    getActiveSessionGroup(): Observable<Group>;
 
-    setCurrentGroup(groupGid: string): Observable<boolean>;
+    setActiveSessionForGroup(groupGid: string): Observable<boolean>;
 
     getActiveGroupSession(): Observable<GroupSession | undefined>;
 
