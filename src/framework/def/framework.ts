@@ -13,21 +13,23 @@ export interface Framework {
 export interface FrameworkCategory {
     identifier: string;
     code: string;
-    terms?: {
-        associations: CategoryAssociation[]
-        identifier: string;
-        code: string;
-        translations?: string;
-        name: string;
-        description?: string;
-        index: number;
-        category: string;
-        status: string;
-    }[];
+    terms?: CategoryTerm[];
     translations?: string;
     name: string;
     description: string;
     index: number;
+    status: string;
+}
+
+export interface CategoryTerm {
+    associations: CategoryAssociation[];
+    identifier: string;
+    code: string;
+    translations?: string;
+    name: string;
+    description?: string;
+    index: number;
+    category: string;
     status: string;
 }
 
