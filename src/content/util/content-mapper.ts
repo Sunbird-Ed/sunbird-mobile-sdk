@@ -13,9 +13,9 @@ export class ContentMapper {
         let localData;
         if (!manifestVersion) {
             serverLastUpdatedOn = contentData.lastUpdatedOn;
-            serverData = contentData;
+            serverData = JSON.stringify(contentData);
         } else {
-            localData = contentData;
+            localData = JSON.stringify(contentData);
         }
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: contentData.identifier,
@@ -34,8 +34,10 @@ export class ContentMapper {
     public static mapContentDBEntryToContent(contentEntry: ContentEntry.SchemaMap, request?: ContentRequest,
                                              feedbackService?: ContentFeedbackService, profileService?: ProfileService): Content {
         let contentData;
-        const serverData: ContentData = JSON.parse(contentEntry[ContentEntry.COLUMN_NAME_SERVER_DATA]);
-        const localData: ContentData = JSON.parse(contentEntry[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+        const serverInfo = contentEntry[ContentEntry.COLUMN_NAME_SERVER_DATA];
+        const localInfo = contentEntry[ContentEntry.COLUMN_NAME_LOCAL_DATA];
+        const serverData: ContentData = serverInfo && JSON.parse(serverInfo);
+        const localData: ContentData = localInfo && JSON.parse(localInfo);
         if (localData) {
             contentData = localData;
         }
