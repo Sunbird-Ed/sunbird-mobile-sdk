@@ -7,7 +7,7 @@ import {QueryBuilder} from '../../db/util/query-builder';
 import {ContentMapper} from '../util/content-mapper';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
-    private readonly GET_CONTENT_DETAILS_ENDPOINT = '/api/read/';
+    private readonly GET_CONTENT_DETAILS_ENDPOINT = '/read/';
 
     constructor(private dbService: DbService,
                 private contentServiceConfig?: ContentServiceConfig,
@@ -69,7 +69,6 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             .withType(HttpRequestType.GET)
             .withPath(this.contentServiceConfig!.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + request.contentId)
             .withApiToken(true)
-            .withSessionToken(true)
             .build())
             .map((response) => {
                 return response.body.result.content;

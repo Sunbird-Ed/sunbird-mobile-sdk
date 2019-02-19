@@ -74,21 +74,19 @@ export class ContentMapper {
         if (localLastUpdatedTime) {
             contentCreationTime = new Date(localLastUpdatedTime).getTime();
         }
-
-        const content = {
+        return {
             identifier: contentEntry[ContentEntry.COLUMN_NAME_IDENTIFIER],
             contentData: contentData,
             isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
             mimeType: contentEntry[ContentEntry.COLUMN_NAME_MIME_TYPE],
-            basePath: contentEntry[ContentEntry.COLUMN_NAME_PATH]!,
+            basePath: contentEntry[ContentEntry.COLUMN_NAME_PATH]! || '',
             contentType: contentEntry[ContentEntry.COLUMN_NAME_CONTENT_TYPE],
             isAvailableLocally: ContentUtil.isAvailableLocally(contentEntry[ContentEntry.COLUMN_NAME_CONTENT_STATE]!),
-            referenceCount: Number(contentEntry[ContentEntry.COLUMN_NAME_IDENTIFIER]),
-            sizeOnDevice: Number(contentEntry[ContentEntry.COLUMN_NAME_IDENTIFIER]),
-            lastUsedTime: contentEntry[ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP],
+            referenceCount: Number(contentEntry[ContentEntry.COLUMN_NAME_REF_COUNT]) || 0,
+            sizeOnDevice: Number(contentEntry[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]) || 0,
+            lastUsedTime: Number(contentEntry[ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP]) || 0,
             lastUpdatedTime: contentCreationTime,
         };
-        return content;
 
 
     }
