@@ -96,6 +96,15 @@ export class ProfileServiceImpl implements ProfileService {
         });
     }
 
+    updateProfile(profile: Profile): Observable<Profile> {
+        return this.dbService.update({
+            table: ProfileEntry.TABLE_NAME,
+            selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
+            selectionArgs: [profile.uid],
+            modelJson: ProfileMapper.mapProfileToProfileDBEntry(profile)
+        }).mergeMap(() => Observable.of(profile));
+    }
+
     updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<Profile> {
         return new UpdateServerProfileInfoHandler(this.apiService,
             this.profileServiceConfig).handle(updateUserInfoRequest);
