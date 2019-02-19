@@ -1,166 +1,101 @@
-import {DbService, InsertQuery, ReadQuery} from '../../db';
-import {TelemetryDecorator, TelemetryService, TelemetryStat, TelemetrySyncStat} from '..';
-import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
+import {DbService, InsertQuery} from '../../db';
 import {
-    CorrelationData,
-    End,
-    Error as ErrorTelemetry,
-    Impression,
-    Interact,
-    Log,
-    Rollup,
-    Start,
-    TelemetryObject
-} from '../def/telemetry-model';
+    TelemetryDecorator,
+    TelemetryEndRequest,
+    TelemetryErrorRequest,
+    TelemetryEvents,
+    TelemetryImpressionRequest,
+    TelemetryInteractRequest,
+    TelemetryLogRequest,
+    TelemetryService,
+    TelemetryStartRequest,
+    TelemetryStat,
+    TelemetrySyncStat
+} from '..';
+import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {Observable, Observer} from 'rxjs';
+import Telemetry = TelemetryEvents.Telemetry;
+import {ProfileService, ProfileSession} from '../../profile';
+import {GroupService} from '../../group';
 
 export class TelemetryServiceImpl implements TelemetryService {
 
     private static readonly KEY_SYNC_TIME = 'telemetry_sync_time';
 
-    constructor(private dbService: DbService, private decorator: TelemetryDecorator) {
+    constructor(private dbService: DbService, private decorator: TelemetryDecorator,
+                private profileService: ProfileService,
+                private groupService: GroupService) {
     }
 
-    audit(): void {
-    }
-
-    end(type, mode, pageId, env, object?: TelemetryObject, rollup?: Rollup,
-        corRelationList?: Array<CorrelationData>): void {
-
-        const end = new End();
-        end.type = type;
-        end.pageId = pageId;
+    end({
+            type, mode, duration, pageId, summaryList, env,
+            objId, objType, objVer, rollup, correlationData
+        }: TelemetryEndRequest): Observable<boolean> {
+        const end = new TelemetryEvents.End(type, mode, duration, pageId, summaryList);
         end.env = env;
-        end.mode = mode;
-        if (object && object.id) {
-            end.objId = object.id;
-        }
-
-        if (object && object.type) {
-            end.objType = object.type;
-        }
-
-        if (object && object.version) {
-            end.objVer = object.version;
-        }
-        if (rollup) {
-            end.rollup = rollup;
-        }
-        if (corRelationList) {
-            end.correlationData = corRelationList;
-        }
-
-        this.save(end);
+        end.objId = objId;
+        end.objType = objType;
+        end.objId = objId;
+        end.objVer = objVer;
+        end.rollup = rollup;
+        end.correlationData = correlationData;
+        return this.save(end);
     }
 
-    error(env, errCode, errorType, pageId, stackTrace): void {
-        const error = new ErrorTelemetry();
+    error({errorCode, errorType, stacktrace, pageId, env}: TelemetryErrorRequest): Observable<boolean> {
+        const error = new TelemetryEvents.Error(errorCode, errorType, stacktrace, pageId);
         error.env = env;
-        error.errorCode = errCode;
-        error.errorType = errorType;
-        error.pageId = pageId;
-        error.stacktrace = stackTrace;
-
-        this.save(error);
+        return this.save(error);
     }
 
-    impression(type, subtype, pageid, env, objectId?: string, objectType?: string, objectVersion?: string,
-               rollup?: Rollup, corRelationList?: Array<CorrelationData>): void {
-
-        const impression = new Impression();
-        impression.type = type;
-        impression.subType = subtype;
-        impression.pageId = pageid;
+    impression({
+                   type, subType, pageId, uri, visits, env, objId,
+                   objType, objVer, rollup, correlationData
+               }: TelemetryImpressionRequest): Observable<boolean> {
+        const impression = new TelemetryEvents.Impression(type, subType, pageId, uri, visits);
         impression.env = env;
-        impression.objId = objectId ? objectId : '';
-        impression.objType = objectType ? objectType : '';
-        impression.objVer = objectVersion ? objectVersion : '';
-
-        if (rollup !== undefined) {
-            impression.rollup = rollup;
-        }
-        if (corRelationList !== undefined) {
-            impression.correlationData = corRelationList;
-        }
-
-        this.save(impression);
-
+        impression.objId = objId;
+        impression.objType = objType;
+        impression.objVer = objVer;
+        impression.rollup = rollup;
+        impression.correlationData = correlationData;
+        return this.save(impression);
     }
 
-    interact(interactType, subType, env, pageId, object?: TelemetryObject, values?: Map<any, any>,
-             rollup?: Rollup, corRelationList?: Array<CorrelationData>): void {
-
-        const interact = new Interact();
-        interact.type = interactType;
-        interact.subType = subType;
-        interact.pageId = pageId;
-        interact.id = pageId;
+    interact({
+                 type, subType, id, pageId, pos, values, env, rollup,
+                 valueMap, correlationData, objId, objType, objVer
+             }: TelemetryInteractRequest): Observable<boolean> {
+        const interact = new TelemetryEvents.Interact(type, subType, id, pageId, pos, values);
         interact.env = env;
-        if (values !== null) {
-            interact.valueMap = values!!;
-        }
-        if (rollup !== undefined) {
-            interact.rollup = rollup;
-        }
-        if (corRelationList !== undefined) {
-            interact.correlationData = corRelationList;
-        }
-
-        if (object && object.id) {
-            interact.objId = object.id;
-        }
-
-        if (object && object.type) {
-            interact.objType = object.type;
-        }
-
-        if (object && object.version) {
-            interact.objVer = object.version;
-        }
-
-        this.save(interact);
+        interact.rollup = rollup;
+        interact.valueMap = valueMap;
+        interact.correlationData = correlationData;
+        interact.objId = objId;
+        interact.objType = objType;
+        interact.objVer = objVer;
+        return this.save(interact);
     }
 
-    log(logLevel, message, env, type, params: Array<any>): void {
-        const log = new Log();
-        log.level = logLevel;
-        log.message = message;
+    log({type, level, message, pageId, params, env, actorType}: TelemetryLogRequest): Observable<boolean> {
+        const log = new TelemetryEvents.Log(type, level, message, pageId, params);
         log.env = env;
-        log.type = type;
-        log.params = params;
-
-        this.save(log);
+        log.actorType = actorType;
+        return this.save(log);
     }
 
-    start(pageId, env, mode, object?: TelemetryObject, rollup?: Rollup, corRelationList?: Array<CorrelationData>): void {
-
-        const start = new Start();
-        start.type = object ? object.type : '';
-        start.pageId = pageId;
+    start({
+              type, deviceSpecification, loc, mode, duration, pageId, env,
+              objId, objType, objVer, rollup, correlationData
+          }: TelemetryStartRequest): Observable<boolean> {
+        const start = new TelemetryEvents.Start(type, deviceSpecification, loc, mode, duration, pageId);
         start.env = env;
-        start.mode = mode;
-        if (object && object.id) {
-            start.objId = object.id;
-        }
-
-        if (object && object.type) {
-            start.objType = object.type;
-        }
-
-        if (object && object.version) {
-            start.objVer = object.version;
-        }
-        if (rollup !== undefined) {
-            start.rollup = rollup;
-        }
-        if (corRelationList !== undefined) {
-            start.correlationData = corRelationList;
-        }
-        this.save(start);
-    }
-
-    event(telemetry: any): Observable<boolean> {
-        return Observable.fromPromise(this.save(telemetry));
+        start.objId = objId;
+        start.objType = objType;
+        start.objVer = objVer;
+        start.rollup = rollup;
+        start.correlationData = correlationData;
+        return this.save(start);
     }
 
     import(sourcePath: string): Observable<boolean> {
@@ -205,45 +140,36 @@ export class TelemetryServiceImpl implements TelemetryService {
 
 
     sync(): Observable<TelemetrySyncStat> {
-
-        const readQuery: ReadQuery = {
-            table: TelemetryEntry.TABLE_NAME,
-            limit: '1000'
-        };
-
-        // fetch events from telemetry table
-        this.dbService.read(readQuery)
-            .toPromise()
-            .then(value => {
-
-            })
-            .catch(error => {
-
-            });
-
-
         throw new Error('Method not implemented.');
     }
 
+    event(telemetry: any): Observable<number> {
+        throw new Error('Method not implemented.');
+    }
 
-    private save(telemetry: any): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
+    private save(telemetry: any): Observable<boolean> {
+        return Observable.zip(
+            this.getCurrentProfileSession(),
+            this.getCurrentProfileSession()
+        ).mergeMap((r) => {
+            const profileSession: ProfileSession | undefined = r[0];
+            const groupSession: ProfileSession | undefined = r[1];
 
             const insertQuery: InsertQuery = {
                 table: TelemetryEntry.TABLE_NAME,
-                modelJson: this.decorator.prepare(this.decorator.decorate(telemetry))
+                modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!, groupSession!))
             };
 
-            this.dbService.insert(insertQuery)
-                .toPromise()
-                .then(numberOfRow => {
-                    resolve(numberOfRow > 0);
-                })
-                .catch(error => {
-                    reject(error);
-                });
+            return this.dbService.insert(insertQuery).map((count) => count > 1);
         });
+    }
 
+    private getCurrentProfileSession(): Promise<ProfileSession | undefined> {
+        return this.profileService.getActiveProfileSession().toPromise();
+    }
+
+    private getCurrentGroupSession(): Promise<ProfileSession | undefined> {
+        return this.profileService.getActiveProfileSession().toPromise();
     }
 
 }

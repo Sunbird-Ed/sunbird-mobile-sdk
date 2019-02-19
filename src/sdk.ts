@@ -11,7 +11,7 @@ import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/impl/auth-service-impl';
-import {ContentService, ContentFeedbackService} from './content';
+import {ContentFeedbackService, ContentService} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
 import {Channel, Framework, FrameworkService, FrameworkServiceImpl} from './framework';
@@ -43,7 +43,7 @@ import {ZipService} from './util/zip/def/zip-service';
 import {DeviceInfo} from './util/device/def/device-info';
 import {ZipServiceImpl} from './util/zip/impl/zip-service-impl';
 import {DeviceInfoImpl} from './util/device/impl/device-info-impl';
-import { ContentFeedbackServiceImpl } from './content/impl/content-feedback-service-impl';
+import {ContentFeedbackServiceImpl} from './content/impl/content-feedback-service-impl';
 
 export class SunbirdSdk {
 
@@ -140,6 +140,7 @@ export class SunbirdSdk {
     get systemSettingsService(): SystemSettingsService {
         return this._systemSettingsService;
     }
+
     public async init(sdkConfig: SdkConfig) {
         this._sdkConfig = Object.freeze(sdkConfig);
 
@@ -170,8 +171,17 @@ export class SunbirdSdk {
         }
 
         await this._dbService.init();
-
-        this._telemetryService = new TelemetryServiceImpl(this._dbService, new TelemetryDecoratorImpl());
+        this._profileService = new ProfileServiceImpl(
+            sdkConfig.profileServiceConfig,
+            this._dbService,
+            this._apiService,
+            new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig),
+            this._keyValueStore
+        );
+        this._groupService = new GroupServiceImpl(this._dbService);
+        this._deviceInfo = new DeviceInfoImpl();
+        this._telemetryService = new TelemetryServiceImpl(this._dbService,
+            new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo), this._profileService, this._groupService);
 
         this._apiService = new ApiServiceImpl(sdkConfig.apiConfig);
 
@@ -195,8 +205,6 @@ export class SunbirdSdk {
 
         this._groupService = new GroupServiceImpl(this._dbService, this._keyValueStore);
         this._zipService = new ZipServiceImpl();
-        this._deviceInfo = new DeviceInfoImpl();
-
         this._contentService = new ContentServiceImpl(
             sdkConfig.contentServiceConfig,
             this._apiService,

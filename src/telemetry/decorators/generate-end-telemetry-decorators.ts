@@ -1,19 +1,10 @@
 import {TelemetryEndRequest} from '../def/requests';
 import {SunbirdSdk} from '../../sdk';
-import {
-    afterMethodFactory,
-    afterMethodResolvesFactory,
-    beforeMethodFactory
-} from './decorator-factories';
+import {afterMethodFactory, afterMethodResolvesFactory, beforeMethodFactory} from './decorator-factories';
+
 const invokeEnd = (telemetryEndRequest: TelemetryEndRequest) => {
     SunbirdSdk.instance.telemetryService.end(
-        telemetryEndRequest.objectType,
-        telemetryEndRequest.mode,
-        telemetryEndRequest.pageId,
-        telemetryEndRequest.env,
-        telemetryEndRequest.object,
-        telemetryEndRequest.rollup,
-        telemetryEndRequest.corRelationList
+        telemetryEndRequest
     );
 };
 

@@ -5,7 +5,7 @@ export class TelemetryError extends Error {
     errorType: ErrorType;
 
     constructor(errorCode: ErrorCode, errorType: ErrorType) {
-        super(errorCode as string + errorType);
+        super(errorCode + errorType);
         this.errorCode = errorCode;
         this.errorType = errorType;
         Object.setPrototypeOf(this, TelemetryError.prototype);

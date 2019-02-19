@@ -6,8 +6,11 @@ declare var UniqueDeviceID: {
 };
 
 export class DeviceInfoImpl implements DeviceInfo {
+
+    private deviceId: string;
+
     getDeviceID(): string {
-        return SHA1(UniqueDeviceID.get());
+        return this.deviceId ? this.deviceId : SHA1(UniqueDeviceID.get());
     }
 
 }
