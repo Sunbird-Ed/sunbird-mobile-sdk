@@ -28,14 +28,14 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
 
     handle(request: ContentDetailRequest): Observable<Content> {
         return this.readContentFromDB(request.contentId)
-            .mergeMap((rows: ContentEntry.SchemaMap[] | undefined) => {
+            .mergeMap((rows: ContentEntry.SchemaMap[] | Content ) => {
                 if (rows && rows[0]) {
                     return Observable.of(ContentMapper.mapContentDBEntryToContent(rows[0]));
                 }
 
                 return this.fetchFromServer(request)
                     .map((contentData) => {
-                        return ContentMapper.mapContentDBEntryToContent(ContentMapper.mapContentDataToContentDBEntry(contentData,''));
+                        return ContentMapper.mapServerResponseToContent(contentData);
                     });
             });
     }
@@ -65,7 +65,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
     }
 
     private fetchFromServer(request: ContentDetailRequest): Observable<ContentData> {
-        return this.apiService!.fetch<{ result}>(new Request.Builder()
+        return this.apiService!.fetch<{ result }>(new Request.Builder()
             .withType(HttpRequestType.GET)
             .withPath(this.contentServiceConfig!.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + request.contentId)
             .withApiToken(true)

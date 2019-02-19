@@ -31,6 +31,32 @@ export class ContentMapper {
         };
     }
 
+    public static mapServerResponseToContent(contentData, manifestVersion?: string): Content {
+        let serverLastUpdatedOn;
+        let serverData;
+        let localData;
+        if (!manifestVersion) {
+            serverLastUpdatedOn = contentData.lastUpdatedOn;
+            serverData = contentData;
+        } else {
+            localData = contentData;
+        }
+        return {
+            identifier: contentData.identifier,
+            contentData: contentData,
+            isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
+            mimeType: contentData.mimeType,
+            basePath:  '',
+            contentType: ContentUtil.readContentType(contentData),
+            isAvailableLocally: false,
+            referenceCount: 0,
+            sizeOnDevice: 0,
+            lastUsedTime: 0,
+            lastUpdatedTime: 0,
+        };
+
+    }
+
     public static mapContentDBEntryToContent(contentEntry: ContentEntry.SchemaMap, request?: ContentRequest,
                                              feedbackService?: ContentFeedbackService, profileService?: ProfileService): Content {
         let contentData;

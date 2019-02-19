@@ -5,6 +5,10 @@ export class Actor {
     static readonly TYPE_USER = 'User';
     id: string;
     type: string;
+
+    Actor() {
+        this.type = Actor.TYPE_USER;
+    }
 }
 
 export class Audit {
@@ -16,7 +20,7 @@ export class Audit {
 }
 
 export class Context {
-    private env: string;
+    private _env: string;
     private cdata: Array<CorrelationData>;
 
     channel: string;
@@ -25,8 +29,12 @@ export class Context {
     did: string;
 
 
+    get env(): string {
+        return this._env;
+    }
+
     public setEnv(value: string) {
-        this.env = value;
+        this._env = value;
     }
 
     public setCdata(value: Array<CorrelationData>) {
@@ -104,6 +112,12 @@ export class ProducerData {
     id: string;
     pid: string;
     ver: string;
+
+    ProducerData() {
+        this.id = '';
+        this.pid = '';
+        this.ver = '';
+    }
 }
 
 export class Search {
@@ -169,13 +183,13 @@ export namespace TelemetryEvents {
          * Who did the event
          * Actor of the event
          */
-        private actor: Actor;
+        private _actor: Actor;
 
         /**
          * Who did the event
          * Context in which the event has occured.
          */
-        private context: Context;
+        private _context: Context;
 
         /**
          * What is the target of the event
@@ -190,13 +204,17 @@ export namespace TelemetryEvents {
         protected constructor(eid: string) {
             this.eid = eid;
             this.ets = Date.now();
-            this.actor = new Actor();
-            this.context = new Context();
+            this._actor = new Actor();
+            this._context = new Context();
             this.edata = {};
         }
 
         public setActor(value: Actor) {
-            this.actor = value;
+            this._actor = value;
+        }
+
+        public setContext(value: Context) {
+            this._context = value;
         }
 
         public setEdata(value: {}) {
@@ -208,16 +226,25 @@ export namespace TelemetryEvents {
         }
 
         public setEnvironment(env: string) {
-            this.context.setEnv(env);
+            this._context.setEnv(env);
         }
 
         public setCoRrelationdata(correlationData: CorrelationData[]) {
-            this.context.setCdata(correlationData);
+            this._context.setCdata(correlationData);
         }
 
         public setObject(id: string, type: string, ver: string, rollup: Rollup) {
             this.object = new TelemetryObject(id, type, ver);
             this.object.setRollup(rollup);
+        }
+
+
+        get actor(): Actor {
+            return this._actor;
+        }
+
+        get context(): Context {
+            return this._context;
         }
     }
 
