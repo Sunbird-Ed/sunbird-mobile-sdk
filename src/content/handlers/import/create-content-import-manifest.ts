@@ -73,7 +73,7 @@ export class CreateContentImportManifest {
             }
             const items: any[] = importnExportHandler.populateContents(contentWithAllChildren);
             const manifest: { [key: string]: any } = importnExportHandler.generateManifestForArchive(items);
-            await this.fileService.writeFile(contentInDb[COLUMN_NAME_PATH],
+            await this.fileService.writeFile(contentInDb[COLUMN_NAME_PATH]!,
                 CreateContentImportManifest.MANIFEST_FILE_NAME,
                 JSON.stringify(manifest),
                 {replace: true});

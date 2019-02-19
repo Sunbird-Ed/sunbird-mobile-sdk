@@ -20,7 +20,7 @@ export class CopyAsset {
                 const contentData = exportContentContext.items![i];
                 const appIcon = contentData.appIcon;
                 if (appIcon) {
-                    await this.copyAsset(contentInDb[COLUMN_NAME_PATH], exportContentContext.tmpLocationPath!, appIcon);
+                    await this.copyAsset(contentInDb[COLUMN_NAME_PATH]!, exportContentContext.tmpLocationPath!, appIcon);
                 }
 
                 const contentDisposition: string = contentData.contentDisposition;
@@ -28,7 +28,7 @@ export class CopyAsset {
                 if (ContentUtil.isInlineIdentity(contentDisposition, contentEncoding)) {
                     const artifactUrl: string = contentData.artifactUrl;
                     if (artifactUrl) {
-                        await this.copyAsset(contentInDb[COLUMN_NAME_PATH], exportContentContext.tmpLocationPath!, artifactUrl);
+                        await this.copyAsset(contentInDb[COLUMN_NAME_PATH]!, exportContentContext.tmpLocationPath!, artifactUrl);
                     }
                 }
                 i++;

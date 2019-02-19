@@ -46,11 +46,11 @@ export class DeleteContentHandler {
 
     deleteOrUpdateContent(contentInDb: ContentEntry.SchemaMap,
                           isChildItems: boolean, isChildContent: boolean): Promise<boolean> {
-        let refCount: number = contentInDb[COLUMN_NAME_REF_COUNT];
+        let refCount: number = contentInDb[COLUMN_NAME_REF_COUNT]!;
         let contentState;
-        let visibility: string = contentInDb[COLUMN_NAME_VISIBILITY];
+        let visibility: string = contentInDb[COLUMN_NAME_VISIBILITY]!;
         const mimeType: string = contentInDb[COLUMN_NAME_MIME_TYPE];
-        const path: string = contentInDb[COLUMN_NAME_PATH];
+        const path: string = contentInDb[COLUMN_NAME_PATH]!;
         if (Boolean(isChildContent)) {
             // If visibility is Default it means this content was visible in my downloads.
             // After deleting artifact for this content it should not visible as well so reduce the refCount also for this.

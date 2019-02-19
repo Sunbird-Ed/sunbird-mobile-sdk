@@ -140,6 +140,7 @@ export class SunbirdSdk {
     get systemSettingsService(): SystemSettingsService {
         return this._systemSettingsService;
     }
+
     public async init(sdkConfig: SdkConfig) {
         this._sdkConfig = Object.freeze(sdkConfig);
 
@@ -170,8 +171,17 @@ export class SunbirdSdk {
         }
 
         await this._dbService.init();
-
-        this._telemetryService = new TelemetryServiceImpl(this._dbService, new TelemetryDecoratorImpl());
+        this._profileService = new ProfileServiceImpl(
+            sdkConfig.profileServiceConfig,
+            this._dbService,
+            this._apiService,
+            new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig),
+            this._keyValueStore
+        );
+        this._groupService = new GroupServiceImpl(this._dbService);
+        this._deviceInfo = new DeviceInfoImpl();
+        this._telemetryService = new TelemetryServiceImpl(this._dbService,
+            new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo), this._profileService, this._groupService);
 
         this._apiService = new ApiServiceImpl(sdkConfig.apiConfig);
 
@@ -185,18 +195,7 @@ export class SunbirdSdk {
             this._fileService = new FileServiceImpl();
         }
 
-        this._profileService = new ProfileServiceImpl(
-            sdkConfig.profileServiceConfig,
-            this._dbService,
-            this._apiService,
-            new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig),
-            this._keyValueStore
-        );
-
-        this._groupService = new GroupServiceImpl(this._dbService);
         this._zipService = new ZipServiceImpl();
-        this._deviceInfo = new DeviceInfoImpl();
-
         this._contentService = new ContentServiceImpl(
             sdkConfig.contentServiceConfig,
             this._apiService,
