@@ -6,9 +6,10 @@ export interface ContentSearchResult {
     responseMessageId: string;
     filterCriteria: ContentSearchCriteria;
     request?: {
-        [index: string]: any;
+        [key: string]: any;
     };
     contentDataList: ContentData[];
+    collectionDataList?: ContentData[];
 }
 export interface SearchResponse {
     params: {

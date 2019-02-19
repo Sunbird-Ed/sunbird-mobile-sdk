@@ -135,7 +135,7 @@ export class TelemetryServiceImpl implements TelemetryService {
     start(pageId, env, mode, object?: TelemetryObject, rollup?: Rollup, corRelationList?: Array<CorrelationData>): void {
 
         const start = new Start();
-        start.type = object!!.type;
+        start.type = object ? object.type : '';
         start.pageId = pageId;
         start.env = env;
         start.mode = mode;
@@ -156,7 +156,6 @@ export class TelemetryServiceImpl implements TelemetryService {
         if (corRelationList !== undefined) {
             start.correlationData = corRelationList;
         }
-
         this.save(start);
     }
 

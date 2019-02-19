@@ -11,13 +11,14 @@ import {
 import { GetChannelDetailsHandler } from '../handler/get-channel-detail-handler';
 import { GetFrameworkDetailsHandler } from '../handler/get-framework-detail-handler';
 import {FileService} from '../../util/file/def/file-service';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import { Organization } from '../def/Organization';
 import { ApiService, HttpRequestType, Request} from '../../api';
 
 
 export class FrameworkServiceImpl implements FrameworkService {
-
+    public activeChannel$: Observable<Channel | undefined>;
+    private activeChannelSource: Subject<Channel | undefined>;
     DB_KEY_FRAMEWORK_DETAILS = 'framework_details_key-';
     private readonly SEARCH_ORGANIZATION_ENDPOINT = '/search';
 
@@ -27,6 +28,8 @@ export class FrameworkServiceImpl implements FrameworkService {
                 private apiService: ApiService,
                 private cachedChannelItemStore: CachedItemStore<Channel>,
                 private cachedFrameworkItemStore: CachedItemStore<Framework>) {
+        this.activeChannelSource = new BehaviorSubject<Channel | undefined>(undefined);
+        this.activeChannel$ = this.activeChannelSource.asObservable();
     }
 
 
@@ -54,6 +57,10 @@ export class FrameworkServiceImpl implements FrameworkService {
         return this.keyValueStore.setValue(key, JSON.stringify(request));
     }
 
+    setActiveChannel(channel: Channel) {
+        this.activeChannelSource.next(channel);
+    }
+
     searchOrganization<T>(request: OrganizationSearchCriteria<T>): Observable<Organization<T>> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
@@ -66,5 +73,4 @@ export class FrameworkServiceImpl implements FrameworkService {
             return response.body.result.response;
         });
     }
-
 }

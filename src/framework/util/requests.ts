@@ -1,5 +1,15 @@
-import {FrameworkCategory} from '../def/framework-category';
+import {FrameworkCategoryCode} from '..';
 
-export interface GetSuggestedFramworksRequest {
-    categories: FrameworkCategory[];
+export interface GetSuggestedFrameworksRequest {
+    language: string;
+    requiredCategories: FrameworkCategoryCode[];
+}
+
+export interface GetFrameworkCategoryTermsRequest {
+    frameworkId?: string;
+    requiredCategories: FrameworkCategoryCode[];
+    currentCategoryCode: string;
+    prevCategoryCode?: string;
+    selectedTermsCodes?: string[];
+    language: string;
 }

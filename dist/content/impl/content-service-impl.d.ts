@@ -1,4 +1,4 @@
-import { ChildContentRequest, Content, ContentDeleteRequest, ContentDeleteResponse, ContentDetailRequest, ContentExportResponse, ContentImportRequest, ContentImportResponse, ContentRequest, ContentSearchCriteria, ContentSearchResult, ContentService, ContentServiceConfig, EcarImportRequest, HierarchyInfo } from '..';
+import { ChildContentRequest, Content, ContentDeleteRequest, ContentDeleteResponse, ContentDetailRequest, ContentExportRequest, ContentImportRequest, ContentImportResponse, ContentMarkerRequest, ContentRequest, ContentSearchCriteria, ContentSearchResult, ContentService, ContentServiceConfig, EcarImportRequest, HierarchyInfo } from '..';
 import { Observable } from 'rxjs';
 import { ApiService, Response } from '../../api';
 import { ProfileService } from '../../profile';
@@ -6,6 +6,8 @@ import { KeyValueStore } from '../../key-value-store';
 import { DbService } from '../../db';
 import { AppConfig } from '../../api/config/app-config';
 import { FileService } from '../../util/file/def/file-service';
+import { DeviceInfo } from '../../util/device/def/device-info';
+import { ZipService } from '../../util/zip/def/zip-service';
 export declare class ContentServiceImpl implements ContentService {
     private contentServiceConfig;
     private apiService;
@@ -14,12 +16,14 @@ export declare class ContentServiceImpl implements ContentService {
     private appConfig;
     private keyValueStore;
     private fileService;
-    constructor(contentServiceConfig: ContentServiceConfig, apiService: ApiService, dbService: DbService, profileService: ProfileService, appConfig: AppConfig, keyValueStore: KeyValueStore, fileService: FileService);
+    private zipService;
+    private deviceInfo;
+    constructor(contentServiceConfig: ContentServiceConfig, apiService: ApiService, dbService: DbService, profileService: ProfileService, appConfig: AppConfig, keyValueStore: KeyValueStore, fileService: FileService, zipService: ZipService, deviceInfo: DeviceInfo);
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
     getContents(request: ContentRequest): Observable<Content>;
     cancelImport(contentId: string): void;
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
-    exportContent(contentExportRequest: ContentExportResponse): void;
+    exportContent(contentExportRequest: ContentExportRequest): Observable<Response>;
     getChildContents(childContentRequest: ChildContentRequest): Observable<any>;
     getDownloadState(): Promise<any>;
     importContent(contentImportRequest: ContentImportRequest): Observable<any>;
@@ -29,4 +33,5 @@ export declare class ContentServiceImpl implements ContentService {
     subscribeForImportStatus(contentId: string): Observable<any>;
     searchContent(request: ContentSearchCriteria): Observable<ContentSearchResult>;
     cancelDownload(contentId: string): Observable<undefined>;
+    setContentMarker(contentMarkerRequest: ContentMarkerRequest): Observable<boolean>;
 }

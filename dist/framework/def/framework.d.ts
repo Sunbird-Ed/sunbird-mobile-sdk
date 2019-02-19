@@ -6,24 +6,31 @@ export interface Framework {
     description?: string;
     type?: string;
     objectType?: string;
-    categories?: Array<FrameworkCategories>;
+    categories?: FrameworkCategory[];
+    translations?: string;
 }
-export interface FrameworkCategories {
+export interface FrameworkCategory {
     identifier: string;
     code: string;
-    terms: {
-        associations: Array<CategoryAssociations>;
-        identifier: string;
-        code: string;
-        translations?: null;
-        name: string;
-        description?: string;
-        index: number;
-        category: string;
-        status: string;
-    };
+    terms?: CategoryTerm[];
+    translations?: string;
+    name: string;
+    description: string;
+    index: number;
+    status: string;
 }
-export interface CategoryAssociations {
+export interface CategoryTerm {
+    associations: CategoryAssociation[];
+    identifier: string;
+    code: string;
+    translations?: string;
+    name: string;
+    description?: string;
+    index: number;
+    category: string;
+    status: string;
+}
+export interface CategoryAssociation {
     identifier: string;
     code: string;
     translations?: string;

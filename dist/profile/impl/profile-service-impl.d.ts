@@ -6,6 +6,12 @@ import { ApiService } from '../../api';
 import { CachedItemStore, KeyValueStore } from '../../key-value-store';
 import { ContentAccessFilterCriteria } from '../def/content-access-filter-criteria';
 import { ContentAccess } from '../def/content-access';
+import { ProfileExistsResponse } from '../def/profile-exists-response';
+import { IsProfileAlreadyInUseRequest } from '..';
+import { GenerateOtpRequest } from '..';
+import { VerifyOtpRequest } from '..';
+import { LocationSearchCriteria } from '..';
+import { LocationSearchResult } from '../def/location-search-result';
 export declare class ProfileServiceImpl implements ProfileService {
     private profileServiceConfig;
     private dbService;
@@ -25,6 +31,10 @@ export declare class ProfileServiceImpl implements ProfileService {
     setActiveSessionForProfile(profileUid: string): Observable<boolean>;
     getActiveProfileSession(): Observable<ProfileSession | undefined>;
     acceptTermsAndConditions(acceptTermsConditions: AcceptTermsConditionRequest): Observable<boolean>;
+    isProfileAlreadyInUse(isProfileAlreadyInUseRequest: IsProfileAlreadyInUseRequest): Observable<ProfileExistsResponse>;
+    generateOTP(generateOtpRequest: GenerateOtpRequest): Observable<boolean>;
+    verifyOTP(verifyOTPRequest: VerifyOtpRequest): Observable<boolean>;
+    searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult>;
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]>;
     private mapDbProfileEntriesToProfiles;
 }

@@ -1,5 +1,5 @@
-import { Framework } from './framework';
-import { Channel } from './channel';
+import {Framework} from './framework';
+import {Channel} from './channel';
 import {Observable} from 'rxjs';
 import {
     ChannelDetailsRequest,
@@ -9,6 +9,7 @@ import {
 import { Organization } from './Organization';
 
 export interface FrameworkService {
+    activeChannel$: Observable<Channel | undefined>;
 
     getChannelDetails(request: ChannelDetailsRequest): Observable<Channel>;
 
@@ -16,6 +17,7 @@ export interface FrameworkService {
 
     persistFrameworkDetails(request: Framework): Observable<boolean>;
 
-    searchOrganization<T>(request: OrganizationSearchCriteria<T>): Observable<Organization<T>>;
+    setActiveChannel(channel: Channel);
 
+    searchOrganization<T>(request: OrganizationSearchCriteria<T>): Observable<Organization<T>>;
 }

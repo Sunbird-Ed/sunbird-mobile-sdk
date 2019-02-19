@@ -54,6 +54,10 @@ export interface ContentImportRequest {
     };
     contentStatusArray: string[];
 }
+export interface ContentExportRequest {
+    destinationFolder: string;
+    contentIds: string[];
+}
 export declare enum ContentImportStatus {
     NOT_FOUND = -1,
     ENQUEUED_FOR_DOWNLOAD = 0,
@@ -70,6 +74,16 @@ export declare enum ContentImportStatus {
 export interface ContentExportResponse {
     exportedFilePath: string;
 }
+export interface ContentMarkerRequest {
+    contentId: string;
+    uid: string;
+    data: string;
+    extraInfo: {
+        [key: string]: any;
+    };
+    marker: number;
+    isMarked: boolean;
+}
 export interface ContentSearchCriteria {
     query: string;
     exists: string[];
@@ -84,6 +98,7 @@ export interface ContentSearchCriteria {
     audience: string[];
     channel: string[];
     purpose: string[];
+    topic: string[];
     pragma: string[];
     exclPragma: string[];
     contentStatusArray: string[];
@@ -127,11 +142,13 @@ export interface ImportContentContext {
     contentImportResponseList: ContentImportResponse[];
 }
 export interface ExportContentContext {
-    ecarFilePath: string;
-    tmpLocationPath: string;
+    ecarFilePath?: string;
+    tmpLocationPath?: string;
     destinationFolder: string;
-    items: any[];
+    items?: any[];
     contentModelsToExport: ContentEntry.SchemaMap[];
-    metadata: any;
-    manifest: any;
+    metadata: {
+        [key: string]: any;
+    };
+    manifest?: any;
 }

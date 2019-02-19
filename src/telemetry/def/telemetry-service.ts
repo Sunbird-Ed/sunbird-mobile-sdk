@@ -17,42 +17,42 @@ import {
 } from './telemetry-constants';
 
 
-export abstract class TelemetryService {
+export interface TelemetryService {
 
-    abstract start(pageId: PageId, env: Environment, mode: Mode, object?: TelemetryObject,
+    start(pageId: PageId, env: Environment, mode: Mode, object?: TelemetryObject,
          rollup?: Rollup, corRelationList?: Array<CorrelationData>): void;
 
-    abstract interact(interactType: InteractType,
-                      subType: InteractSubtype,
-                      env: Environment,
-                      pageId: PageId,
-                      object?: TelemetryObject, values?: {},
-                      rollup?: Rollup, corRelationList?: Array<CorrelationData>): void;
+    interact(interactType: InteractType,
+             subType: InteractSubtype,
+             env: Environment,
+             pageId: PageId,
+             object?: TelemetryObject, values?: {},
+             rollup?: Rollup, corRelationList?: Array<CorrelationData>): void;
 
-    abstract impression(type: ImpressionType, subtype: ImpressionSubtype, pageid: PageId, env: Environment, objectId?: string,
-        objectType?: string, objectVersion?: string, rollup?: Rollup, corRelationList?: Array<CorrelationData>): void;
+    impression(type: ImpressionType, subtype: ImpressionSubtype, pageid: PageId, env: Environment, objectId?: string,
+               objectType?: string, objectVersion?: string, rollup?: Rollup, corRelationList?: Array<CorrelationData>): void;
 
-    abstract end(type, mode: Mode, pageId: PageId, env: Environment, object?: TelemetryObject, rollup?: Rollup,
+    end(type, mode: Mode, pageId: PageId, env: Environment, object?: TelemetryObject, rollup?: Rollup,
         corRelationList?: Array<CorrelationData>): void;
 
-    abstract audit(): void;
+    audit(): void;
 
-    abstract log(logLevel: LogLevel, message, env: Environment, type: LogType, params: Array<any>): void;
+    log(logLevel: LogLevel, message, env: Environment, type: LogType, params: Array<any>): void;
 
-    abstract error(env: Environment,
+    error(env: Environment,
                    errCode: ErrorCode,
                    errorType: ErrorType,
                    pageId: PageId,
                    stackTrace: string): void;
 
-    abstract event(telemetry: any): Observable<boolean>;
+    event(telemetry: any): Observable<boolean>;
 
-    abstract import(sourcePath: string): Observable<boolean>;
+    import(sourcePath: string): Observable<boolean>;
 
-    abstract export(destPath: string): Observable<boolean>;
+    export(destPath: string): Observable<boolean>;
 
-    abstract getTelemetryStat(): Observable<TelemetryStat>;
+    getTelemetryStat(): Observable<TelemetryStat>;
 
-    abstract sync(): Observable<TelemetrySyncStat>;
+    sync(): Observable<TelemetrySyncStat>;
 
 }

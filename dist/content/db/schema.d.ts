@@ -83,6 +83,14 @@ export declare namespace ContentMarkerEntry {
     const COLUMN_NAME_DATA = "data";
     const COLUMN_NAME_EXTRA_INFO = "extra_info";
     const COLUMN_NAME_MARKER = "marker";
+    interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+        [COLUMN_NAME_CONTENT_IDENTIFIER]: string;
+        [COLUMN_NAME_EPOCH_TIMESTAMP]: number;
+        [COLUMN_NAME_DATA]: string;
+        [COLUMN_NAME_EXTRA_INFO]: string;
+        [COLUMN_NAME_MARKER]: number;
+    }
     const getCreateEntry: (() => string);
     const deleteTable: (() => string);
 }
