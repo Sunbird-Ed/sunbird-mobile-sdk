@@ -9,14 +9,7 @@ import {
 
 const invokeInteract = (telemetryInteractRequest: TelemetryInteractRequest) => {
     SunbirdSdk.instance.telemetryService.interact(
-        telemetryInteractRequest.interactType,
-        telemetryInteractRequest.subType,
-        telemetryInteractRequest.env,
-        telemetryInteractRequest.pageId,
-        telemetryInteractRequest.object,
-        telemetryInteractRequest.values,
-        telemetryInteractRequest.rollup,
-        telemetryInteractRequest.corRelationList
+        telemetryInteractRequest
     );
 };
 

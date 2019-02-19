@@ -1,6 +1,9 @@
 import {
     AcceptTermsConditionRequest,
+    GenerateOtpRequest,
     GetAllProfileRequest,
+    IsProfileAlreadyInUseRequest,
+    LocationSearchCriteria,
     NoActiveSessionError,
     NoProfileFoundError,
     Profile,
@@ -11,7 +14,8 @@ import {
     ServerProfile,
     ServerProfileDetailsRequest,
     ServerProfileSearchCriteria,
-    UpdateServerProfileInfoRequest
+    UpdateServerProfileInfoRequest,
+    VerifyOtpRequest
 } from '..';
 import {DbService} from '../../db';
 import {Observable} from 'rxjs';
@@ -32,13 +36,9 @@ import {ContentAccessEntry} from '../../content/db/schema';
 import {InvalidProfileError} from '../errors/invalid-profile-error';
 import {UniqueId} from '../../db/util/unique-id';
 import {ProfileExistsResponse} from '../def/profile-exists-response';
-import {IsProfileAlreadyInUseRequest} from '..';
 import {IsProfileAlreadyInUseHandler} from '../handler/is-profile-already-in-use-handler';
-import {GenerateOtpRequest} from '..';
 import {GenerateOtpHandler} from '../handler/generate-otp-handler';
-import {VerifyOtpRequest} from '..';
 import {VerifyOtpHandler} from '../handler/verify-otp-handler';
-import {LocationSearchCriteria} from '..';
 import {LocationSearchResult} from '../def/location-search-result';
 import {SearchLocationHandler} from '../handler/search-location-handler';
 

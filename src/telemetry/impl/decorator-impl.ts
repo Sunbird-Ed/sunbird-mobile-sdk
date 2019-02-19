@@ -1,8 +1,9 @@
-import {TelemetryDecorator} from '..';
+import {TelemetryDecorator, TelemetryEvents} from '..';
+import Telemetry = TelemetryEvents.Telemetry;
 
 export class TelemetryDecoratorImpl implements TelemetryDecorator {
 
-    decorate(event: any): any {
+    decorate(event: Telemetry): any {
         return event;
     }
 

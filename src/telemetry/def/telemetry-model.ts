@@ -1,4 +1,4 @@
-import {PageId} from './telemetry-constants';
+import {LogLevel, PageId} from './telemetry-constants';
 
 export class Actor {
     static readonly TYPE_SYSTEM = 'System';
@@ -146,15 +146,6 @@ export class ProcessedEventModel {
     priority: number;
 }
 
-export enum LogLevel {
-    TRACE = 'TRACE',
-    DEBUG = 'DEBUG',
-    INFO = 'INFO',
-    WARN = 'WARN',
-    ERROR = 'ERROR',
-    FATAL = 'FATAL'
-}
-
 export namespace TelemetryEvents {
     export abstract class Telemetry {
         private static readonly TELEMETRY_VERSION: string = '3.0';
@@ -233,16 +224,16 @@ export namespace TelemetryEvents {
     export class End extends Telemetry {
         private static readonly EID = 'END';
 
-        env: string;
         type: string;
         mode: string;
         duration: number;
         pageId: string;
+        summaryList: Array<{ [index: string]: any }>;
+        env: string;
         objId: string;
         objType: string;
         objVer: string;
         rollup: Rollup;
-        summaryList: Array<{ [index: string]: any }>;
         correlationData: Array<CorrelationData>;
 
         public constructor(type: string, mode: string, duration: number, pageid: PageId, summaryList: {}[]) {
@@ -304,7 +295,7 @@ export namespace TelemetryEvents {
         objVer: string;
         rollup: Rollup;
 
-        constructor(type: string, subtype: string, id: string, pageid: PageId, pos: { [key: string]: string }, values: {}[]) {
+        constructor(type: string, subtype: string, id: string, pageid: PageId, pos: { [key: string]: string }[], values: {}[]) {
             super(Interact.EID);
             this.setEdata({
                 ...(type ? {type} : {type: ''}),

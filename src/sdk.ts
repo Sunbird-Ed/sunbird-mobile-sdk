@@ -11,7 +11,7 @@ import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/impl/auth-service-impl';
-import {ContentService, ContentFeedbackService} from './content';
+import {ContentFeedbackService, ContentService} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
 import {Channel, Framework, FrameworkService, FrameworkServiceImpl} from './framework';
@@ -43,7 +43,7 @@ import {ZipService} from './util/zip/def/zip-service';
 import {DeviceInfo} from './util/device/def/device-info';
 import {ZipServiceImpl} from './util/zip/impl/zip-service-impl';
 import {DeviceInfoImpl} from './util/device/impl/device-info-impl';
-import { ContentFeedbackServiceImpl } from './content/impl/content-feedback-service-impl';
+import {ContentFeedbackServiceImpl} from './content/impl/content-feedback-service-impl';
 
 export class SunbirdSdk {
 
