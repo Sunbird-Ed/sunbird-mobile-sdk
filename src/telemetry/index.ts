@@ -9,4 +9,6 @@ export * from './def/telemetry-error';
 export * from './decorators/generate-error-telemetry-decorators';
 export * from './decorators/generate-interact-telemetry-decorators';
 export * from './decorators/generate-impression-telemetry-decorators';
+export * from './decorators/generate-log-telemetry-decorators';
+export * from './decorators/generate-start-telemetry-decorators';
 export * from './util/telemetry-request-factory';
