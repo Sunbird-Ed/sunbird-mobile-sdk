@@ -1,8 +1,14 @@
-import { FrameworkCategory } from './framework-category';
+import { FrameworkCategoryCode } from './framework-category-code';
 export interface ChannelDetailsRequest {
     channelId: string;
 }
 export interface FrameworkDetailsRequest {
     frameworkId: string;
-    categories: FrameworkCategory[];
+    requiredCategories: FrameworkCategoryCode[];
+}
+export interface OrganizationSearchCriteria<T> {
+    filters: {
+        isRootOrg: boolean;
+    };
+    fields: (keyof T)[];
 }

@@ -31,6 +31,8 @@ export declare class SunbirdSdk {
     private _sharedPreferences;
     private _fileService;
     private _systemSettingsService;
+    private _zipService;
+    private _deviceInfo;
     private _sdkConfig;
     readonly sdkConfig: SdkConfig;
     readonly pageAssembleService: PageAssembleService;

@@ -6,6 +6,7 @@ export declare class ContentUtil {
     private static DEFAULT_PACKAGE_VERSION;
     static defaultCompatibilityLevel: number;
     private static INITIAL_VALUE_FOR_TRANSFER_COUNT;
+    private static readonly MAX_CONTENT_NAME;
     static isAvailableLocally(contentState: number): boolean;
     static isUpdateAvailable(serverData: ContentData, localData: ContentData): boolean;
     static hasChildren(localData: string): boolean;
@@ -55,5 +56,8 @@ export declare class ContentUtil {
      * @return
      */
     static isInlineIdentity(contentDisposition: string, contentEncoding: string): boolean | "";
+    static isOnlineContent(contentData: any): boolean;
     static addOrUpdateDialcodeMapping(jsonStr: string, identifier: string, rootNodeIdentifier: string): string;
+    static deDupe<T>(array: T[], property: any): T[];
+    static getExportedFileName(contentsInDb: ContentEntry.SchemaMap[]): string;
 }

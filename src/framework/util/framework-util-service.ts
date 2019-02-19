@@ -1,7 +1,11 @@
 import {Observable} from 'rxjs';
-import {Framework} from '..';
-import {GetSuggestedFramworksRequest} from './requests';
+import {CategoryTerm, Channel, Framework, GetFrameworkCategoryTermsRequest,} from '..';
+import {GetSuggestedFrameworksRequest} from './requests';
 
 export interface FrameworkUtilService {
-    getSuggestedFrameworkList(getSuggestedFrameworksRequest: GetSuggestedFramworksRequest): Observable<Framework[]>;
+    getActiveChannelSuggestedFrameworkList(getSuggestedFrameworksRequest: GetSuggestedFrameworksRequest): Observable<Framework[]>;
+
+    getFrameworkCategoryTerms(getFrameworkCategoriesRequest: GetFrameworkCategoryTermsRequest): Observable<CategoryTerm[]>;
+
+    getCustodianChannel(): Observable<Channel>;
 }

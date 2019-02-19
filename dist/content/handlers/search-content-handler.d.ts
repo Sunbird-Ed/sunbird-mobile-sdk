@@ -17,15 +17,15 @@ export declare class SearchContentHandler {
     getCompatibilityLevelFilter(): any;
     getRequest(request: any, framework: string, langCode: string): Request;
     createFiilterCriteria(previouscriteria: ContentSearchCriteria, facets: ContentSearchFilter[], filters: any): {
-        'query': string;
-        'limit': number;
-        'offset': number;
-        'facets': string[];
-        'sort': ContentSortCriteria[];
-        'mode': string;
-        'facetFilters': never[];
+        query: string;
+        limit: number;
+        offset: number;
+        facets: string[];
+        sort: ContentSortCriteria[];
+        mode: string;
+        facetFilters: never[];
     };
     addFilterValue(facets: ContentSearchFilter[], filters: any): void;
     getFilterValuesWithAppliedFilter(facetValues: FilterValue[], appliedFilter: string[]): FilterValue[];
-    mapSearchResponse(searchResponse: any): ContentSearchResult;
+    mapSearchResponse(searchResponse: any, searchRequest: any): ContentSearchResult;
 }

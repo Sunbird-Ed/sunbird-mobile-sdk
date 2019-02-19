@@ -11,7 +11,7 @@ import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/impl/auth-service-impl';
-import {ContentService} from './content';
+import {ContentService, ContentFeedbackService} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
 import {Channel, Framework, FrameworkService, FrameworkServiceImpl} from './framework';
@@ -43,6 +43,7 @@ import {ZipService} from './util/zip/def/zip-service';
 import {DeviceInfo} from './util/device/def/device-info';
 import {ZipServiceImpl} from './util/zip/impl/zip-service-impl';
 import {DeviceInfoImpl} from './util/device/impl/device-info-impl';
+import { ContentFeedbackServiceImpl } from './content/impl/content-feedback-service-impl';
 
 export class SunbirdSdk {
 
@@ -74,6 +75,7 @@ export class SunbirdSdk {
     private _zipService: ZipService;
     private _deviceInfo: DeviceInfo;
     private _sdkConfig: SdkConfig;
+    private _contentFeedbackService: ContentFeedbackService;
 
     get sdkConfig(): SdkConfig {
         return this._sdkConfig;
@@ -113,6 +115,10 @@ export class SunbirdSdk {
 
     get contentService(): ContentService {
         return this._contentService;
+    }
+
+    get contentFeedbackService(): ContentFeedbackService {
+        return this._contentFeedbackService;
     }
 
     get courseService(): CourseService {
@@ -239,5 +245,6 @@ export class SunbirdSdk {
             this._fileService,
             new CachedItemStoreImpl<SystemSettings>(this._keyValueStore, sdkConfig.apiConfig),
         );
+        this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService);
     }
 }
