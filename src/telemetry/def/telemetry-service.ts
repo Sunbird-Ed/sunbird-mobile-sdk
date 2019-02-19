@@ -45,14 +45,13 @@ export interface TelemetryService {
                    pageId: PageId,
                    stackTrace: string): void;
 
-    event(telemetry: any): Observable<boolean>;
-
     import(sourcePath: string): Observable<boolean>;
 
     export(destPath: string): Observable<boolean>;
 
     getTelemetryStat(): Observable<TelemetryStat>;
 
-    sync(): Observable<TelemetrySyncStat>;
+    event(telemetry: any): Observable<number>;
 
+    sync(): Observable<TelemetrySyncStat>;
 }
