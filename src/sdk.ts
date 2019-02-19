@@ -171,6 +171,12 @@ export class SunbirdSdk {
         }
 
         await this._dbService.init();
+
+        this._apiService = new ApiServiceImpl(sdkConfig.apiConfig);
+
+        this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService);
+
+        this._keyValueStore = new KeyValueStoreImpl(this._dbService);
         this._profileService = new ProfileServiceImpl(
             sdkConfig.profileServiceConfig,
             this._dbService,
@@ -183,11 +189,6 @@ export class SunbirdSdk {
         this._telemetryService = new TelemetryServiceImpl(this._dbService,
             new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo), this._profileService, this._groupService);
 
-        this._apiService = new ApiServiceImpl(sdkConfig.apiConfig);
-
-        this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService);
-
-        this._keyValueStore = new KeyValueStoreImpl(this._dbService);
 
         if (sdkConfig.fileConfig.debugMode === true) {
             this._fileService = new DebugPromptFileService();
