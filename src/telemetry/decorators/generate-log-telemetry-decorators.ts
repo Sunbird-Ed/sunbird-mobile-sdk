@@ -1,16 +1,10 @@
 import {TelemetryLogRequest} from '../def/requests';
 import {SunbirdSdk} from '../../sdk';
-import {
-    afterMethodResolvesFactory,
-    beforeMethodFactory
-} from './decorator-factories';
+import {afterMethodResolvesFactory, beforeMethodFactory} from './decorator-factories';
+
 const invokeLog = (telemetryLogRequest: TelemetryLogRequest) => {
     SunbirdSdk.instance.telemetryService.log(
-        telemetryLogRequest.logLevel,
-        telemetryLogRequest.message,
-        telemetryLogRequest.env,
-        telemetryLogRequest.type,
-        telemetryLogRequest.params
+        telemetryLogRequest
     );
 };
 

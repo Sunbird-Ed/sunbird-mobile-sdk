@@ -1,18 +1,10 @@
 import {TelemetryStartRequest} from '../def/requests';
 import {SunbirdSdk} from '../../sdk';
-import {
-    afterMethodFactory,
-    afterMethodResolvesFactory,
-    beforeMethodFactory
-} from './decorator-factories';
+import {afterMethodFactory, afterMethodResolvesFactory, beforeMethodFactory} from './decorator-factories';
+
 const invokeStart = (telemetryStartRequest: TelemetryStartRequest) => {
     SunbirdSdk.instance.telemetryService.start(
-        telemetryStartRequest.pageId,
-        telemetryStartRequest.env,
-        telemetryStartRequest.mode,
-        telemetryStartRequest.object,
-        telemetryStartRequest.rollup,
-        telemetryStartRequest.corRelationList
+        telemetryStartRequest
     );
 };
 

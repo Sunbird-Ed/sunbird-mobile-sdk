@@ -18,7 +18,7 @@ export class CompressContent {
         const response: Response = new Response();
         exportContentContext.contentModelsToExport.forEach(async (contentInDb) => {
             const contentData = JSON.parse(contentInDb[COLUMN_NAME_LOCAL_DATA]);
-            if (!ContentUtil.isAvailableLocally(contentInDb[COLUMN_NAME_CONTENT_STATE])
+            if (!ContentUtil.isAvailableLocally(contentInDb[COLUMN_NAME_CONTENT_STATE]!)
                 || ContentUtil.isOnlineContent(contentData)
                 || ContentUtil.isInlineIdentity(contentData.contentDisposition, contentData.contentEncoding)) {
                 return;
@@ -32,7 +32,7 @@ export class CompressContent {
                 skipDirectoriesName.push(contentInDb[COLUMN_NAME_IDENTIFIER]);
                 skipFilesName.push(contentInDb[COLUMN_NAME_IDENTIFIER].concat('/', 'manifest.json'));
                 await this.fileService.createFile(exportContentContext.tmpLocationPath!, artifactUrl, true);
-                await this.zipService.zip(path, payload, skipDirectoriesName, skipFilesName);
+                await this.zipService.zip(path!, payload, skipDirectoriesName, skipFilesName);
             }
 
         });
