@@ -47,7 +47,8 @@ export class BaseConnection implements Connection {
             'X-Device-Id': SHA1(this.apiConfig.api_authentication.deviceId).toString(),
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'Accept-Encoding': 'gzip'
         };
         this.http.addHeaders(header);
     }
