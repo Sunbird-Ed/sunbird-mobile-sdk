@@ -193,7 +193,7 @@ export class SunbirdSdk {
             this._keyValueStore
         );
 
-        this._groupService = new GroupServiceImpl(this._dbService);
+        this._groupService = new GroupServiceImpl(this._dbService, this._keyValueStore);
         this._zipService = new ZipServiceImpl();
         this._deviceInfo = new DeviceInfoImpl();
 

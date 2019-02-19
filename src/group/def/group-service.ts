@@ -2,6 +2,7 @@ import {Group} from './group';
 import {Observable} from 'rxjs';
 import {GetAllGroupRequest} from './get-all-group-request';
 import {ProfilesToGroupRequest} from './profiles-to-group-request';
+import {GroupSession} from './group-session';
 
 
 export interface GroupService {
@@ -11,6 +12,12 @@ export interface GroupService {
     deleteGroup(gid: string): Observable<undefined>;
 
     updateGroup(group: Group): Observable<Group>;
+
+    getCurrentGroup(): Observable<Group>;
+
+    setCurrentGroup(groupGid: string): Observable<boolean>;
+
+    getActiveGroupSession(): Observable<GroupSession | undefined>;
 
     getAllGroups(getAllGroupRequest?: GetAllGroupRequest): Observable<Group[]>;
 
