@@ -13,7 +13,7 @@ export enum ProfileSource {
 export interface Profile {
     uid: string;
     handle: string;
-    createdAt?: string;
+    createdAt?: number;
     medium?: string[];
     board?: string[];
     subject?: string[];
