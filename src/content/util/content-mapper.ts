@@ -13,9 +13,9 @@ export class ContentMapper {
         let localData;
         if (!manifestVersion) {
             serverLastUpdatedOn = contentData.lastUpdatedOn;
-            serverData = contentData;
+            serverData = JSON.stringify(contentData);
         } else {
-            localData = contentData;
+            localData = JSON.stringify(contentData);
         }
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: contentData.identifier,
@@ -31,11 +31,39 @@ export class ContentMapper {
         };
     }
 
+    public static mapServerResponseToContent(contentData, manifestVersion?: string): Content {
+        let serverLastUpdatedOn;
+        let serverData;
+        let localData;
+        if (!manifestVersion) {
+            serverLastUpdatedOn = contentData.lastUpdatedOn;
+            serverData = contentData;
+        } else {
+            localData = contentData;
+        }
+        return {
+            identifier: contentData.identifier,
+            contentData: contentData,
+            isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
+            mimeType: contentData.mimeType,
+            basePath:  '',
+            contentType: ContentUtil.readContentType(contentData),
+            isAvailableLocally: false,
+            referenceCount: 0,
+            sizeOnDevice: 0,
+            lastUsedTime: 0,
+            lastUpdatedTime: 0,
+        };
+
+    }
+
     public static mapContentDBEntryToContent(contentEntry: ContentEntry.SchemaMap, request?: ContentRequest,
                                              feedbackService?: ContentFeedbackService, profileService?: ProfileService): Content {
         let contentData;
-        const serverData: ContentData = JSON.parse(contentEntry[ContentEntry.COLUMN_NAME_SERVER_DATA]);
-        const localData: ContentData = JSON.parse(contentEntry[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+        const serverInfo = contentEntry[ContentEntry.COLUMN_NAME_SERVER_DATA];
+        const localInfo = contentEntry[ContentEntry.COLUMN_NAME_LOCAL_DATA];
+        const serverData: ContentData = serverInfo && JSON.parse(serverInfo);
+        const localData: ContentData = localInfo && JSON.parse(localInfo);
         if (localData) {
             contentData = localData;
         }
@@ -72,21 +100,19 @@ export class ContentMapper {
         if (localLastUpdatedTime) {
             contentCreationTime = new Date(localLastUpdatedTime).getTime();
         }
-
-        const content = {
+        return {
             identifier: contentEntry[ContentEntry.COLUMN_NAME_IDENTIFIER],
             contentData: contentData,
             isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
             mimeType: contentEntry[ContentEntry.COLUMN_NAME_MIME_TYPE],
-            basePath: contentEntry[ContentEntry.COLUMN_NAME_PATH]!,
+            basePath: contentEntry[ContentEntry.COLUMN_NAME_PATH]! || '',
             contentType: contentEntry[ContentEntry.COLUMN_NAME_CONTENT_TYPE],
             isAvailableLocally: ContentUtil.isAvailableLocally(contentEntry[ContentEntry.COLUMN_NAME_CONTENT_STATE]!),
-            referenceCount: Number(contentEntry[ContentEntry.COLUMN_NAME_IDENTIFIER]),
-            sizeOnDevice: Number(contentEntry[ContentEntry.COLUMN_NAME_IDENTIFIER]),
-            lastUsedTime: contentEntry[ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP],
+            referenceCount: Number(contentEntry[ContentEntry.COLUMN_NAME_REF_COUNT]) || 0,
+            sizeOnDevice: Number(contentEntry[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]) || 0,
+            lastUsedTime: Number(contentEntry[ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP]) || 0,
             lastUpdatedTime: contentCreationTime,
         };
-        return content;
 
 
     }

@@ -16,7 +16,7 @@ import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {Observable, Observer} from 'rxjs';
 import Telemetry = TelemetryEvents.Telemetry;
 import {ProfileService, ProfileSession} from '../../profile';
-import {GroupService} from '../../group';
+import {GroupService, GroupSession} from '../../group';
 
 export class TelemetryServiceImpl implements TelemetryService {
 
@@ -150,14 +150,15 @@ export class TelemetryServiceImpl implements TelemetryService {
     private save(telemetry: any): Observable<boolean> {
         return Observable.zip(
             this.getCurrentProfileSession(),
-            this.getCurrentProfileSession()
+            this.getCurrentGroupSession()
         ).mergeMap((r) => {
             const profileSession: ProfileSession | undefined = r[0];
-            const groupSession: ProfileSession | undefined = r[1];
+            const groupSession: GroupSession | undefined = r[1];
 
             const insertQuery: InsertQuery = {
                 table: TelemetryEntry.TABLE_NAME,
-                modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!, groupSession!))
+                modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!.uid,
+                    profileSession!.sid, groupSession!.gid))
             };
 
             return this.dbService.insert(insertQuery).map((count) => count > 1);
@@ -168,8 +169,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         return this.profileService.getActiveProfileSession().toPromise();
     }
 
-    private getCurrentGroupSession(): Promise<ProfileSession | undefined> {
-        return this.profileService.getActiveProfileSession().toPromise();
+    private getCurrentGroupSession(): Promise<GroupSession | undefined> {
+        return this.groupService.getActiveGroupSession().toPromise();
     }
 
 }
