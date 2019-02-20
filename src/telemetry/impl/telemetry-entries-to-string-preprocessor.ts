@@ -4,8 +4,8 @@ import * as Collections from 'typescript-collections';
 
 export class TelemetryEntriesToStringPreprocessor implements TelemetrySyncPreprocessor {
     process(input: any): any {
-        if (!Array.isArray(input)) {
-            throw new InvalidInputForSyncPreprocessorError('StringToByteArrayPreprocessor expects input of type "Telemetry[]"');
+        if (typeof input !== 'object') {
+            throw new InvalidInputForSyncPreprocessorError('TelemetryEntriesToStringPreprocessor expects input of type "object"');
         }
 
         return Collections.util.makeString(input);
