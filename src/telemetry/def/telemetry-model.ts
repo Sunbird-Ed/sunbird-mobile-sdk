@@ -6,7 +6,7 @@ export class Actor {
     id: string;
     type: string;
 
-    Actor() {
+    constructor() {
         this.type = Actor.TYPE_USER;
     }
 }
@@ -20,7 +20,7 @@ export class Audit {
 }
 
 export class Context {
-    private _env: string;
+    private env: string;
     private cdata: Array<CorrelationData>;
 
     channel: string;
@@ -29,12 +29,12 @@ export class Context {
     did: string;
 
 
-    get env(): string {
-        return this._env;
+    getEnvironment(): string {
+        return this.env;
     }
 
-    public setEnv(value: string) {
-        this._env = value;
+    public setEnvironment(value: string) {
+        this.env = value;
     }
 
     public setCdata(value: Array<CorrelationData>) {
@@ -109,14 +109,39 @@ export class Interrupt {
 }
 
 export class ProducerData {
-    id: string;
-    pid: string;
-    ver: string;
+      id: string ;
+      pid: string;
+      ver: string;
 
     ProducerData() {
         this.id = '';
         this.pid = '';
         this.ver = '';
+    }
+
+    getId(): string {
+        return this.id;
+    }
+
+    getPid(): string {
+        return this.pid;
+    }
+
+    getVersion(): string {
+        return this.ver;
+    }
+
+
+    setId(value: string) {
+        this.id = value;
+    }
+
+    setPid(value: string) {
+        this.pid = value;
+    }
+
+    setVersion(value: string) {
+        this.ver = value;
     }
 }
 
@@ -209,6 +234,11 @@ export namespace TelemetryEvents {
             this.edata = {};
         }
 
+
+        public getEid(): string {
+            return this.eid;
+        }
+
         public setActor(value: Actor) {
             this.actor = value;
         }
@@ -226,7 +256,7 @@ export namespace TelemetryEvents {
         }
 
         public setEnvironment(env: string) {
-            this.context.setEnv(env);
+            this.context.setEnvironment(env);
         }
 
         public setCoRrelationdata(correlationData: CorrelationData[]) {

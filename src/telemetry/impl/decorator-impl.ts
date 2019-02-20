@@ -40,8 +40,8 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         const context: Context = event.getContext();
         context.channel = this.apiConfig.api_authentication.channelId;
         this.patchPData(context);
-        if (!context.env) {
-            context.setEnv('app');
+        if (!context.getEnvironment()) {
+            context.setEnvironment('app');
         }
         context.sid = sid;
         context.did = this.deviceInfo.getDeviceID();
@@ -52,23 +52,29 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
             event.pdata = new ProducerData();
         }
         const pData: ProducerData = event.pdata;
-        if (!pData.hasOwnProperty('id')) {
+        if (!pData.getId()) {
             pData.id = this.apiConfig.api_authentication.producerId;
         }
 
         const pid = pData.pid;
-        pData.pid = pid ? this.apiConfig.api_authentication.producerUniqueId : 'geniesdk.android';
+        if (pid) {
+            pData.pid = pid;
+        } else if (this.apiConfig.api_authentication.producerUniqueId) {
+            pData.pid = this.apiConfig.api_authentication.producerUniqueId;
+        } else {
+            pData.pid = 'geniesdk.android';
+        }
 
         if (pData.ver) {
             pData.ver = '';
         }
     }
 
-    prepare(event: any) {
+    prepare(event: Telemetry, priority) {
         return {
             event: JSON.stringify(event),
-            event_type: event['type'],
-            timestamp: new Date().getTime(),
+            event_type: event.getEid(),
+            timestamp: Date.now(),
             priority: 1
         };
     }
