@@ -1,13 +1,12 @@
 import {ProfileEntry} from '../db/schema';
-import {Profile} from '..';
-import {ProfileType, ProfileSource} from '..';
+import {Profile, ProfileSource, ProfileType} from '..';
 
 export class ProfileMapper {
     public static mapProfileDBEntryToProfile(profileEntry: ProfileEntry.SchemaMap): Profile {
         return {
             uid: profileEntry[ProfileEntry.COLUMN_NAME_UID],
             handle: profileEntry[ProfileEntry.COLUMN_NAME_HANDLE],
-            createdAt: profileEntry[ProfileEntry.COLUMN_NAME_CREATED_AT],
+            createdAt: (profileEntry[ProfileEntry.COLUMN_NAME_CREATED_AT]).toString(),
             medium: profileEntry[ProfileEntry.COLUMN_NAME_MEDIUM].split(','),
             board: profileEntry[ProfileEntry.COLUMN_NAME_BOARD].split(','),
             subject: profileEntry[ProfileEntry.COLUMN_NAME_SUBJECT].split(','),
@@ -23,7 +22,7 @@ export class ProfileMapper {
         return {
             [ProfileEntry.COLUMN_NAME_UID]: profile.uid,
             [ProfileEntry.COLUMN_NAME_HANDLE]: profile.handle,
-            [ProfileEntry.COLUMN_NAME_CREATED_AT]: profile.createdAt,
+            [ProfileEntry.COLUMN_NAME_CREATED_AT]: Number(profile.createdAt ? profile.createdAt : ''),
             [ProfileEntry.COLUMN_NAME_MEDIUM]: (profile.medium ? profile.medium.join(',') : ''),
             [ProfileEntry.COLUMN_NAME_BOARD]: (profile.board ? profile.board.join(',') : ''),
             [ProfileEntry.COLUMN_NAME_SUBJECT]: (profile.subject ? profile.subject.join(',') : ''),
