@@ -12,7 +12,7 @@ export class DeviceInfoImpl implements DeviceInfo {
 
     constructor(private sdkConfig: SdkConfig) {
         if (sdkConfig.apiConfig.debugMode) {
-            this.deviceId = SHA1(device ? device.uuid : '4adce7fad56e02b7').toString();
+            this.deviceId = SHA1('4adce7fad56e02b7').toString();
         }
 
         this.deviceId = SHA1(device.uuid).toString();
