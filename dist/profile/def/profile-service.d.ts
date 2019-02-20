@@ -19,6 +19,7 @@ import { LocationSearchResult } from './location-search-result';
 export interface ProfileService {
     createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
     deleteProfile(uid: string): Observable<undefined>;
+    updateProfile(profile: Profile): Observable<Profile>;
     updateServerProfile(updateServerProfileRequest: UpdateServerProfileInfoRequest): Observable<Profile>;
     getTenantInfo(): Observable<TenantInfo>;
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;

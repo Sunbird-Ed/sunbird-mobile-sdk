@@ -1,51 +1,83 @@
-import { Environment, ImpressionSubtype, ImpressionType, InteractSubtype, InteractType, LogLevel, LogType, Mode, PageId } from './telemetry-constants';
-import { CorrelationData, Rollup, TelemetryObject } from './telemetry-model';
+import { Environment, ImpressionSubtype, ImpressionType, InteractSubtype, InteractType, LogLevel, LogType, PageId } from './telemetry-constants';
+import { CorrelationData, DeviceSpecification, Rollup, Visit } from './telemetry-model';
 export declare class TelemetryInteractRequest {
-    interactType: InteractType;
+    type: InteractType;
     subType: InteractSubtype;
-    env: Environment;
+    id: string;
     pageId: PageId;
-    object?: TelemetryObject;
-    values?: Map<any, any>;
-    rollup?: Rollup;
-    corRelationList?: Array<CorrelationData>;
+    pos: Array<{
+        [index: string]: string;
+    }>;
+    values: Array<{
+        [index: string]: any;
+    }>;
+    env: Environment;
+    rollup: Rollup;
+    valueMap: {
+        [index: string]: any;
+    };
+    correlationData: Array<CorrelationData>;
+    objId: string;
+    objType: string;
+    objVer: string;
 }
 export declare class TelemetryErrorRequest {
-    env: Environment;
+    errorCode: string;
+    errorType: string;
+    stacktrace: string;
     pageId: PageId;
+    env: Environment;
 }
 export declare class TelemetryImpressionRequest {
-    impressionType: ImpressionType;
+    type: ImpressionType;
     subType: ImpressionSubtype;
     pageId: PageId;
+    uri: string;
+    visits: Visit[];
     env: Environment;
-    objectId?: string;
-    objectType?: string;
-    objectVersion?: string;
+    objId: string;
+    objType: string;
+    objVer: string;
+    correlationData: Array<CorrelationData>;
     rollup?: Rollup;
-    corRelationList?: Array<CorrelationData>;
 }
 export declare class TelemetryStartRequest {
+    type: string;
+    deviceSpecification: DeviceSpecification;
+    loc: string;
+    mode: string;
+    duration: number;
     pageId: PageId;
     env: Environment;
-    mode: Mode;
-    object?: TelemetryObject;
-    rollup?: Rollup;
-    corRelationList?: Array<CorrelationData>;
+    objId: string;
+    objType: string;
+    objVer: string;
+    rollup: Rollup;
+    correlationData: Array<CorrelationData>;
 }
 export declare class TelemetryEndRequest {
-    objectType: string;
-    mode: Mode;
-    pageId: PageId;
     env: Environment;
-    object?: TelemetryObject;
-    rollup?: Rollup;
-    corRelationList?: Array<CorrelationData>;
+    type: string;
+    mode: string;
+    duration: number;
+    pageId: PageId;
+    objId: string;
+    objType: string;
+    objVer: string;
+    rollup: Rollup;
+    summaryList: Array<{
+        [index: string]: any;
+    }>;
+    correlationData: Array<CorrelationData>;
 }
 export declare class TelemetryLogRequest {
-    logLevel: LogLevel;
-    message: string;
-    env: Environment;
     type: LogType;
-    params: Array<any>;
+    level: LogLevel;
+    message: string;
+    pageId: PageId;
+    params: Array<{
+        [index: string]: any;
+    }>;
+    env: Environment;
+    actorType: string;
 }

@@ -19,17 +19,22 @@ export declare namespace ContentEntry {
     const COLUMN_NAME_UID = "uid";
     const COLUMN_NAME_SIZE_ON_DEVICE = "size_on_device";
     interface SchemaMap {
-        [_ID]: string;
         [COLUMN_NAME_IDENTIFIER]: string;
         [COLUMN_NAME_SERVER_DATA]: string;
         [COLUMN_NAME_LOCAL_DATA]: string;
         [COLUMN_NAME_MIME_TYPE]: string;
-        [COLUMN_NAME_PATH]: string;
-        [COLUMN_NAME_INDEX]: string;
-        [COLUMN_NAME_VISIBILITY]: string;
+        [COLUMN_NAME_PATH]?: string;
+        [COLUMN_NAME_INDEX]?: string;
+        [COLUMN_NAME_VISIBILITY]?: string;
         [COLUMN_NAME_SERVER_LAST_UPDATED_ON]: string;
-        [COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: string;
+        [COLUMN_NAME_LOCAL_LAST_UPDATED_ON]?: string;
         [COLUMN_NAME_MANIFEST_VERSION]: string;
+        [COLUMN_NAME_REF_COUNT]?: number;
+        [COLUMN_NAME_CONTENT_STATE]?: number;
+        [COLUMN_NAME_CONTENT_TYPE]: string;
+        [COLUMN_NAME_AUDIENCE]?: string;
+        [COLUMN_NAME_PRAGMA]?: string;
+        [COLUMN_NAME_SIZE_ON_DEVICE]?: number;
     }
     const getCreateEntry: (() => string);
     const getDeleteEntry: (() => string);
