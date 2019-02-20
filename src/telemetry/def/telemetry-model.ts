@@ -183,13 +183,13 @@ export namespace TelemetryEvents {
          * Who did the event
          * Actor of the event
          */
-        private _actor: Actor;
+        private actor: Actor;
 
         /**
          * Who did the event
          * Context in which the event has occured.
          */
-        private _context: Context;
+        private context: Context;
 
         /**
          * What is the target of the event
@@ -204,17 +204,17 @@ export namespace TelemetryEvents {
         protected constructor(eid: string) {
             this.eid = eid;
             this.ets = Date.now();
-            this._actor = new Actor();
-            this._context = new Context();
+            this.actor = new Actor();
+            this.context = new Context();
             this.edata = {};
         }
 
         public setActor(value: Actor) {
-            this._actor = value;
+            this.actor = value;
         }
 
         public setContext(value: Context) {
-            this._context = value;
+            this.context = value;
         }
 
         public setEdata(value: {}) {
@@ -226,11 +226,11 @@ export namespace TelemetryEvents {
         }
 
         public setEnvironment(env: string) {
-            this._context.setEnv(env);
+            this.context.setEnv(env);
         }
 
         public setCoRrelationdata(correlationData: CorrelationData[]) {
-            this._context.setCdata(correlationData);
+            this.context.setCdata(correlationData);
         }
 
         public setObject(id: string, type: string, ver: string, rollup: Rollup) {
@@ -239,12 +239,12 @@ export namespace TelemetryEvents {
         }
 
 
-        get actor(): Actor {
-            return this._actor;
+        public getActor(): Actor {
+            return this.actor;
         }
 
-        get context(): Context {
-            return this._context;
+        public getContext(): Context {
+            return this.context;
         }
     }
 
