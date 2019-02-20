@@ -22,11 +22,11 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
     }
 
     patchActor(event: Telemetry, uid: string) {
-        if (!event.actor) {
+        if (!event.getActor()) {
             event.setActor(new Actor());
         }
 
-        const actor: Actor = event.actor;
+        const actor: Actor = event.getActor();
 
         if (!actor.id) {
             actor.id = uid;
@@ -34,10 +34,10 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
     }
 
     patchContext(event: Telemetry, sid) {
-        if (!event.context) {
+        if (!event.getContext()) {
             event.setContext(new Context());
         }
-        const context: Context = event.context;
+        const context: Context = event.getContext();
         context.channel = this.apiConfig.api_authentication.channelId;
         this.patchPData(context);
         if (!context.env) {
