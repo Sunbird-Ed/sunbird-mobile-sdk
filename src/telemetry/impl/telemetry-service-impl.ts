@@ -16,6 +16,7 @@ import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {Observable, Observer} from 'rxjs';
 import {ProfileService, ProfileSession} from '../../profile';
 import {GroupService, GroupSession} from '../../group';
+import {TelemetrySyncHandler} from '../handler/telemetry-sync-handler';
 
 export class TelemetryServiceImpl implements TelemetryService {
 
@@ -139,7 +140,7 @@ export class TelemetryServiceImpl implements TelemetryService {
 
 
     sync(): Observable<TelemetrySyncStat> {
-        throw new Error('Method not implemented.');
+        return new TelemetrySyncHandler().handle();
     }
 
     event(telemetry: any): Observable<number> {
