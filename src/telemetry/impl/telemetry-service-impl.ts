@@ -14,7 +14,6 @@ import {
 } from '..';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {Observable, Observer} from 'rxjs';
-import Telemetry = TelemetryEvents.Telemetry;
 import {ProfileService, ProfileSession} from '../../profile';
 import {GroupService, GroupSession} from '../../group';
 
@@ -158,7 +157,7 @@ export class TelemetryServiceImpl implements TelemetryService {
             const insertQuery: InsertQuery = {
                 table: TelemetryEntry.TABLE_NAME,
                 modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!.uid,
-                    profileSession!.sid, groupSession!.gid))
+                    profileSession!.sid, groupSession && groupSession.gid))
             };
 
             return this.dbService.insert(insertQuery).map((count) => count > 1);

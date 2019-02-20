@@ -1,10 +1,6 @@
 import {Actor, Context, ProducerData, TelemetryDecorator, TelemetryEvents} from '..';
-import {AppConfig} from '../../api/config/app-config';
-import {ApiAuthenticator} from '../../api/impl/api-authenticator';
 import {ApiConfig} from '../../api';
 import {DeviceInfo} from '../../util/device/def/device-info';
-import {GroupService} from '../../group';
-import {ProfileService, ProfileSession} from '../../profile';
 import Telemetry = TelemetryEvents.Telemetry;
 
 export class TelemetryDecoratorImpl implements TelemetryDecorator {
@@ -13,7 +9,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
                 private deviceInfo: DeviceInfo) {
     }
 
-    decorate(event: Telemetry, uid: string, sid: string, gid: string): any {
+    decorate(event: Telemetry, uid: string, sid: string, gid?: string): any {
         if (uid) {
             this.patchActor(event, uid);
         } else {
