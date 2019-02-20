@@ -12,7 +12,7 @@ export interface ApiConfig {
         mobileAppConsumer: string;
         channelId: string;
         producerId: string;
-        deviceId: string;
+        producerUniqueId: string;
     };
     cached_requests: {
         timeToLive: number;

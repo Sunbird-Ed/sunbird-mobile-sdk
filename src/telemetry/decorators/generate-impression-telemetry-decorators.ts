@@ -5,7 +5,7 @@ import {afterMethodFactory, afterMethodResolvesFactory, beforeMethodFactory} fro
 const invokeImpression = (telemetryImpressionRequest: TelemetryImpressionRequest) => {
     SunbirdSdk.instance.telemetryService.impression(
         telemetryImpressionRequest
-    );
+    ).subscribe();
 };
 
 export const GenerateImpressionTelemetryAfterMethod = (telemetryImpressionRequest: TelemetryImpressionRequest) => {

@@ -1,4 +1,4 @@
-import { AcceptTermsConditionRequest, GetAllProfileRequest, Profile, ProfileService, ProfileServiceConfig, ProfileSession, ProfileSource, ServerProfile, ServerProfileDetailsRequest, ServerProfileSearchCriteria, UpdateServerProfileInfoRequest } from '..';
+import { AcceptTermsConditionRequest, GenerateOtpRequest, GetAllProfileRequest, IsProfileAlreadyInUseRequest, LocationSearchCriteria, Profile, ProfileService, ProfileServiceConfig, ProfileSession, ProfileSource, ServerProfile, ServerProfileDetailsRequest, ServerProfileSearchCriteria, UpdateServerProfileInfoRequest, VerifyOtpRequest } from '..';
 import { DbService } from '../../db';
 import { Observable } from 'rxjs';
 import { TenantInfo } from '../def/tenant-info';
@@ -7,10 +7,6 @@ import { CachedItemStore, KeyValueStore } from '../../key-value-store';
 import { ContentAccessFilterCriteria } from '../def/content-access-filter-criteria';
 import { ContentAccess } from '../def/content-access';
 import { ProfileExistsResponse } from '../def/profile-exists-response';
-import { IsProfileAlreadyInUseRequest } from '..';
-import { GenerateOtpRequest } from '..';
-import { VerifyOtpRequest } from '..';
-import { LocationSearchCriteria } from '..';
 import { LocationSearchResult } from '../def/location-search-result';
 export declare class ProfileServiceImpl implements ProfileService {
     private profileServiceConfig;
@@ -22,6 +18,7 @@ export declare class ProfileServiceImpl implements ProfileService {
     constructor(profileServiceConfig: ProfileServiceConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore);
     createProfile(profile: Profile, profileSource?: ProfileSource): Observable<Profile>;
     deleteProfile(uid: string): Observable<undefined>;
+    updateProfile(profile: Profile): Observable<Profile>;
     updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<Profile>;
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
     getTenantInfo(): Observable<TenantInfo>;

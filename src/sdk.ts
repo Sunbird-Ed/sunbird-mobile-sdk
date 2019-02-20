@@ -16,13 +16,12 @@ import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
 import {Channel, Framework, FrameworkService, FrameworkServiceImpl} from './framework';
 import {ContentServiceImpl} from './content/impl/content-service-impl';
-import {ProfileService, ProfileServiceImpl} from './profile';
+import {ProfileService, ProfileServiceImpl, ServerProfile} from './profile';
 import {KeyValueStore} from './key-value-store';
 import {KeyValueStoreImpl} from './key-value-store/impl/key-value-store-impl';
 import {FormServiceImpl} from './form/impl/form-service-impl';
 import {FileService} from './util/file/def/file-service';
 import {CachedItemStoreImpl} from './key-value-store/impl/cached-item-store-impl';
-import {ServerProfile} from './profile/def/server-profile';
 import {PageAssembleService} from './page';
 import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
 import {PageAssemble} from './page/def/page-assemble';
@@ -36,9 +35,7 @@ import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
 import {GroupService} from './group';
 import {GroupServiceImpl} from './group/impl/group-service-impl';
 import {DebugPromptFileService} from './util/file/impl/debug-prompt-file-service';
-import {SystemSettingsServiceImpl} from './system-settings/impl/system-settings-service-impl';
-import {SystemSettingsService} from './system-settings/def/system-settings-service';
-import {SystemSettings} from './system-settings/def/system-settings';
+import {SystemSettings, SystemSettingsService, SystemSettingsServiceImpl} from './system-settings';
 import {ZipService} from './util/zip/def/zip-service';
 import {DeviceInfo} from './util/device/def/device-info';
 import {ZipServiceImpl} from './util/zip/impl/zip-service-impl';
@@ -144,6 +141,8 @@ export class SunbirdSdk {
     public async init(sdkConfig: SdkConfig) {
         this._sdkConfig = Object.freeze(sdkConfig);
 
+        this._deviceInfo = new DeviceInfoImpl(this.sdkConfig);
+
         this._sharedPreferences = new SharedPreferencesImpl();
 
         if (sdkConfig.dbConfig.debugMode === true) {
@@ -172,7 +171,7 @@ export class SunbirdSdk {
 
         await this._dbService.init();
 
-        this._apiService = new ApiServiceImpl(sdkConfig.apiConfig);
+        this._apiService = new ApiServiceImpl(sdkConfig.apiConfig, this._deviceInfo);
 
         this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService);
 
@@ -185,7 +184,6 @@ export class SunbirdSdk {
             this._keyValueStore
         );
         this._groupService = new GroupServiceImpl(this._dbService, this._keyValueStore);
-        this._deviceInfo = new DeviceInfoImpl();
         this._telemetryService = new TelemetryServiceImpl(this._dbService,
             new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo), this._profileService, this._groupService);
 

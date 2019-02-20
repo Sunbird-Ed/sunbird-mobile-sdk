@@ -5,6 +5,10 @@ export class Actor {
     static readonly TYPE_USER = 'User';
     id: string;
     type: string;
+
+    constructor() {
+        this.type = Actor.TYPE_USER;
+    }
 }
 
 export class Audit {
@@ -25,7 +29,11 @@ export class Context {
     did: string;
 
 
-    public setEnv(value: string) {
+    getEnvironment(): string {
+        return this.env;
+    }
+
+    public setEnvironment(value: string) {
         this.env = value;
     }
 
@@ -101,9 +109,40 @@ export class Interrupt {
 }
 
 export class ProducerData {
-    id: string;
-    pid: string;
-    ver: string;
+      id: string ;
+      pid: string;
+      ver: string;
+
+    ProducerData() {
+        this.id = '';
+        this.pid = '';
+        this.ver = '';
+    }
+
+    getId(): string {
+        return this.id;
+    }
+
+    getPid(): string {
+        return this.pid;
+    }
+
+    getVersion(): string {
+        return this.ver;
+    }
+
+
+    setId(value: string) {
+        this.id = value;
+    }
+
+    setPid(value: string) {
+        this.pid = value;
+    }
+
+    setVersion(value: string) {
+        this.ver = value;
+    }
 }
 
 export class Search {
@@ -195,8 +234,17 @@ export namespace TelemetryEvents {
             this.edata = {};
         }
 
+
+        public getEid(): string {
+            return this.eid;
+        }
+
         public setActor(value: Actor) {
             this.actor = value;
+        }
+
+        public setContext(value: Context) {
+            this.context = value;
         }
 
         public setEdata(value: {}) {
@@ -208,7 +256,7 @@ export namespace TelemetryEvents {
         }
 
         public setEnvironment(env: string) {
-            this.context.setEnv(env);
+            this.context.setEnvironment(env);
         }
 
         public setCoRrelationdata(correlationData: CorrelationData[]) {
@@ -218,6 +266,15 @@ export namespace TelemetryEvents {
         public setObject(id: string, type: string, ver: string, rollup: Rollup) {
             this.object = new TelemetryObject(id, type, ver);
             this.object.setRollup(rollup);
+        }
+
+
+        public getActor(): Actor {
+            return this.actor;
+        }
+
+        public getContext(): Context {
+            return this.context;
         }
     }
 

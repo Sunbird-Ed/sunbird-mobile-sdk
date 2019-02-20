@@ -25,3 +25,10 @@ export interface CourseBatchesRequest {
 export interface CourseBatchDetailsRequest {
     batchId: string;
 }
+export interface GetContentStateRequest {
+    userId: string;
+    batchId: string;
+    courseIds: string[];
+    contentIds: string[];
+    returnRefreshedContentStates: boolean;
+}

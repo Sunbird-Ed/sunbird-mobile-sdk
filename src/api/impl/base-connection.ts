@@ -1,16 +1,17 @@
 import {ApiConfig, HttpClient, HttpRequestType, HttpSerializer, Request, Response, ResponseCode} from '..';
 import {Observable} from 'rxjs';
-import * as SHA1 from 'crypto-js/sha1';
 import {Connection} from '../def/connection';
 import {Authenticator} from '../def/authenticator';
 import {ApiAuthenticator} from './api-authenticator';
 import {SessionAuthenticator} from '../../auth';
 import * as qs from 'qs';
+import {DeviceInfo} from '../../util/device/def/device-info';
 
 export class BaseConnection implements Connection {
 
     constructor(protected http: HttpClient,
-                protected apiConfig: ApiConfig) {
+                protected apiConfig: ApiConfig,
+                protected deviceInfo: DeviceInfo) {
         this.addGlobalHeader();
     }
 
@@ -44,7 +45,7 @@ export class BaseConnection implements Connection {
         const header = {
             'X-Channel-Id': this.apiConfig.api_authentication.channelId,
             'X-App-Id': this.apiConfig.api_authentication.producerId,
-            'X-Device-Id': SHA1(this.apiConfig.api_authentication.deviceId).toString(),
+            'X-Device-Id': this.deviceInfo.getDeviceID(),
             'Accept': 'application/json',
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
@@ -54,7 +55,7 @@ export class BaseConnection implements Connection {
 
     private buildInterceptorsFromAuthenticators(request: Request) {
         if (request.withApiToken) {
-            request.authenticators.push(new ApiAuthenticator(this.apiConfig, this));
+            request.authenticators.push(new ApiAuthenticator(this.apiConfig, this.deviceInfo, this));
         }
 
         if (request.withSessionToken) {

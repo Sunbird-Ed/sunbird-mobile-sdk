@@ -10,7 +10,7 @@ import {
 const invokeInteract = (telemetryInteractRequest: TelemetryInteractRequest) => {
     SunbirdSdk.instance.telemetryService.interact(
         telemetryInteractRequest
-    );
+    ).subscribe();
 };
 
 export const GenerateInteractTelemetryAfterMethod = (telemetryInteractRequest: TelemetryInteractRequest) => {

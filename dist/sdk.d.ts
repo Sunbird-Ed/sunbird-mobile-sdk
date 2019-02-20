@@ -4,7 +4,7 @@ import { AuthService } from './auth';
 import { TelemetryService } from './telemetry';
 import { SharedPreferences } from './util/shared-preferences';
 import { SdkConfig } from './sdk-config';
-import { ContentService } from './content';
+import { ContentFeedbackService, ContentService } from './content';
 import { CourseService } from './course';
 import { FormService } from './form';
 import { FrameworkService } from './framework';
@@ -12,7 +12,7 @@ import { ProfileService } from './profile';
 import { KeyValueStore } from './key-value-store';
 import { PageAssembleService } from './page';
 import { GroupService } from './group';
-import { SystemSettingsService } from './system-settings/def/system-settings-service';
+import { SystemSettingsService } from './system-settings';
 export declare class SunbirdSdk {
     private static _instance?;
     static readonly instance: SunbirdSdk;
@@ -34,6 +34,7 @@ export declare class SunbirdSdk {
     private _zipService;
     private _deviceInfo;
     private _sdkConfig;
+    private _contentFeedbackService;
     readonly sdkConfig: SdkConfig;
     readonly pageAssembleService: PageAssembleService;
     readonly dbService: DbService;
@@ -44,6 +45,7 @@ export declare class SunbirdSdk {
     readonly profileService: ProfileService;
     readonly groupService: GroupService;
     readonly contentService: ContentService;
+    readonly contentFeedbackService: ContentFeedbackService;
     readonly courseService: CourseService;
     readonly formService: FormService;
     readonly frameworkService: FrameworkService;
