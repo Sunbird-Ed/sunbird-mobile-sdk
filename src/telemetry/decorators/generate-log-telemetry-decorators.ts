@@ -5,7 +5,7 @@ import {afterMethodResolvesFactory, beforeMethodFactory} from './decorator-facto
 const invokeLog = (telemetryLogRequest: TelemetryLogRequest) => {
     SunbirdSdk.instance.telemetryService.log(
         telemetryLogRequest
-    );
+    ).subscribe();
 };
 
 export const GenerateLogTelemetryBeforeMethod = (telemetryLogRequest: TelemetryLogRequest) => {

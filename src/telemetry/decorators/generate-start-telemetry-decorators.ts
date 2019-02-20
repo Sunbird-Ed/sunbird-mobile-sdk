@@ -5,7 +5,7 @@ import {afterMethodFactory, afterMethodResolvesFactory, beforeMethodFactory} fro
 const invokeStart = (telemetryStartRequest: TelemetryStartRequest) => {
     SunbirdSdk.instance.telemetryService.start(
         telemetryStartRequest
-    );
+    ).subscribe();
 };
 
 export const GenerateStartTelemetryAfterMethod = (telemetryStartRequest: TelemetryStartRequest) => {

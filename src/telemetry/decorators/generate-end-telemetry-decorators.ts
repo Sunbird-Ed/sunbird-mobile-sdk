@@ -5,7 +5,7 @@ import {afterMethodFactory, afterMethodResolvesFactory, beforeMethodFactory} fro
 const invokeEnd = (telemetryEndRequest: TelemetryEndRequest) => {
     SunbirdSdk.instance.telemetryService.end(
         telemetryEndRequest
-    );
+    ).subscribe();
 };
 
 export const GenerateEndTelemetryAfterMethod = (telemetryEndRequest: TelemetryEndRequest) => {
