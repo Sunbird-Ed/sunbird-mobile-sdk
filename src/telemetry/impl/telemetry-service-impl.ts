@@ -17,14 +17,23 @@ import {Observable, Observer} from 'rxjs';
 import {ProfileService, ProfileSession} from '../../profile';
 import {GroupService, GroupSession} from '../../group';
 import {TelemetrySyncHandler} from '../handler/telemetry-sync-handler';
+import {KeyValueStore} from '../../key-value-store';
+import {ApiService} from '../../api';
+import {TelemetryConfig} from '../config/telemetry-config';
+import {DeviceInfo} from '../../util/device/def/device-info';
 
 export class TelemetryServiceImpl implements TelemetryService {
 
     private static readonly KEY_SYNC_TIME = 'telemetry_sync_time';
 
-    constructor(private dbService: DbService, private decorator: TelemetryDecorator,
+    constructor(private dbService: DbService,
+                private decorator: TelemetryDecorator,
                 private profileService: ProfileService,
-                private groupService: GroupService) {
+                private groupService: GroupService,
+                private keyValueStore: KeyValueStore,
+                private apiService: ApiService,
+                private telemetryConfig: TelemetryConfig,
+                private deviceInfo: DeviceInfo) {
     }
 
     end({
@@ -140,7 +149,13 @@ export class TelemetryServiceImpl implements TelemetryService {
 
 
     sync(): Observable<TelemetrySyncStat> {
-        return new TelemetrySyncHandler().handle();
+        return new TelemetrySyncHandler(
+            this.keyValueStore,
+            this.dbService,
+            this.apiService,
+            this.telemetryConfig,
+            this.deviceInfo
+        ).handle();
     }
 
     event(telemetry: any): Observable<number> {

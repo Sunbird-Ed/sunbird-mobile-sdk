@@ -14,7 +14,14 @@ import {AuthServiceImpl} from './auth/impl/auth-service-impl';
 import {ContentFeedbackService, ContentService} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
-import {Channel, Framework, FrameworkService, FrameworkServiceImpl, FrameworkUtilService, FrameworkUtilServiceImpl} from './framework';
+import {
+    Channel,
+    Framework,
+    FrameworkService,
+    FrameworkServiceImpl,
+    FrameworkUtilService,
+    FrameworkUtilServiceImpl
+} from './framework';
 import {ContentServiceImpl} from './content/impl/content-service-impl';
 import {ProfileService, ProfileServiceImpl, ServerProfile} from './profile';
 import {KeyValueStore} from './key-value-store';
@@ -181,6 +188,7 @@ export class SunbirdSdk {
         this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService);
 
         this._keyValueStore = new KeyValueStoreImpl(this._dbService);
+
         this._profileService = new ProfileServiceImpl(
             sdkConfig.profileServiceConfig,
             this._dbService,
@@ -189,8 +197,17 @@ export class SunbirdSdk {
             this._keyValueStore
         );
         this._groupService = new GroupServiceImpl(this._dbService, this._keyValueStore);
-        this._telemetryService = new TelemetryServiceImpl(this._dbService,
-            new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo), this._profileService, this._groupService);
+
+        this._telemetryService = new TelemetryServiceImpl(
+            this._dbService,
+            new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo),
+            this._profileService,
+            this._groupService,
+            this._keyValueStore,
+            this._apiService,
+            this._sdkConfig.telemetryConfig,
+            this._deviceInfo
+        );
 
 
         if (sdkConfig.fileConfig.debugMode === true) {

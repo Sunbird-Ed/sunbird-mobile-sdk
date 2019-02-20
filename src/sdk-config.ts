@@ -9,6 +9,7 @@ import {PageServiceConfig} from './page';
 import {AppConfig} from './api/config/app-config';
 import {FileConfig} from './util/file/config/file-config';
 import {SystemSettingsConfig} from './system-settings';
+import {TelemetryConfig} from './telemetry/config/telemetry-config';
 
 export interface SdkConfig {
     apiConfig: ApiConfig;
@@ -22,4 +23,5 @@ export interface SdkConfig {
     pageServiceConfig: PageServiceConfig;
     appConfig: AppConfig;
     systemSettingsConfig: SystemSettingsConfig;
+    telemetryConfig: TelemetryConfig;
 }
