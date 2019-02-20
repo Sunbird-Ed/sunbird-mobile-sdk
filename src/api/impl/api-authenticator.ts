@@ -4,13 +4,14 @@ import {Observable} from 'rxjs';
 import {ApiKeys} from '../../app-config';
 import {Authenticator} from '../def/authenticator';
 import {Connection} from '../def/connection';
+import {DeviceInfo} from '../../util/device/def/device-info';
 
 export class ApiAuthenticator implements Authenticator {
 
     private apiTokenHandler: ApiTokenHandler;
 
-    constructor(private apiConfig: ApiConfig, private connection: Connection) {
-        this.apiTokenHandler = new ApiTokenHandler(this.apiConfig, this.connection);
+    constructor(private apiConfig: ApiConfig, private deviceInfo: DeviceInfo, private connection: Connection) {
+        this.apiTokenHandler = new ApiTokenHandler(this.apiConfig, this.connection, this.deviceInfo);
     }
 
     interceptRequest(request: Request): Request {

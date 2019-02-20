@@ -7,10 +7,14 @@ declare const device: {
 
 export class DeviceInfoImpl implements DeviceInfo {
 
-    private deviceId: string;
+    private readonly deviceId: string;
+
+    constructor() {
+        this.deviceId = SHA1(device.uuid).toString();
+    }
 
     getDeviceID(): string {
-        return this.deviceId ? this.deviceId : SHA1(device.uuid);
+        return this.deviceId;
     }
 
 }
