@@ -158,7 +158,7 @@ export class TelemetryServiceImpl implements TelemetryService {
             const insertQuery: InsertQuery = {
                 table: TelemetryEntry.TABLE_NAME,
                 modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!.uid,
-                    profileSession!.sid, groupSession && groupSession.gid))
+                    profileSession!.sid, groupSession && groupSession.gid), 1)
             };
 
             return this.dbService.insert(insertQuery).map((count) => count > 1);
