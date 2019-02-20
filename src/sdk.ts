@@ -14,7 +14,7 @@ import {AuthServiceImpl} from './auth/impl/auth-service-impl';
 import {ContentFeedbackService, ContentService} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
-import {Channel, Framework, FrameworkService, FrameworkServiceImpl} from './framework';
+import {Channel, Framework, FrameworkService, FrameworkServiceImpl, FrameworkUtilService, FrameworkUtilServiceImpl} from './framework';
 import {ContentServiceImpl} from './content/impl/content-service-impl';
 import {ProfileService, ProfileServiceImpl, ServerProfile} from './profile';
 import {KeyValueStore} from './key-value-store';
@@ -65,6 +65,7 @@ export class SunbirdSdk {
     private _courseService: CourseService;
     private _formService: FormService;
     private _frameworkService: FrameworkService;
+    private _frameworkUtilService: FrameworkUtilService;
     private _pageAssembleService: PageAssembleService;
     private _sharedPreferences: SharedPreferences;
     private _fileService: FileService;
@@ -128,6 +129,10 @@ export class SunbirdSdk {
 
     get frameworkService(): FrameworkService {
         return this._frameworkService;
+    }
+
+    get frameworkUtilService(): FrameworkUtilService {
+        return this._frameworkUtilService;
     }
 
     get sharedPreferences(): SharedPreferences {
@@ -237,6 +242,13 @@ export class SunbirdSdk {
             this._apiService,
             new CachedItemStoreImpl<Channel>(this._keyValueStore, sdkConfig.apiConfig),
             new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig),
+        );
+
+        this._frameworkUtilService = new FrameworkUtilServiceImpl(
+            this._sharedPreferences,
+            this._frameworkService,
+            this._profileService,
+            this._systemSettingsService
         );
 
         this._pageAssembleService = new PageAssembleServiceImpl(
