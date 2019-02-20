@@ -13,7 +13,6 @@ export interface ApiConfig {
         channelId: string;
         producerId: string;
         producerUniqueId: string;
-        deviceId: string;
     };
     cached_requests: {
         timeToLive: number;

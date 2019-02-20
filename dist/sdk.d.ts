@@ -12,7 +12,7 @@ import { ProfileService } from './profile';
 import { KeyValueStore } from './key-value-store';
 import { PageAssembleService } from './page';
 import { GroupService } from './group';
-import { SystemSettingsService } from './system-settings/def/system-settings-service';
+import { SystemSettingsService } from './system-settings';
 export declare class SunbirdSdk {
     private static _instance?;
     static readonly instance: SunbirdSdk;
