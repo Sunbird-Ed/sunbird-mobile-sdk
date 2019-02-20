@@ -4,6 +4,7 @@ export declare class Actor {
     static readonly TYPE_USER: string;
     id: string;
     type: string;
+    Actor(): void;
 }
 export declare class Audit {
     env: string;
@@ -13,12 +14,13 @@ export declare class Audit {
     actorType: string;
 }
 export declare class Context {
-    private env;
+    private _env;
     private cdata;
     channel: string;
     pdata: ProducerData;
     sid: string;
     did: string;
+    readonly env: string;
     setEnv(value: string): void;
     setCdata(value: Array<CorrelationData>): void;
 }
@@ -82,6 +84,7 @@ export declare class ProducerData {
     id: string;
     pid: string;
     ver: string;
+    ProducerData(): void;
 }
 export declare class Search {
     type: string;
@@ -136,12 +139,12 @@ export declare namespace TelemetryEvents {
          * Who did the event
          * Actor of the event
          */
-        private actor;
+        private _actor;
         /**
          * Who did the event
          * Context in which the event has occured.
          */
-        private context;
+        private _context;
         /**
          * What is the target of the event
          * Object which is the subject of the event
@@ -151,11 +154,14 @@ export declare namespace TelemetryEvents {
         private tags;
         protected constructor(eid: string);
         setActor(value: Actor): void;
+        setContext(value: Context): void;
         setEdata(value: {}): void;
         setTags(value: string[]): void;
         setEnvironment(env: string): void;
         setCoRrelationdata(correlationData: CorrelationData[]): void;
         setObject(id: string, type: string, ver: string, rollup: Rollup): void;
+        readonly actor: Actor;
+        readonly context: Context;
     }
     class End extends Telemetry {
         private static readonly EID;
