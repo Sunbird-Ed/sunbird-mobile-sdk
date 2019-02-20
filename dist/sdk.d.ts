@@ -7,7 +7,7 @@ import { SdkConfig } from './sdk-config';
 import { ContentFeedbackService, ContentService } from './content';
 import { CourseService } from './course';
 import { FormService } from './form';
-import { FrameworkService } from './framework';
+import { FrameworkService, FrameworkUtilService } from './framework';
 import { ProfileService } from './profile';
 import { KeyValueStore } from './key-value-store';
 import { PageAssembleService } from './page';
@@ -27,6 +27,7 @@ export declare class SunbirdSdk {
     private _courseService;
     private _formService;
     private _frameworkService;
+    private _frameworkUtilService;
     private _pageAssembleService;
     private _sharedPreferences;
     private _fileService;
@@ -49,6 +50,7 @@ export declare class SunbirdSdk {
     readonly courseService: CourseService;
     readonly formService: FormService;
     readonly frameworkService: FrameworkService;
+    readonly frameworkUtilService: FrameworkUtilService;
     readonly sharedPreferences: SharedPreferences;
     readonly systemSettingsService: SystemSettingsService;
     init(sdkConfig: SdkConfig): Promise<void>;

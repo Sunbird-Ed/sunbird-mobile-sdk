@@ -4,7 +4,7 @@ export declare class Actor {
     static readonly TYPE_USER: string;
     id: string;
     type: string;
-    Actor(): void;
+    constructor();
 }
 export declare class Audit {
     env: string;
@@ -14,14 +14,14 @@ export declare class Audit {
     actorType: string;
 }
 export declare class Context {
-    private _env;
+    private env;
     private cdata;
     channel: string;
     pdata: ProducerData;
     sid: string;
     did: string;
-    readonly env: string;
-    setEnv(value: string): void;
+    getEnvironment(): string;
+    setEnvironment(value: string): void;
     setCdata(value: Array<CorrelationData>): void;
 }
 export declare class DeviceSpecification {
@@ -85,6 +85,12 @@ export declare class ProducerData {
     pid: string;
     ver: string;
     ProducerData(): void;
+    getId(): string;
+    getPid(): string;
+    getVersion(): string;
+    setId(value: string): void;
+    setPid(value: string): void;
+    setVersion(value: string): void;
 }
 export declare class Search {
     type: string;
@@ -139,12 +145,12 @@ export declare namespace TelemetryEvents {
          * Who did the event
          * Actor of the event
          */
-        private _actor;
+        private actor;
         /**
          * Who did the event
          * Context in which the event has occured.
          */
-        private _context;
+        private context;
         /**
          * What is the target of the event
          * Object which is the subject of the event
@@ -153,6 +159,7 @@ export declare namespace TelemetryEvents {
         private edata;
         private tags;
         protected constructor(eid: string);
+        getEid(): string;
         setActor(value: Actor): void;
         setContext(value: Context): void;
         setEdata(value: {}): void;
@@ -160,8 +167,8 @@ export declare namespace TelemetryEvents {
         setEnvironment(env: string): void;
         setCoRrelationdata(correlationData: CorrelationData[]): void;
         setObject(id: string, type: string, ver: string, rollup: Rollup): void;
-        readonly actor: Actor;
-        readonly context: Context;
+        getActor(): Actor;
+        getContext(): Context;
     }
     class End extends Telemetry {
         private static readonly EID;

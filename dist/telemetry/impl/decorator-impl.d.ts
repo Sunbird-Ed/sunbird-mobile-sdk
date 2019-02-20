@@ -10,9 +10,9 @@ export declare class TelemetryDecoratorImpl implements TelemetryDecorator {
     patchActor(event: Telemetry, uid: string): void;
     patchContext(event: Telemetry, sid: any): void;
     patchPData(event: Context): void;
-    prepare(event: any): {
+    prepare(event: Telemetry, priority: any): {
         event: string;
-        event_type: any;
+        event_type: string;
         timestamp: number;
         priority: number;
     };

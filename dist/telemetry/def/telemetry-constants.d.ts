@@ -21,69 +21,69 @@ export declare class ObjectType {
 export declare enum Mode {
     PLAY = "play"
 }
-export declare class PageId {
-    SPLASH_SCREEN: string;
-    LOGIN: string;
-    LOGOUT: string;
-    SIGNUP: string;
-    ONBOARDING: string;
-    USER_TYPE_SELECTION: string;
-    HOME: string;
-    COURSES: string;
-    LIBRARY: string;
-    GROUPS: string;
-    PROFILE: string;
-    COURSE_PAGE_FILTER: string;
-    LIBRARY_PAGE_FILTER: string;
-    COURSE_DETAIL: string;
-    COLLECTION_DETAIL: string;
-    CONTENT_DETAIL: string;
-    SHARE_CONTENT: string;
-    FLAG_CONTENT: string;
-    CONTENT_RATING: string;
-    ANNOUNCEMENT_LIST: string;
-    ANNOUNCEMENT_DETAIL: string;
-    SHARE_ANNOUCEMENT: string;
-    QRCodeScanner: string;
-    SERVER_NOTIFICATION: string;
-    LOCAL_NOTIFICATION: string;
-    NOTIFICATION_LIST: string;
-    SIGNIN_OVERLAY: string;
-    SETTINGS: string;
-    SETTINGS_LANGUAGE: string;
-    SETTINGS_DATASYNC: string;
-    SETTINGS_DEVICE_TAGS: string;
-    SETTINGS_SUPPORTS: string;
-    SETTINGS_ABOUT_US: string;
-    ABOUT_APP: string;
-    USERS_GROUPS: string;
-    CREATE_USER: string;
-    CREATE_GROUP: string;
-    CREATE_GROUP_SYLLABUS_CLASS: string;
-    CREATE_GROUP_USER_SELECTION: string;
-    GROUP_DETAIL: string;
-    GUEST_PROFILE: string;
-    EDIT_USER: string;
-    EDIT_GROUP: string;
-    ADD_GROUP_SYLLABUS_CLASS: string;
-    ADD_GROUP_USER_SELECTION: string;
-    REMOVE_USERS_FROM_GROUP: string;
-    SHARE_USER_GROUP: string;
-    REPORTS_USER_GROUP: string;
-    REPORTS_ASSESMENT_CONTENT_LIST: string;
-    REPORTS_USER_ASSESMENT_DETAILS: string;
-    REPORTS_GROUP_ASSESMENT_DETAILS: string;
-    ONBOARDING_LANGUAGE_SETTING: string;
-    VIEW_MORE: string;
-    DIAL_CODE_SCAN_RESULT: string;
-    ONBOARDING_PROFILE_PREFERENCES: string;
-    ONBOARDING_QR_SHOWCASE: string;
-    SEARCH: string;
-    DOWNLOAD_SPINE: string;
-    DIAL_NOT_LINKED: string;
-    DIAL_LINKED_NO_CONTENT: string;
-    TERMS_N_CONDITIONS: string;
-    TERMS_N_CONDITIONS_STATIC_PAGE: string;
+export declare enum PageId {
+    SPLASH_SCREEN = "splash",
+    LOGIN = "login",
+    LOGOUT = "logout",
+    SIGNUP = "signup",
+    ONBOARDING = "onboarding",
+    USER_TYPE_SELECTION = "user-type-selection",
+    HOME = "home",
+    COURSES = "courses",
+    LIBRARY = "library",
+    GROUPS = "groups",
+    PROFILE = "profile",
+    COURSE_PAGE_FILTER = "course-page-filter",
+    LIBRARY_PAGE_FILTER = "library-page-filter",
+    COURSE_DETAIL = "course-detail",
+    COLLECTION_DETAIL = "collection-detail",
+    CONTENT_DETAIL = "content-detail",
+    SHARE_CONTENT = "share-content",
+    FLAG_CONTENT = "flag-content",
+    CONTENT_RATING = "content-rating",
+    ANNOUNCEMENT_LIST = "announcement-list",
+    ANNOUNCEMENT_DETAIL = "announcement-detail",
+    SHARE_ANNOUCEMENT = "share-announcement",
+    QRCodeScanner = "qr-code-scanner",
+    SERVER_NOTIFICATION = "server-notifiaction",
+    LOCAL_NOTIFICATION = "local-notifiaction",
+    NOTIFICATION_LIST = "notifiaction-list",
+    SIGNIN_OVERLAY = "signin-overlay",
+    SETTINGS = "settings",
+    SETTINGS_LANGUAGE = "settings-language",
+    SETTINGS_DATASYNC = "settings-datasync",
+    SETTINGS_DEVICE_TAGS = "settings-device-tags",
+    SETTINGS_SUPPORTS = "settings-supports",
+    SETTINGS_ABOUT_US = "settings-about-us",
+    ABOUT_APP = "about-app",
+    USERS_GROUPS = "users-groups",
+    CREATE_USER = "create-profile",
+    CREATE_GROUP = "create-group",
+    CREATE_GROUP_SYLLABUS_CLASS = "create-group-syllabusclass",
+    CREATE_GROUP_USER_SELECTION = "create-group-userselection",
+    GROUP_DETAIL = "group-detail",
+    GUEST_PROFILE = "guest-profile",
+    EDIT_USER = "edit-user",
+    EDIT_GROUP = "edit-group",
+    ADD_GROUP_SYLLABUS_CLASS = "add-group-syllabusclass",
+    ADD_GROUP_USER_SELECTION = "add-group-userselection",
+    REMOVE_USERS_FROM_GROUP = "remove-users-from-group",
+    SHARE_USER_GROUP = "share-user-group",
+    REPORTS_USER_GROUP = "reports-users-group",
+    REPORTS_ASSESMENT_CONTENT_LIST = "assesment-content-list",
+    REPORTS_USER_ASSESMENT_DETAILS = "user-assesment-details",
+    REPORTS_GROUP_ASSESMENT_DETAILS = "group-assesment-details",
+    ONBOARDING_LANGUAGE_SETTING = "onboarding-language-setting",
+    VIEW_MORE = "view-more",
+    DIAL_CODE_SCAN_RESULT = "dial-code-scan-result",
+    ONBOARDING_PROFILE_PREFERENCES = "profile-settings",
+    ONBOARDING_QR_SHOWCASE = "onboarding-qr-showcase",
+    SEARCH = "search",
+    DOWNLOAD_SPINE = "download-spine",
+    DIAL_NOT_LINKED = "dial-not-linked",
+    DIAL_LINKED_NO_CONTENT = "dial-linked-but-no-content",
+    TERMS_N_CONDITIONS = "terms-n-conditions",
+    TERMS_N_CONDITIONS_STATIC_PAGE = "terms-n-conditions-static-page"
 }
 export declare enum LogType {
     NOTIFICATION = "notification"
