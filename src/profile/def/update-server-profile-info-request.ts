@@ -4,17 +4,17 @@ export interface UpdateServerProfileInfoRequest {
     emailId?: string;
     phoneVerified?: boolean;
     emailVerified?: boolean;
-    // frameWork: { [key: string]: any };
-    /*
+    locationCodes?: Array<string>;
     firstName?: string;
     lastName?: string;
+    framework?: { [key: string]: any };
+    /*
     language?: Array<string>;
     profileSummary?: string;
     subject?: Array<string>;
     gender?: string;
     dob?: string;
     grade?: Array<string>;
-    location?: string;
     avatar?: string;
     webPages?: Array<UserWebPages>;
     education?: Array<UserEducation>;
