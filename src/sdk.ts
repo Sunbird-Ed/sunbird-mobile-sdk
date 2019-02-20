@@ -141,7 +141,7 @@ export class SunbirdSdk {
     public async init(sdkConfig: SdkConfig) {
         this._sdkConfig = Object.freeze(sdkConfig);
 
-        this._deviceInfo = new DeviceInfoImpl();
+        this._deviceInfo = new DeviceInfoImpl(this.sdkConfig);
 
         this._sharedPreferences = new SharedPreferencesImpl();
 
