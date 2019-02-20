@@ -35,7 +35,7 @@ export namespace ProfileEntry {
             ProfileEntry._ID + DbConstants.SPACE + 'INTEGER PRIMARY KEY,' +
             COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' UNIQUE NOT NULL' + DbConstants.COMMA_SEP +
             COLUMN_NAME_HANDLE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CREATED_AT + DbConstants.SPACE + DbConstants.DATE_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CREATED_AT + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_MEDIUM + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_BOARD + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_SUBJECT + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +

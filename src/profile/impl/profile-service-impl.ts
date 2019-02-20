@@ -80,7 +80,7 @@ export class ProfileServiceImpl implements ProfileService {
             }
         }
 
-        profile.createdAt = (Date.now()).toString();
+        profile.createdAt = Date.now();
 
         return this.dbService.insert({
             table: ProfileEntry.TABLE_NAME,
