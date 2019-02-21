@@ -23,6 +23,11 @@ export class Request {
             this.request = new Request();
         }
 
+        withHost(host: string) {
+            this.request._host = host;
+            return this;
+        }
+
         withPath(path: string) {
             this.request._path = path;
             return this;
@@ -88,6 +93,7 @@ export class Request {
 
     };
 
+    private _host?: string;
     private _serializer: HttpSerializer = HttpSerializer.JSON;
     private _responseInterceptors: ResponseInterceptor[] = [];
     private _withApiToken = false;
@@ -188,5 +194,9 @@ export class Request {
 
     set authenticators(value: Authenticator[]) {
         this._authenticators = value;
+    }
+
+    get host(): string | undefined {
+        return this._host;
     }
 }
