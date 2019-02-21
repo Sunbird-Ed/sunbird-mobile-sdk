@@ -10,7 +10,7 @@ import {
     ProfileService,
     ProfileServiceConfig,
     ProfileSession,
-    ProfileSource,
+    ProfileSource, ProfileType,
     ServerProfile,
     ServerProfileDetailsRequest,
     ServerProfileSearchCriteria,
@@ -190,7 +190,6 @@ export class ProfileServiceImpl implements ProfileService {
                 if (!profile) {
                     throw new NoProfileFoundError('No Profile found');
                 }
-
                 return profile;
             })
             .mergeMap((profile: Profile) => {
@@ -205,12 +204,23 @@ export class ProfileServiceImpl implements ProfileService {
 
     getActiveProfileSession(): Observable<ProfileSession | undefined> {
         return this.keyValueStore.getValue(ProfileServiceImpl.KEY_USER_SESSION)
-            .map((response) => {
+            .mergeMap((response) => {
                 if (!response) {
-                    return undefined;
+                    const request: Profile = {
+                        uid: '',
+                        handle: '',
+                        profileType: ProfileType.TEACHER,
+                        source: ProfileSource.LOCAL
+                    };
+                    return this.createProfile(request)
+                        .mergeMap((profile: Profile) => {
+                            return this.setActiveSessionForProfile(profile.uid);
+                        }).mergeMap(() => {
+                            return this.getActiveProfileSession();
+                        });
                 }
 
-                return JSON.parse(response);
+                return Observable.of(JSON.parse(response));
 
             });
     }

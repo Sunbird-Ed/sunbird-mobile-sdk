@@ -56,7 +56,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
             pData.id = this.apiConfig.api_authentication.producerId;
         }
 
-        const pid = pData.pid;
+        const pid = pData.getPid();
         if (pid) {
             pData.pid = pid;
         } else if (this.apiConfig.api_authentication.producerUniqueId) {

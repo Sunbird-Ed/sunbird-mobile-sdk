@@ -5,6 +5,8 @@ import {SummaryRequest} from '../def/request';
 import {SummarizerHandler} from '../handler/summarizer-handler';
 import {DbService} from '../../db';
 import {LearnerAssessmentsEntry, LearnerSummaryEntry} from '../../profile/db/schema';
+import {TelemetryEvents} from '../../telemetry';
+import Telemetry = TelemetryEvents.Telemetry;
 
 export class SummarizerServiceImpl implements SummarizerService {
 
@@ -51,10 +53,10 @@ export class SummarizerServiceImpl implements SummarizerService {
             SummarizerHandler.mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb));
     }
 
-    saveLearnerAssessmentDetails() {
+    saveLearnerAssessmentDetails(event: Telemetry) {
     }
 
-    saveLearnerContentSummaryDetails() {
+    saveLearnerContentSummaryDetails(event: Telemetry) {
     }
 
 }

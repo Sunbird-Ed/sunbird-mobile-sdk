@@ -14,7 +14,7 @@ export class ProfileMapper {
             grade: profileEntry[ProfileEntry.COLUMN_NAME_GRADE].split(','),
             syllabus: profileEntry[ProfileEntry.COLUMN_NAME_SYLLABUS].split(','),
             source: profileEntry[ProfileEntry.COLUMN_NAME_SOURCE] as ProfileSource,
-            gradeValue: JSON.parse(profileEntry[ProfileEntry.COLUMN_NAME_GRADE_VALUE])
+            gradeValue: profileEntry[ProfileEntry.COLUMN_NAME_GRADE_VALUE] && JSON.parse(profileEntry[ProfileEntry.COLUMN_NAME_GRADE_VALUE])
         };
     }
 
