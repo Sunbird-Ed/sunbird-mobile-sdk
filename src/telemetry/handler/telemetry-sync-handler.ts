@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiService, HttpRequestType, HttpSerializer, Request} from '../../api';
 import {TelemetryEvents, TelemetrySyncStat} from '..';
 import {Observable} from 'rxjs';
 import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
@@ -11,7 +11,6 @@ import {DeviceInfo} from '../../util/device/def/device-info';
 import {DbService, InsertQuery} from '../../db';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {UniqueId} from '../../db/util/unique-id';
-import * as pako from 'pako';
 import Telemetry = TelemetryEvents.Telemetry;
 import COLUMN_NAME_MSG_ID = TelemetryProcessedEntry.COLUMN_NAME_MSG_ID;
 import COLUMN_NAME_NUMBER_OF_EVENTS = TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS;
@@ -97,7 +96,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
             WHERE ${TelemetryEntry.COLUMN_NAME_PRIORITY} = (SELECT MIN (${TelemetryEntry.COLUMN_NAME_PRIORITY})
             FROM ${TelemetryEntry.TABLE_NAME})
             ORDER BY ${TelemetryEntry.COLUMN_NAME_TIMESTAMP}
-            LIMIT 1000`
+            LIMIT 1`
         );
 
         return events$.expand(() => events$);
@@ -143,9 +142,11 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
     private syncProcessedEvents(processedEvents: string): Observable<undefined> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
+            .withHeaders({'Content-Encoding': 'gzip'})
+            .withSerializer(HttpSerializer.UTF8)
             .withPath(this.telemetryConfig.telemetryApiPath +
                 TelemetrySyncHandler.TELEMETRY_ENDPOINT)
-            .withBody(JSON.parse(pako.inflate(processedEvents, {to: 'string'})))
+            .withBody(processedEvents)
             .withApiToken(true)
             .build();
 
