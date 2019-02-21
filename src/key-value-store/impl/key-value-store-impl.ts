@@ -2,6 +2,7 @@ import {KeyValueStore} from '..';
 import {Observable} from 'rxjs';
 import {DbService} from '../../db';
 import {KeyValueStoreEntry} from '../db/schema';
+import {Utf8ToB64Encoder} from '../../util/encoders/utf8-to-b64-encoder';
 
 export class KeyValueStoreImpl implements KeyValueStore {
     constructor(private dbService: DbService) {
@@ -43,11 +44,11 @@ export class KeyValueStoreImpl implements KeyValueStore {
     }
 
     private utf8_to_b64(str: string) {
-        return window.btoa(unescape(encodeURIComponent(str)));
+        return new Utf8ToB64Encoder().encode(str);
     }
 
     private b64_to_utf8(str: string) {
-        return decodeURIComponent(escape(window.atob(str)));
+        return new Utf8ToB64Encoder().decode(str);
     }
 }
 
