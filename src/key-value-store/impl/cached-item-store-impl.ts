@@ -85,7 +85,6 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
 
     private saveItemTTL(id: string, timeToLiveKey: string): Observable<boolean> {
         localStorage.setItem(timeToLiveKey + '-' + id, Date.now() + '');
-
         return Observable.of(true);
     }
 
