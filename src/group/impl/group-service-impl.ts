@@ -7,13 +7,15 @@ import {UniqueId} from '../../db/util/unique-id';
 import {KeyValueStore} from '../../key-value-store';
 import {NoGroupFoundError} from '../error/no-group-found-error';
 import {NoActiveGroupSessionError} from '../error/no-active-group-session-error';
+import {ProfileService} from '../../profile';
 
 
 export class GroupServiceImpl implements GroupService {
     private static readonly KEY_GROUP_SESSION = 'group_session';
 
     constructor(private dbService: DbService,
-        private keyValueStore: KeyValueStore) {
+                private profileService: ProfileService,
+                private keyValueStore: KeyValueStore) {
 
     }
 
@@ -67,20 +69,20 @@ export class GroupServiceImpl implements GroupService {
 
     getActiveSessionGroup(): Observable<Group> {
         return this.getActiveGroupSession()
-        .map((profileSession: GroupSession | undefined) => {
-            if (!profileSession) {
-                throw new NoActiveGroupSessionError('No active session available');
-            }
+            .map((profileSession: GroupSession | undefined) => {
+                if (!profileSession) {
+                    throw new NoActiveGroupSessionError('No active session available');
+                }
 
-            return profileSession;
-        })
-        .mergeMap((profileSession: GroupSession) => {
-            return this.dbService.read({
-                table: GroupEntry.TABLE_NAME,
-                selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
-                selectionArgs: [profileSession.gid]
-            }).map((rows) => rows && rows[0]);
-        });
+                return profileSession;
+            })
+            .mergeMap((profileSession: GroupSession) => {
+                return this.dbService.read({
+                    table: GroupEntry.TABLE_NAME,
+                    selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
+                    selectionArgs: [profileSession.gid]
+                }).map((rows) => rows && rows[0]);
+            });
     }
 
     setActiveSessionForGroup(gid: string): Observable<boolean> {
@@ -110,16 +112,16 @@ export class GroupServiceImpl implements GroupService {
             });
     }
 
-        getActiveGroupSession(): Observable<GroupSession | undefined> {
-            return this.keyValueStore.getValue(GroupServiceImpl.KEY_GROUP_SESSION)
-                .map((response) => {
-                    if (!response) {
-                        return undefined;
-                    }
-                    return JSON.parse(response);
+    getActiveGroupSession(): Observable<GroupSession | undefined> {
+        return this.keyValueStore.getValue(GroupServiceImpl.KEY_GROUP_SESSION)
+            .map((response) => {
+                if (!response) {
+                    return undefined;
+                }
+                return JSON.parse(response);
 
-                });
-        }
+            });
+    }
 
     getAllGroups(groupRequest?: GetAllGroupRequest): Observable<Group[]> {
         if (!groupRequest) {
@@ -132,12 +134,22 @@ export class GroupServiceImpl implements GroupService {
         }
 
         return this.dbService.execute(`
-            SELECT * FROM ${GroupEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
+            SELECT * FROM ${GroupEntry.TABLE_NAME}
+            LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
             ${GroupEntry.TABLE_NAME}.${GroupEntry.COLUMN_NAME_GID} = ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_GID}
-            WHERE ${GroupProfileEntry.COLUMN_NAME_UID} = "${groupRequest.uid}"
-        `).map((groups: GroupEntry.SchemaMap[]) =>
+            WHERE ${GroupProfileEntry.COLUMN_NAME_UID} = "${groupRequest.uid}"`
+        ).map((groups: GroupEntry.SchemaMap[]) =>
             groups.map((group: GroupEntry.SchemaMap) => GroupMapper.mapGroupDBEntryToGroup(group))
-        );
+        ).mergeMap((groups: Group[]) =>
+            Observable.from(groups)
+        ).mergeMap((group: Group) =>
+            this.profileService.getAllProfiles({
+                groupId: group.gid
+            }).map((profiles) => ({
+                ...group,
+                profilesCount: profiles.length
+            }))
+        ).reduce((allResponses, currentResponse) => [...allResponses, currentResponse], []);
     }
 
 
