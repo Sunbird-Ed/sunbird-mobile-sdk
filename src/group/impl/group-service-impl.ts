@@ -1,7 +1,7 @@
 import {DbService} from '../../db';
 import {Observable} from 'rxjs';
 import {GroupEntry, GroupProfileEntry} from '../db/schema';
-import {GetAllGroupRequest, Group, GroupService, ProfilesToGroupRequest, GroupSession} from '..';
+import {GetAllGroupRequest, Group, GroupService, GroupSession, ProfilesToGroupRequest} from '..';
 import {GroupMapper} from '../util/group-mapper';
 import {UniqueId} from '../../db/util/unique-id';
 import {KeyValueStore} from '../../key-value-store';
@@ -59,7 +59,7 @@ export class GroupServiceImpl implements GroupService {
                 [GroupEntry.COLUMN_NAME_SYLLABUS]: group.syllabus.join(','),
                 [GroupEntry.COLUMN_NAME_UPDATED_AT]: Date.now(),
                 [GroupEntry.COLUMN_NAME_GRADE]: group.grade.join(','),
-                [GroupEntry.COLUMN_NAME_GRADE_VALUE]: JSON.stringify(group.gradeValueMap)
+                [GroupEntry.COLUMN_NAME_GRADE_VALUE]: JSON.stringify(group.gradeValue)
             }
         });
         return Observable.of(group);

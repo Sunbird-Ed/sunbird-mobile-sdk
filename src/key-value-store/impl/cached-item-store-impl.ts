@@ -1,8 +1,6 @@
-import {CachedItemStore} from '../def/cached-item-store';
+import {CachedItemStore, KeyValueStore} from '..';
 import {Observable} from 'rxjs';
-import {KeyValueStore} from '..';
 import {ApiConfig} from '../../api';
-import { NoFileFoundError } from '../../util/file/errors/no-file-found';
 
 export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
 
@@ -41,6 +39,11 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
                     if (initial) {
                             return initial().switchMap((item: T) => {
                                 return this.saveItem(id, timeToLiveKey, noSqlkey, item);
+                            }).catch((e) => {
+                                return fromServer()
+                                    .switchMap((item: T) => {
+                                        return this.saveItem(id, timeToLiveKey, noSqlkey, item);
+                                    });
                             });
                     } else {
                         return fromServer()

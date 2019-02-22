@@ -4,10 +4,11 @@ export interface Group {
     syllabus: string[];
     createdAt: number;
     grade: string[];
-    gradeValueMap: { [key: string]: any };
+    gradeValue: {
+        [key: string]: any;
+    };
     updatedAt: number;
 }
-
 export interface GroupProfile {
     gid: string;
     uid: string;

@@ -8,6 +8,6 @@ export class ByteArrayToBinaryStringPreprocessor implements TelemetrySyncPreproc
             throw new InvalidInputForSyncPreprocessorError('ByteArrayToBinaryStringPreprocessor expects input of type "UInt8Array"');
         }
 
-        return pako.deflate(input, {to: 'string'});
+        return pako.gzip(input, {to: 'string'});
     }
 }

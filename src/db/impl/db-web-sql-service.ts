@@ -72,8 +72,7 @@ export class DbWebSqlService implements DbService {
         console.log(query.toString());
 
         this.webSqlDB.transaction((tx) => {
-            tx.executeSql(query.toString(),
-                [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
+            tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
                     observable.next(Array.from(sqlResultSet.rows));
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
@@ -90,13 +89,11 @@ export class DbWebSqlService implements DbService {
         const query = squel.insert()
             .into(inserQuery.table)
             .setFields(inserQuery.modelJson)
-            .toString();
 
-        console.log(query);
+        console.log(query.toString());
 
         this.webSqlDB.transaction((tx) => {
-            tx.executeSql(query,
-                [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
+            tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
                     observable.next(sqlResultSet.rowsAffected);
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
@@ -146,8 +143,7 @@ export class DbWebSqlService implements DbService {
         console.log(query.toString());
 
         this.webSqlDB.transaction((tx) => {
-            tx.executeSql(query.toString(),
-                [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
+            tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
                     observable.next(!!sqlResultSet.rowsAffected);
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
@@ -164,13 +160,11 @@ export class DbWebSqlService implements DbService {
         const query = squel.delete()
             .from(deleteQuery.table)
             .where(deleteQuery.selection, ...deleteQuery.selectionArgs)
-            .toString();
 
-        console.log(query);
+        console.log(query.toString());
 
         this.webSqlDB.transaction((tx) => {
-            tx.executeSql(query,
-                [], (sqlTransaction, sqlResultSet: SQLResultSet) => {
+            tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
                     observable.next(undefined);
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
