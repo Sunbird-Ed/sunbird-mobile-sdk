@@ -124,23 +124,26 @@ export class GroupServiceImpl implements GroupService {
     }
 
     getAllGroups(groupRequest?: GetAllGroupRequest): Observable<Group[]> {
-        if (!groupRequest) {
-            return this.dbService.read({
-                table: GroupEntry.TABLE_NAME,
-                columns: []
-            }).map((groups: GroupEntry.SchemaMap[]) =>
+        return (() => {
+            if (!groupRequest) {
+                return this.dbService.read({
+                    table: GroupEntry.TABLE_NAME,
+                    columns: []
+                }).map((groups: GroupEntry.SchemaMap[]) =>
+                    groups.map((group: GroupEntry.SchemaMap) => GroupMapper.mapGroupDBEntryToGroup(group))
+                );
+            }
+
+            return this.dbService.execute(`
+                SELECT * FROM ${GroupEntry.TABLE_NAME}
+                LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
+                ${GroupEntry.TABLE_NAME}.${GroupEntry.COLUMN_NAME_GID} =
+                ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_GID}
+                WHERE ${GroupProfileEntry.COLUMN_NAME_UID} = "${groupRequest.uid}"`
+            ).map((groups: GroupEntry.SchemaMap[]) =>
                 groups.map((group: GroupEntry.SchemaMap) => GroupMapper.mapGroupDBEntryToGroup(group))
             );
-        }
-
-        return this.dbService.execute(`
-            SELECT * FROM ${GroupEntry.TABLE_NAME}
-            LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
-            ${GroupEntry.TABLE_NAME}.${GroupEntry.COLUMN_NAME_GID} = ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_GID}
-            WHERE ${GroupProfileEntry.COLUMN_NAME_UID} = "${groupRequest.uid}"`
-        ).map((groups: GroupEntry.SchemaMap[]) =>
-            groups.map((group: GroupEntry.SchemaMap) => GroupMapper.mapGroupDBEntryToGroup(group))
-        ).mergeMap((groups: Group[]) =>
+        })().mergeMap((groups: Group[]) =>
             Observable.from(groups)
         ).mergeMap((group: Group) =>
             this.profileService.getAllProfiles({
