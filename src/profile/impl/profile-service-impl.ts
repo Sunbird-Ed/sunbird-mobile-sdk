@@ -10,7 +10,8 @@ import {
     ProfileService,
     ProfileServiceConfig,
     ProfileSession,
-    ProfileSource, ProfileType,
+    ProfileSource,
+    ProfileType,
     ServerProfile,
     ServerProfileDetailsRequest,
     ServerProfileSearchCriteria,
@@ -97,11 +98,14 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     updateProfile(profile: Profile): Observable<Profile> {
+        const profileDBEntry = ProfileMapper.mapProfileToProfileDBEntry(profile);
+        delete profileDBEntry[ProfileEntry.COLUMN_NAME_CREATED_AT];
+
         return this.dbService.update({
             table: ProfileEntry.TABLE_NAME,
             selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
             selectionArgs: [profile.uid],
-            modelJson: ProfileMapper.mapProfileToProfileDBEntry(profile)
+            modelJson: profileDBEntry
         }).mergeMap(() => Observable.of(profile));
     }
 
