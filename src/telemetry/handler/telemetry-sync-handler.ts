@@ -59,12 +59,12 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
                 return ({
                     syncedEventCount: acc.syncedEventCount + currentStat.syncedEventCount,
                     syncTime: Date.now(),
-                    syncedFileSize: (parseFloat(acc.syncedFileSize) + parseFloat(acc.syncedFileSize)) + 'KB'
+                    syncedFileSize: acc.syncedFileSize + currentStat.syncedFileSize
                 });
             }, {
                 syncedEventCount: 0,
                 syncTime: Date.now(),
-                syncedFileSize: '0KB'
+                syncedFileSize: 0
             });
     }
 
@@ -195,7 +195,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
                             .mapTo(syncStat || {
                                 syncedEventCount: 0,
                                 syncTime: Date.now(),
-                                syncedFileSize: '0KB'
+                                syncedFileSize: 0
                             })
                     )
             );
@@ -232,9 +232,8 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
             .map(() => ({
                 syncedEventCount: processedEventsBatchEntry[COLUMN_NAME_NUMBER_OF_EVENTS],
                 syncTime: Date.now(),
-                syncedFileSize: '0KB'
+                syncedFileSize: new TextEncoder().encode(processedEventsBatchEntry[COLUMN_NAME_DATA]).length
             }));
-        // TODO: Get correct fileSize of processed telemetry
     }
 
     private deleteProcessedEvent(processedEventsBatchEntry?: TelemetryProcessedEntry.SchemaMap): Observable<undefined> {
