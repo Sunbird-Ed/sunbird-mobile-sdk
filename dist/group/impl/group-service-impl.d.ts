@@ -2,11 +2,13 @@ import { DbService } from '../../db';
 import { Observable } from 'rxjs';
 import { GetAllGroupRequest, Group, GroupService, GroupSession, ProfilesToGroupRequest } from '..';
 import { KeyValueStore } from '../../key-value-store';
+import { ProfileService } from '../../profile';
 export declare class GroupServiceImpl implements GroupService {
     private dbService;
+    private profileService;
     private keyValueStore;
     private static readonly KEY_GROUP_SESSION;
-    constructor(dbService: DbService, keyValueStore: KeyValueStore);
+    constructor(dbService: DbService, profileService: ProfileService, keyValueStore: KeyValueStore);
     createGroup(group: Group): Observable<Group>;
     deleteGroup(gid: string): Observable<undefined>;
     updateGroup(group: Group): Observable<Group>;

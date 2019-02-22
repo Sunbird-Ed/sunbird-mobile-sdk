@@ -8,6 +8,7 @@ export interface Group {
         [key: string]: any;
     };
     updatedAt: number;
+    profilesCount?: number;
 }
 export interface GroupProfile {
     gid: string;
