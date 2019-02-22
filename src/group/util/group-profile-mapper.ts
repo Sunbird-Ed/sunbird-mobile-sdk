@@ -1,5 +1,5 @@
 import {GroupProfileEntry} from '../../profile/db/schema';
-import {GroupProfile} from '../../profile/def/group';
+import {GroupProfile} from '..';
 
 export class GroupProfileMapper {
     public static mapGroupProfileDBEntryToGroupProfile(groupProfileEntry: GroupProfileEntry.SchemaMap): GroupProfile {
