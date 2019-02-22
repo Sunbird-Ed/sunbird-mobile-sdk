@@ -7,7 +7,7 @@ import {Observable} from 'rxjs';
 
 
 export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSettingsRequest, SystemSettings> {
-    private readonly SYSTEM_SETTINGS_FILE_KEY_PREFIX = 'system-settings-';
+    private readonly SYSTEM_SETTINGS_FILE_KEY_PREFIX = 'system-setting-';
     private readonly SYSTEM_SETTINGS_LOCAL_KEY = 'system-settings-';
     private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = '/system/settings/get';
 
@@ -46,6 +46,7 @@ export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSett
         return Observable.fromPromise(this.fileservice.readAsText(dir, file))
             .map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
+                console.log('systemsetting res', result.result.response);
                 return (result.result.response);
             });
     }
