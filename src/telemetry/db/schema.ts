@@ -1,13 +1,20 @@
 import {DbConstants} from '../../db';
 
 export namespace TelemetryEntry {
-
     export const _ID = '_id';
     export const TABLE_NAME = 'telemetry';
     export const COLUMN_NAME_EVENT_TYPE = 'event_type';
     export const COLUMN_NAME_EVENT = 'event';
     export const COLUMN_NAME_TIMESTAMP = 'timestamp';
     export const COLUMN_NAME_PRIORITY = 'priority';
+
+    export interface SchemaMap {
+        [_ID]: string;
+        [COLUMN_NAME_EVENT_TYPE]: string;
+        [COLUMN_NAME_EVENT]: string;
+        [COLUMN_NAME_TIMESTAMP]: number;
+        [COLUMN_NAME_PRIORITY]: number;
+    }
 
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE ' + TelemetryEntry.TABLE_NAME + ' (' +
@@ -34,6 +41,14 @@ export namespace TelemetryProcessedEntry {
     export const COLUMN_NAME_DATA = 'data';
     export const COLUMN_NAME_NUMBER_OF_EVENTS = 'event_count';
     export const COLUMN_NAME_PRIORITY = 'priority';
+
+    export interface SchemaMap {
+        [_ID]: string;
+        [COLUMN_NAME_MSG_ID]: string;
+        [COLUMN_NAME_DATA]: string;
+        [COLUMN_NAME_NUMBER_OF_EVENTS]: number;
+        [COLUMN_NAME_PRIORITY]: number;
+    }
 
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE ' + TelemetryProcessedEntry.TABLE_NAME + ' (' +
