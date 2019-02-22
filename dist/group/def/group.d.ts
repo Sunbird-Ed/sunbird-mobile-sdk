@@ -4,7 +4,7 @@ export interface Group {
     syllabus: string[];
     createdAt: number;
     grade: string[];
-    gradeValueMap: {
+    gradeValue: {
         [key: string]: any;
     };
     updatedAt: number;

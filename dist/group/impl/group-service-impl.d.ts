@@ -1,6 +1,6 @@
 import { DbService } from '../../db';
 import { Observable } from 'rxjs';
-import { GetAllGroupRequest, Group, GroupService, ProfilesToGroupRequest, GroupSession } from '..';
+import { GetAllGroupRequest, Group, GroupService, GroupSession, ProfilesToGroupRequest } from '..';
 import { KeyValueStore } from '../../key-value-store';
 export declare class GroupServiceImpl implements GroupService {
     private dbService;
