@@ -1,6 +1,5 @@
-import { CachedItemStore } from '../def/cached-item-store';
+import { CachedItemStore, KeyValueStore } from '..';
 import { Observable } from 'rxjs';
-import { KeyValueStore } from '..';
 import { ApiConfig } from '../../api';
 export declare class CachedItemStoreImpl<T> implements CachedItemStore<T> {
     private keyValueStore;
