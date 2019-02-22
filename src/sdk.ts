@@ -261,13 +261,6 @@ export class SunbirdSdk {
             new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig),
         );
 
-        this._frameworkUtilService = new FrameworkUtilServiceImpl(
-            this._sharedPreferences,
-            this._frameworkService,
-            this._profileService,
-            this._systemSettingsService
-        );
-
         this._pageAssembleService = new PageAssembleServiceImpl(
             this._apiService,
             sdkConfig.pageServiceConfig,
@@ -281,6 +274,14 @@ export class SunbirdSdk {
             this._fileService,
             new CachedItemStoreImpl<SystemSettings>(this._keyValueStore, sdkConfig.apiConfig),
         );
+
+        this._frameworkUtilService = new FrameworkUtilServiceImpl(
+            this._sharedPreferences,
+            this._frameworkService,
+            this._profileService,
+            this._systemSettingsService
+        );
+
         this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService);
     }
 }
