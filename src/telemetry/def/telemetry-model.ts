@@ -163,9 +163,9 @@ export class Share {
 
 export class TelemetryObject {
     private rollup?: Rollup;
-    private id: string;
-    private type: string;
-    private version: string;
+    public readonly id: string;
+    public readonly type: string;
+    public readonly version: string;
 
     constructor(id: string, type: string, version: string) {
         this.id = id;
