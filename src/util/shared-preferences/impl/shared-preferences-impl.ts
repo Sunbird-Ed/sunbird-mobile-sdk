@@ -8,6 +8,7 @@ export class SharedPreferencesImpl implements SharedPreferences {
     }
 
     public putString(key: string, value: string): Observable<undefined> {
-        return Observable.defer(() => localStorage.setItem(key, value));
+        return Observable.defer(() => Observable.of(localStorage.setItem(key, value))
+            .mapTo(undefined));
     }
 }
