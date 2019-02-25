@@ -16,7 +16,7 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     private apiService;
     private telemetryConfig;
     private deviceInfo;
-    private static readonly KEY_SYNC_TIME;
+    private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP;
     constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, telemetryConfig: TelemetryConfig, deviceInfo: DeviceInfo);
     end({ type, mode, duration, pageId, summaryList, env, objId, objType, objVer, rollup, correlationData }: TelemetryEndRequest): Observable<boolean>;
     error({ errorCode, errorType, stacktrace, pageId, env }: TelemetryErrorRequest): Observable<boolean>;
@@ -30,6 +30,4 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     sync(): Observable<TelemetrySyncStat>;
     event(telemetry: any): Observable<number>;
     private save;
-    private getCurrentProfileSession;
-    private getCurrentGroupSession;
 }

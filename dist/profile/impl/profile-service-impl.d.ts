@@ -8,14 +8,16 @@ import { ContentAccessFilterCriteria } from '../def/content-access-filter-criter
 import { ContentAccess } from '../def/content-access';
 import { ProfileExistsResponse } from '../def/profile-exists-response';
 import { LocationSearchResult } from '../def/location-search-result';
+import { SharedPreferences } from '../../util/shared-preferences';
 export declare class ProfileServiceImpl implements ProfileService {
     private profileServiceConfig;
     private dbService;
     private apiService;
     private cachedItemStore;
     private keyValueStore;
+    private sharedPreferences;
     private static readonly KEY_USER_SESSION;
-    constructor(profileServiceConfig: ProfileServiceConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore);
+    constructor(profileServiceConfig: ProfileServiceConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences);
     createProfile(profile: Profile, profileSource?: ProfileSource): Observable<Profile>;
     deleteProfile(uid: string): Observable<undefined>;
     updateProfile(profile: Profile): Observable<Profile>;

@@ -6,6 +6,18 @@ export declare class Actor {
     type: string;
     constructor();
 }
+export declare class ReportSummary {
+    uid: string;
+    contentId: string;
+    name: string;
+    lastUsedTime: number;
+    noOfQuestions: number;
+    correctAnswers: number;
+    totalTimespent: number;
+    hierarchyData: string;
+    totalMaxScore: number;
+    totalScore: number;
+}
 export declare class Audit {
     env: string;
     props: Array<string>;
@@ -114,9 +126,9 @@ export declare class Share {
 }
 export declare class TelemetryObject {
     private rollup?;
-    private id;
-    private type;
-    private version;
+    readonly id: string;
+    readonly type: string;
+    readonly version: string;
     constructor(id: string, type: string, version: string);
     setRollup(value: Rollup): void;
 }
