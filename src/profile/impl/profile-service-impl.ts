@@ -152,8 +152,11 @@ export class ProfileServiceImpl implements ProfileService {
 
 
         return this.dbService.execute(`
-            SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
-            ${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}"
+            SELECT * FROM ${ProfileEntry.TABLE_NAME}
+            LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
+            ${ProfileEntry.TABLE_NAME}.${ProfileEntry.COLUMN_NAME_UID} =
+            ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_UID}
+            WHERE ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}"
         `).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriesToProfiles(profiles));
     }
 
