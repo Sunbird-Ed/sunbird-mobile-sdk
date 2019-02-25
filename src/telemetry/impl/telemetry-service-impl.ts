@@ -164,11 +164,11 @@ export class TelemetryServiceImpl implements TelemetryService {
 
     private save(telemetry: any): Observable<boolean> {
         return Observable.zip(
-            this.getCurrentProfileSession(),
-            this.getCurrentGroupSession()
-        ).mergeMap((r) => {
-            const profileSession: ProfileSession | undefined = r[0];
-            const groupSession: GroupSession | undefined = r[1];
+            this.profileService.getActiveProfileSession(),
+            this.groupService.getActiveGroupSession()
+        ).mergeMap((sessions) => {
+            const profileSession: ProfileSession | undefined = sessions[0];
+            const groupSession: GroupSession | undefined = sessions[1];
 
             const insertQuery: InsertQuery = {
                 table: TelemetryEntry.TABLE_NAME,
@@ -179,13 +179,4 @@ export class TelemetryServiceImpl implements TelemetryService {
             return this.dbService.insert(insertQuery).map((count) => count > 1);
         });
     }
-
-    private getCurrentProfileSession(): Promise<ProfileSession | undefined> {
-        return this.profileService.getActiveProfileSession().toPromise();
-    }
-
-    private getCurrentGroupSession(): Promise<GroupSession | undefined> {
-        return this.groupService.getActiveGroupSession().toPromise();
-    }
-
 }
