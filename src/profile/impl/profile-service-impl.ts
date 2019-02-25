@@ -181,7 +181,15 @@ export class ProfileServiceImpl implements ProfileService {
                     table: ProfileEntry.TABLE_NAME,
                     selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
                     selectionArgs: [profileSession.uid]
-                }).map((rows) => rows && rows[0]);
+                }).map((rows) => {
+                    const profileDBEntry = rows && rows[0];
+
+                    if (!profileDBEntry) {
+                        throw new NoProfileFoundError(`No profile found for profileSession with uid ${profileSession.uid}`);
+                    }
+
+                    return ProfileMapper.mapProfileDBEntryToProfile(profileDBEntry);
+                });
             });
     }
 
