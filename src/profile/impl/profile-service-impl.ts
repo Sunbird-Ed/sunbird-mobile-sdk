@@ -42,16 +42,18 @@ import {GenerateOtpHandler} from '../handler/generate-otp-handler';
 import {VerifyOtpHandler} from '../handler/verify-otp-handler';
 import {LocationSearchResult} from '../def/location-search-result';
 import {SearchLocationHandler} from '../handler/search-location-handler';
+import {SharedPreferences} from '../../util/shared-preferences';
 
 
 export class ProfileServiceImpl implements ProfileService {
-    private static readonly KEY_USER_SESSION = 'session';
+    private static readonly KEY_USER_SESSION = 'profile_session';
 
     constructor(private profileServiceConfig: ProfileServiceConfig,
                 private dbService: DbService,
                 private apiService: ApiService,
                 private cachedItemStore: CachedItemStore<ServerProfile>,
-                private keyValueStore: KeyValueStore) {
+                private keyValueStore: KeyValueStore,
+                private sharedPreferences: SharedPreferences) {
     }
 
     createProfile(profile: Profile, profileSource: ProfileSource = ProfileSource.LOCAL): Observable<Profile> {
@@ -201,16 +203,16 @@ export class ProfileServiceImpl implements ProfileService {
             })
             .mergeMap((profile: Profile) => {
                 const profileSession = new ProfileSession(profile.uid);
-                return this.keyValueStore.setValue(ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify({
+                return this.sharedPreferences.putString(ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify({
                     uid: profileSession.uid,
                     sid: profileSession.sid,
                     createdTime: profileSession.createdTime
-                }));
+                })).mapTo(true);
             });
     }
 
     getActiveProfileSession(): Observable<ProfileSession | undefined> {
-        return this.keyValueStore.getValue(ProfileServiceImpl.KEY_USER_SESSION)
+        return this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION)
             .mergeMap((response) => {
                 if (!response) {
                     const request: Profile = {
@@ -219,6 +221,7 @@ export class ProfileServiceImpl implements ProfileService {
                         profileType: ProfileType.TEACHER,
                         source: ProfileSource.LOCAL
                     };
+
                     return this.createProfile(request)
                         .mergeMap((profile: Profile) => {
                             return this.setActiveSessionForProfile(profile.uid);
@@ -226,9 +229,7 @@ export class ProfileServiceImpl implements ProfileService {
                             return this.getActiveProfileSession();
                         });
                 }
-
                 return Observable.of(JSON.parse(response));
-
             });
     }
 

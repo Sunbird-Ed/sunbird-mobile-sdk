@@ -201,13 +201,15 @@ export class SunbirdSdk {
             this._dbService,
             this._apiService,
             new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig),
-            this._keyValueStore
+            this._keyValueStore,
+            this._sharedPreferences
         );
 
         this._groupService = new GroupServiceImpl(
             this._dbService,
             this._profileService,
-            this._keyValueStore
+            this._keyValueStore,
+            this._sharedPreferences
         );
 
         this._zipService = new ZipServiceImpl();

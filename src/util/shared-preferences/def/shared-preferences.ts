@@ -1,5 +1,7 @@
-export interface SharedPreferences {
-    getString(key: string): Promise<string | null>;
+import {Observable} from 'rxjs';
 
-    putString(key: string, value: string): void;
+export interface SharedPreferences {
+    getString(key: string): Observable<string | undefined>;
+
+    putString(key: string, value: string): Observable<undefined>;
 }
