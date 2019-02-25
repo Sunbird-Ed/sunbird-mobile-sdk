@@ -124,26 +124,26 @@ export class GroupServiceImpl implements GroupService {
     }
 
     getAllGroups(groupRequest?: GetAllGroupRequest): Observable<Group[]> {
-        return (() => {
-            if (!groupRequest) {
-                return this.dbService.read({
-                    table: GroupEntry.TABLE_NAME,
-                    columns: []
-                }).map((groups: GroupEntry.SchemaMap[]) =>
+        return Observable.defer(() => {
+            if (groupRequest) {
+                return this.dbService.execute(`
+                    SELECT * FROM ${GroupEntry.TABLE_NAME}
+                    LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
+                    ${GroupEntry.TABLE_NAME}.${GroupEntry.COLUMN_NAME_GID} =
+                    ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_GID}
+                    WHERE ${GroupProfileEntry.COLUMN_NAME_UID} = "${groupRequest!.uid}"`
+                ).map((groups: GroupEntry.SchemaMap[]) =>
                     groups.map((group: GroupEntry.SchemaMap) => GroupMapper.mapGroupDBEntryToGroup(group))
                 );
             }
 
-            return this.dbService.execute(`
-                SELECT * FROM ${GroupEntry.TABLE_NAME}
-                LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
-                ${GroupEntry.TABLE_NAME}.${GroupEntry.COLUMN_NAME_GID} =
-                ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_GID}
-                WHERE ${GroupProfileEntry.COLUMN_NAME_UID} = "${groupRequest.uid}"`
-            ).map((groups: GroupEntry.SchemaMap[]) =>
+            return this.dbService.read({
+                table: GroupEntry.TABLE_NAME,
+                columns: []
+            }).map((groups: GroupEntry.SchemaMap[]) =>
                 groups.map((group: GroupEntry.SchemaMap) => GroupMapper.mapGroupDBEntryToGroup(group))
             );
-        })().mergeMap((groups: Group[]) =>
+        }).mergeMap((groups: Group[]) =>
             Observable.from(groups)
         ).mergeMap((group: Group) =>
             this.profileService.getAllProfiles({
@@ -157,28 +157,27 @@ export class GroupServiceImpl implements GroupService {
 
 
     addProfilesToGroup(profileToGroupRequest: ProfilesToGroupRequest): Observable<number> {
-        this.dbService.beginTransaction();
-
-        return this.dbService.delete({
-            table: GroupProfileEntry.TABLE_NAME,
-            selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ?`,
-            selectionArgs: [profileToGroupRequest.groupId]
-        }).switchMap(() => {
-            return Observable.from(profileToGroupRequest.uidList)
-                .mergeMap((uid: string) => {
-                    return this.dbService.insert({
-                        table: GroupProfileEntry.TABLE_NAME,
-                        modelJson: {
-                            [GroupProfileEntry.COLUMN_NAME_GID]: profileToGroupRequest.groupId,
-                            [GroupProfileEntry.COLUMN_NAME_UID]: uid
-                        }
+        return Observable
+            .defer(() => Observable.of(this.dbService.beginTransaction()))
+            .mergeMap(() => this.dbService.delete({
+                table: GroupProfileEntry.TABLE_NAME,
+                selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ?`,
+                selectionArgs: [profileToGroupRequest.groupId]
+            }))
+            .switchMap(() => {
+                return Observable.from(profileToGroupRequest.uidList)
+                    .mergeMap((uid: string) => {
+                        return this.dbService.insert({
+                            table: GroupProfileEntry.TABLE_NAME,
+                            modelJson: {
+                                [GroupProfileEntry.COLUMN_NAME_GID]: profileToGroupRequest.groupId,
+                                [GroupProfileEntry.COLUMN_NAME_UID]: uid
+                            }
+                        });
                     });
-                });
-        }).do(() => {
-            this.dbService.endTransaction(true);
-        }).catch((e) => {
-            this.dbService.endTransaction(false);
-            return Observable.throw(e);
-        });
+            })
+            .finally(() => {
+                this.dbService.endTransaction(false);
+            });
     }
 }
