@@ -1,6 +1,6 @@
 {
   "name": "sunbird-sdk",
-  "version": "1.14.29",
+  "version": "1.14.30",
   "description": "Heart of the sunbird mobile app. Holds the imporatnat business logic including api calls and db operations.",
   "main": "dist/index.js",
   "scripts": {
