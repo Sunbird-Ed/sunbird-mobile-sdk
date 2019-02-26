@@ -11,12 +11,12 @@ export declare enum Environment {
     SETTINGS = "settings",
     ONBOARDING = "onboarding"
 }
-export declare class ObjectType {
-    NOTIFICATION: string;
-    USER: string;
-    GROUP: string;
-    CONTENT: string;
-    QUESTION: string;
+export declare enum ObjectType {
+    NOTIFICATION = "notification",
+    USER = "User",
+    GROUP = "Group",
+    CONTENT = "Content",
+    QUESTION = "Question"
 }
 export declare enum Mode {
     PLAY = "play"
@@ -217,11 +217,14 @@ export declare enum InteractSubtype {
     PLAY_CLICKED = "play-clicked",
     EXTRA_INFO = "extra-info",
     PROFILE_ATTRIBUTE_POPULATION = "profile-attribute-population",
-    ACCEPTANCE_CHECKBOX_CLICKED = "acceptance_checkbox_clicked"
+    ACCEPTANCE_CHECKBOX_CLICKED = "acceptance_checkbox_clicked",
+    UPDATE_INITIATE = "update-initiate",
+    DOWNLOAD_INITIATE = "download-initiate",
+    PLAY_ONLINE = "play-online"
 }
 export declare enum ErrorCode {
     ERR_DOWNLOAD_FAILED = "ERR_DOWNLOAD_FAILED"
 }
-export declare class ErrorType {
-    SYSTEM: string;
+export declare enum ErrorType {
+    SYSTEM = "SYSTEM"
 }
