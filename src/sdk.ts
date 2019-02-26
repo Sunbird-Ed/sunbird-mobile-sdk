@@ -206,13 +206,6 @@ export class SunbirdSdk {
             this._sharedPreferences
         );
 
-        this._frameworkUtilService = new FrameworkUtilServiceImpl(
-            this._sharedPreferences,
-            this._frameworkService,
-            this._profileService,
-            this._systemSettingsService
-        );
-
         this._profileService = new ProfileServiceImpl(
             sdkConfig.profileServiceConfig,
             this._dbService,
@@ -270,6 +263,13 @@ export class SunbirdSdk {
             this._apiService,
             this._fileService,
             new CachedItemStoreImpl<SystemSettings>(this._keyValueStore, sdkConfig.apiConfig),
+        );
+
+        this._frameworkUtilService = new FrameworkUtilServiceImpl(
+            this._sharedPreferences,
+            this._frameworkService,
+            this._profileService,
+            this._systemSettingsService
         );
 
         this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService);

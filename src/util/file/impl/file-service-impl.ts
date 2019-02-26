@@ -132,7 +132,9 @@ export class FileServiceImpl implements FileService {
     ): Promise<FileEntry> {
         return new Promise<FileEntry>((resolve, reject) => {
             try {
-                directoryEntry.getFile(fileName, flags, resolve, err => {
+                directoryEntry.getFile(fileName, flags, (entry: FileEntry) => {
+                    resolve(entry);
+                }, err => {
                     reject(err);
                 });
             } catch (xc) {

@@ -7,7 +7,7 @@ import {Observable} from 'rxjs';
 
 
 export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSettingsRequest, SystemSettings> {
-    private readonly SYSTEM_SETTINGS_FILE_KEY_PREFIX = 'system-settings-';
+    private readonly SYSTEM_SETTINGS_FILE_KEY_PREFIX = 'system-setting-';
     private readonly SYSTEM_SETTINGS_LOCAL_KEY = 'system-settings-';
     private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = '/system/settings/get';
 
