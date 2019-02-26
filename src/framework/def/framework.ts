@@ -22,7 +22,7 @@ export interface FrameworkCategory {
 }
 
 export interface CategoryTerm {
-    associations: CategoryAssociation[];
+    associations?: CategoryAssociation[];
     identifier: string;
     code: string;
     translations?: string;

@@ -101,7 +101,7 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
 
         const categoryAssociationsArray: CategoryAssociation[][] = categoryTerms
             .filter((term) => request.selectedTermsCodes!.find((selectedTerm) => selectedTerm === term.code))
-            .map((term) => term.associations);
+            .map((term) => term.associations || []);
 
         if (categoryAssociationsArray.some((categoryAssociations) => categoryAssociations.length === 0)) {
             return framework.categories!.find((category) => category.code === request.currentCategoryCode)!.terms!
