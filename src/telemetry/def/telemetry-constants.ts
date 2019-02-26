@@ -13,12 +13,12 @@ export enum Environment {
     ONBOARDING = 'onboarding'
 }
 
-export class ObjectType {
-    NOTIFICATION = 'notification';
-    USER = 'User';
-    GROUP = 'Group';
-    CONTENT = 'Content';
-    QUESTION = 'Question';
+export enum ObjectType {
+     NOTIFICATION = 'notification',
+     USER = 'User',
+     GROUP = 'Group',
+     CONTENT = 'Content',
+     QUESTION = 'Question'
 }
 
 export enum Mode {
@@ -230,12 +230,15 @@ export enum InteractSubtype {
     EXTRA_INFO = 'extra-info',
     PROFILE_ATTRIBUTE_POPULATION = 'profile-attribute-population',
     ACCEPTANCE_CHECKBOX_CLICKED = 'acceptance_checkbox_clicked',
+    UPDATE_INITIATE = 'update-initiate',
+    DOWNLOAD_INITIATE = 'download-initiate',
+    PLAY_ONLINE = 'play-online'
 }
 
 export enum ErrorCode {
     ERR_DOWNLOAD_FAILED = 'ERR_DOWNLOAD_FAILED'
 }
 
-export class ErrorType {
-    SYSTEM = 'SYSTEM';
+export enum ErrorType {
+    SYSTEM = 'SYSTEM'
 }
