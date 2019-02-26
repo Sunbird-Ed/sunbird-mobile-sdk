@@ -5,17 +5,12 @@ import {Observable} from 'rxjs';
 import {GetSuggestedFrameworksRequest} from './requests';
 import {FrameworkMapper} from './framework-mapper';
 import {Profile, ProfileService} from '../../profile';
-import {SystemSettingsService} from '../../system-settings';
 import {GetFrameworkCategoryTermsHandler} from '../handler/get-framework-category-terms-handler';
 
 export class FrameworkUtilServiceImpl implements FrameworkUtilService {
-
-    private readonly SYSTEM_SETTINGS_CUSTODIAN_ORG_ID_KEY = 'custodianOrgId';
-
     constructor(private sharedPreferences: SharedPreferences,
                 private frameworkService: FrameworkService,
-                private profileService: ProfileService,
-                private systemSettingsService: SystemSettingsService) {
+                private profileService: ProfileService) {
     }
 
     public getActiveChannel(): Observable<Channel> {
@@ -31,7 +26,7 @@ export class FrameworkUtilServiceImpl implements FrameworkUtilService {
                 Observable.if(
                     () => !!profile.serverProfile,
                     Observable.defer(() => this.getActiveChannel()),
-                    Observable.defer(() => this.getCustodianChannel())
+                    Observable.defer(() => this.frameworkService.getDefaultChannelDetails())
                 )
             )
             .mergeMap((channel: Channel) => {
@@ -61,13 +56,5 @@ export class FrameworkUtilServiceImpl implements FrameworkUtilService {
             this,
             this.frameworkService,
         ).handle(request);
-    }
-
-    private getCustodianChannel(): Observable<Channel> {
-        return this.systemSettingsService.getSystemSettings({id: this.SYSTEM_SETTINGS_CUSTODIAN_ORG_ID_KEY})
-            .map((r) => r.value)
-            .mergeMap((channelId: string) => {
-                return this.frameworkService.getChannelDetails({channelId: channelId});
-            });
     }
 }

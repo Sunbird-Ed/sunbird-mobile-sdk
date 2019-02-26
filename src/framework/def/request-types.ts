@@ -5,7 +5,7 @@ export interface ChannelDetailsRequest {
 }
 
 export interface FrameworkDetailsRequest {
-    frameworkId: string;
+    frameworkId?: string;
     requiredCategories: FrameworkCategoryCode[];
 }
 

@@ -196,6 +196,13 @@ export class SunbirdSdk {
             this._fileService = new FileServiceImpl();
         }
 
+        this._systemSettingsService = new SystemSettingsServiceImpl(
+            sdkConfig.systemSettingsConfig,
+            this._apiService,
+            this._fileService,
+            new CachedItemStoreImpl<SystemSettings>(this._keyValueStore, sdkConfig.apiConfig),
+        );
+
         this._frameworkService = new FrameworkServiceImpl(
             sdkConfig.frameworkServiceConfig,
             this._keyValueStore,
@@ -203,7 +210,8 @@ export class SunbirdSdk {
             this._apiService,
             new CachedItemStoreImpl<Channel>(this._keyValueStore, sdkConfig.apiConfig),
             new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig),
-            this._sharedPreferences
+            this._sharedPreferences,
+            this._systemSettingsService
         );
 
         this._profileService = new ProfileServiceImpl(
@@ -258,18 +266,10 @@ export class SunbirdSdk {
             new CachedItemStoreImpl<PageAssemble>(this._keyValueStore, sdkConfig.apiConfig)
         );
 
-        this._systemSettingsService = new SystemSettingsServiceImpl(
-            sdkConfig.systemSettingsConfig,
-            this._apiService,
-            this._fileService,
-            new CachedItemStoreImpl<SystemSettings>(this._keyValueStore, sdkConfig.apiConfig),
-        );
-
         this._frameworkUtilService = new FrameworkUtilServiceImpl(
             this._sharedPreferences,
             this._frameworkService,
-            this._profileService,
-            this._systemSettingsService
+            this._profileService
         );
 
         this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService);

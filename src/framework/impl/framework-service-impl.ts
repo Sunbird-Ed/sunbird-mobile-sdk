@@ -16,6 +16,7 @@ import {Organization} from '../def/Organization';
 import {ApiService, HttpRequestType, Request} from '../../api';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';
+import {SystemSettingsService} from '../../system-settings';
 
 export class FrameworkServiceImpl implements FrameworkService {
     private static readonly KEY_ACTIVE_CHANNEL_ID = 'active_channel_id';
@@ -27,9 +28,17 @@ export class FrameworkServiceImpl implements FrameworkService {
                 private apiService: ApiService,
                 private cachedChannelItemStore: CachedItemStore<Channel>,
                 private cachedFrameworkItemStore: CachedItemStore<Framework>,
-                private sharedPreferences: SharedPreferences) {
+                private sharedPreferences: SharedPreferences,
+                private systemSettingsService: SystemSettingsService) {
     }
 
+    getDefaultChannelDetails(): Observable<Channel> {
+        return this.systemSettingsService.getSystemSettings({id: this.frameworkServiceConfig.systemSettingsDefaultChannelIdKey})
+            .map((r) => r.value)
+            .mergeMap((channelId: string) => {
+                return this.getChannelDetails({channelId: channelId});
+            });
+    }
 
     getChannelDetails(request: ChannelDetailsRequest): Observable<Channel> {
         return new GetChannelDetailsHandler(
@@ -42,6 +51,7 @@ export class FrameworkServiceImpl implements FrameworkService {
 
     getFrameworkDetails(request: FrameworkDetailsRequest): Observable<Framework> {
         return new GetFrameworkDetailsHandler(
+            this,
             this.apiService,
             this.frameworkServiceConfig,
             this.fileService,

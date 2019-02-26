@@ -5,6 +5,8 @@ import {ChannelDetailsRequest, FrameworkDetailsRequest, OrganizationSearchCriter
 import {Organization} from './Organization';
 
 export interface FrameworkService {
+    getDefaultChannelDetails(): Observable<Channel>;
+
     getChannelDetails(request: ChannelDetailsRequest): Observable<Channel>;
 
     getFrameworkDetails(request: FrameworkDetailsRequest): Observable<Framework>;

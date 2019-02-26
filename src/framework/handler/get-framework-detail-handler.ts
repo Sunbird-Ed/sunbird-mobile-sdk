@@ -3,7 +3,7 @@ import {Path} from '../../util/file/util/path';
 import {FileService} from '../../util/file/def/file-service';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
-import {Framework, FrameworkDetailsRequest, FrameworkServiceConfig} from '..';
+import {Channel, Framework, FrameworkDetailsRequest, FrameworkService, FrameworkServiceConfig} from '..';
 import {FrameworkMapper} from '../util/framework-mapper';
 
 
@@ -13,20 +13,33 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
     private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = '/read';
 
 
-    constructor(
-        private apiService: ApiService,
+    constructor(private frameworkService: FrameworkService,
+                private apiService: ApiService,
                 private frameworkServiceConfig: FrameworkServiceConfig,
                 private fileservice: FileService,
                 private cachedItemStore: CachedItemStore<Framework>) {
     }
 
     handle(request: FrameworkDetailsRequest): Observable<Framework> {
-        return this.cachedItemStore.getCached(
-            request.frameworkId,
-            this.FRAMEWORK_LOCAL_KEY,
-            this.FRAMEWORK_LOCAL_KEY,
-            () => this.fetchFromServer(request),
-            () => this.fetchFromFile(request)
+        return Observable.if(
+            () => !!request.frameworkId,
+            Observable.defer(() => {
+                return this.cachedItemStore.getCached(
+                    request.frameworkId!,
+                    this.FRAMEWORK_LOCAL_KEY,
+                    this.FRAMEWORK_LOCAL_KEY,
+                    () => this.fetchFromServer(request),
+                    () => this.fetchFromFile(request));
+            }),
+            Observable.defer(() => {
+                return this.frameworkService.getDefaultChannelDetails()
+                    .mergeMap((channel: Channel) =>
+                        this.frameworkService.getFrameworkDetails({
+                            frameworkId: channel.defaultFramework,
+                            requiredCategories: request.requiredCategories
+                        })
+                    );
+            })
         );
     }
 
