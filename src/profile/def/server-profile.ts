@@ -1,7 +1,14 @@
 export interface ServerProfile {
+    userId: string;
     identifier: string;
     firstName: string;
     lastName: string;
+    rootOrg: RootOrg;
+    tncAcceptedVersion: string;
+    tncAcceptedOn: string;
+    tncLatestVersion: string;
+    promptTnC: boolean;
+    tncLatestVersionUrl: string;
     // webPages: string[];
     // "tcStatus": null,
     // education: [],
@@ -41,4 +48,11 @@ export interface ServerProfile {
     // "currentLoginTime": null,
     // "location": "",
     // "status": 1
+}
+
+export interface RootOrg {
+    rootOrgId?: string;
+    orgName?: string;
+    slug?: string;
+    hashTagId?: string;
 }
