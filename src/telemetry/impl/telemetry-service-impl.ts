@@ -13,7 +13,7 @@ import {
     TelemetrySyncStat
 } from '..';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
-import {Observable, Observer} from 'rxjs';
+import {Observable} from 'rxjs';
 import {ProfileService, ProfileSession} from '../../profile';
 import {GroupService, GroupSession} from '../../group';
 import {TelemetrySyncHandler} from '../handler/telemetry-sync-handler';
@@ -23,8 +23,7 @@ import {TelemetryConfig} from '../config/telemetry-config';
 import {DeviceInfo} from '../../util/device/def/device-info';
 
 export class TelemetryServiceImpl implements TelemetryService {
-
-    private static readonly KEY_SYNC_TIME = 'telemetry_sync_time';
+    private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
 
     constructor(private dbService: DbService,
                 private decorator: TelemetryDecorator,
@@ -116,34 +115,29 @@ export class TelemetryServiceImpl implements TelemetryService {
     }
 
     getTelemetryStat(): Observable<TelemetryStat> {
-        const telemetryEventCountQuery = 'select count(*) from ' + TelemetryEntry.TABLE_NAME;
-        const processedTelemetryEventCountQuery = 'select sum(' +
-            TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS + ') from ' + TelemetryProcessedEntry.TABLE_NAME;
-        let telemetryEventCount = 0;
-        let processedTelemetryEventCount = 0;
-        const syncStat = new TelemetryStat();
+        const telemetryCountQuery = `
+            SELECT COUNT(*) as TELEMETRY_COUNT
+            FROM ${TelemetryEntry.TABLE_NAME}
+        `;
 
-        return Observable.create((observer: Observer<TelemetryStat>) => {
-            this.dbService.execute(telemetryEventCountQuery)
-                .toPromise()
-                .then(value => {
-                    telemetryEventCount = value[0];
-                    return this.dbService.execute(processedTelemetryEventCountQuery);
-                })
-                .then(value => {
-                    processedTelemetryEventCount = value[0];
-                    syncStat.unSyncedEventCount = telemetryEventCount + processedTelemetryEventCount;
-                    const syncTime = localStorage.getItem(TelemetryServiceImpl.KEY_SYNC_TIME);
-                    if (syncTime !== null) {
-                        syncStat.lastSyncTime = parseInt(syncTime, 10);
-                    }
+        const processedTelemetryCountQuery = `
+            SELECT SUM(${TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS}) as PROCESSED_TELEMETRY_COUNT
+            FROM ${TelemetryProcessedEntry.TABLE_NAME}
+        `;
 
-                    observer.next(syncStat);
-                    observer.complete();
-                })
-                .catch(error => {
-                    observer.error(error);
-                });
+        return Observable.zip(
+            this.dbService.execute(telemetryCountQuery),
+            this.dbService.execute(processedTelemetryCountQuery),
+            this.keyValueStore.getValue(TelemetryServiceImpl.KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP)
+        ).map((results) => {
+            const telemetryCount: number = results[0][0]['TELEMETRY_COUNT'];
+            const processedTelemetryCount: number = results[1][0]['PROCESSED_TELEMETRY_COUNT'];
+            const lastSyncedTimestamp: number = results[2] ? parseInt(results[2]!, 10) : 0;
+
+            return {
+                unSyncedEventCount: telemetryCount + processedTelemetryCount,
+                lastSyncTime: lastSyncedTimestamp
+            };
         });
     }
 
@@ -155,7 +149,11 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.apiService,
             this.telemetryConfig,
             this.deviceInfo
-        ).handle();
+        ).handle()
+            .mergeMap((telemetrySyncStat) =>
+                this.keyValueStore.setValue(TelemetryServiceImpl.KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP, telemetrySyncStat.syncTime + '')
+                    .mapTo(telemetrySyncStat)
+            );
     }
 
     event(telemetry: any): Observable<number> {
@@ -164,11 +162,11 @@ export class TelemetryServiceImpl implements TelemetryService {
 
     private save(telemetry: any): Observable<boolean> {
         return Observable.zip(
-            this.getCurrentProfileSession(),
-            this.getCurrentGroupSession()
-        ).mergeMap((r) => {
-            const profileSession: ProfileSession | undefined = r[0];
-            const groupSession: GroupSession | undefined = r[1];
+            this.profileService.getActiveProfileSession(),
+            this.groupService.getActiveGroupSession()
+        ).mergeMap((sessions) => {
+            const profileSession: ProfileSession | undefined = sessions[0];
+            const groupSession: GroupSession | undefined = sessions[1];
 
             const insertQuery: InsertQuery = {
                 table: TelemetryEntry.TABLE_NAME,
@@ -179,13 +177,4 @@ export class TelemetryServiceImpl implements TelemetryService {
             return this.dbService.insert(insertQuery).map((count) => count > 1);
         });
     }
-
-    private getCurrentProfileSession(): Promise<ProfileSession | undefined> {
-        return this.profileService.getActiveProfileSession().toPromise();
-    }
-
-    private getCurrentGroupSession(): Promise<GroupSession | undefined> {
-        return this.groupService.getActiveGroupSession().toPromise();
-    }
-
 }

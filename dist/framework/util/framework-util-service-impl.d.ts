@@ -12,7 +12,8 @@ export declare class FrameworkUtilServiceImpl implements FrameworkUtilService {
     private systemSettingsService;
     private readonly SYSTEM_SETTINGS_CUSTODIAN_ORG_ID_KEY;
     constructor(sharedPreferences: SharedPreferences, frameworkService: FrameworkService, profileService: ProfileService, systemSettingsService: SystemSettingsService);
+    getActiveChannel(): Observable<Channel>;
     getActiveChannelSuggestedFrameworkList(getSuggestedFrameworksRequest: GetSuggestedFrameworksRequest): Observable<Framework[]>;
-    getCustodianChannel(): Observable<Channel>;
     getFrameworkCategoryTerms(request: GetFrameworkCategoryTermsRequest): Observable<CategoryTerm[]>;
+    private getCustodianChannel;
 }

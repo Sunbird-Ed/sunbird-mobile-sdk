@@ -1,4 +1,4 @@
-export class TelemetryStat {
+export interface TelemetryStat {
     unSyncedEventCount: number;
     lastSyncTime: number;
 }

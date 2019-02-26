@@ -10,7 +10,8 @@ import {
     ProfileService,
     ProfileServiceConfig,
     ProfileSession,
-    ProfileSource, ProfileType,
+    ProfileSource,
+    ProfileType,
     ServerProfile,
     ServerProfileDetailsRequest,
     ServerProfileSearchCriteria,
@@ -41,16 +42,20 @@ import {GenerateOtpHandler} from '../handler/generate-otp-handler';
 import {VerifyOtpHandler} from '../handler/verify-otp-handler';
 import {LocationSearchResult} from '../def/location-search-result';
 import {SearchLocationHandler} from '../handler/search-location-handler';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {FrameworkService} from '../../framework';
 
 
 export class ProfileServiceImpl implements ProfileService {
-    private static readonly KEY_USER_SESSION = 'session';
+    private static readonly KEY_USER_SESSION = 'profile_session';
 
     constructor(private profileServiceConfig: ProfileServiceConfig,
                 private dbService: DbService,
                 private apiService: ApiService,
                 private cachedItemStore: CachedItemStore<ServerProfile>,
-                private keyValueStore: KeyValueStore) {
+                private keyValueStore: KeyValueStore,
+                private sharedPreferences: SharedPreferences,
+                private frameworkService: FrameworkService) {
     }
 
     createProfile(profile: Profile, profileSource: ProfileSource = ProfileSource.LOCAL): Observable<Profile> {
@@ -97,11 +102,14 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     updateProfile(profile: Profile): Observable<Profile> {
+        const profileDBEntry = ProfileMapper.mapProfileToProfileDBEntry(profile);
+        delete profileDBEntry[ProfileEntry.COLUMN_NAME_CREATED_AT];
+
         return this.dbService.update({
             table: ProfileEntry.TABLE_NAME,
             selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
             selectionArgs: [profile.uid],
-            modelJson: ProfileMapper.mapProfileToProfileDBEntry(profile)
+            modelJson: profileDBEntry
         }).mergeMap(() => Observable.of(profile));
     }
 
@@ -148,8 +156,11 @@ export class ProfileServiceImpl implements ProfileService {
 
 
         return this.dbService.execute(`
-            SELECT * FROM ${ProfileEntry.TABLE_NAME} LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
-            ${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}"
+            SELECT * FROM ${ProfileEntry.TABLE_NAME}
+            LEFT JOIN ${GroupProfileEntry.TABLE_NAME} ON
+            ${ProfileEntry.TABLE_NAME}.${ProfileEntry.COLUMN_NAME_UID} =
+            ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_UID}
+            WHERE ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_GID} = "${profileRequest.groupId}"
         `).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriesToProfiles(profiles));
     }
 
@@ -172,7 +183,15 @@ export class ProfileServiceImpl implements ProfileService {
                     table: ProfileEntry.TABLE_NAME,
                     selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
                     selectionArgs: [profileSession.uid]
-                }).map((rows) => rows && rows[0]);
+                }).map((rows) => {
+                    const profileDBEntry = rows && rows[0];
+
+                    if (!profileDBEntry) {
+                        throw new NoProfileFoundError(`No profile found for profileSession with uid ${profileSession.uid}`);
+                    }
+
+                    return ProfileMapper.mapProfileDBEntryToProfile(profileDBEntry);
+                });
             });
     }
 
@@ -192,18 +211,25 @@ export class ProfileServiceImpl implements ProfileService {
                 }
                 return profile;
             })
+            .mergeMap((profile: Profile) =>
+                Observable.if(
+                    () => profile.source === ProfileSource.SERVER,
+                    Observable.defer(() => this.frameworkService.setActiveChannelId(profile.serverProfile!.rootOrg.hashTagId)),
+                    Observable.defer(() => Observable.of(undefined))
+                ).mapTo(profile)
+            )
             .mergeMap((profile: Profile) => {
                 const profileSession = new ProfileSession(profile.uid);
-                return this.keyValueStore.setValue(ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify({
+                return this.sharedPreferences.putString(ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify({
                     uid: profileSession.uid,
                     sid: profileSession.sid,
                     createdTime: profileSession.createdTime
-                }));
+                })).mapTo(true);
             });
     }
 
     getActiveProfileSession(): Observable<ProfileSession | undefined> {
-        return this.keyValueStore.getValue(ProfileServiceImpl.KEY_USER_SESSION)
+        return this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION)
             .mergeMap((response) => {
                 if (!response) {
                     const request: Profile = {
@@ -212,6 +238,7 @@ export class ProfileServiceImpl implements ProfileService {
                         profileType: ProfileType.TEACHER,
                         source: ProfileSource.LOCAL
                     };
+
                     return this.createProfile(request)
                         .mergeMap((profile: Profile) => {
                             return this.setActiveSessionForProfile(profile.uid);
@@ -219,9 +246,7 @@ export class ProfileServiceImpl implements ProfileService {
                             return this.getActiveProfileSession();
                         });
                 }
-
                 return Observable.of(JSON.parse(response));
-
             });
     }
 

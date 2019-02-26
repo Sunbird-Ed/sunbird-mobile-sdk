@@ -11,6 +11,19 @@ export class Actor {
     }
 }
 
+export declare class ReportSummary {
+    uid: string;
+    contentId: string;
+    name: string;
+    lastUsedTime: number;
+    noOfQuestions: number;
+    correctAnswers: number;
+    totalTimespent: number;
+    hierarchyData: string;
+    totalMaxScore: number;
+    totalScore: number;
+}
+
 export class Audit {
     env: string;
     props: Array<string>;
@@ -163,9 +176,9 @@ export class Share {
 
 export class TelemetryObject {
     private rollup?: Rollup;
-    private id: string;
-    private type: string;
-    private version: string;
+    public readonly id: string;
+    public readonly type: string;
+    public readonly version: string;
 
     constructor(id: string, type: string, version: string) {
         this.id = id;

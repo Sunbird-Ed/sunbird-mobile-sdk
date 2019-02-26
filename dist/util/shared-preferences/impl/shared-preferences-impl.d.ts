@@ -1,5 +1,6 @@
 import { SharedPreferences } from '..';
+import { Observable } from 'rxjs';
 export declare class SharedPreferencesImpl implements SharedPreferences {
-    getString(key: string): Promise<string | null>;
-    putString(key: string, value: string): void;
+    getString(key: string): Observable<string | undefined>;
+    putString(key: string, value: string): Observable<undefined>;
 }

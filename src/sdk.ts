@@ -189,26 +189,6 @@ export class SunbirdSdk {
 
         this._keyValueStore = new KeyValueStoreImpl(this._dbService);
 
-        this._profileService = new ProfileServiceImpl(
-            sdkConfig.profileServiceConfig,
-            this._dbService,
-            this._apiService,
-            new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig),
-            this._keyValueStore
-        );
-        this._groupService = new GroupServiceImpl(this._dbService, this._keyValueStore);
-
-        this._telemetryService = new TelemetryServiceImpl(
-            this._dbService,
-            new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo),
-            this._profileService,
-            this._groupService,
-            this._keyValueStore,
-            this._apiService,
-            this._sdkConfig.telemetryConfig,
-            this._deviceInfo
-        );
-
 
         if (sdkConfig.fileConfig.debugMode === true) {
             this._fileService = new DebugPromptFileService();
@@ -216,16 +196,35 @@ export class SunbirdSdk {
             this._fileService = new FileServiceImpl();
         }
 
+        this._frameworkService = new FrameworkServiceImpl(
+            sdkConfig.frameworkServiceConfig,
+            this._keyValueStore,
+            this._fileService,
+            this._apiService,
+            new CachedItemStoreImpl<Channel>(this._keyValueStore, sdkConfig.apiConfig),
+            new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig),
+            this._sharedPreferences
+        );
+
         this._profileService = new ProfileServiceImpl(
             sdkConfig.profileServiceConfig,
             this._dbService,
             this._apiService,
             new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig),
-            this._keyValueStore
+            this._keyValueStore,
+            this._sharedPreferences,
+            this._frameworkService
         );
 
-        this._groupService = new GroupServiceImpl(this._dbService, this._keyValueStore);
+        this._groupService = new GroupServiceImpl(
+            this._dbService,
+            this._profileService,
+            this._keyValueStore,
+            this._sharedPreferences
+        );
+
         this._zipService = new ZipServiceImpl();
+
         this._contentService = new ContentServiceImpl(
             sdkConfig.contentServiceConfig,
             this._apiService,
@@ -252,15 +251,6 @@ export class SunbirdSdk {
             new CachedItemStoreImpl<{ [key: string]: {} }>(this._keyValueStore, sdkConfig.apiConfig)
         );
 
-        this._frameworkService = new FrameworkServiceImpl(
-            sdkConfig.frameworkServiceConfig,
-            this._keyValueStore,
-            this._fileService,
-            this._apiService,
-            new CachedItemStoreImpl<Channel>(this._keyValueStore, sdkConfig.apiConfig),
-            new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig),
-        );
-
         this._pageAssembleService = new PageAssembleServiceImpl(
             this._apiService,
             sdkConfig.pageServiceConfig,
@@ -283,5 +273,22 @@ export class SunbirdSdk {
         );
 
         this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService);
+
+        this._telemetryService = new TelemetryServiceImpl(
+            this._dbService,
+            new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo),
+            this._profileService,
+            this._groupService,
+            this._keyValueStore,
+            this._apiService,
+            this._sdkConfig.telemetryConfig,
+            this._deviceInfo
+        );
+
+        this.postInit();
+    }
+
+    private postInit() {
+        this._frameworkService.setActiveChannelId(this._sdkConfig.apiConfig.api_authentication.channelId).subscribe();
     }
 }

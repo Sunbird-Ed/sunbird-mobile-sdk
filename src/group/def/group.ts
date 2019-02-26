@@ -6,6 +6,7 @@ export interface Group {
     grade: string[];
     gradeValue: { [key: string]: any };
     updatedAt: number;
+    profilesCount?: number;
 }
 
 export interface GroupProfile {

@@ -1,11 +1,14 @@
 import {SharedPreferences} from '..';
+import {Observable} from 'rxjs';
 
 export class SharedPreferencesImpl implements SharedPreferences {
-    public async getString(key: string): Promise<string | null> {
-        return localStorage.getItem(key);
+    public getString(key: string): Observable<string | undefined> {
+        return Observable.defer(() => Observable.of(localStorage.getItem(key))
+            .map((v) => v || undefined));
     }
 
-    public putString(key: string, value: string): void {
-        return localStorage.setItem(key, value);
+    public putString(key: string, value: string): Observable<undefined> {
+        return Observable.defer(() => Observable.of(localStorage.setItem(key, value))
+            .mapTo(undefined));
     }
 }

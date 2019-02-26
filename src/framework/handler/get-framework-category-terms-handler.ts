@@ -7,16 +7,17 @@ import {
     FrameworkCategory,
     FrameworkCategoryCode,
     FrameworkService,
+    FrameworkUtilService,
     GetFrameworkCategoryTermsRequest
 } from '..';
 import {Observable} from 'rxjs';
-import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';
 import * as Collections from 'typescript-collections';
 import {FrameworkMapper} from '../util/framework-mapper';
 
 export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFrameworkCategoryTermsRequest, CategoryTerm[]> {
 
-    constructor(private frameworkService: FrameworkService) {
+    constructor(private frameworkUtilService: FrameworkUtilService,
+                private frameworkService: FrameworkService) {
     }
 
     handle(request: GetFrameworkCategoryTermsRequest): Observable<CategoryTerm[]> {
@@ -25,7 +26,7 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
                 return this.getTranslatedFrameworkDetails(request.frameworkId, request.requiredCategories, request.language);
             }
 
-            return this.getCurrentChannelTranslatedDefaultFrameworkDetails(request.requiredCategories, request.language);
+            return this.getActiveChannelTranslatedDefaultFrameworkDetails(request.requiredCategories, request.language);
         }) as () => Observable<Framework>)()
             .map((framework: Framework) => {
                 let terms: CategoryTerm[] = [];
@@ -42,20 +43,21 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
             });
     }
 
-    private getCurrentChannelTranslatedDefaultFrameworkDetails(requiredCategories: FrameworkCategoryCode[], language: string): Observable<Framework> {
-        return this.frameworkService.activeChannel$
-            .map((channel) => {
-                if (!channel) {
-                    throw new NoActiveChannelFoundError('No active channel found');
-                }
-                return channel;
-            })
+    private getActiveChannelTranslatedDefaultFrameworkDetails(
+        requiredCategories: FrameworkCategoryCode[],
+        language: string
+    ): Observable<Framework> {
+        return this.frameworkUtilService.getActiveChannel()
             .mergeMap((channel: Channel) => {
                 return this.getTranslatedFrameworkDetails(channel.defaultFramework, requiredCategories, language);
             });
     }
 
-    private getTranslatedFrameworkDetails(frameworkId: string, requiredCategories: FrameworkCategoryCode[], language: string): Observable<Framework> {
+    private getTranslatedFrameworkDetails(
+        frameworkId: string,
+        requiredCategories: FrameworkCategoryCode[],
+        language: string
+    ): Observable<Framework> {
         return this.frameworkService.getFrameworkDetails({
             frameworkId,
             requiredCategories
