@@ -46,7 +46,6 @@ export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSett
         return Observable.fromPromise(this.fileservice.readAsText(dir, file))
             .map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
-                console.log('systemsetting res', result.result.response);
                 return (result.result.response);
             });
     }
