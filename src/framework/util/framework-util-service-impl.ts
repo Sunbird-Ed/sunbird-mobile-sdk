@@ -4,7 +4,6 @@ import {CategoryTerm, Channel, Framework, FrameworkService, GetFrameworkCategory
 import {Observable} from 'rxjs';
 import {GetSuggestedFrameworksRequest} from './requests';
 import {FrameworkMapper} from './framework-mapper';
-import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';
 import {Profile, ProfileService} from '../../profile';
 import {SystemSettingsService} from '../../system-settings';
 import {GetFrameworkCategoryTermsHandler} from '../handler/get-framework-category-terms-handler';
@@ -19,22 +18,22 @@ export class FrameworkUtilServiceImpl implements FrameworkUtilService {
                 private systemSettingsService: SystemSettingsService) {
     }
 
+    public getActiveChannel(): Observable<Channel> {
+        return this.frameworkService.getActiveChannelId()
+            .mergeMap((channelId: string) =>
+                this.frameworkService.getChannelDetails({channelId})
+            );
+    }
+
     public getActiveChannelSuggestedFrameworkList(getSuggestedFrameworksRequest: GetSuggestedFrameworksRequest): Observable<Framework[]> {
         return this.profileService.getActiveSessionProfile()
-            .mergeMap((profile: Profile) => {
-                if (profile.serverProfile) {
-                    return this.frameworkService.activeChannel$
-                        .map((channel) => {
-                            if (!channel) {
-                                throw new NoActiveChannelFoundError('No active channel found');
-                            }
-
-                            return channel;
-                        });
-                }
-
-                return this.getCustodianChannel();
-            })
+            .mergeMap((profile: Profile) =>
+                Observable.if(
+                    () => !!profile.serverProfile,
+                    Observable.defer(() => this.getActiveChannel()),
+                    Observable.defer(() => this.getCustodianChannel())
+                )
+            )
             .mergeMap((channel: Channel) => {
                 if (channel.frameworks) {
                     return Observable.of(channel.frameworks)
@@ -57,15 +56,18 @@ export class FrameworkUtilServiceImpl implements FrameworkUtilService {
             });
     }
 
-    getCustodianChannel(): Observable<Channel> {
+    public getFrameworkCategoryTerms(request: GetFrameworkCategoryTermsRequest): Observable<CategoryTerm[]> {
+        return new GetFrameworkCategoryTermsHandler(
+            this,
+            this.frameworkService,
+        ).handle(request);
+    }
+
+    private getCustodianChannel(): Observable<Channel> {
         return this.systemSettingsService.getSystemSettings({id: this.SYSTEM_SETTINGS_CUSTODIAN_ORG_ID_KEY})
             .map((r) => r.value)
             .mergeMap((channelId: string) => {
                 return this.frameworkService.getChannelDetails({channelId: channelId});
             });
-    }
-
-    getFrameworkCategoryTerms(request: GetFrameworkCategoryTermsRequest): Observable<CategoryTerm[]> {
-        return new GetFrameworkCategoryTermsHandler(this.frameworkService).handle(request);
     }
 }

@@ -8,28 +8,26 @@ import {
     FrameworkServiceConfig,
     OrganizationSearchCriteria
 } from '..';
-import { GetChannelDetailsHandler } from '../handler/get-channel-detail-handler';
-import { GetFrameworkDetailsHandler } from '../handler/get-framework-detail-handler';
+import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
+import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
 import {FileService} from '../../util/file/def/file-service';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import { Organization } from '../def/Organization';
-import { ApiService, HttpRequestType, Request} from '../../api';
-
+import {Observable} from 'rxjs';
+import {Organization} from '../def/Organization';
+import {ApiService, HttpRequestType, Request} from '../../api';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';
 
 export class FrameworkServiceImpl implements FrameworkService {
-    public activeChannel$: Observable<Channel | undefined>;
-    private activeChannelSource: Subject<Channel | undefined>;
-    DB_KEY_FRAMEWORK_DETAILS = 'framework_details_key-';
-    private readonly SEARCH_ORGANIZATION_ENDPOINT = '/search';
+    private static readonly KEY_ACTIVE_CHANNEL_ID = 'active_channel_id';
+    private static readonly SEARCH_ORGANIZATION_ENDPOINT = '/search';
 
     constructor(private frameworkServiceConfig: FrameworkServiceConfig,
                 private keyValueStore: KeyValueStore,
                 private fileService: FileService,
                 private apiService: ApiService,
                 private cachedChannelItemStore: CachedItemStore<Channel>,
-                private cachedFrameworkItemStore: CachedItemStore<Framework>) {
-        this.activeChannelSource = new BehaviorSubject<Channel | undefined>(undefined);
-        this.activeChannel$ = this.activeChannelSource.asObservable();
+                private cachedFrameworkItemStore: CachedItemStore<Framework>,
+                private sharedPreferences: SharedPreferences) {
     }
 
 
@@ -51,20 +49,10 @@ export class FrameworkServiceImpl implements FrameworkService {
         ).handle(request);
     }
 
-    persistFrameworkDetails(request: Framework): Observable<boolean> {
-        const frameworkId = request.identifier;
-        const key = this.DB_KEY_FRAMEWORK_DETAILS + frameworkId;
-        return this.keyValueStore.setValue(key, JSON.stringify(request));
-    }
-
-    setActiveChannel(channel: Channel) {
-        this.activeChannelSource.next(channel);
-    }
-
     searchOrganization<T>(request: OrganizationSearchCriteria<T>): Observable<Organization<T>> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
-            .withPath(this.frameworkServiceConfig.searchOrganizationApiPath + this.SEARCH_ORGANIZATION_ENDPOINT)
+            .withPath(this.frameworkServiceConfig.searchOrganizationApiPath + FrameworkServiceImpl.SEARCH_ORGANIZATION_ENDPOINT)
             .withBody({request})
             .withApiToken(true)
             .build();
@@ -72,5 +60,20 @@ export class FrameworkServiceImpl implements FrameworkService {
         return this.apiService.fetch<{ result: { response: Organization<T> } }>(apiRequest).map((response) => {
             return response.body.result.response;
         });
+    }
+
+    getActiveChannelId(): Observable<string> {
+        return this.sharedPreferences.getString(FrameworkServiceImpl.KEY_ACTIVE_CHANNEL_ID)
+            .map((channelId: string | undefined) => {
+                if (!channelId) {
+                    throw new NoActiveChannelFoundError('No Active channel Id set in preferences');
+                }
+
+                return channelId;
+            });
+    }
+
+    setActiveChannelId(channelId: string): Observable<undefined> {
+        return this.sharedPreferences.putString(FrameworkServiceImpl.KEY_ACTIVE_CHANNEL_ID, channelId);
     }
 }

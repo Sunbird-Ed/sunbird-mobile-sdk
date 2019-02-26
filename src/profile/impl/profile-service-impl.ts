@@ -43,6 +43,7 @@ import {VerifyOtpHandler} from '../handler/verify-otp-handler';
 import {LocationSearchResult} from '../def/location-search-result';
 import {SearchLocationHandler} from '../handler/search-location-handler';
 import {SharedPreferences} from '../../util/shared-preferences';
+import {FrameworkService} from '../../framework';
 
 
 export class ProfileServiceImpl implements ProfileService {
@@ -53,7 +54,8 @@ export class ProfileServiceImpl implements ProfileService {
                 private apiService: ApiService,
                 private cachedItemStore: CachedItemStore<ServerProfile>,
                 private keyValueStore: KeyValueStore,
-                private sharedPreferences: SharedPreferences) {
+                private sharedPreferences: SharedPreferences,
+                private frameworkService: FrameworkService) {
     }
 
     createProfile(profile: Profile, profileSource: ProfileSource = ProfileSource.LOCAL): Observable<Profile> {
@@ -209,6 +211,13 @@ export class ProfileServiceImpl implements ProfileService {
                 }
                 return profile;
             })
+            .mergeMap((profile: Profile) =>
+                Observable.if(
+                    () => profile.source === ProfileSource.SERVER,
+                    Observable.defer(() => this.frameworkService.setActiveChannelId(profile.serverProfile!.rootOrg.hashTagId)),
+                    Observable.defer(() => Observable.of(undefined))
+                ).mapTo(profile)
+            )
             .mergeMap((profile: Profile) => {
                 const profileSession = new ProfileSession(profile.uid);
                 return this.sharedPreferences.putString(ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify({

@@ -54,5 +54,5 @@ export interface RootOrg {
     rootOrgId?: string;
     orgName?: string;
     slug?: string;
-    hashTagId?: string;
+    hashTagId: string;
 }

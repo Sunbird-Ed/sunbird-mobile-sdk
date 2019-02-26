@@ -196,13 +196,31 @@ export class SunbirdSdk {
             this._fileService = new FileServiceImpl();
         }
 
+        this._frameworkService = new FrameworkServiceImpl(
+            sdkConfig.frameworkServiceConfig,
+            this._keyValueStore,
+            this._fileService,
+            this._apiService,
+            new CachedItemStoreImpl<Channel>(this._keyValueStore, sdkConfig.apiConfig),
+            new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig),
+            this._sharedPreferences
+        );
+
+        this._frameworkUtilService = new FrameworkUtilServiceImpl(
+            this._sharedPreferences,
+            this._frameworkService,
+            this._profileService,
+            this._systemSettingsService
+        );
+
         this._profileService = new ProfileServiceImpl(
             sdkConfig.profileServiceConfig,
             this._dbService,
             this._apiService,
             new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig),
             this._keyValueStore,
-            this._sharedPreferences
+            this._sharedPreferences,
+            this._frameworkService
         );
 
         this._groupService = new GroupServiceImpl(
@@ -240,22 +258,6 @@ export class SunbirdSdk {
             new CachedItemStoreImpl<{ [key: string]: {} }>(this._keyValueStore, sdkConfig.apiConfig)
         );
 
-        this._frameworkService = new FrameworkServiceImpl(
-            sdkConfig.frameworkServiceConfig,
-            this._keyValueStore,
-            this._fileService,
-            this._apiService,
-            new CachedItemStoreImpl<Channel>(this._keyValueStore, sdkConfig.apiConfig),
-            new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig),
-        );
-
-        this._frameworkUtilService = new FrameworkUtilServiceImpl(
-            this._sharedPreferences,
-            this._frameworkService,
-            this._profileService,
-            this._systemSettingsService
-        );
-
         this._pageAssembleService = new PageAssembleServiceImpl(
             this._apiService,
             sdkConfig.pageServiceConfig,
@@ -282,5 +284,11 @@ export class SunbirdSdk {
             this._sdkConfig.telemetryConfig,
             this._deviceInfo
         );
+
+        this.postInit();
+    }
+
+    private postInit() {
+        this._frameworkService.setActiveChannelId(this._sdkConfig.apiConfig.api_authentication.channelId).subscribe();
     }
 }
