@@ -20,7 +20,7 @@ export interface FrameworkCategory {
     status: string;
 }
 export interface CategoryTerm {
-    associations: CategoryAssociation[];
+    associations?: CategoryAssociation[];
     identifier: string;
     code: string;
     translations?: string;
