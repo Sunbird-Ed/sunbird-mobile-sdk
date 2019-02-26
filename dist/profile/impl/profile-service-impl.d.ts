@@ -9,6 +9,7 @@ import { ContentAccess } from '../def/content-access';
 import { ProfileExistsResponse } from '../def/profile-exists-response';
 import { LocationSearchResult } from '../def/location-search-result';
 import { SharedPreferences } from '../../util/shared-preferences';
+import { FrameworkService } from '../../framework';
 export declare class ProfileServiceImpl implements ProfileService {
     private profileServiceConfig;
     private dbService;
@@ -16,8 +17,9 @@ export declare class ProfileServiceImpl implements ProfileService {
     private cachedItemStore;
     private keyValueStore;
     private sharedPreferences;
+    private frameworkService;
     private static readonly KEY_USER_SESSION;
-    constructor(profileServiceConfig: ProfileServiceConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences);
+    constructor(profileServiceConfig: ProfileServiceConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences, frameworkService: FrameworkService);
     createProfile(profile: Profile, profileSource?: ProfileSource): Observable<Profile>;
     deleteProfile(uid: string): Observable<undefined>;
     updateProfile(profile: Profile): Observable<Profile>;
