@@ -54,4 +54,5 @@ export declare class SunbirdSdk {
     readonly sharedPreferences: SharedPreferences;
     readonly systemSettingsService: SystemSettingsService;
     init(sdkConfig: SdkConfig): Promise<void>;
+    private postInit;
 }
