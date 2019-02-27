@@ -38,24 +38,27 @@ export class GroupServiceImpl implements GroupService {
     }
 
     deleteGroup(gid: string): Observable<undefined> {
-        this.dbService.beginTransaction();
-
-        return Observable.zip(
-            this.dbService.delete({
-                table: GroupEntry.TABLE_NAME,
-                selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
-                selectionArgs: [gid]
-            }),
-            this.dbService.delete({
-                table: GroupProfileEntry.TABLE_NAME,
-                selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ?`,
-                selectionArgs: [gid]
-            })
-        ).do(() => {
-            this.dbService.endTransaction(true);
-        }).map(() => {
-            return undefined;
-        });
+        return Observable
+            .defer(() => Observable.of(this.dbService.beginTransaction()))
+            .mergeMap(() => {
+                return Observable.zip(
+                    this.dbService.delete({
+                        table: GroupEntry.TABLE_NAME,
+                        selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
+                        selectionArgs: [gid]
+                    }),
+                    this.dbService.delete({
+                        table: GroupProfileEntry.TABLE_NAME,
+                        selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ?`,
+                        selectionArgs: [gid]
+                    })
+                ).mapTo(undefined);
+            }).do(() => {
+                this.dbService.endTransaction(true);
+            }).catch((e) => {
+                this.dbService.endTransaction(false);
+                return Observable.throw(e);
+            });
     }
 
     updateGroup(group: Group): Observable<Group> {
@@ -183,8 +186,12 @@ export class GroupServiceImpl implements GroupService {
                         });
                     });
             })
-            .finally(() => {
+            .do(() => {
+                this.dbService.endTransaction(true);
+            })
+            .catch((e) => {
                 this.dbService.endTransaction(false);
+                return Observable.throw(e);
             });
     }
 }
