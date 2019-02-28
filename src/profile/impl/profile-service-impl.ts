@@ -214,7 +214,18 @@ export class ProfileServiceImpl implements ProfileService {
             .mergeMap((profile: Profile) =>
                 Observable.if(
                     () => profile.source === ProfileSource.SERVER,
-                    Observable.defer(() => this.frameworkService.setActiveChannelId(profile.serverProfile!.rootOrg.hashTagId)),
+                    Observable.defer(() => {
+                        return this.getServerProfilesDetails({
+                            userId: profile.uid,
+                            requiredFields: []
+                        }).map((serverProfile: ServerProfile) => ({
+                            ...profile,
+                            serverProfile
+                        })).mergeMap((attachedServerProfileDetailsProfile: Profile) => {
+                            return this.frameworkService
+                                .setActiveChannelId(attachedServerProfileDetailsProfile.serverProfile!.rootOrg.hashTagId);
+                        });
+                    }),
                     Observable.defer(() => Observable.of(undefined))
                 ).mapTo(profile)
             )
