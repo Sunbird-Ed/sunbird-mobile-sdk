@@ -46,6 +46,10 @@ export class Context {
         return this.env;
     }
 
+    public getCData(): Array<CorrelationData> {
+        return this.cdata;
+    }
+
     public setEnvironment(value: string) {
         this.env = value;
     }
@@ -175,7 +179,7 @@ export class Share {
 }
 
 export class TelemetryObject {
-    private rollup?: Rollup;
+    public  rollup?: Rollup;
     public readonly id: string;
     public readonly type: string;
     public readonly version: string;
@@ -286,8 +290,20 @@ export namespace TelemetryEvents {
             return this.actor;
         }
 
+        public getEData(): any {
+            return this.edata;
+        }
+
         public getContext(): Context {
             return this.context;
+        }
+
+        public getObject(): TelemetryObject {
+            return this.object;
+        }
+
+        public getTimeStamp(): number {
+            return this.ets;
         }
     }
 

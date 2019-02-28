@@ -1,87 +1,51 @@
 import {LearnerAssessmentsEntry, LearnerSummaryEntry, ProfileEntry} from '../../profile/db/schema';
 import {ArrayUtil} from '../../util/array-util';
-import {LearnerAssessmentDetails, LearnerAssessmentSummary, QuestionSummary, UserReportSummary} from '../def/response';
+import {
+    LearnerAssessmentDetails,
+    LearnerAssessmentSummary,
+    LearnerContentSummaryDetails,
+    QuestionSummary,
+    UserReportSummary
+} from '../def/response';
 import {NumberUtil} from '../../util/number-util';
 import QuestionReportsSchema = LearnerAssessmentsEntry.QuestionReportsSchema;
+import {Context, CorrelationData, TelemetryEvents} from '../../telemetry';
+import Telemetry = TelemetryEvents.Telemetry;
 
 export class SummarizerHandler {
-
-    public static getChildProgressQuery(uids: string[]): string {
-        return `SELECT ${LearnerAssessmentsEntry.COLUMN_NAME_UID}, ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID},
-                COUNT (${LearnerAssessmentsEntry.COLUMN_NAME_QID}) AS no_of_questions,
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_CORRECT}) AS correct_answers,
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_TIME_SPENT}) AS total_time_spent, h_data ,
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE}) AS total_max_score,
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_SCORE}) AS total_score
-                FROM  ${LearnerAssessmentsEntry.TABLE_NAME}
-                WHERE ${LearnerAssessmentsEntry.COLUMN_NAME_UID} IN (${ArrayUtil.joinPreservingQuotes(uids)})
-                GROUP BY ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} `;
+    constructor() {
     }
 
-    public static getContentProgressQuery(contentId: string): string {
-        return `SELECT ${LearnerAssessmentsEntry.COLUMN_NAME_UID}, ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID},
-                COUNT (${LearnerAssessmentsEntry.COLUMN_NAME_QID}) AS no_of_questions,
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_CORRECT}) AS correct_answers,
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_TIME_SPENT}) AS total_time_spent, h_data ,
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE}) AS total_max_score,
-                FROM  ${LearnerAssessmentsEntry.TABLE_NAME}
-                WHERE ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = '${contentId}'
-                GROUP BY ${LearnerAssessmentsEntry.COLUMN_NAME_UID} `;
+    public static mapLearnerAssesmentDetailsToDbEntries(learnerAssessmentDetails: LearnerAssessmentDetails):
+        LearnerAssessmentsEntry.SchemaMap {
+        return {
+            [LearnerAssessmentsEntry.COLUMN_NAME_UID]: learnerAssessmentDetails.uid,
+            [LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID]: learnerAssessmentDetails.contentId,
+            [LearnerAssessmentsEntry.COLUMN_NAME_QID]: learnerAssessmentDetails.qid,
+            [LearnerAssessmentsEntry.COLUMN_NAME_Q_INDEX]: learnerAssessmentDetails.qindex,
+            [LearnerAssessmentsEntry.COLUMN_NAME_CORRECT]: learnerAssessmentDetails.correct,
+            [LearnerAssessmentsEntry.COLUMN_NAME_SCORE]: learnerAssessmentDetails.score,
+            [LearnerAssessmentsEntry.COLUMN_NAME_TIME_SPENT]: learnerAssessmentDetails.timespent,
+            [LearnerAssessmentsEntry.COLUMN_NAME_RES]: learnerAssessmentDetails.res,
+            [LearnerAssessmentsEntry.COLUMN_NAME_TIMESTAMP]: learnerAssessmentDetails.timestamp,
+            [LearnerAssessmentsEntry.COLUMN_NAME_Q_DESC]: learnerAssessmentDetails.qdesc,
+            [LearnerAssessmentsEntry.COLUMN_NAME_Q_TITLE]: learnerAssessmentDetails.qtitle,
+            [LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE]: learnerAssessmentDetails.maxScore,
+            [LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA]: learnerAssessmentDetails.hierarchyData,
+            [LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS]: learnerAssessmentDetails.total_ts!
+        };
     }
 
-    public static getDetailReportsQuery(uids: string[], contentId: string): string {
-        return `SELECT *, lcs.${LearnerSummaryEntry.COLUMN_NAME_TOTAL_TS}
-                FROM  ${LearnerAssessmentsEntry.TABLE_NAME} la
-                LEFT JOIN ${LearnerSummaryEntry.TABLE_NAME} lcs
-                ON (la.${LearnerSummaryEntry.COLUMN_NAME_UID} = lcs.${LearnerAssessmentsEntry.COLUMN_NAME_UID}
-                AND la.${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} = lcs.${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID})
-                WHERE la.${LearnerAssessmentsEntry.COLUMN_NAME_UID} IN(${ArrayUtil.joinPreservingQuotes(uids)})
-                AND la.${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID}='${contentId}'`;
-    }
-
-    public static getReportsByUserQuery(uids: string[], contentId: string): string {
-        return `SELECT lcs.${LearnerSummaryEntry.COLUMN_NAME_TOTAL_TS},
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_SCORE}),
-                la.${LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA},la.${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID},
-                la.${LearnerAssessmentsEntry.COLUMN_NAME_UID},p.${ProfileEntry.COLUMN_NAME_HANDLE},
-                la.${LearnerAssessmentsEntry.COLUMN_NAME_TIME_SPENT}
-                FROM ${LearnerAssessmentsEntry.TABLE_NAME} la
-                LEFT JOIN ${LearnerSummaryEntry.TABLE_NAME} lcs
-                ON (la.${LearnerSummaryEntry.COLUMN_NAME_UID} = lcs.${LearnerAssessmentsEntry.COLUMN_NAME_UID}
-                LEFT JOIN ${ProfileEntry.TABLE_NAME} p
-                ON (la.${LearnerAssessmentsEntry.COLUMN_NAME_UID} = p.${ProfileEntry.COLUMN_NAME_UID}
-                WHERE la.${LearnerAssessmentsEntry.COLUMN_NAME_UID} IN(${ArrayUtil.joinPreservingQuotes(uids)})
-                AND la.${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID}='${contentId}'
-                GROUP BY ${LearnerAssessmentsEntry.COLUMN_NAME_UID}`;
-    }
-
-    public static getQuetsionDetailsQuery(uids: string[], contentId: string, qid: string): string {
-        return `SELECT ${LearnerAssessmentsEntry.COLUMN_NAME_UID}, ${LearnerAssessmentsEntry.COLUMN_NAME_TIME_SPENT} as time,
-                ${LearnerAssessmentsEntry.COLUMN_NAME_SCORE} as result,
-                ${LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE} as max_score
-                FROM ${LearnerAssessmentsEntry.TABLE_NAME}
-                WHERE ${LearnerAssessmentsEntry.COLUMN_NAME_UID} IN(${ArrayUtil.joinPreservingQuotes(uids)})
-                AND ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID}='${contentId}'
-                AND ${LearnerAssessmentsEntry.COLUMN_NAME_QID}='${qid}'`;
-    }
-
-    public static getReportAccuracyQuery(uids: string[], contentId: string): string {
-        return `SELECT ${LearnerAssessmentsEntry.COLUMN_NAME_QID}, COUNT (*) as users_count
-                FROM  ${LearnerAssessmentsEntry.TABLE_NAME}
-                WHERE ${LearnerAssessmentsEntry.COLUMN_NAME_UID} IN(${ArrayUtil.joinPreservingQuotes(uids)})
-                AND ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID}='${contentId}'
-                AND ${LearnerAssessmentsEntry.COLUMN_NAME_SCORE} > 0
-                GROUP BY ${LearnerAssessmentsEntry.COLUMN_NAME_QID}`;
-    }
-
-    public static getQuestionReportsQuery(uids: string[], contentId: string): string {
-        return `SELECT *, SUM(${LearnerAssessmentsEntry.COLUMN_NAME_SCORE}) as marks,
-                COUNT (${LearnerAssessmentsEntry.COLUMN_NAME_Q_INDEX}) as count,
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE}) as  maxscore
-                FROM ${LearnerAssessmentsEntry.TABLE_NAME}
-                WHERE ${LearnerAssessmentsEntry.COLUMN_NAME_UID} IN(${ArrayUtil.joinPreservingQuotes(uids)})
-                AND ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID}='${contentId}'
-                GROUP BY ${LearnerAssessmentsEntry.COLUMN_NAME_QID}`;
+    public static mapContentSummaryDetailsToDbEntries(learnerContentSummaryDetails: LearnerContentSummaryDetails):
+        LearnerSummaryEntry.SchemaMap {
+        return {
+            [LearnerSummaryEntry.COLUMN_NAME_UID]: learnerContentSummaryDetails.uid,
+            [LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID]: learnerContentSummaryDetails.contentId,
+            [LearnerSummaryEntry.COLUMN_NAME_AVG_TS]: learnerContentSummaryDetails.avgts!,
+            [LearnerSummaryEntry.COLUMN_NAME_TOTAL_TS]: learnerContentSummaryDetails.totalts!,
+            [LearnerSummaryEntry.COLUMN_NAME_LAST_UPDATED_ON]: learnerContentSummaryDetails.lastUpdated!,
+            [LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA]: learnerContentSummaryDetails.hierarchyData,
+        };
     }
 
     public static mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb: LearnerSummaryEntry.SchemaMap[]): LearnerAssessmentSummary[] {
@@ -188,4 +152,54 @@ export class SummarizerHandler {
             };
         });
     }
+
+    public static mapTelemetryToContentSummaryDetails(telemetry: Telemetry): LearnerContentSummaryDetails {
+        const eData = telemetry.getEData();
+        const question = eData.item;
+        const cDataList: Array<CorrelationData> = telemetry.getContext().getCData();
+        return {
+            uid: telemetry.getActor().id,
+            contentId: telemetry.getObject().id,
+            timespent: Number(eData.duration),
+            timestamp: telemetry.getTimeStamp(),
+            hierarchyData: this.getHierarchyData(cDataList)
+        };
+
+    }
+
+    public static mapTelemetryToLearnerAssesmentDetails(telemetry: Telemetry): LearnerAssessmentDetails {
+        const eData = telemetry.getEData();
+        const question = eData.item;
+        const cDataList: Array<CorrelationData> = telemetry.getContext().getCData();
+        return {
+            uid: telemetry.getActor().id,
+            contentId: telemetry.getObject().id,
+            qid: question.id,
+            qindex: Number(eData.index),
+            correct: eData.pass === 'Yes' ? 1 : 0,
+            score: Number(eData.score),
+            timespent: Number(eData.duration),
+            timestamp: telemetry.getTimeStamp(),
+            res: JSON.stringify(eData.resvalues),
+            qdesc: question.desc,
+            qtitle: question.title,
+            maxScore: Number(question.maxscore),
+            hierarchyData: this.getHierarchyData(cDataList)
+        };
+
+    }
+
+
+    private static getHierarchyData(cDataList: Array<CorrelationData>): string {
+        let hierarchyData = '';
+        if (cDataList) {
+            cDataList.forEach((cData) => {
+                if (cData.type === 'Collection' || cData.type === 'TextBook') {
+                    return hierarchyData = cData.id;
+                }
+            });
+        }
+        return '';
+    }
+
 }

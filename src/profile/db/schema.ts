@@ -271,13 +271,16 @@ export namespace LearnerSummaryEntry {
     export interface SchemaMap {
         [COLUMN_NAME_UID]: string;
         [COLUMN_NAME_CONTENT_ID]: string;
-        [COLUMN_NAME_CONTENT_ID]: string;
-        [COLUMN_NAME_NO_OF_QUESTIONS]: number;
-        [COLUMN_NAME_CORRECT_ANSWERS]: number;
-        [COLUMN_NAME_TOTAL_TIME_SPENT]: number;
+        [COLUMN_NAME_AVG_TS]: number;
+        [COLUMN_NAME_SESSIONS]?: number;
+        [COLUMN_NAME_TOTAL_TS]: number;
+        [COLUMN_NAME_LAST_UPDATED_ON]: number;
         [COLUMN_NAME_HIERARCHY_DATA]: string;
-        [COLUMN_NAME_TOTAL_MAX_SCORE]: number;
-        [COLUMN_NAME_TOTAL_SCORE]: number;
+        [COLUMN_NAME_NO_OF_QUESTIONS]?: number;
+        [COLUMN_NAME_CORRECT_ANSWERS]?: number;
+        [COLUMN_NAME_TOTAL_TIME_SPENT]?: number;
+        [COLUMN_NAME_TOTAL_MAX_SCORE]?: number;
+        [COLUMN_NAME_TOTAL_SCORE]?: number;
     }
 
 
