@@ -191,6 +191,18 @@ export class ProfileServiceImpl implements ProfileService {
                     }
 
                     return ProfileMapper.mapProfileDBEntryToProfile(profileDBEntry);
+                }).mergeMap((profile: Profile) => {
+                    if (profile.source === ProfileSource.SERVER) {
+                        return this.getServerProfilesDetails({
+                            userId: profile.uid,
+                            requiredFields: []
+                        }).map((serverProfile: ServerProfile) => ({
+                            ...profile,
+                            serverProfile
+                        }));
+                    }
+
+                    return Observable.of(profile);
                 });
             });
     }
