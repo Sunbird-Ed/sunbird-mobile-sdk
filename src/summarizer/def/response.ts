@@ -26,7 +26,7 @@ export interface LearnerAssessmentDetails {
     qtitle: string;
     maxScore: number;
     hierarchyData: string;
-    total_ts: number;
+    total_ts?: number;
     marks?: number;
     occurenceCount?: number;
     sum_max_score?: number;
@@ -37,13 +37,13 @@ export interface LearnerAssessmentDetails {
 export interface LearnerContentSummaryDetails {
     uid: string;
     contentId: string;
-    avgts: number;
-    sessions: number;
-    totalts: number;
-    lastUpdated: number;
+    avgts?: number;
+    sessions?: number;
+    totalts?: number;
+    lastUpdated?: number;
     timespent: number;
     timestamp: number;
-    ver: string;
+    ver?: string;
     hierarchyData: string;
 }
 

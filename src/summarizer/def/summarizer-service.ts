@@ -10,9 +10,9 @@ export interface SummarizerService {
 
     getLearnerAssessmentDetails(request: SummaryRequest): Observable<LearnerAssessmentDetails[]>;
 
-    saveLearnerAssessmentDetails(event: Telemetry);
+    saveLearnerAssessmentDetails(event: Telemetry): Observable<boolean>;
 
-    saveLearnerContentSummaryDetails(event: Telemetry);
+    saveLearnerContentSummaryDetails(event: Telemetry): Observable<boolean>;
 
     getReportsByUser(request: SummaryRequest): Observable<{ [key: string]: any }[]>;
 

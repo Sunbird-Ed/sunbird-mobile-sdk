@@ -9,7 +9,7 @@ export class ContentMarkerMigration extends Migration {
 
     public async apply(dbService: DbService) {
         this.queries().forEach(async (query) => {
-            await dbService.execute(query);
+            await dbService.execute(query).toPromise();
         });
 
         return undefined;

@@ -1,5 +1,6 @@
 import {DbService, Migration} from '..';
-import {GroupEntry, GroupProfileEntry} from '../../profile/db/schema';
+import {GroupEntry, GroupProfileEntry, LearnerAssessmentsEntry, LearnerSummaryEntry, ProfileEntry} from '../../profile/db/schema';
+import {ProfileSource} from '../../profile';
 
 export class GroupProfileMigration extends Migration {
 
@@ -9,8 +10,26 @@ export class GroupProfileMigration extends Migration {
 
     public async apply(dbService: DbService) {
         this.queries().forEach(async (query) => {
-            await dbService.execute(query);
+            await dbService.execute(query).toPromise();
         });
+
+        await dbService.read({
+            table: ProfileEntry.TABLE_NAME,
+            columns: []
+        }).map((rows: ProfileEntry.SchemaMap[]) => {
+            rows.forEach(async (row: ProfileEntry.SchemaMap) => {
+                if (row[ProfileEntry.COLUMN_NAME_UID] === row[ProfileEntry.COLUMN_NAME_HANDLE]) {
+                    row[ProfileEntry.COLUMN_NAME_SOURCE] = ProfileSource.SERVER.valueOf();
+
+                } else {
+                    row[ProfileEntry.COLUMN_NAME_SOURCE] = ProfileSource.SERVER.valueOf();
+                }
+                await dbService.update({
+                    table: ProfileEntry.TABLE_NAME,
+                    modelJson: row
+                }).toPromise();
+            });
+        }).toPromise();
 
         return undefined;
     }
