@@ -11,7 +11,6 @@ import {DeviceInfo} from '../../util/device/def/device-info';
 import {DbService, InsertQuery} from '../../db';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {UniqueId} from '../../db/util/unique-id';
-import * as pako from 'pako';
 import COLUMN_NAME_MSG_ID = TelemetryProcessedEntry.COLUMN_NAME_MSG_ID;
 import COLUMN_NAME_NUMBER_OF_EVENTS = TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS;
 import COLUMN_NAME_PRIORITY = TelemetryEntry.COLUMN_NAME_PRIORITY;
@@ -179,11 +178,10 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
             return Observable.of(undefined);
         }
 
-        return this.dbService.delete({
-            table: TelemetryEntry.TABLE_NAME,
-            selection: `_id in (${events.map(() => '?').join(', ')})`,
-            selectionArgs: events.map((event) => event[TelemetryEntry._ID])
-        });
+        return this.dbService.execute(`
+            DELETE FROM ${TelemetryEntry.TABLE_NAME}
+            WHERE ${TelemetryEntry._ID} IN (${events.map((event) => event[TelemetryEntry._ID]).join(',')})
+        `);
     }
 
     private handleProcessedEventsBatch(): Observable<TelemetrySyncStat> {
@@ -215,13 +213,12 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
             return Observable.of(undefined);
         }
 
-        // const body = processedEvents;
-        const body = JSON.parse(pako.ungzip(processedEventsBatchEntry[COLUMN_NAME_DATA], {to: 'string'}));
+        const body = new TextEncoder().encode(processedEventsBatchEntry[COLUMN_NAME_DATA]);
+        // const body = JSON.parse(pako.ungzip(processedEventsBatchEntry[COLUMN_NAME_DATA], {to: 'string'}));
 
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
-            // .withHeaders({'Content-Encoding': 'gzip'})
-            // .withSerializer(HttpSerializer.UTF8)
+            .withHeaders({'Content-Encoding': 'gzip'})
             .withPath(this.telemetryConfig.telemetryApiPath +
                 TelemetrySyncHandler.TELEMETRY_ENDPOINT)
             .withBody(body)

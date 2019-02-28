@@ -28,9 +28,15 @@ export class BaseConnection implements Connection {
                 case HttpRequestType.PATCH:
                     response = await this.http.patch(request.host || this.apiConfig.host, request.path, request.headers, request.body).toPromise();
                     break;
-                case HttpRequestType.POST:
-                    response = await this.http.post(request.host || this.apiConfig.host, request.path, request.headers, request.body).toPromise();
+                case HttpRequestType.POST: {
+                    if (request.body instanceof Uint8Array) {
+                        response = await this.handleByteArrayPost(request);
+                    } else {
+                        response = await this.http.post(request.host || this.apiConfig.host, request.path, request.headers, request.body).toPromise();
+                    }
+
                     break;
+                }
             }
 
             response = await this.interceptResponse(request, response);
@@ -94,6 +100,40 @@ export class BaseConnection implements Connection {
         }
 
         return response;
+    }
+
+    private async handleByteArrayPost(request: Request): Promise<Response> {
+        return new Promise<Response>((resolve, reject) => {
+            const xhr = new XMLHttpRequest;
+            xhr.open(HttpRequestType.POST, (request.host || this.apiConfig.host) + request.path, false);
+            Object.keys(request.headers).forEach((header) => {
+                xhr.setRequestHeader(header, request.headers[header]);
+            });
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const sunbirdResponse = new Response<any>();
+                        sunbirdResponse.responseCode = xhr.status;
+                        sunbirdResponse.body = JSON.parse(xhr.responseText);
+
+                        resolve(sunbirdResponse);
+                    } else {
+                        const sunbirdResponse = new Response<any>();
+                        sunbirdResponse.errorMesg = 'NETWORK ERROR';
+                        sunbirdResponse.responseCode = xhr.status;
+
+                        try {
+                            sunbirdResponse.body = JSON.parse(xhr.responseText);
+                        } catch (e) {
+                            sunbirdResponse.body = xhr.responseText;
+                        }
+
+                        resolve(sunbirdResponse);
+                    }
+                }
+            };
+            xhr.send(request.body);
+        });
     }
 
 }
