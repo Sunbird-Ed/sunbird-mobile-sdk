@@ -9,6 +9,8 @@ export interface ServerProfile {
     tncLatestVersion: string;
     promptTnC: boolean;
     tncLatestVersionUrl: string;
+    id: string;
+    avatar: string;
     // webPages: string[];
     // "tcStatus": null,
     // education: [],
@@ -25,7 +27,6 @@ export interface ServerProfile {
     // "isDeleted": false,
     // "organisations": [],
     // "countryCode": "",
-    // "id": "3c43a5d4-1ceb-435a-ae7c-aa6c707514e7",
     // "tempPassword": null,
     // "email": "",
     // "phoneVerified": null,
@@ -35,7 +36,6 @@ export interface ServerProfile {
     // "profileSummary": null,
     // "tcUpdatedDate": null,
     // "registryId": null,
-    // "avatar": null,
     // "userName": "",
     // "rootOrgId": "ORG_001",
     // "emailVerified": false,
