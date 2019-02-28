@@ -1,3 +1,3 @@
-export enum EventNamespaces {
+export enum EventNamespace {
     TELEMETRY = 'TELEMETRY'
 }

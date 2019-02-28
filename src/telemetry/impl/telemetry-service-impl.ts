@@ -21,9 +21,10 @@ import {KeyValueStore} from '../../key-value-store';
 import {ApiService} from '../../api';
 import {TelemetryConfig} from '../config/telemetry-config';
 import {DeviceInfo} from '../../util/device/def/device-info';
-import {EventNamespaces, EventsBusService} from '../../events-bus';
+import {EventNamespace, EventsBusService} from '../../events-bus';
+import {EventDelegate} from '../../events-bus/def/event-delegate';
 
-export class TelemetryServiceImpl implements TelemetryService {
+export class TelemetryServiceImpl implements TelemetryService, EventDelegate {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
 
     constructor(private dbService: DbService,
@@ -35,14 +36,7 @@ export class TelemetryServiceImpl implements TelemetryService {
                 private telemetryConfig: TelemetryConfig,
                 private deviceInfo: DeviceInfo,
                 private eventsBusService: EventsBusService) {
-        this.subscribeToTelemetryEvents();
-    }
-
-    event(telemetry: any): void {
-        this.eventsBusService.emit({
-            namespace: EventNamespaces.TELEMETRY,
-            event: telemetry
-        });
+        this.eventsBusService.registerDelegate({namespace: EventNamespace.TELEMETRY, delegate: this});
     }
 
     end({
@@ -166,13 +160,9 @@ export class TelemetryServiceImpl implements TelemetryService {
             );
     }
 
-    private subscribeToTelemetryEvents() {
-        this.eventsBusService.events(EventNamespaces.TELEMETRY)
-            .filter((event: any) => {
-                return event instanceof TelemetryEvents.Telemetry;
-            })
-            .mergeMap((telemetry: TelemetryEvents.Telemetry) => this.save(telemetry))
-            .subscribe();
+    onEvent(telemetry: TelemetryEvents.Telemetry): Observable<undefined> {
+        return this.save(telemetry)
+            .mapTo(undefined);
     }
 
     private save(telemetry: TelemetryEvents.Telemetry): Observable<boolean> {
