@@ -48,6 +48,8 @@ import {DeviceInfo} from './util/device/def/device-info';
 import {ZipServiceImpl} from './util/zip/impl/zip-service-impl';
 import {DeviceInfoImpl} from './util/device/impl/device-info-impl';
 import {ContentFeedbackServiceImpl} from './content/impl/content-feedback-service-impl';
+import {EventsBusService} from './events-bus';
+import {EventsBusServiceImpl} from './events-bus/impl/events-bus-service-impl';
 
 export class SunbirdSdk {
 
@@ -81,6 +83,7 @@ export class SunbirdSdk {
     private _deviceInfo: DeviceInfo;
     private _sdkConfig: SdkConfig;
     private _contentFeedbackService: ContentFeedbackService;
+    private _eventsBusService: EventsBusService;
 
     get sdkConfig(): SdkConfig {
         return this._sdkConfig;
@@ -150,12 +153,18 @@ export class SunbirdSdk {
         return this._systemSettingsService;
     }
 
+    get eventsBusService(): EventsBusService {
+        return this._eventsBusService;
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._sdkConfig = Object.freeze(sdkConfig);
 
         this._deviceInfo = new DeviceInfoImpl(this.sdkConfig);
 
         this._sharedPreferences = new SharedPreferencesImpl();
+
+        this._eventsBusService = new EventsBusServiceImpl();
 
         if (sdkConfig.dbConfig.debugMode === true) {
             this._dbService = new DbWebSqlService(
@@ -282,7 +291,8 @@ export class SunbirdSdk {
             this._keyValueStore,
             this._apiService,
             this._sdkConfig.telemetryConfig,
-            this._deviceInfo
+            this._deviceInfo,
+            this._eventsBusService
         );
 
         this.postInit();

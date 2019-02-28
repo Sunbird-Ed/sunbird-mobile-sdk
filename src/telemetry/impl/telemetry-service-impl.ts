@@ -21,6 +21,7 @@ import {KeyValueStore} from '../../key-value-store';
 import {ApiService} from '../../api';
 import {TelemetryConfig} from '../config/telemetry-config';
 import {DeviceInfo} from '../../util/device/def/device-info';
+import {EventNamespaces, EventsBusService} from '../../events-bus';
 
 export class TelemetryServiceImpl implements TelemetryService {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
@@ -32,7 +33,16 @@ export class TelemetryServiceImpl implements TelemetryService {
                 private keyValueStore: KeyValueStore,
                 private apiService: ApiService,
                 private telemetryConfig: TelemetryConfig,
-                private deviceInfo: DeviceInfo) {
+                private deviceInfo: DeviceInfo,
+                private eventsBusService: EventsBusService) {
+        this.subscribeToTelemetryEvents();
+    }
+
+    event(telemetry: any): void {
+        this.eventsBusService.emit({
+            namespace: EventNamespaces.TELEMETRY,
+            event: telemetry
+        });
     }
 
     end({
@@ -156,11 +166,16 @@ export class TelemetryServiceImpl implements TelemetryService {
             );
     }
 
-    event(telemetry: any): Observable<number> {
-        throw new Error('Method not implemented.');
+    private subscribeToTelemetryEvents() {
+        this.eventsBusService.events(EventNamespaces.TELEMETRY)
+            .filter((event: any) => {
+                return event instanceof TelemetryEvents.Telemetry;
+            })
+            .mergeMap((telemetry: TelemetryEvents.Telemetry) => this.save(telemetry))
+            .subscribe();
     }
 
-    private save(telemetry: any): Observable<boolean> {
+    private save(telemetry: TelemetryEvents.Telemetry): Observable<boolean> {
         return Observable.zip(
             this.profileService.getActiveProfileSession(),
             this.groupService.getActiveGroupSession()

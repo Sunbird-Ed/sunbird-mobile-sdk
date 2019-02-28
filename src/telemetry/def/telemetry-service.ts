@@ -30,7 +30,7 @@ export interface TelemetryService {
 
     getTelemetryStat(): Observable<TelemetryStat>;
 
-    event(telemetry: any): Observable<number>;
+    event(telemetry: any): void;
 
     sync(): Observable<TelemetrySyncStat>;
 }
