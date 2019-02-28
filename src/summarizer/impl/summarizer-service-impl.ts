@@ -1,6 +1,11 @@
 import {SummarizerService} from '../def/summarizer-service';
 import {Observable} from 'rxjs';
-import {LearnerAssessmentDetails, LearnerAssessmentSummary, LearnerContentSummaryDetails, QuestionSummary} from '../def/response';
+import {
+    LearnerAssessmentDetails,
+    LearnerAssessmentSummary,
+    LearnerContentSummaryDetails,
+    QuestionSummary
+} from '../def/response';
 import {SummaryRequest} from '../def/request';
 import {SummarizerHandler} from '../handler/summarizer-handler';
 import {DbService} from '../../db';
@@ -24,8 +29,8 @@ export class SummarizerServiceImpl implements SummarizerService {
 
     getLearnerAssessmentDetails(request: SummaryRequest): Observable<LearnerAssessmentDetails[]> {
         const query = SummarizerQueries.getDetailReportsQuery(request.uids, request.contentId);
-        return this.dbService.execute(query).map((assesmentDetailsInDb: LearnerAssessmentsEntry.SchemaMap[]) =>
-            SummarizerHandler.mapDBEntriesToLearnerAssesmentDetails(assesmentDetailsInDb));
+        return this.dbService.execute(query).map((assessmentDetailsInDb: LearnerAssessmentsEntry.SchemaMap[]) =>
+            SummarizerHandler.mapDBEntriesToLearnerAssesmentDetails(assessmentDetailsInDb));
     }
 
     getReportByQuestions(request: SummaryRequest): Observable<{ [p: string]: any }[]> {
@@ -33,9 +38,9 @@ export class SummarizerServiceImpl implements SummarizerService {
         const accuracyQuery = SummarizerQueries.getReportAccuracyQuery(request.uids, request.contentId);
         return this.dbService.execute(accuracyQuery).map((accuracyReports: LearnerAssessmentsEntry.AccuracySchema[]) =>
             SummarizerHandler.mapDBEntriesToAccuracy(accuracyReports)).mergeMap((accuracyMap: { [p: string]: any }) => {
-            return this.dbService.execute(questionReportQuery).map((assesmentDetailsInDb:
+            return this.dbService.execute(questionReportQuery).map((assessmentDetailsInDb:
                                                                         LearnerAssessmentsEntry.QuestionReportsSchema[]) =>
-                SummarizerHandler.mapDBEntriesToQuestionReports(accuracyMap, assesmentDetailsInDb));
+                SummarizerHandler.mapDBEntriesToQuestionReports(accuracyMap, assessmentDetailsInDb));
         });
     }
 

@@ -1,5 +1,4 @@
-import {LearnerAssessmentsEntry, LearnerSummaryEntry, ProfileEntry} from '../../profile/db/schema';
-import {ArrayUtil} from '../../util/array-util';
+import {LearnerAssessmentsEntry, LearnerSummaryEntry} from '../../profile/db/schema';
 import {
     LearnerAssessmentDetails,
     LearnerAssessmentSummary,
@@ -8,8 +7,7 @@ import {
     UserReportSummary
 } from '../def/response';
 import {NumberUtil} from '../../util/number-util';
-import QuestionReportsSchema = LearnerAssessmentsEntry.QuestionReportsSchema;
-import {Context, CorrelationData, TelemetryEvents} from '../../telemetry';
+import {CorrelationData, TelemetryEvents} from '../../telemetry';
 import Telemetry = TelemetryEvents.Telemetry;
 
 export class SummarizerHandler {
