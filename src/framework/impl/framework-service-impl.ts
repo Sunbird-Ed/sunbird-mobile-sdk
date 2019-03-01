@@ -33,7 +33,12 @@ export class FrameworkServiceImpl implements FrameworkService {
     }
 
     onInit(): Observable<undefined> {
-        return this.setActiveChannelId(this.sdkConfig.apiConfig.api_authentication.channelId);
+        try {
+            this.getActiveChannelId();
+            return Observable.of(undefined);
+        } catch (err) {
+            return this.setActiveChannelId(this.sdkConfig.apiConfig.api_authentication.channelId);
+        }
     }
 
     getDefaultChannelDetails(): Observable<Channel> {
