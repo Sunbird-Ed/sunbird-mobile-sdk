@@ -4,3 +4,8 @@ export interface SummaryRequest {
     contentId: string;
     hierarchyData: string;
 }
+
+export interface DeleteAssessmentDetailsRequest {
+    uid: string;
+    contentId: string;
+}

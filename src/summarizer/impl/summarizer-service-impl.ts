@@ -6,7 +6,7 @@ import {
     LearnerContentSummaryDetails,
     QuestionSummary
 } from '../def/response';
-import {SummaryRequest} from '../def/request';
+import {DeleteAssessmentDetailsRequest, SummaryRequest} from '../def/request';
 import {SummarizerHandler} from '../handler/summarizer-handler';
 import {DbService} from '../../db';
 import {LearnerAssessmentsEntry, LearnerSummaryEntry} from '../../profile/db/schema';
@@ -16,10 +16,10 @@ import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 import {NumberUtil} from '../../util/number-util';
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {EventDelegate} from '../../events-bus/def/event-delegate';
+import {SummaryTelemetryEventHandler} from '../handler/summary-telemetry-event-handler';
 import Telemetry = TelemetryEvents.Telemetry;
 
 export class SummarizerServiceImpl implements SummarizerService, EventDelegate {
-
     constructor(private dbService: DbService,
                 private eventsBusService: EventsBusService) {
         this.eventsBusService.registerDelegate({namespace: EventNamespace.TELEMETRY, delegate: this});
@@ -133,7 +133,12 @@ export class SummarizerServiceImpl implements SummarizerService, EventDelegate {
         });
     }
 
+    deletePreviousAssessmentDetails(deleteAssessmentDetailsRequest: DeleteAssessmentDetailsRequest): Observable<number> {
+        // TODO: Swayangjit
+        throw new Error('To be implemented');
+    }
+
     onEvent(event: TelemetryEvents.Telemetry): Observable<undefined> {
-        return Observable.of(undefined);
+        return new SummaryTelemetryEventHandler(this).handle(event);
     }
 }

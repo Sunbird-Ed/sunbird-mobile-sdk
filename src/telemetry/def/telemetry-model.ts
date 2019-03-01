@@ -50,6 +50,10 @@ export class Context {
         return this.cdata;
     }
 
+    public getPData(): ProducerData {
+        return this.pdata;
+    }
+
     public setEnvironment(value: string) {
         this.env = value;
     }
