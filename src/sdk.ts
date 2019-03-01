@@ -50,6 +50,9 @@ import {DeviceInfoImpl} from './util/device/impl/device-info-impl';
 import {ContentFeedbackServiceImpl} from './content/impl/content-feedback-service-impl';
 import {EventsBusService} from './events-bus';
 import {EventsBusServiceImpl} from './events-bus/impl/events-bus-service-impl';
+import {SummarizerService} from './summarizer/def/summarizer-service';
+import {SummarizerServiceImpl} from './summarizer/impl/summarizer-service-impl';
+import {Observable} from 'rxjs';
 
 export class SunbirdSdk {
 
@@ -84,6 +87,7 @@ export class SunbirdSdk {
     private _sdkConfig: SdkConfig;
     private _contentFeedbackService: ContentFeedbackService;
     private _eventsBusService: EventsBusService;
+    private _summarizerService: SummarizerService;
 
     get sdkConfig(): SdkConfig {
         return this._sdkConfig;
@@ -157,6 +161,10 @@ export class SunbirdSdk {
         return this._eventsBusService;
     }
 
+    get summarizerService(): SummarizerService {
+        return this._summarizerService;
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._sdkConfig = Object.freeze(sdkConfig);
 
@@ -213,7 +221,7 @@ export class SunbirdSdk {
         );
 
         this._frameworkService = new FrameworkServiceImpl(
-            sdkConfig.frameworkServiceConfig,
+            sdkConfig,
             this._keyValueStore,
             this._fileService,
             this._apiService,
@@ -295,10 +303,15 @@ export class SunbirdSdk {
             this._eventsBusService
         );
 
+        this._summarizerService = new SummarizerServiceImpl(this._dbService, this._eventsBusService);
+
         this.postInit();
     }
 
     private postInit() {
-        this._frameworkService.setActiveChannelId(this._sdkConfig.apiConfig.api_authentication.channelId).subscribe();
+        Observable.combineLatest(
+            this._frameworkService.onInit(),
+            this._eventsBusService.onInit()
+        ).subscribe();
     }
 }

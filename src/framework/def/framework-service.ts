@@ -1,10 +1,11 @@
 import {Framework} from './framework';
 import {Channel} from './channel';
 import {Observable} from 'rxjs';
-import {ChannelDetailsRequest, FrameworkDetailsRequest, OrganizationSearchCriteria,} from './request-types';
+import {ChannelDetailsRequest, FrameworkDetailsRequest, OrganizationSearchCriteria} from './request-types';
 import {Organization} from './Organization';
+import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 
-export interface FrameworkService {
+export interface FrameworkService extends SdkServiceOnInitDelegate {
     getDefaultChannelDetails(): Observable<Channel>;
 
     getChannelDetails(request: ChannelDetailsRequest): Observable<Channel>;

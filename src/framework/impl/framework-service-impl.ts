@@ -5,7 +5,6 @@ import {
     Framework,
     FrameworkDetailsRequest,
     FrameworkService,
-    FrameworkServiceConfig,
     OrganizationSearchCriteria
 } from '..';
 import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
@@ -17,12 +16,13 @@ import {ApiService, HttpRequestType, Request} from '../../api';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';
 import {SystemSettingsService} from '../../system-settings';
+import {SdkConfig} from '../../sdk-config';
 
 export class FrameworkServiceImpl implements FrameworkService {
     private static readonly KEY_ACTIVE_CHANNEL_ID = 'active_channel_id';
     private static readonly SEARCH_ORGANIZATION_ENDPOINT = '/search';
 
-    constructor(private frameworkServiceConfig: FrameworkServiceConfig,
+    constructor(private sdkConfig: SdkConfig,
                 private keyValueStore: KeyValueStore,
                 private fileService: FileService,
                 private apiService: ApiService,
@@ -32,8 +32,12 @@ export class FrameworkServiceImpl implements FrameworkService {
                 private systemSettingsService: SystemSettingsService) {
     }
 
+    onInit(): Observable<undefined> {
+        return this.setActiveChannelId(this.sdkConfig.apiConfig.api_authentication.channelId);
+    }
+
     getDefaultChannelDetails(): Observable<Channel> {
-        return this.systemSettingsService.getSystemSettings({id: this.frameworkServiceConfig.systemSettingsDefaultChannelIdKey})
+        return this.systemSettingsService.getSystemSettings({id: this.sdkConfig.frameworkServiceConfig.systemSettingsDefaultChannelIdKey})
             .map((r) => r.value)
             .mergeMap((channelId: string) => {
                 return this.getChannelDetails({channelId: channelId});
@@ -43,7 +47,7 @@ export class FrameworkServiceImpl implements FrameworkService {
     getChannelDetails(request: ChannelDetailsRequest): Observable<Channel> {
         return new GetChannelDetailsHandler(
             this.apiService,
-            this.frameworkServiceConfig,
+            this.sdkConfig.frameworkServiceConfig,
             this.fileService,
             this.cachedChannelItemStore,
         ).handle(request);
@@ -53,7 +57,7 @@ export class FrameworkServiceImpl implements FrameworkService {
         return new GetFrameworkDetailsHandler(
             this,
             this.apiService,
-            this.frameworkServiceConfig,
+            this.sdkConfig.frameworkServiceConfig,
             this.fileService,
             this.cachedFrameworkItemStore,
         ).handle(request);
@@ -62,7 +66,7 @@ export class FrameworkServiceImpl implements FrameworkService {
     searchOrganization<T>(request: OrganizationSearchCriteria<T>): Observable<Organization<T>> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
-            .withPath(this.frameworkServiceConfig.searchOrganizationApiPath + FrameworkServiceImpl.SEARCH_ORGANIZATION_ENDPOINT)
+            .withPath(this.sdkConfig.frameworkServiceConfig.searchOrganizationApiPath + FrameworkServiceImpl.SEARCH_ORGANIZATION_ENDPOINT)
             .withBody({request})
             .withApiToken(true)
             .build();
