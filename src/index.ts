@@ -12,5 +12,6 @@ export * from './page';
 export * from './sdk';
 export * from './sdk-config';
 export * from './events-bus';
+export * from './system-settings';
 // utils
 export * from './util/shared-preferences';
