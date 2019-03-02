@@ -4,6 +4,7 @@ import {FileUtil} from '../../../util/file/util/file-util';
 import {ErrorCode} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
 import {ZipService} from '../../../util/zip/def/zip-service';
+import {UniqueId} from '../../../db/util/unique-id';
 
 export class ExtractEcar {
     private readonly FILE_SIZE = 'FILE_SIZE';
@@ -12,14 +13,20 @@ export class ExtractEcar {
                 private zipService: ZipService) {
     }
 
-    execute(importContext: ImportContentContext): Promise<Response> {
+    public execute(importContext: ImportContentContext): Promise<Response> {
         const response: Response = new Response();
         let size: number;
         return this.fileService.getMetaData(importContext.ecarFilePath).then((metaData) => {
             size = metaData.size;
-            return this.fileService.getTempLocation(importContext.destinationFolder);
-        }).then((directoryEntry) => {
-            this.zipService.unzip(importContext.ecarFilePath, directoryEntry.toURL());
+            return this.fileService.createDir(importContext.tmpLocation! .concat('/', UniqueId.generateUniqueId()), true);
+        }).then(async (directoryEntry) => {
+            importContext.tmpLocation = directoryEntry.nativeURL;
+            await new Promise((resolve) => {
+                this.zipService.unzip(importContext.ecarFilePath, directoryEntry.nativeURL, () => {
+                    resolve();
+                });
+            });
+            importContext.metadata = {};
             importContext.metadata.FILE_SIZE = size;
             response.body = importContext;
             return Promise.resolve(response);

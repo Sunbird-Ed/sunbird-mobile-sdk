@@ -1,4 +1,5 @@
-import {LogLevel, PageId} from './telemetry-constants';
+import {LogLevel, PageId, ShareItemType} from './telemetry-constants';
+import {NumberUtil} from '../../util/number-util';
 
 export class Actor {
     static readonly TYPE_SYSTEM = 'System';
@@ -175,12 +176,12 @@ export class Search {
     size: number;
 }
 
-export class Share {
-    env: string;
-    direction: string;
-    dataType: string;
-    items: Array<{ [index: string]: any }>;
-}
+// export class Share {
+//     env: string;
+//     direction: string;
+//     dataType: string;
+//     items: Array<{ [index: string]: any }>;
+// }
 
 export class TelemetryObject {
     public  rollup?: Rollup;
@@ -467,6 +468,52 @@ export namespace TelemetryEvents {
                 ...(stacktrace ? {stacktrace} : {}),
                 ...(pageid ? {pageid} : {}),
             });
+        }
+    }
+
+    export class Share extends Telemetry {
+        private static readonly EID = 'SHARE';
+
+        dir: string;
+        type: string;
+        items: Array<{ [index: string]: any }> = [];
+
+        constructor(dir: string, type: string, items: Array<{ [index: string]: any }>){
+            super(Share.EID);
+
+            this.setEdata({
+                ...(dir ? {dir: dir} : {}),
+                ...(type ? {type: type} : {}),
+                ...(items ? {items: items} : {})
+            });
+        }
+
+        addItem(type: ShareItemType, origin: string, identifier: string, pkgVersion: number,
+                transferCount: number, size: string) {
+            const item: { [index: string]: any } = {};
+            item['origin'] = origin;
+            item['id'] = identifier;
+            item['type'] = this.capitalize(type.valueOf());
+            if (type.valueOf() === ShareItemType.CONTENT.valueOf()
+                || type.valueOf() === ShareItemType.EXPLODEDCONTENT.valueOf()) {
+                item['ver'] = pkgVersion.toString();
+                const paramsList: Array<{ [index: string]: any }> = [];
+                const param: { [index: string]: any } = {};
+                param['transfers'] = NumberUtil.parseInt(transferCount);
+                param['size'] = size;
+                paramsList.push(param);
+                item['params'] = paramsList;
+            }
+            const originMap: { [index: string]: any } = {};
+            originMap['id'] = origin;
+            originMap[type] = 'Device';
+            item['origin'] = originMap;
+
+            this.items.push(item);
+        }
+
+        capitalize(input): string {
+            return input.charAt(0).toUpperCase() + input.slice(1);
         }
     }
 }

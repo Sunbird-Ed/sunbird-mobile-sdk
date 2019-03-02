@@ -57,8 +57,7 @@ export class ContentMapper {
 
     }
 
-    public static mapContentDBEntryToContent(contentEntry: ContentEntry.SchemaMap, request?: ContentRequest,
-                                             feedbackService?: ContentFeedbackService, profileService?: ProfileService): Content {
+    public static mapContentDBEntryToContent(contentEntry: ContentEntry.SchemaMap): Content {
         let contentData;
         const serverInfo = contentEntry[ContentEntry.COLUMN_NAME_SERVER_DATA];
         const localInfo = contentEntry[ContentEntry.COLUMN_NAME_LOCAL_DATA];

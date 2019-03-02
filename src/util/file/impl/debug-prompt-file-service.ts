@@ -69,4 +69,8 @@ export class DebugPromptFileService implements FileService {
     writeFile(path: string, fileName: string, text: string, options: IWriteOptions): Promise<string> {
         throw new Error('To be Implemented');
     }
+
+    getDirectorySize(path: string): Promise<number> {
+        return Promise.resolve(0);
+    }
 }

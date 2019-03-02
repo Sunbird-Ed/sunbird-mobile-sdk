@@ -14,7 +14,7 @@ import {
     ContentService,
     ContentServiceConfig,
     EcarImportRequest, ExportContentContext,
-    HierarchyInfo,
+    HierarchyInfo, ImportContentContext,
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
@@ -43,11 +43,19 @@ import {CreateContentExportManifest} from '../handlers/export/create-content-exp
 import {WriteManifest} from '../handlers/export/write-manifest';
 import {CompressContent} from '../handlers/export/compress-content';
 import {ZipService} from '../../util/zip/def/zip-service';
-import {DeviceMemoryCheck} from '../handlers/export/device-memory-check';
+import {DeviceMemoryCheck} from '../handlers/import/device-memory-check';
 import {CopyAsset} from '../handlers/export/copy-asset';
 import {EcarBundle} from '../handlers/export/ecar-bundle';
 import {DeleteTempEcar} from '../handlers/export/delete-temp-ecar';
 import {AddTransferTelemetryExport} from '../handlers/export/add-transfer-telemetry-export';
+import {ExtractEcar} from '../handlers/import/extract-ecar';
+import {ValidateEcar} from '../handlers/import/validate-ecar';
+import {ExtractPayloads} from '../handlers/import/extract-payloads';
+import {CreateContentImportManifest} from '../handlers/import/create-content-import-manifest';
+import {EcarCleanup} from '../handlers/import/ecar-cleanup';
+import {TelemetryService} from '../../telemetry';
+import {UpdateSizeOnDevice} from '../handlers/import/update-size-on-device';
+import {GenerateShareEvnet} from '../handlers/import/generate-share-evnet';
 
 export class ContentServiceImpl implements ContentService {
     constructor(private contentServiceConfig: ContentServiceConfig,
@@ -58,7 +66,8 @@ export class ContentServiceImpl implements ContentService {
                 private keyValueStore: KeyValueStore,
                 private fileService: FileService,
                 private zipService: ZipService,
-                private deviceInfo: DeviceInfo) {
+                private deviceInfo: DeviceInfo,
+                private telemetryService: TelemetryService) {
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
@@ -66,9 +75,9 @@ export class ContentServiceImpl implements ContentService {
             this.dbService, this.contentServiceConfig, this.apiService).handle(request);
     }
 
-    getContents(request: ContentRequest): Observable<Content> {
+    getContents(request: ContentRequest): Observable<Content[]> {
         const query = new GetContentsHandler().getAllLocalContentQuery(request);
-        return this.dbService.execute(query).mergeMap((contentsInDb: ContentEntry.SchemaMap[]) => {
+        return this.dbService.execute(query).map((contentsInDb: ContentEntry.SchemaMap[]) => {
             return contentsInDb.map((contentInDb: ContentEntry.SchemaMap) =>
                 ContentMapper.mapContentDBEntryToContent(contentInDb));
         });
@@ -184,25 +193,93 @@ export class ContentServiceImpl implements ContentService {
         throw new Error('Not Implemented yet');
     }
 
-    importEcar(ecarImportRequest: EcarImportRequest): Observable<Response<ContentImportResponse>> {
+    importEcar(ecarImportRequest: EcarImportRequest): Observable<Response> {
 
-        this.fileService.exists(ecarImportRequest.sourceFilePath).then((entry: Entry) => {
-            if (FileUtil.getFileExtension(ecarImportRequest.sourceFilePath) !== FileExtension.CONTENT) {
+        return Observable.fromPromise(this.fileService.exists(ecarImportRequest.sourceFilePath).then((entry: Entry) => {
+            const importContentContext: ImportContentContext = {
+                isChildContent: ecarImportRequest.isChildContent,
+                ecarFilePath: ecarImportRequest.sourceFilePath,
+                destinationFolder: ecarImportRequest.destinationFolder
+            };
+            return this.fileService.getTempLocation(ecarImportRequest.destinationFolder).then((tempLocation: DirectoryEntry) => {
+                importContentContext.tmpLocation = tempLocation.nativeURL;
+                return new ExtractEcar(this.fileService, this.zipService).execute(importContentContext);
+            }).then((importResponse: Response) => {
+                console.log('importtresponse extract ecar', importResponse.body);
+                return new ValidateEcar(this.fileService, this.dbService, this.appConfig).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                console.log('importtresponse validate ecar', importResponse.body);
+                return new ExtractPayloads(this.fileService, this.zipService, this.appConfig,
+                    this.dbService, this.deviceInfo).execute(importResponse.body);
+            }).then((importResponse: Response) => {
                 const response: Response = new Response();
-                response.errorMesg = ErrorCode.ECAR_NOT_FOUND.valueOf();
-                return Observable.of(response);
-            } else {
-                this.fileService.getFreeDiskSpace();
-                // TODO Add device memory check before import
-
-            }
-
+                console.log('importtresponse validate ecar', importResponse.body);
+                return new CreateContentImportManifest(this.dbService, this.deviceInfo, this.fileService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                console.log('importtresponse CreateContentImportManifest', importResponse.body);
+                return new EcarCleanup(this.fileService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                console.log('importtresponse EcarCleanUp', importResponse.body);
+                return new UpdateSizeOnDevice(this.dbService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                console.log('importtresponse EcarCleanUp', importResponse.body);
+                return new GenerateShareEvnet(this.telemetryService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                const response: Response = new Response();
+                console.log('importtresponse ', importResponse.body);
+                response.errorMesg = importResponse.errorMesg;
+                return response;
+            });
         }).catch((error) => {
+            console.log('error', error);
+            const response: Response = new Response();
+            response.errorMesg = ErrorCode.ECAR_NOT_FOUND.valueOf();
+            return response;
+        }));
+        // const importContentContext: ImportContentContext = {
+        //     isChildContent: ecarImportRequest.isChildContent,
+        //     ecarFilePath: ecarImportRequest.sourceFilePath,
+        //     destinationFolder: ecarImportRequest.destinationFolder
+        // };
+        // return this.fileService.getTempLocation(ecarImportRequest.destinationFolder).then((destinationPath) => {
+        //     return new DeviceMemoryCheck(this.fileService).execute(importContentContext);
+        // }).then((importResponse: Response) => {
+        //     return new ExtractEcar(this.fileService, this.zipService).execute(importResponse.body);
+        // }).then((importResponse: Response<ContentImportResponse>) => {
+        //     return Observable.of(importResponse.body);
+        // }).catch(() => {
+        //     const response: Response = new Response();
+        //     response.errorMesg = ErrorCode.ECAR_NOT_FOUND.valueOf();
+        //     return Observable.of(response);
+        // });
 
-        });
+        // this.fileService.exists(ecarImportRequest.sourceFilePath).then((entry: Entry) => {
+        //     if (FileUtil.getFileExtension(ecarImportRequest.sourceFilePath) !== FileExtension.CONTENT) {
+        //         const response: Response = new Response();
+        //         response.errorMesg = ErrorCode.ECAR_NOT_FOUND.valueOf();
+        //         return Observable.of(response);
+        //     } else {
+        //         const importContentContext: ImportContentContext = {
+        //             isChildContent: ecarImportRequest.isChildContent,
+        //             ecarFilePath: ecarImportRequest.sourceFilePath,
+        //             destinationFolder: ecarImportRequest.destinationFolder
+        //         };
+        //         return this.fileService.getTempLocation(ecarImportRequest.destinationFolder).then((destinationPath) => {
+        //             return new DeviceMemoryCheck(this.fileService).execute(importContentContext);
+        //         }).then((importResponse: Response) => {
+        //             return new ExtractEcar(this.fileService, this.zipService).execute(importResponse.body);
+        //         }).then((importResponse: Response<ContentImportResponse>) => {
+        //             return Observable.of(importResponse.body);
+        //         });
+        //
+        //     }
+        //
+        // }).catch((error) => {
+        //
+        // });
 
 
-        throw new Error('Not Implemented yet');
+        // throw new Error('Not Implemented yet');
     }
 
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {

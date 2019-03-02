@@ -12,6 +12,7 @@ import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import {DbService} from '../../db';
 import {Observable} from 'rxjs';
+import {ArrayUtil} from '../../util/array-util';
 
 export class ImportNExportHandler {
     private static readonly EKSTEP_CONTENT_ARCHIVE = 'ekstep.content.archive';
@@ -31,7 +32,7 @@ export class ImportNExportHandler {
             // item local data
             const item = JSON.parse(contentInDb[COLUMN_NAME_LOCAL_DATA]);
             // index item
-            contentIndex.contentInDb[COLUMN_NAME_IDENTIFIER] = item;
+            contentIndex[contentInDb[COLUMN_NAME_IDENTIFIER]] = item;
             ContentUtil.addViralityMetadataIfMissing(item, this.deviceInfo!.getDeviceID());
             // get item's children only to mark children with visibility as Parent
             if (ContentUtil.hasChildren(item)) {
@@ -44,7 +45,7 @@ export class ImportNExportHandler {
         });
         allContentsIdentifier.forEach((identifier) => {
             const contentData = contentIndex[identifier];
-            if (childIdentifiers.indexOf(identifier) !== -1) {
+            if (ArrayUtil.contains(childIdentifiers, identifier)) {
                 contentData['visibility'] = Visibility.PARENT.valueOf();
             }
             items.push(contentData);

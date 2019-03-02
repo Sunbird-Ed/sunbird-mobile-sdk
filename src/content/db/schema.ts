@@ -32,7 +32,7 @@ export namespace ContentEntry {
         [COLUMN_NAME_PATH]?: string;
         [COLUMN_NAME_INDEX]?: string;
         [COLUMN_NAME_VISIBILITY]?: string;
-        [COLUMN_NAME_SERVER_LAST_UPDATED_ON]: string;
+        [COLUMN_NAME_SERVER_LAST_UPDATED_ON]?: string;
         [COLUMN_NAME_LOCAL_LAST_UPDATED_ON]?: string;
         [COLUMN_NAME_MANIFEST_VERSION]: string;
         [COLUMN_NAME_REF_COUNT]?: number;
@@ -103,12 +103,12 @@ export namespace ContentAccessEntry {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
             _ID + ' INTEGER PRIMARY KEY,' +
-            COLUMN_NAME_UID + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CONTENT_IDENTIFIER + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_STATUS + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CONTENT_TYPE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_LEARNER_STATE + DbConstants.BLOB_TYPE +
+            COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CONTENT_IDENTIFIER +  DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_EPOCH_TIMESTAMP +  DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_STATUS +  DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CONTENT_TYPE +  DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_LEARNER_STATE +  DbConstants.SPACE + DbConstants.BLOB_TYPE +
             ' )';
     };
 
