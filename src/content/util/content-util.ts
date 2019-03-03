@@ -363,7 +363,7 @@ export class ContentUtil {
             }
 
             const pkgVersion = localData.pkgVersion;
-            fileName = `${name}-v${pkgVersion}${appendName}`;
+            fileName = `${name}-v${pkgVersion}${appendName}.ecar`;
         }
 
         return fileName;

@@ -43,11 +43,11 @@ import {CreateContentExportManifest} from '../handlers/export/create-content-exp
 import {WriteManifest} from '../handlers/export/write-manifest';
 import {CompressContent} from '../handlers/export/compress-content';
 import {ZipService} from '../../util/zip/def/zip-service';
-import {DeviceMemoryCheck} from '../handlers/import/device-memory-check';
+import {DeviceMemoryCheck} from '../handlers/export/device-memory-check';
 import {CopyAsset} from '../handlers/export/copy-asset';
 import {EcarBundle} from '../handlers/export/ecar-bundle';
 import {DeleteTempEcar} from '../handlers/export/delete-temp-ecar';
-import {AddTransferTelemetryExport} from '../handlers/export/add-transfer-telemetry-export';
+import {GenerateShareTelemetry} from '../handlers/export/generate-share-telemetry';
 import {ExtractEcar} from '../handlers/import/extract-ecar';
 import {ValidateEcar} from '../handlers/import/validate-ecar';
 import {ExtractPayloads} from '../handlers/import/extract-payloads';
@@ -55,7 +55,7 @@ import {CreateContentImportManifest} from '../handlers/import/create-content-imp
 import {EcarCleanup} from '../handlers/import/ecar-cleanup';
 import {TelemetryService} from '../../telemetry';
 import {UpdateSizeOnDevice} from '../handlers/import/update-size-on-device';
-import {GenerateShareEvnet} from '../handlers/import/generate-share-evnet';
+import {CreateTempLoc} from '../handlers/export/create-temp-loc';
 
 export class ContentServiceImpl implements ContentService {
     constructor(private contentServiceConfig: ContentServiceConfig,
@@ -123,46 +123,41 @@ export class ContentServiceImpl implements ContentService {
             response.body = ErrorCode.EXPORT_FAILED_NOTHING_TO_EXPORT;
             return Observable.of(response);
         }
-        return Observable.of(response);
-        // let fileName;
-        // let exportContentContext: ExportContentContext;
-        // return new ImportNExportHandler(this.deviceInfo, this.dbService).findAllContentsWithIdentifiers(contentExportRequest.contentIds).then
-        // ((contentsInDb) => {
-        //     const metaData: { [key: string]: any } = {};
-        //     fileName = ContentUtil.getExportedFileName(contentsInDb);
-        //     metaData.content_count = contentsInDb.length;
-        //     exportContentContext = {
-        //         metadata: metaData,
-        //         destinationFolder: contentExportRequest.destinationFolder,
-        //         contentModelsToExport: contentsInDb
-        //     };
-        //     return this.fileService.getTempLocation(contentExportRequest.destinationFolder);
-        // }).then((directory: DirectoryEntry) => {
-        //     return this.fileService.createFile(directory.toURL(), fileName, true);
-        // }).then((fileEntry: FileEntry) => {
-        //     exportContentContext.ecarFilePath = fileEntry.toURL();
-        //     return new CleanTempLoc(this.fileService).execute(exportContentContext);
-        // }).then((exportResponse: Response) => {
-        // }).then((exportResponse: Response) => {
-        //     return new WriteManifest(this.fileService).execute(exportResponse.body);
-        // }).then((exportResponse: Response) => {
-        //     return new CompressContent(this.zipService, this.fileService).execute(exportResponse.body);
-        // }).then((exportResponse: Response) => {
-        //     return new DeviceMemoryCheck(this.fileService).execute(exportResponse.body);
-        // }).then((exportResponse: Response) => {
-        //     return new CopyAsset(this.fileService).execute(exportResponse.body);
-        // }).then((exportResponse: Response) => {
-        //     return new EcarBundle(this.fileService, this.zipService).execute(exportResponse.body);
-        // }).then((exportResponse: Response) => {
-        //     return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
-        // }).then((exportResponse: Response) => {
-        //     return new AddTransferTelemetryExport().execute(exportResponse.body);
-        // }).then((exportResponse: Response) => {
-        //     return Observable.of(exportResponse);
-        // }).catch((exportResponse: Response) => {
-        //     return Observable.of(exportResponse);
-        // });
-
+        const exportHandler = new ImportNExportHandler(this.deviceInfo, this.dbService);
+        return Observable.fromPromise(exportHandler.getContentExportDBModeltoExport(
+            contentExportRequest.contentIds).then((contentsInDb: ContentEntry.SchemaMap[]) => {
+            return this.fileService.getTempLocation(contentExportRequest.destinationFolder).then((tempLocationPath: DirectoryEntry) => {
+                const metaData: { [key: string]: any } = {};
+                const fileName = ContentUtil.getExportedFileName(contentsInDb);
+                metaData['content_count'] = contentsInDb.length;
+                const exportContentContext: ExportContentContext = {
+                    metadata: metaData,
+                    ecarFilePath: tempLocationPath.nativeURL.concat(fileName),
+                    destinationFolder: contentExportRequest.destinationFolder,
+                    contentModelsToExport: contentsInDb,
+                    tmpLocationPath: tempLocationPath.nativeURL
+                };
+                return new CleanTempLoc(this.fileService).execute(exportContentContext);
+            }).then((exportResponse: Response) => {
+                return new CreateTempLoc(this.fileService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new CreateContentExportManifest(this.dbService, exportHandler).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new WriteManifest(this.fileService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new CompressContent(this.zipService, this.fileService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new DeviceMemoryCheck(this.fileService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new CopyAsset(this.fileService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new EcarBundle(this.fileService, this.zipService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new GenerateShareTelemetry(this.telemetryService).execute(exportResponse.body);
+            });
+        }));
     }
 
     getChildContents(childContentRequest: ChildContentRequest): Observable<any> {
@@ -223,7 +218,7 @@ export class ContentServiceImpl implements ContentService {
                 return new UpdateSizeOnDevice(this.dbService).execute(importResponse.body);
             }).then((importResponse: Response) => {
                 console.log('importtresponse EcarCleanUp', importResponse.body);
-                return new GenerateShareEvnet(this.telemetryService).execute(importResponse.body);
+                return new GenerateShareTelemetry(this.telemetryService).execute(importResponse.body);
             }).then((importResponse: Response) => {
                 const response: Response = new Response();
                 console.log('importtresponse ', importResponse.body);

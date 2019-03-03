@@ -23,7 +23,7 @@ export class ImportNExportHandler {
 
     }
 
-    populateContents(contentsInDb: ContentEntry.SchemaMap[]): any[] {
+    populateItems(contentsInDb: ContentEntry.SchemaMap[]): { [key: string]: any }[] {
         const items: any[] = [];
         const allContentsIdentifier: string[] = [];
         let childIdentifiers: string[] = [];
@@ -54,7 +54,8 @@ export class ImportNExportHandler {
         return items;
     }
 
-    async getContentExportDBModeltoExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {
+   public async getContentExportDBModeltoExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {
+        const contentModelToExport: ContentEntry.SchemaMap[] = [];
         const queue: Queue<ContentEntry.SchemaMap> = new Queue();
 
         let contentWithAllChildren: ContentEntry.SchemaMap[] = [];
@@ -69,15 +70,15 @@ export class ImportNExportHandler {
                 const childContentsIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(node[COLUMN_NAME_LOCAL_DATA]);
                 const contentModelListInDB: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(
                     childContentsIdentifiers);
-                if (contentModelListInDB) {
+                if (contentModelListInDB && contentModelListInDB.length > 0) {
                     contentModelListInDB.forEach((contentModelInDb) => {
                         queue.add(contentModelInDb);
                     });
-                    contentWithAllChildren = {...contentWithAllChildren, ...contentModelListInDB};
                 }
             }
+            contentModelToExport.push(node);
         }
-        return Promise.resolve(ContentUtil.deDupe(contentWithAllChildren, 'identifier'));
+        return Promise.resolve(ContentUtil.deDupe(contentModelToExport, 'identifier'));
     }
 
     generateManifestForArchive(items: any[]): { [key: string]: any } {

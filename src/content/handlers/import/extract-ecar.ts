@@ -18,11 +18,11 @@ export class ExtractEcar {
         let size: number;
         return this.fileService.getMetaData(importContext.ecarFilePath).then((metaData) => {
             size = metaData.size;
-            return this.fileService.createDir(importContext.tmpLocation! .concat('/', UniqueId.generateUniqueId()), true);
+            return this.fileService.createDir(importContext.tmpLocation!.concat('/', UniqueId.generateUniqueId()), true);
         }).then(async (directoryEntry) => {
             importContext.tmpLocation = directoryEntry.nativeURL;
             await new Promise((resolve) => {
-                this.zipService.unzip(importContext.ecarFilePath, directoryEntry.nativeURL, () => {
+                this.zipService.unzip(importContext.ecarFilePath, {target: directoryEntry.nativeURL}, () => {
                     resolve();
                 });
             });

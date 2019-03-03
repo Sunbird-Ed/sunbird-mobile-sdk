@@ -16,7 +16,6 @@ import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 import {FileUtil} from '../../../util/file/util/file-util';
 import {DeviceInfo} from '../../../util/device/def/device-info';
-import {ProfileEntry} from '../../../profile/db/schema';
 
 export class ExtractPayloads {
 
@@ -85,10 +84,12 @@ export class ExtractPayloads {
                             (contentDisposition === ContentDisposition.INLINE.valueOf()
                                 && contentEncoding === ContentEncoding.GZIP.valueOf())) { // Content with artifact without zip i.e. pfd, mp4
                             const payload = importContext.tmpLocation!.concat('/', artifactUrl);
-                            await new Promise((resolve) => {
-                                this.zipService.unzip(payload, payloadDestination!, () => {
+                            await new Promise((resolve, reject) => {
+                                this.zipService.unzip(payload, {target: payloadDestination!}, () => {
                                     isUnzippingSuccessfull = true;
                                     resolve();
+                                }, () => {
+                                    reject();
                                 });
                             });
                         } else if (ContentUtil.isInlineIdentity(contentDisposition, contentEncoding)) {
@@ -128,7 +129,7 @@ export class ExtractPayloads {
                 JSON.stringify(element), mimeType, contentType, visibility, payloadDestination,
                 referenceCount, contentState, audience, pragma, sizeOnDevice);
             if (!existingContentModel) {
-               await this.dbService.insert({
+                await this.dbService.insert({
                     table: ContentEntry.TABLE_NAME,
                     modelJson: newContentModel
                 }).toPromise();

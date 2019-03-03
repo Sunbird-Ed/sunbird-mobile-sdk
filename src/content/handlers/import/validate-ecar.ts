@@ -19,13 +19,7 @@ export class ValidateEcar {
 
     public async execute(importContext: ImportContentContext): Promise<Response> {
         const response: Response = new Response();
-        let data;
-        try {
-            data = await this.fileService.readAsText(importContext.tmpLocation!, this.MANIFEST_FILE_NAME);
-        } catch (e) {
-            console.log(' REadAs text error', e);
-        }
-
+        const data = await this.fileService.readAsText(importContext.tmpLocation!, this.MANIFEST_FILE_NAME);
 
         if (!data) {
             response.errorMesg = ErrorCode.IMPORT_FAILED_MANIFEST_FILE_NOT_FOUND.valueOf();

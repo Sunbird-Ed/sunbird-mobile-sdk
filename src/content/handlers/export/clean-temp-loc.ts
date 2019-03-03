@@ -10,26 +10,27 @@ export class CleanTempLoc {
     constructor(private fileService: FileService) {
     }
 
-    public execute(exportContext: ExportContentContext): Promise<Response> {
+    public async execute(exportContext: ExportContentContext): Promise<Response> {
         const response: Response = new Response();
         const yesterday: number = Date.now() - (24 * 60 * 60 * 1000);
-        return this.fileService.listDir(exportContext.destinationFolder).then((directoryList) => {
-            if (directoryList && directoryList.length > 0) {
-                directoryList.forEach(async (directory) => {
-                    if (FileUtil.getFileExtension(directory.toURL()) === FileExtension.CONTENT) {
-                        const metaData: Metadata = await this.fileService.getMetaData(directory.toURL());
-                        if (new Date(metaData.modificationTime).getMilliseconds() <= yesterday) {
+        const directoryList: Entry[] = await this.fileService.listDir(exportContext.destinationFolder);
+        if (directoryList && directoryList.length > 0) {
+            for (const directory of directoryList) {
+                if (FileUtil.getFileExtension(directory.nativeURL) === FileExtension.CONTENT) {
+                    const metaData: Metadata = await this.fileService.getMetaData(directory.nativeURL);
+                    if (new Date(metaData.modificationTime).getMilliseconds() <= yesterday) {
+                        await new Promise((resolve) => {
                             directory.remove(() => {
+                                resolve();
                             }, () => {
+                                resolve();
                             });
-                        }
+                        });
                     }
-                });
+                }
             }
-            return Promise.resolve(response);
-        }).catch(() => {
-            response.errorMesg = ErrorCode.EXPORT_FAILED_COPY_ASSET;
-            return Promise.reject(response);
-        });
+        }
+        response.body = exportContext;
+        return Promise.resolve(response);
     }
 }
