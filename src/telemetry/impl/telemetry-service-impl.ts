@@ -7,7 +7,7 @@ import {
     TelemetryImpressionRequest,
     TelemetryInteractRequest,
     TelemetryLogRequest,
-    TelemetryService,
+    TelemetryService, TelemetryShareRequest,
     TelemetryStartRequest,
     TelemetryStat,
     TelemetrySyncStat
@@ -96,6 +96,14 @@ export class TelemetryServiceImpl implements TelemetryService, EventDelegate {
         return this.save(log);
     }
 
+    share({dir, type, items}: TelemetryShareRequest): Observable<boolean> {
+        const share = new TelemetryEvents.Share(dir, type, []);
+        items.forEach((item) => {
+            share.addItem(item.type, item.origin, item.identifier, item.pkgVersion, item.transferCount, item.size);
+        });
+        return this.save(share);
+    }
+
     start({
               type, deviceSpecification, loc, mode, duration, pageId, env,
               objId, objType, objVer, rollup, correlationData
@@ -182,4 +190,6 @@ export class TelemetryServiceImpl implements TelemetryService, EventDelegate {
             return this.dbService.insert(insertQuery).map((count) => count > 1);
         });
     }
+
+
 }

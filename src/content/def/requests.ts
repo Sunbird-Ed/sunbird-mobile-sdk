@@ -152,12 +152,13 @@ export interface ImportContentContext {
     isChildContent: boolean;
     ecarFilePath: string;
     destinationFolder: string;
-    metadata: any;
-    manifestVersion: string;
-    skippedItemsIdentifier: string[];
-    items: any[];
-    identifiers: string[];
-    contentImportResponseList: ContentImportResponse[];
+    metadata?: any;
+    manifestVersion?: string;
+    skippedItemsIdentifier?: string[];
+    items?: any[];
+    identifiers?: string[];
+    contentImportResponseList?: ContentImportResponse[];
+    tmpLocation?: string;
 }
 
 export interface ExportContentContext {

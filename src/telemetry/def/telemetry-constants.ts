@@ -104,6 +104,24 @@ export enum LogLevel {
     FATAL = 'FATAL'
 }
 
+export enum ShareDirection {
+    IN = 'In',
+    OUT = 'Out',
+}
+
+export enum ShareType {
+    FILE = 'File',
+    MESSAGE = 'Message',
+    LINK = 'Link'
+}
+
+export enum ShareItemType {
+    CONTENT = 'CONTENT',
+    EXPLODEDCONTENT = 'EXPLODEDCONTENT',
+    TELEMETRY = 'TELEMETRY',
+    PROFILE = 'PROFILE'
+}
+
 export class LogMessage {
     RECEIVED = 'Received';
     DISPLAYED = 'Displayed';

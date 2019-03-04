@@ -8,6 +8,7 @@ import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import {Visibility} from '../../util/content-constants';
 import {Response} from '../../../api';
 import moment from 'moment';
+import {ImportNExportHandler} from '../import-n-export-handler';
 
 export class CreateContentExportManifest {
 
@@ -15,41 +16,19 @@ export class CreateContentExportManifest {
     private static readonly SUPPORTED_MANIFEST_VERSION = '1.1';
 
     constructor(private dbService: DbService,
-                private deviceInfo: DeviceInfo) {
+                private exportHandler: ImportNExportHandler) {
     }
 
     execute(exportContentContext: ExportContentContext): Promise<Response> {
-        const allContentsIdentifier: string[] = [];
-        let childIdentifiers: string[] = [];
-        const contentIndex: { [key: string]: any } = {};
         const response: Response = new Response();
-        exportContentContext.contentModelsToExport.forEach((contentInDb) => {
-            // item local data
-            const item = JSON.parse(contentInDb[COLUMN_NAME_LOCAL_DATA]);
-            // index item
-            contentIndex.contentInDb[COLUMN_NAME_IDENTIFIER] = item;
-            ContentUtil.addViralityMetadataIfMissing(item, this.deviceInfo.getDeviceID());
-            // get item's children only to mark children with visibility as Parent
-            if (ContentUtil.hasChildren(item)) {
-                // store children identifiers
-                const childContentIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(item);
-                childIdentifiers = {...childIdentifiers, ...childContentIdentifiers};
-            }
-
-            allContentsIdentifier.push(contentInDb[COLUMN_NAME_IDENTIFIER]);
-        });
-        allContentsIdentifier.forEach((identifier) => {
-            const contentData = contentIndex[identifier];
-            if (childIdentifiers.indexOf(identifier) !== -1) {
-                contentData['visibility'] = Visibility.PARENT.valueOf();
-            }
-            exportContentContext.items!.push(contentData);
-        });
-
+        const items: any[] = this.exportHandler.populateItems(exportContentContext.contentModelsToExport);
+        exportContentContext.items! = [];
+        exportContentContext.manifest = {};
+        exportContentContext.items = exportContentContext.items!.concat(items);
         const archive: { [key: string]: any } = {};
-        archive.ttl = 24;
-        archive.count = exportContentContext.items!.length;
-        archive.items = exportContentContext.items;
+        archive['ttl'] = 24;
+        archive['count'] = exportContentContext.items!.length;
+        archive['items'] = exportContentContext.items;
 
         // Initialize manifest
         exportContentContext.manifest['id'] = CreateContentExportManifest.EKSTEP_CONTENT_ARCHIVE;

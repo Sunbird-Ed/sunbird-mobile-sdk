@@ -13,7 +13,12 @@ export class FileUtil {
     }
 
     public static getParentDir(directoryPath: string): string {
-        return directoryPath.substr(0, directoryPath.lastIndexOf('/') + 1);
+        return directoryPath.substr(0, directoryPath.lastIndexOf('/', directoryPath.length - 2)).concat('/');
+    }
+
+    public static getDirectoryName(filePath: string): string {
+        const dirNames = filePath.split('/');
+        return dirNames[dirNames.length - 2];
     }
 
     public static getTempDirPath(externalFilesDir: string): string {

@@ -44,5 +44,7 @@ export interface FileService {
     getTempLocation(destinationPath: string): Promise<DirectoryEntry>;
 
     getFreeDiskSpace(): Promise<number>;
+
+    getDirectorySize(path: string): Promise<number>;
 }
 

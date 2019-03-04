@@ -250,6 +250,18 @@ export class SunbirdSdk {
 
         this._zipService = new ZipServiceImpl();
 
+        this._telemetryService = new TelemetryServiceImpl(
+            this._dbService,
+            new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo),
+            this._profileService,
+            this._groupService,
+            this._keyValueStore,
+            this._apiService,
+            this._sdkConfig.telemetryConfig,
+            this._deviceInfo,
+            this._eventsBusService
+        );
+
         this._contentService = new ContentServiceImpl(
             sdkConfig.contentServiceConfig,
             this._apiService,
@@ -259,7 +271,8 @@ export class SunbirdSdk {
             this._keyValueStore,
             this._fileService,
             this._zipService,
-            this._deviceInfo
+            this._deviceInfo,
+            this.telemetryService
         );
 
         this._courseService = new CourseServiceImpl(
@@ -291,27 +304,12 @@ export class SunbirdSdk {
 
         this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService);
 
-        this._telemetryService = new TelemetryServiceImpl(
-            this._dbService,
-            new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo),
-            this._profileService,
-            this._groupService,
-            this._keyValueStore,
-            this._apiService,
-            this._sdkConfig.telemetryConfig,
-            this._deviceInfo,
-            this._eventsBusService
-        );
-
         this._summarizerService = new SummarizerServiceImpl(this._dbService, this._eventsBusService);
 
         this.postInit();
     }
 
     private postInit() {
-        Observable.combineLatest(
-            this._frameworkService.onInit(),
-            this._eventsBusService.onInit()
-        ).subscribe();
+        this._frameworkService.setActiveChannelId(this._sdkConfig.apiConfig.api_authentication.channelId).subscribe();
     }
 }

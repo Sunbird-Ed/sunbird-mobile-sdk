@@ -25,11 +25,10 @@ export class CreateContentImportManifest {
 
     execute(importContentContext: ImportContentContext): Promise<Response> {
 
-
         const response: Response = new Response();
-        return this.findAllContentsWithIdentifiers(importContentContext.identifiers).then((contentsInDb) => {
+        return this.findAllContentsWithIdentifiers(importContentContext.identifiers!).then(async (contentsInDb) => {
             try {
-                this.createnWriteManifest(contentsInDb);
+                await this.createnWriteManifest(contentsInDb);
                 response.body = importContentContext;
                 return Promise.resolve(response);
             } catch (e) {
@@ -41,15 +40,16 @@ export class CreateContentImportManifest {
 
     findAllContentsWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
         const identifiersStr = identifiers.join(',');
-        const orderby = ` order by ${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} desc, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} desc`;
-        const filter = ` where ${COLUMN_NAME_IDENTIFIER} in ('${identifiersStr}') AND ${COLUMN_NAME_REF_COUNT} > 0`;
-        const query = `select * from ${ContentEntry.TABLE_NAME} ${filter} ${orderby}`;
+        const orderby = ` ORDER BY ${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} DESC, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} DESC`;
+        const filter = ` WHERE ${COLUMN_NAME_IDENTIFIER} IN ('${identifiersStr}') AND ${COLUMN_NAME_REF_COUNT} > 0`;
+        const query = `SELECT * FROM ${ContentEntry.TABLE_NAME} ${filter} ${orderby}`;
         return this.dbService.execute(query).toPromise();
     }
 
-    createnWriteManifest(contentsInDb: ContentEntry.SchemaMap[]) {
+    async createnWriteManifest(contentsInDb: ContentEntry.SchemaMap[]) {
         const importnExportHandler = new ImportNExportHandler(this.deviceInfo);
-        contentsInDb.forEach(async (contentInDb: ContentEntry.SchemaMap) => {
+        for (const e of contentsInDb) {
+            const contentInDb = e as ContentEntry.SchemaMap;
             const queue: Queue<ContentEntry.SchemaMap> = new Queue();
             queue.add(contentInDb);
             let node: ContentEntry.SchemaMap;
@@ -68,15 +68,14 @@ export class CreateContentImportManifest {
                         });
                         contentWithAllChildren = {...contentWithAllChildren, ...contentModelListInDB};
                     }
-
                 }
             }
-            const items: any[] = importnExportHandler.populateContents(contentWithAllChildren);
+            const items: any[] = importnExportHandler.populateItems(contentWithAllChildren);
             const manifest: { [key: string]: any } = importnExportHandler.generateManifestForArchive(items);
             await this.fileService.writeFile(contentInDb[COLUMN_NAME_PATH]!,
                 CreateContentImportManifest.MANIFEST_FILE_NAME,
                 JSON.stringify(manifest),
                 {replace: true});
-        });
+        }
     }
 }
