@@ -6,10 +6,10 @@ import {
     InteractType,
     LogLevel,
     LogType,
-    PageId, ShareItemType
+    PageId,
+    ShareItemType
 } from './telemetry-constants';
 import {CorrelationData, DeviceSpecification, Rollup, Visit} from './telemetry-model';
-import {NumberUtil} from '../../util/number-util';
 
 export class TelemetryInteractRequest {
     type: InteractType;

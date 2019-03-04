@@ -478,7 +478,7 @@ export namespace TelemetryEvents {
         type: string;
         items: Array<{ [index: string]: any }> = [];
 
-        constructor(dir: string, type: string, items: Array<{ [index: string]: any }>){
+        constructor(dir: string, type: string, items: Array<{ [index: string]: any }>) {
             super(Share.EID);
 
             this.setEdata({
