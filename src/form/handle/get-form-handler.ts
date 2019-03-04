@@ -26,7 +26,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
         return this.cachedItemStore.getCached(
             GetFormHandler.getIdForRequest(request),
             this.FORM_LOCAL_KEY,
-            this.FORM_LOCAL_KEY,
+            'ttl_' + this.FORM_LOCAL_KEY,
             () => this.fetchFormServer(request),
             () => this.fetchFromFile(request)
         );

@@ -1,21 +1,28 @@
 import {ImportContentContext} from '../..';
 import {Response} from '../../../api';
-import {ContentDisposition, ContentEncoding, ContentStatus, ErrorCode, State, Visibility, MimeType} from '../../util/content-constants';
+import {
+    ContentDisposition,
+    ContentEncoding,
+    ContentStatus,
+    MimeType,
+    State,
+    Visibility
+} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
-import {DbService, InsertQuery} from '../../../db';
+import {DbService} from '../../../db';
 import {ContentUtil} from '../../util/content-util';
 import {GetContentDetailsHandler} from '../get-content-details-handler';
 import {ContentEntry} from '../../db/schema';
-import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 import {ZipService} from '../../../util/zip/def/zip-service';
-import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
-import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import {DirectoryEntry, Metadata} from '../../../util/file';
 import {AppConfig} from '../../../api/config/app-config';
-import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
-import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 import {FileUtil} from '../../../util/file/util/file-util';
 import {DeviceInfo} from '../../../util/device/def/device-info';
+import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
+import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
+import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
+import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
+import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 
 export class ExtractPayloads {
 
@@ -23,7 +30,8 @@ export class ExtractPayloads {
                 private zipService: ZipService,
                 private appConfig: AppConfig,
                 private dbService: DbService,
-                private deviceInfo: DeviceInfo) {
+                private deviceInfo: DeviceInfo,
+                private getContentDetailsHandler: GetContentDetailsHandler) {
     }
 
     public async execute(importContext: ImportContentContext): Promise<Response> {
@@ -54,7 +62,7 @@ export class ExtractPayloads {
             let contentState = State.ONLY_SPINE.valueOf();
             let payloadDestination: string | undefined;
             const existingContentModel: ContentEntry.SchemaMap =
-                await new GetContentDetailsHandler(this.dbService).getContentFromDB(identifier)[0];
+                await this.getContentDetailsHandler.getContentFromDB(identifier)[0];
             let existingContentPath;
             if (existingContentModel) {
                 existingContentPath = existingContentModel[COLUMN_NAME_PATH];

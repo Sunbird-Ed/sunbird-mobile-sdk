@@ -27,7 +27,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
                 return this.cachedItemStore.getCached(
                     request.frameworkId!,
                     this.FRAMEWORK_LOCAL_KEY,
-                    this.FRAMEWORK_LOCAL_KEY,
+                    'ttl_' + this.FRAMEWORK_LOCAL_KEY,
                     () => this.fetchFromServer(request),
                     () => this.fetchFromFile(request));
             }),

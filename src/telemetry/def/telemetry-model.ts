@@ -90,14 +90,14 @@ export class ExData {
 
 }
 
-export class Feedback {
-    env: string;
-    rating: number;
-    comments: string;
-    id: string;
-    version: string;
-    type: string;
-}
+// export class Feedback {
+//     env: string;
+//     rating: number;
+//     comments: string;
+//     id: string;
+//     version: string;
+//     type: string;
+// }
 
 export class GameData {
     id: string;
@@ -478,7 +478,7 @@ export namespace TelemetryEvents {
         type: string;
         items: Array<{ [index: string]: any }> = [];
 
-        constructor(dir: string, type: string, items: Array<{ [index: string]: any }>){
+        constructor(dir: string, type: string, items: Array<{ [index: string]: any }>) {
             super(Share.EID);
 
             this.setEdata({
@@ -514,6 +514,25 @@ export namespace TelemetryEvents {
 
         capitalize(input): string {
             return input.charAt(0).toUpperCase() + input.slice(1);
+        }
+    }
+
+    export class Feedback extends Telemetry {
+        private static readonly EID = 'FEEDBACK';
+
+        rating: number;
+        comments: string;
+        env: string
+        objId: string;
+        objType: string;
+        objVer: string;
+        constructor(rating: number, comments: string) {
+            super(Feedback.EID);
+
+            this.setEdata({
+                ...(rating ? {rating: rating} : {}),
+                ...(comments ? {comments: comments} : {}),
+            });
         }
     }
 }

@@ -1,4 +1,6 @@
 import {Rollup} from '../../telemetry';
+import {ContentAccess} from '../../profile/def/content-access';
+import {ContentMarker} from './response';
 
 export interface Content {
     identifier: string;
@@ -10,13 +12,14 @@ export interface Content {
     lastUpdatedTime: number;
     isAvailableLocally: boolean;
     isUpdateAvailable: boolean;
-    contentFeedback?: ContentFeedback;
-    contentAccess?: Access;
     children?: Content[];
     hierarchyInfo?: HierarchyInfo[];
     sizeOnDevice: number;
     lastUsedTime: number;
     rollup?: Rollup;
+    contentFeedback?: ContentFeedback[];
+    contentAccess?: ContentAccess[];
+    contentMarker?: ContentMarker[];
 }
 
 export interface ContentData {
@@ -82,16 +85,6 @@ export interface ContentFeedback {
 export interface ContentFeedbackFilterCriteria {
     uid: string;
     contentId: string;
-}
-
-export interface Access {
-    status: number;
-    contentId: string;
-    contentLearnerState: LearnerState;
-}
-
-export interface LearnerState {
-    learnerState: { [key: string]: any };
 }
 
 export interface HierarchyInfo {

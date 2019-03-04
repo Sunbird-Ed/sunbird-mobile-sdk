@@ -14,7 +14,8 @@ export class ValidateEcar {
 
     constructor(private fileService: FileService,
                 private dbService: DbService,
-                private appConfig: AppConfig) {
+                private appConfig: AppConfig,
+                private getContentDetailsHandler: GetContentDetailsHandler) {
     }
 
     public async execute(importContext: ImportContentContext): Promise<Response> {
@@ -61,7 +62,7 @@ export class ValidateEcar {
                 continue;
             }
 
-            const contentDetailsHandler = new GetContentDetailsHandler(this.dbService);
+            const contentDetailsHandler = this.getContentDetailsHandler;
             const existingContentModel: ContentEntry.SchemaMap[] = await contentDetailsHandler.getContentFromDB(identifier);
             let existingContentPath;
             if (existingContentModel && existingContentModel[0]) {

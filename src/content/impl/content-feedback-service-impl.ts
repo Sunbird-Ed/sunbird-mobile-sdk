@@ -1,48 +1,32 @@
-import {ContentFeedbackService} from '../def/content-feedback-service';
-import {ContentFeedback, ContentFeedbackFilterCriteria} from '..';
+import {ContentFeedback, ContentFeedbackFilterCriteria, ContentFeedbackService} from '..';
 import {Observable} from 'rxjs';
 import {ContentFeedbackEntry} from '../db/schema';
 import {DbService, ReadQuery} from '../../db';
 import {ContentFeedbackHandler} from '../handlers/content-feedback-handler';
 import {QueryBuilder} from '../../db/util/query-builder';
 import {ProfileService, ProfileSession} from '../../profile';
+import {ContentUtil} from '../util/content-util';
+import {ShareItemType, TelemetryService} from '../../telemetry';
 
 export class ContentFeedbackServiceImpl implements ContentFeedbackService {
 
     constructor(private dbService: DbService,
-                private profileService: ProfileService) {
+                private profileService: ProfileService,
+                private telemetryService: TelemetryService) {
 
     }
 
     getFeedback(contentFeedbackFilterCriteria: ContentFeedbackFilterCriteria): Observable<ContentFeedback[]> {
-        let userFilter = '';
-        let contentFilter = '';
-        if (contentFeedbackFilterCriteria) {
-            if (contentFeedbackFilterCriteria.uid) {
-                userFilter = `${ContentFeedbackEntry.COLUMN_NAME_UID} = '${contentFeedbackFilterCriteria.uid}'`;
-            }
-            if (contentFeedbackFilterCriteria.contentId) {
-                contentFilter = `${ContentFeedbackEntry.COLUMN_NAME_CONTENT_ID} = '${contentFeedbackFilterCriteria.contentId}'`;
-            }
-        }
-        let filter = '';
-        if (userFilter && contentFilter) {
-            filter = filter.concat(` where ${userFilter} AND ${contentFilter}`);
-        } else if (contentFilter) {
-            filter = filter.concat(` where ${contentFilter}`);
-        } else if (userFilter) {
-            filter = filter.concat(` where ${userFilter}`);
-        }
-        const query = `SELECT * FROM ${ContentFeedbackEntry.TABLE_NAME} ${filter}`;
-        return this.dbService.execute(filter).map((feedbackList: ContentFeedbackEntry.SchemaMap[]) => {
+        const query = `SELECT * FROM ${ContentFeedbackEntry.TABLE_NAME} ${ContentUtil.getUidnIdentifierFiler(
+            contentFeedbackFilterCriteria.uid, contentFeedbackFilterCriteria.contentId)}`;
+        return this.dbService.execute(query).map((feedbackList: ContentFeedbackEntry.SchemaMap[]) => {
             return feedbackList.map((feedback: ContentFeedbackEntry.SchemaMap) =>
                 ContentFeedbackHandler.mapFeedbackDBEntrytoResponseFeedback(feedback));
         });
 
     }
 
-    sendFeedback(contentFeedback: ContentFeedback): Observable<any> {
-        // TODO generate feedback event
+    sendFeedback(contentFeedback: ContentFeedback): Observable<boolean> {
         return this.profileService.getActiveProfileSession()
             .mergeMap((response: ProfileSession | undefined) => {
                 const readQuery: ReadQuery = {
@@ -55,6 +39,16 @@ export class ContentFeedbackServiceImpl implements ContentFeedbackService {
                         .build(),
                     limit: '1'
                 };
+
+                this.telemetryService.feedback({
+                    env: 'sdk',
+                    rating: contentFeedback.rating,
+                    comments: contentFeedback.comments,
+                    objId: contentFeedback.contentId,
+                    objType: ShareItemType.CONTENT.valueOf(),
+                    objVer: contentFeedback.contentVersion,
+                });
+
                 return this.dbService.read(readQuery).mergeMap((rows) => {
                     if (rows && rows.length) {
                         return this.dbService.update({

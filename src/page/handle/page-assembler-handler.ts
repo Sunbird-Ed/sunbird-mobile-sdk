@@ -29,7 +29,7 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
         return this.cachedItemStore.getCached(
             PageAssemblerHandler.getIdForDb(request),
             this.PAGE_ASSEMBLE_LOCAL_KEY,
-            this.PAGE_ASSEMBLE_LOCAL_KEY,
+            'ttl_' + this.PAGE_ASSEMBLE_LOCAL_KEY,
             () => this.fetchFromServer(request)
         );
     }

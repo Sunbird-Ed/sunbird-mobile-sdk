@@ -1,4 +1,4 @@
-import {ContentSearchCriteria, ContentSearchFilter, FilterValue} from './requests';
+import {ContentSearchCriteria, ContentSearchFilter} from './requests';
 import {ContentData} from './content';
 import {ContentImportStatus} from '../util/content-constants';
 
@@ -42,3 +42,11 @@ export enum ContentDeleteStatus {
     NOT_FOUND = -1,
     DELETED_SUCCESSFULLY = 1
 }
+
+export interface ContentMarker {
+    contentId: string;
+    uid: string;
+    extraInfoMap: {[key: string]: any};
+    marker: number;
+}
+

@@ -3,7 +3,7 @@ import {ContentDisposition, ContentEncoding, ContentStatus, State, Visibility} f
 import {ChildContent} from '../def/response';
 import {Rollup} from '../../telemetry';
 import {AppConfig} from '../../api/config/app-config';
-import {ContentEntry} from '../db/schema';
+import {ContentEntry, ContentMarkerEntry} from '../db/schema';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
@@ -383,5 +383,20 @@ export class ContentUtil {
 
     public static readSizeFromContentMap(item: any): string {
         return item.size ? item.size : '';
+    }
+
+    public static getUidnIdentifierFiler(uid: string , identifier): string {
+        const uidFilter = uid && `uid = ${uid}`;
+        const identifierFilter = identifier && `identifier = ${identifier}`;
+
+        let filter = '';
+        if (uidFilter && identifierFilter) {
+            filter = `WHERE (${identifierFilter} AND ${uidFilter})`;
+        } else if (identifierFilter) {
+            filter = `WHERE (${identifierFilter})`;
+        } else if (uidFilter) {
+            filter = `WHERE (${uidFilter})`;
+        }
+        return filter;
     }
 }

@@ -1,17 +1,31 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {Content, ContentData, ContentDetailRequest, ContentServiceConfig} from '..';
+import {
+    Content,
+    ContentData,
+    ContentDetailRequest,
+    ContentFeedback,
+    ContentFeedbackService, ContentMarker,
+    ContentServiceConfig
+} from '..';
 import {Observable} from 'rxjs';
 import {DbService, ReadQuery} from '../../db';
 import {ContentEntry} from '../db/schema';
 import {QueryBuilder} from '../../db/util/query-builder';
 import {ContentMapper} from '../util/content-mapper';
+import {CachedItemStore} from '../../key-value-store';
+import {Profile, ProfileService} from '../../profile';
+import {ContentAccess} from '../../profile/def/content-access';
+import {ContentMarkerHandler} from './content-marker-handler';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
-    private readonly GET_CONTENT_DETAILS_ENDPOINT = '/read/';
+    private readonly CONTENT_LOCAL_KEY = 'content-';
+    private readonly GET_CONTENT_DETAILS_ENDPOINT = '/read';
 
-    constructor(private dbService: DbService,
-                private contentServiceConfig?: ContentServiceConfig,
-                private apiService?: ApiService) {
+    constructor(private contentFeedbackService: ContentFeedbackService,
+                private profileService: ProfileService,
+                private apiService: ApiService,
+                private contentServiceConfig: ContentServiceConfig,
+                private dbService: DbService) {
     }
 
     public static getReadContentQuery(identifier: string): ReadQuery {
@@ -27,29 +41,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
     }
 
     handle(request: ContentDetailRequest): Observable<Content> {
-        return this.readContentFromDB(request.contentId)
-            .mergeMap((rows: ContentEntry.SchemaMap[] | Content ) => {
-                if (rows && rows[0]) {
-                    return Observable.of(ContentMapper.mapContentDBEntryToContent(rows[0]));
-                }
-
-                return this.fetchFromServer(request)
-                    .map((contentData) => {
-                        return ContentMapper.mapServerResponseToContent(contentData);
-                    });
-            });
-    }
-
-    private readContentFromDB(contentId: string): Observable<ContentEntry.SchemaMap[]> {
-        return this.dbService.read({
-            table: ContentEntry.TABLE_NAME,
-            selection: new QueryBuilder()
-                .where('? = ?')
-                .args([ContentEntry.COLUMN_NAME_IDENTIFIER, contentId])
-                .end()
-                .build(),
-            limit: '1'
-        });
+        return  this.fetchFromServer(request);
     }
 
     getContentFromDB(contentId: string): Promise<ContentEntry.SchemaMap[]> {
@@ -64,14 +56,75 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
         }).toPromise();
     }
 
-    private fetchFromServer(request: ContentDetailRequest): Observable<ContentData> {
-        return this.apiService!.fetch<{ result }>(new Request.Builder()
+    private fetchFromServer(request: ContentDetailRequest): Observable<Content> {
+        return this.apiService.fetch<{ result: { content: ContentData } }>(new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath(this.contentServiceConfig!.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + request.contentId)
+            .withPath(this.contentServiceConfig.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + '/' + request.contentId)
             .withApiToken(true)
             .build())
             .map((response) => {
-                return response.body.result.content;
+                const contentData = response.body.result.content;
+                return ContentMapper.mapServerResponseToContent(contentData);
+            })
+            .mergeMap(async (content: Content) => {
+                if (request.attachContentAccess) {
+                    content = await this.attachContentAccess(content).toPromise();
+                }
+
+                if (request.attachFeedback) {
+                    content = await this.attachFeedback(content).toPromise();
+                }
+
+                if (request.attachContentMarker) {
+                    content = await this.attachContentMarker(content).toPromise();
+                }
+
+                return content;
+            });
+    }
+
+    public attachContentAccess(content: Content): Observable<Content> {
+        return this.profileService.getActiveSessionProfile()
+            .mergeMap(({uid}: Profile) => {
+                return this.profileService.getAllContentAccess({
+                    contentId: content.identifier,
+                    uid
+                }).map((contentAccess: ContentAccess[]) => {
+                    return {
+                        ...content,
+                        contentAccess
+                    };
+                });
+            });
+    }
+
+    public attachFeedback(content: Content): Observable<Content> {
+        return this.profileService.getActiveSessionProfile()
+            .mergeMap(({uid}: Profile) => {
+                return this.contentFeedbackService.getFeedback({
+                    contentId: content.identifier,
+                    uid
+                }).map((contentFeedback: ContentFeedback[]) => {
+                    return {
+                        ...content,
+                        contentFeedback
+                    };
+                });
+            });
+    }
+
+    public attachContentMarker(content: Content): Observable<Content> {
+        return this.profileService.getActiveSessionProfile()
+            .mergeMap(({uid}: Profile) => {
+                return new ContentMarkerHandler(this.dbService).getContentMarker(content.identifier, uid)
+                    .map
+                    ((contentMarkers: ContentMarker[]) => {
+                        return {
+                            ...content,
+                            contentMarkers
+                        };
+                    });
             });
     }
 }
+

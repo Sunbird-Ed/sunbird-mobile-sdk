@@ -11,7 +11,7 @@ import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/impl/auth-service-impl';
-import {ContentFeedbackService, ContentService} from './content';
+import {Content, ContentFeedbackService, ContentService} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
 import {
@@ -52,7 +52,6 @@ import {EventsBusService} from './events-bus';
 import {EventsBusServiceImpl} from './events-bus/impl/events-bus-service-impl';
 import {SummarizerService} from './summarizer/def/summarizer-service';
 import {SummarizerServiceImpl} from './summarizer/impl/summarizer-service-impl';
-import {Observable} from 'rxjs';
 
 export class SunbirdSdk {
 
@@ -262,17 +261,19 @@ export class SunbirdSdk {
             this._eventsBusService
         );
 
+        this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService, this._telemetryService);
+
         this._contentService = new ContentServiceImpl(
             sdkConfig.contentServiceConfig,
             this._apiService,
             this._dbService,
             this._profileService,
             sdkConfig.appConfig,
-            this._keyValueStore,
             this._fileService,
             this._zipService,
             this._deviceInfo,
-            this.telemetryService
+            this.telemetryService,
+            this._contentFeedbackService
         );
 
         this._courseService = new CourseServiceImpl(
@@ -301,8 +302,6 @@ export class SunbirdSdk {
             this._frameworkService,
             this._profileService
         );
-
-        this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService);
 
         this._summarizerService = new SummarizerServiceImpl(this._dbService, this._eventsBusService);
 
