@@ -318,7 +318,7 @@ export class ProfileServiceImpl implements ProfileService {
                         `${ContentAccessEntry.COLUMN_NAME_UID}= ? AND ${ContentAccessEntry
                             .COLUMN_NAME_CONTENT_IDENTIFIER}= ?`,
                     selectionArgs: [uid, contentAccess.contentId],
-                    orderBy: `ORDER BY ${ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP} DESC`,
+                    orderBy: `${ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP} DESC`,
                     limit: '1'
                 }).mergeMap((contentAccessInDb: ContentAccessEntry.SchemaMap[]) => {
                     const contentAccessDbModel: ContentAccessEntry.SchemaMap = {

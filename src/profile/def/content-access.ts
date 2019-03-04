@@ -1,5 +1,5 @@
 export class ContentAccess {
-    status: number;
+    status: ContentAccessStatus;
     contentId: string;
     contentType: string;
     contentLearnerState: ContentLearnerState;
