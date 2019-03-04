@@ -75,8 +75,8 @@ export class ExtractPayloads {
             }
             // If the content is exist then copy the old content data and add it into new content.
             if (doesContentExist && !(element.status === ContentStatus.DRAFT.valueOf())) {
-                if (existingContentModel[COLUMN_NAME_VISIBILITY] === Visibility.DEFAULT.valueOf()) {
-                    element = JSON.parse(existingContentModel[COLUMN_NAME_LOCAL_DATA]);
+                if (existingContentModel![COLUMN_NAME_VISIBILITY] === Visibility.DEFAULT.valueOf()) {
+                    element = JSON.parse(existingContentModel![COLUMN_NAME_LOCAL_DATA]);
                 }
             } else {
                 doesContentExist = false;
