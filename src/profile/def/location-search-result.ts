@@ -1,3 +1,6 @@
 export interface LocationSearchResult {
-    locationList: string;
+    code: string;
+    name: string;
+    id: string;
+    type: string;
 }
