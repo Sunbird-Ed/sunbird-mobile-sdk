@@ -6,7 +6,7 @@ import {ContentFeedbackHandler} from '../handlers/content-feedback-handler';
 import {QueryBuilder} from '../../db/util/query-builder';
 import {ProfileService, ProfileSession} from '../../profile';
 import {ContentUtil} from '../util/content-util';
-import {ShareDirection, ShareItemType, ShareType, TelemetryService} from '../../telemetry';
+import {ShareItemType, TelemetryService} from '../../telemetry';
 
 export class ContentFeedbackServiceImpl implements ContentFeedbackService {
 
@@ -39,6 +39,7 @@ export class ContentFeedbackServiceImpl implements ContentFeedbackService {
                         .build(),
                     limit: '1'
                 };
+
                 this.telemetryService.feedback({
                     env: 'sdk',
                     rating: contentFeedback.rating,
@@ -46,7 +47,8 @@ export class ContentFeedbackServiceImpl implements ContentFeedbackService {
                     objId: contentFeedback.contentId,
                     objType: ShareItemType.CONTENT.valueOf(),
                     objVer: contentFeedback.contentVersion,
-                })
+                });
+
                 return this.dbService.read(readQuery).mergeMap((rows) => {
                     if (rows && rows.length) {
                         return this.dbService.update({

@@ -1,5 +1,6 @@
 import {Rollup} from '../../telemetry';
 import {ContentAccess} from '../../profile/def/content-access';
+import {ContentMarker} from './response';
 
 export interface Content {
     identifier: string;
@@ -79,13 +80,6 @@ export interface ContentFeedback {
     createdAt: number;
     stageId: string;
     contentVersion: string;
-}
-
-export interface ContentMarker {
-    contentId: string;
-    uid: string;
-    extraInfoMap: {};
-    marker: number;
 }
 
 export interface ContentFeedbackFilterCriteria {
