@@ -44,6 +44,7 @@ import {LocationSearchResult} from '../def/location-search-result';
 import {SearchLocationHandler} from '../handler/search-location-handler';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {FrameworkService} from '../../framework';
+import {ContentUtil} from '../../content/util/content-util';
 
 
 export class ProfileServiceImpl implements ProfileService {
@@ -294,26 +295,9 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]> {
-        let userFilter = '';
-        let contentFilter = '';
-        if (criteria) {
-            if (criteria.uid) {
-                userFilter = `${ContentAccessEntry.COLUMN_NAME_UID} = '${criteria.uid}'`;
-            }
-            if (criteria.contentId) {
-                contentFilter = `${ContentAccessEntry.COLUMN_NAME_CONTENT_IDENTIFIER} = '${criteria.contentId}'`;
-            }
-        }
-        let filter = '';
-        if (userFilter && contentFilter) {
-            filter = filter.concat(` where ${userFilter} AND ${contentFilter}`);
-        } else if (contentFilter) {
-            filter = filter.concat(` where ${contentFilter}`);
-        } else if (userFilter) {
-            filter = filter.concat(` where ${userFilter}`);
-        }
 
-        const query = `SELECT * FROM ${ContentAccessEntry.TABLE_NAME} ${filter}`;
+        const query = `SELECT * FROM ${ContentAccessEntry.TABLE_NAME} ${ContentUtil.getUidnIdentifierFiler(
+            criteria.uid, criteria.contentId)}`;
 
         return this.dbService.execute(query).map((contentAccessList: ContentAccessEntry.SchemaMap[]) => {
             return contentAccessList.map((contentAccess: ContentAccessEntry.SchemaMap) =>

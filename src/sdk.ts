@@ -269,12 +269,10 @@ export class SunbirdSdk {
             this._dbService,
             this._profileService,
             sdkConfig.appConfig,
-            this._keyValueStore,
             this._fileService,
             this._zipService,
             this._deviceInfo,
             this.telemetryService,
-            new CachedItemStoreImpl<Content>(this._keyValueStore, sdkConfig.apiConfig),
             this._contentFeedbackService
         );
 

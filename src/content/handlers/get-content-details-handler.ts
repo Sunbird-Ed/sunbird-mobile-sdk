@@ -25,7 +25,6 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 private profileService: ProfileService,
                 private apiService: ApiService,
                 private contentServiceConfig: ContentServiceConfig,
-                private cachedItemStore: CachedItemStore<Content>,
                 private dbService: DbService) {
     }
 
@@ -42,12 +41,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
     }
 
     handle(request: ContentDetailRequest): Observable<Content> {
-        return this.cachedItemStore.getCached(
-            request.contentId,
-            this.CONTENT_LOCAL_KEY,
-            'ttl_' + this.CONTENT_LOCAL_KEY,
-            () => this.fetchFromServer(request)
-        );
+        return  this.fetchFromServer(request);
     }
 
     getContentFromDB(contentId: string): Promise<ContentEntry.SchemaMap[]> {
@@ -89,7 +83,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             });
     }
 
-    private attachContentAccess(content: Content): Observable<Content> {
+    public attachContentAccess(content: Content): Observable<Content> {
         return this.profileService.getActiveSessionProfile()
             .mergeMap(({uid}: Profile) => {
                 return this.profileService.getAllContentAccess({
@@ -104,7 +98,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             });
     }
 
-    private attachFeedback(content: Content): Observable<Content> {
+    public attachFeedback(content: Content): Observable<Content> {
         return this.profileService.getActiveSessionProfile()
             .mergeMap(({uid}: Profile) => {
                 return this.contentFeedbackService.getFeedback({
@@ -119,7 +113,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             });
     }
 
-    private attachContentMarker(content: Content): Observable<Content> {
+    public attachContentMarker(content: Content): Observable<Content> {
         return this.profileService.getActiveSessionProfile()
             .mergeMap(({uid}: Profile) => {
                 return new ContentMarkerHandler(this.dbService).getContentMarker(content.identifier, uid)

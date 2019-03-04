@@ -1,4 +1,4 @@
-import {ContentSearchCriteria, ContentSearchFilter, FilterValue} from './requests';
+import {ContentSearchCriteria, ContentSearchFilter} from './requests';
 import {ContentData} from './content';
 import {ContentImportStatus} from '../util/content-constants';
 

@@ -23,7 +23,6 @@ import {
 import {Observable} from 'rxjs';
 import {ApiService, HttpRequestType, Request, Response} from '../../api';
 import {ProfileService} from '../../profile';
-import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
 import {DbService} from '../../db';
 import {ChildContentsHandler} from '../handlers/get-child-contents-handler';
@@ -68,16 +67,14 @@ export class ContentServiceImpl implements ContentService {
                 private dbService: DbService,
                 private profileService: ProfileService,
                 private appConfig: AppConfig,
-                private keyValueStore: KeyValueStore,
                 private fileService: FileService,
                 private zipService: ZipService,
                 private deviceInfo: DeviceInfo,
                 private telemetryService: TelemetryService,
-                private cachedItemStore: CachedItemStore<Content>,
                 private contentFeedbackService: ContentFeedbackService) {
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
-            this.apiService, this.contentServiceConfig, this.cachedItemStore, this.dbService);
+            this.apiService, this.contentServiceConfig, this.dbService);
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
@@ -86,10 +83,30 @@ export class ContentServiceImpl implements ContentService {
 
     getContents(request: ContentRequest): Observable<Content[]> {
         const query = new GetContentsHandler().getAllLocalContentQuery(request);
-        return this.dbService.execute(query).map((contentsInDb: ContentEntry.SchemaMap[]) => {
-            return contentsInDb.map((contentInDb: ContentEntry.SchemaMap) =>
-                ContentMapper.mapContentDBEntryToContent(contentInDb));
-        });
+        return this.dbService.execute(query)
+            .mergeMap(async (contentsInDb: ContentEntry.SchemaMap[]) => {
+                const contents: Content[] = [];
+
+                for (const contentInDb of contentsInDb) {
+                    let content = ContentMapper.mapContentDBEntryToContent(contentInDb);
+
+                    if (request.attachContentAccess) {
+                        content = await this.getContentDetailsHandler.attachContentAccess(content).toPromise();
+                    }
+
+                    if (request.attachFeedback) {
+                        content = await this.getContentDetailsHandler.attachFeedback(content).toPromise();
+                    }
+
+                    if (request.attachContentMarker) {
+                        content = await this.getContentDetailsHandler.attachContentMarker(content).toPromise();
+                    }
+
+                    contents.push(content);
+                }
+
+                return contents;
+            });
     }
 
     cancelImport(contentId: string) {
@@ -216,29 +233,22 @@ export class ContentServiceImpl implements ContentService {
                 importContentContext.tmpLocation = tempLocation.nativeURL;
                 return new ExtractEcar(this.fileService, this.zipService).execute(importContentContext);
             }).then((importResponse: Response) => {
-                console.log('importtresponse extract ecar', importResponse.body);
                 return new ValidateEcar(this.fileService, this.dbService, this.appConfig,
                     this.getContentDetailsHandler).execute(importResponse.body);
             }).then((importResponse: Response) => {
-                console.log('importtresponse validate ecar', importResponse.body);
                 return new ExtractPayloads(this.fileService, this.zipService, this.appConfig,
                     this.dbService, this.deviceInfo, this.getContentDetailsHandler).execute(importResponse.body);
             }).then((importResponse: Response) => {
                 const response: Response = new Response();
-                console.log('importtresponse validate ecar', importResponse.body);
                 return new CreateContentImportManifest(this.dbService, this.deviceInfo, this.fileService).execute(importResponse.body);
             }).then((importResponse: Response) => {
-                console.log('importtresponse CreateContentImportManifest', importResponse.body);
                 return new EcarCleanup(this.fileService).execute(importResponse.body);
             }).then((importResponse: Response) => {
-                console.log('importtresponse EcarCleanUp', importResponse.body);
                 return new UpdateSizeOnDevice(this.dbService).execute(importResponse.body);
             }).then((importResponse: Response) => {
-                console.log('importtresponse EcarCleanUp', importResponse.body);
                 return new GenerateShareTelemetry(this.telemetryService).execute(importResponse.body);
             }).then((importResponse: Response) => {
                 const response: Response = new Response();
-                console.log('importtresponse ', importResponse.body);
                 response.errorMesg = importResponse.errorMesg;
                 return response;
             });
