@@ -6,7 +6,7 @@ export  interface ContentFeedbackService {
      *
      * @param contentFeedback - {@link ContentFeedback}
      */
-    sendFeedback(contentFeedback: ContentFeedback): Observable<void>;
+    sendFeedback(contentFeedback: ContentFeedback): Observable<boolean>;
 
     /**
      * This api is used to get the feedback about a content.

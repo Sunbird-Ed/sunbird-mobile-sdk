@@ -3,7 +3,7 @@ import {
     TelemetryDecorator,
     TelemetryEndRequest,
     TelemetryErrorRequest,
-    TelemetryEvents,
+    TelemetryEvents, TelemetryFeedbackRequest,
     TelemetryImpressionRequest,
     TelemetryInteractRequest,
     TelemetryLogRequest,
@@ -102,6 +102,15 @@ export class TelemetryServiceImpl implements TelemetryService, EventDelegate {
             share.addItem(item.type, item.origin, item.identifier, item.pkgVersion, item.transferCount, item.size);
         });
         return this.save(share);
+    }
+
+    feedback({rating, comments, env, objId, objType, objVer}: TelemetryFeedbackRequest): Observable<boolean> {
+        const feedback = new TelemetryEvents.Feedback(rating, comments);
+        feedback.env = env;
+        feedback.objId = objId;
+        feedback.objType = objType;
+        feedback.objVer = objVer;
+        return this.save(feedback);
     }
 
     start({

@@ -4,7 +4,7 @@ import {
     ContentData,
     ContentDetailRequest,
     ContentFeedback,
-    ContentFeedbackService,
+    ContentFeedbackService, ContentMarker,
     ContentServiceConfig
 } from '..';
 import {Observable} from 'rxjs';
@@ -15,6 +15,7 @@ import {ContentMapper} from '../util/content-mapper';
 import {CachedItemStore} from '../../key-value-store';
 import {Profile, ProfileService} from '../../profile';
 import {ContentAccess} from '../../profile/def/content-access';
+import {ContentMarkerHandler} from './content-marker-handler';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
     private readonly CONTENT_LOCAL_KEY = 'content-';
@@ -81,7 +82,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 }
 
                 if (request.attachContentMarker) {
-                    // TODO
+                    content = await this.attachContentMarker(content).toPromise();
                 }
 
                 return content;
@@ -117,4 +118,19 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 });
             });
     }
+
+    private attachContentMarker(content: Content): Observable<Content> {
+        return this.profileService.getActiveSessionProfile()
+            .mergeMap(({uid}: Profile) => {
+                return new ContentMarkerHandler(this.dbService).getContentMarker(content.identifier, uid)
+                    .map
+                    ((contentMarkers: ContentMarker[]) => {
+                        return {
+                            ...content,
+                            contentMarkers
+                        };
+                    });
+            });
+    }
 }
+

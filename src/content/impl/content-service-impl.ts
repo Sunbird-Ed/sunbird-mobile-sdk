@@ -21,7 +21,7 @@ import {
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
-import {ApiService, Response} from '../../api';
+import {ApiService, HttpRequestType, Request, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
@@ -57,7 +57,8 @@ import {EcarCleanup} from '../handlers/import/ecar-cleanup';
 import {TelemetryService} from '../../telemetry';
 import {UpdateSizeOnDevice} from '../handlers/import/update-size-on-device';
 import {CreateTempLoc} from '../handlers/export/create-temp-loc';
-import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
+import {SearchRequest} from '../def/search-request';
+import {ContentSearchApiHandler} from '../handlers/import/content-search-api-handler';
 
 export class ContentServiceImpl implements ContentService {
     private getContentDetailsHandler: GetContentDetailsHandler;
@@ -107,7 +108,7 @@ export class ContentServiceImpl implements ContentService {
                     status: ContentDeleteStatus.DELETED_SUCCESSFULLY
                 });
 
-                if (ContentUtil.hasChildren(contentInDb[0][COLUMN_NAME_LOCAL_DATA])) {
+                if (ContentUtil.hasChildren(contentInDb[0][ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
                     await deleteContentHandler.deleteAllChildren(contentInDb[0], contentDelete.isChildContent);
                 }
 
@@ -190,9 +191,17 @@ export class ContentServiceImpl implements ContentService {
         throw new Error('Not Implemented yet');
     }
 
-    importContent(contentImportRequest: ContentImportRequest): Observable<any> {
-        // TODO
-        throw new Error('Not Implemented yet');
+    importContent(contentImportRequest: ContentImportRequest): Observable<Response> {
+        const searchContentHandler = new SearchContentHandler(this.appConfig, this.contentServiceConfig);
+        const filter: SearchRequest = searchContentHandler.getContentSearchFilter(
+            Object.keys(contentImportRequest.contentImportMap!), contentImportRequest.contentStatusArray);
+        const contentSearchHandler = new ContentSearchApiHandler(this.apiService, this.contentServiceConfig).handle(filter);
+        return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig).handle(filter)
+            .map((searchResponse: SearchResponse) => {
+                console.log('searchResponse', searchResponse);
+                return new Response();
+            });
+
     }
 
     importEcar(ecarImportRequest: EcarImportRequest): Observable<Response> {
@@ -208,7 +217,8 @@ export class ContentServiceImpl implements ContentService {
                 return new ExtractEcar(this.fileService, this.zipService).execute(importContentContext);
             }).then((importResponse: Response) => {
                 console.log('importtresponse extract ecar', importResponse.body);
-                return new ValidateEcar(this.fileService, this.dbService, this.appConfig, this.getContentDetailsHandler).execute(importResponse.body);
+                return new ValidateEcar(this.fileService, this.dbService, this.appConfig,
+                    this.getContentDetailsHandler).execute(importResponse.body);
             }).then((importResponse: Response) => {
                 console.log('importtresponse validate ecar', importResponse.body);
                 return new ExtractPayloads(this.fileService, this.zipService, this.appConfig,
@@ -238,50 +248,6 @@ export class ContentServiceImpl implements ContentService {
             response.errorMesg = ErrorCode.ECAR_NOT_FOUND.valueOf();
             return response;
         }));
-        // const importContentContext: ImportContentContext = {
-        //     isChildContent: ecarImportRequest.isChildContent,
-        //     ecarFilePath: ecarImportRequest.sourceFilePath,
-        //     destinationFolder: ecarImportRequest.destinationFolder
-        // };
-        // return this.fileService.getTempLocation(ecarImportRequest.destinationFolder).then((destinationPath) => {
-        //     return new DeviceMemoryCheck(this.fileService).execute(importContentContext);
-        // }).then((importResponse: Response) => {
-        //     return new ExtractEcar(this.fileService, this.zipService).execute(importResponse.body);
-        // }).then((importResponse: Response<ContentImportResponse>) => {
-        //     return Observable.of(importResponse.body);
-        // }).catch(() => {
-        //     const response: Response = new Response();
-        //     response.errorMesg = ErrorCode.ECAR_NOT_FOUND.valueOf();
-        //     return Observable.of(response);
-        // });
-
-        // this.fileService.exists(ecarImportRequest.sourceFilePath).then((entry: Entry) => {
-        //     if (FileUtil.getFileExtension(ecarImportRequest.sourceFilePath) !== FileExtension.CONTENT) {
-        //         const response: Response = new Response();
-        //         response.errorMesg = ErrorCode.ECAR_NOT_FOUND.valueOf();
-        //         return Observable.of(response);
-        //     } else {
-        //         const importContentContext: ImportContentContext = {
-        //             isChildContent: ecarImportRequest.isChildContent,
-        //             ecarFilePath: ecarImportRequest.sourceFilePath,
-        //             destinationFolder: ecarImportRequest.destinationFolder
-        //         };
-        //         return this.fileService.getTempLocation(ecarImportRequest.destinationFolder).then((destinationPath) => {
-        //             return new DeviceMemoryCheck(this.fileService).execute(importContentContext);
-        //         }).then((importResponse: Response) => {
-        //             return new ExtractEcar(this.fileService, this.zipService).execute(importResponse.body);
-        //         }).then((importResponse: Response<ContentImportResponse>) => {
-        //             return Observable.of(importResponse.body);
-        //         });
-        //
-        //     }
-        //
-        // }).catch((error) => {
-        //
-        // });
-
-
-        // throw new Error('Not Implemented yet');
     }
 
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {

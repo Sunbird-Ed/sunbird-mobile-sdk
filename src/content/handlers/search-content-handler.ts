@@ -10,6 +10,8 @@ import {
 import {HttpRequestType, Request} from '../../api';
 import {AppConfig} from '../../api/config/app-config';
 import {SearchType} from '../util/content-constants';
+import {SearchRequest} from '../def/search-request';
+import {ContentUtil} from '../util/content-util';
 
 export class SearchContentHandler {
 
@@ -111,7 +113,7 @@ export class SearchContentHandler {
     }
 
     getCompatibilityLevelFilter(): any {
-        return {'min': this.appConfig.minCompatibilityLevel, 'max': this.appConfig.maxCompatibilityLevel};
+        return {'min': 1, 'max': this.appConfig.maxCompatibilityLevel};
     }
 
     getRequest(request, framework: string, langCode: string): Request {
@@ -198,6 +200,18 @@ export class SearchContentHandler {
                 topic: string[];
             },
             request: searchRequest
+        };
+    }
+
+    public getContentSearchFilter(contentIds: string[], status: string[]): SearchRequest {
+        return {
+            filters: {
+                compatibilityLevel: this.getCompatibilityLevelFilter(),
+                identifier: contentIds.filter((v, i) => contentIds.indexOf(v) === i),
+                status: status,
+                objectType: ['Content']
+            },
+            fields: ['downloadUrl', 'variants', 'mimeType']
         };
     }
 }
