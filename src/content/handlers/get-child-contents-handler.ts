@@ -11,7 +11,8 @@ import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
 
 export class ChildContentsHandler {
 
-    constructor(private dbService: DbService) {
+    constructor(private dbService: DbService,
+                private getContentDetailsHandler: GetContentDetailsHandler) {
     }
 
     public async fetchChildrenOfContent(contentInDb: ContentEntry.SchemaMap,
@@ -151,7 +152,7 @@ export class ChildContentsHandler {
             const idCount: number = nextContentIdentifierList.length;
             let isAllHierarchyContentFound = true;
             for (let i = 0; i < (idCount - 1); i++) {
-                const contentInDb: ContentEntry.SchemaMap[] = await new GetContentDetailsHandler(this.dbService)
+                const contentInDb: ContentEntry.SchemaMap[] = await this.getContentDetailsHandler
                     .getContentFromDB(nextContentIdentifierList[i]);
                 if (contentInDb[0]) {
                     nextContentHierarchyList.push({
@@ -164,7 +165,7 @@ export class ChildContentsHandler {
                 }
             }
             if (Boolean(isAllHierarchyContentFound)) {
-                const nextContentInDb: ContentEntry.SchemaMap[] = await new GetContentDetailsHandler(this.dbService).getContentFromDB(
+                const nextContentInDb: ContentEntry.SchemaMap[] = await this.getContentDetailsHandler.getContentFromDB(
                     nextContentIdentifierList[idCount - 1]);
                 if (nextContentInDb && nextContentInDb[0]) {
                     nextContent = CotentMapper.mapContentDBEntryToContent(nextContentInDb[0]);

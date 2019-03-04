@@ -4,25 +4,28 @@ import {
     ContentDeleteRequest,
     ContentDeleteResponse,
     ContentDeleteStatus,
-    ContentDetailRequest, ContentExportRequest,
-    ContentExportResponse,
+    ContentDetailRequest,
+    ContentExportRequest,
+    ContentFeedbackService,
     ContentImportRequest,
-    ContentImportResponse, ContentMarkerRequest,
+    ContentMarkerRequest,
     ContentRequest,
     ContentSearchCriteria,
     ContentSearchResult,
     ContentService,
     ContentServiceConfig,
-    EcarImportRequest, ExportContentContext,
-    HierarchyInfo, ImportContentContext,
+    EcarImportRequest,
+    ExportContentContext,
+    HierarchyInfo,
+    ImportContentContext,
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
 import {ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
-import {KeyValueStore} from '../../key-value-store';
+import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
-import {DbService, ReadQuery} from '../../db';
+import {DbService} from '../../db';
 import {ChildContentsHandler} from '../handlers/get-child-contents-handler';
 import {ContentEntry, ContentMarkerEntry} from '../db/schema';
 import {ContentUtil} from '../util/content-util';
@@ -30,10 +33,8 @@ import {DeleteContentHandler} from '../handlers/delete-content-handler';
 import {SearchContentHandler} from '../handlers/search-content-handler';
 import {AppConfig} from '../../api/config/app-config';
 import {FileService} from '../../util/file/def/file-service';
-import {DirectoryEntry, Entry, FileEntry} from '../../util/file';
-import {FileUtil} from '../../util/file/util/file-util';
-import {ErrorCode, FileExtension} from '../util/content-constants';
-import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
+import {DirectoryEntry, Entry} from '../../util/file';
+import {ErrorCode} from '../util/content-constants';
 import {GetContentsHandler} from '../handlers/get-contents-handler';
 import {ContentMapper} from '../util/content-mapper';
 import {ImportNExportHandler} from '../handlers/import-n-export-handler';
@@ -56,8 +57,11 @@ import {EcarCleanup} from '../handlers/import/ecar-cleanup';
 import {TelemetryService} from '../../telemetry';
 import {UpdateSizeOnDevice} from '../handlers/import/update-size-on-device';
 import {CreateTempLoc} from '../handlers/export/create-temp-loc';
+import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 
 export class ContentServiceImpl implements ContentService {
+    private getContentDetailsHandler: GetContentDetailsHandler;
+
     constructor(private contentServiceConfig: ContentServiceConfig,
                 private apiService: ApiService,
                 private dbService: DbService,
@@ -67,12 +71,16 @@ export class ContentServiceImpl implements ContentService {
                 private fileService: FileService,
                 private zipService: ZipService,
                 private deviceInfo: DeviceInfo,
-                private telemetryService: TelemetryService) {
+                private telemetryService: TelemetryService,
+                private cachedItemStore: CachedItemStore<Content>,
+                private contentFeedbackService: ContentFeedbackService) {
+        this.getContentDetailsHandler = new GetContentDetailsHandler(
+            this.contentFeedbackService, this.profileService,
+            this.apiService, this.contentServiceConfig, this.cachedItemStore, this.dbService);
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
-        return new GetContentDetailsHandler(
-            this.dbService, this.contentServiceConfig, this.apiService).handle(request);
+        return this.getContentDetailsHandler.handle(request);
     }
 
     getContents(request: ContentRequest): Observable<Content[]> {
@@ -90,10 +98,9 @@ export class ContentServiceImpl implements ContentService {
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]> {
         const contentDeleteResponse: ContentDeleteResponse[] = [];
-        const getContentsHandler = new GetContentDetailsHandler(this.dbService);
         const deleteContentHandler = new DeleteContentHandler(this.dbService);
         contentDeleteRequest.contentDeleteList.forEach(async (contentDelete) => {
-            const contentInDb: ContentEntry.SchemaMap[] = await getContentsHandler.getContentFromDB(contentDelete.contentId);
+            const contentInDb: ContentEntry.SchemaMap[] = await this.getContentDetailsHandler.getContentFromDB(contentDelete.contentId);
             if (contentInDb && contentInDb[0]) {
                 contentDeleteResponse.push({
                     identifier: contentDelete.contentId,
@@ -161,7 +168,7 @@ export class ContentServiceImpl implements ContentService {
     }
 
     getChildContents(childContentRequest: ChildContentRequest): Observable<any> {
-        const childContentHandler = new ChildContentsHandler(this.dbService);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
         let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
         if (!hierarchyInfoList) {
             hierarchyInfoList = [];
@@ -201,11 +208,11 @@ export class ContentServiceImpl implements ContentService {
                 return new ExtractEcar(this.fileService, this.zipService).execute(importContentContext);
             }).then((importResponse: Response) => {
                 console.log('importtresponse extract ecar', importResponse.body);
-                return new ValidateEcar(this.fileService, this.dbService, this.appConfig).execute(importResponse.body);
+                return new ValidateEcar(this.fileService, this.dbService, this.appConfig, this.getContentDetailsHandler).execute(importResponse.body);
             }).then((importResponse: Response) => {
                 console.log('importtresponse validate ecar', importResponse.body);
                 return new ExtractPayloads(this.fileService, this.zipService, this.appConfig,
-                    this.dbService, this.deviceInfo).execute(importResponse.body);
+                    this.dbService, this.deviceInfo, this.getContentDetailsHandler).execute(importResponse.body);
             }).then((importResponse: Response) => {
                 const response: Response = new Response();
                 console.log('importtresponse validate ecar', importResponse.body);
@@ -278,7 +285,7 @@ export class ContentServiceImpl implements ContentService {
     }
 
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {
-        const childContentHandler = new ChildContentsHandler(this.dbService);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
@@ -290,7 +297,7 @@ export class ContentServiceImpl implements ContentService {
     }
 
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {
-        const childContentHandler = new ChildContentsHandler(this.dbService);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);

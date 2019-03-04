@@ -1,5 +1,4 @@
-import {ContentFeedbackService} from '../def/content-feedback-service';
-import {ContentFeedback, ContentFeedbackFilterCriteria} from '..';
+import {ContentFeedback, ContentFeedbackFilterCriteria, ContentFeedbackService} from '..';
 import {Observable} from 'rxjs';
 import {ContentFeedbackEntry} from '../db/schema';
 import {DbService, ReadQuery} from '../../db';
