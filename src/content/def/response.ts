@@ -42,3 +42,11 @@ export enum ContentDeleteStatus {
     NOT_FOUND = -1,
     DELETED_SUCCESSFULLY = 1
 }
+
+export interface ContentMarker {
+    contentId: string;
+    uid: string;
+    extraInfoMap: {[key: string]: any};
+    marker: number;
+}
+

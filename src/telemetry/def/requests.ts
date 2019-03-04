@@ -78,6 +78,16 @@ export class TelemetryEndRequest {
     correlationData: Array<CorrelationData>;
 }
 
+export class TelemetryFeedbackRequest {
+    env: string;
+    rating: number;
+    comments: string;
+    objId: string;
+    objType: string;
+    objVer: string;
+}
+
+
 export class TelemetryLogRequest {
     type: LogType;
     level: LogLevel;
