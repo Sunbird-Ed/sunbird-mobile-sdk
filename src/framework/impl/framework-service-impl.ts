@@ -33,7 +33,15 @@ export class FrameworkServiceImpl implements FrameworkService {
     }
 
     onInit(): Observable<undefined> {
-        return this.setActiveChannelId(this.sdkConfig.apiConfig.api_authentication.channelId);
+        return this.getActiveChannelId()
+            .mapTo(undefined)
+            .catch((e) => {
+                if (e instanceof NoActiveChannelFoundError) {
+                    return this.setActiveChannelId(this.sdkConfig.apiConfig.api_authentication.channelId);
+                }
+
+                throw e;
+            });
     }
 
     getDefaultChannelDetails(): Observable<Channel> {
@@ -80,7 +88,7 @@ export class FrameworkServiceImpl implements FrameworkService {
         return this.sharedPreferences.getString(FrameworkServiceImpl.KEY_ACTIVE_CHANNEL_ID)
             .map((channelId: string | undefined) => {
                 if (!channelId) {
-                    throw new NoActiveChannelFoundError('No Active channel Id set in preferences');
+                    throw new NoActiveChannelFoundError('No Active channel ID set in preferences');
                 }
 
                 return channelId;
