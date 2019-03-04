@@ -22,7 +22,7 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
         return this.cachedItemStore.getCached(
             request.channelId,
             this.CHANNEL_LOCAL_KEY,
-            this.CHANNEL_LOCAL_KEY,
+            'ttl_' + this.CHANNEL_LOCAL_KEY,
             () => this.fetchFromServer(request),
             () => this.fetchFromFile(request)
         );

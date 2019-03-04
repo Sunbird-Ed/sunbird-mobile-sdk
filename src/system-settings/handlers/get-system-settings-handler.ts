@@ -1,7 +1,7 @@
 import {CachedItemStore} from '../../key-value-store';
 import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
-import {SystemSettings, GetSystemSettingsRequest, SystemSettingsConfig} from '..';
+import {GetSystemSettingsRequest, SystemSettings, SystemSettingsConfig} from '..';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
 
@@ -22,7 +22,7 @@ export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSett
         return this.cachedItemStore.getCached(
             request.id,
             this.SYSTEM_SETTINGS_LOCAL_KEY,
-            this.SYSTEM_SETTINGS_LOCAL_KEY,
+            'ttl_' + this.SYSTEM_SETTINGS_LOCAL_KEY,
             () => this.fetchFromServer(request),
             () => this.fetchFromFile(request)
         );
