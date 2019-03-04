@@ -1,8 +1,9 @@
 import {DbService} from '../../db';
-import {ContentRequest, ContentSortCriteria} from '..';
+import {Content, ContentFeedbackService, ContentRequest, ContentSortCriteria} from '..';
 import {ContentAccessEntry, ContentEntry, ContentMarkerEntry} from '../db/schema';
 import {State, Visibility} from '../util/content-constants';
 import {ContentAccess} from '../../profile/def/content-access';
+import {ProfileService} from '../../profile';
 
 export class GetContentsHandler {
 
@@ -62,21 +63,23 @@ export class GetContentsHandler {
     private generateSortByQuery(sortCriteriaList: ContentSortCriteria[], uid: string): string {
         let orderBy = '';
         let i = 0;
-        sortCriteriaList.forEach((sortCriteria) => {
-            if (sortCriteria) {
-                if ('lastUsedOn' === sortCriteria.sortAttribute.valueOf() && uid) {
-                    orderBy = this.generateOrderByQuery(i, orderBy, ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP,
-                        sortCriteria.sortOrder.valueOf());
-                } else if ('localLastUpdatedOn' === sortCriteria.sortAttribute.valueOf()) {
-                    orderBy = this.generateOrderByQuery(i, orderBy, ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON,
-                        sortCriteria.sortOrder.valueOf());
-                } else if ('sizeOnDevice' === sortCriteria.sortAttribute.valueOf()) {
-                    orderBy = this.generateOrderByQuery(i, orderBy, ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE,
-                        sortCriteria.sortOrder.valueOf());
+        if (sortCriteriaList) {
+            sortCriteriaList.forEach((sortCriteria) => {
+                if (sortCriteria) {
+                    if ('lastUsedOn' === sortCriteria.sortAttribute.valueOf() && uid) {
+                        orderBy = this.generateOrderByQuery(i, orderBy, ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP,
+                            sortCriteria.sortOrder.valueOf());
+                    } else if ('localLastUpdatedOn' === sortCriteria.sortAttribute.valueOf()) {
+                        orderBy = this.generateOrderByQuery(i, orderBy, ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON,
+                            sortCriteria.sortOrder.valueOf());
+                    } else if ('sizeOnDevice' === sortCriteria.sortAttribute.valueOf()) {
+                        orderBy = this.generateOrderByQuery(i, orderBy, ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE,
+                            sortCriteria.sortOrder.valueOf());
+                    }
                 }
-            }
-            i++;
-        });
+                i++;
+            });
+        }
         return orderBy;
 
     }
@@ -91,6 +94,8 @@ export class GetContentsHandler {
         orderByQuery.concat(` ca.${columnName} ${sortOrder}`);
         return orderByQuery;
     }
+
+
 
 
 }

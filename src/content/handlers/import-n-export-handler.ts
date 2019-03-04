@@ -12,6 +12,7 @@ import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import {DbService} from '../../db';
 import {Observable} from 'rxjs';
+import {ArrayUtil} from '../../util/array-util';
 
 export class ImportNExportHandler {
     private static readonly EKSTEP_CONTENT_ARCHIVE = 'ekstep.content.archive';
@@ -22,7 +23,7 @@ export class ImportNExportHandler {
 
     }
 
-    populateContents(contentsInDb: ContentEntry.SchemaMap[]): any[] {
+    populateItems(contentsInDb: ContentEntry.SchemaMap[]): { [key: string]: any }[] {
         const items: any[] = [];
         const allContentsIdentifier: string[] = [];
         let childIdentifiers: string[] = [];
@@ -31,7 +32,7 @@ export class ImportNExportHandler {
             // item local data
             const item = JSON.parse(contentInDb[COLUMN_NAME_LOCAL_DATA]);
             // index item
-            contentIndex.contentInDb[COLUMN_NAME_IDENTIFIER] = item;
+            contentIndex[contentInDb[COLUMN_NAME_IDENTIFIER]] = item;
             ContentUtil.addViralityMetadataIfMissing(item, this.deviceInfo!.getDeviceID());
             // get item's children only to mark children with visibility as Parent
             if (ContentUtil.hasChildren(item)) {
@@ -44,7 +45,7 @@ export class ImportNExportHandler {
         });
         allContentsIdentifier.forEach((identifier) => {
             const contentData = contentIndex[identifier];
-            if (childIdentifiers.indexOf(identifier) !== -1) {
+            if (ArrayUtil.contains(childIdentifiers, identifier)) {
                 contentData['visibility'] = Visibility.PARENT.valueOf();
             }
             items.push(contentData);
@@ -53,7 +54,8 @@ export class ImportNExportHandler {
         return items;
     }
 
-    async getContentExportDBModeltoExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {
+   public async getContentExportDBModeltoExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {
+        const contentModelToExport: ContentEntry.SchemaMap[] = [];
         const queue: Queue<ContentEntry.SchemaMap> = new Queue();
 
         let contentWithAllChildren: ContentEntry.SchemaMap[] = [];
@@ -68,15 +70,15 @@ export class ImportNExportHandler {
                 const childContentsIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(node[COLUMN_NAME_LOCAL_DATA]);
                 const contentModelListInDB: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(
                     childContentsIdentifiers);
-                if (contentModelListInDB) {
+                if (contentModelListInDB && contentModelListInDB.length > 0) {
                     contentModelListInDB.forEach((contentModelInDb) => {
                         queue.add(contentModelInDb);
                     });
-                    contentWithAllChildren = {...contentWithAllChildren, ...contentModelListInDB};
                 }
             }
+            contentModelToExport.push(node);
         }
-        return Promise.resolve(ContentUtil.deDupe(contentWithAllChildren, 'identifier'));
+        return Promise.resolve(ContentUtil.deDupe(contentModelToExport, 'identifier'));
     }
 
     generateManifestForArchive(items: any[]): { [key: string]: any } {

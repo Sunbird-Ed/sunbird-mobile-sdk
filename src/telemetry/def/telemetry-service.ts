@@ -6,7 +6,7 @@ import {
     TelemetryErrorRequest,
     TelemetryImpressionRequest,
     TelemetryInteractRequest,
-    TelemetryLogRequest,
+    TelemetryLogRequest, TelemetryShareRequest,
     TelemetryStartRequest
 } from './requests';
 
@@ -21,6 +21,8 @@ export interface TelemetryService {
     end(request: TelemetryEndRequest): Observable<boolean>;
 
     log(request: TelemetryLogRequest): Observable<boolean>;
+
+    share(request: TelemetryShareRequest): Observable<boolean>;
 
     error(request: TelemetryErrorRequest): Observable<boolean>;
 

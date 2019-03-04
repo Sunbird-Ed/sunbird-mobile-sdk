@@ -4,6 +4,6 @@ export class NumberUtil {
     }
 
     public static parseInt(input): number {
-        return parseInt(input, 10);
+        return input ? parseInt(input, 10) : 0;
     }
 }

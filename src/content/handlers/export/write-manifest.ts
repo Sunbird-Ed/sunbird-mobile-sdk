@@ -16,17 +16,18 @@ export class WriteManifest {
         const response: Response = new Response();
         return this.fileService.getFreeDiskSpace().then((deviceUsableSpace) => {
             if (deviceUsableSpace > 0 && deviceUsableSpace < (1024 * 1024)) {
-                response.errorMesg = ErrorCode.EXPORT_FAILED_COPY_ASSET;
-                return Promise.reject(response);
+                response.errorMesg = ErrorCode.EXPORT_FAILED_MEMORY_NOT_SUFFICIENT;
+                throw response;
             }
             return this.fileService.writeFile(exportContentContext.tmpLocationPath!,
                 WriteManifest.MANIFEST_FILE_NAME,
                 JSON.stringify(exportContentContext.manifest),
                 {replace: true});
         }).then(() => {
+            response.body = exportContentContext;
             return Promise.resolve(response);
         }).catch(() => {
-            response.errorMesg = ErrorCode.EXPORT_FAILED_COPY_ASSET;
+            response.errorMesg = ErrorCode.EXPORT_FAILED_WRITING_MANIFEST;
             return Promise.reject(response);
         });
     }

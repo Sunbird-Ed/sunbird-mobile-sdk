@@ -9,10 +9,12 @@ export class EcarCleanup {
 
     execute(importContentContext: ImportContentContext): Promise<Response> {
         const response: Response = new Response();
-        return this.fileService.getTempLocation(importContentContext.destinationFolder).then((tempLocation) => {
-            return this.fileService.removeRecursively(tempLocation.toURL());
-        }).then(() => {
-            return Promise.resolve(response);
-        });
+        return this.fileService.removeRecursively(importContentContext.tmpLocation!)
+            .then(() => {
+                response.body = importContentContext;
+                return Promise.resolve(response);
+            }).catch(() => {
+                return Promise.reject(response);
+            });
     }
 }

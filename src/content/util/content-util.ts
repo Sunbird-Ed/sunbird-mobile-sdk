@@ -8,6 +8,7 @@ import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
+import {NumberUtil} from '../../util/number-util';
 
 export class ContentUtil {
     private static DEFAULT_PACKAGE_VERSION = -1;
@@ -34,8 +35,8 @@ export class ContentUtil {
         return sVersion > 0 && lVersion > 0 && sVersion > lVersion;
     }
 
-    public static hasChildren(localData: string): boolean {
-        return JSON.parse(localData).children;
+    public static hasChildren(localData): boolean {
+        return localData && localData.children;
     }
 
     public static getContentRollup(identifier: string, hierarchyInfoList: HierarchyInfo[]): Rollup {
@@ -223,7 +224,7 @@ export class ContentUtil {
     }
 
     public static getContentRootDir(rootFilePath: string): string {
-        return rootFilePath.concat('/content');
+        return rootFilePath.concat('content');
     }
 
     private static transferCount(viralityMetadata): number {
@@ -273,7 +274,10 @@ export class ContentUtil {
         if (!contentMetaData['virality']) {
             contentMetaData.virality = {};
         }
-        const viralityMetadata = localData['virality'];
+        let viralityMetadata = localData['virality'];
+        if (!viralityMetadata) {
+            viralityMetadata = {};
+        }
 
         if (!viralityMetadata['origin']) {
             viralityMetadata['origin'] = origin;
@@ -359,10 +363,25 @@ export class ContentUtil {
             }
 
             const pkgVersion = localData.pkgVersion;
-            fileName = `${name}-v${pkgVersion}${appendName}`;
+            fileName = `${name}-v${pkgVersion}${appendName}.ecar`;
         }
 
         return fileName;
     }
 
+    public static readOriginFromContentMap(item: any): string {
+        const metaData: any = item.contentMetaData;
+        const virality: any = metaData && metaData.virality;
+        return virality ? virality.origin : '';
+    }
+
+    public static readTransferCountFromContentMap(item: any): number {
+        const metaData: any = item.contentMetaData;
+        const virality: any = metaData && metaData.virality;
+        return virality ? NumberUtil.parseInt(virality.transferCount) : 0;
+    }
+
+    public static readSizeFromContentMap(item: any): string {
+        return item.size ? item.size : '';
+    }
 }

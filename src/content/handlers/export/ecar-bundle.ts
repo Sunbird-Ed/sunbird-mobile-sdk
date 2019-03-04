@@ -4,6 +4,7 @@ import {ExportContentContext} from '../..';
 import {Response} from '../../../api';
 import {FileUtil} from '../../../util/file/util/file-util';
 import {ErrorCode} from '../../util/content-constants';
+import {Metadata} from '../../../util/file';
 
 export class EcarBundle {
     private static readonly FILE_SIZE = 'FILE_SIZE';
@@ -12,19 +13,20 @@ export class EcarBundle {
                 private zipService: ZipService) {
     }
 
-    execute(exportContentContext: ExportContentContext): Promise<Response> {
+    public async execute(exportContentContext: ExportContentContext): Promise<Response> {
         const response: Response = new Response();
-        return this.zipService.zip(exportContentContext.tmpLocationPath!, exportContentContext.ecarFilePath!).then(() => {
-
-            return this.fileService.getMetaData(exportContentContext.ecarFilePath!);
-        }).then((metaData) => {
-            exportContentContext.metadata[EcarBundle.FILE_SIZE] = metaData.size;
-            response.body = exportContentContext;
-            return Promise.resolve(response);
-        }).catch(() => {
-            response.errorMesg = ErrorCode.EXPORT_FAILED_COPY_ASSET;
-            return Promise.reject(response);
+        await new Promise((resolve, reject) => {
+            this.zipService.zip(exportContentContext.tmpLocationPath!, {target: exportContentContext.ecarFilePath!!}, [], [], () => {
+                resolve();
+            }, () => {
+                response.errorMesg = ErrorCode.EXPORT_FAILED_ECAR_BUNDLE;
+                throw response;
+            });
         });
+        const metaData: Metadata = await this.fileService.getMetaData(exportContentContext.ecarFilePath!);
+        exportContentContext.metadata[EcarBundle.FILE_SIZE] = metaData.size;
+        response.body = exportContentContext;
+        return response;
     }
 
 }

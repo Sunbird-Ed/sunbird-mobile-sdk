@@ -29,12 +29,12 @@ declare var cordova: {
 
 };
 
- /**
-     * Allows the user to look up the Entry for a file or directory referred to by a local URL.
-     * @param url A URL referring to a local file in a filesystem accessable via this API.
-     * @param successCallback A callback that is called to report the Entry to which the supplied URL refers.
-     * @param errorCallback A callback that is called when errors happen, or when the request to obtain the Entry is denied.
-     */
+/**
+ * Allows the user to look up the Entry for a file or directory referred to by a local URL.
+ * @param url A URL referring to a local file in a filesystem accessable via this API.
+ * @param successCallback A callback that is called to report the Entry to which the supplied URL refers.
+ * @param errorCallback A callback that is called when errors happen, or when the request to obtain the Entry is denied.
+ */
 
 declare var resolveLocalFileSystemURL: (
     url: string,
@@ -176,9 +176,14 @@ export class FileServiceImpl implements FileService {
         }
         const parentDir = FileUtil.getParentDir(path);
         const dirName = FileUtil.getFileName(path).replace('/', '');
-        return this.resolveDirectoryUrl(path).then(fse => {
-            return this.getDirectory(fse, dirName, options);
+        return this.exists(path).then(() => {
+            return this.resolveDirectoryUrl(path);
+        }).catch(() => {
+            return this.resolveDirectoryUrl(parentDir).then(fse => {
+                return this.getDirectory(fse, dirName, options);
+            });
         });
+
     }
 
     /**
@@ -221,6 +226,7 @@ export class FileServiceImpl implements FileService {
      * @returns {Promise<RemoveResult>} Returns a Promise that resolves with a RemoveResult or rejects with an error.
      */
     removeRecursively(path: string): Promise<RemoveResult> {
+        path = path.endsWith('/') ? path.substring(0, path.length - 1) : path;
         const parentDir = FileUtil.getParentDir(path);
         const dirName = FileUtil.getFileName(path).replace('/', '');
         return this.resolveDirectoryUrl(parentDir)
@@ -295,7 +301,9 @@ export class FileServiceImpl implements FileService {
     getTempLocation(destinationPath: string): Promise<DirectoryEntry> {
         return this.resolveDirectoryUrl(destinationPath)
             .then((directoryEntry: DirectoryEntry) => {
-                return this.createDir(destinationPath.concat('/', 'tmp'), false);
+                return this.resolveDirectoryUrl(destinationPath.concat('tmp'));
+            }).catch(() => {
+                return this.createDir(destinationPath.concat('tmp'), false);
             });
     }
 
@@ -552,4 +560,27 @@ export class FileServiceImpl implements FileService {
     getExternalApplicationStorageDirectory(): string {
         return file.externalApplicationStorageDirectory;
     }
+
+    getDirectorySize(path: string): Promise<number> {
+        return Promise.resolve(0);
+    }
+
+    // size(entry: Entry): Promise<number> {
+    //     if (entry.isFile) {
+    //         return new Promise<number>((resolve, reject) => {
+    //             entry.getMetadata(f => resolve(f.size), error => reject(error));
+    //         });
+    //     } else if (entry.isDirectory) {
+    //         return new Promise<number>((resolve, reject) => {
+    //             const directoryReader = (entry as DirectoryEntry).createReader();
+    //             directoryReader.readEntries((entries: Entry[]) => {
+    //                     Promise.all(entries.map(e => this.size(e))).then((size: number[]) => {
+    //                         const dirSize = size.reduce((prev, current) => prev + current, 0);
+    //                         resolve(dirSize);
+    //                     }).catch(err => reject(err));
+    //                 },
+    //                 (error) => reject(error));
+    //         });
+    //     }
+    // }
 }

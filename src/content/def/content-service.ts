@@ -10,14 +10,14 @@ import {
 import {Response} from '../../api';
 import {Observable} from 'rxjs';
 import {Content, HierarchyInfo} from './content';
-import {ContentDeleteResponse, ContentSearchResult} from './response';
+import {ContentDeleteResponse, ContentImportResponse, ContentSearchResult} from './response';
 
 
 export interface ContentService {
 
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
 
-    getContents(criteria: ContentRequest): Observable<Content>;
+    getContents(criteria: ContentRequest): Observable<Content[]>;
 
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
 

@@ -6,9 +6,10 @@ import {
     InteractType,
     LogLevel,
     LogType,
-    PageId
+    PageId, ShareItemType
 } from './telemetry-constants';
 import {CorrelationData, DeviceSpecification, Rollup, Visit} from './telemetry-model';
+import {NumberUtil} from '../../util/number-util';
 
 export class TelemetryInteractRequest {
     type: InteractType;
@@ -85,5 +86,22 @@ export class TelemetryLogRequest {
     params: Array<{ [index: string]: any }>;
     env: Environment;
     actorType: string;
+}
+
+export class TelemetryShareRequest {
+    dir: string;
+    type: string;
+    items: Array<Item> = [];
+    env: string;
+
+}
+
+export interface Item {
+    type: ShareItemType;
+    origin: string;
+    identifier: string;
+    pkgVersion: number;
+    transferCount: number;
+    size: string;
 }
 
