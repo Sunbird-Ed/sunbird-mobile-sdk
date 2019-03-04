@@ -63,17 +63,18 @@ export class ValidateEcar {
             }
 
             const contentDetailsHandler = this.getContentDetailsHandler;
-            const existingContentModel: ContentEntry.SchemaMap[] = await contentDetailsHandler.getContentFromDB(identifier);
+            const existingContentModel = await contentDetailsHandler.fetchFromDB(identifier).toPromise();
             let existingContentPath;
-            if (existingContentModel && existingContentModel[0]) {
-                existingContentPath = existingContentModel[0][COLUMN_NAME_PATH];
+
+            if (existingContentModel) {
+                existingContentPath = existingContentModel[COLUMN_NAME_PATH];
             }
 
             // To check whether the file is already imported or not
             if (existingContentPath     // Check if path of old content is not empty.
                 && visibility === Visibility.DEFAULT.valueOf() // If visibility is Parent then invoke ExtractPayloads
                 && !ContentUtil.isDuplicateCheckRequired(isDraftContent, element.pkgVersion) // Check if its draft and pkgVersion is 0.
-                && ContentUtil.isImportFileExist(existingContentModel[0], element)// Check whether the file is already imported or not.
+                && ContentUtil.isImportFileExist(existingContentModel, element)// Check whether the file is already imported or not.
             ) {
                 this.skipContent(importContext, identifier, visibility, ContentImportStatus.ALREADY_EXIST);
                 continue;

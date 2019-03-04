@@ -1,8 +1,15 @@
 import {SearchType} from '../util/content-constants';
-import {HierarchyInfo} from './content';
+import {Content, HierarchyInfo} from './content';
 import {CorrelationData} from '../../telemetry';
 import {ContentImportResponse} from './response';
 import {ContentEntry} from '../db/schema';
+
+export interface ContentDecorateRequest {
+    content: Content;
+    attachFeedback?: boolean;
+    attachContentAccess?: boolean;
+    attachContentMarker?: boolean;
+}
 
 export interface ContentDetailRequest {
     contentId: string;

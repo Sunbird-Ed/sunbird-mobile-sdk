@@ -21,7 +21,7 @@ import {
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
-import {ApiService, HttpRequestType, Request, Response} from '../../api';
+import {ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
 import {DbService} from '../../db';
@@ -90,17 +90,12 @@ export class ContentServiceImpl implements ContentService {
                 for (const contentInDb of contentsInDb) {
                     let content = ContentMapper.mapContentDBEntryToContent(contentInDb);
 
-                    if (request.attachContentAccess) {
-                        content = await this.getContentDetailsHandler.attachContentAccess(content).toPromise();
-                    }
-
-                    if (request.attachFeedback) {
-                        content = await this.getContentDetailsHandler.attachFeedback(content).toPromise();
-                    }
-
-                    if (request.attachContentMarker) {
-                        content = await this.getContentDetailsHandler.attachContentMarker(content).toPromise();
-                    }
+                    content = await this.getContentDetailsHandler.decorateContent({
+                        content,
+                        attachContentAccess: request.attachContentAccess,
+                        attachContentMarker: request.attachContentAccess,
+                        attachFeedback: request.attachFeedback
+                    }).toPromise();
 
                     contents.push(content);
                 }
@@ -118,18 +113,18 @@ export class ContentServiceImpl implements ContentService {
         const contentDeleteResponse: ContentDeleteResponse[] = [];
         const deleteContentHandler = new DeleteContentHandler(this.dbService);
         contentDeleteRequest.contentDeleteList.forEach(async (contentDelete) => {
-            const contentInDb: ContentEntry.SchemaMap[] = await this.getContentDetailsHandler.getContentFromDB(contentDelete.contentId);
-            if (contentInDb && contentInDb[0]) {
+            const contentInDb = await this.getContentDetailsHandler.fetchFromDB(contentDelete.contentId).toPromise();
+            if (contentInDb) {
                 contentDeleteResponse.push({
                     identifier: contentDelete.contentId,
                     status: ContentDeleteStatus.DELETED_SUCCESSFULLY
                 });
 
-                if (ContentUtil.hasChildren(contentInDb[0][ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
-                    await deleteContentHandler.deleteAllChildren(contentInDb[0], contentDelete.isChildContent);
+                if (ContentUtil.hasChildren(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
+                    await deleteContentHandler.deleteAllChildren(contentInDb, contentDelete.isChildContent);
                 }
 
-                await deleteContentHandler.deleteOrUpdateContent(contentInDb[0], false, contentDelete.isChildContent);
+                await deleteContentHandler.deleteOrUpdateContent(contentInDb, false, contentDelete.isChildContent);
 
             } else {
                 contentDeleteResponse.push({

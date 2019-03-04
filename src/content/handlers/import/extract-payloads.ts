@@ -61,8 +61,8 @@ export class ExtractPayloads {
             const dialCodes = element.dialcodes;
             let contentState = State.ONLY_SPINE.valueOf();
             let payloadDestination: string | undefined;
-            const existingContentModel: ContentEntry.SchemaMap =
-                await this.getContentDetailsHandler.getContentFromDB(identifier)[0];
+
+            const existingContentModel = await this.getContentDetailsHandler.fetchFromDB(identifier).toPromise();
             let existingContentPath;
             if (existingContentModel) {
                 existingContentPath = existingContentModel[COLUMN_NAME_PATH];
