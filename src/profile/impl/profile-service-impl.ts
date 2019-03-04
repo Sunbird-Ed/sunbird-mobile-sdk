@@ -289,7 +289,7 @@ export class ProfileServiceImpl implements ProfileService {
         return new VerifyOtpHandler(this.apiService, this.profileServiceConfig).handle(verifyOTPRequest);
     }
 
-    searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult> {
+    searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult[]> {
         return new SearchLocationHandler(this.apiService, this.profileServiceConfig).handle(locationSearchCriteria);
     }
 

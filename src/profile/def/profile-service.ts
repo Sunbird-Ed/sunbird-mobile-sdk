@@ -51,5 +51,5 @@ export interface ProfileService {
 
     verifyOTP(verifyOTPRequest: VerifyOtpRequest): Observable<boolean>;
 
-    searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult>;
+    searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult[]>;
 }
