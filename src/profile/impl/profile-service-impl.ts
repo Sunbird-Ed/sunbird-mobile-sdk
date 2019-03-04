@@ -312,12 +312,13 @@ export class ProfileServiceImpl implements ProfileService {
         } else if (userFilter) {
             filter = filter.concat(` where ${userFilter}`);
         }
+
         const query = `SELECT * FROM ${ContentAccessEntry.TABLE_NAME} ${filter}`;
-        return this.dbService.execute(filter).map((contentAccessList: ContentAccessEntry.SchemaMap[]) => {
+
+        return this.dbService.execute(query).map((contentAccessList: ContentAccessEntry.SchemaMap[]) => {
             return contentAccessList.map((contentAccess: ContentAccessEntry.SchemaMap) =>
                 ProfileHandler.mapDBEntryToContenetAccess(contentAccess));
         });
-
     }
 
     private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
