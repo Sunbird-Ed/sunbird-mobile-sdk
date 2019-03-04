@@ -386,8 +386,8 @@ export class ContentUtil {
     }
 
     public static getUidnIdentifierFiler(uid: string , identifier): string {
-        const uidFilter = uid && `uid = ${uid}`;
-        const identifierFilter = identifier && `identifier = ${identifier}`;
+        const uidFilter = uid && `uid = '${uid}'`;
+        const identifierFilter = identifier && `identifier = '${identifier}'`;
 
         let filter = '';
         if (uidFilter && identifierFilter) {

@@ -88,7 +88,7 @@ export class DbWebSqlService implements DbService {
 
         const query = squel.insert()
             .into(inserQuery.table)
-            .setFields(inserQuery.modelJson)
+            .setFields(inserQuery.modelJson);
 
         console.log(query.toString());
 
@@ -122,8 +122,8 @@ export class DbWebSqlService implements DbService {
         return observable;
     }
 
-    update(updateQuery: UpdateQuery): Observable<boolean> {
-        const observable = new Subject<boolean>();
+    update(updateQuery: UpdateQuery): Observable<number> {
+        const observable = new Subject<number>();
 
         const query = squel.update()
             .table(updateQuery.table);
@@ -144,7 +144,7 @@ export class DbWebSqlService implements DbService {
 
         this.webSqlDB.transaction((tx) => {
             tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
-                    observable.next(!!sqlResultSet.rowsAffected);
+                    observable.next(sqlResultSet.rowsAffected);
                     observable.complete();
                 }, (sqlTransaction, sqlError) => {
                     observable.error(sqlError);
@@ -159,7 +159,7 @@ export class DbWebSqlService implements DbService {
 
         const query = squel.delete()
             .from(deleteQuery.table)
-            .where(deleteQuery.selection, ...deleteQuery.selectionArgs)
+            .where(deleteQuery.selection, ...deleteQuery.selectionArgs);
 
         console.log(query.toString());
 

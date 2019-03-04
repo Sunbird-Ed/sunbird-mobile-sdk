@@ -58,6 +58,7 @@ import {UpdateSizeOnDevice} from '../handlers/import/update-size-on-device';
 import {CreateTempLoc} from '../handlers/export/create-temp-loc';
 import {SearchRequest} from '../def/search-request';
 import {ContentSearchApiHandler} from '../handlers/import/content-search-api-handler';
+import {ArrayUtil} from '../../util/array-util';
 
 export class ContentServiceImpl implements ContentService {
     private getContentDetailsHandler: GetContentDetailsHandler;
@@ -303,10 +304,11 @@ export class ContentServiceImpl implements ContentService {
     }
 
     setContentMarker(contentMarkerRequest: ContentMarkerRequest): Observable<boolean> {
-        const query = `SELECT * FROM ${ContentMarkerEntry.TABLE_NAME} WHERE
- ${ContentMarkerEntry.COLUMN_NAME_UID} = ${contentMarkerRequest.uid} AND ${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER}
- =${contentMarkerRequest.contentId} AND ${ContentMarkerEntry.COLUMN_NAME_MARKER} = ${contentMarkerRequest.marker}`;
-        return this.dbService.execute(query).mergeMap((contentMarker) => {
+        const query = `SELECT * FROM ${ContentMarkerEntry.TABLE_NAME}
+                       WHERE ${ContentMarkerEntry.COLUMN_NAME_UID} = '${contentMarkerRequest.uid}'
+                       AND ${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER}='${contentMarkerRequest.contentId}'
+                       AND ${ContentMarkerEntry.COLUMN_NAME_MARKER} = ${contentMarkerRequest.marker}`;
+        return this.dbService.execute(query).mergeMap((contentMarker: ContentMarkerEntry.SchemaMap[]) => {
 
             const markerModel: ContentMarkerEntry.SchemaMap = {
                 uid: contentMarkerRequest.uid,
@@ -314,9 +316,9 @@ export class ContentServiceImpl implements ContentService {
                 epoch_timestamp: Date.now(),
                 data: contentMarkerRequest.data,
                 extra_info: JSON.stringify(contentMarkerRequest.extraInfo),
-                marker: contentMarkerRequest.marker
+                marker: contentMarkerRequest.marker.valueOf()
             };
-            if (!contentMarker) {
+            if (ArrayUtil.isEmpty(contentMarker)) {
                 return this.dbService.insert({
                     table: ContentMarkerEntry.TABLE_NAME,
                     modelJson: markerModel
@@ -325,8 +327,13 @@ export class ContentServiceImpl implements ContentService {
                 if (contentMarkerRequest.isMarked) {
                     return this.dbService.update({
                         table: ContentMarkerEntry.TABLE_NAME,
+                        selection:
+                            `${ContentMarkerEntry.COLUMN_NAME_UID}= ? AND ${ContentMarkerEntry
+                                .COLUMN_NAME_CONTENT_IDENTIFIER}= ? AND ${ContentMarkerEntry.COLUMN_NAME_MARKER}= ?`,
+                        selectionArgs: [contentMarkerRequest.uid, contentMarkerRequest.contentId,
+                            contentMarkerRequest.marker.valueOf().toString()],
                         modelJson: markerModel
-                    });
+                    }).map(v => v > 0);
                 } else {
                     return this.dbService.delete({
                         table: ContentMarkerEntry.TABLE_NAME,

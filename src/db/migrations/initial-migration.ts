@@ -8,7 +8,7 @@ import {ImportedMetadataEntry,
        } from '../../profile/db/schema';
 import {GroupEntry, GroupProfileEntry} from '../../group/db/schema';
 import {PartnerEntry} from '../../partner/db/schema';
-import {ContentAccessEntry, ContentEntry, ContentFeedbackEntry} from '../../content/db/schema';
+import {ContentAccessEntry, ContentEntry, ContentFeedbackEntry, ContentMarkerEntry} from '../../content/db/schema';
 import {NotificationEntry} from '../../notification/db/schema';
 import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 
@@ -41,7 +41,8 @@ export class InitialMigration extends Migration {
             NotificationEntry.getCreateEntry(),
             GroupEntry.getCreateEntry(),
             GroupProfileEntry.getCreateEntry(),
-            KeyValueStoreEntry.getCreateEntry()
+            KeyValueStoreEntry.getCreateEntry(),
+            ContentMarkerEntry.getCreateEntry()
         ];
     }
 

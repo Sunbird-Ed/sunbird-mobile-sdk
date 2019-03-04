@@ -127,7 +127,7 @@ export class ExtractPayloads {
             }
 
             const referenceCount = this.getReferenceCount(existingContentModel, visibility, importContext.isChildContent);
-            visibility = this.getContentVisibility(existingContentModel, element['objectType'], importContext.isChildContent);
+            visibility = this.getContentVisibility(existingContentModel, element['objectType'], importContext.isChildContent, visibility);
             contentState = this.getContentState(existingContentModel, contentState);
             const basePath = this.getBasePath(payloadDestination, doesContentExist, existingContentPath);
             const sizeMetaData: Metadata = await this.fileService.getMetaData(basePath);
@@ -215,7 +215,7 @@ export class ExtractPayloads {
      * add or update the reference count for the content
      *
      */
-    getContentVisibility(existingContentInDb, objectType, isChildContent: boolean): string {
+    getContentVisibility(existingContentInDb, objectType, isChildContent: boolean, previuosVisibility: string): string {
         let visibility;
         if ('Library' === objectType) {
             visibility = Visibility.PARENT.valueOf();
@@ -226,7 +226,7 @@ export class ExtractPayloads {
                 visibility = existingContentInDb[COLUMN_NAME_VISIBILITY];
             }
         }
-        return visibility;
+        return visibility ? visibility : previuosVisibility;
     }
 
     /**

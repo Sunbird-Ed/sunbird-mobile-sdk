@@ -1,6 +1,6 @@
 import {ContentFeedback, ContentFeedbackFilterCriteria, ContentFeedbackService} from '..';
 import {Observable} from 'rxjs';
-import {ContentFeedbackEntry} from '../db/schema';
+import {ContentFeedbackEntry, ContentMarkerEntry} from '../db/schema';
 import {DbService, ReadQuery} from '../../db';
 import {ContentFeedbackHandler} from '../handlers/content-feedback-handler';
 import {QueryBuilder} from '../../db/util/query-builder';
@@ -40,27 +40,38 @@ export class ContentFeedbackServiceImpl implements ContentFeedbackService {
                     limit: '1'
                 };
 
-                this.telemetryService.feedback({
+                const feedbackModel: ContentFeedbackEntry.SchemaMap = {
+                    uid: response!.uid,
+                    identifier: contentFeedback.contentId,
+                    rating: contentFeedback.rating,
+                    comments: contentFeedback.comments,
+                    createdAt: Date.now(),
+                };
+                return this.telemetryService.feedback({
                     env: 'sdk',
                     rating: contentFeedback.rating,
                     comments: contentFeedback.comments,
                     objId: contentFeedback.contentId,
                     objType: ShareItemType.CONTENT.valueOf(),
                     objVer: contentFeedback.contentVersion,
-                });
-
-                return this.dbService.read(readQuery).mergeMap((rows) => {
-                    if (rows && rows.length) {
-                        return this.dbService.update({
-                            table: ContentFeedbackEntry.TABLE_NAME,
-                            modelJson: rows[0]
-                        });
-                    } else {
-                        return this.dbService.insert({
-                            table: ContentFeedbackEntry.TABLE_NAME,
-                            modelJson: rows[0]
-                        }).map(v => v > 0);
-                    }
+                }).mergeMap(() => {
+                    return this.dbService.read(readQuery).mergeMap((rows) => {
+                        if (rows && rows.length) {
+                            return this.dbService.update({
+                                table: ContentFeedbackEntry.TABLE_NAME,
+                                selection:
+                                    `${ContentFeedbackEntry.COLUMN_NAME_UID}= ? AND ${ContentFeedbackEntry
+                                        .COLUMN_NAME_CONTENT_ID}= ?`,
+                                selectionArgs: [response!.uid, contentFeedback.contentId],
+                                modelJson: feedbackModel
+                            }).map(v => v > 0);
+                        } else {
+                            return this.dbService.insert({
+                                table: ContentFeedbackEntry.TABLE_NAME,
+                                modelJson: feedbackModel
+                            }).map(v => v > 0);
+                        }
+                    });
                 });
             });
 

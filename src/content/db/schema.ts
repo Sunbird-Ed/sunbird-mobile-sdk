@@ -94,7 +94,7 @@ export namespace ContentAccessEntry {
         [COLUMN_NAME_UID]: string;
         [COLUMN_NAME_CONTENT_IDENTIFIER]: string;
         [COLUMN_NAME_EPOCH_TIMESTAMP]: number;
-        [COLUMN_NAME_STATUS]: string;
+        [COLUMN_NAME_STATUS]: number;
         [COLUMN_NAME_CONTENT_TYPE]: string;
         [COLUMN_NAME_LEARNER_STATE]: string;
     }
@@ -131,7 +131,7 @@ export namespace ContentFeedbackEntry {
     export interface SchemaMap {
         [COLUMN_NAME_CONTENT_ID]: string;
         [COLUMN_NAME_UID]: string;
-        [COLUMN_NAME_RATING]: string;
+        [COLUMN_NAME_RATING]: number;
         [COLUMN_NAME_COMMENTS]: string;
         [COLUMN_NAME_CREATED_AT]: number;
     }

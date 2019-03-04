@@ -2,12 +2,12 @@ import {Content, HierarchyInfo} from '../def/content';
 import {ChildContent} from '../def/response';
 import {DbService} from '../../db';
 import {ContentUtil} from '../util/content-util';
-import {CotentMapper} from '../util/cotent-mapper';
 import {ContentEntry} from '../db/schema';
 import {ChildContents, MimeType, State} from '../util/content-constants';
 import {GetContentDetailsHandler} from './get-content-details-handler';
 import {Stack} from '../util/stack';
 import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
+import {ContentMapper} from '../util/content-mapper';
 
 export class ChildContentsHandler {
 
@@ -19,7 +19,7 @@ export class ChildContentsHandler {
                                         currentLevel: number,
                                         level: number,
                                         hierarchyInfoList?: HierarchyInfo[]): Promise<Content> {
-        const content: Content = CotentMapper.mapContentDBEntryToContent(contentInDb);
+        const content: Content = ContentMapper.mapContentDBEntryToContent(contentInDb);
         const rows: ContentEntry.SchemaMap[] =
             await this.getSortedChildrenList(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA], ChildContents.ALL);
 
@@ -168,7 +168,7 @@ export class ChildContentsHandler {
                 const nextContentInDb = await this.getContentDetailsHandler.fetchFromDB(
                     nextContentIdentifierList[idCount - 1]).toPromise();
                 if (nextContentInDb) {
-                    nextContent = CotentMapper.mapContentDBEntryToContent(nextContentInDb);
+                    nextContent = ContentMapper.mapContentDBEntryToContent(nextContentInDb);
                     nextContent.hierarchyInfo = hierarchyInfoList;
                     nextContent.rollup = ContentUtil.getContentRollup(nextContent.identifier, nextContent.hierarchyInfo);
                 }

@@ -11,7 +11,7 @@ export abstract class DbService {
 
     abstract insert(insertQuery: InsertQuery): Observable<number>;
 
-    abstract update(updateQuery: UpdateQuery): Observable<boolean>;
+    abstract update(updateQuery: UpdateQuery): Observable<number>;
 
     abstract delete(deleteQuery: DeleteQuery): Observable<undefined>;
 

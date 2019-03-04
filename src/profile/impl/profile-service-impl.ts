@@ -30,10 +30,10 @@ import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-deta
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {ProfileMapper} from '../util/profile-mapper';
 import {ContentAccessFilterCriteria} from '../def/content-access-filter-criteria';
-import {ContentAccess} from '../def/content-access';
+import {ContentAccess, ContentAccessStatus} from '../def/content-access';
 import {AcceptTermConditionHandler} from '../handler/accept-term-condition-handler';
 import {ProfileHandler} from '../handler/profile-handler';
-import {ContentAccessEntry} from '../../content/db/schema';
+import {ContentAccessEntry, ContentFeedbackEntry} from '../../content/db/schema';
 import {InvalidProfileError} from '../errors/invalid-profile-error';
 import {UniqueId} from '../../db/util/unique-id';
 import {ProfileExistsResponse} from '../def/profile-exists-response';
@@ -307,5 +307,48 @@ export class ProfileServiceImpl implements ProfileService {
 
     private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
         return profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile));
+    }
+
+    addContentAccess(contentAccess: ContentAccess): Observable<boolean> {
+        return this.getActiveSessionProfile()
+            .mergeMap(({uid}: Profile) => {
+                return this.dbService.read({
+                    table: ContentAccessEntry.TABLE_NAME,
+                    selection:
+                        `${ContentAccessEntry.COLUMN_NAME_UID}= ? AND ${ContentAccessEntry
+                            .COLUMN_NAME_CONTENT_IDENTIFIER}= ?`,
+                    selectionArgs: [uid, contentAccess.contentId],
+                    orderBy: `ORDER BY ${ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP} DESC`,
+                    limit: '1'
+                }).mergeMap((contentAccessInDb: ContentAccessEntry.SchemaMap[]) => {
+                    const contentAccessDbModel: ContentAccessEntry.SchemaMap = {
+                        uid: uid,
+                        identifier: contentAccess.contentId,
+                        epoch_timestamp: Date.now(),
+                        status: ContentAccessStatus.PLAYED.valueOf(),
+                        content_type: contentAccess.contentType,
+                        learner_state: contentAccess.contentLearnerState &&
+                            JSON.stringify(contentAccess.contentLearnerState.learnerState)
+                    };
+                    if (contentAccessInDb && contentAccessInDb.length) {
+                        contentAccessDbModel.status = contentAccessInDb[0][ContentAccessEntry.COLUMN_NAME_STATUS];
+                        return this.dbService.update({
+                            table: ContentAccessEntry.TABLE_NAME,
+                            selection:
+                                `${ContentAccessEntry.COLUMN_NAME_UID}= ? AND ${ContentAccessEntry
+                                    .COLUMN_NAME_CONTENT_IDENTIFIER}= ?`,
+                            selectionArgs: [uid, contentAccess.contentId],
+                            modelJson: contentAccessDbModel
+                        }).map(v => v > 0);
+                    } else {
+                        return this.dbService.insert({
+                            table: ContentAccessEntry.TABLE_NAME,
+                            modelJson: contentAccessDbModel
+                        }).map(v => v > 0);
+                    }
+                });
+            });
+
+
     }
 }
