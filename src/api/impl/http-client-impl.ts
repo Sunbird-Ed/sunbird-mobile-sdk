@@ -1,32 +1,6 @@
 import {HttpClient, HttpRequestType, HttpSerializer, Response} from '..';
 import {Observable, Subject} from 'rxjs';
 
-interface HttpResponse {
-    status: number;
-    headers: any;
-    url: string;
-    data?: any;
-    error?: string;
-}
-
-declare var cordova: {
-    plugin: {
-        http: {
-            setDataSerializer: (string) => void;
-            setHeader: (host: string, header: string, value: string) => void;
-            get: (url: string, parameters: any, headers: { [key: string]: string },
-                  successCallback: (response: HttpResponse) => void,
-                  errorCallback: (response: HttpResponse) => void) => void;
-            patch: (url: string, data: any, headers: { [key: string]: string },
-                    successCallback: (response: HttpResponse) => void,
-                    errorCallback: (response: HttpResponse) => void) => void;
-            post: (url: string, data: any, headers: { [key: string]: string },
-                   successCallback: (response: HttpResponse) => void,
-                   errorCallback: (response: HttpResponse) => void) => void;
-        }
-    }
-};
-
 export class HttpClientImpl implements HttpClient {
 
     private http = cordova.plugin.http;
