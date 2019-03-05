@@ -25,7 +25,8 @@
     "moduleResolution": "node"
   },
   "include": [
-    "./src/**/*"
+    "./src/**/*",
+    "./plugins/sb-cordova-plugin-db.d.ts"
   ],
   "exclude": [
     "node_modules",
