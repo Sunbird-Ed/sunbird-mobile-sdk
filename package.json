@@ -29,7 +29,8 @@
     "cordova-plugin-advanced-http": "^2.0.2",
     "cordova-plugin-file": "^6.0.1",
     "sb-cordova-plugin-customtabs": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-customtabs.git",
-    "sb-cordova-plugin-db": "git+https://github.com/swayangjit/sb-cordova-plugin-db.git"
+    "sb-cordova-plugin-db": "git+https://github.com/swayangjit/sb-cordova-plugin-db.git",
+    "cordova-plugin-android-downloadmanager": "^0.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",
