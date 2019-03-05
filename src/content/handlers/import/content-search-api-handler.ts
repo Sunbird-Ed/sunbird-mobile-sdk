@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../../api';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request, Response} from '../../../api';
 import {ContentServiceConfig, SearchResponse} from '../..';
 import {Observable} from 'rxjs';
 import {SearchRequest} from '../../def/search-request';
@@ -19,9 +19,8 @@ export class ContentSearchApiHandler implements ApiRequestHandler<SearchRequest,
             .withBody({request})
             .build();
 
-        return this.apiService.fetch<{ result: SearchResponse }>(apiRequest).map((success) => {
-            console.log('response', success);
-            return success.body.result;
+        return this.apiService.fetch<SearchResponse>(apiRequest).map((success) => {
+            return success.body;
         });
     }
 

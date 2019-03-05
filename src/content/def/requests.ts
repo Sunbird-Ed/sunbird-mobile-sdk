@@ -68,8 +68,15 @@ export interface EcarImportRequest {
 
 
 export interface ContentImportRequest {
-    contentImportMap?: { [index: string]: any };
+    contentImportMap?: { [index: string]: ContentImport };
     contentStatusArray: string[];
+}
+
+export interface ContentImport {
+    isChildContent: boolean;
+    destinationFolder: string;
+    contentId: string;
+    correlationData?: CorrelationData[];
 }
 
 export interface ContentExportRequest {
