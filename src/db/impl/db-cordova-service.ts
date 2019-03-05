@@ -18,6 +18,12 @@ declare var db: {
            error) => void,
     execute: (query: string, success, error) => void,
     insert: (table: string, model: string, success, error) => void,
+    update: (table: string,
+             selection: string,
+             selectionArgs: Array<string>,
+             model,
+             success,
+             error) => void,
     beginTransaction: () => void,
     endTransaction: (isOperationSuccessful: boolean) => void
 };
@@ -26,11 +32,25 @@ export class DbCordovaService implements DbService {
     constructor(private context: DbConfig,
                 private dBVersion: number,
                 private appMigrationList: Migration[]
-    ) {}
+    ) {
+    }
 
 
-    update(updateQuery: UpdateQuery): Observable<boolean> {
-        throw new Error('Method not implemented.');
+    update(updateQuery: UpdateQuery): Observable<number> {
+        const observable = new Subject<any>();
+
+        db.update(updateQuery.table,
+            updateQuery.selection || '',
+            updateQuery.selectionArgs || [],
+            updateQuery.modelJson,
+            (count: any) => {
+                observable.next(count);
+                observable.complete();
+            }, (error: string) => {
+                observable.error(error);
+            });
+
+        return observable;
     }
 
     public async init(): Promise<undefined> {

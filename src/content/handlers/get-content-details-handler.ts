@@ -2,9 +2,11 @@ import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api
 import {
     Content,
     ContentData,
+    ContentDecorateRequest,
     ContentDetailRequest,
     ContentFeedback,
-    ContentFeedbackService, ContentMarker,
+    ContentFeedbackService,
+    ContentMarker,
     ContentServiceConfig
 } from '..';
 import {Observable} from 'rxjs';
@@ -12,13 +14,11 @@ import {DbService, ReadQuery} from '../../db';
 import {ContentEntry} from '../db/schema';
 import {QueryBuilder} from '../../db/util/query-builder';
 import {ContentMapper} from '../util/content-mapper';
-import {CachedItemStore} from '../../key-value-store';
 import {Profile, ProfileService} from '../../profile';
 import {ContentAccess} from '../../profile/def/content-access';
 import {ContentMarkerHandler} from './content-marker-handler';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
-    private readonly CONTENT_LOCAL_KEY = 'content-';
     private readonly GET_CONTENT_DETAILS_ENDPOINT = '/read';
 
     constructor(private contentFeedbackService: ContentFeedbackService,
@@ -40,33 +40,51 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
         };
     }
 
-    handle(request: ContentDetailRequest): Observable<Content> {
-        return  this.fetchFromServer(request);
+    public handle(request: ContentDetailRequest): Observable<Content> {
+        return this.fetchFromDB(request.contentId)
+            .mergeMap((contentDbEntry) => {
+                if (contentDbEntry) {
+                    return Observable.of(ContentMapper.mapContentDBEntryToContent(contentDbEntry));
+                }
+
+                return this.fetchFromServer(request);
+            });
     }
 
-    getContentFromDB(contentId: string): Promise<ContentEntry.SchemaMap[]> {
+    /** @internal */
+    public fetchFromDB(contentId: string): Observable<ContentEntry.SchemaMap | undefined> {
         return this.dbService.read({
             table: ContentEntry.TABLE_NAME,
-            selection: new QueryBuilder()
-                .where('? = ?')
-                .args([ContentEntry.COLUMN_NAME_IDENTIFIER, contentId])
-                .end()
-                .build(),
+            selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
+            selectionArgs: [contentId],
             limit: '1'
-        }).toPromise();
+        }).map((contentsFromDB: ContentEntry.SchemaMap[]) => contentsFromDB[0]);
     }
 
-    private fetchFromServer(request: ContentDetailRequest): Observable<Content> {
-        return this.apiService.fetch<{ result: { content: ContentData } }>(new Request.Builder()
-            .withType(HttpRequestType.GET)
-            .withPath(this.contentServiceConfig.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + '/' + request.contentId)
-            .withApiToken(true)
-            .build())
-            .map((response) => {
-                const contentData = response.body.result.content;
-                return ContentMapper.mapServerResponseToContent(contentData);
-            })
-            .mergeMap(async (content: Content) => {
+    fetchFromServer(request: ContentDetailRequest): Observable<Content> {
+        return this.apiService.fetch<{ result: { content: ContentData } }>(
+            new Request.Builder()
+                .withType(HttpRequestType.GET)
+                .withPath(this.contentServiceConfig.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + '/' + request.contentId)
+                .withApiToken(true)
+                .build()
+        ).map((response) => {
+            const contentData = response.body.result.content;
+            return ContentMapper.mapServerResponseToContent(contentData);
+        }).mergeMap((content: Content) => {
+            return this.decorateContent({
+                content,
+                attachFeedback: request.attachFeedback,
+                attachContentAccess: request.attachContentAccess,
+                attachContentMarker: request.attachContentMarker
+            });
+        });
+    }
+
+    /** @internal */
+    public decorateContent(request: ContentDecorateRequest): Observable<Content> {
+        return Observable.of(request.content)
+            .mergeMap(async (content) => {
                 if (request.attachContentAccess) {
                     content = await this.attachContentAccess(content).toPromise();
                 }
@@ -83,7 +101,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             });
     }
 
-    public attachContentAccess(content: Content): Observable<Content> {
+    private attachContentAccess(content: Content): Observable<Content> {
         return this.profileService.getActiveSessionProfile()
             .mergeMap(({uid}: Profile) => {
                 return this.profileService.getAllContentAccess({
@@ -98,7 +116,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             });
     }
 
-    public attachFeedback(content: Content): Observable<Content> {
+    private attachFeedback(content: Content): Observable<Content> {
         return this.profileService.getActiveSessionProfile()
             .mergeMap(({uid}: Profile) => {
                 return this.contentFeedbackService.getFeedback({
@@ -113,7 +131,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             });
     }
 
-    public attachContentMarker(content: Content): Observable<Content> {
+    private attachContentMarker(content: Content): Observable<Content> {
         return this.profileService.getActiveSessionProfile()
             .mergeMap(({uid}: Profile) => {
                 return new ContentMarkerHandler(this.dbService).getContentMarker(content.identifier, uid)

@@ -83,7 +83,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventDelegate {
                             learnerAssesmentDetils.hierarchyData ? learnerAssesmentDetils.hierarchyData : '',
                             learnerAssesmentDetils.qid],
                         modelJson: learnerAssessmentDbSchema
-                    });
+                    }).map(v => v > 0);
 
                 } else {
                     return this.dbService.insert({
@@ -118,7 +118,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventDelegate {
                         learnerContentSummaryDetails.contentId,
                         learnerContentSummaryDetails.hierarchyData],
                     modelJson: learnerAssessmentDbSchema
-                });
+                }).map(v => v > 0);
 
             } else {
                 learnerAssessmentDbSchema.avg_ts = learnerContentSummaryDetails.timespent;

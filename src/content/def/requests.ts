@@ -1,8 +1,15 @@
 import {SearchType} from '../util/content-constants';
-import {HierarchyInfo} from './content';
+import {Content, HierarchyInfo} from './content';
 import {CorrelationData} from '../../telemetry';
 import {ContentImportResponse} from './response';
 import {ContentEntry} from '../db/schema';
+
+export interface ContentDecorateRequest {
+    content: Content;
+    attachFeedback?: boolean;
+    attachContentAccess?: boolean;
+    attachContentMarker?: boolean;
+}
 
 export interface ContentDetailRequest {
     contentId: string;
@@ -12,10 +19,11 @@ export interface ContentDetailRequest {
 }
 
 export interface ContentRequest {
-    uid: string;
+    uid?: string;
     contentTypes: string[];
-    audience: string[];
-    pragma: string[];
+    audience?: string[];
+    pragma?: string[];
+    exclPragma?: string[];
     attachFeedback?: boolean;
     attachContentAccess?: boolean;
     attachContentMarker?: boolean;
@@ -92,8 +100,14 @@ export interface ContentMarkerRequest {
     uid: string;
     data: string;
     extraInfo: { [key: string]: any };
-    marker: number;
+    marker: MarkerType;
     isMarked: boolean;
+}
+
+export enum MarkerType {
+    NOTHING = 0,
+    PREVIEWED = 1,
+    BOOKMARKED = 2
 }
 
 export interface ContentSearchCriteria {

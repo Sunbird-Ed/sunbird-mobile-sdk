@@ -4,23 +4,33 @@ import {ContentAccessEntry, ContentEntry, ContentMarkerEntry} from '../db/schema
 import {State, Visibility} from '../util/content-constants';
 import {ContentAccess} from '../../profile/def/content-access';
 import {ProfileService} from '../../profile';
+import {ArrayUtil} from '../../util/array-util';
 
 export class GetContentsHandler {
 
 
     getAllLocalContentQuery(request: ContentRequest): string {
         const uid = request.uid;
-        const contentTypesStr = request.contentTypes.join(',');
-        let contentTypeFilter = `c.${ContentEntry.COLUMN_NAME_CONTENT_TYPE} in('${contentTypesStr.toLowerCase()}')`;
+        const contentTypesStr = ArrayUtil.joinPreservingQuotes(request.contentTypes);
+        let contentTypeFilter = `c.${ContentEntry.COLUMN_NAME_CONTENT_TYPE} IN(${contentTypesStr.toLowerCase()})`;
         const contentVisibilityFilter = `c.${ContentEntry.COLUMN_NAME_VISIBILITY} = '${Visibility.DEFAULT.valueOf()}'`;
         const artifactAvailabilityFilter = `c.${ContentEntry.COLUMN_NAME_CONTENT_STATE} = '${State.ARTIFACT_AVAILABLE.valueOf()}'`;
         let filter = `${contentVisibilityFilter} AND ${artifactAvailabilityFilter} AND ${contentTypeFilter}`;
+        const audienceFilter = this.getAudienceFilter(request.audience!);
+        const pragmaFilter = this.getPragmaFilter(request.exclPragma!, request.pragma!);
+
+        if (audienceFilter) {
+            filter = `${filter}  AND (${audienceFilter})`;
+        }
+        if (pragmaFilter) {
+            filter = `${filter}  AND (${pragmaFilter})`;
+        }
         let whereClause = `WHERE (${filter})`;
         let query = '';
-        const orderBy = this.generateSortByQuery(request.sortCriteria!, uid);
+        const orderBy = this.generateSortByQuery(request.sortCriteria!, uid!);
         if (request.recentlyViewed) {
             if (uid) {
-                contentTypeFilter = `ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_TYPE} IN ('${contentTypesStr.toLowerCase()}')`;
+                contentTypeFilter = `ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_TYPE} IN (${contentTypesStr.toLowerCase()})`;
                 if (request.localOnly) {
                     filter = `ca.${ContentAccessEntry.COLUMN_NAME_UID} = '${uid}' AND ${contentTypeFilter}
                      AND ${artifactAvailabilityFilter}`;
@@ -40,6 +50,30 @@ export class GetContentsHandler {
         }
         return query;
 
+    }
+
+    private getAudienceFilter(audience: string[]): string {
+        let filter = '';
+        if (audience) {
+            audience.forEach((element) => {
+                filter = filter.concat(filter.length > 0 ? ' OR ' : '', `c.${ContentEntry.COLUMN_NAME_AUDIENCE} LIKE '%%${element}%%'`);
+            });
+        }
+        return filter;
+    }
+
+    private getPragmaFilter(exclPragma: string[], pragma: string[]): string {
+        let filter = '';
+        if (exclPragma) {
+            exclPragma.forEach((element) => {
+                filter = filter.concat(filter.length > 0 ? ' OR ' : '', `c.${ContentEntry.COLUMN_NAME_PRAGMA} NOT LIKE '%%${element}%%'`);
+            });
+        } else if (pragma) {
+            pragma.forEach((element) => {
+                filter = filter.concat(filter.length > 0 ? ' OR ' : '', `c.${ContentEntry.COLUMN_NAME_PRAGMA} LIKE '%%${element}%%'`);
+            });
+        }
+        return filter;
     }
 
     private getRecentlyViewedQuery(whereClause: string, orderBy: string, limit: number): string {
@@ -94,8 +128,6 @@ export class GetContentsHandler {
         orderByQuery.concat(` ca.${columnName} ${sortOrder}`);
         return orderByQuery;
     }
-
-
 
 
 }

@@ -3,12 +3,12 @@ import {ContentDisposition, ContentEncoding, ContentStatus, State, Visibility} f
 import {ChildContent} from '../def/response';
 import {Rollup} from '../../telemetry';
 import {AppConfig} from '../../api/config/app-config';
-import {ContentEntry, ContentMarkerEntry} from '../db/schema';
+import {ContentEntry} from '../db/schema';
+import {NumberUtil} from '../../util/number-util';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
-import {NumberUtil} from '../../util/number-util';
 
 export class ContentUtil {
     private static DEFAULT_PACKAGE_VERSION = -1;
@@ -130,7 +130,7 @@ export class ContentUtil {
         return isDraftContent && pkgVersion === 0;
     }
 
-    public static isImportFileExist(oldContentModel: ContentEntry.SchemaMap, contentData: any): boolean {
+    public static isImportFileExist(oldContentModel: ContentEntry.SchemaMap | undefined, contentData: any): boolean {
         if (!oldContentModel || !contentData) {
             return false;
         }
@@ -188,9 +188,9 @@ export class ContentUtil {
      * @param newIdentifier New content identifier
      * @return True - if file exists, False- does not exists
      */
-    public static doesContentExist(existingContentInDB: ContentEntry.SchemaMap, newIdentifier: string,
+    public static doesContentExist(existingContentInDB: ContentEntry.SchemaMap | undefined, newIdentifier: string,
                                    newPkgVersion: number, keepLowerVersion: boolean): boolean {
-        if (existingContentInDB == null) {
+        if (!existingContentInDB) {
             return false;
         }
 
@@ -386,8 +386,8 @@ export class ContentUtil {
     }
 
     public static getUidnIdentifierFiler(uid: string , identifier): string {
-        const uidFilter = uid && `uid = ${uid}`;
-        const identifierFilter = identifier && `identifier = ${identifier}`;
+        const uidFilter = uid && `uid = '${uid}'`;
+        const identifierFilter = identifier && `identifier = '${identifier}'`;
 
         let filter = '';
         if (uidFilter && identifierFilter) {

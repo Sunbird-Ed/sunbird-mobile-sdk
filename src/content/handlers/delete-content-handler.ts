@@ -106,7 +106,7 @@ export class DeleteContentHandler {
             return this.dbService.update({
                 table: ContentEntry.TABLE_NAME,
                 modelJson: contentInDb
-            }).toPromise();
+            }).map(v => v > 0).toPromise();
         } else {
             return Observable.of(false).toPromise();
         }

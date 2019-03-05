@@ -28,7 +28,7 @@ export class KeyValueStoreImpl implements KeyValueStore {
                             [KeyValueStoreEntry.COLUMN_NAME_KEY]: key,
                             [KeyValueStoreEntry.COLUMN_NAME_VALUE]: value
                         }
-                    });
+                    }).map(v => v > 0);
 
                 } else {
                     return this.dbService.insert({

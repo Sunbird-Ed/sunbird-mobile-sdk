@@ -61,8 +61,8 @@ export class ExtractPayloads {
             const dialCodes = element.dialcodes;
             let contentState = State.ONLY_SPINE.valueOf();
             let payloadDestination: string | undefined;
-            const existingContentModel: ContentEntry.SchemaMap =
-                await this.getContentDetailsHandler.getContentFromDB(identifier)[0];
+
+            const existingContentModel = await this.getContentDetailsHandler.fetchFromDB(identifier).toPromise();
             let existingContentPath;
             if (existingContentModel) {
                 existingContentPath = existingContentModel[COLUMN_NAME_PATH];
@@ -75,8 +75,8 @@ export class ExtractPayloads {
             }
             // If the content is exist then copy the old content data and add it into new content.
             if (doesContentExist && !(element.status === ContentStatus.DRAFT.valueOf())) {
-                if (existingContentModel[COLUMN_NAME_VISIBILITY] === Visibility.DEFAULT.valueOf()) {
-                    element = JSON.parse(existingContentModel[COLUMN_NAME_LOCAL_DATA]);
+                if (existingContentModel![COLUMN_NAME_VISIBILITY] === Visibility.DEFAULT.valueOf()) {
+                    element = JSON.parse(existingContentModel![COLUMN_NAME_LOCAL_DATA]);
                 }
             } else {
                 doesContentExist = false;
@@ -127,7 +127,7 @@ export class ExtractPayloads {
             }
 
             const referenceCount = this.getReferenceCount(existingContentModel, visibility, importContext.isChildContent);
-            visibility = this.getContentVisibility(existingContentModel, element['objectType'], importContext.isChildContent);
+            visibility = this.getContentVisibility(existingContentModel, element['objectType'], importContext.isChildContent, visibility);
             contentState = this.getContentState(existingContentModel, contentState);
             const basePath = this.getBasePath(payloadDestination, doesContentExist, existingContentPath);
             const sizeMetaData: Metadata = await this.fileService.getMetaData(basePath);
@@ -215,7 +215,7 @@ export class ExtractPayloads {
      * add or update the reference count for the content
      *
      */
-    getContentVisibility(existingContentInDb, objectType, isChildContent: boolean): string {
+    getContentVisibility(existingContentInDb, objectType, isChildContent: boolean, previuosVisibility: string): string {
         let visibility;
         if ('Library' === objectType) {
             visibility = Visibility.PARENT.valueOf();
@@ -226,7 +226,7 @@ export class ExtractPayloads {
                 visibility = existingContentInDb[COLUMN_NAME_VISIBILITY];
             }
         }
-        return visibility;
+        return visibility ? visibility : previuosVisibility;
     }
 
     /**

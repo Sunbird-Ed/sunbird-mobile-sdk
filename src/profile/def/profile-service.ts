@@ -43,6 +43,8 @@ export interface ProfileService {
 
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]>;
 
+    addContentAccess(contentAccess: ContentAccess): Observable<boolean>;
+
     acceptTermsAndConditions(acceptTermsConditions: AcceptTermsConditionRequest): Observable<boolean>;
 
     isProfileAlreadyInUse(isProfileAlreadyInUseRequest: IsProfileAlreadyInUseRequest): Observable<ProfileExistsResponse>;

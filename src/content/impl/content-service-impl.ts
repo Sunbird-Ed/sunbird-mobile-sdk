@@ -21,7 +21,7 @@ import {
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
-import {ApiService, HttpRequestType, Request, Response} from '../../api';
+import {ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
 import {DbService} from '../../db';
@@ -58,6 +58,7 @@ import {UpdateSizeOnDevice} from '../handlers/import/update-size-on-device';
 import {CreateTempLoc} from '../handlers/export/create-temp-loc';
 import {SearchRequest} from '../def/search-request';
 import {ContentSearchApiHandler} from '../handlers/import/content-search-api-handler';
+import {ArrayUtil} from '../../util/array-util';
 
 export class ContentServiceImpl implements ContentService {
     private getContentDetailsHandler: GetContentDetailsHandler;
@@ -90,17 +91,12 @@ export class ContentServiceImpl implements ContentService {
                 for (const contentInDb of contentsInDb) {
                     let content = ContentMapper.mapContentDBEntryToContent(contentInDb);
 
-                    if (request.attachContentAccess) {
-                        content = await this.getContentDetailsHandler.attachContentAccess(content).toPromise();
-                    }
-
-                    if (request.attachFeedback) {
-                        content = await this.getContentDetailsHandler.attachFeedback(content).toPromise();
-                    }
-
-                    if (request.attachContentMarker) {
-                        content = await this.getContentDetailsHandler.attachContentMarker(content).toPromise();
-                    }
+                    content = await this.getContentDetailsHandler.decorateContent({
+                        content,
+                        attachContentAccess: request.attachContentAccess,
+                        attachContentMarker: request.attachContentAccess,
+                        attachFeedback: request.attachFeedback
+                    }).toPromise();
 
                     contents.push(content);
                 }
@@ -118,18 +114,18 @@ export class ContentServiceImpl implements ContentService {
         const contentDeleteResponse: ContentDeleteResponse[] = [];
         const deleteContentHandler = new DeleteContentHandler(this.dbService);
         contentDeleteRequest.contentDeleteList.forEach(async (contentDelete) => {
-            const contentInDb: ContentEntry.SchemaMap[] = await this.getContentDetailsHandler.getContentFromDB(contentDelete.contentId);
-            if (contentInDb && contentInDb[0]) {
+            const contentInDb = await this.getContentDetailsHandler.fetchFromDB(contentDelete.contentId).toPromise();
+            if (contentInDb) {
                 contentDeleteResponse.push({
                     identifier: contentDelete.contentId,
                     status: ContentDeleteStatus.DELETED_SUCCESSFULLY
                 });
 
-                if (ContentUtil.hasChildren(contentInDb[0][ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
-                    await deleteContentHandler.deleteAllChildren(contentInDb[0], contentDelete.isChildContent);
+                if (ContentUtil.hasChildren(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
+                    await deleteContentHandler.deleteAllChildren(contentInDb, contentDelete.isChildContent);
                 }
 
-                await deleteContentHandler.deleteOrUpdateContent(contentInDb[0], false, contentDelete.isChildContent);
+                await deleteContentHandler.deleteOrUpdateContent(contentInDb, false, contentDelete.isChildContent);
 
             } else {
                 contentDeleteResponse.push({
@@ -308,10 +304,11 @@ export class ContentServiceImpl implements ContentService {
     }
 
     setContentMarker(contentMarkerRequest: ContentMarkerRequest): Observable<boolean> {
-        const query = `SELECT * FROM ${ContentMarkerEntry.TABLE_NAME} WHERE
- ${ContentMarkerEntry.COLUMN_NAME_UID} = ${contentMarkerRequest.uid} AND ${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER}
- =${contentMarkerRequest.contentId} AND ${ContentMarkerEntry.COLUMN_NAME_MARKER} = ${contentMarkerRequest.marker}`;
-        return this.dbService.execute(query).mergeMap((contentMarker) => {
+        const query = `SELECT * FROM ${ContentMarkerEntry.TABLE_NAME}
+                       WHERE ${ContentMarkerEntry.COLUMN_NAME_UID} = '${contentMarkerRequest.uid}'
+                       AND ${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER}='${contentMarkerRequest.contentId}'
+                       AND ${ContentMarkerEntry.COLUMN_NAME_MARKER} = ${contentMarkerRequest.marker}`;
+        return this.dbService.execute(query).mergeMap((contentMarker: ContentMarkerEntry.SchemaMap[]) => {
 
             const markerModel: ContentMarkerEntry.SchemaMap = {
                 uid: contentMarkerRequest.uid,
@@ -319,9 +316,9 @@ export class ContentServiceImpl implements ContentService {
                 epoch_timestamp: Date.now(),
                 data: contentMarkerRequest.data,
                 extra_info: JSON.stringify(contentMarkerRequest.extraInfo),
-                marker: contentMarkerRequest.marker
+                marker: contentMarkerRequest.marker.valueOf()
             };
-            if (!contentMarker) {
+            if (ArrayUtil.isEmpty(contentMarker)) {
                 return this.dbService.insert({
                     table: ContentMarkerEntry.TABLE_NAME,
                     modelJson: markerModel
@@ -330,8 +327,13 @@ export class ContentServiceImpl implements ContentService {
                 if (contentMarkerRequest.isMarked) {
                     return this.dbService.update({
                         table: ContentMarkerEntry.TABLE_NAME,
+                        selection:
+                            `${ContentMarkerEntry.COLUMN_NAME_UID}= ? AND ${ContentMarkerEntry
+                                .COLUMN_NAME_CONTENT_IDENTIFIER}= ? AND ${ContentMarkerEntry.COLUMN_NAME_MARKER}= ?`,
+                        selectionArgs: [contentMarkerRequest.uid, contentMarkerRequest.contentId,
+                            contentMarkerRequest.marker.valueOf().toString()],
                         modelJson: markerModel
-                    });
+                    }).map(v => v > 0);
                 } else {
                     return this.dbService.delete({
                         table: ContentMarkerEntry.TABLE_NAME,
