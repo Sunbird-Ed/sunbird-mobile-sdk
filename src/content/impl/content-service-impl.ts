@@ -318,16 +318,18 @@ export class ContentServiceImpl implements ContentService {
     }
 
 
-    searchContent(request: ContentSearchCriteria): Observable<ContentSearchResult> {
+    searchContent(contentSearchCriteria: ContentSearchCriteria): Observable<ContentSearchResult> {
+        contentSearchCriteria.limit = contentSearchCriteria.limit ? contentSearchCriteria.limit : 100;
+        contentSearchCriteria.offset = contentSearchCriteria.offset ? contentSearchCriteria.offset : 0;
         const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
             this.contentServiceConfig, this.telemetryService);
-        const searchRequest = searchHandler.getSearchRequest(request);
-        const httpRequest = searchHandler.getRequest(searchRequest, request.framework, request.languageCode);
-        return this.apiService.fetch<SearchResponse>(httpRequest)
-            .mergeMap((response: Response<SearchResponse>) => {
-                return Observable.of(searchHandler.mapSearchResponse(response.body, searchRequest));
+        const searchRequest = searchHandler.getSearchContentRequest(contentSearchCriteria);
+        return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig,
+            contentSearchCriteria.framework, contentSearchCriteria.languageCode)
+            .handle(searchRequest)
+            .map((searchResponse: SearchResponse) => {
+                return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
             });
-
     }
 
     cancelDownload(contentId: string): Observable<undefined> {

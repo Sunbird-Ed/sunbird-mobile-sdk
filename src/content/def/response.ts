@@ -12,11 +12,13 @@ export interface ContentSearchResult {
 }
 
 export interface SearchResponse {
+    id: string;
     params: { resmsgid: string };
     result: {
         count: number,
         content: ContentData[],
-        facets: ContentSearchFilter
+        collections: ContentData[],
+        facets: ContentSearchFilter[]
     };
 }
 
