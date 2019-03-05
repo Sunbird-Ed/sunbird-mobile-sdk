@@ -1,0 +1,25 @@
+// @ts-ignore
+declare var db: {
+    init: (dbName, dbVersion, migrations, callback) => void,
+    read: (distinct: boolean,
+           table: string,
+           columns: Array<string>,
+           selection: string,
+           selectionArgs: Array<string>,
+           groupBy: string,
+           having: string,
+           orderBy: string,
+           limit: string,
+           success,
+           error) => void,
+    execute: (query: string, success, error) => void,
+    insert: (table: string, model: string, success, error) => void,
+    update: (table: string,
+             selection: string,
+             selectionArgs: Array<string>,
+             model,
+             success,
+             error) => void,
+    beginTransaction: () => void,
+    endTransaction: (isOperationSuccessful: boolean) => void
+};
