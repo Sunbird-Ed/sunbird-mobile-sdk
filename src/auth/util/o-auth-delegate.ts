@@ -6,13 +6,6 @@ import {StateLoginSessionProvider} from './state-login-session-provider';
 import * as qs from 'qs';
 import {AuthEndPoints} from '../def/auth-end-points';
 
-declare var customtabs: {
-    isAvailable: (success: () => void, error: (error: string) => void) => void;
-    launch: (url: string, success: (callbackUrl: string) => void, error: (error: string) => void) => void;
-    launchInBrowser: (url: string, success: (callbackUrl: string) => void, error: (error: string) => void) => void;
-    close: (success: () => void, error: (error: string) => void) => void;
-};
-
 export interface StepOneCallbackType {
     code?: string;
     access_token?: string;

@@ -4,13 +4,6 @@ import {ApiKeys} from '../../app-config';
 import {NoActiveSessionError} from '../../profile';
 import {AuthEndPoints} from '../def/auth-end-points';
 
-declare var customtabs: {
-    isAvailable: (success: () => void, error: (error: string) => void) => void;
-    launch: (url: string, success: (callbackUrl: string) => void, error: (error: string) => void) => void;
-    launchInBrowser: (url: string, success: (callbackUrl: string) => void, error: (error: string) => void) => void;
-    close: (success: () => void, error: (error: string) => void) => void;
-};
-
 export class AuthUtil {
     constructor(private apiConfig: ApiConfig, private apiService: ApiService) {
     }
