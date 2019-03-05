@@ -7,7 +7,7 @@ interface HttpResponse {
     error?: string;
 }
 
-declare var cordova: {
+interface Cordova {
     plugin: {
         http: {
             setDataSerializer: (string) => void;
@@ -22,5 +22,5 @@ declare var cordova: {
                    successCallback: (response: HttpResponse) => void,
                    errorCallback: (response: HttpResponse) => void) => void;
         }
-    },
-};
+    };
+}

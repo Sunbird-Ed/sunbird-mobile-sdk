@@ -3,7 +3,8 @@ interface EnqueueRequest {
     title: string;
     description: string;
     mimeType: string;
-    visibleInDownloadsUi: boolean;
+
+    visibleInDownloadsUi: true;
     notificationVisibility: number;
 
     // Either of the next three properties
@@ -15,12 +16,17 @@ interface EnqueueRequest {
         dirType: string;
         subPath: string;
     };
-    destinationUri?: string;
+    destinationUri?: '';
 
     headers: { [key: string]: string }[];
 }
 
-interface Entry {
+interface EnqueueFilter {
+    ids: string[];
+    status: number;
+}
+
+interface EnqueuedEntry {
     id: string;
     title: string;
     description: string;
@@ -36,14 +42,8 @@ interface Entry {
     totalSizeBytes: number;
 }
 
-
-interface Window {
-    downloadManager: {
-        enqueue(req: EnqueueRequest, cb?: (err: any, idString: string) => void);
-        query(filter: {
-            ids: string[],
-            status: number
-        }[] | undefined, cb: (err: any, entry: Entry[]) => void);
-        remove(ids: string[], cb?: (err, removedCount) => void);
-    };
-}
+declare var downloadManager: {
+    enqueue: (enqueueRequest: EnqueueRequest, callback?: (err, id: string) => void) => void;
+    query: (filter: EnqueueFilter | undefined, callback?: (err, entries: EnqueuedEntry[]) => void) => void;
+    remove: (ids: string[], callback?: (err, removeCount: number) => void);
+};
