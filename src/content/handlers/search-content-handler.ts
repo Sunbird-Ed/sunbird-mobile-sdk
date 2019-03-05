@@ -1,4 +1,5 @@
 import {
+    ContentData,
     ContentSearchCriteria,
     ContentSearchFilter,
     ContentSearchResult,
@@ -9,9 +10,9 @@ import {
 } from '..';
 import {HttpRequestType, Request} from '../../api';
 import {AppConfig} from '../../api/config/app-config';
-import {SearchType} from '../util/content-constants';
+import {MimeType, SearchType} from '../util/content-constants';
 import {SearchRequest} from '../def/search-request';
-import {ContentUtil} from '../util/content-util';
+import {InteractSubtype, InteractType, PageId, TelemetryInteractRequest, TelemetryService} from '../../telemetry';
 
 export class SearchContentHandler {
 
@@ -20,7 +21,8 @@ export class SearchContentHandler {
     private readonly SEARCH_ENDPOINT = '/api/search';
 
     constructor(private appConfig: AppConfig,
-                private contentServiceConfig: ContentServiceConfig) {
+                private contentServiceConfig: ContentServiceConfig,
+                private telemetryService: TelemetryService) {
     }
 
     getSearchContentRequest(criteria: ContentSearchCriteria): any {
@@ -214,4 +216,37 @@ export class SearchContentHandler {
             fields: ['downloadUrl', 'variants', 'mimeType']
         };
     }
+
+    public async getDownloadUrl(contentData: ContentData): Promise<string> {
+        let downladUrl;
+        if (contentData.mimeType === MimeType.COLLECTION.valueOf()) {
+            const variants = contentData.variants;
+            if (variants && variants['online']) {
+                const spineData = variants['online'];
+                downladUrl = spineData && spineData['ecarUrl'];
+                await this.buildContentLoadingEvent('online', contentData.identifier);
+            } else if (variants && variants['spine']) {
+                const spineData = variants['spine'];
+                downladUrl = spineData && spineData['ecarUrl'];
+                await this.buildContentLoadingEvent('spine', contentData.identifier);
+            }
+        }
+
+        if (!downladUrl) {
+            downladUrl = contentData.downloadUrl!.trim();
+            await this.buildContentLoadingEvent('full', contentData.identifier);
+        }
+        return downladUrl;
+    }
+
+    buildContentLoadingEvent(subtype: string, identifier: string): Promise<boolean> {
+        const telemetryInteractRequest = new TelemetryInteractRequest();
+        telemetryInteractRequest.type = InteractType.OTHER;
+        telemetryInteractRequest.subType = InteractSubtype.ABOUT_APP_CLICKED;
+        telemetryInteractRequest.pageId = PageId.ABOUT_APP;
+        telemetryInteractRequest.objId = identifier;
+        telemetryInteractRequest.objType = 'Content';
+        return this.telemetryService.interact(telemetryInteractRequest).toPromise();
+    }
+
 }

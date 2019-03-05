@@ -31,7 +31,7 @@ export interface ContentService {
 
     importEcar(ecarImportRequest: EcarImportRequest): Observable<Response>;
 
-    importContent(contentImportRequest: ContentImportRequest): Observable<Response>;
+    importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]>;
 
     subscribeForImportStatus(contentId: string): Observable<Response>;
 
