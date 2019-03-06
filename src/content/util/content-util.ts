@@ -399,4 +399,5 @@ export class ContentUtil {
         }
         return filter;
     }
+
 }

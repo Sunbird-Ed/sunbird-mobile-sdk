@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../../api';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request, Response} from '../../../api';
 import {ContentServiceConfig, SearchResponse} from '../..';
 import {Observable} from 'rxjs';
 import {SearchRequest} from '../../def/search-request';
@@ -8,20 +8,22 @@ export class ContentSearchApiHandler implements ApiRequestHandler<SearchRequest,
     private readonly SEARCH_ENDPOINT = '/search';
 
     constructor(private apiService: ApiService,
-                private contentServiceConfig: ContentServiceConfig) {
+                private contentServiceConfig: ContentServiceConfig,
+                private framework?: string,
+                private langCode?: string) {
     }
 
     handle(request: SearchRequest): Observable<SearchResponse> {
+        const additionalPath = this.framework && this.langCode && `?framework=${this.framework}&lang=${this.langCode}`;
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
-            .withPath(this.contentServiceConfig.searchApiPath.concat(this.SEARCH_ENDPOINT))
+            .withPath(this.contentServiceConfig.searchApiPath.concat(this.SEARCH_ENDPOINT).concat(additionalPath ? additionalPath : ''))
             .withApiToken(true)
             .withBody({request})
             .build();
 
-        return this.apiService.fetch<{ result: SearchResponse }>(apiRequest).map((success) => {
-            console.log('response', success);
-            return success.body.result;
+        return this.apiService.fetch<SearchResponse>(apiRequest).map((success) => {
+            return success.body;
         });
     }
 

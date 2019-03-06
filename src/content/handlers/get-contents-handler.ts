@@ -1,9 +1,6 @@
-import {DbService} from '../../db';
-import {Content, ContentFeedbackService, ContentRequest, ContentSortCriteria} from '..';
+import {ContentRequest, ContentSortCriteria, SortOrder} from '..';
 import {ContentAccessEntry, ContentEntry, ContentMarkerEntry} from '../db/schema';
 import {State, Visibility} from '../util/content-constants';
-import {ContentAccess} from '../../profile/def/content-access';
-import {ProfileService} from '../../profile';
 import {ArrayUtil} from '../../util/array-util';
 
 export class GetContentsHandler {
@@ -77,13 +74,13 @@ export class GetContentsHandler {
     }
 
     private getRecentlyViewedQuery(whereClause: string, orderBy: string, limit: number): string {
-        return `SELECT c.*, ca.${ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP}
+        return `SELECT c.*, ca.${ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP},
                 cm.${ContentMarkerEntry.COLUMN_NAME_DATA} FROM ${ContentAccessEntry.TABLE_NAME} c LEFT JOIN
                 ${ContentMarkerEntry.TABLE_NAME} cm ON
                 cm.${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER} = ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_IDENTIFIER} LEFT JOIN
                 ${ContentEntry.TABLE_NAME}  c ON
                 c.${ContentEntry.COLUMN_NAME_IDENTIFIER} = ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_IDENTIFIER}
-                ${whereClause} ${orderBy} LIMIT limit`;
+                ${whereClause} ${orderBy} LIMIT ${limit}`;
     }
 
     private getLocalOnlyQuery(whereClause: string, orderBy: string, uid: string): string {
@@ -97,23 +94,26 @@ export class GetContentsHandler {
     private generateSortByQuery(sortCriteriaList: ContentSortCriteria[], uid: string): string {
         let orderBy = '';
         let i = 0;
-        if (sortCriteriaList) {
-            sortCriteriaList.forEach((sortCriteria) => {
-                if (sortCriteria) {
-                    if ('lastUsedOn' === sortCriteria.sortAttribute.valueOf() && uid) {
-                        orderBy = this.generateOrderByQuery(i, orderBy, ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP,
-                            sortCriteria.sortOrder.valueOf());
-                    } else if ('localLastUpdatedOn' === sortCriteria.sortAttribute.valueOf()) {
-                        orderBy = this.generateOrderByQuery(i, orderBy, ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON,
-                            sortCriteria.sortOrder.valueOf());
-                    } else if ('sizeOnDevice' === sortCriteria.sortAttribute.valueOf()) {
-                        orderBy = this.generateOrderByQuery(i, orderBy, ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE,
-                            sortCriteria.sortOrder.valueOf());
-                    }
-                }
-                i++;
-            });
+        if (!sortCriteriaList) {
+            sortCriteriaList = [];
+            sortCriteriaList.push({sortAttribute: 'lastUsedOn', sortOrder: SortOrder.DESC});
+            sortCriteriaList.push({sortAttribute: 'localLastUpdatedOn', sortOrder: SortOrder.DESC});
         }
+        sortCriteriaList.forEach((sortCriteria) => {
+            if (sortCriteria) {
+                if ('lastUsedOn' === sortCriteria.sortAttribute.valueOf() && uid) {
+                    orderBy = this.generateOrderByQuery(i, orderBy, ` ca.${ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP}`,
+                        sortCriteria.sortOrder.valueOf());
+                } else if ('localLastUpdatedOn' === sortCriteria.sortAttribute.valueOf()) {
+                    orderBy = this.generateOrderByQuery(i, orderBy, ` c.${ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON}`,
+                        sortCriteria.sortOrder.valueOf());
+                } else if ('sizeOnDevice' === sortCriteria.sortAttribute.valueOf()) {
+                    orderBy = this.generateOrderByQuery(i, orderBy, ` c.${ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE}`,
+                        sortCriteria.sortOrder.valueOf());
+                }
+            }
+            i++;
+        });
         return orderBy;
 
     }
@@ -125,7 +125,7 @@ export class GetContentsHandler {
         } else {
             orderByQuery = orderBy.concat('ORDER BY');
         }
-        orderByQuery.concat(` ca.${columnName} ${sortOrder}`);
+        orderByQuery = orderByQuery.concat(`${columnName} ${sortOrder}`);
         return orderByQuery;
     }
 

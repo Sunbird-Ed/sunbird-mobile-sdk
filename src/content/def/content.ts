@@ -43,7 +43,7 @@ export interface ContentData {
     license: string;
     expires: string;
     downloadUrl: string;
-    variants: any;
+    variants: { [key: string]: any };
     artifactUrl: string;
     language: string[];
     gradeLevel: string[];
@@ -78,7 +78,7 @@ export interface ContentFeedback {
     rating: number;
     comments: string;
     createdAt?: number;
-    stageId: string;
+    stageId?: string;
     contentVersion: string;
 }
 
