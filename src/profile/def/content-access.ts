@@ -2,7 +2,7 @@ export class ContentAccess {
     status: ContentAccessStatus;
     contentId: string;
     contentType: string;
-    contentLearnerState: ContentLearnerState;
+    contentLearnerState?: ContentLearnerState;
 }
 
 export interface ContentLearnerState {
