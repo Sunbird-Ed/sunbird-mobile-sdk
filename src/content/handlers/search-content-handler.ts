@@ -1,17 +1,19 @@
 import {
+    ContentData,
     ContentSearchCriteria,
     ContentSearchFilter,
     ContentSearchResult,
     ContentServiceConfig,
     ContentSortCriteria,
-    FilterValue,
+    FilterValue, SearchResponse,
     SortOrder
 } from '..';
 import {HttpRequestType, Request} from '../../api';
 import {AppConfig} from '../../api/config/app-config';
-import {SearchType} from '../util/content-constants';
-import {SearchRequest} from '../def/search-request';
-import {ContentUtil} from '../util/content-util';
+import {MimeType, SearchType} from '../util/content-constants';
+import {SearchFilter, SearchRequest} from '../def/search-request';
+import {InteractSubtype, InteractType, PageId, TelemetryInteractRequest, TelemetryService} from '../../telemetry';
+import {NumberUtil} from '../../util/number-util';
 
 export class SearchContentHandler {
 
@@ -20,10 +22,11 @@ export class SearchContentHandler {
     private readonly SEARCH_ENDPOINT = '/api/search';
 
     constructor(private appConfig: AppConfig,
-                private contentServiceConfig: ContentServiceConfig) {
+                private contentServiceConfig: ContentServiceConfig,
+                private telemetryService: TelemetryService) {
     }
 
-    getSearchContentRequest(criteria: ContentSearchCriteria): any {
+    getSearchContentRequest(criteria: ContentSearchCriteria): SearchRequest {
         return {
             query: criteria.query,
             offset: criteria.offset,
@@ -31,49 +34,51 @@ export class SearchContentHandler {
             mode: criteria.mode,
             exists: (criteria.exists && criteria.exists.length > 0) ? criteria.exists : [],
             facets: (criteria.facets && criteria.facets.length > 0) ? criteria.facets : [],
-            sort_by: this.getSortByRequest(criteria.sortCriteria),
+            sort_by: this.getSortByRequest(criteria.sortCriteria!),
             filters: this.getSearchFilter(criteria)
         };
     }
 
-    getSearchFilter(criteria: ContentSearchCriteria): any {
-        if (criteria.searchType.valueOf() === SearchType.SEARCH) {
+    getSearchFilter(criteria: ContentSearchCriteria): SearchFilter {
+        if (criteria.searchType!.valueOf() === SearchType.SEARCH.valueOf()) {
             return this.getSearchRequest(criteria);
-        } else if (criteria.searchType.valueOf() === SearchType.FILTER) {
+        } else if (criteria.searchType!.valueOf() === SearchType.FILTER.valueOf()) {
             return this.getFilterRequest(criteria);
         }
+        return {};
     }
 
-    getFilterRequest(criteria: ContentSearchCriteria): any {
-        let searchRequest = {
-            'compatibilityLevel': this.getCompatibilityLevelFilter(),
-            'contentType': (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : [],
+    getFilterRequest(criteria: ContentSearchCriteria): SearchFilter {
+        let searchFilter: SearchFilter = {
+            compatibilityLevel: this.getCompatibilityLevelFilter(),
+            contentType: (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : []
         };
-        this.addFiltersToRequest(searchRequest, criteria.facetFilters);
-        this.addFiltersToRequest(searchRequest, criteria.impliedFilters);
+        this.addFiltersToRequest(searchFilter, criteria.facetFilters!);
+        this.addFiltersToRequest(searchFilter, criteria.impliedFilters!);
 
         if (criteria.impliedFiltersMap && criteria.impliedFiltersMap.length > 0) {
             criteria.impliedFiltersMap.forEach(filterMap => {
-                searchRequest = {
-                    ...searchRequest,
+                searchFilter = {
+                    ...searchFilter,
                     ...filterMap
                 };
             });
         }
-
+        return searchFilter;
     }
 
-    addFiltersToRequest(searchRequest, filter: ContentSearchFilter[]) {
-
-        if (filter.length > 0) {
+    addFiltersToRequest(searchFilter: SearchFilter, filter: ContentSearchFilter[]) {
+        if (filter && filter.length) {
             filter.forEach(facetFilter => {
                 const filterValueList: string[] = [];
                 facetFilter.values.forEach(value => {
-                    filterValueList.push(value.name);
+                    if (value.apply) {
+                        filterValueList.push(value.name);
+                    }
                 });
 
-                if (filterValueList.length > 0) {
-                    searchRequest[facetFilter.name] = filterValueList;
+                if (filterValueList.length) {
+                    searchFilter[facetFilter.name] = filterValueList;
                 }
 
             });
@@ -81,16 +86,16 @@ export class SearchContentHandler {
     }
 
 
-    getSearchRequest(criteria: ContentSearchCriteria): any {
+    getSearchRequest(criteria: ContentSearchCriteria): SearchFilter {
         return {
             compatibilityLevel: this.getCompatibilityLevelFilter(),
             status: criteria.contentStatusArray,
             objectType: ['Content'],
             contentType: (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : [],
-            keywords: (criteria.keywords && criteria.keywords.length > 0) ? criteria.keywords : [],
-            dialcodes: (criteria.dialCodes && criteria.dialCodes.length > 0) ? criteria.dialCodes : [],
-            createdBy: (criteria.createdBy && criteria.createdBy.length > 0) ? criteria.createdBy : [],
-            gradeLevel: (criteria.grade && criteria.grade.length > 0) ? criteria.grade : [],
+            ...((criteria.keywords && criteria.keywords.length) ? {keywords: criteria.keywords} : {}),
+            ...((criteria.dialCodes && criteria.dialCodes.length) ? {dialcodes: criteria.dialCodes} : {}),
+            ...((criteria.createdBy && criteria.createdBy.length) ? {createdBy: criteria.createdBy} : {}),
+            ...((criteria.grade && criteria.grade.length) ? {gradeLevel: criteria.grade} : {}),
             medium: (criteria.medium && criteria.medium.length > 0) ? criteria.medium : [],
             board: (criteria.board && criteria.board.length > 0) ? criteria.board : [],
             language: (criteria.language && criteria.language.length > 0) ? criteria.language : [],
@@ -104,7 +109,7 @@ export class SearchContentHandler {
     }
 
     getSortByRequest(sortCriteria: ContentSortCriteria[]): any {
-        if (sortCriteria && sortCriteria.length === 0) {
+        if (!sortCriteria || !sortCriteria!.length) {
             return {};
         }
         const attribute = sortCriteria[0].sortAttribute;
@@ -116,28 +121,74 @@ export class SearchContentHandler {
         return {'min': 1, 'max': this.appConfig.maxCompatibilityLevel};
     }
 
-    getRequest(request, framework: string, langCode: string): Request {
-        return new Request.Builder()
-            .withType(HttpRequestType.POST)
-            .withPath(this.contentServiceConfig.apiPath + this.SEARCH_ENDPOINT + '/' + '?framework=' + framework + '&lang=' + langCode)
-            .withApiToken(true)
-            .withSessionToken(true)
-            .withBody(request)
-            .build();
-    }
 
-    createFiilterCriteria(previouscriteria: ContentSearchCriteria, facets: ContentSearchFilter[], filters) {
-        const facetsFilter: ContentSearchFilter[] = [];
-        return {
+    createFilterCriteria(previouscriteria: ContentSearchCriteria, facets: ContentSearchFilter[],
+                         appliedFilterMap: SearchFilter): ContentSearchCriteria {
+        const facetFilters: ContentSearchFilter[] = [];
+        const contentSearchCriteria: ContentSearchCriteria = {
             query: previouscriteria.query,
             limit: previouscriteria.limit,
             offset: previouscriteria.offset,
             facets: previouscriteria.facets,
-            sort: previouscriteria.sortCriteria && previouscriteria.sortCriteria.length > 0
+            sortCriteria: previouscriteria.sortCriteria && previouscriteria.sortCriteria.length
                 ? previouscriteria.sortCriteria : [],
             mode: previouscriteria.mode === 'soft' ? 'soft' : 'hard',
-            facetFilters: []
         };
+
+        if (!facets) {
+            return contentSearchCriteria;
+        }
+
+        facets.forEach((facet) => {
+            const appliedFilter: string[] = appliedFilterMap ? appliedFilterMap[facet.name] : [];
+            const facetValues: FilterValue[] = facet.values;
+            const values = this.getSortedFilterValuesWithAppliedFilters(facetValues, appliedFilter);
+            if (facet.name) {
+                facetFilters.push(facet);
+            }
+            delete appliedFilterMap[facet.name];
+        });
+        contentSearchCriteria.facetFilters = facetFilters;
+        contentSearchCriteria.impliedFilters = this.mapFilterValues(appliedFilterMap, contentSearchCriteria);
+        return contentSearchCriteria;
+    }
+
+    private getSortedFilterValuesWithAppliedFilters(facetValues: FilterValue[], appliedFilters: string[]): FilterValue[] {
+        facetValues.forEach((facetValue) => {
+            let applied = false;
+            if (appliedFilters) {
+                appliedFilters.forEach((appliedFilter) => {
+                    if (facetValue.name === appliedFilter) {
+                        applied = true;
+                    }
+                });
+            }
+            facetValue.apply = applied;
+            facetValue.count = NumberUtil.parseInt(facetValue.count);
+        });
+        return facetValues;
+    }
+
+    private mapFilterValues(filtersMap: SearchFilter, contentSearchCriteria: ContentSearchCriteria): ContentSearchFilter[] {
+        const contentSearchFilters: ContentSearchFilter[] = [];
+        const impliedFiltersMap: { [key: string]: any }[] = [];
+        Object.keys(filtersMap).forEach(key => {
+            const values = filtersMap[key];
+            if (Array.isArray(values) && values.length) {
+                const filterValues: FilterValue[] = [];
+                values.forEach((value) => {
+                    const filterValue: FilterValue = {name: value, apply: true};
+                    filterValues.push(filterValue);
+                });
+                contentSearchFilters.push({name: key, values: filterValues});
+            } else if (values) {
+                const filterMap: { [key: string]: any } = {};
+                filterMap[key] = values;
+                impliedFiltersMap.push(filterMap);
+            }
+        });
+        contentSearchCriteria.impliedFiltersMap = impliedFiltersMap;
+        return contentSearchFilters;
     }
 
     addFilterValue(facets: ContentSearchFilter[], filters) {
@@ -161,46 +212,17 @@ export class SearchContentHandler {
         return facetValues;
     }
 
-    mapSearchResponse(searchResponse, searchRequest): ContentSearchResult {
-        const result = searchResponse.result;
-        return {
+    mapSearchResponse(previousContentCriteria: ContentSearchCriteria, searchResponse: SearchResponse,
+                      searchRequest: SearchRequest): ContentSearchResult {
+        const constentSearchResult: ContentSearchResult = {
             id: searchResponse.id,
-            responseMessageId: searchResponse.params.resmsgid ? searchResponse.params.resmsgid : '',
-            contentDataList: result.content ? result.content : [],
-            filterCriteria: new class implements ContentSearchCriteria {
-                age: number;
-                audience: string[];
-                board: string[];
-                channel: string[];
-                contentStatusArray: string[];
-                contentTypes: string[];
-                createdBy: string[];
-                dialCodes: string[];
-                exclPragma: string[];
-                exists: string[];
-                facetFilters: ContentSearchFilter[];
-                facets: string[];
-                framework: string;
-                grade: string[];
-                impliedFilters: ContentSearchFilter[];
-                impliedFiltersMap: Array<any>;
-                keywords: string[];
-                language: string[];
-                languageCode: string;
-                limit: number;
-                medium: string[];
-                mode: string;
-                offlineSearch: boolean;
-                offset: number;
-                pragma: string[];
-                purpose: string[];
-                query: string;
-                searchType: SearchType;
-                sortCriteria: ContentSortCriteria[];
-                topic: string[];
-            },
-            request: searchRequest
+            responseMessageId: searchResponse.params.resmsgid,
+            filterCriteria: this.createFilterCriteria(previousContentCriteria, searchResponse.result.facets, searchRequest.filters),
+            request: searchRequest,
+            contentDataList: searchResponse.result.content,
+            collectionDataList: searchResponse.result.collections ? searchResponse.result.collections : []
         };
+        return constentSearchResult;
     }
 
     public getContentSearchFilter(contentIds: string[], status: string[]): SearchRequest {
@@ -214,4 +236,37 @@ export class SearchContentHandler {
             fields: ['downloadUrl', 'variants', 'mimeType']
         };
     }
+
+    public async getDownloadUrl(contentData: ContentData): Promise<string> {
+        let downladUrl;
+        if (contentData.mimeType === MimeType.COLLECTION.valueOf()) {
+            const variants = contentData.variants;
+            if (variants && variants['online']) {
+                const spineData = variants['online'];
+                downladUrl = spineData && spineData['ecarUrl'];
+                await this.buildContentLoadingEvent('online', contentData.identifier);
+            } else if (variants && variants['spine']) {
+                const spineData = variants['spine'];
+                downladUrl = spineData && spineData['ecarUrl'];
+                await this.buildContentLoadingEvent('spine', contentData.identifier);
+            }
+        }
+
+        if (!downladUrl) {
+            downladUrl = contentData.downloadUrl!.trim();
+            await this.buildContentLoadingEvent('full', contentData.identifier);
+        }
+        return downladUrl;
+    }
+
+    buildContentLoadingEvent(subtype: string, identifier: string): Promise<boolean> {
+        const telemetryInteractRequest = new TelemetryInteractRequest();
+        telemetryInteractRequest.type = InteractType.OTHER;
+        telemetryInteractRequest.subType = InteractSubtype.ABOUT_APP_CLICKED;
+        telemetryInteractRequest.pageId = PageId.ABOUT_APP;
+        telemetryInteractRequest.objId = identifier;
+        telemetryInteractRequest.objType = 'Content';
+        return this.telemetryService.interact(telemetryInteractRequest).toPromise();
+    }
+
 }

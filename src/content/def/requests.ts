@@ -68,8 +68,15 @@ export interface EcarImportRequest {
 
 
 export interface ContentImportRequest {
-    contentImportMap?: { [index: string]: any };
+    contentImportMap?: { [index: string]: ContentImport };
     contentStatusArray: string[];
+}
+
+export interface ContentImport {
+    isChildContent: boolean;
+    destinationFolder: string;
+    contentId: string;
+    correlationData?: CorrelationData[];
 }
 
 export interface ContentExportRequest {
@@ -112,36 +119,36 @@ export enum MarkerType {
 
 export interface ContentSearchCriteria {
 
-    query: string;
-    exists: string[];
-    offset: number;
-    limit: number;
-    mode: string;
-    age: number;
-    grade: string[];
-    medium: string[];
-    board: string[];
-    createdBy: string[];
-    audience: string[];
-    channel: string[];
-    purpose: string[];
-    topic: string[];
-    pragma: string[];
-    exclPragma: string[];
-    contentStatusArray: string[];
-    facets: string[];
-    contentTypes: string[];
-    keywords: string[];
-    dialCodes: string[];
-    language: string[];
-    offlineSearch: boolean;
-    facetFilters: ContentSearchFilter[];
-    impliedFilters: ContentSearchFilter[];
-    impliedFiltersMap: Array<any>;
-    sortCriteria: ContentSortCriteria[];
-    searchType: SearchType;
-    framework: string;
-    languageCode: string;
+    query?: string;
+    exists?: string[];
+    offset?: number;
+    limit?: number;
+    mode?: string;
+    age?: number;
+    grade?: string[];
+    medium?: string[];
+    board?: string[];
+    createdBy?: string[];
+    audience?: string[];
+    channel?: string[];
+    purpose?: string[];
+    topic?: string[];
+    pragma?: string[];
+    exclPragma?: string[];
+    contentStatusArray?: string[];
+    facets?: string[];
+    contentTypes?: string[];
+    keywords?: string[];
+    dialCodes?: string[];
+    language?: string[];
+    offlineSearch?: boolean;
+    facetFilters?: ContentSearchFilter[];
+    impliedFilters?: ContentSearchFilter[];
+    impliedFiltersMap?: { [key: string]: any }[];
+    sortCriteria?: ContentSortCriteria[];
+    searchType?: SearchType;
+    framework?: string;
+    languageCode?: string;
 }
 
 export interface ContentSearchFilter {
@@ -151,9 +158,11 @@ export interface ContentSearchFilter {
 
 export interface FilterValue {
     name: string;
-    count: number;
+    count?: number;
     apply: boolean;
-    translations: string;
+    translations?: string;
+    description?: string;
+    index?: number;
 }
 
 export interface ContentSortCriteria {

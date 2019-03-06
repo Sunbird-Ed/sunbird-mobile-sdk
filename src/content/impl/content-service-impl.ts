@@ -1,13 +1,14 @@
 import {
     ChildContentRequest,
     Content,
+    ContentData,
     ContentDeleteRequest,
     ContentDeleteResponse,
     ContentDeleteStatus,
     ContentDetailRequest,
     ContentExportRequest,
-    ContentFeedbackService,
-    ContentImportRequest,
+    ContentFeedbackService, ContentImport,
+    ContentImportRequest, ContentImportResponse,
     ContentMarkerRequest,
     ContentRequest,
     ContentSearchCriteria,
@@ -33,7 +34,7 @@ import {SearchContentHandler} from '../handlers/search-content-handler';
 import {AppConfig} from '../../api/config/app-config';
 import {FileService} from '../../util/file/def/file-service';
 import {DirectoryEntry, Entry} from '../../util/file';
-import {ErrorCode} from '../util/content-constants';
+import {ContentImportStatus, ErrorCode, FileExtension} from '../util/content-constants';
 import {GetContentsHandler} from '../handlers/get-contents-handler';
 import {ContentMapper} from '../util/content-mapper';
 import {ImportNExportHandler} from '../handlers/import-n-export-handler';
@@ -59,6 +60,9 @@ import {CreateTempLoc} from '../handlers/export/create-temp-loc';
 import {SearchRequest} from '../def/search-request';
 import {ContentSearchApiHandler} from '../handlers/import/content-search-api-handler';
 import {ArrayUtil} from '../../util/array-util';
+import {FileUtil} from '../../util/file/util/file-util';
+import {DownloadRequest} from '../../util/downloader/def/request';
+import {MimeType} from '../util/content-constants';
 
 export class ContentServiceImpl implements ContentService {
     private getContentDetailsHandler: GetContentDetailsHandler;
@@ -204,15 +208,43 @@ export class ContentServiceImpl implements ContentService {
         throw new Error('Not Implemented yet');
     }
 
-    importContent(contentImportRequest: ContentImportRequest): Observable<Response> {
-        const searchContentHandler = new SearchContentHandler(this.appConfig, this.contentServiceConfig);
+    importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]> {
+        const searchContentHandler = new SearchContentHandler(this.appConfig, this.contentServiceConfig, this.telemetryService);
+        const contentIds: string[] = Object.keys(contentImportRequest.contentImportMap!);
+        const contentImportResponse: ContentImportResponse[] = [];
         const filter: SearchRequest = searchContentHandler.getContentSearchFilter(
-            Object.keys(contentImportRequest.contentImportMap!), contentImportRequest.contentStatusArray);
-        const contentSearchHandler = new ContentSearchApiHandler(this.apiService, this.contentServiceConfig).handle(filter);
+            contentIds, contentImportRequest.contentStatusArray);
         return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig).handle(filter)
             .map((searchResponse: SearchResponse) => {
-                console.log('searchResponse', searchResponse);
-                return new Response();
+                return searchResponse.result.content;
+            }).mergeMap(async (contents: ContentData[]) => {
+                if (contents && contents.length) {
+                    const downloadRequestList: DownloadRequest[] = [];
+                    for (const contentId of contentIds) {
+                        const contentData: ContentData | undefined = contents.find(x => x.identifier === contentId);
+                        if (contentData) {
+                            const downloadUrl = await searchContentHandler.getDownloadUrl(contentData);
+                            let status: ContentImportStatus = ContentImportStatus.NOT_FOUND;
+                            if (downloadUrl && FileUtil.getFileExtension(downloadUrl) === FileExtension.CONTENT.valueOf()) {
+                                status = ContentImportStatus.ENQUEUED_FOR_DOWNLOAD;
+                                const contentImport: ContentImport = contentImportRequest.contentImportMap![contentId];
+                                const downloadRequest: DownloadRequest = {
+                                    identifier: contentId,
+                                    downloadUrl: downloadUrl,
+                                    mimeType: MimeType.ECAR.valueOf(),
+                                    destinationFolder: contentImport.destinationFolder,
+                                    isChildContent: contentImport.isChildContent,
+                                    filename: contentId.concat('.', MimeType.ECAR.valueOf()),
+                                    correlationData: contentImport.correlationData
+                                };
+                                downloadRequestList.push(downloadRequest);
+                            }
+                            contentImportResponse.push({identifier: contentId, status: status});
+                        }
+                    }
+                    console.log('downloadRequestList', downloadRequestList);
+                }
+                return contentImportResponse;
             });
 
     }
@@ -286,16 +318,18 @@ export class ContentServiceImpl implements ContentService {
     }
 
 
-    searchContent(request: ContentSearchCriteria): Observable<ContentSearchResult> {
+    searchContent(contentSearchCriteria: ContentSearchCriteria): Observable<ContentSearchResult> {
+        contentSearchCriteria.limit = contentSearchCriteria.limit ? contentSearchCriteria.limit : 100;
+        contentSearchCriteria.offset = contentSearchCriteria.offset ? contentSearchCriteria.offset : 0;
         const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
-            this.contentServiceConfig);
-        const searchRequest = searchHandler.getSearchRequest(request);
-        const httpRequest = searchHandler.getRequest(searchRequest, request.framework, request.languageCode);
-        return this.apiService.fetch<SearchResponse>(httpRequest)
-            .mergeMap((response: Response<SearchResponse>) => {
-                return Observable.of(searchHandler.mapSearchResponse(response.body, searchRequest));
+            this.contentServiceConfig, this.telemetryService);
+        const searchRequest = searchHandler.getSearchContentRequest(contentSearchCriteria);
+        return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig,
+            contentSearchCriteria.framework, contentSearchCriteria.languageCode)
+            .handle(searchRequest)
+            .map((searchResponse: SearchResponse) => {
+                return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
             });
-
     }
 
     cancelDownload(contentId: string): Observable<undefined> {

@@ -1,11 +1,7 @@
 export class FileUtil {
     public static getFileExtension(filePath: string): string {
         const extension: string = filePath.substring((filePath.lastIndexOf('.') + 1), filePath.length);
-        if (extension) {
-            return '';
-        } else {
-            return extension;
-        }
+        return extension ? extension : '';
     }
 
     public static getFileName(filePath: string): string {
