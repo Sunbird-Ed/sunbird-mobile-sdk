@@ -13,7 +13,7 @@ export interface OrganizationSearchCriteria<T> {
     filters: {
         isRootOrg: boolean;
     };
-    fields: (keyof T)[];
+    fields?: (keyof T)[];
 }
 
 
