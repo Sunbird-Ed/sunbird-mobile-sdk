@@ -1,4 +1,4 @@
-import {ContentAccessEntry, ContentEntry} from '../db/schema';
+import {ContentAccessEntry, ContentEntry, ContentMarkerEntry} from '../db/schema';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
 import {ContentUtil} from '../util/content-util';
 import {Content, ContentData, ContentDetailRequest, ContentRequest} from '..';
@@ -46,7 +46,7 @@ export class ContentMapper {
             contentData: contentData,
             isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
             mimeType: contentData.mimeType,
-            basePath:  '',
+            basePath: '',
             contentType: ContentUtil.readContentType(contentData),
             isAvailableLocally: false,
             referenceCount: 0,
@@ -62,7 +62,28 @@ export class ContentMapper {
         const serverInfo = contentEntry[ContentEntry.COLUMN_NAME_SERVER_DATA];
         const localInfo = contentEntry[ContentEntry.COLUMN_NAME_LOCAL_DATA];
         const serverData: ContentData = serverInfo && JSON.parse(serverInfo);
-        const localData: ContentData = localInfo && JSON.parse(localInfo);
+        let localData: ContentData = localInfo && JSON.parse(localInfo);
+
+        let identifier = contentEntry[ContentEntry.COLUMN_NAME_IDENTIFIER];
+        let mimeType = contentEntry[ContentEntry.COLUMN_NAME_MIME_TYPE];
+        let visibility = contentEntry[ContentEntry.COLUMN_NAME_VISIBILITY];
+        let contentType = contentEntry[ContentEntry.COLUMN_NAME_CONTENT_TYPE];
+        let lastUsedTime = 0;
+        if (contentEntry.hasOwnProperty(ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP)) {
+            lastUsedTime = contentEntry[ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP];
+        }
+
+        if (contentEntry.hasOwnProperty(ContentMarkerEntry.COLUMN_NAME_DATA)) {
+            if (!localData) {
+                localData = JSON.parse(contentEntry[ContentMarkerEntry.COLUMN_NAME_DATA]);
+            }
+            if (localData) {
+                identifier = localData.identifier;
+                mimeType = localData.mimeType;
+                visibility = ContentUtil.readVisibility(localData);
+                contentType = ContentUtil.readContentType(localData);
+            }
+        }
         if (localData) {
             contentData = localData;
         }
@@ -99,17 +120,19 @@ export class ContentMapper {
         if (localLastUpdatedTime) {
             contentCreationTime = new Date(localLastUpdatedTime).getTime();
         }
+
+
         return {
-            identifier: contentEntry[ContentEntry.COLUMN_NAME_IDENTIFIER],
+            identifier: identifier,
             contentData: contentData,
             isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
-            mimeType: contentEntry[ContentEntry.COLUMN_NAME_MIME_TYPE],
+            mimeType: mimeType,
             basePath: contentEntry[ContentEntry.COLUMN_NAME_PATH]! || '',
-            contentType: contentEntry[ContentEntry.COLUMN_NAME_CONTENT_TYPE],
+            contentType: contentType,
             isAvailableLocally: ContentUtil.isAvailableLocally(contentEntry[ContentEntry.COLUMN_NAME_CONTENT_STATE]!),
             referenceCount: Number(contentEntry[ContentEntry.COLUMN_NAME_REF_COUNT]) || 0,
             sizeOnDevice: Number(contentEntry[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]) || 0,
-            lastUsedTime: Number(contentEntry[ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP]) || 0,
+            lastUsedTime: lastUsedTime || 0,
             lastUpdatedTime: contentCreationTime,
         };
 

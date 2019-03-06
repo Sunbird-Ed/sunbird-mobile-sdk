@@ -63,8 +63,9 @@ import {ArrayUtil} from '../../util/array-util';
 import {FileUtil} from '../../util/file/util/file-util';
 import {DownloadRequest} from '../../util/downloader/def/request';
 import {MimeType} from '../util/content-constants';
+import {DownloadCompleteDelegate} from '../../util/downloader/def/download-complete-delegate';
 
-export class ContentServiceImpl implements ContentService {
+export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
     private getContentDetailsHandler: GetContentDetailsHandler;
 
     constructor(private contentServiceConfig: ContentServiceConfig,
@@ -378,5 +379,9 @@ export class ContentServiceImpl implements ContentService {
                 }
             }
         });
+    }
+
+    onDownloadComplete(request: any): Observable<undefined> {
+        return Observable.of(undefined);
     }
 }
