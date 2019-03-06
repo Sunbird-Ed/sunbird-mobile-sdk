@@ -80,7 +80,7 @@ export class GetContentsHandler {
                 cm.${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER} = ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_IDENTIFIER} LEFT JOIN
                 ${ContentEntry.TABLE_NAME}  c ON
                 c.${ContentEntry.COLUMN_NAME_IDENTIFIER} = ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_IDENTIFIER}
-                ${whereClause} ${orderBy} LIMIT limit`;
+                ${whereClause} ${orderBy} LIMIT ${limit}`;
     }
 
     private getLocalOnlyQuery(whereClause: string, orderBy: string, uid: string): string {
@@ -102,13 +102,13 @@ export class GetContentsHandler {
         sortCriteriaList.forEach((sortCriteria) => {
             if (sortCriteria) {
                 if ('lastUsedOn' === sortCriteria.sortAttribute.valueOf() && uid) {
-                    orderBy = this.generateOrderByQuery(i, orderBy, ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP,
+                    orderBy = this.generateOrderByQuery(i, orderBy, ` ca.${ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP}`,
                         sortCriteria.sortOrder.valueOf());
                 } else if ('localLastUpdatedOn' === sortCriteria.sortAttribute.valueOf()) {
-                    orderBy = this.generateOrderByQuery(i, orderBy, ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON,
+                    orderBy = this.generateOrderByQuery(i, orderBy, ` c.${ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON}`,
                         sortCriteria.sortOrder.valueOf());
                 } else if ('sizeOnDevice' === sortCriteria.sortAttribute.valueOf()) {
-                    orderBy = this.generateOrderByQuery(i, orderBy, ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE,
+                    orderBy = this.generateOrderByQuery(i, orderBy, ` c.${ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE}`,
                         sortCriteria.sortOrder.valueOf());
                 }
             }
@@ -125,7 +125,7 @@ export class GetContentsHandler {
         } else {
             orderByQuery = orderBy.concat('ORDER BY');
         }
-        orderByQuery.concat(` ca.${columnName} ${sortOrder}`);
+        orderByQuery = orderByQuery.concat(`${columnName} ${sortOrder}`);
         return orderByQuery;
     }
 
