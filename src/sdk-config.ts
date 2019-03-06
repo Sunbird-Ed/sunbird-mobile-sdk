@@ -10,6 +10,7 @@ import {AppConfig} from './api/config/app-config';
 import {FileConfig} from './util/file/config/file-config';
 import {SystemSettingsConfig} from './system-settings';
 import {TelemetryConfig} from './telemetry/config/telemetry-config';
+import {SharedPreferencesConfig} from './util/shared-preferences';
 
 export interface SdkConfig {
     apiConfig: ApiConfig;
@@ -24,4 +25,5 @@ export interface SdkConfig {
     appConfig: AppConfig;
     systemSettingsConfig: SystemSettingsConfig;
     telemetryConfig: TelemetryConfig;
+    sharedPreferencesConfig: SharedPreferencesConfig;
 }
