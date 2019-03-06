@@ -74,7 +74,7 @@ export class GetContentsHandler {
     }
 
     private getRecentlyViewedQuery(whereClause: string, orderBy: string, limit: number): string {
-        return `SELECT c.*, ca.${ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP}
+        return `SELECT c.*, ca.${ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP},
                 cm.${ContentMarkerEntry.COLUMN_NAME_DATA} FROM ${ContentAccessEntry.TABLE_NAME} c LEFT JOIN
                 ${ContentMarkerEntry.TABLE_NAME} cm ON
                 cm.${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER} = ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_IDENTIFIER} LEFT JOIN
