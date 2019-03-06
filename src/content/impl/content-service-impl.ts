@@ -16,9 +16,9 @@ import {
     ContentService,
     ContentServiceConfig,
     EcarImportRequest,
-    ExportContentContext,
+    ExportContentContext, GroupByPageResult,
     HierarchyInfo,
-    ImportContentContext,
+    ImportContentContext, PageSection,
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
@@ -383,5 +383,32 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     onDownloadComplete(request: any): Observable<undefined> {
         return Observable.of(undefined);
+    }
+
+    getGroupByPage(request: ContentSearchCriteria): Observable<GroupByPageResult> {
+        return this.searchContent(request).map((result: ContentSearchResult) => {
+            const filterValues = result.filterCriteria.facetFilters![0].values;
+            const allContent = result.contentDataList;
+            const pageSectionList: PageSection[] = [];
+            // forming response same as PageService.getPageAssemble format
+            for (let i = 0; i < filterValues.length; i++) {
+                const pageSection: PageSection = {};
+                const contents = allContent.filter((content) => {
+                    return content.subject.toLowerCase().trim() === filterValues[i].name.toLowerCase().trim();
+                });
+                delete filterValues[i].apply;
+                pageSection.contents = contents;
+                pageSection.name = filterValues[i].name.charAt(0).toUpperCase() + filterValues[i].name.slice(1);
+                // TODO : need to handle localization
+                pageSection.display = {name: {en: filterValues[i].name}};
+                pageSectionList.push(pageSection);
+            }
+
+            return {
+                name: 'Resource',
+                sections: pageSectionList
+            };
+        });
+
     }
 }
