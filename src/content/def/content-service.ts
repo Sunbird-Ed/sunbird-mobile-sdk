@@ -10,7 +10,7 @@ import {
 import {Response} from '../../api';
 import {Observable} from 'rxjs';
 import {Content, HierarchyInfo} from './content';
-import {ContentDeleteResponse, ContentImportResponse, ContentSearchResult} from './response';
+import {ContentDeleteResponse, ContentImportResponse, ContentSearchResult, GroupByPageResult} from './response';
 
 
 export interface ContentService {
@@ -22,6 +22,8 @@ export interface ContentService {
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
 
     searchContent(criteria: ContentSearchCriteria): Observable<ContentSearchResult>;
+
+    getGroupByPage(request: ContentSearchCriteria): Observable<GroupByPageResult>;
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
 
