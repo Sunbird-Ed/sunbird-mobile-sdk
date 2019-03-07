@@ -7,8 +7,10 @@ import {
     ContentDeleteStatus,
     ContentDetailRequest,
     ContentExportRequest,
-    ContentFeedbackService, ContentImport,
-    ContentImportRequest, ContentImportResponse,
+    ContentFeedbackService,
+    ContentImport,
+    ContentImportRequest,
+    ContentImportResponse,
     ContentMarkerRequest,
     ContentRequest,
     ContentSearchCriteria,
@@ -17,8 +19,10 @@ import {
     ContentServiceConfig,
     EcarImportRequest,
     ExportContentContext,
+    GroupByPageResult,
     HierarchyInfo,
     ImportContentContext,
+    PageSection,
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
@@ -34,7 +38,7 @@ import {SearchContentHandler} from '../handlers/search-content-handler';
 import {AppConfig} from '../../api/config/app-config';
 import {FileService} from '../../util/file/def/file-service';
 import {DirectoryEntry, Entry} from '../../util/file';
-import {ContentImportStatus, ErrorCode, FileExtension} from '../util/content-constants';
+import {ContentImportStatus, ErrorCode, FileExtension, MimeType} from '../util/content-constants';
 import {GetContentsHandler} from '../handlers/get-contents-handler';
 import {ContentMapper} from '../util/content-mapper';
 import {ImportNExportHandler} from '../handlers/import-n-export-handler';
@@ -61,8 +65,7 @@ import {SearchRequest} from '../def/search-request';
 import {ContentSearchApiHandler} from '../handlers/import/content-search-api-handler';
 import {ArrayUtil} from '../../util/array-util';
 import {FileUtil} from '../../util/file/util/file-util';
-import {DownloadRequest} from '../../util/downloader/def/request';
-import {MimeType} from '../util/content-constants';
+import {DownloadRequest} from '../../util/download';
 import {DownloadCompleteDelegate} from '../../util/downloader/def/download-complete-delegate';
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
@@ -383,5 +386,32 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     onDownloadComplete(request: any): Observable<undefined> {
         return Observable.of(undefined);
+    }
+
+    getGroupByPage(request: ContentSearchCriteria): Observable<GroupByPageResult> {
+        return this.searchContent(request).map((result: ContentSearchResult) => {
+            const filterValues = result.filterCriteria.facetFilters![0].values;
+            const allContent = result.contentDataList;
+            const pageSectionList: PageSection[] = [];
+            // forming response same as PageService.getPageAssemble format
+            for (let i = 0; i < filterValues.length; i++) {
+                const pageSection: PageSection = {};
+                const contents = allContent.filter((content) => {
+                    return content.subject.toLowerCase().trim() === filterValues[i].name.toLowerCase().trim();
+                });
+                delete filterValues[i].apply;
+                pageSection.contents = contents;
+                pageSection.name = filterValues[i].name.charAt(0).toUpperCase() + filterValues[i].name.slice(1);
+                // TODO : need to handle localization
+                pageSection.display = {name: {en: filterValues[i].name}};
+                pageSectionList.push(pageSection);
+            }
+
+            return {
+                name: 'Resource',
+                sections: pageSectionList
+            };
+        });
+
     }
 }

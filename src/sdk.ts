@@ -11,7 +11,7 @@ import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/impl/auth-service-impl';
-import {Content, ContentFeedbackService, ContentService} from './content';
+import {ContentFeedbackService, ContentService} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
 import {
@@ -53,6 +53,9 @@ import {EventsBusService} from './events-bus';
 import {EventsBusServiceImpl} from './events-bus/impl/events-bus-service-impl';
 import {SummarizerService} from './summarizer/def/summarizer-service';
 import {SummarizerServiceImpl} from './summarizer/impl/summarizer-service-impl';
+import {Observable} from 'rxjs';
+import {DownloadService} from './util/download';
+import {DownloadServiceImpl} from './util/download/download-service-impl';
 
 export class SunbirdSdk {
 
@@ -88,6 +91,7 @@ export class SunbirdSdk {
     private _contentFeedbackService: ContentFeedbackService;
     private _eventsBusService: EventsBusService;
     private _summarizerService: SummarizerService;
+    private _downloadService: DownloadService;
 
     get sdkConfig(): SdkConfig {
         return this._sdkConfig;
@@ -163,6 +167,10 @@ export class SunbirdSdk {
 
     get summarizerService(): SummarizerService {
         return this._summarizerService;
+    }
+
+    get downloadService(): DownloadService {
+        return this._downloadService;
     }
 
     public async init(sdkConfig: SdkConfig) {
@@ -310,10 +318,16 @@ export class SunbirdSdk {
 
         this._summarizerService = new SummarizerServiceImpl(this._dbService, this._eventsBusService);
 
+        this._downloadService = new DownloadServiceImpl(this._eventsBusService, this._sharedPreferences);
+
         this.postInit();
     }
 
     private postInit() {
-        this._frameworkService.setActiveChannelId(this._sdkConfig.apiConfig.api_authentication.channelId).subscribe();
+        Observable.combineLatest(
+            this._frameworkService.onInit(),
+            this._eventsBusService.onInit(),
+            this._downloadService.onInit()
+        ).subscribe();
     }
 }

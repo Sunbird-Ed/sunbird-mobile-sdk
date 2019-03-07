@@ -11,6 +11,22 @@ export interface ContentSearchResult {
     collectionDataList?: ContentData[];
 }
 
+export interface GroupByPageResult {
+    name: string;
+    sections: PageSection[];
+}
+
+export interface PageSection {
+    count?: number;
+    name?: string;
+    contents?: ContentData[];
+    display?: Display;
+}
+
+export interface Display {
+    name: { [key: string]: any };
+}
+
 export interface SearchResponse {
     id: string;
     params: { resmsgid: string };

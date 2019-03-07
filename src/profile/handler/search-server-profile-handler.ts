@@ -1,7 +1,6 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {ServerProfileSearchCriteria} from '..';
+import {ProfileServiceConfig, ServerProfileSearchCriteria} from '..';
 import {ServerProfile} from '../def/server-profile';
-import {ProfileServiceConfig} from '..';
 import {Observable} from 'rxjs';
 
 export class SearchServerProfileHandler implements ApiRequestHandler<ServerProfileSearchCriteria, ServerProfile[]> {
@@ -27,8 +26,8 @@ export class SearchServerProfileHandler implements ApiRequestHandler<ServerProfi
             })
             .build();
 
-        return this.apiService.fetch<{ result: ServerProfile[] }>(apiRequest).map((success) => {
-            return success.body.result;
+        return this.apiService.fetch<{ result: { response: { content: ServerProfile[] } } }>(apiRequest).map((success) => {
+            return success.body.result.response.content;
         });
     }
 
