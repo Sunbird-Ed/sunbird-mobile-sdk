@@ -7,8 +7,10 @@ import {
     ContentDeleteStatus,
     ContentDetailRequest,
     ContentExportRequest,
-    ContentFeedbackService, ContentImport,
-    ContentImportRequest, ContentImportResponse,
+    ContentFeedbackService,
+    ContentImport,
+    ContentImportRequest,
+    ContentImportResponse,
     ContentMarkerRequest,
     ContentRequest,
     ContentSearchCriteria,
@@ -34,7 +36,7 @@ import {SearchContentHandler} from '../handlers/search-content-handler';
 import {AppConfig} from '../../api/config/app-config';
 import {FileService} from '../../util/file/def/file-service';
 import {DirectoryEntry, Entry} from '../../util/file';
-import {ContentImportStatus, ErrorCode, FileExtension} from '../util/content-constants';
+import {ContentImportStatus, ErrorCode, FileExtension, MimeType} from '../util/content-constants';
 import {GetContentsHandler} from '../handlers/get-contents-handler';
 import {ContentMapper} from '../util/content-mapper';
 import {ImportNExportHandler} from '../handlers/import-n-export-handler';
@@ -61,8 +63,7 @@ import {SearchRequest} from '../def/search-request';
 import {ContentSearchApiHandler} from '../handlers/import/content-search-api-handler';
 import {ArrayUtil} from '../../util/array-util';
 import {FileUtil} from '../../util/file/util/file-util';
-import {DownloadRequest} from '../../util/downloader/def/request';
-import {MimeType} from '../util/content-constants';
+import {DownloadRequest} from '../../util/download';
 
 export class ContentServiceImpl implements ContentService {
     private getContentDetailsHandler: GetContentDetailsHandler;
