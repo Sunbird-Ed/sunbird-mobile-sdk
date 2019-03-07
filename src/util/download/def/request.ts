@@ -1,16 +1,17 @@
 import {CorrelationData} from '../../../telemetry';
 
 export interface DownloadRequest {
+    downloadId?: string;
     identifier: string;
     downloadUrl: string;
     mimeType: string;
     destinationFolder: string;
     isChildContent?: boolean;
     correlationData?: CorrelationData[];
-    filename?: string;
+    filename: string;
     downloadedFilePath?: string;
 }
 
-export interface DownloadRemoveRequest {
-    downloadId: number;
+export interface DownloadCancelRequest {
+    identifier: string;
 }

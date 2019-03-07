@@ -15,3 +15,4 @@ export * from './events-bus';
 export * from './system-settings';
 // utils
 export * from './util/shared-preferences';
+export * from './util/download';

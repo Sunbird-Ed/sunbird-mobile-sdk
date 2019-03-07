@@ -48,6 +48,7 @@
     "babel-jest": "^23.4.0",
     "cordova-plugin-advanced-http": "^2.0.2",
     "cordova-plugin-file": "^6.0.1",
+    "cordova-plugin-android-downloadmanager": "^0.5.0",
     "jest": "^23.6.0",
     "rxjs": ">=5 < 6",
     "ts-loader": "^5.3.2",
