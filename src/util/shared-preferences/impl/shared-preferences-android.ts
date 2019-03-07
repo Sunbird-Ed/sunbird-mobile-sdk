@@ -3,7 +3,9 @@ import {Observable} from 'rxjs';
 
 export class SharedPreferencesAndroid implements SharedPreferences {
 
-    private sharedPreferences = plugins.SharedPreferences.getInstance();
+    private static readonly sharedPreferncesName = 'org.ekstep.genieservices.preference_file';
+
+    private sharedPreferences = plugins.SharedPreferences.getInstance(SharedPreferencesAndroid.sharedPreferncesName);
 
     public getString(key: string): Observable<string | undefined> {
         return Observable.create((observer) => {
