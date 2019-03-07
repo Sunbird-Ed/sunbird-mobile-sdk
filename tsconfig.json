@@ -28,7 +28,8 @@
     "./src/**/*",
     "./plugins/sb-cordova-plugin-db.d.ts",
     "./plugins/sb-cordova-plugin-customtabs.d.ts",
-    "./plugins/cordova-plugin-advanced-http.d.ts"
+    "./plugins/cordova-plugin-advanced-http.d.ts",
+    "./plugins/cordova-plugin-awesome-shared-preferences.d.ts"
   ],
   "exclude": [
     "node_modules",
