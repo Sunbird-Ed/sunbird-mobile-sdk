@@ -78,7 +78,7 @@ export interface ContentFeedback {
     rating: number;
     comments: string;
     createdAt?: number;
-    stageId: string;
+    stageId?: string;
     contentVersion: string;
 }
 

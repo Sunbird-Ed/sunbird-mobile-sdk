@@ -32,7 +32,8 @@ import {CachedItemStoreImpl} from './key-value-store/impl/cached-item-store-impl
 import {PageAssembleService} from './page';
 import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
 import {PageAssemble} from './page/def/page-assemble';
-import {SharedPreferencesImpl} from './util/shared-preferences/impl/shared-preferences-impl';
+import {SharedPreferencesLocalStorage} from './util/shared-preferences/impl/shared-preferences-local-storage';
+import {SharedPreferencesAndroid} from './util/shared-preferences/impl/shared-preferences-android';
 import {FileServiceImpl} from './util/file/impl/file-service-impl';
 import {DbWebSqlService} from './db/impl/db-web-sql-service';
 import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migration';
@@ -170,7 +171,11 @@ export class SunbirdSdk {
 
         this._deviceInfo = new DeviceInfoImpl(this.sdkConfig);
 
-        this._sharedPreferences = new SharedPreferencesImpl();
+        if (sdkConfig.sharedPreferencesConfig.debugMode) {
+            this._sharedPreferences = new SharedPreferencesLocalStorage();
+        } else {
+            this._sharedPreferences = new SharedPreferencesAndroid();
+        }
 
         this._eventsBusService = new EventsBusServiceImpl();
 
