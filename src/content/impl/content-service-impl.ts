@@ -243,7 +243,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                     correlationData: contentImport.correlationData
                                 };
                                 downloadRequestList.push(downloadRequest);
-                               // await this.downloadService.download(downloadRequest).toPromise();
+                                await this.downloadService.download(downloadRequestList).toPromise();
                             }
                             contentImportResponse.push({identifier: contentId, status: status});
                         }

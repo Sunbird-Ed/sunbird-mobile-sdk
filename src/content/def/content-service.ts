@@ -1,9 +1,11 @@
 import {
     ChildContentRequest,
     ContentDeleteRequest,
-    ContentDetailRequest, ContentExportRequest,
-    ContentExportResponse,
-    ContentImportRequest, ContentMarkerRequest, ContentRequest,
+    ContentDetailRequest,
+    ContentExportRequest,
+    ContentImportRequest,
+    ContentMarkerRequest,
+    ContentRequest,
     ContentSearchCriteria,
     EcarImportRequest
 } from './requests';
@@ -14,7 +16,7 @@ import {ContentDeleteResponse, ContentImportResponse, ContentSearchResult, Group
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
 
 
-export interface ContentService  extends  DownloadCompleteDelegate{
+export interface ContentService extends DownloadCompleteDelegate {
 
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
 
