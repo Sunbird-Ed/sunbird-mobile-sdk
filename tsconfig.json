@@ -32,6 +32,7 @@
     "./plugins/cordova-plugin-file.d.ts",
     "./plugins/cordova-plugin-awesome-shared-preferences.d.ts",
     "./plugins/cordova-plugin-android-downloadmanager.d.ts",
+    "./plugins/jjdltc-cordova-plugin-zip.d.ts",
     "./plugins/cordova.d.ts"
   ],
   "exclude": [
