@@ -320,6 +320,7 @@ export class SunbirdSdk {
 
         this._downloadService = new DownloadServiceImpl(this._eventsBusService, this._sharedPreferences);
 
+        this._downloadService.registerDownloadCompleteDelegate(this._contentService);
         this.postInit();
     }
 

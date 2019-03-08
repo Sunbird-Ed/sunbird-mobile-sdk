@@ -11,9 +11,10 @@ import {Response} from '../../api';
 import {Observable} from 'rxjs';
 import {Content, HierarchyInfo} from './content';
 import {ContentDeleteResponse, ContentImportResponse, ContentSearchResult, GroupByPageResult} from './response';
+import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
 
 
-export interface ContentService {
+export interface ContentService  extends  DownloadCompleteDelegate{
 
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
 
