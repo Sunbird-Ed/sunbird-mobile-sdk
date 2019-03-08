@@ -38,7 +38,7 @@ import {SearchContentHandler} from '../handlers/search-content-handler';
 import {AppConfig} from '../../api/config/app-config';
 import {FileService} from '../../util/file/def/file-service';
 import {DirectoryEntry, Entry} from '../../util/file';
-import {ContentImportStatus, ErrorCode, FileExtension, MimeType} from '../util/content-constants';
+import {ContentErrorCode, ContentImportStatus, FileExtension, MimeType} from '../util/content-constants';
 import {GetContentsHandler} from '../handlers/get-contents-handler';
 import {ContentMapper} from '../util/content-mapper';
 import {ImportNExportHandler} from '../handlers/import-n-export-handler';
@@ -150,7 +150,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     exportContent(contentExportRequest: ContentExportRequest): Observable<Response> {
         const response: Response = new Response();
         if (!contentExportRequest.contentIds.length) {
-            response.body = ErrorCode.EXPORT_FAILED_NOTHING_TO_EXPORT;
+            response.body = ContentErrorCode.EXPORT_FAILED_NOTHING_TO_EXPORT;
             return Observable.of(response);
         }
         const exportHandler = new ImportNExportHandler(this.deviceInfo, this.dbService);
@@ -289,7 +289,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         }).catch((error) => {
             console.log('error', error);
             const response: Response = new Response();
-            response.errorMesg = ErrorCode.ECAR_NOT_FOUND.valueOf();
+            response.errorMesg = ContentErrorCode.ECAR_NOT_FOUND.valueOf();
             return response;
         }));
     }
