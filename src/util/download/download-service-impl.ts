@@ -14,29 +14,28 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     private static readonly KEY_TO_DOWNLOAD_LIST = 'to_download_list';
     private static readonly DOWNLOAD_DIR_NAME = 'Download';
 
-    private downloadCompleteDelegate?: DownloadCompleteDelegate;
     private currentDownloadRequest$ = new BehaviorSubject<DownloadRequest | undefined>(undefined);
 
     constructor(private eventsBusService: EventsBusService,
-                private sharedPreferences: SharedPreferences) {
+                private sharedPreferences: SharedPreferences,
+                private downloadCompleteDelegate?: DownloadCompleteDelegate) {
         window['downloadManager'] = downloadManagerInstance;
     }
 
     onInit(): Observable<undefined> {
-        return this.listenToDownloadProgresses();
+        return this.listenForDownloadProgressesChanges();
     }
 
-    download(downloadRequest: DownloadRequest): Observable<undefined> {
+    download(downloadRequests: DownloadRequest[]): Observable<undefined> {
         return this.currentDownloadRequest$
             .take(1)
             .mergeMap((currentDownloadRequest?: DownloadRequest) => {
                 if (currentDownloadRequest) {
-                    return this.addToDownloadList(downloadRequest)
-                        .mergeMap(() => this.resume(false));
+                    return this.addToDownloadList(downloadRequests);
                 }
 
-                return this.addToDownloadList(downloadRequest)
-                    .mergeMap(() => this.resume());
+                return this.addToDownloadList(downloadRequests)
+                    .mergeMap(() => this.switchToNextDownloadRequest());
             });
     }
 
@@ -54,74 +53,67 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                             observer.next(!!removeCount);
                             observer.complete();
                         });
-                    }).mergeMap(() => this.removeFromDownloadList(downloadCancelRequest))
-                        .mergeMap(() => this.resume());
+                    })
+                        .mergeMap(() => this.removeFromDownloadList(downloadCancelRequest))
+                        .mergeMap(() => this.switchToNextDownloadRequest());
                 }
 
-                return this.removeFromDownloadList(downloadCancelRequest)
-                    .mergeMap(() => this.resume(false));
+                return this.removeFromDownloadList(downloadCancelRequest);
             });
     }
 
-    registerDownloadCompleteDelegate(downloadCompleteDelegate: DownloadCompleteDelegate): void {
-        this.downloadCompleteDelegate = downloadCompleteDelegate;
-    }
-
-    private resume(moveToNext = true): Observable<undefined> {
-        return this.currentDownloadRequest$
-            .take(1)
-            .mergeMap((currentDownloadRequest) => {
-                if (currentDownloadRequest && moveToNext === false) {
-                    return Observable.of(undefined);
+    private switchToNextDownloadRequest(): Observable<undefined> {
+        return this.getDownloadListAsSet()
+            .mergeMap((downloadListAsSet: Collections.Set<DownloadRequest>) => {
+                if (!downloadListAsSet.size()) {
+                    return Observable.of(undefined)
+                        .do(() => this.currentDownloadRequest$.next(undefined));
                 }
 
-                return this.getDownloadListAsSet()
-                    .mergeMap((downloadListAsSet: Collections.Set<DownloadRequest>) => {
-                        if (!downloadListAsSet.size()) {
-                            return Observable.of(undefined)
-                                .do(() => this.currentDownloadRequest$.next(undefined));
+                const anyDownloadRequest = downloadListAsSet.toArray().shift() as DownloadRequest;
+
+                return Observable.create((observer) => {
+                    downloadManager.enqueue({
+                        uri: anyDownloadRequest.downloadUrl,
+                        title: anyDownloadRequest.filename,
+                        description: '',
+                        mimeType: anyDownloadRequest.mimeType,
+                        visibleInDownloadsUi: true,
+                        notificationVisibility: 1,
+                        destinationInExternalFilesDir: {
+                            dirType: DownloadServiceImpl.DOWNLOAD_DIR_NAME,
+                            subPath: anyDownloadRequest.filename
+                        },
+                        headers: []
+                    }, (err, id: string) => {
+                        if (err) {
+                            return observer.error(err);
                         }
 
-                        const anyDownloadRequest = downloadListAsSet.toArray().shift() as DownloadRequest;
-
-                        return Observable.create((observer) => {
-                            downloadManager.enqueue({
-                                uri: anyDownloadRequest.downloadUrl,
-                                title: anyDownloadRequest.filename,
-                                description: '',
-                                mimeType: anyDownloadRequest.mimeType,
-                                visibleInDownloadsUi: true,
-                                notificationVisibility: 1,
-                                destinationInExternalFilesDir: {
-                                    dirType: DownloadServiceImpl.DOWNLOAD_DIR_NAME,
-                                    subPath: anyDownloadRequest.filename
-                                },
-                                headers: []
-                            }, (err, id: string) => {
-                                if (err) {
-                                    return observer.error(err);
-                                }
-
-                                observer.next(id);
-                            });
-                        }).do((downloadId) => {
-                            anyDownloadRequest.downloadedFilePath = cordova.file.externalDataDirectory +
-                                DownloadServiceImpl.DOWNLOAD_DIR_NAME + '/' + anyDownloadRequest.filename;
-                            anyDownloadRequest.downloadId = downloadId;
-                            this.currentDownloadRequest$.next(anyDownloadRequest);
-                        }).catch(() => {
-                            return this.cancel({
-                                identifier: anyDownloadRequest.identifier
-                            });
-                        }) as Observable<undefined>;
+                        observer.next(id);
                     });
+                }).do((downloadId) => {
+                    anyDownloadRequest.downloadedFilePath = cordova.file.externalDataDirectory +
+                        DownloadServiceImpl.DOWNLOAD_DIR_NAME + '/' + anyDownloadRequest.filename;
+                    anyDownloadRequest.downloadId = downloadId;
+                    this.currentDownloadRequest$.next(anyDownloadRequest);
+                }).catch(() => {
+                    return this.cancel({
+                        identifier: anyDownloadRequest.identifier
+                    });
+                }) as Observable<undefined>;
             });
     }
 
-    private addToDownloadList(request: DownloadRequest): Observable<undefined> {
+    private addToDownloadList(requests: DownloadRequest[]): Observable<undefined> {
         return this.getDownloadListAsSet()
-            .do((downloadRequests: Collections.Set<DownloadRequest>) => {
-                downloadRequests.add(request);
+            .map((downloadRequests: Collections.Set<DownloadRequest>) => {
+                requests.reduce((acc, request) => {
+                    acc.add(request);
+                    return acc;
+                }, downloadRequests);
+
+                return downloadRequests;
             })
             .mergeMap((downloadRequests: Collections.Set<DownloadRequest>) => {
                 return this.sharedPreferences.putString(
@@ -201,6 +193,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         progress: -1,
                         status: DownloadStatus.STATUS_PENDING,
                     });
+                    observer.complete();
                 }
 
                 const entry = entries[0];
@@ -208,14 +201,15 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                 observer.next({
                     downloadId: downloadRequest.downloadId,
                     identifier: downloadRequest.identifier,
-                    progress: (entry.bytesDownloadedSoFar / entry.totalSizeBytes) * 100,
+                    progress: entry.totalSizeBytes >= 0 ? (entry.bytesDownloadedSoFar / entry.totalSizeBytes) * 100 : -1,
                     status: entry.status,
                 });
+                observer.complete();
             });
         });
     }
 
-    private listenToDownloadProgresses(): Observable<undefined> {
+    private listenForDownloadProgressesChanges(): Observable<undefined> {
         return this.currentDownloadRequest$
             .switchMap((currentDownloadRequest: DownloadRequest | undefined) => {
                 if (!currentDownloadRequest) {
@@ -225,15 +219,17 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                 return Observable.interval(1000)
                     .mergeMap(() => {
                         return this.getDownloadProgress(currentDownloadRequest)
-                            .do((p) => console.log(p))
-                            .mergeMap((downloadProgress) => {
-                                return Observable.zip(
-                                    this.handleDownloadCompletion(downloadProgress!),
-                                    this.emitProgressInEventBus(downloadProgress!)
-                                );
-                            })
-                            .mapTo(undefined);
-                    });
+                    })
+                    .distinctUntilChanged((prev, next) =>
+                        Collections.util.makeString(prev) === Collections.util.makeString(next))
+                    .do((p) => console.log(p))
+                    .mergeMap((downloadProgress) => {
+                        return Observable.zip(
+                            this.handleDownloadCompletion(downloadProgress!),
+                            this.emitProgressInEventBus(downloadProgress!)
+                        );
+                    })
+                    .mapTo(undefined);
             });
     }
 }
