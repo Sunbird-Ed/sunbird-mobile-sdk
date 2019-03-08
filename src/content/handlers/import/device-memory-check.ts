@@ -1,8 +1,8 @@
 import {FileService} from '../../../util/file/def/file-service';
-import {ContentImportResponse, ImportContentContext} from '../..';
+import {ImportContentContext} from '../..';
 import {FileUtil} from '../../../util/file/util/file-util';
 import {Response} from '../../../api';
-import {ErrorCode} from '../../util/content-constants';
+import {ContentErrorCode} from '../../util/content-constants';
 
 export class DeviceMemoryCheck {
     freeDiskSpace: number;
@@ -18,7 +18,7 @@ export class DeviceMemoryCheck {
             const bufferSize = this.calculateBufferSize(metaData.size);
             const response: Response = new Response();
             if (!FileUtil.isFreeSpaceAvailable(this.freeDiskSpace, metaData.size, bufferSize)) {
-                response.errorMesg = ErrorCode.IMPORT_FAILED_DEVICE_MEMORY_FULL.valueOf();
+                response.errorMesg = ContentErrorCode.IMPORT_FAILED_DEVICE_MEMORY_FULL.valueOf();
                 return Promise.reject(response);
             }
             return Promise.resolve(response);

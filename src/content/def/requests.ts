@@ -84,20 +84,6 @@ export interface ContentExportRequest {
     contentIds: string[];
 }
 
-export enum ContentImportStatus {
-    NOT_FOUND = -1,
-    ENQUEUED_FOR_DOWNLOAD = 0,
-    DOWNLOAD_STARTED = 1,
-    DOWNLOAD_FAILED = 2,
-    DOWNLOAD_COMPLETED = 3,
-    IMPORT_STARTED = 4,
-    IMPORT_FAILED = 5,
-    NOT_COMPATIBLE = 6,
-    CONTENT_EXPIRED = 7,
-    ALREADY_EXIST = 8,
-    IMPORT_COMPLETED = 100
-}
-
 export interface ContentExportResponse {
     exportedFilePath: string;
 }

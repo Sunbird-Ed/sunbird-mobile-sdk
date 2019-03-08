@@ -1,16 +1,11 @@
 import {FileService} from '../../../util/file/def/file-service';
 import {ExportContentContext} from '../..';
-import {DirectoryEntry, Entry} from '../../../util/file';
-import {__await} from 'tslib';
+import {Entry} from '../../../util/file';
 import {ContentEntry} from '../../db/schema';
-import COLUMN_NAME_CONTENT_TYPE = ContentEntry.COLUMN_NAME_CONTENT_TYPE;
-import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 import {ContentUtil} from '../../util/content-util';
 import {Response} from '../../../api';
-import {ErrorCode} from '../../util/content-constants';
-import {FileUtil} from '../../../util/file/util/file-util';
-import * as ts from 'tsickle/src/typescript-2.4';
-import directory = ts.ScriptElementKind.directory;
+import {ContentErrorCode} from '../../util/content-constants';
+import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class CopyAsset {
     constructor(private fileService: FileService) {
@@ -41,7 +36,7 @@ export class CopyAsset {
             response.body = exportContentContext;
             return response;
         } catch (e) {
-            response.errorMesg = ErrorCode.EXPORT_FAILED_COPY_ASSET;
+            response.errorMesg = ContentErrorCode.EXPORT_FAILED_COPY_ASSET;
             throw response;
         }
 

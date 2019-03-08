@@ -253,7 +253,7 @@ export enum InteractSubtype {
     PLAY_ONLINE = 'play-online'
 }
 
-export enum ErrorCode {
+export enum TelemetryErrorCode {
     ERR_DOWNLOAD_FAILED = 'ERR_DOWNLOAD_FAILED'
 }
 

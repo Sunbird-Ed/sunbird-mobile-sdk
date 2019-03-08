@@ -1,7 +1,7 @@
 import {FileService} from '../../../util/file/def/file-service';
 import {ExportContentContext} from '../..';
 import {Response} from '../../../api';
-import {ErrorCode} from '../../util/content-constants';
+import {ContentErrorCode} from '../../util/content-constants';
 
 export class DeleteTempEcar {
 
@@ -14,7 +14,7 @@ export class DeleteTempEcar {
             response.body = exportContentContext;
             return response;
         }).catch(() => {
-            response.errorMesg = ErrorCode.EXPORT_FAILED_DELETING_ECAR;
+            response.errorMesg = ContentErrorCode.EXPORT_FAILED_DELETING_ECAR;
             throw response;
         });
     }

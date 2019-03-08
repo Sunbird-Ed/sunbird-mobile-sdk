@@ -2,8 +2,7 @@ import {FileService} from '../../../util/file/def/file-service';
 import {ZipService} from '../../../util/zip/def/zip-service';
 import {ExportContentContext} from '../..';
 import {Response} from '../../../api';
-import {FileUtil} from '../../../util/file/util/file-util';
-import {ErrorCode} from '../../util/content-constants';
+import {ContentErrorCode} from '../../util/content-constants';
 import {Metadata} from '../../../util/file';
 
 export class EcarBundle {
@@ -19,7 +18,7 @@ export class EcarBundle {
             this.zipService.zip(exportContentContext.tmpLocationPath!, {target: exportContentContext.ecarFilePath!!}, [], [], () => {
                 resolve();
             }, () => {
-                response.errorMesg = ErrorCode.EXPORT_FAILED_ECAR_BUNDLE;
+                response.errorMesg = ContentErrorCode.EXPORT_FAILED_ECAR_BUNDLE;
                 throw response;
             });
         });

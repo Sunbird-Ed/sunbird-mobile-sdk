@@ -70,7 +70,7 @@ export enum ContentImportStatus {
 
 }
 
-export enum ErrorCode {
+export enum ContentErrorCode {
     NO_DATA_FOUND = 'NO_DATA_FOUND',
     INVALID_FILE = 'INVALID_FILE',
     ECAR_NOT_FOUND = 'ECAR_NOT_FOUND',
