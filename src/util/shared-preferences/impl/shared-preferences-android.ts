@@ -9,12 +9,15 @@ export class SharedPreferencesAndroid implements SharedPreferences {
 
     public getString(key: string): Observable<string | undefined> {
         return Observable.create((observer) => {
-            this.sharedPreferences.getString(key, undefined, (value) => {
-                observer.next(value);
+            this.sharedPreferences.getString(key, '', (value) => {
+                if (!value) {
+                    observer.next(undefined);
+                } else {
+                    observer.next(value);
+                }
                 observer.complete();
             }, (error) => {
-                observer.next(undefined);
-                observer.complete();
+                observer.error(error);
             });
         });
     }
@@ -25,8 +28,7 @@ export class SharedPreferencesAndroid implements SharedPreferences {
                 observer.next(undefined);
                 observer.complete();
             }, (error) => {
-                observer.next(undefined);
-                observer.complete();
+                observer.error(error);
             });
         });
     }

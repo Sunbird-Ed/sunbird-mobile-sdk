@@ -48,7 +48,7 @@ import {ContentUtil} from '../../content/util/content-util';
 
 
 export class ProfileServiceImpl implements ProfileService {
-    private static readonly KEY_USER_SESSION = 'profile_session';
+    private static readonly KEY_USER_SESSION = 'session';
 
     constructor(private profileServiceConfig: ProfileServiceConfig,
                 private dbService: DbService,
