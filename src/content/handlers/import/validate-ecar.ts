@@ -1,6 +1,6 @@
 import {ImportContentContext} from '../..';
 import {Response} from '../../../api';
-import {ContentImportStatus, ErrorCode, Visibility} from '../../util/content-constants';
+import {ContentErrorCode, ContentImportStatus, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
 import {ContentUtil} from '../../util/content-util';
 import {AppConfig} from '../../../api/config/app-config';
@@ -23,20 +23,20 @@ export class ValidateEcar {
         const data = await this.fileService.readAsText(importContext.tmpLocation!, this.MANIFEST_FILE_NAME);
 
         if (!data) {
-            response.errorMesg = ErrorCode.IMPORT_FAILED_MANIFEST_FILE_NOT_FOUND.valueOf();
+            response.errorMesg = ContentErrorCode.IMPORT_FAILED_MANIFEST_FILE_NOT_FOUND.valueOf();
             throw response;
         }
 
         const manifestJson = JSON.parse(data);
 
         if (manifestJson.ver === 1.0) {
-            response.errorMesg = ErrorCode.IMPORT_FAILED_UNSUPPORTED_MANIFEST.valueOf();
+            response.errorMesg = ContentErrorCode.IMPORT_FAILED_UNSUPPORTED_MANIFEST.valueOf();
             throw response;
         }
         const archive = manifestJson.archive;
         const items = archive.items;
         if (!archive.items) {
-            response.errorMesg = ErrorCode.IMPORT_FAILED_NO_CONTENT_METADATA.valueOf();
+            response.errorMesg = ContentErrorCode.IMPORT_FAILED_NO_CONTENT_METADATA.valueOf();
             throw response;
         }
 

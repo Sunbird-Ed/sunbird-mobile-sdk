@@ -1,12 +1,4 @@
 import {ZipService} from '../def/zip-service';
-import {Entry, EntryCallback, ErrorCallback, FileError, FileSystem, LocalFileSystem} from '../../file';
-
-declare var JJzip: {
-    unzip(sourceZip: string, option, successCallback, errorCallback);
-
-    zip(directoryPath: string, option, directoriesToBeSkipped: string[], filesToBeSkipped: string[], successCallback, errorCallback);
-
-};
 
 export class ZipServiceImpl implements ZipService {
     unzip(sourceZip: string, option, successCallback?, errorCallback?) {
@@ -33,5 +25,4 @@ export class ZipServiceImpl implements ZipService {
             }
         });
     }
-
 }

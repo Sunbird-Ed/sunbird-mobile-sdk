@@ -38,7 +38,7 @@ import {SearchContentHandler} from '../handlers/search-content-handler';
 import {AppConfig} from '../../api/config/app-config';
 import {FileService} from '../../util/file/def/file-service';
 import {DirectoryEntry, Entry} from '../../util/file';
-import {ContentImportStatus, ErrorCode, FileExtension, MimeType} from '../util/content-constants';
+import {ContentErrorCode, ContentImportStatus, FileExtension, MimeType} from '../util/content-constants';
 import {GetContentsHandler} from '../handlers/get-contents-handler';
 import {ContentMapper} from '../util/content-mapper';
 import {ImportNExportHandler} from '../handlers/import-n-export-handler';
@@ -65,8 +65,8 @@ import {SearchRequest} from '../def/search-request';
 import {ContentSearchApiHandler} from '../handlers/import/content-search-api-handler';
 import {ArrayUtil} from '../../util/array-util';
 import {FileUtil} from '../../util/file/util/file-util';
-import {DownloadRequest} from '../../util/download';
-import {DownloadCompleteDelegate} from '../../util/downloader/def/download-complete-delegate';
+import {DownloadRequest, DownloadService} from '../../util/download';
+import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
     private getContentDetailsHandler: GetContentDetailsHandler;
@@ -80,7 +80,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 private zipService: ZipService,
                 private deviceInfo: DeviceInfo,
                 private telemetryService: TelemetryService,
-                private contentFeedbackService: ContentFeedbackService) {
+                private contentFeedbackService: ContentFeedbackService,
+                private downloadService: DownloadService) {
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
             this.apiService, this.contentServiceConfig, this.dbService);
@@ -149,7 +150,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     exportContent(contentExportRequest: ContentExportRequest): Observable<Response> {
         const response: Response = new Response();
         if (!contentExportRequest.contentIds.length) {
-            response.body = ErrorCode.EXPORT_FAILED_NOTHING_TO_EXPORT;
+            response.body = ContentErrorCode.EXPORT_FAILED_NOTHING_TO_EXPORT;
             return Observable.of(response);
         }
         const exportHandler = new ImportNExportHandler(this.deviceInfo, this.dbService);
@@ -242,6 +243,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                     correlationData: contentImport.correlationData
                                 };
                                 downloadRequestList.push(downloadRequest);
+                                await this.downloadService.download(downloadRequestList).toPromise();
                             }
                             contentImportResponse.push({identifier: contentId, status: status});
                         }
@@ -287,7 +289,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         }).catch((error) => {
             console.log('error', error);
             const response: Response = new Response();
-            response.errorMesg = ErrorCode.ECAR_NOT_FOUND.valueOf();
+            response.errorMesg = ContentErrorCode.ECAR_NOT_FOUND.valueOf();
             return response;
         }));
     }
@@ -384,10 +386,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         });
     }
 
-    onDownloadComplete(request: any): Observable<undefined> {
-        return Observable.of(undefined);
-    }
-
     getGroupByPage(request: ContentSearchCriteria): Observable<GroupByPageResult> {
         return this.searchContent(request).map((result: ContentSearchResult) => {
             const filterValues = result.filterCriteria.facetFilters![0].values;
@@ -413,5 +411,17 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             };
         });
 
+    }
+
+    onDownloadCompletion(request: DownloadRequest): Observable<undefined> {
+        const importEcarRequest: EcarImportRequest = {
+            isChildContent: request.isChildContent!,
+            sourceFilePath: request.downloadedFilePath!,
+            destinationFolder: request.destinationFolder!,
+            correlationData: request.correlationData!
+        };
+        return this.importEcar(importEcarRequest).mapTo(undefined).catch(() => {
+            return Observable.of(undefined);
+        });
     }
 }

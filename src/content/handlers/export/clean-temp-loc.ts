@@ -1,7 +1,7 @@
 import {FileService} from '../../../util/file/def/file-service';
 import {Response} from '../../../api';
 import {FileUtil} from '../../../util/file/util/file-util';
-import {ErrorCode, FileExtension, Visibility} from '../../util/content-constants';
+import {FileExtension} from '../../util/content-constants';
 import {Entry, Metadata} from '../../../util/file';
 import {ExportContentContext} from '../..';
 
