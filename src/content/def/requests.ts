@@ -69,7 +69,7 @@ export interface EcarImportRequest {
 
 
 export interface ContentImportRequest {
-    contentImports: ContentImport[];
+    contentImportArray: ContentImport[];
     contentStatusArray: string[];
 }
 
