@@ -44,26 +44,37 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
     }
 
     handle(): Observable<TelemetrySyncStat> {
-        return this.registerDevice()
-            .mergeMap(() => this.processEventsBatch())
-            .expand((processedEventsCount: number) =>
-                processedEventsCount ? this.processEventsBatch() : Observable.empty()
-            )
-            .reduce(() => undefined, undefined)
-            .mergeMap(() => this.handleProcessedEventsBatch())
-            .expand((syncStat: TelemetrySyncStat) =>
-                syncStat.syncedEventCount ? this.handleProcessedEventsBatch() : Observable.empty()
-            )
-            .reduce((acc: TelemetrySyncStat, currentStat: TelemetrySyncStat) => {
-                return ({
-                    syncedEventCount: acc.syncedEventCount + currentStat.syncedEventCount,
+        return this.hasTelemetryThresholdCrossed()
+            .mergeMap((has: boolean) => {
+                if (has) {
+                    return this.registerDevice()
+                        .mergeMap(() => this.processEventsBatch())
+                        .expand((processedEventsCount: number) =>
+                            processedEventsCount ? this.processEventsBatch() : Observable.empty()
+                        )
+                        .reduce(() => undefined, undefined)
+                        .mergeMap(() => this.handleProcessedEventsBatch())
+                        .expand((syncStat: TelemetrySyncStat) =>
+                            syncStat.syncedEventCount ? this.handleProcessedEventsBatch() : Observable.empty()
+                        )
+                        .reduce((acc: TelemetrySyncStat, currentStat: TelemetrySyncStat) => {
+                            return ({
+                                syncedEventCount: acc.syncedEventCount + currentStat.syncedEventCount,
+                                syncTime: Date.now(),
+                                syncedFileSize: acc.syncedFileSize + currentStat.syncedFileSize
+                            });
+                        }, {
+                            syncedEventCount: 0,
+                            syncTime: Date.now(),
+                            syncedFileSize: 0
+                        });
+                }
+
+                return Observable.of({
+                    syncedEventCount: 0,
                     syncTime: Date.now(),
-                    syncedFileSize: acc.syncedFileSize + currentStat.syncedFileSize
+                    syncedFileSize: 0
                 });
-            }, {
-                syncedEventCount: 0,
-                syncTime: Date.now(),
-                syncedFileSize: 0
             });
     }
 
@@ -108,22 +119,26 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
             );
     }
 
-    private fetchEvents(): Observable<TelemetryEntry.SchemaMap[]> {
+    private hasTelemetryThresholdCrossed(): Observable<boolean> {
         return this.dbService.execute(`
             SELECT count(*) as COUNT FROM ${TelemetryEntry.TABLE_NAME}`
-        ).mergeMap((result) => {
+        ).map((result) => {
             if (result && result[0] && (result[0]['COUNT'] >= this.telemetryConfig.telemetrySyncThreshold)) {
-                return this.dbService.execute(`
-                    SELECT * FROM ${TelemetryEntry.TABLE_NAME}
-                    WHERE ${TelemetryEntry.COLUMN_NAME_PRIORITY} = (SELECT MIN (${TelemetryEntry.COLUMN_NAME_PRIORITY})
-                    FROM ${TelemetryEntry.TABLE_NAME})
-                    ORDER BY ${TelemetryEntry.COLUMN_NAME_TIMESTAMP}
-                    LIMIT ${this.telemetryConfig.telemetrySyncBandwidth}`
-                );
+                return true;
+            } else {
+                return false;
             }
-
-            return Observable.of([]);
         });
+    }
+
+    private fetchEvents(): Observable<TelemetryEntry.SchemaMap[]> {
+        return this.dbService.execute(`
+            SELECT * FROM ${TelemetryEntry.TABLE_NAME}
+            WHERE ${TelemetryEntry.COLUMN_NAME_PRIORITY} = (SELECT MIN (${TelemetryEntry.COLUMN_NAME_PRIORITY})
+            FROM ${TelemetryEntry.TABLE_NAME})
+            ORDER BY ${TelemetryEntry.COLUMN_NAME_TIMESTAMP}
+            LIMIT ${this.telemetryConfig.telemetrySyncBandwidth}`
+        );
     }
 
     private processEvents(events: TelemetryEntry.SchemaMap[]): Observable<ProcessedEventsMeta> {
