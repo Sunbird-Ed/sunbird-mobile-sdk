@@ -7,24 +7,22 @@ export class SharedPreferencesAndroid implements SharedPreferences {
 
     public getString(key: string): Observable<string | undefined> {
         return Observable.create((observer) => {
-            this.sharedPreferences.getString(key, undefined, (value) => {
+            this.sharedPreferences.getString(key, '', (value) => {
                 observer.next(value);
                 observer.complete();
-            }, (error) => {
-                observer.next(undefined);
-                observer.complete();
+            }, (e) => {
+                observer.error(e);
             });
         });
     }
 
     public putString(key: string, value: string): Observable<undefined> {
         return Observable.create((observer) => {
-            this.sharedPreferences.putString(key, value, (val) => {
+            this.sharedPreferences.putString(key, value, () => {
                 observer.next(undefined);
                 observer.complete();
-            }, (error) => {
-                observer.next(undefined);
-                observer.complete();
+            }, (e) => {
+                observer.error(e);
             });
         });
     }
