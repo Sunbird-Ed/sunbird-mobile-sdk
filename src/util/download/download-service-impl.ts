@@ -16,9 +16,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
 
     private currentDownloadRequest$ = new BehaviorSubject<DownloadRequest | undefined>(undefined);
 
+    private downloadCompleteDelegate?: DownloadCompleteDelegate;
+
     constructor(private eventsBusService: EventsBusService,
-                private sharedPreferences: SharedPreferences,
-                private downloadCompleteDelegate?: DownloadCompleteDelegate) {
+                private sharedPreferences: SharedPreferences) {
         window['downloadManager'] = downloadManagerInstance;
     }
 
@@ -60,6 +61,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
 
                 return this.removeFromDownloadList(downloadCancelRequest);
             });
+    }
+
+    registerOnDownloadCompleteDelegate(downloadCompleteDelegate: DownloadCompleteDelegate): void {
+        this.downloadCompleteDelegate = downloadCompleteDelegate;
     }
 
     private switchToNextDownloadRequest(): Observable<undefined> {
@@ -167,7 +172,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         () => !!this.downloadCompleteDelegate,
                         Observable.defer(() => this.downloadCompleteDelegate!.onDownloadCompletion(currentDownloadRequest!)),
                         Observable.defer(() => Observable.of(undefined))
-                    ).mergeMap(() => this.cancel({identifier: currentDownloadRequest!.identifier}));
+                    ).mergeMap(() => this.cancel({identifier: currentDownloadRequest!.identifier}))
+                        .catch(() => this.cancel({identifier: currentDownloadRequest!.identifier}));
                 }
 
                 return Observable.of(undefined);
@@ -218,7 +224,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
 
                 return Observable.interval(1000)
                     .mergeMap(() => {
-                        return this.getDownloadProgress(currentDownloadRequest)
+                        return this.getDownloadProgress(currentDownloadRequest);
                     })
                     .distinctUntilChanged((prev, next) =>
                         Collections.util.makeString(prev) === Collections.util.makeString(next))

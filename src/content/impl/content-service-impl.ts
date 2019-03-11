@@ -241,19 +241,18 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                 const downloadRequest: ContentDownloadRequest = {
                                     identifier: contentId,
                                     downloadUrl: downloadUrl,
-                                    mimeType: MimeType.ECAR.valueOf(),
+                                    mimeType: MimeType.ECAR,
                                     destinationFolder: contentImport.destinationFolder,
                                     isChildContent: contentImport.isChildContent,
-                                    filename: contentId.concat('.', MimeType.ECAR.valueOf()),
+                                    filename: contentId.concat('.', FileExtension.CONTENT),
                                     correlationData: contentImport.correlationData
                                 };
                                 downloadRequestList.push(downloadRequest);
-                                await this.downloadService.download(downloadRequestList).toPromise();
                             }
                             contentImportResponse.push({identifier: contentId, status: status});
                         }
                     }
-                    console.log('downloadRequestList', downloadRequestList);
+                    await this.downloadService.download(downloadRequestList).toPromise();
                 }
                 return contentImportResponse;
             });
