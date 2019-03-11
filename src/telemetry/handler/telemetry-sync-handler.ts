@@ -31,11 +31,11 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
 
     private readonly preprocessors: TelemetrySyncPreprocessor[];
 
-    constructor(private keyValueStore: KeyValueStore,
-                private dbService: DbService,
-                private apiService: ApiService,
+    constructor(private dbService: DbService,
                 private telemetryConfig: TelemetryConfig,
-                private deviceInfo: DeviceInfo) {
+                private deviceInfo: DeviceInfo,
+                private keyValueStore?: KeyValueStore,
+                private apiService?: ApiService) {
         this.preprocessors = [
             new TelemetryEntriesToStringPreprocessor(),
             new StringToByteArrayPreprocessor(),
@@ -68,7 +68,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
     }
 
     private registerDevice(): Observable<undefined> {
-        return this.keyValueStore.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY)
+        return this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY)
             .mergeMap((timestamp: string | undefined) => {
                 if (timestamp && (parseInt(timestamp, 10) > Date.now())) {
                     return Observable.of(undefined);
@@ -76,27 +76,27 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
 
                 const apiRequest: Request = new Request.Builder()
                     .withType(HttpRequestType.POST)
-                    .withHost(this.telemetryConfig.deviceRegisterHost)
-                    .withPath(this.telemetryConfig.deviceRegisterApiPath +
-                        TelemetrySyncHandler.DEVICE_REGISTER_ENDPOINT + '/' + this.deviceInfo.getDeviceID())
+                    .withHost(this.telemetryConfig!.deviceRegisterHost)
+                    .withPath(this.telemetryConfig!.deviceRegisterApiPath +
+                        TelemetrySyncHandler.DEVICE_REGISTER_ENDPOINT + '/' + this.deviceInfo!.getDeviceID())
                     .withApiToken(true)
                     .build();
 
-                return this.apiService.fetch(apiRequest)
+                return this.apiService!.fetch(apiRequest)
                     .mergeMap(() =>
-                        this.keyValueStore.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY,
+                        this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY,
                             Date.now() + TelemetrySyncHandler.REGISTER_API_SUCCESS_TTL + '')
                             .map(() => undefined)
                     )
                     .catch(() =>
-                        this.keyValueStore.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY,
+                        this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY,
                             Date.now() + TelemetrySyncHandler.REGISTER_API_FAILURE_TTL + '')
                             .map(() => undefined)
                     );
             });
     }
 
-    private processEventsBatch(): Observable<number> {
+    public processEventsBatch(): Observable<number> {
         return this.fetchEvents()
             .mergeMap((events) =>
                 this.processEvents(events)
@@ -225,7 +225,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
             .withApiToken(true)
             .build();
 
-        return this.apiService.fetch(apiRequest)
+        return this.apiService!.fetch(apiRequest)
             .map(() => ({
                 syncedEventCount: processedEventsBatchEntry[COLUMN_NAME_NUMBER_OF_EVENTS],
                 syncTime: Date.now(),

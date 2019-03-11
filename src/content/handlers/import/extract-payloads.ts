@@ -91,7 +91,7 @@ export class ExtractPayloads {
                         if (!contentDisposition || !contentEncoding ||
                             (contentDisposition === ContentDisposition.INLINE.valueOf()
                                 && contentEncoding === ContentEncoding.GZIP.valueOf())) { // Content with artifact without zip i.e. pfd, mp4
-                            const payload = importContext.tmpLocation!.concat('/', artifactUrl);
+                            const payload = importContext.tmpLocation!.concat(artifactUrl);
                             await new Promise((resolve, reject) => {
                                 this.zipService.unzip(payload, {target: payloadDestination!}, () => {
                                     isUnzippingSuccessfull = true;
@@ -159,10 +159,11 @@ export class ExtractPayloads {
     private constructContentDBModel(identifier, manifestVersion, localData,
                                     mimeType, contentType, visibility, path,
                                     refCount, contentState, audience, pragma, sizeOnDevice): ContentEntry.SchemaMap {
+        console.log('Path', path);
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
-            [ContentEntry.COLUMN_NAME_PATH]: path,
+            [ContentEntry.COLUMN_NAME_PATH]: ContentUtil.getBasePath(path),
             [ContentEntry.COLUMN_NAME_REF_COUNT]: refCount,
             [ContentEntry.COLUMN_NAME_CONTENT_STATE]: contentState,
             [ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]: sizeOnDevice,

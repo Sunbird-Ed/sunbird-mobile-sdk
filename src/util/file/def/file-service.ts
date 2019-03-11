@@ -21,7 +21,7 @@ export interface FileService {
 
     createFile(path: string, fileName: string, replace: boolean): Promise<FileEntry>;
 
-    removeFile(path: string, fileName: string): Promise<RemoveResult>;
+    removeFile(path: string): Promise<RemoveResult>;
 
     getFile(directoryEntry: DirectoryEntry, fileName: string, flags: Flags): Promise<FileEntry>;
 

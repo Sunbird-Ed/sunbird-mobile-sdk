@@ -8,6 +8,7 @@ import {GetContentDetailsHandler} from './get-content-details-handler';
 import {Stack} from '../util/stack';
 import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
 import {ContentMapper} from '../util/content-mapper';
+import {ArrayUtil} from '../../util/array-util';
 
 export class ChildContentsHandler {
 
@@ -20,10 +21,10 @@ export class ChildContentsHandler {
                                         level: number,
                                         hierarchyInfoList?: HierarchyInfo[]): Promise<Content> {
         const content: Content = ContentMapper.mapContentDBEntryToContent(contentInDb);
-        const rows: ContentEntry.SchemaMap[] =
+        const childContentModels: ContentEntry.SchemaMap[] =
             await this.getSortedChildrenList(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA], ChildContents.ALL);
 
-        if (rows && rows.length > 0) {
+        if (childContentModels && childContentModels.length) {
             if (!hierarchyInfoList) {
                 content.hierarchyInfo = [
                     {
@@ -34,14 +35,16 @@ export class ChildContentsHandler {
             }
 
             if (level === -1 || currentLevel <= level) {
-                content.children = await Promise.all(rows.map((row) =>
-                    this.fetchChildrenOfContent(
-                        row,
+                const childContents: Content[] = [];
+                for (const element of childContentModels) {
+                    const childContentModel = element as ContentEntry.SchemaMap;
+                    const childContent: Content = await this.fetchChildrenOfContent(element,
                         currentLevel + 1,
                         level,
-                        hierarchyInfoList
-                    )
-                ));
+                        hierarchyInfoList);
+                    childContents.push(childContent);
+                }
+                content.children = childContents;
             }
         } else {
             content.hierarchyInfo = hierarchyInfoList;
@@ -52,7 +55,7 @@ export class ChildContentsHandler {
 
     private async getSortedChildrenList(localData: string, level: number): Promise<ContentEntry.SchemaMap[]> {
         const data = JSON.parse(localData);
-        let childContents: ChildContent[] = Array.of(data.children);
+        let childContents: ChildContent[] = data.children;
         if (!childContents || !childContents.length) {
             return [];
         }
@@ -89,9 +92,9 @@ export class ChildContentsHandler {
                 break;
         }
 
-        const query = `select * from ${ContentEntry.TABLE_NAME}
-                        where ${ContentEntry.COLUMN_NAME_IDENTIFIER}
-                        in ('${childIdentifiers.join(',')}') ${filter} ${orderBy}`;
+        const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
+                        WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER}
+                        IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)}) ${filter} ${orderBy}`;
         return this.dbService.execute(query).toPromise();
     }
 

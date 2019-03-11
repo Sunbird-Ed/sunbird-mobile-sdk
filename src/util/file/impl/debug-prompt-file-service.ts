@@ -54,7 +54,7 @@ export class DebugPromptFileService implements FileService {
         throw new Error('To be Implemented');
     }
 
-    removeFile(path: string, fileName: string): Promise<RemoveResult> {
+    removeFile(path: string): Promise<RemoveResult> {
         throw new Error('To be Implemented');
     }
 

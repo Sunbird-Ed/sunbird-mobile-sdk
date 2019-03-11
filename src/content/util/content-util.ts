@@ -36,6 +36,12 @@ export class ContentUtil {
     }
 
     public static hasChildren(localData): boolean {
+        if (!localData) {
+            return false;
+        }
+        if (typeof (localData) === 'string') {
+            localData = JSON.parse(localData);
+        }
         return localData && localData.children;
     }
 
@@ -62,9 +68,14 @@ export class ContentUtil {
         return {l1: l1, l2: l2, l3: l3, l4: l4};
     }
 
-    public static getChildContentsIdentifiers(localData: string): string[] {
+    public static getChildContentsIdentifiers(localData): string[] {
         const childIdentifiers: string[] = [];
-        const contentData = JSON.parse(localData);
+        let contentData;
+        if (typeof (localData) === 'string') {
+            contentData = JSON.parse(localData);
+        } else {
+            contentData = localData;
+        }
         const children: ChildContent[] = contentData.children;
         if (children && children.length) {
             children.forEach((child) => {
@@ -385,7 +396,7 @@ export class ContentUtil {
         return item.size ? item.size : '';
     }
 
-    public static getUidnIdentifierFiler(uid: string , identifier): string {
+    public static getUidnIdentifierFiler(uid: string, identifier): string {
         const uidFilter = uid && `uid = '${uid}'`;
         const identifierFilter = identifier && `identifier = '${identifier}'`;
 
@@ -398,6 +409,18 @@ export class ContentUtil {
             filter = `WHERE (${uidFilter})`;
         }
         return filter;
+    }
+
+    public static getBasePath(basePath: string): string {
+        if (!basePath) {
+            return '';
+        }
+        if (basePath.indexOf('file://') !== -1) {
+            basePath = basePath.replace('file://', '');
+        } else {
+            basePath = 'file://'.concat(basePath);
+        }
+        return basePath;
     }
 
 }

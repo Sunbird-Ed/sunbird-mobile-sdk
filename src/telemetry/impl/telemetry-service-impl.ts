@@ -1,9 +1,10 @@
 import {DbService, InsertQuery} from '../../db';
 import {
+    ExportTelemetryContext, ImportTelemetryContext,
     TelemetryDecorator,
     TelemetryEndRequest,
     TelemetryErrorRequest,
-    TelemetryEvents, TelemetryFeedbackRequest,
+    TelemetryEvents, TelemetryExportRequest, TelemetryFeedbackRequest, TelemetryImportRequest,
     TelemetryImpressionRequest,
     TelemetryInteractRequest,
     TelemetryLogRequest,
@@ -23,6 +24,16 @@ import {TelemetryConfig} from '../config/telemetry-config';
 import {DeviceInfo} from '../../util/device/def/device-info';
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {EventDelegate} from '../../events-bus/def/event-delegate';
+import {FileService} from '../../util/file/def/file-service';
+import {CreateTelemetryExportFile} from '../handler/export/create-telemetry-export-file';
+import {TelemetryExportResponse} from '../def/response';
+import {Response} from '../../api';
+import {CopyDatabase} from '../handler/export/copy-database';
+import {CreateMetaData} from '../handler/export/create-meta-data';
+import {CleanupExportedFile} from '../handler/export/cleanup-exported-file';
+import {CleanCurrentDatabase} from '../handler/export/clean-current-database';
+import {GenerateShareTelemetry} from '../handler/export/generate-share-telemetry';
+import {ValidateTelemetryMetadata} from '../handler/import/validate-telemetry-metadata';
 
 export class TelemetryServiceImpl implements TelemetryService, EventDelegate {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
@@ -35,7 +46,8 @@ export class TelemetryServiceImpl implements TelemetryService, EventDelegate {
                 private apiService: ApiService,
                 private telemetryConfig: TelemetryConfig,
                 private deviceInfo: DeviceInfo,
-                private eventsBusService: EventsBusService) {
+                private eventsBusService: EventsBusService,
+                private fileService: FileService) {
         this.eventsBusService.registerDelegate({namespace: EventNamespace.TELEMETRY, delegate: this});
     }
 
@@ -127,12 +139,44 @@ export class TelemetryServiceImpl implements TelemetryService, EventDelegate {
         return this.save(start);
     }
 
-    import(sourcePath: string): Observable<boolean> {
+    importTelemetry(importTelemetryRequest: TelemetryImportRequest): Observable<boolean> {
+        const importTelemetryContext: ImportTelemetryContext = {
+            sourceDBFilePath: importTelemetryRequest.sourceFilePath
+        };
+        Observable.fromPromise(
+            new ValidateTelemetryMetadata(this.dbService).execute(importTelemetryContext).then(() => {
+            })
+        );
         throw new Error('Method not implemented.');
     }
 
-    export(destPath: string): Observable<boolean> {
-        throw new Error('Method not implemented.');
+    exportTelemetry(telemetryExportRequest: TelemetryExportRequest): Observable<TelemetryExportResponse> {
+        const exportTelemetryContext: ExportTelemetryContext = {destinationFolder: telemetryExportRequest.destinationFolder};
+        const telemetrySyncHandler: TelemetrySyncHandler = new TelemetrySyncHandler(
+            this.dbService,
+            this.telemetryConfig,
+            this.deviceInfo
+        );
+        return Observable.fromPromise(
+            telemetrySyncHandler.processEventsBatch().toPromise().then(() => {
+                return new CreateTelemetryExportFile(this.fileService, this.deviceInfo).execute(exportTelemetryContext);
+            }).then((exportResponse: Response) => {
+                const res: TelemetryExportResponse = {exportedFilePath: 'yep'};
+                return new CopyDatabase(this.dbService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new CreateMetaData(this.dbService, this.fileService, this.deviceInfo).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new CleanupExportedFile(this.dbService, this.fileService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new CleanCurrentDatabase(this.dbService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new CleanCurrentDatabase(this.dbService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new GenerateShareTelemetry(this.dbService, this).execute(exportResponse.body);
+            }).then((exportResponse: Response<ExportTelemetryContext>) => {
+                const res: TelemetryExportResponse = {exportedFilePath: exportResponse.body.destinationDBFilePath!};
+                return res;
+            }));
     }
 
     getTelemetryStat(): Observable<TelemetryStat> {
@@ -165,11 +209,11 @@ export class TelemetryServiceImpl implements TelemetryService, EventDelegate {
 
     sync(): Observable<TelemetrySyncStat> {
         return new TelemetrySyncHandler(
-            this.keyValueStore,
             this.dbService,
-            this.apiService,
             this.telemetryConfig,
-            this.deviceInfo
+            this.deviceInfo,
+            this.keyValueStore,
+            this.apiService
         ).handle()
             .mergeMap((telemetrySyncStat) =>
                 this.keyValueStore.setValue(TelemetryServiceImpl.KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP, telemetrySyncStat.syncTime + '')

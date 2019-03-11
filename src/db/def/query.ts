@@ -1,5 +1,6 @@
 export interface BaseQuery {
     table: string;
+    useExternalDb?: boolean;
 }
 
 export interface ReadQuery extends BaseQuery {
