@@ -10,6 +10,6 @@ interface SharedPreferences {
 
 declare var plugins: {
     SharedPreferences: {
-        getInstance(): SharedPreferences
+        getInstance: (name:string) => SharedPreferences
     }
 };
