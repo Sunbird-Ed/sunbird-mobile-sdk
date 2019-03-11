@@ -219,7 +219,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]> {
         const searchContentHandler = new SearchContentHandler(this.appConfig, this.contentServiceConfig, this.telemetryService);
-        const contentIds: string[] = Object.keys(contentImportRequest.contentImportMap!);
+        const contentIds: string[] = contentImportRequest.contentImports.map((i) => i.contentId);
         const contentImportResponse: ContentImportResponse[] = [];
         const filter: SearchRequest = searchContentHandler.getContentSearchFilter(
             contentIds, contentImportRequest.contentStatusArray);
@@ -236,7 +236,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             let status: ContentImportStatus = ContentImportStatus.NOT_FOUND;
                             if (downloadUrl && FileUtil.getFileExtension(downloadUrl) === FileExtension.CONTENT.valueOf()) {
                                 status = ContentImportStatus.ENQUEUED_FOR_DOWNLOAD;
-                                const contentImport: ContentImport = contentImportRequest.contentImportMap![contentId];
+                                const contentImport: ContentImport =
+                                    contentImportRequest.contentImports.find((i) => i.contentId === contentId)!;
                                 const downloadRequest: ContentDownloadRequest = {
                                     identifier: contentId,
                                     downloadUrl: downloadUrl,
