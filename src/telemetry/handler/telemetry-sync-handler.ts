@@ -45,8 +45,8 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
 
     handle(): Observable<TelemetrySyncStat> {
         return this.hasTelemetryThresholdCrossed()
-            .mergeMap((has: boolean) => {
-                if (has) {
+            .mergeMap((hasTelemetryThresholdCrossed: boolean) => {
+                if (hasTelemetryThresholdCrossed) {
                     return this.registerDevice()
                         .mergeMap(() => this.processEventsBatch())
                         .expand((processedEventsCount: number) =>
