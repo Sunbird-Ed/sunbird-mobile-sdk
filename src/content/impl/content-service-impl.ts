@@ -6,11 +6,14 @@ import {
     ContentDeleteResponse,
     ContentDeleteStatus,
     ContentDetailRequest,
+    ContentDownloadRequest,
+    ContentErrorCode,
     ContentExportRequest,
     ContentFeedbackService,
     ContentImport,
     ContentImportRequest,
     ContentImportResponse,
+    ContentImportStatus,
     ContentMarkerRequest,
     ContentRequest,
     ContentSearchCriteria,
@@ -19,9 +22,11 @@ import {
     ContentServiceConfig,
     EcarImportRequest,
     ExportContentContext,
+    FileExtension,
     GroupByPageResult,
     HierarchyInfo,
     ImportContentContext,
+    MimeType,
     PageSection,
     SearchResponse
 } from '..';
@@ -38,7 +43,6 @@ import {SearchContentHandler} from '../handlers/search-content-handler';
 import {AppConfig} from '../../api/config/app-config';
 import {FileService} from '../../util/file/def/file-service';
 import {DirectoryEntry, Entry} from '../../util/file';
-import {ContentErrorCode, ContentImportStatus, FileExtension, MimeType} from '../util/content-constants';
 import {GetContentsHandler} from '../handlers/get-contents-handler';
 import {ContentMapper} from '../util/content-mapper';
 import {ImportNExportHandler} from '../handlers/import-n-export-handler';
@@ -233,7 +237,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             if (downloadUrl && FileUtil.getFileExtension(downloadUrl) === FileExtension.CONTENT.valueOf()) {
                                 status = ContentImportStatus.ENQUEUED_FOR_DOWNLOAD;
                                 const contentImport: ContentImport = contentImportRequest.contentImportMap![contentId];
-                                const downloadRequest: DownloadRequest = {
+                                const downloadRequest: ContentDownloadRequest = {
                                     identifier: contentId,
                                     downloadUrl: downloadUrl,
                                     mimeType: MimeType.ECAR.valueOf(),
@@ -413,7 +417,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     }
 
-    onDownloadCompletion(request: DownloadRequest): Observable<undefined> {
+    onDownloadCompletion(request: ContentDownloadRequest): Observable<undefined> {
         const importEcarRequest: EcarImportRequest = {
             isChildContent: request.isChildContent!,
             sourceFilePath: request.downloadedFilePath!,

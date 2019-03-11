@@ -1,8 +1,9 @@
-import {SearchType} from '../util/content-constants';
+import {SearchType} from '..';
 import {Content, HierarchyInfo} from './content';
 import {CorrelationData} from '../../telemetry';
 import {ContentImportResponse} from './response';
 import {ContentEntry} from '../db/schema';
+import {DownloadRequest} from '../../util/download';
 
 export interface ContentDecorateRequest {
     content: Content;
@@ -180,4 +181,8 @@ export interface ExportContentContext {
     manifest?: any;
 }
 
+export interface ContentDownloadRequest extends DownloadRequest {
+    isChildContent?: boolean;
+    correlationData?: CorrelationData[];
+}
 

@@ -2,7 +2,7 @@ import {DownloadService} from './def/download-service';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {DownloadProgress} from './download-progress';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
-import {DownloadCancelRequest, DownloadRequest} from './def/request';
+import {DownloadCancelRequest, DownloadRequest} from './def/requests';
 import {DownloadStatus} from './def/download-status';
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {SharedPreferences} from '../shared-preferences';
