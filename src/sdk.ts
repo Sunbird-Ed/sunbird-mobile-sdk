@@ -271,7 +271,8 @@ export class SunbirdSdk {
             this._apiService,
             this._sdkConfig.telemetryConfig,
             this._deviceInfo,
-            this._eventsBusService
+            this._eventsBusService,
+            this._fileService
         );
 
         this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService, this._telemetryService);

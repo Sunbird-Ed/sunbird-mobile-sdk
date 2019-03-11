@@ -18,6 +18,7 @@ export class DbCordovaService implements DbService {
             updateQuery.selection || '',
             updateQuery.selectionArgs || [],
             updateQuery.modelJson,
+            updateQuery.useExternalDb || false,
             (count: any) => {
                 observable.next(count);
                 observable.complete();
@@ -60,7 +61,7 @@ export class DbCordovaService implements DbService {
 
         const observable = new Subject<any>();
 
-        db.execute(query, value => {
+        db.execute(query, deleteQuery.useExternalDb || false, value => {
             observable.next(value);
             observable.complete();
         }, error => {
@@ -82,10 +83,10 @@ export class DbCordovaService implements DbService {
         });
     }
 
-    execute(query: string): Observable<any> {
+    execute(query: string, useExternalDb?: boolean): Observable<any> {
         const observable = new Subject<any>();
 
-        db.execute(query, value => {
+        db.execute(query, useExternalDb || false, (value) => {
             observable.next(value);
             observable.complete();
         }, error => {
@@ -107,6 +108,7 @@ export class DbCordovaService implements DbService {
             readQuery.having || '',
             readQuery.orderBy || '',
             readQuery.limit || '',
+            readQuery.useExternalDb || false,
             (json: any[]) => {
                 observable.next(json);
                 observable.complete();
@@ -121,7 +123,7 @@ export class DbCordovaService implements DbService {
         const observable = new Subject<number>();
 
         db.insert(inserQuery.table,
-            inserQuery.modelJson, (number: number) => {
+            inserQuery.modelJson, inserQuery.useExternalDb || false, (number: number) => {
                 observable.next(number);
                 observable.complete();
             }, (error: string) => {
@@ -135,8 +137,32 @@ export class DbCordovaService implements DbService {
         db.beginTransaction();
     }
 
-    endTransaction(isOperationSuccessful: boolean): void {
-        db.endTransaction(isOperationSuccessful);
+    endTransaction(isOperationSuccessful: boolean, useExternalDb?: boolean): void {
+        db.endTransaction(isOperationSuccessful, useExternalDb || false);
+    }
+
+    copyDatabase(destination: string): Observable<boolean> {
+        const observable = new Subject<boolean>();
+
+        db.copyDatabase(destination, (success: boolean) => {
+            observable.next(success);
+            observable.complete();
+        }, (error: string) => {
+            observable.error(error);
+        });
+
+        return observable;
+    }
+
+    open(dbFilePath: string): Promise<undefined> {
+        return new Promise<undefined>(((resolve, reject) => {
+            db.open(dbFilePath,
+                (value) => {
+                    resolve();
+                }, (value) => {
+                    reject();
+                });
+        }));
     }
 
 }

@@ -3,13 +3,14 @@ import {TelemetrySyncStat} from './telemetry-sync-stat';
 import {Observable} from 'rxjs';
 import {
     TelemetryEndRequest,
-    TelemetryErrorRequest, TelemetryFeedbackRequest,
+    TelemetryErrorRequest, TelemetryExportRequest, TelemetryFeedbackRequest, TelemetryImportRequest,
     TelemetryImpressionRequest,
     TelemetryInteractRequest,
     TelemetryLogRequest, TelemetryShareRequest,
     TelemetryStartRequest
 } from './requests';
-
+import {Response} from '../../api';
+import {TelemetryExportResponse} from './response';
 
 export interface TelemetryService {
     start(request: TelemetryStartRequest): Observable<boolean>;
@@ -28,9 +29,9 @@ export interface TelemetryService {
 
     error(request: TelemetryErrorRequest): Observable<boolean>;
 
-    import(sourcePath: string): Observable<boolean>;
+    importTelemetry(telemetryImportRequest: TelemetryImportRequest): Observable<boolean>;
 
-    export(destinationPath: string): Observable<boolean>;
+    exportTelemetry(telemetryExportRequest: TelemetryExportRequest): Observable<TelemetryExportResponse>;
 
     getTelemetryStat(): Observable<TelemetryStat>;
 

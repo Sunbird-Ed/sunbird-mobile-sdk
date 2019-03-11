@@ -115,3 +115,24 @@ export interface Item {
     size: string;
 }
 
+export interface ExportTelemetryContext {
+    destinationFolder: string;
+    destinationDBFilePath?: string;
+    metadata?: { [index: string]: any };
+    size?: string;
+}
+
+export interface ImportTelemetryContext {
+    sourceDBFilePath: string;
+    metadata?: { [index: string]: any };
+}
+
+export interface TelemetryExportRequest {
+    destinationFolder: string;
+}
+
+export interface TelemetryImportRequest {
+    sourceFilePath: string;
+}
+
+

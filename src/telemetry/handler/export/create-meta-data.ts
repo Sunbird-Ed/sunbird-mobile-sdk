@@ -3,8 +3,8 @@ import {Response} from '../../../api';
 import {DeviceInfo} from '../../../util/device/def/device-info';
 import {UniqueId} from '../../../db/util/unique-id';
 import {FileService} from '../../../util/file/def/file-service';
-import {ExportProfileContext} from '../../def/export-profile-context';
-import {MetaEntry} from '../../../telemetry/db/schema';
+import {MetaEntry, TelemetryProcessedEntry} from '../../db/schema';
+import {ExportTelemetryContext} from '../..';
 
 export class CreateMetaData {
     constructor(private dbService: DbService,
@@ -12,9 +12,9 @@ export class CreateMetaData {
                 private deviceInfo: DeviceInfo) {
     }
 
-    public async execute(exportContext: ExportProfileContext): Promise<Response> {
+    public async execute(exportContext: ExportTelemetryContext): Promise<Response> {
         const response: Response = new Response();
-        const metaData: { [key: string]: any } = this.generateMetaData(exportContext.userIds, exportContext.groupIds);
+        const metaData: { [key: string]: any } = await this.generateMetaData();
         return this.dbService.open(exportContext.destinationDBFilePath!).then(() => {
             return this.dbService.execute(MetaEntry.getCreateEntry(), true).toPromise();
         }).then(() => {
@@ -29,16 +29,15 @@ export class CreateMetaData {
     }
 
 
-    private generateMetaData(userIds: string[], groupIds: string[]): { [key: string]: any } {
+    private async generateMetaData(): Promise<{ [key: string]: any }> {
         const metaData: { [key: string]: any } = {};
         metaData['version'] = 1;
         metaData['types'] = ['telemetry'];
         metaData['did'] = this.deviceInfo.getDeviceID();
         metaData['export_id'] = UniqueId.generateUniqueId();
-        if (!groupIds) {
-            groupIds = [];
-        }
-        metaData['profiles_count'] = userIds.length + groupIds.length;
+        const query = `SELECT sum(${TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS}) from ${TelemetryProcessedEntry.TABLE_NAME}`;
+        const result: any[] = await this.dbService.execute(query).toPromise();
+        metaData['events_count'] = result.length;
         return metaData;
 
     }

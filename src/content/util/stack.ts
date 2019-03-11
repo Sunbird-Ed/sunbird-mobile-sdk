@@ -22,7 +22,7 @@ export class Stack<T> {
     }
 
     public isEmpty(): boolean {
-        return !!this._stack.length;
+        return (this._stack.length === 0);
     }
 
     public addAll(item: T[]) {

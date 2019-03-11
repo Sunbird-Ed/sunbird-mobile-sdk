@@ -63,6 +63,9 @@ export namespace UserEntry {
     export const _ID = '_id';
     export const TABLE_NAME = 'users';
     export const COLUMN_NAME_UID = 'uid';
+    export interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+    }
 
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE ' + UserEntry.TABLE_NAME + ' (' +
@@ -147,6 +150,11 @@ export namespace ImportedMetadataEntry {
     export const COLUMN_NAME_DEVICE_ID = 'device_id';
     export const COLUMN_NAME_COUNT = 'count';
 
+    export interface SchemaMap {
+        [COLUMN_NAME_IMPORTED_ID]: string;
+        [COLUMN_NAME_DEVICE_ID]: string;
+        [COLUMN_NAME_COUNT]: string;
+    }
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + ImportedMetadataEntry.TABLE_NAME + ' (' +
             ImportedMetadataEntry._ID + ' INTEGER PRIMARY KEY,' +

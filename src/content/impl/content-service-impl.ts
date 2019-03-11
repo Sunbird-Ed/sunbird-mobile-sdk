@@ -194,7 +194,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         }));
     }
 
-    getChildContents(childContentRequest: ChildContentRequest): Observable<any> {
+    getChildContents(childContentRequest: ChildContentRequest): Observable<Content> {
         const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
         let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
         if (!hierarchyInfoList) {
