@@ -38,8 +38,8 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
             .withSessionToken(true)
             .build();
 
-        return this.apiService.fetch<{ result: Course[] }>(apiRequest).map((response) => {
-            return response.body.result;
+        return this.apiService.fetch<{ result: { courses: Course[] } }>(apiRequest).map((response) => {
+            return response.body.result.courses;
         });
     }
 }
