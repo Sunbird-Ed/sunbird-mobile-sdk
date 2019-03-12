@@ -26,6 +26,53 @@ export class SearchContentHandler {
                 private telemetryService: TelemetryService) {
     }
 
+    getSearchCriteria(requestMap: { [key: string]: any }): ContentSearchCriteria {
+        const filter: { [key: string]: any } = requestMap['request'];
+        const query = filter['query'];
+        const exists = filter['exists'];
+        let mode;
+        if (filter.hasOwnProperty('soft') && filter['mode'] === 'soft') {
+            mode = 'soft';
+        }
+        const sortCriteria: ContentSortCriteria[] = [];
+        if (filter.hasOwnProperty('sort_by')) {
+            const sortBy = filter['sort_by'];
+            Object.keys(sortBy).forEach((key) => {
+                const criteria: ContentSortCriteria = {
+                    sortAttribute: key,
+                    sortOrder: SortOrder[String(sortBy[key])]
+                };
+                sortCriteria.push(criteria);
+            });
+        }
+
+        const contentSearchCriteria: ContentSearchCriteria = {
+            ...((query ? {query: query} : {})),
+            ...((exists ? {exists: exists} : {})),
+            mode: mode,
+            sortCriteria: sortCriteria
+        };
+
+        let contentTypes;
+        let impliedFilter;
+        if (filter.hasOwnProperty('filters')) {
+            const filterMap: SearchFilter = filter['filters'] as SearchFilter;
+            if (filterMap.contentType) {
+                contentTypes = filterMap.contentType;
+            }
+            impliedFilter = this.mapFilterValues(filterMap, contentSearchCriteria);
+            contentSearchCriteria.impliedFilters = impliedFilter;
+            contentSearchCriteria.contentTypes = contentTypes;
+        }
+        let facets: string[];
+        if (filter.hasOwnProperty('facets')) {
+            facets = filter['facets'];
+            contentSearchCriteria.facets = facets;
+        }
+
+        return contentSearchCriteria;
+    }
+
     getSearchContentRequest(criteria: ContentSearchCriteria): SearchRequest {
         return {
             query: criteria.query,

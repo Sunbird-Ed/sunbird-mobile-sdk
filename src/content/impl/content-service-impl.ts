@@ -71,7 +71,7 @@ import {SearchRequest} from '../def/search-request';
 import {ContentSearchApiHandler} from '../handlers/import/content-search-api-handler';
 import {ArrayUtil} from '../../util/array-util';
 import {FileUtil} from '../../util/file/util/file-util';
-import {DownloadRequest, DownloadService} from '../../util/download';
+import {DownloadCancelRequest, DownloadRequest, DownloadService} from '../../util/download';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {EventObserver} from '../../events-bus/def/event-observer';
@@ -125,9 +125,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             });
     }
 
-    cancelImport(contentId: string) {
-        // TODO
-        throw new Error('Not Implemented yet');
+    cancelImport(contentId: string): Observable<any> {
+        return this.downloadService.cancel({identifier: contentId});
     }
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]> {
@@ -335,11 +334,16 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
 
-    searchContent(contentSearchCriteria: ContentSearchCriteria): Observable<ContentSearchResult> {
-        contentSearchCriteria.limit = contentSearchCriteria.limit ? contentSearchCriteria.limit : 100;
-        contentSearchCriteria.offset = contentSearchCriteria.offset ? contentSearchCriteria.offset : 0;
+    searchContent(contentSearchCriteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult> {
         const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
             this.contentServiceConfig, this.telemetryService);
+        if (request) {
+            contentSearchCriteria = searchHandler.getSearchContentRequest(request!);
+        } else {
+            contentSearchCriteria.limit = contentSearchCriteria.limit ? contentSearchCriteria.limit : 100;
+            contentSearchCriteria.offset = contentSearchCriteria.offset ? contentSearchCriteria.offset : 0;
+        }
+
         const searchRequest = searchHandler.getSearchContentRequest(contentSearchCriteria);
         return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig,
             contentSearchCriteria.framework, contentSearchCriteria.languageCode)

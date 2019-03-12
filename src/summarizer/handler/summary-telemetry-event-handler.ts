@@ -61,10 +61,10 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
             this.currentUID.toLocaleLowerCase() === event.getActor().id.toLocaleLowerCase() &&
             this.currentContentID.toLocaleLowerCase() === event.getObject().id.toLocaleLowerCase()
         ) {
-            return this.summarizerService.deletePreviousAssessmentDetails({
-                uid: this.currentUID,
-                contentId: this.currentContentID
-            }).do(() => {
+            return this.summarizerService.deletePreviousAssessmentDetails(
+                this.currentUID,
+                this.currentContentID
+            ).do(() => {
                 this.currentUID = undefined;
                 this.currentContentID = undefined;
             }).mapTo(undefined);

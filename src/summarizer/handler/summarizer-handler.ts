@@ -1,5 +1,6 @@
 import {LearnerAssessmentsEntry, LearnerSummaryEntry} from '../../profile/db/schema';
 import {
+    ContentCache,
     LearnerAssessmentDetails,
     LearnerAssessmentSummary,
     LearnerContentSummaryDetails,
@@ -46,7 +47,7 @@ export class SummarizerHandler {
         };
     }
 
-    public static mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb: LearnerSummaryEntry.SchemaMap[]): LearnerAssessmentSummary[] {
+    public static mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb: LearnerSummaryEntry.SchemaMap[], cache: Map<string, ContentCache>): LearnerAssessmentSummary[] {
         return assesmentsInDb.map((assesment: LearnerSummaryEntry.SchemaMap) => {
             return {
                 uid: assesment[LearnerSummaryEntry.COLUMN_NAME_UID].toString(),
@@ -56,7 +57,8 @@ export class SummarizerHandler {
                 totalTimespent: Number(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_TIME_SPENT]),
                 hierarchyData: assesment[LearnerSummaryEntry.COLUMN_NAME_HIERARCHY_DATA].toString(),
                 totalMaxScore: NumberUtil.toPrecision(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_MAX_SCORE]),
-                totalScore: NumberUtil.toPrecision(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_SCORE])
+                totalScore: NumberUtil.toPrecision(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_SCORE]),
+                name: cache[assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID].toString()]
             };
         });
     }

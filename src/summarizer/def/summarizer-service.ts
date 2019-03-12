@@ -1,6 +1,6 @@
 import {Observable} from 'rxjs';
 import {LearnerAssessmentDetails, LearnerAssessmentSummary} from './response';
-import {DeleteAssessmentDetailsRequest, SummaryRequest} from './request';
+import { SummaryRequest} from './request';
 import {TelemetryEvents} from '../../telemetry';
 import Telemetry = TelemetryEvents.Telemetry;
 
@@ -20,7 +20,7 @@ export interface SummarizerService {
 
     getDetailsPerQuestion(request: SummaryRequest): Observable<{ [key: string]: any }[]>;
 
-    deletePreviousAssessmentDetails(deleteAssessmentDetailsRequest: DeleteAssessmentDetailsRequest): Observable<number>;
+    deletePreviousAssessmentDetails(uid: string, contentId: string): Observable<number>;
 }
 
 
