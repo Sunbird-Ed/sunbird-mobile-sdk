@@ -1,14 +1,19 @@
 import {DbService, InsertQuery} from '../../db';
 import {
-    ExportTelemetryContext, ImportTelemetryContext,
+    ExportTelemetryContext,
+    ImportTelemetryContext,
     TelemetryDecorator,
     TelemetryEndRequest,
     TelemetryErrorRequest,
-    TelemetryEvents, TelemetryExportRequest, TelemetryFeedbackRequest, TelemetryImportRequest,
+    TelemetryEvents,
+    TelemetryExportRequest,
+    TelemetryFeedbackRequest,
+    TelemetryImportRequest,
     TelemetryImpressionRequest,
     TelemetryInteractRequest,
     TelemetryLogRequest,
-    TelemetryService, TelemetryShareRequest,
+    TelemetryService,
+    TelemetryShareRequest,
     TelemetryStartRequest,
     TelemetryStat,
     TelemetrySyncStat
@@ -19,15 +24,14 @@ import {ProfileService, ProfileSession} from '../../profile';
 import {GroupService, GroupSession} from '../../group';
 import {TelemetrySyncHandler} from '../handler/telemetry-sync-handler';
 import {KeyValueStore} from '../../key-value-store';
-import {ApiService} from '../../api';
+import {ApiService, Response} from '../../api';
 import {TelemetryConfig} from '../config/telemetry-config';
 import {DeviceInfo} from '../../util/device/def/device-info';
 import {EventNamespace, EventsBusService} from '../../events-bus';
-import {EventDelegate} from '../../events-bus/def/event-delegate';
+import {EventObserver} from '../../events-bus/def/event-observer';
 import {FileService} from '../../util/file/def/file-service';
 import {CreateTelemetryExportFile} from '../handler/export/create-telemetry-export-file';
 import {TelemetryExportResponse} from '../def/response';
-import {Response} from '../../api';
 import {CopyDatabase} from '../handler/export/copy-database';
 import {CreateMetaData} from '../handler/export/create-meta-data';
 import {CleanupExportedFile} from '../handler/export/cleanup-exported-file';
@@ -35,7 +39,7 @@ import {CleanCurrentDatabase} from '../handler/export/clean-current-database';
 import {GenerateShareTelemetry} from '../handler/export/generate-share-telemetry';
 import {ValidateTelemetryMetadata} from '../handler/import/validate-telemetry-metadata';
 
-export class TelemetryServiceImpl implements TelemetryService, EventDelegate {
+export class TelemetryServiceImpl implements TelemetryService, EventObserver {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
 
     constructor(private dbService: DbService,
@@ -48,7 +52,7 @@ export class TelemetryServiceImpl implements TelemetryService, EventDelegate {
                 private deviceInfo: DeviceInfo,
                 private eventsBusService: EventsBusService,
                 private fileService: FileService) {
-        this.eventsBusService.registerDelegate({namespace: EventNamespace.TELEMETRY, delegate: this});
+        this.eventsBusService.registerObserver({namespace: EventNamespace.TELEMETRY, observer: this});
     }
 
     end({

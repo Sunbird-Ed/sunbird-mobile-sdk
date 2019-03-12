@@ -71,9 +71,10 @@ import {ArrayUtil} from '../../util/array-util';
 import {FileUtil} from '../../util/file/util/file-util';
 import {DownloadRequest, DownloadService} from '../../util/download';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
+import {EventsBusService} from '../../events-bus';
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
-    private getContentDetailsHandler: GetContentDetailsHandler;
+    private readonly getContentDetailsHandler: GetContentDetailsHandler;
 
     constructor(private contentServiceConfig: ContentServiceConfig,
                 private apiService: ApiService,
@@ -85,10 +86,11 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 private deviceInfo: DeviceInfo,
                 private telemetryService: TelemetryService,
                 private contentFeedbackService: ContentFeedbackService,
-                private downloadService: DownloadService) {
+                private downloadService: DownloadService,
+                private eventsBusService: EventsBusService) {
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
-            this.apiService, this.contentServiceConfig, this.dbService);
+            this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {

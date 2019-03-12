@@ -1,4 +1,5 @@
 export enum EventNamespace {
     TELEMETRY = 'TELEMETRY',
-    DOWNLOADS = 'DOWNLOADS'
+    DOWNLOADS = 'DOWNLOADS',
+    CONTENT = 'CONTENT'
 }

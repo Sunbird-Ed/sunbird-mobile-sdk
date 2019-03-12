@@ -319,7 +319,8 @@ export class SunbirdSdk {
             this._deviceInfo,
             this.telemetryService,
             this._contentFeedbackService,
-            this._downloadService
+            this._downloadService,
+            this._eventsBusService
         );
 
         this._downloadService.registerOnDownloadCompleteDelegate(this._contentService);

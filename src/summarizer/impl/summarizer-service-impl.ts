@@ -15,14 +15,14 @@ import {SummarizerQueries} from '../handler/summarizer-queries';
 import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 import {NumberUtil} from '../../util/number-util';
 import {EventNamespace, EventsBusService} from '../../events-bus';
-import {EventDelegate} from '../../events-bus/def/event-delegate';
+import {EventObserver} from '../../events-bus/def/event-observer';
 import {SummaryTelemetryEventHandler} from '../handler/summary-telemetry-event-handler';
 import Telemetry = TelemetryEvents.Telemetry;
 
-export class SummarizerServiceImpl implements SummarizerService, EventDelegate {
+export class SummarizerServiceImpl implements SummarizerService, EventObserver {
     constructor(private dbService: DbService,
                 private eventsBusService: EventsBusService) {
-        this.eventsBusService.registerDelegate({namespace: EventNamespace.TELEMETRY, delegate: this});
+        this.eventsBusService.registerObserver({namespace: EventNamespace.TELEMETRY, observer: this});
     }
 
     getDetailsPerQuestion(request: SummaryRequest): Observable<{ [p: string]: any }[]> {
