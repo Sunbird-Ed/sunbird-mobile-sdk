@@ -23,6 +23,7 @@ import {Content, ContentRequest, ContentService} from '../../content';
 
 export class SummarizerServiceImpl implements SummarizerService, EventObserver {
     private contentMap: Map<string, ContentCache>;
+
     constructor(private dbService: DbService,
                 private contenService: ContentService,
                 private eventsBusService: EventsBusService) {
@@ -160,16 +161,43 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver {
         });
     }
 
-    deletePreviousAssessmentDetails(uid: string, contentId: string): Observable<number> {
-        // TODO: Swayangjit
-        this.dbService.read({
+    deletePreviousAssessmentDetails(uid: string, contentId: string): Observable<undefined> {
+        return this.dbService.read({
             table: LearnerSummaryEntry.TABLE_NAME,
             selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} =?
             AND ${LearnerSummaryEntry.COLUMN_NAME_UID} = ?
             AND ${LearnerSummaryEntry.COLUMN_NAME_HIERARCHY_DATA}`,
             selectionArgs: [uid, contentId, '']
+        }).mergeMap((summariesinDb: LearnerSummaryEntry.SchemaMap[]) => {
+            if (summariesinDb && summariesinDb.length) {
+                return this.dbService.delete({
+                    table: LearnerSummaryEntry.TABLE_NAME,
+                    selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} =?
+                        AND ${LearnerSummaryEntry.COLUMN_NAME_UID} = ?`,
+                    selectionArgs: [uid, contentId]
+                });
+            } else {
+                return Observable.of(undefined);
+            }
+        }).mergeMap(() => {
+            return this.dbService.read({
+                table: LearnerAssessmentsEntry.TABLE_NAME,
+                selection: `${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} =?
+                            AND ${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ?`,
+                selectionArgs: [uid, contentId]
+            });
+        }).mergeMap((assesmentsInDb: LearnerAssessmentsEntry.SchemaMap[]) => {
+            if (assesmentsInDb && assesmentsInDb.length) {
+                return this.dbService.delete({
+                    table: LearnerSummaryEntry.TABLE_NAME,
+                    selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} =?
+                        AND ${LearnerSummaryEntry.COLUMN_NAME_UID} = ?`,
+                    selectionArgs: [uid, contentId]
+                });
+            } else {
+                return Observable.of(undefined);
+            }
         });
-        throw new Error('To be implemented');
     }
 
     onEvent(event: TelemetryEvents.Telemetry): Observable<undefined> {

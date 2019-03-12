@@ -5,10 +5,10 @@ import {
     ContentSearchResult,
     ContentServiceConfig,
     ContentSortCriteria,
-    FilterValue, SearchResponse,
+    FilterValue,
+    SearchResponse,
     SortOrder
 } from '..';
-import {HttpRequestType, Request} from '../../api';
 import {AppConfig} from '../../api/config/app-config';
 import {MimeType, SearchType} from '../util/content-constants';
 import {SearchFilter, SearchRequest} from '../def/search-request';
@@ -28,6 +28,7 @@ export class SearchContentHandler {
 
     getSearchCriteria(requestMap: { [key: string]: any }): ContentSearchCriteria {
         const filter: { [key: string]: any } = requestMap['request'];
+        const searchType = String(filter['searchType']);
         const query = filter['query'];
         const exists = filter['exists'];
         let mode;
@@ -50,7 +51,8 @@ export class SearchContentHandler {
             ...((query ? {query: query} : {})),
             ...((exists ? {exists: exists} : {})),
             mode: mode,
-            sortCriteria: sortCriteria
+            sortCriteria: sortCriteria,
+            searchType: SearchType[searchType]
         };
 
         let contentTypes;

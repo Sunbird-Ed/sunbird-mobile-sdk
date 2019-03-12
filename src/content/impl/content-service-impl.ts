@@ -338,7 +338,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
             this.contentServiceConfig, this.telemetryService);
         if (request) {
-            contentSearchCriteria = searchHandler.getSearchContentRequest(request!);
+            contentSearchCriteria = searchHandler.getSearchCriteria(request);
         } else {
             contentSearchCriteria.limit = contentSearchCriteria.limit ? contentSearchCriteria.limit : 100;
             contentSearchCriteria.offset = contentSearchCriteria.offset ? contentSearchCriteria.offset : 0;

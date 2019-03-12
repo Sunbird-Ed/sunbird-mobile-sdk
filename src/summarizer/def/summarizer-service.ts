@@ -20,7 +20,7 @@ export interface SummarizerService {
 
     getDetailsPerQuestion(request: SummaryRequest): Observable<{ [key: string]: any }[]>;
 
-    deletePreviousAssessmentDetails(uid: string, contentId: string): Observable<number>;
+    deletePreviousAssessmentDetails(uid: string, contentId: string): Observable<undefined>;
 }
 
 

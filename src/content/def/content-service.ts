@@ -24,7 +24,7 @@ export interface ContentService extends DownloadCompleteDelegate {
 
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
 
-    searchContent(criteria: ContentSearchCriteria, request: { [key: string]: any }): Observable<ContentSearchResult>;
+    searchContent(criteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult>;
 
     getGroupByPage(request: ContentSearchCriteria): Observable<GroupByPageResult>;
 

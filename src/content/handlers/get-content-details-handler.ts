@@ -48,9 +48,17 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 if (contentDbEntry) {
                     return Observable.of(ContentMapper.mapContentDBEntryToContent(contentDbEntry))
                         .do(async (localContent) => {
-                            const serverContent = await this.fetchFromServer(request).toPromise();
-
-                            if (ContentUtil.isUpdateAvailable(serverContent.contentData, localContent.contentData)) {
+                            const serverContent: ContentData = await this.fetchFromServer(request).toPromise();
+                            localContent[ContentEntry.COLUMN_NAME_SERVER_DATA] = serverContent;
+                            localContent[ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON] = serverContent['lastUpdatedOn'];
+                            localContent[ContentEntry.COLUMN_NAME_AUDIENCE] = ContentUtil.readAudience(serverContent);
+                            await this.dbService.update({
+                                table: ContentEntry.TABLE_NAME,
+                                selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
+                                selectionArgs: [localContent[ContentEntry.COLUMN_NAME_IDENTIFIER]],
+                                modelJson: localContent
+                            });
+                            if (ContentUtil.isUpdateAvailable(serverContent, localContent.contentData)) {
                                 this.eventsBusService.emit({
                                     namespace: EventNamespace.CONTENT,
                                     event: serverContent
@@ -59,7 +67,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                         });
                 }
 
-                return this.fetchFromServer(request);
+                return this.fetchAndDecorate(request);
             });
     }
 
@@ -73,7 +81,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
         }).map((contentsFromDB: ContentEntry.SchemaMap[]) => contentsFromDB[0]);
     }
 
-    fetchFromServer(request: ContentDetailRequest): Observable<Content> {
+    fetchFromServer(request: ContentDetailRequest): Observable<ContentData> {
         return this.apiService.fetch<{ result: { content: ContentData } }>(
             new Request.Builder()
                 .withType(HttpRequestType.GET)
@@ -81,7 +89,13 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 .withApiToken(true)
                 .build()
         ).map((response) => {
-            const contentData = response.body.result.content;
+            return response.body.result.content;
+        });
+    }
+
+
+    fetchAndDecorate(request: ContentDetailRequest): Observable<Content> {
+        return this.fetchFromServer(request).map((contentData: ContentData) => {
             return ContentMapper.mapServerResponseToContent(contentData);
         }).mergeMap((content: Content) => {
             return this.decorateContent({
