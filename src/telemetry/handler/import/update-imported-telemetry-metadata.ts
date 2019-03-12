@@ -1,15 +1,16 @@
 import {DbService} from '../../../db';
 import {Response} from '../../../api';
+import {ImportTelemetryContext} from '../..';
+import {TelemetryProcessedEntry} from '../../db/schema';
 import {ImportedMetadataEntry} from '../../../profile/db/schema';
-import {ImportProfileContext} from '../../def/import-profile-context';
 
-export class UpdateImportedProfileMetadata {
+export class UpdateImportedTelemetryMetadata {
 
     constructor(private dbService: DbService) {
 
     }
 
-    public execute(importContext: ImportProfileContext): Promise<Response> {
+    public execute(importContext: ImportTelemetryContext): Promise<Response> {
         const response: Response = new Response();
         const importId = importContext.metadata!['export_id'];
         const did = importContext.metadata!['did'];
@@ -27,14 +28,12 @@ export class UpdateImportedProfileMetadata {
             if (results && results.length) {
                 return this.dbService.update({
                     table: ImportedMetadataEntry.TABLE_NAME,
-                    modelJson: importMetaDataModel,
-                    selection: `${ImportedMetadataEntry.COLUMN_NAME_IMPORTED_ID} =? AND ${ImportedMetadataEntry.COLUMN_NAME_DEVICE_ID} =?`,
-                    selectionArgs: [importId, did]
+                    modelJson: importMetaDataModel
                 }).toPromise();
             } else {
                 return this.dbService.insert({
                     table: ImportedMetadataEntry.TABLE_NAME,
-                    modelJson: importMetaDataModel,
+                    modelJson: importMetaDataModel
                 }).toPromise();
             }
         }).then(() => {

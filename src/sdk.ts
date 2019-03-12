@@ -271,7 +271,8 @@ export class SunbirdSdk {
             this._apiService,
             this._sdkConfig.telemetryConfig,
             this._deviceInfo,
-            this._eventsBusService
+            this._eventsBusService,
+            this._fileService
         );
 
         this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService, this._telemetryService);
@@ -305,7 +306,7 @@ export class SunbirdSdk {
 
         this._summarizerService = new SummarizerServiceImpl(this._dbService, this._eventsBusService);
 
-        this._downloadService = new DownloadServiceImpl(this._eventsBusService, this._sharedPreferences, this._contentService);
+        this._downloadService = new DownloadServiceImpl(this._eventsBusService, this._sharedPreferences);
 
         this._contentService = new ContentServiceImpl(
             sdkConfig.contentServiceConfig,
@@ -320,6 +321,8 @@ export class SunbirdSdk {
             this._contentFeedbackService,
             this._downloadService
         );
+
+        this._downloadService.registerOnDownloadCompleteDelegate(this._contentService);
 
         this.postInit();
     }

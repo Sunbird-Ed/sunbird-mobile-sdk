@@ -151,8 +151,10 @@ export class FileServiceImpl implements FileService {
      * @returns {Promise<RemoveResult>} Returns a Promise that resolves to a RemoveResult or rejects with an error.
      */
 
-    removeFile(path: string, fileName: string): Promise<RemoveResult> {
-        return this.resolveDirectoryUrl(path)
+    removeFile(path: string): Promise<RemoveResult> {
+        const parentDir = FileUtil.getParentDir(path);
+        const fileName = FileUtil.getFileName(path).replace('/', '');
+        return this.resolveDirectoryUrl(parentDir)
             .then(fse => {
                 return this.getFile(fse, fileName, {create: false});
             })

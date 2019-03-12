@@ -1,5 +1,5 @@
 import {Observable} from 'rxjs';
-import {DownloadRequest} from './request';
+import {DownloadRequest} from './requests';
 
 export interface DownloadCompleteDelegate {
     onDownloadCompletion(downloadRequest: DownloadRequest): Observable<undefined>;

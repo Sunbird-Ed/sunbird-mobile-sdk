@@ -14,6 +14,7 @@ import {DeviceInfo} from '../../../util/device/def/device-info';
 import {FileService} from '../../../util/file/def/file-service';
 import {Response} from '../../../api';
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
+import {ArrayUtil} from '../../../util/array-util';
 
 export class CreateContentImportManifest {
     private static readonly MANIFEST_FILE_NAME = 'manifest.json';
@@ -39,21 +40,21 @@ export class CreateContentImportManifest {
     }
 
     findAllContentsWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
-        const identifiersStr = identifiers.join(',');
+        const identifiersStr = ArrayUtil.joinPreservingQuotes(identifiers);
         const orderby = ` ORDER BY ${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} DESC, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} DESC`;
-        const filter = ` WHERE ${COLUMN_NAME_IDENTIFIER} IN ('${identifiersStr}') AND ${COLUMN_NAME_REF_COUNT} > 0`;
+        const filter = ` WHERE ${COLUMN_NAME_IDENTIFIER} IN (${identifiersStr}) AND ${COLUMN_NAME_REF_COUNT} > 0`;
         const query = `SELECT * FROM ${ContentEntry.TABLE_NAME} ${filter} ${orderby}`;
         return this.dbService.execute(query).toPromise();
     }
 
-    async createnWriteManifest(contentsInDb: ContentEntry.SchemaMap[]) {
+    private async createnWriteManifest(contentsInDb: ContentEntry.SchemaMap[]) {
         const importnExportHandler = new ImportNExportHandler(this.deviceInfo);
         for (const e of contentsInDb) {
             const contentInDb = e as ContentEntry.SchemaMap;
             const queue: Queue<ContentEntry.SchemaMap> = new Queue();
             queue.add(contentInDb);
             let node: ContentEntry.SchemaMap;
-            let contentWithAllChildren: ContentEntry.SchemaMap[] = [];
+            const contentWithAllChildren: ContentEntry.SchemaMap[] = [];
             contentWithAllChildren.push(contentInDb);
             while (!queue.isEmpty()) {
                 node = queue.dequeue()!;
@@ -62,17 +63,17 @@ export class CreateContentImportManifest {
                     const childContentsIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(node[COLUMN_NAME_LOCAL_DATA]);
                     const contentModelListInDB: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(
                         childContentsIdentifiers);
-                    if (contentModelListInDB) {
+                    if (contentModelListInDB && contentModelListInDB.length) {
                         contentModelListInDB.forEach((contentModelInDb) => {
                             queue.add(contentModelInDb);
                         });
-                        contentWithAllChildren = {...contentWithAllChildren, ...contentModelListInDB};
+                        contentWithAllChildren.concat(contentModelListInDB);
                     }
                 }
             }
             const items: any[] = importnExportHandler.populateItems(contentWithAllChildren);
             const manifest: { [key: string]: any } = importnExportHandler.generateManifestForArchive(items);
-            await this.fileService.writeFile(contentInDb[COLUMN_NAME_PATH]!,
+            await this.fileService.writeFile(ContentUtil.getBasePath(contentInDb[COLUMN_NAME_PATH]!),
                 CreateContentImportManifest.MANIFEST_FILE_NAME,
                 JSON.stringify(manifest),
                 {replace: true});

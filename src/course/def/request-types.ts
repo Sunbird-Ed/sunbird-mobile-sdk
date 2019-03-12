@@ -23,8 +23,7 @@ export interface UpdateContentStateRequest {
 }
 
 export interface CourseBatchesRequest {
-    courseId: string[] | string;
-    filters: any;
+    filters: CourseBatchesRequestFilters;
 }
 
 export interface CourseBatchDetailsRequest {
@@ -37,4 +36,22 @@ export interface GetContentStateRequest {
     courseIds: string[];
     contentIds: string[];
     returnRefreshedContentStates: boolean;
+}
+
+export interface CourseBatchesRequestFilters {
+    courseId: string[] | string;
+    status?: string[];
+    enrollmentType?: string;
+    sortBy?: string;
+}
+
+export enum CourseEnrollmentType {
+    OPEN = 'open',
+    INVITE_ONLY = 'invite-only'
+}
+
+export enum CourseBatchStatus {
+    NOT_STARTED = '0',
+    IN_PROGRESS = '1',
+    COMPLETED = '2'
 }

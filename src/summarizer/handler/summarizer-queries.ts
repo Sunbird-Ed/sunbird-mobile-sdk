@@ -109,4 +109,5 @@ export class SummarizerQueries {
                        ${LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA} ${hData ? `= ?` : ` IS NULL`} `;
         return query;
     }
+
 }

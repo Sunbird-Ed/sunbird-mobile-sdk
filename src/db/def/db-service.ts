@@ -5,7 +5,9 @@ export abstract class DbService {
 
     abstract init(): Promise<undefined>;
 
-    abstract execute(rawQuery: string): Observable<any>;
+    abstract open(dbFilePath: string): Promise<undefined>;
+
+    abstract execute(rawQuery: string, useExternalDb?: boolean): Observable<any>;
 
     abstract read(readQuery: ReadQuery): Observable<any[]>;
 
@@ -18,5 +20,7 @@ export abstract class DbService {
     abstract beginTransaction(): void;
 
     abstract endTransaction(isOperationSuccessful: boolean): void;
+
+    abstract copyDatabase(destination: string): Observable<boolean>;
 
 }

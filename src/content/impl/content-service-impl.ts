@@ -6,11 +6,14 @@ import {
     ContentDeleteResponse,
     ContentDeleteStatus,
     ContentDetailRequest,
+    ContentDownloadRequest,
+    ContentErrorCode,
     ContentExportRequest,
     ContentFeedbackService,
     ContentImport,
     ContentImportRequest,
     ContentImportResponse,
+    ContentImportStatus,
     ContentMarkerRequest,
     ContentRequest,
     ContentSearchCriteria,
@@ -19,9 +22,11 @@ import {
     ContentServiceConfig,
     EcarImportRequest,
     ExportContentContext,
+    FileExtension,
     GroupByPageResult,
     HierarchyInfo,
     ImportContentContext,
+    MimeType,
     PageSection,
     SearchResponse
 } from '..';
@@ -38,7 +43,6 @@ import {SearchContentHandler} from '../handlers/search-content-handler';
 import {AppConfig} from '../../api/config/app-config';
 import {FileService} from '../../util/file/def/file-service';
 import {DirectoryEntry, Entry} from '../../util/file';
-import {ContentErrorCode, ContentImportStatus, FileExtension, MimeType} from '../util/content-constants';
 import {GetContentsHandler} from '../handlers/get-contents-handler';
 import {ContentMapper} from '../util/content-mapper';
 import {ImportNExportHandler} from '../handlers/import-n-export-handler';
@@ -190,7 +194,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         }));
     }
 
-    getChildContents(childContentRequest: ChildContentRequest): Observable<any> {
+    getChildContents(childContentRequest: ChildContentRequest): Observable<Content> {
         const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
         let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
         if (!hierarchyInfoList) {
@@ -215,7 +219,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]> {
         const searchContentHandler = new SearchContentHandler(this.appConfig, this.contentServiceConfig, this.telemetryService);
-        const contentIds: string[] = Object.keys(contentImportRequest.contentImportMap!);
+        const contentIds: string[] = contentImportRequest.contentImportArray.map((i) => i.contentId);
         const contentImportResponse: ContentImportResponse[] = [];
         const filter: SearchRequest = searchContentHandler.getContentSearchFilter(
             contentIds, contentImportRequest.contentStatusArray);
@@ -232,23 +236,23 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             let status: ContentImportStatus = ContentImportStatus.NOT_FOUND;
                             if (downloadUrl && FileUtil.getFileExtension(downloadUrl) === FileExtension.CONTENT.valueOf()) {
                                 status = ContentImportStatus.ENQUEUED_FOR_DOWNLOAD;
-                                const contentImport: ContentImport = contentImportRequest.contentImportMap![contentId];
-                                const downloadRequest: DownloadRequest = {
+                                const contentImport: ContentImport =
+                                    contentImportRequest.contentImportArray.find((i) => i.contentId === contentId)!;
+                                const downloadRequest: ContentDownloadRequest = {
                                     identifier: contentId,
                                     downloadUrl: downloadUrl,
-                                    mimeType: MimeType.ECAR.valueOf(),
+                                    mimeType: MimeType.ECAR,
                                     destinationFolder: contentImport.destinationFolder,
                                     isChildContent: contentImport.isChildContent,
-                                    filename: contentId.concat('.', MimeType.ECAR.valueOf()),
+                                    filename: contentId.concat('.', FileExtension.CONTENT),
                                     correlationData: contentImport.correlationData
                                 };
                                 downloadRequestList.push(downloadRequest);
-                                await this.downloadService.download(downloadRequestList).toPromise();
                             }
                             contentImportResponse.push({identifier: contentId, status: status});
                         }
                     }
-                    console.log('downloadRequestList', downloadRequestList);
+                    await this.downloadService.download(downloadRequestList).toPromise();
                 }
                 return contentImportResponse;
             });
@@ -413,7 +417,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     }
 
-    onDownloadCompletion(request: DownloadRequest): Observable<undefined> {
+    onDownloadCompletion(request: ContentDownloadRequest): Observable<undefined> {
         const importEcarRequest: EcarImportRequest = {
             isChildContent: request.isChildContent!,
             sourceFilePath: request.downloadedFilePath!,

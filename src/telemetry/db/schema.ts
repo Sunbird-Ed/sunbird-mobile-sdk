@@ -65,7 +65,7 @@ export namespace TelemetryProcessedEntry {
     };
 }
 
-export namespace EventPriorityEntry  {
+export namespace EventPriorityEntry {
 
     export const _ID = '_id';
     export const TABLE_NAME = 'event_priority';
@@ -77,7 +77,7 @@ export namespace EventPriorityEntry  {
         return 'CREATE TABLE ' + EventPriorityEntry.TABLE_NAME + ' (' +
             EventPriorityEntry._ID + ' INTEGER PRIMARY KEY,' +
             EventPriorityEntry.COLUMN_NAME_EVENT + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            EventPriorityEntry.COLUMN_NAME_PRIORITY + DbConstants.SPACE  + DbConstants.INT_TYPE +
+            EventPriorityEntry.COLUMN_NAME_PRIORITY + DbConstants.SPACE + DbConstants.INT_TYPE +
             ' )';
     };
 
@@ -86,7 +86,7 @@ export namespace EventPriorityEntry  {
     };
 }
 
-export namespace TelemetryTagEntry  {
+export namespace TelemetryTagEntry {
 
     export const _ID = '_id';
     export const TABLE_NAME = 'telemetry_tags';
@@ -95,7 +95,6 @@ export namespace TelemetryTagEntry  {
     export const COLUMN_NAME_DESCRIPTION = 'description';
     export const COLUMN_NAME_START_DATE = 'start_date';
     export const COLUMN_NAME_END_DATE = 'end_date';
-
 
 
     export const getCreateEntry: (() => string) = () => {
@@ -111,5 +110,31 @@ export namespace TelemetryTagEntry  {
 
     export const getDeleteEntry: (() => string) = () => {
         return 'DROP TABLE IF EXISTS ' + TABLE_NAME;
+    };
+
+}
+
+export namespace MetaEntry {
+
+    export const _ID = '_id';
+    export const TABLE_NAME = 'meta_data';
+    export const COLUMN_NAME_MSG_ID = 'key';
+    export const COLUMN_NAME_DATA = 'value';
+
+    export interface SchemaMap {
+        [_ID]: string;
+        [COLUMN_NAME_MSG_ID]: string;
+        [COLUMN_NAME_DATA]: string;
+    }
+    export const getCreateEntry: (() => string) = () => {
+        return 'CREATE TABLE ' + MetaEntry.TABLE_NAME + ' (' +
+            MetaEntry._ID + ' INTEGER PRIMARY KEY,' +
+            MetaEntry.COLUMN_NAME_MSG_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            MetaEntry.COLUMN_NAME_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE +
+            ' )';
+    };
+
+    export const getDeleteEntry: (() => string) = () => {
+        return 'DROP TABLE IF EXISTS ' + MetaEntry.TABLE_NAME;
     };
 }

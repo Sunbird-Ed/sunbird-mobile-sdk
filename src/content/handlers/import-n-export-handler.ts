@@ -26,7 +26,7 @@ export class ImportNExportHandler {
     populateItems(contentsInDb: ContentEntry.SchemaMap[]): { [key: string]: any }[] {
         const items: any[] = [];
         const allContentsIdentifier: string[] = [];
-        let childIdentifiers: string[] = [];
+        const childIdentifiers: string[] = [];
         const contentIndex: { [key: string]: any } = {};
         contentsInDb.forEach((contentInDb) => {
             // item local data
@@ -38,27 +38,32 @@ export class ImportNExportHandler {
             if (ContentUtil.hasChildren(item)) {
                 // store children identifiers
                 const childContentIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(item);
-                childIdentifiers = {...childIdentifiers, ...childContentIdentifiers};
+                childIdentifiers.concat(childContentIdentifiers);
             }
 
             allContentsIdentifier.push(contentInDb[COLUMN_NAME_IDENTIFIER]);
         });
-        allContentsIdentifier.forEach((identifier) => {
-            const contentData = contentIndex[identifier];
-            if (ArrayUtil.contains(childIdentifiers, identifier)) {
-                contentData['visibility'] = Visibility.PARENT.valueOf();
-            }
-            items.push(contentData);
-        });
+        try {
+            allContentsIdentifier.forEach((identifier) => {
+                const contentData = contentIndex[identifier];
+                if (ArrayUtil.contains(childIdentifiers, identifier)) {
+                    contentData['visibility'] = Visibility.PARENT.valueOf();
+                }
+                items.push(contentData);
+            });
+        } catch (e) {
+            console.log(e);
+        }
+
 
         return items;
     }
 
-   public async getContentExportDBModeltoExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {
+    public async getContentExportDBModeltoExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {
         const contentModelToExport: ContentEntry.SchemaMap[] = [];
         const queue: Queue<ContentEntry.SchemaMap> = new Queue();
 
-        let contentWithAllChildren: ContentEntry.SchemaMap[] = [];
+        const contentWithAllChildren: ContentEntry.SchemaMap[] = [];
         const contentsInDb: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(contentIds);
         contentsInDb.forEach((contentInDb) => {
             queue.add(contentInDb);
@@ -91,7 +96,7 @@ export class ImportNExportHandler {
         // Initialize manifest
         manifest['id'] = ImportNExportHandler.EKSTEP_CONTENT_ARCHIVE;
         manifest['ver'] = ImportNExportHandler.SUPPORTED_MANIFEST_VERSION;
-        manifest['ts'] = moment().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'');
+        manifest['ts'] = moment(Date.now()).format('YYYY-MM-DDTHH:mm:ss[Z]');
         manifest['archive'] = archive;
         return manifest;
     }

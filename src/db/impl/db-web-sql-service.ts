@@ -191,5 +191,13 @@ export class DbWebSqlService implements DbService {
         return new InitialMigration().apply(this);
     }
 
+    copyDatabase(): Observable<boolean> {
+        throw new Error('Not implemented');
+    }
+
+    open(dbFilePath: string): Promise<undefined> {
+        throw new Error('Not implemented');
+    }
+
 
 }
