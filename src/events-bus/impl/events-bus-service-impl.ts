@@ -1,8 +1,8 @@
 import {EventNamespace, EventsBusService} from '..';
 import {Observable, Subject} from 'rxjs';
 import {EmitRequest} from '../def/emit-request';
-import {RegisterDelegateRequest} from '../def/register-delegate-request';
-import {EventDelegate} from '../def/event-delegate';
+import {RegisterObserverRequest} from '../def/register-observer-request';
+import {EventObserver} from '../def/event-observer';
 
 interface EventContainer {
     namespace: string;
@@ -11,7 +11,7 @@ interface EventContainer {
 
 export class EventsBusServiceImpl implements EventsBusService {
     private eventsBus = new Subject<EventContainer>();
-    private eventDelegates: { namespace: EventNamespace, delegate: EventDelegate }[] = [];
+    private eventDelegates: { namespace: EventNamespace, observer: EventObserver }[] = [];
 
     constructor() {
     }
@@ -21,7 +21,7 @@ export class EventsBusServiceImpl implements EventsBusService {
             .mergeMap((eventContainer: EventContainer) => {
                 const delegateHandlers = this.eventDelegates
                     .filter((d) => d.namespace === eventContainer.namespace)
-                    .map((d) => d.delegate.onEvent(eventContainer.event));
+                    .map((d) => d.observer.onEvent(eventContainer.event));
 
                 return Observable.zip(...delegateHandlers).mapTo(undefined);
             });
@@ -40,7 +40,7 @@ export class EventsBusServiceImpl implements EventsBusService {
         });
     }
 
-    registerDelegate({namespace, delegate}: RegisterDelegateRequest) {
-        this.eventDelegates.push({namespace, delegate});
+    registerObserver({namespace, observer}: RegisterObserverRequest) {
+        this.eventDelegates.push({namespace, observer});
     }
 }

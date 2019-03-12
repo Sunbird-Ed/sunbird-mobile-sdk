@@ -14,9 +14,10 @@ import {DbService, ReadQuery} from '../../db';
 import {ContentEntry} from '../db/schema';
 import {QueryBuilder} from '../../db/util/query-builder';
 import {ContentMapper} from '../util/content-mapper';
-import {Profile, ProfileService} from '../../profile';
-import {ContentAccess} from '../../profile/def/content-access';
+import {ContentAccess, Profile, ProfileService} from '../../profile';
 import {ContentMarkerHandler} from './content-marker-handler';
+import {ContentUtil} from '../util/content-util';
+import {EventNamespace, EventsBusService} from '../../events-bus';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
     private readonly GET_CONTENT_DETAILS_ENDPOINT = '/read';
@@ -25,7 +26,8 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 private profileService: ProfileService,
                 private apiService: ApiService,
                 private contentServiceConfig: ContentServiceConfig,
-                private dbService: DbService) {
+                private dbService: DbService,
+                private eventsBusService: EventsBusService) {
     }
 
     public static getReadContentQuery(identifier: string): ReadQuery {
@@ -44,7 +46,17 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
         return this.fetchFromDB(request.contentId)
             .mergeMap((contentDbEntry) => {
                 if (contentDbEntry) {
-                    return Observable.of(ContentMapper.mapContentDBEntryToContent(contentDbEntry));
+                    return Observable.of(ContentMapper.mapContentDBEntryToContent(contentDbEntry))
+                        .do(async (localContent) => {
+                            const serverContent = await this.fetchFromServer(request).toPromise();
+
+                            if (ContentUtil.isUpdateAvailable(serverContent.contentData, localContent.contentData)) {
+                                this.eventsBusService.emit({
+                                    namespace: EventNamespace.CONTENT,
+                                    event: serverContent
+                                });
+                            }
+                        });
                 }
 
                 return this.fetchFromServer(request);
