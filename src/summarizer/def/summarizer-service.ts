@@ -8,7 +8,7 @@ import Telemetry = TelemetryEvents.Telemetry;
 export interface SummarizerService {
     getSummary(request: SummaryRequest): Observable<LearnerAssessmentSummary[]>;
 
-    getLearnerAssessmentDetails(request: SummaryRequest): Observable<LearnerAssessmentDetails[]>;
+    getLearnerAssessmentDetails(request: SummaryRequest): Observable<Map<string, ReportDetailPerUser>>;
 
     saveLearnerAssessmentDetails(event: Telemetry): Observable<boolean>;
 

@@ -196,6 +196,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content> {
+        if (!childContentRequest.level) {
+            childContentRequest.level = -1;
+        }
         const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
         let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
         if (!hierarchyInfoList) {
@@ -209,7 +212,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId))
             .mergeMap((rows: ContentEntry.SchemaMap[]) => {
-                return childContentHandler.fetchChildrenOfContent(rows[0], 0, childContentRequest.level, hierarchyInfoList);
+                return childContentHandler.fetchChildrenOfContent(rows[0], 0, childContentRequest.level!, hierarchyInfoList);
             });
     }
 
@@ -349,8 +352,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     cancelDownload(contentId: string): Observable<undefined> {
-        // TODO
-        throw new Error('Not Implemented yet');
+        return this.downloadService.cancel({identifier: contentId});
     }
 
     setContentMarker(contentMarkerRequest: ContentMarkerRequest): Observable<boolean> {

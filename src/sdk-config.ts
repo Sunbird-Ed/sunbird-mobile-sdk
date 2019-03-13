@@ -11,6 +11,7 @@ import {FileConfig} from './util/file/config/file-config';
 import {SystemSettingsConfig} from './system-settings';
 import {TelemetryConfig} from './telemetry/config/telemetry-config';
 import {SharedPreferencesConfig} from './util/shared-preferences';
+import {PlayerConfig} from './player/def/response';
 
 export interface SdkConfig {
     apiConfig: ApiConfig;
@@ -26,4 +27,5 @@ export interface SdkConfig {
     systemSettingsConfig: SystemSettingsConfig;
     telemetryConfig: TelemetryConfig;
     sharedPreferencesConfig: SharedPreferencesConfig;
+    playerConfig?: PlayerConfig;
 }

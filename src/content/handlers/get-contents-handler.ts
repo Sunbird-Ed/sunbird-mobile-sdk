@@ -30,7 +30,7 @@ export class GetContentsHandler {
         }
         let whereClause = `WHERE (${filter})`;
         let query = '';
-        const orderBy = this.generateSortByQuery(request.sortCriteria!, uid!);
+        const orderBy = request.resourcesOnly ? '' : this.generateSortByQuery(request.sortCriteria!, uid!);
         if (request.recentlyViewed) {
             if (uid) {
                 contentTypeFilter = `ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_TYPE} IN (${contentTypesStr.toLowerCase()})`;
