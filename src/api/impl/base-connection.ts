@@ -6,33 +6,41 @@ import {ApiAuthenticator} from './api-authenticator';
 import {SessionAuthenticator} from '../../auth';
 import * as qs from 'qs';
 import {DeviceInfo} from '../../util/device/def/device-info';
+import {SharedPreferences} from '../../util/shared-preferences';
 
 export class BaseConnection implements Connection {
 
     constructor(protected http: HttpClient,
                 protected apiConfig: ApiConfig,
-                protected deviceInfo: DeviceInfo) {
+                protected deviceInfo: DeviceInfo,
+                protected sharedPreferences: SharedPreferences) {
         this.addGlobalHeader();
     }
 
     public invoke(request: Request): Observable<Response> {
         this.buildInterceptorsFromAuthenticators(request);
 
-        request = this.interceptRequest(request);
-
         let response = (async () => {
+            request = await this.interceptRequest(request);
+
             switch (request.type) {
                 case HttpRequestType.GET:
-                    response = await this.http.get(request.host || this.apiConfig.host, request.path, request.headers, request.parameters).toPromise();
+                    response = await this.http.get(
+                        request.host || this.apiConfig.host, request.path, request.headers, request.parameters
+                    ).toPromise();
                     break;
                 case HttpRequestType.PATCH:
-                    response = await this.http.patch(request.host || this.apiConfig.host, request.path, request.headers, request.body).toPromise();
+                    response = await this.http.patch(
+                        request.host || this.apiConfig.host, request.path, request.headers, request.body
+                    ).toPromise();
                     break;
                 case HttpRequestType.POST: {
                     if (request.body instanceof Uint8Array) {
                         response = await this.handleByteArrayPost(request);
                     } else {
-                        response = await this.http.post(request.host || this.apiConfig.host, request.path, request.headers, request.body).toPromise();
+                        response = await this.http.post(
+                            request.host || this.apiConfig.host, request.path, request.headers, request.body
+                        ).toPromise();
                     }
 
                     break;
@@ -61,11 +69,11 @@ export class BaseConnection implements Connection {
 
     private buildInterceptorsFromAuthenticators(request: Request) {
         if (request.withApiToken) {
-            request.authenticators.push(new ApiAuthenticator(this.apiConfig, this.deviceInfo, this));
+            request.authenticators.push(new ApiAuthenticator(this.sharedPreferences, this.apiConfig, this.deviceInfo, this));
         }
 
         if (request.withSessionToken) {
-            request.authenticators.push(new SessionAuthenticator(this.apiConfig, this));
+            request.authenticators.push(new SessionAuthenticator(this.sharedPreferences, this.apiConfig, this));
         }
 
         request.authenticators.forEach((authenticator: Authenticator) => {
@@ -80,10 +88,10 @@ export class BaseConnection implements Connection {
         this.http.setSerializer(request.serializer);
     }
 
-    private interceptRequest(request: Request): Request {
+    private async interceptRequest(request: Request): Promise<Request> {
         const interceptors = request.requestInterceptors;
         for (const interceptor of interceptors) {
-            request = interceptor.interceptRequest(request);
+            request = await interceptor.interceptRequest(request).toPromise();
         }
 
         return request;

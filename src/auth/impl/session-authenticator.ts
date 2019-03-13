@@ -13,25 +13,27 @@ import {Observable} from 'rxjs';
 import {ApiKeys} from '../../app-config';
 import {Connection} from '../../api/def/connection';
 import {OauthSession} from '..';
+import {SharedPreferences} from '../../util/shared-preferences';
 
 export class SessionAuthenticator implements RequestInterceptor, ResponseInterceptor {
 
 
-    constructor(private apiConfig: ApiConfig, private connection: Connection) {
+    constructor(private sharedPreferences: SharedPreferences, private apiConfig: ApiConfig, private connection: Connection) {
     }
 
-    interceptRequest(request: Request): Request {
-        const sessionToken = localStorage.getItem(ApiKeys.KEY_ACCESS_TOKEN);
+    interceptRequest(request: Request): Observable<Request> {
+        return this.sharedPreferences.getString(ApiKeys.KEY_ACCESS_TOKEN)
+            .map((sessionToken) => {
+                if (sessionToken) {
+                    const existingHeaders = request.headers;
+                    existingHeaders['X-Authenticated-User-Token'] = sessionToken;
+                    request.headers = existingHeaders;
+                } else {
+                    throw new Error('No Session Found');
+                }
 
-        if (sessionToken) {
-            const existingHeaders = request.headers;
-            existingHeaders['X-Authenticated-User-Token'] = sessionToken;
-            request.headers = existingHeaders;
-        } else {
-            throw new Error('No Session Found');
-        }
-
-        return request;
+                return request;
+            });
     }
 
     interceptResponse(request: Request, response: Response): Observable<Response> {
