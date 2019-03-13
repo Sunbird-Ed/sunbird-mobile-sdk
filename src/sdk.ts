@@ -253,6 +253,8 @@ export class SunbirdSdk {
             this._frameworkService
         );
 
+        await this._profileService.onInit().toPromise();
+
         this._groupService = new GroupServiceImpl(
             this._dbService,
             this._profileService,

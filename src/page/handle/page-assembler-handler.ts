@@ -30,9 +30,7 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
             PageAssemblerHandler.getIdForDb(request),
             this.PAGE_ASSEMBLE_LOCAL_KEY,
             'ttl_' + this.PAGE_ASSEMBLE_LOCAL_KEY,
-            () => this.fetchFromServer(request),
-            undefined,
-            30 * 60 * 60 * 1000
+            () => this.fetchFromServer(request)
         );
     }
 

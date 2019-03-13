@@ -59,6 +59,28 @@ export class ProfileServiceImpl implements ProfileService {
                 private frameworkService: FrameworkService) {
     }
 
+    onInit(): Observable<undefined> {
+        return this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION)
+            .mergeMap((response) => {
+                if (!response) {
+                    const request: Profile = {
+                        uid: '',
+                        handle: '',
+                        profileType: ProfileType.TEACHER,
+                        source: ProfileSource.LOCAL
+                    };
+
+                    return this.createProfile(request)
+                        .mergeMap((profile: Profile) => {
+                            return this.setActiveSessionForProfile(profile.uid);
+                        })
+                        .mapTo(undefined);
+                }
+
+                return Observable.of(undefined);
+            });
+    }
+
     createProfile(profile: Profile, profileSource: ProfileSource = ProfileSource.LOCAL): Observable<Profile> {
         switch (profileSource) {
             case ProfileSource.LOCAL: {
@@ -172,13 +194,6 @@ export class ProfileServiceImpl implements ProfileService {
 
     getActiveSessionProfile(): Observable<Profile> {
         return this.getActiveProfileSession()
-            .map((profileSession: ProfileSession | undefined) => {
-                if (!profileSession) {
-                    throw new NoActiveSessionError('No active session available');
-                }
-
-                return profileSession;
-            })
             .mergeMap((profileSession: ProfileSession) => {
                 return this.dbService.read({
                     table: ProfileEntry.TABLE_NAME,
@@ -252,25 +267,14 @@ export class ProfileServiceImpl implements ProfileService {
             });
     }
 
-    getActiveProfileSession(): Observable<ProfileSession | undefined> {
+    getActiveProfileSession(): Observable<ProfileSession> {
         return this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION)
-            .mergeMap((response) => {
-                if (!response) {
-                    const request: Profile = {
-                        uid: '',
-                        handle: '',
-                        profileType: ProfileType.TEACHER,
-                        source: ProfileSource.LOCAL
-                    };
-
-                    return this.createProfile(request)
-                        .mergeMap((profile: Profile) => {
-                            return this.setActiveSessionForProfile(profile.uid);
-                        }).mergeMap(() => {
-                            return this.getActiveProfileSession();
-                        });
+            .map((response) => {
+                if (response) {
+                    return JSON.parse(response);
                 }
-                return Observable.of(JSON.parse(response));
+
+                throw new NoActiveSessionError('No active session available');
             });
     }
 
