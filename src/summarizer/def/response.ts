@@ -7,6 +7,8 @@ export interface LearnerAssessmentSummary {
     hierarchyData: string;
     totalMaxScore: number;
     totalScore: number;
+    name?: string;
+    lastUsedTime?: number;
 }
 
 
@@ -62,6 +64,12 @@ export interface UserReportSummary {
     uid: string;
     userName: string;
     timespent: number;
+}
+
+export class ContentCache {
+    lastUsedTime: number;
+    name: string;
+    identifier: string;
 }
 
 

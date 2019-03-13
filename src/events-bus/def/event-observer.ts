@@ -1,5 +1,5 @@
 import {Observable} from 'rxjs';
 
-export interface EventDelegate {
+export interface EventObserver {
     onEvent(event: any): Observable<undefined>;
 }

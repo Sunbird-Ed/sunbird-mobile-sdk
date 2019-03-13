@@ -1,12 +1,13 @@
 import {SummarizerService} from '../def/summarizer-service';
 import {Observable} from 'rxjs';
 import {
+    ContentCache,
     LearnerAssessmentDetails,
     LearnerAssessmentSummary,
     LearnerContentSummaryDetails,
     QuestionSummary
 } from '../def/response';
-import {DeleteAssessmentDetailsRequest, SummaryRequest} from '../def/request';
+import {SummaryRequest} from '../def/request';
 import {SummarizerHandler} from '../handler/summarizer-handler';
 import {DbService} from '../../db';
 import {LearnerAssessmentsEntry, LearnerSummaryEntry} from '../../profile/db/schema';
@@ -15,14 +16,18 @@ import {SummarizerQueries} from '../handler/summarizer-queries';
 import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 import {NumberUtil} from '../../util/number-util';
 import {EventNamespace, EventsBusService} from '../../events-bus';
-import {EventDelegate} from '../../events-bus/def/event-delegate';
+import {EventObserver} from '../../events-bus/def/event-observer';
 import {SummaryTelemetryEventHandler} from '../handler/summary-telemetry-event-handler';
 import Telemetry = TelemetryEvents.Telemetry;
+import {Content, ContentRequest, ContentService} from '../../content';
 
-export class SummarizerServiceImpl implements SummarizerService, EventDelegate {
+export class SummarizerServiceImpl implements SummarizerService, EventObserver {
+    private contentMap: Map<string, ContentCache>;
+
     constructor(private dbService: DbService,
+                private contenService: ContentService,
                 private eventsBusService: EventsBusService) {
-        this.eventsBusService.registerDelegate({namespace: EventNamespace.TELEMETRY, delegate: this});
+        this.eventsBusService.registerObserver({namespace: EventNamespace.TELEMETRY, observer: this});
     }
 
     getDetailsPerQuestion(request: SummaryRequest): Observable<{ [p: string]: any }[]> {
@@ -61,8 +66,31 @@ export class SummarizerServiceImpl implements SummarizerService, EventDelegate {
         } else if (request.contentId) {
             query = SummarizerQueries.getContentProgressQuery(request.contentId);
         }
-        return this.dbService.execute(query).map((assesmentsInDb: LearnerSummaryEntry.SchemaMap[]) =>
-            SummarizerHandler.mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb));
+        return this.getContentCache().mergeMap((cache: Map<string, ContentCache>) => {
+            return this.dbService.execute(query).map((assesmentsInDb: LearnerSummaryEntry.SchemaMap[]) =>
+                SummarizerHandler.mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb, cache));
+        });
+
+    }
+
+    getContentCache(): Observable<Map<string, ContentCache>> {
+        if (this.contentMap) {
+            return Observable.of(this.contentMap);
+        } else {
+            const contentRequest: ContentRequest = {resourcesOnly: true, contentTypes: []};
+            return this.contenService.getContents(contentRequest).map((results: Content[]) => {
+                results.forEach(element => {
+                    const cacheContent = new ContentCache();
+                    cacheContent.name = element.contentData.name;
+                    cacheContent.lastUsedTime = element.lastUsedTime;
+                    cacheContent.identifier = element.identifier;
+                    this.contentMap.set(element.identifier, cacheContent);
+                });
+                return this.contentMap;
+            });
+
+        }
+
     }
 
     saveLearnerAssessmentDetails(event: Telemetry): Observable<boolean> {
@@ -133,9 +161,43 @@ export class SummarizerServiceImpl implements SummarizerService, EventDelegate {
         });
     }
 
-    deletePreviousAssessmentDetails(deleteAssessmentDetailsRequest: DeleteAssessmentDetailsRequest): Observable<number> {
-        // TODO: Swayangjit
-        throw new Error('To be implemented');
+    deletePreviousAssessmentDetails(uid: string, contentId: string): Observable<undefined> {
+        return this.dbService.read({
+            table: LearnerSummaryEntry.TABLE_NAME,
+            selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} =?
+            AND ${LearnerSummaryEntry.COLUMN_NAME_UID} = ?
+            AND ${LearnerSummaryEntry.COLUMN_NAME_HIERARCHY_DATA}`,
+            selectionArgs: [uid, contentId, '']
+        }).mergeMap((summariesinDb: LearnerSummaryEntry.SchemaMap[]) => {
+            if (summariesinDb && summariesinDb.length) {
+                return this.dbService.delete({
+                    table: LearnerSummaryEntry.TABLE_NAME,
+                    selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} =?
+                        AND ${LearnerSummaryEntry.COLUMN_NAME_UID} = ?`,
+                    selectionArgs: [uid, contentId]
+                });
+            } else {
+                return Observable.of(undefined);
+            }
+        }).mergeMap(() => {
+            return this.dbService.read({
+                table: LearnerAssessmentsEntry.TABLE_NAME,
+                selection: `${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} =?
+                            AND ${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ?`,
+                selectionArgs: [uid, contentId]
+            });
+        }).mergeMap((assesmentsInDb: LearnerAssessmentsEntry.SchemaMap[]) => {
+            if (assesmentsInDb && assesmentsInDb.length) {
+                return this.dbService.delete({
+                    table: LearnerSummaryEntry.TABLE_NAME,
+                    selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} =?
+                        AND ${LearnerSummaryEntry.COLUMN_NAME_UID} = ?`,
+                    selectionArgs: [uid, contentId]
+                });
+            } else {
+                return Observable.of(undefined);
+            }
+        });
     }
 
     onEvent(event: TelemetryEvents.Telemetry): Observable<undefined> {

@@ -8,6 +8,8 @@ import {
     ContentDetailRequest,
     ContentDownloadRequest,
     ContentErrorCode,
+    ContentEvent,
+    ContentEventType,
     ContentExportRequest,
     ContentFeedbackService,
     ContentImport,
@@ -69,11 +71,13 @@ import {SearchRequest} from '../def/search-request';
 import {ContentSearchApiHandler} from '../handlers/import/content-search-api-handler';
 import {ArrayUtil} from '../../util/array-util';
 import {FileUtil} from '../../util/file/util/file-util';
-import {DownloadRequest, DownloadService} from '../../util/download';
+import {DownloadCancelRequest, DownloadRequest, DownloadService} from '../../util/download';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
+import {EventNamespace, EventsBusService} from '../../events-bus';
+import {EventObserver} from '../../events-bus/def/event-observer';
 
-export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
-    private getContentDetailsHandler: GetContentDetailsHandler;
+export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, EventObserver {
+    private readonly getContentDetailsHandler: GetContentDetailsHandler;
 
     constructor(private contentServiceConfig: ContentServiceConfig,
                 private apiService: ApiService,
@@ -85,10 +89,13 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 private deviceInfo: DeviceInfo,
                 private telemetryService: TelemetryService,
                 private contentFeedbackService: ContentFeedbackService,
-                private downloadService: DownloadService) {
+                private downloadService: DownloadService,
+                private eventsBusService: EventsBusService) {
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
-            this.apiService, this.contentServiceConfig, this.dbService);
+            this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
+
+        this.eventsBusService.registerObserver({namespace: EventNamespace.CONTENT, observer: this});
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
@@ -118,9 +125,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             });
     }
 
-    cancelImport(contentId: string) {
-        // TODO
-        throw new Error('Not Implemented yet');
+    cancelImport(contentId: string): Observable<any> {
+        return this.downloadService.cancel({identifier: contentId});
     }
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]> {
@@ -328,11 +334,16 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
 
-    searchContent(contentSearchCriteria: ContentSearchCriteria): Observable<ContentSearchResult> {
-        contentSearchCriteria.limit = contentSearchCriteria.limit ? contentSearchCriteria.limit : 100;
-        contentSearchCriteria.offset = contentSearchCriteria.offset ? contentSearchCriteria.offset : 0;
+    searchContent(contentSearchCriteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult> {
         const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
             this.contentServiceConfig, this.telemetryService);
+        if (request) {
+            contentSearchCriteria = searchHandler.getSearchCriteria(request);
+        } else {
+            contentSearchCriteria.limit = contentSearchCriteria.limit ? contentSearchCriteria.limit : 100;
+            contentSearchCriteria.offset = contentSearchCriteria.offset ? contentSearchCriteria.offset : 0;
+        }
+
         const searchRequest = searchHandler.getSearchContentRequest(contentSearchCriteria);
         return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig,
             contentSearchCriteria.framework, contentSearchCriteria.languageCode)
@@ -427,5 +438,21 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return this.importEcar(importEcarRequest).mapTo(undefined).catch(() => {
             return Observable.of(undefined);
         });
+    }
+
+    onEvent(event: ContentEvent): Observable<undefined> {
+        switch (event.type) {
+            case ContentEventType.UPDATE: {
+                return this.onContentUpdate();
+            }
+            default: {
+                return Observable.of(undefined);
+            }
+        }
+    }
+
+    private onContentUpdate(): Observable<undefined> {
+        // TODO Swayangjit
+        return Observable.of(undefined);
     }
 }

@@ -24,7 +24,7 @@ export interface ContentService extends DownloadCompleteDelegate {
 
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
 
-    searchContent(criteria: ContentSearchCriteria): Observable<ContentSearchResult>;
+    searchContent(criteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult>;
 
     getGroupByPage(request: ContentSearchCriteria): Observable<GroupByPageResult>;
 
@@ -40,7 +40,7 @@ export interface ContentService extends DownloadCompleteDelegate {
 
     subscribeForImportStatus(contentId: string): Observable<Response>;
 
-    cancelImport(contentId: string);
+    cancelImport(contentId: string): Observable<any>;
 
     exportContent(contentExportRequest: ContentExportRequest): Observable<Response>;
 

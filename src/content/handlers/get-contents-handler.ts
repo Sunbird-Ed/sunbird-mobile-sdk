@@ -7,12 +7,19 @@ export class GetContentsHandler {
 
 
     getAllLocalContentQuery(request: ContentRequest): string {
+        if (!request.contentTypes || !request.contentTypes.length) {
+            request.contentTypes = ['Story', 'Worksheet', 'Game', 'Resource', 'Collection', 'TextBook'];
+        }
+        if (request.resourcesOnly) {
+            request.contentTypes = ['Story', 'Worksheet', 'Game', 'Resource'];
+        }
         const uid = request.uid;
         const contentTypesStr = ArrayUtil.joinPreservingQuotes(request.contentTypes);
         let contentTypeFilter = `c.${ContentEntry.COLUMN_NAME_CONTENT_TYPE} IN(${contentTypesStr.toLowerCase()})`;
-        const contentVisibilityFilter = `c.${ContentEntry.COLUMN_NAME_VISIBILITY} = '${Visibility.DEFAULT.valueOf()}'`;
+        const contentVisibilityFilter = request.resourcesOnly ? '' :
+            `c.${ContentEntry.COLUMN_NAME_VISIBILITY} = '${Visibility.DEFAULT.valueOf()}' AND`;
         const artifactAvailabilityFilter = `c.${ContentEntry.COLUMN_NAME_CONTENT_STATE} = '${State.ARTIFACT_AVAILABLE.valueOf()}'`;
-        let filter = `${contentVisibilityFilter} AND ${artifactAvailabilityFilter} AND ${contentTypeFilter}`;
+        let filter = `${contentVisibilityFilter} ${artifactAvailabilityFilter} AND ${contentTypeFilter}`;
         const audienceFilter = this.getAudienceFilter(request.audience!);
         const pragmaFilter = this.getPragmaFilter(request.exclPragma!, request.pragma!);
 

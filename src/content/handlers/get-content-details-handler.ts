@@ -14,9 +14,10 @@ import {DbService, ReadQuery} from '../../db';
 import {ContentEntry} from '../db/schema';
 import {QueryBuilder} from '../../db/util/query-builder';
 import {ContentMapper} from '../util/content-mapper';
-import {Profile, ProfileService} from '../../profile';
-import {ContentAccess} from '../../profile/def/content-access';
+import {ContentAccess, Profile, ProfileService} from '../../profile';
 import {ContentMarkerHandler} from './content-marker-handler';
+import {ContentUtil} from '../util/content-util';
+import {EventNamespace, EventsBusService} from '../../events-bus';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
     private readonly GET_CONTENT_DETAILS_ENDPOINT = '/read';
@@ -25,7 +26,8 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 private profileService: ProfileService,
                 private apiService: ApiService,
                 private contentServiceConfig: ContentServiceConfig,
-                private dbService: DbService) {
+                private dbService: DbService,
+                private eventsBusService: EventsBusService) {
     }
 
     public static getReadContentQuery(identifier: string): ReadQuery {
@@ -44,10 +46,28 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
         return this.fetchFromDB(request.contentId)
             .mergeMap((contentDbEntry) => {
                 if (contentDbEntry) {
-                    return Observable.of(ContentMapper.mapContentDBEntryToContent(contentDbEntry));
+                    return Observable.of(ContentMapper.mapContentDBEntryToContent(contentDbEntry))
+                        .do(async (localContent) => {
+                            const serverContent: ContentData = await this.fetchFromServer(request).toPromise();
+                            localContent[ContentEntry.COLUMN_NAME_SERVER_DATA] = serverContent;
+                            localContent[ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON] = serverContent['lastUpdatedOn'];
+                            localContent[ContentEntry.COLUMN_NAME_AUDIENCE] = ContentUtil.readAudience(serverContent);
+                            await this.dbService.update({
+                                table: ContentEntry.TABLE_NAME,
+                                selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
+                                selectionArgs: [localContent[ContentEntry.COLUMN_NAME_IDENTIFIER]],
+                                modelJson: localContent
+                            });
+                            if (ContentUtil.isUpdateAvailable(serverContent, localContent.contentData)) {
+                                this.eventsBusService.emit({
+                                    namespace: EventNamespace.CONTENT,
+                                    event: serverContent
+                                });
+                            }
+                        });
                 }
 
-                return this.fetchFromServer(request);
+                return this.fetchAndDecorate(request);
             });
     }
 
@@ -61,7 +81,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
         }).map((contentsFromDB: ContentEntry.SchemaMap[]) => contentsFromDB[0]);
     }
 
-    fetchFromServer(request: ContentDetailRequest): Observable<Content> {
+    fetchFromServer(request: ContentDetailRequest): Observable<ContentData> {
         return this.apiService.fetch<{ result: { content: ContentData } }>(
             new Request.Builder()
                 .withType(HttpRequestType.GET)
@@ -69,7 +89,13 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 .withApiToken(true)
                 .build()
         ).map((response) => {
-            const contentData = response.body.result.content;
+            return response.body.result.content;
+        });
+    }
+
+
+    fetchAndDecorate(request: ContentDetailRequest): Observable<Content> {
+        return this.fetchFromServer(request).map((contentData: ContentData) => {
             return ContentMapper.mapServerResponseToContent(contentData);
         }).mergeMap((content: Content) => {
             return this.decorateContent({
