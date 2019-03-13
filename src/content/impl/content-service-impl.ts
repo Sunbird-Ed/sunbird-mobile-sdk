@@ -8,8 +8,6 @@ import {
     ContentDetailRequest,
     ContentDownloadRequest,
     ContentErrorCode,
-    ContentEvent,
-    ContentEventType,
     ContentExportRequest,
     ContentFeedbackService,
     ContentImport,
@@ -71,12 +69,11 @@ import {SearchRequest} from '../def/search-request';
 import {ContentSearchApiHandler} from '../handlers/import/content-search-api-handler';
 import {ArrayUtil} from '../../util/array-util';
 import {FileUtil} from '../../util/file/util/file-util';
-import {DownloadCancelRequest, DownloadRequest, DownloadService} from '../../util/download';
+import {DownloadRequest, DownloadService} from '../../util/download';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
-import {EventNamespace, EventsBusService} from '../../events-bus';
-import {EventObserver} from '../../events-bus/def/event-observer';
+import {EventsBusService} from '../../events-bus';
 
-export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, EventObserver {
+export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
     private readonly getContentDetailsHandler: GetContentDetailsHandler;
 
     constructor(private contentServiceConfig: ContentServiceConfig,
@@ -94,8 +91,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
             this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
-
-        this.eventsBusService.registerObserver({namespace: EventNamespace.CONTENT, observer: this});
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
@@ -438,21 +433,5 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return this.importEcar(importEcarRequest).mapTo(undefined).catch(() => {
             return Observable.of(undefined);
         });
-    }
-
-    onEvent(event: ContentEvent): Observable<undefined> {
-        switch (event.type) {
-            case ContentEventType.UPDATE: {
-                return this.onContentUpdate();
-            }
-            default: {
-                return Observable.of(undefined);
-            }
-        }
-    }
-
-    private onContentUpdate(): Observable<undefined> {
-        // TODO Swayangjit
-        return Observable.of(undefined);
     }
 }

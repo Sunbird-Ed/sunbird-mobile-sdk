@@ -1,4 +1,4 @@
-import {OauthSession, SessionProvider} from '..';
+import {OAuthSession, SessionProvider} from '..';
 import {ApiConfig, ApiService} from '../../api';
 import {OAuthDelegate} from './o-auth-delegate';
 
@@ -10,7 +10,7 @@ export class OAuthSessionProvider implements SessionProvider {
         this.oAuthService = new OAuthDelegate(this.apiConfig, this.apiService);
     }
 
-    public async provide(): Promise<OauthSession> {
+    public async provide(): Promise<OAuthSession> {
         return this.oAuthService.doOAuthStepOne();
     }
 }

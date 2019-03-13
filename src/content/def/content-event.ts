@@ -4,7 +4,6 @@ export interface ContentEvent {
 }
 
 export enum ContentEventType {
-    UPDATE = 'UPDATE',
-    DOWNLOAD = 'DOWNLOAD'
+    UPDATE = 'UPDATE'
 }
 

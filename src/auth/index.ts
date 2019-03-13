@@ -1,4 +1,4 @@
-export * from './def/oauth-session';
+export * from './def/o-auth-session';
 export * from './def/session-provider';
 export * from './def/auth-service';
 export * from './impl/session-authenticator';
