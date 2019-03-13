@@ -31,6 +31,7 @@ export interface ContentRequest {
     sortCriteria?: ContentSortCriteria[];
     recentlyViewed?: boolean;
     localOnly?: boolean;
+    resourcesOnly?: boolean;
     limit?: number;
 }
 

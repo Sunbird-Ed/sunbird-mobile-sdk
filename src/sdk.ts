@@ -304,7 +304,7 @@ export class SunbirdSdk {
             this._profileService
         );
 
-        this._summarizerService = new SummarizerServiceImpl(this._dbService, this._eventsBusService);
+
 
         this._downloadService = new DownloadServiceImpl(this._eventsBusService, this._sharedPreferences);
 
@@ -322,6 +322,8 @@ export class SunbirdSdk {
             this._downloadService,
             this._eventsBusService
         );
+
+        this._summarizerService = new SummarizerServiceImpl(this._dbService, this.contentService, this._eventsBusService);
 
         this._downloadService.registerOnDownloadCompleteDelegate(this._contentService);
 

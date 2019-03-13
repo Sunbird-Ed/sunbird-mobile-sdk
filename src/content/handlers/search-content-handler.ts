@@ -5,10 +5,10 @@ import {
     ContentSearchResult,
     ContentServiceConfig,
     ContentSortCriteria,
-    FilterValue, SearchResponse,
+    FilterValue,
+    SearchResponse,
     SortOrder
 } from '..';
-import {HttpRequestType, Request} from '../../api';
 import {AppConfig} from '../../api/config/app-config';
 import {MimeType, SearchType} from '../util/content-constants';
 import {SearchFilter, SearchRequest} from '../def/search-request';
@@ -24,6 +24,55 @@ export class SearchContentHandler {
     constructor(private appConfig: AppConfig,
                 private contentServiceConfig: ContentServiceConfig,
                 private telemetryService: TelemetryService) {
+    }
+
+    getSearchCriteria(requestMap: { [key: string]: any }): ContentSearchCriteria {
+        const filter: { [key: string]: any } = requestMap['request'];
+        const searchType = String(filter['searchType']);
+        const query = filter['query'];
+        const exists = filter['exists'];
+        let mode;
+        if (filter.hasOwnProperty('soft') && filter['mode'] === 'soft') {
+            mode = 'soft';
+        }
+        const sortCriteria: ContentSortCriteria[] = [];
+        if (filter.hasOwnProperty('sort_by')) {
+            const sortBy = filter['sort_by'];
+            Object.keys(sortBy).forEach((key) => {
+                const criteria: ContentSortCriteria = {
+                    sortAttribute: key,
+                    sortOrder: SortOrder[String(sortBy[key])]
+                };
+                sortCriteria.push(criteria);
+            });
+        }
+
+        const contentSearchCriteria: ContentSearchCriteria = {
+            ...((query ? {query: query} : {})),
+            ...((exists ? {exists: exists} : {})),
+            mode: mode,
+            sortCriteria: sortCriteria,
+            searchType: SearchType[searchType]
+        };
+
+        let contentTypes;
+        let impliedFilter;
+        if (filter.hasOwnProperty('filters')) {
+            const filterMap: SearchFilter = filter['filters'] as SearchFilter;
+            if (filterMap.contentType) {
+                contentTypes = filterMap.contentType;
+            }
+            impliedFilter = this.mapFilterValues(filterMap, contentSearchCriteria);
+            contentSearchCriteria.impliedFilters = impliedFilter;
+            contentSearchCriteria.contentTypes = contentTypes;
+        }
+        let facets: string[];
+        if (filter.hasOwnProperty('facets')) {
+            facets = filter['facets'];
+            contentSearchCriteria.facets = facets;
+        }
+
+        return contentSearchCriteria;
     }
 
     getSearchContentRequest(criteria: ContentSearchCriteria): SearchRequest {

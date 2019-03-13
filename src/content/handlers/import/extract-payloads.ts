@@ -50,7 +50,7 @@ export class ExtractPayloads {
             const contentDisposition = element.contentDisposition;
             const contentType = ContentUtil.readContentType(element);
             let visibility = ContentUtil.readVisibility(element);
-            const audience = ContentUtil.readVisibility(element);
+            const audience = ContentUtil.readAudience(element);
             const pragma = ContentUtil.readPragma(element);
             const compatibilityLevel = ContentUtil.readCompatibilityLevel(element);
             const pkgVersion = element.pkgVersion;
@@ -159,7 +159,6 @@ export class ExtractPayloads {
     private constructContentDBModel(identifier, manifestVersion, localData,
                                     mimeType, contentType, visibility, path,
                                     refCount, contentState, audience, pragma, sizeOnDevice): ContentEntry.SchemaMap {
-        console.log('Path', path);
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
