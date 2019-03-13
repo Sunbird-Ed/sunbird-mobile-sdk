@@ -1,5 +1,5 @@
 import {Observable} from 'rxjs';
-import {LearnerAssessmentDetails, LearnerAssessmentSummary} from './response';
+import {LearnerAssessmentDetails, LearnerAssessmentSummary, ReportDetailPerUser} from './response';
 import { SummaryRequest} from './request';
 import {TelemetryEvents} from '../../telemetry';
 import Telemetry = TelemetryEvents.Telemetry;
@@ -8,7 +8,7 @@ import Telemetry = TelemetryEvents.Telemetry;
 export interface SummarizerService {
     getSummary(request: SummaryRequest): Observable<LearnerAssessmentSummary[]>;
 
-    getLearnerAssessmentDetails(request: SummaryRequest): Observable<LearnerAssessmentDetails[]>;
+    getLearnerAssessmentDetails(request: SummaryRequest): Observable<Map<string, ReportDetailPerUser>>;
 
     saveLearnerAssessmentDetails(event: Telemetry): Observable<boolean>;
 

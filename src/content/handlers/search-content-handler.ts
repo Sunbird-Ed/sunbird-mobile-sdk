@@ -7,10 +7,11 @@ import {
     ContentSortCriteria,
     FilterValue,
     SearchResponse,
+    SearchType,
     SortOrder
 } from '..';
 import {AppConfig} from '../../api/config/app-config';
-import {MimeType, SearchType} from '../util/content-constants';
+import {MimeType} from '../util/content-constants';
 import {SearchFilter, SearchRequest} from '../def/search-request';
 import {InteractSubtype, InteractType, PageId, TelemetryInteractRequest, TelemetryService} from '../../telemetry';
 import {NumberUtil} from '../../util/number-util';
@@ -27,21 +28,23 @@ export class SearchContentHandler {
     }
 
     getSearchCriteria(requestMap: { [key: string]: any }): ContentSearchCriteria {
-        const filter: { [key: string]: any } = requestMap['request'];
-        const searchType = String(filter['searchType']);
-        const query = filter['query'];
-        const exists = filter['exists'];
+        const request: { [key: string]: any } = requestMap['request'];
+        const query = request['query'];
+        const exists = request['exists'];
+        const limit = request['limit'];
+        const offset = request['offset'];
         let mode;
-        if (filter.hasOwnProperty('soft') && filter['mode'] === 'soft') {
+        if (request.hasOwnProperty('mode') && request['mode'] === 'soft') {
             mode = 'soft';
         }
         const sortCriteria: ContentSortCriteria[] = [];
-        if (filter.hasOwnProperty('sort_by')) {
-            const sortBy = filter['sort_by'];
+        if (request.hasOwnProperty('sort_by')) {
+            const sortBy = request['sort_by'];
             Object.keys(sortBy).forEach((key) => {
+
                 const criteria: ContentSortCriteria = {
                     sortAttribute: key,
-                    sortOrder: SortOrder[String(sortBy[key])]
+                    sortOrder: this.getSortOrder(String(sortBy[key]))
                 };
                 sortCriteria.push(criteria);
             });
@@ -52,13 +55,15 @@ export class SearchContentHandler {
             ...((exists ? {exists: exists} : {})),
             mode: mode,
             sortCriteria: sortCriteria,
-            searchType: SearchType[searchType]
+            searchType: this.getSearchType(String(request['searchType'])),
+            offset: offset ? offset : 0,
+            limit: limit ? limit : 100
         };
 
         let contentTypes;
         let impliedFilter;
-        if (filter.hasOwnProperty('filters')) {
-            const filterMap: SearchFilter = filter['filters'] as SearchFilter;
+        if (request.hasOwnProperty('filters')) {
+            const filterMap: SearchFilter = request['filters'] as SearchFilter;
             if (filterMap.contentType) {
                 contentTypes = filterMap.contentType;
             }
@@ -67,12 +72,36 @@ export class SearchContentHandler {
             contentSearchCriteria.contentTypes = contentTypes;
         }
         let facets: string[];
-        if (filter.hasOwnProperty('facets')) {
-            facets = filter['facets'];
+        if (request.hasOwnProperty('facets')) {
+            facets = request['facets'];
             contentSearchCriteria.facets = facets;
         }
 
         return contentSearchCriteria;
+    }
+
+    private getSortOrder(order): SortOrder {
+        let sortOrder: SortOrder;
+        if (order === 'asc') {
+            sortOrder = SortOrder.ASC;
+        } else if (order === 'desc') {
+            sortOrder = SortOrder.DESC;
+        } else {
+            sortOrder = SortOrder.DESC;
+        }
+        return sortOrder;
+    }
+
+    private getSearchType(type): SearchType {
+        let searchType: SearchType;
+        if (type === 'search') {
+            searchType = SearchType.SEARCH;
+        } else if (type === 'filter') {
+            searchType = SearchType.FILTER;
+        } else {
+            searchType = SearchType.SEARCH;
+        }
+        return searchType;
     }
 
     getSearchContentRequest(criteria: ContentSearchCriteria): SearchRequest {

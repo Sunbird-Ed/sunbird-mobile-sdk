@@ -32,7 +32,8 @@
     "sb-cordova-plugin-customtabs": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-customtabs.git",
     "sb-cordova-plugin-db": "git+https://github.com/swayangjit/sb-cordova-plugin-db.git",
     "jjdltc-cordova-plugin-zip": "git+https://github.com/swayangjit/jjdltc-cordova-plugin-zip.git",
-    "cordova-plugin-android-downloadmanager": "^0.5.0"
+    "cordova-plugin-android-downloadmanager": "^0.5.0",
+    "cordova-plugin-buildconfig-reader": "git+https://github.com/swayangjit/cordova-plugin-buildconfig-reader.git"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",

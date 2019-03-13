@@ -423,4 +423,33 @@ export class ContentUtil {
         return basePath;
     }
 
+    public static getRollup(identifier: string, hierachyInfo: HierarchyInfo[]): Rollup {
+        let l1, l2, l3, l4;
+        if (!hierachyInfo) {
+            l1 = identifier;
+        } else {
+            let i;
+            for (i = 0; i <= hierachyInfo.length; i++) {
+                switch (i) {
+                    case 0:
+                        l1 = hierachyInfo[i].identifier;
+                        break;
+                    case 1:
+                        l2 = hierachyInfo[i].identifier;
+                        break;
+                    case 2:
+                        l3 = hierachyInfo[i].identifier;
+                        break;
+                    case 3:
+                        l4 = hierachyInfo[i].identifier;
+                        break;
+                }
+
+            }
+
+        }
+        const rollup: Rollup = {l1: l1, l2: l2, l3: l3, l4: l4};
+        return rollup;
+    }
+
 }
