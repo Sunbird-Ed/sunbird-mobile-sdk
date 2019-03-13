@@ -47,9 +47,10 @@ export class SummarizerHandler {
         };
     }
 
-    public static mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb: LearnerSummaryEntry.SchemaMap[], cache: Map<string, ContentCache>):
-        LearnerAssessmentSummary[] {
+    public static mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb: LearnerSummaryEntry.SchemaMap[],
+                                                        cache: Map<string, ContentCache>): LearnerAssessmentSummary[] {
         return assesmentsInDb.map((assesment: LearnerSummaryEntry.SchemaMap) => {
+            const contentCache: ContentCache | undefined = cache.get(assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID]) ;
             return {
                 uid: assesment[LearnerSummaryEntry.COLUMN_NAME_UID].toString(),
                 contentId: assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID].toString(),
@@ -59,7 +60,7 @@ export class SummarizerHandler {
                 hierarchyData: assesment[LearnerSummaryEntry.COLUMN_NAME_HIERARCHY_DATA].toString(),
                 totalMaxScore: NumberUtil.toPrecision(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_MAX_SCORE]),
                 totalScore: NumberUtil.toPrecision(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_SCORE]),
-                name: cache[assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID].toString()]
+                name: contentCache!.name
             };
         });
     }
