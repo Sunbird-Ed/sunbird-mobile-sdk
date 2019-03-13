@@ -1,5 +1,5 @@
 import {Observable} from 'rxjs';
-import {LearnerAssessmentDetails, LearnerAssessmentSummary} from './response';
+import {LearnerAssessmentDetails, LearnerAssessmentSummary, ReportDetailPerUser} from './response';
 import { SummaryRequest} from './request';
 import {TelemetryEvents} from '../../telemetry';
 import Telemetry = TelemetryEvents.Telemetry;
