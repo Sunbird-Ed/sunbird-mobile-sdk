@@ -1,6 +1,5 @@
-import {ContentRequest, ContentSortCriteria, SortOrder} from '..';
+import {ContentRequest, ContentSortCriteria, SortOrder, State, Visibility} from '..';
 import {ContentAccessEntry, ContentEntry, ContentMarkerEntry} from '../db/schema';
-import {State, Visibility} from '../util/content-constants';
 import {ArrayUtil} from '../../util/array-util';
 
 export class GetContentsHandler {
