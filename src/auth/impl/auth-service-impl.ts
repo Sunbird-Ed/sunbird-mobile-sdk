@@ -1,14 +1,15 @@
-import {AuthService, OauthSession, SessionProvider} from '..';
+import {AuthService, OAuthSession, SessionProvider} from '..';
 import {ApiConfig, ApiService} from '../../api';
 import {AuthUtil} from '../util/auth-util';
 import {Observable} from 'rxjs';
+import {SharedPreferences} from '../../util/shared-preferences';
 
 export class AuthServiceImpl implements AuthService {
 
     private authUtil: AuthUtil;
 
-    constructor(private apiConfig: ApiConfig, private apiService: ApiService) {
-        this.authUtil = new AuthUtil(this.apiConfig, this.apiService);
+    constructor(private apiConfig: ApiConfig, private apiService: ApiService, private sharedPreferences: SharedPreferences) {
+        this.authUtil = new AuthUtil(this.apiConfig, this.apiService, this.sharedPreferences);
     }
 
     setSession(sessionProvider: SessionProvider): Observable<undefined> {
@@ -18,15 +19,15 @@ export class AuthServiceImpl implements AuthService {
         }));
     }
 
-    getSession(): Observable<OauthSession | undefined> {
+    getSession(): Observable<OAuthSession | undefined> {
         return Observable.fromPromise(this.authUtil.getSessionData());
     }
 
-    resignSession(): Observable<undefined> {
+    resignSession(): Observable<void> {
         return Observable.fromPromise(this.authUtil.endSession());
     }
 
-    refreshSession(): Observable<undefined> {
+    refreshSession(): Observable<void> {
         return Observable.fromPromise(this.authUtil.refreshSession());
     }
 }

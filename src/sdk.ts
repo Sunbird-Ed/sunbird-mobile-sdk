@@ -212,9 +212,9 @@ export class SunbirdSdk {
 
         await this._dbService.init();
 
-        this._apiService = new ApiServiceImpl(sdkConfig.apiConfig, this._deviceInfo);
+        this._apiService = new ApiServiceImpl(sdkConfig.apiConfig, this._deviceInfo, this._sharedPreferences);
 
-        this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService);
+        this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService, this._sharedPreferences);
 
         this._keyValueStore = new KeyValueStoreImpl(this._dbService);
 

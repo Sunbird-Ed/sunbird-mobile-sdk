@@ -1,5 +1,5 @@
-import {OauthSession, SessionProvider} from '..';
-import {HttpRequestType, Request, ApiConfig, ApiService, JWTUtil, Response} from '../../api';
+import {OAuthSession, SessionProvider} from '..';
+import {ApiConfig, ApiService, HttpRequestType, JWTUtil, Request, Response} from '../../api';
 import {StepOneCallbackType} from './o-auth-delegate';
 import * as qs from 'qs';
 
@@ -10,7 +10,7 @@ export class StateLoginSessionProvider implements SessionProvider {
         private apiService: ApiService) {
     }
 
-    public async provide(): Promise<OauthSession> {
+    public async provide(): Promise<OAuthSession> {
         const id = await this.openInAppBrowser(this.params.ssoUrl!);
 
         const apiRequest: Request = new Request.Builder()
@@ -24,8 +24,8 @@ export class StateLoginSessionProvider implements SessionProvider {
             .toPromise()
             .then((response: Response<{ access_token: string, refresh_token: string }>) => {
                     return {
-                        accessToken: response.body.access_token,
-                        refreshToken: response.body.refresh_token,
+                        access_token: response.body.access_token,
+                        refresh_token: response.body.refresh_token,
                         userToken: JWTUtil.parseUserTokenFromAccessToken(response.body.access_token)
                     };
                 }

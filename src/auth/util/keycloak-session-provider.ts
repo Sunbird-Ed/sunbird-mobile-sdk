@@ -1,4 +1,4 @@
-import {OauthSession, SessionProvider} from '..';
+import {OAuthSession, SessionProvider} from '..';
 import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../api';
 import {StepOneCallbackType} from './o-auth-delegate';
 
@@ -8,7 +8,7 @@ export class KeycloakSessionProvider implements SessionProvider {
                 private apiService: ApiService) {
     }
 
-    public async provide(): Promise<OauthSession> {
+    public async provide(): Promise<OAuthSession> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.apiConfig.user_authentication.authUrl + '/token')
@@ -30,12 +30,12 @@ export class KeycloakSessionProvider implements SessionProvider {
             .toPromise()
             .then((response: Response<{ access_token: string, refresh_token: string }>) => {
                 return {
-                    accessToken: response.body.access_token,
-                    refreshToken: response.body.refresh_token,
+                    access_token: response.body.access_token,
+                    refresh_token: response.body.refresh_token,
                     userToken: JWTUtil.parseUserTokenFromAccessToken(response.body.access_token)
                 };
             }).catch(e => {
-                console.log(e);
+                console.error(e);
 
                 throw e;
             });
