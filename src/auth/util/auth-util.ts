@@ -41,7 +41,7 @@ export class AuthUtil {
     }
 
     public async startSession(sessionData: OAuthSession): Promise<void> {
-        await this.sharedPreferences.putString(ApiKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData));
+        await this.sharedPreferences.putString(ApiKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
     }
 
     public async endSession(): Promise<void> {
