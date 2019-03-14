@@ -1,6 +1,6 @@
 import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../api';
 import {OAuthSession} from '..';
-import {ApiKeys} from '../../preference-keys';
+import {AuthKeys} from '../../preference-keys';
 import {NoActiveSessionError} from '../../profile';
 import {AuthEndPoints} from '../def/auth-end-points';
 import {SharedPreferences} from '../../util/shared-preferences';
@@ -41,7 +41,7 @@ export class AuthUtil {
     }
 
     public async startSession(sessionData: OAuthSession): Promise<void> {
-        await this.sharedPreferences.putString(ApiKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
+        await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
     }
 
     public async endSession(): Promise<void> {
@@ -52,14 +52,14 @@ export class AuthUtil {
 
             customtabs.isAvailable(() => {
                 customtabs.launch(launchUrl!!, async () => {
-                    await this.sharedPreferences.putString(ApiKeys.KEY_OAUTH_SESSION, '');
+                    await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '');
                     resolve();
                 }, error => {
                     reject(error);
                 });
             }, error => {
                 customtabs.launchInBrowser(launchUrl!!, async () => {
-                    await this.sharedPreferences.putString(ApiKeys.KEY_OAUTH_SESSION, '');
+                    await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '');
                     resolve();
                 }, err => {
                     reject(err);
@@ -69,7 +69,7 @@ export class AuthUtil {
     }
 
     public async getSessionData(): Promise<OAuthSession | undefined> {
-        const stringifiedSessionData = await this.sharedPreferences.getString(ApiKeys.KEY_OAUTH_SESSION).toPromise();
+        const stringifiedSessionData = await this.sharedPreferences.getString(AuthKeys.KEY_OAUTH_SESSION).toPromise();
 
         if (!stringifiedSessionData) {
             return undefined;

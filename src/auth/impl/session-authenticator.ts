@@ -10,7 +10,7 @@ import {
     ResponseInterceptor
 } from '../../api';
 import {Observable} from 'rxjs';
-import {ApiKeys} from '../../preference-keys';
+import {AuthKeys} from '../../preference-keys';
 import {Connection} from '../../api/def/connection';
 import {OAuthSession} from '..';
 import {SharedPreferences} from '../../util/shared-preferences';
@@ -22,7 +22,7 @@ export class SessionAuthenticator implements RequestInterceptor, ResponseInterce
     }
 
     interceptRequest(request: Request): Observable<Request> {
-        return this.sharedPreferences.getString(ApiKeys.KEY_OAUTH_SESSION)
+        return this.sharedPreferences.getString(AuthKeys.KEY_OAUTH_SESSION)
             .map((stringifiedSessionData?: string) => {
                 if (stringifiedSessionData) {
                     const sessionData: OAuthSession = JSON.parse(stringifiedSessionData);
@@ -53,7 +53,7 @@ export class SessionAuthenticator implements RequestInterceptor, ResponseInterce
     }
 
     private async invokeRefreshSessionTokenApi() {
-        const stringifiedSessionData = await this.sharedPreferences.getString(ApiKeys.KEY_OAUTH_SESSION).toPromise();
+        const stringifiedSessionData = await this.sharedPreferences.getString(AuthKeys.KEY_OAUTH_SESSION).toPromise();
 
         if (stringifiedSessionData) {
             let sessionData: OAuthSession = JSON.parse(stringifiedSessionData);
@@ -83,7 +83,7 @@ export class SessionAuthenticator implements RequestInterceptor, ResponseInterce
     }
 
     private async startSession(sessionData: OAuthSession): Promise<undefined> {
-        this.sharedPreferences.putString(ApiKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData));
+        this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData));
 
         return;
     }

@@ -1,7 +1,11 @@
 export namespace ApiKeys {
     export const KEY_API_TOKEN = 'key_api_token';
+}
+
+export namespace AuthKeys {
     export const KEY_OAUTH_SESSION = 'key_oauth_session';
 }
+
 export namespace GroupKeys {
     export const KEY_GROUP_SESSION = 'group_session';
 }
