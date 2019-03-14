@@ -189,10 +189,11 @@ export namespace LearnerAssessmentsEntry {
     export const COLUMN_NAME_HIERARCHY_DATA = 'h_data';
     export const COLUMN_NAME_TOTAL_TS = 'total_ts';
     export const COLUMN_NAME_MARKS = 'marks';
-    export const COLUMN_NAME_COUNT = 'count';
-    export const COLUMN_NAME_TOTAL_MAX_SCORE = 'maxscore';
+    export const COLUMN_NAME_COUNT = 'occurence_count';
+    export const COLUMN_NAME_TOTAL_MAX_SCORE = 'sum_max_score';
     export const COLUMN_NAME_USERS_COUNT = 'users_count';
     export const COLUMN_NAME_HANDLE = 'handle';
+
 
 
     export interface SchemaMap {

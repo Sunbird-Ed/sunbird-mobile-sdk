@@ -126,9 +126,9 @@ export class SummarizerHandler {
                 maxScore: NumberUtil.toPrecision(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE]),
                 hierarchyData: questionReport[LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA],
                 total_ts: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS]),
-                marks: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS]),
-                occurenceCount: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS]),
-                sum_max_score: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS]),
+                marks: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_MARKS]),
+                occurenceCount: questionReport[LearnerAssessmentsEntry.COLUMN_NAME_COUNT],
+                sum_max_score: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_MAX_SCORE]),
                 correct_users_count: correctUserCount
             };
         });
