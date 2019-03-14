@@ -19,7 +19,7 @@ import {SystemSettingsService} from '../../system-settings';
 import {SdkConfig} from '../../sdk-config';
 
 export class FrameworkServiceImpl implements FrameworkService {
-    private static readonly KEY_ACTIVE_CHANNEL_ID = 'active_channel_id';
+    private static readonly KEY_ACTIVE_CHANNEL_ID = 'channelId';
     private static readonly SEARCH_ORGANIZATION_ENDPOINT = '/search';
 
     constructor(private sdkConfig: SdkConfig,

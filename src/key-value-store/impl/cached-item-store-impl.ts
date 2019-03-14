@@ -1,11 +1,13 @@
-import {CachedItemStore, KeyValueStore} from '..';
-import {Observable} from 'rxjs';
-import {ApiConfig} from '../../api';
+import { CachedItemStore, KeyValueStore } from '..';
+import { Observable } from 'rxjs';
+import { ApiConfig } from '../../api';
+import { SharedPreferences } from '../../util/shared-preferences';
 
 export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
 
     constructor(private keyValueStore: KeyValueStore,
-                private apiConfig: ApiConfig) {
+        private apiConfig: ApiConfig,
+        private sharedPreferences: SharedPreferences) {
     }
 
     public getCached(
@@ -37,14 +39,14 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
                         });
                 } else {
                     if (initial) {
-                            return initial().switchMap((item: T) => {
-                                return this.saveItem(id, timeToLiveKey, noSqlkey, item);
-                            }).catch((e) => {
-                                return fromServer()
-                                    .switchMap((item: T) => {
-                                        return this.saveItem(id, timeToLiveKey, noSqlkey, item);
-                                    });
-                            });
+                        return initial().switchMap((item: T) => {
+                            return this.saveItem(id, timeToLiveKey, noSqlkey, item);
+                        }).catch((e) => {
+                            return fromServer()
+                                .switchMap((item: T) => {
+                                    return this.saveItem(id, timeToLiveKey, noSqlkey, item);
+                                });
+                        });
                     } else {
                         return fromServer()
                             .switchMap((item: T) => {
@@ -56,22 +58,27 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
     }
 
     private isItemCachedInDb(timeToLiveKey: string, id: string): Observable<boolean> {
-        if (localStorage.getItem(timeToLiveKey + '-' + id)) {
-            return Observable.of(true);
-        }
-
-        return Observable.of(false);
+        return this.sharedPreferences.getString(timeToLiveKey + '-' + id)
+            .mergeMap((ttl) => {
+                return Observable.if(
+                    () => !!ttl,
+                    Observable.defer(() => Observable.of(true)),
+                    Observable.defer(() => Observable.of(false))
+                );
+            });
     }
 
     private isItemTTLExpired(timeToLiveKey: string, id: string, timeToLive: number): Observable<boolean> {
-        const savedTimestamp: number = Number(localStorage.getItem(timeToLiveKey + '-' + id)!);
-        const nowTimeStamp: number = Date.now();
-
-        if (nowTimeStamp - savedTimestamp < timeToLive) {
-            return Observable.of(false);
-        } else {
-            return Observable.of(true);
-        }
+        return this.sharedPreferences.getString(timeToLiveKey + '-' + id)
+        .mergeMap((ttl) => {
+            const savedTimestamp: number = Number(ttl);
+            const nowTimeStamp: number = Date.now();
+            if (nowTimeStamp - savedTimestamp < timeToLive) {
+                return Observable.of(false);
+            } else {
+                return Observable.of(true);
+            }
+        });
     }
 
     private saveItem(id: string, timeToLiveKey: string, noSqlkey: string, item: T) {
@@ -84,8 +91,10 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
     }
 
     private saveItemTTL(id: string, timeToLiveKey: string): Observable<boolean> {
-        localStorage.setItem(timeToLiveKey + '-' + id, Date.now() + '');
-        return Observable.of(true);
+        return this.sharedPreferences.putString(timeToLiveKey + '-' + id, Date.now() + '')
+        .mergeMap((val) => {
+            return Observable.of(true);
+        });
     }
 
     private saveItemToDb(id: string, noSqlkey: string, item): Observable<boolean> {

@@ -16,9 +16,10 @@ import {GenerateOtpRequest} from './generate-otp-request';
 import {VerifyOtpRequest} from './verify-otp-request';
 import {LocationSearchCriteria} from './location-search-criteria';
 import {LocationSearchResult} from './location-search-result';
+import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
 
 
-export interface ProfileService {
+export interface ProfileService extends SdkServiceOnInitDelegate {
     createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
 
     deleteProfile(uid: string): Observable<undefined>;
@@ -39,7 +40,7 @@ export interface ProfileService {
 
     setActiveSessionForProfile(profileUid: string): Observable<boolean>;
 
-    getActiveProfileSession(): Observable<ProfileSession | undefined>;
+    getActiveProfileSession(): Observable<ProfileSession>;
 
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]>;
 

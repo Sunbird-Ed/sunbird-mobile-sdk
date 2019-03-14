@@ -237,7 +237,7 @@ export class SunbirdSdk {
             sdkConfig.systemSettingsConfig,
             this._apiService,
             this._fileService,
-            new CachedItemStoreImpl<SystemSettings>(this._keyValueStore, sdkConfig.apiConfig),
+            new CachedItemStoreImpl<SystemSettings>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
         );
 
         this._frameworkService = new FrameworkServiceImpl(
@@ -245,8 +245,8 @@ export class SunbirdSdk {
             this._keyValueStore,
             this._fileService,
             this._apiService,
-            new CachedItemStoreImpl<Channel>(this._keyValueStore, sdkConfig.apiConfig),
-            new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig),
+            new CachedItemStoreImpl<Channel>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
+            new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
             this._sharedPreferences,
             this._systemSettingsService
         );
@@ -255,11 +255,13 @@ export class SunbirdSdk {
             sdkConfig.profileServiceConfig,
             this._dbService,
             this._apiService,
-            new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig),
+            new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
             this._keyValueStore,
             this._sharedPreferences,
             this._frameworkService
         );
+
+        await this._profileService.onInit().toPromise();
 
         this._groupService = new GroupServiceImpl(
             this._dbService,
@@ -296,14 +298,14 @@ export class SunbirdSdk {
             sdkConfig.formServiceConfig,
             this._apiService,
             this._fileService,
-            new CachedItemStoreImpl<{ [key: string]: {} }>(this._keyValueStore, sdkConfig.apiConfig)
+            new CachedItemStoreImpl<{ [key: string]: {} }>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences)
         );
 
         this._pageAssembleService = new PageAssembleServiceImpl(
             this._apiService,
             sdkConfig.pageServiceConfig,
             this._fileService,
-            new CachedItemStoreImpl<PageAssemble>(this._keyValueStore, sdkConfig.apiConfig)
+            new CachedItemStoreImpl<PageAssemble>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences)
         );
 
         this._frameworkUtilService = new FrameworkUtilServiceImpl(
