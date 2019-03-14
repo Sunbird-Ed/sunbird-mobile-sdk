@@ -12,3 +12,4 @@ export * from './decorators/generate-impression-telemetry-decorators';
 export * from './decorators/generate-log-telemetry-decorators';
 export * from './decorators/generate-start-telemetry-decorators';
 export * from './util/telemetry-request-factory';
+export * from './util/telemetry-auto-sync-util';
