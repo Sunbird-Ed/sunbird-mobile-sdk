@@ -1,7 +1,7 @@
 import {ApiTokenHandler} from '../handlers/api-token-handler';
 import {ApiConfig, Request, Response, ResponseCode} from '..';
 import {Observable} from 'rxjs';
-import {ApiKeys} from '../../app-config';
+import {ApiKeys} from '../../preference-keys';
 import {Authenticator} from '../def/authenticator';
 import {Connection} from '../def/connection';
 import {DeviceInfo} from '../../util/device/def/device-info';
