@@ -195,4 +195,14 @@ export class GroupServiceImpl implements GroupService {
                 return Observable.throw(e);
             });
     }
+
+    removeActiveGroupSession(): Observable<undefined> {
+        return this.getActiveGroupSession()
+        .mergeMap( (groupSession) => {
+            if (!groupSession) {
+                return Observable.of(undefined);
+            }
+            return this.sharedPreferences.putString(GroupServiceImpl.KEY_GROUP_SESSION, '');
+        });
+    }
 }

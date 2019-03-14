@@ -29,7 +29,7 @@ export class SummarizerQueries {
         return `SELECT *, lcs.${LearnerSummaryEntry.COLUMN_NAME_TOTAL_TS}
                 FROM  ${LearnerAssessmentsEntry.TABLE_NAME} la
                 LEFT JOIN ${LearnerSummaryEntry.TABLE_NAME} lcs
-                ON (la.${LearnerSummaryEntry.COLUMN_NAME_UID} = lcs.${LearnerAssessmentsEntry.COLUMN_NAME_UID}
+                ON (la.${LearnerSummaryEntry.COLUMN_NAME_UID} = lcs.${LearnerAssessmentsEntry.COLUMN_NAME_UID})
                 AND la.${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} = lcs.${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID})
                 WHERE la.${LearnerAssessmentsEntry.COLUMN_NAME_UID} IN(${ArrayUtil.joinPreservingQuotes(uids)})
                 AND la.${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID}='${contentId}'`;
@@ -37,7 +37,7 @@ export class SummarizerQueries {
 
     public static getReportsByUserQuery(uids: string[], contentId: string): string {
         return `SELECT lcs.${LearnerSummaryEntry.COLUMN_NAME_TOTAL_TS},
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_SCORE}),
+                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_SCORE}) AS score,
                 la.${LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA},la.${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID},
                 la.${LearnerAssessmentsEntry.COLUMN_NAME_UID},p.${ProfileEntry.COLUMN_NAME_HANDLE},
                 la.${LearnerAssessmentsEntry.COLUMN_NAME_TIME_SPENT}
@@ -48,7 +48,7 @@ export class SummarizerQueries {
                 ON (la.${LearnerAssessmentsEntry.COLUMN_NAME_UID} = p.${ProfileEntry.COLUMN_NAME_UID})
                 WHERE la.${LearnerAssessmentsEntry.COLUMN_NAME_UID} IN(${ArrayUtil.joinPreservingQuotes(uids)})
                 AND la.${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID}='${contentId}'
-                GROUP BY ${LearnerAssessmentsEntry.COLUMN_NAME_UID}`;
+                GROUP BY la.${LearnerAssessmentsEntry.COLUMN_NAME_UID}`;
     }
 
     public static getQuetsionDetailsQuery(uids: string[], contentId: string, qid: string): string {
@@ -72,8 +72,8 @@ export class SummarizerQueries {
 
     public static getQuestionReportsQuery(uids: string[], contentId: string): string {
         return `SELECT *, SUM(${LearnerAssessmentsEntry.COLUMN_NAME_SCORE}) as marks,
-                COUNT (${LearnerAssessmentsEntry.COLUMN_NAME_Q_INDEX}) as count,
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE}) as  maxscore
+                COUNT (${LearnerAssessmentsEntry.COLUMN_NAME_Q_INDEX}) as occurence_count,
+                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE}) as  sum_max_score
                 FROM ${LearnerAssessmentsEntry.TABLE_NAME}
                 WHERE ${LearnerAssessmentsEntry.COLUMN_NAME_UID} IN(${ArrayUtil.joinPreservingQuotes(uids)})
                 AND ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID}='${contentId}'
