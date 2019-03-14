@@ -45,10 +45,11 @@ import {SearchLocationHandler} from '../handler/search-location-handler';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {FrameworkService} from '../../framework';
 import {ContentUtil} from '../../content/util/content-util';
+import {ProfileKeys} from '../../preference-keys';
 
 
 export class ProfileServiceImpl implements ProfileService {
-    private static readonly KEY_USER_SESSION = 'session';
+    private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
 
     constructor(private profileServiceConfig: ProfileServiceConfig,
                 private dbService: DbService,
