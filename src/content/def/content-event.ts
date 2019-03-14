@@ -4,6 +4,7 @@ export interface ContentEvent {
 }
 
 export enum ContentEventType {
-    UPDATE = 'UPDATE'
+    UPDATE = 'UPDATE',
+    IMPORT_COMPLETED = 'IMPORT_COMPLETED'
 }
 

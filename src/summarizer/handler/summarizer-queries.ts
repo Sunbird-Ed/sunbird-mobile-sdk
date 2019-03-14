@@ -43,9 +43,9 @@ export class SummarizerQueries {
                 la.${LearnerAssessmentsEntry.COLUMN_NAME_TIME_SPENT}
                 FROM ${LearnerAssessmentsEntry.TABLE_NAME} la
                 LEFT JOIN ${LearnerSummaryEntry.TABLE_NAME} lcs
-                ON (la.${LearnerSummaryEntry.COLUMN_NAME_UID} = lcs.${LearnerAssessmentsEntry.COLUMN_NAME_UID}
+                ON (la.${LearnerSummaryEntry.COLUMN_NAME_UID} = lcs.${LearnerAssessmentsEntry.COLUMN_NAME_UID})
                 LEFT JOIN ${ProfileEntry.TABLE_NAME} p
-                ON (la.${LearnerAssessmentsEntry.COLUMN_NAME_UID} = p.${ProfileEntry.COLUMN_NAME_UID}
+                ON (la.${LearnerAssessmentsEntry.COLUMN_NAME_UID} = p.${ProfileEntry.COLUMN_NAME_UID})
                 WHERE la.${LearnerAssessmentsEntry.COLUMN_NAME_UID} IN(${ArrayUtil.joinPreservingQuotes(uids)})
                 AND la.${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID}='${contentId}'
                 GROUP BY ${LearnerAssessmentsEntry.COLUMN_NAME_UID}`;

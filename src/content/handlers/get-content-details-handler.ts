@@ -49,22 +49,22 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 if (contentDbEntry) {
                     return Observable.of(ContentMapper.mapContentDBEntryToContent(contentDbEntry))
                         .do(async (localContent) => {
-                            const serverContent: ContentData = await this.fetchFromServer(request).toPromise();
-                            localContent[ContentEntry.COLUMN_NAME_SERVER_DATA] = serverContent;
-                            localContent[ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON] = serverContent['lastUpdatedOn'];
-                            localContent[ContentEntry.COLUMN_NAME_AUDIENCE] = ContentUtil.readAudience(serverContent);
+                            const serverContentData: ContentData = await this.fetchFromServer(request).toPromise();
+                            contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA] = JSON.stringify(serverContentData);
+                            contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON] = serverContentData['lastUpdatedOn'];
+                            contentDbEntry[ContentEntry.COLUMN_NAME_AUDIENCE] = ContentUtil.readAudience(serverContentData);
                             await this.dbService.update({
                                 table: ContentEntry.TABLE_NAME,
                                 selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
                                 selectionArgs: [localContent[ContentEntry.COLUMN_NAME_IDENTIFIER]],
                                 modelJson: localContent
                             }).toPromise();
-                            if (ContentUtil.isUpdateAvailable(serverContent, localContent.contentData)) {
+                            if (ContentUtil.isUpdateAvailable(serverContentData, localContent.contentData)) {
                                 this.eventsBusService.emit({
                                     namespace: EventNamespace.CONTENT,
                                     event: {
                                         type: ContentEventType.UPDATE,
-                                        contentId: serverContent.identifier
+                                        contentId: localContent.contentData.identifier
                                     }
                                 });
                             }

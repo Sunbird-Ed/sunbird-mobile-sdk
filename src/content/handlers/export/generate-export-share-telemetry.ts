@@ -3,7 +3,7 @@ import {Response} from '../../../api';
 import {Item, ShareDirection, ShareItemType, ShareType, TelemetryService, TelemetryShareRequest} from '../../../telemetry';
 import {ContentUtil} from '../../util/content-util';
 
-export class GenerateShareTelemetry {
+export class GenerateExportShareTelemetry {
     constructor(private telemetryService: TelemetryService) {
     }
 

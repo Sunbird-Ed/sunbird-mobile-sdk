@@ -7,7 +7,7 @@ import {
     ContentDeleteStatus,
     ContentDetailRequest,
     ContentDownloadRequest,
-    ContentErrorCode,
+    ContentErrorCode, ContentEventType,
     ContentExportRequest,
     ContentFeedbackService,
     ContentImport,
@@ -56,7 +56,6 @@ import {DeviceMemoryCheck} from '../handlers/export/device-memory-check';
 import {CopyAsset} from '../handlers/export/copy-asset';
 import {EcarBundle} from '../handlers/export/ecar-bundle';
 import {DeleteTempEcar} from '../handlers/export/delete-temp-ecar';
-import {GenerateShareTelemetry} from '../handlers/export/generate-share-telemetry';
 import {ExtractEcar} from '../handlers/import/extract-ecar';
 import {ValidateEcar} from '../handlers/import/validate-ecar';
 import {ExtractPayloads} from '../handlers/import/extract-payloads';
@@ -71,7 +70,10 @@ import {ArrayUtil} from '../../util/array-util';
 import {FileUtil} from '../../util/file/util/file-util';
 import {DownloadRequest, DownloadService} from '../../util/download';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
-import {EventsBusService} from '../../events-bus';
+import {EventNamespace, EventsBusService} from '../../events-bus';
+import {GenerateImportShareTelemetry} from '../handlers/import/generate-import-share-telemetry';
+import {GenerateExportShareTelemetry} from '../handlers/export/generate-export-share-telemetry';
+import {SharedPreferences} from '../../util/shared-preferences';
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
     private readonly getContentDetailsHandler: GetContentDetailsHandler;
@@ -87,6 +89,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 private telemetryService: TelemetryService,
                 private contentFeedbackService: ContentFeedbackService,
                 private downloadService: DownloadService,
+                private sharedPreferences: SharedPreferences,
                 private eventsBusService: EventsBusService) {
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
@@ -126,7 +129,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]> {
         const contentDeleteResponse: ContentDeleteResponse[] = [];
-        const deleteContentHandler = new DeleteContentHandler(this.dbService);
+        const deleteContentHandler = new DeleteContentHandler(this.dbService, this.fileService, this.sharedPreferences);
         contentDeleteRequest.contentDeleteList.forEach(async (contentDelete) => {
             const contentInDb = await this.getContentDetailsHandler.fetchFromDB(contentDelete.contentId).toPromise();
             if (contentInDb) {
@@ -190,7 +193,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             }).then((exportResponse: Response) => {
                 return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
-                return new GenerateShareTelemetry(this.telemetryService).execute(exportResponse.body);
+                return new GenerateExportShareTelemetry(this.telemetryService).execute(exportResponse.body);
             });
         }));
     }
@@ -288,10 +291,17 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             }).then((importResponse: Response) => {
                 return new UpdateSizeOnDevice(this.dbService).execute(importResponse.body);
             }).then((importResponse: Response) => {
-                return new GenerateShareTelemetry(this.telemetryService).execute(importResponse.body);
-            }).then((importResponse: Response) => {
+                return new GenerateImportShareTelemetry(this.telemetryService).execute(importResponse.body);
+            }).then((importResponse: Response<ImportContentContext>) => {
                 const response: Response = new Response();
                 response.errorMesg = importResponse.errorMesg;
+                this.eventsBusService.emit({
+                    namespace: EventNamespace.CONTENT,
+                    event: {
+                        type: ContentEventType.IMPORT_COMPLETED,
+                        contentId: importContentContext.identifiers![0]
+                    }
+                });
                 return response;
             });
         }).catch((error) => {

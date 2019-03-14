@@ -506,7 +506,7 @@ export namespace TelemetryEvents {
             }
             const originMap: { [index: string]: any } = {};
             originMap['id'] = origin;
-            originMap[type] = 'Device';
+            originMap['type'] = 'Device';
             item['origin'] = originMap;
 
             this.items.push(item);

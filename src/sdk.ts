@@ -179,6 +179,10 @@ export class SunbirdSdk {
         return this._downloadService;
     }
 
+    get playerService(): PlayerService {
+        return this._playerService;
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._sdkConfig = Object.freeze(sdkConfig);
 
@@ -274,7 +278,7 @@ export class SunbirdSdk {
 
         this._telemetryService = new TelemetryServiceImpl(
             this._dbService,
-            new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo),
+            new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo, this._appInfo),
             this._profileService,
             this._groupService,
             this._keyValueStore,
@@ -329,6 +333,7 @@ export class SunbirdSdk {
             this.telemetryService,
             this._contentFeedbackService,
             this._downloadService,
+            this._sharedPreferences,
             this._eventsBusService
         );
 
