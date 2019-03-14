@@ -9,9 +9,10 @@ import {SharedPreferences} from '../shared-preferences';
 import * as Collections from 'typescript-collections';
 import * as downloadManagerInstance from 'cordova-plugin-android-downloadmanager';
 import {DownloadCompleteDelegate} from './def/download-complete-delegate';
+import {DownloadKeys} from '../../preference-keys';
 
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
-    private static readonly KEY_TO_DOWNLOAD_LIST = 'to_download_list';
+    private static readonly KEY_TO_DOWNLOAD_LIST = DownloadKeys.KEY_TO_DOWNLOAD_LIST;
     private static readonly DOWNLOAD_DIR_NAME = 'Download';
 
     private currentDownloadRequest$ = new BehaviorSubject<DownloadRequest | undefined>(undefined);

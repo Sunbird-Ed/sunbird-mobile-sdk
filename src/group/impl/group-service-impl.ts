@@ -15,10 +15,11 @@ import {UniqueId} from '../../db/util/unique-id';
 import {KeyValueStore} from '../../key-value-store';
 import {ProfileService} from '../../profile';
 import {SharedPreferences} from '../../util/shared-preferences';
+import {GroupKeys} from '../../preference-keys';
 
 
 export class GroupServiceImpl implements GroupService {
-    private static readonly KEY_GROUP_SESSION = 'group_session';
+    private static readonly KEY_GROUP_SESSION = GroupKeys.KEY_GROUP_SESSION;
 
     constructor(private dbService: DbService,
                 private profileService: ProfileService,

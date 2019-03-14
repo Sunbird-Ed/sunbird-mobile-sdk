@@ -17,9 +17,10 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';
 import {SystemSettingsService} from '../../system-settings';
 import {SdkConfig} from '../../sdk-config';
+import {FrameworkKeys} from '../../preference-keys';
 
 export class FrameworkServiceImpl implements FrameworkService {
-    private static readonly KEY_ACTIVE_CHANNEL_ID = 'channelId';
+    private static readonly KEY_ACTIVE_CHANNEL_ID = FrameworkKeys.KEY_ACTIVE_CHANNEL_ID;
     private static readonly SEARCH_ORGANIZATION_ENDPOINT = '/search';
 
     constructor(private sdkConfig: SdkConfig,
