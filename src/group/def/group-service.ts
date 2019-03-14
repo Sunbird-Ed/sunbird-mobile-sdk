@@ -23,4 +23,6 @@ export interface GroupService {
 
     addProfilesToGroup(profilesToGroupRequest: ProfilesToGroupRequest): Observable<number>;
 
+    removeActiveGroupSession(): Observable<undefined>;
+
 }
