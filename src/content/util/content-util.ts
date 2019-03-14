@@ -381,15 +381,15 @@ export class ContentUtil {
     }
 
     public static readOriginFromContentMap(item: any): string {
-        const metaData: any = item.contentMetaData;
-        const virality: any = metaData && metaData.virality;
-        return virality ? virality.origin : '';
+        const metaData: any = item['contentMetadata'];
+        const virality: any = metaData && metaData['virality'];
+        return virality ? virality['origin'] : '';
     }
 
     public static readTransferCountFromContentMap(item: any): number {
-        const metaData: any = item.contentMetaData;
-        const virality: any = metaData && metaData.virality;
-        return virality ? NumberUtil.parseInt(virality.transferCount) : 0;
+        const metaData: any = item['contentMetadata'];
+        const virality: any = metaData && metaData['virality'];
+        return virality ? NumberUtil.parseInt(virality['transferCount']) : 0;
     }
 
     public static readSizeFromContentMap(item: any): string {
@@ -450,6 +450,13 @@ export class ContentUtil {
         }
         const rollup: Rollup = {l1: l1, l2: l2, l3: l3, l4: l4};
         return rollup;
+    }
+
+    public static addOrUpdateRefCount(refCount: number): number {
+        if (refCount < 0) {
+            refCount = 0;
+        }
+        return refCount;
     }
 
 }

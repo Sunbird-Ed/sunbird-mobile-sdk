@@ -3,7 +3,7 @@ import {Response} from '../../../api';
 import {Item, ShareDirection, ShareItemType, ShareType, TelemetryService, TelemetryShareRequest} from '../../../telemetry';
 import {ContentUtil} from '../../util/content-util';
 
-export class GenerateShareTelemetry {
+export class GenerateImportShareTelemetry {
 
     constructor(private telemetryService: TelemetryService) {
     }
@@ -21,6 +21,7 @@ export class GenerateShareTelemetry {
                 transferCount: ContentUtil.readTransferCountFromContentMap(element),
                 size: ContentUtil.readSizeFromContentMap(element)
             };
+            items.push(item);
         }
         const req: TelemetryShareRequest = {
             dir: ShareDirection.IN,

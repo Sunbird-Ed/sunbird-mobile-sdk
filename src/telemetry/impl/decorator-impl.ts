@@ -2,11 +2,13 @@ import {Actor, Context, ProducerData, TelemetryDecorator, TelemetryEvents} from 
 import {ApiConfig} from '../../api';
 import {DeviceInfo} from '../../util/device/def/device-info';
 import Telemetry = TelemetryEvents.Telemetry;
+import {AppInfo} from '../../util/app/def/app-info';
 
 export class TelemetryDecoratorImpl implements TelemetryDecorator {
 
     constructor(private apiConfig: ApiConfig,
-                private deviceInfo: DeviceInfo) {
+                private deviceInfo: DeviceInfo,
+                private appInfo: AppInfo) {
     }
 
     decorate(event: Telemetry, uid: string, sid: string, gid?: string): any {
@@ -65,12 +67,13 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
             pData.pid = 'geniesdk.android';
         }
 
-        if (pData.ver) {
-            pData.ver = '';
+        if (!pData.ver) {
+            pData.ver = this.appInfo.getVersionName();
         }
     }
 
     prepare(event: Telemetry, priority) {
+        console.log('event', JSON.stringify(event));
         return {
             event: JSON.stringify(event),
             event_type: event.getEid(),

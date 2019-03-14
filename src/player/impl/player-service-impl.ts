@@ -23,6 +23,11 @@ export class PlayerServiceImpl implements PlayerService {
     getPlayerConfig(content: Content, extraInfo: { [key: string]: any }): Observable<PlayerInput> {
         const context: Context = {};
         context.did = this.deviceInfo.getDeviceID();
+        const pData = new ProducerData();
+        pData.id = this.config.apiConfig.api_authentication.producerId;
+        pData.pid = this.config.apiConfig.api_authentication.producerUniqueId;
+        pData.ver = this.appInfo.getVersionName();
+        context.pdata = pData;
         const playerInput: PlayerInput = {};
         content.rollup = ContentUtil.getRollup(content.identifier, content.hierarchyInfo!);
         playerInput.metaData = content;
@@ -45,11 +50,6 @@ export class PlayerServiceImpl implements PlayerService {
             return this.frameworkService.getActiveChannelId();
         }).mergeMap((channelId: string) => {
             context.channel = channelId ? channelId : this.config.apiConfig.api_authentication.channelId;
-            const pData = new ProducerData();
-            pData.id = this.config.apiConfig.api_authentication.producerId;
-            pData.pid = this.config.apiConfig.api_authentication.producerUniqueId;
-            pData.ver = '';
-            context.pdata = pData;
             playerInput.context = context;
             return Observable.of(playerInput);
         });
