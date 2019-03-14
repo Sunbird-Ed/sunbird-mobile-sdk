@@ -1,4 +1,4 @@
-import {ImportContentContext} from '../..';
+import {ContentEventType, ImportContentContext} from '../..';
 import {Response} from '../../../api';
 import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
@@ -16,6 +16,7 @@ import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
+import {EventNamespace, EventsBusService} from '../../../events-bus';
 
 export class ExtractPayloads {
 
@@ -24,12 +25,17 @@ export class ExtractPayloads {
                 private appConfig: AppConfig,
                 private dbService: DbService,
                 private deviceInfo: DeviceInfo,
-                private getContentDetailsHandler: GetContentDetailsHandler) {
+                private getContentDetailsHandler: GetContentDetailsHandler,
+                private eventsBusService: EventsBusService) {
     }
 
     public async execute(importContext: ImportContentContext): Promise<Response> {
         const response: Response = new Response();
         importContext.identifiers = [];
+        // this count is for maintaining how many contents are imported so far
+        let currentCount = 0;
+        // post event before starting with how many imports are to be done totally
+        this.postImportProgressEvent(currentCount, importContext.items!.length);
         for (const e of importContext.items!) {
             let element = e as any;
             const identifier = element.identifier;
@@ -143,10 +149,23 @@ export class ExtractPayloads {
                 }).toPromise();
             }
             importContext.identifiers.push(identifier);
-
+            // increase the current count
+            currentCount++;
+            this.postImportProgressEvent(currentCount, importContext.items!.length);
         }
         response.body = importContext;
         return Promise.resolve(response);
+    }
+
+    private postImportProgressEvent(currentCount, totalCount) {
+        this.eventsBusService.emit({
+            namespace: EventNamespace.CONTENT,
+            event: {
+                type: ContentEventType.IMPORT_PROGRESS,
+                totalCount: totalCount,
+                currentCount: currentCount
+            }
+        });
     }
 
     async copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string) {
