@@ -1,3 +1,5 @@
+import {DownloadStatus} from './def/download-status';
+
 export interface DownloadProgress {
     downloadId: string;
     identifier: string;
