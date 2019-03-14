@@ -1,13 +1,6 @@
 import {ImportContentContext} from '../..';
 import {Response} from '../../../api';
-import {
-    ContentDisposition,
-    ContentEncoding,
-    ContentStatus,
-    MimeType,
-    State,
-    Visibility
-} from '../../util/content-constants';
+import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
 import {DbService} from '../../../db';
 import {ContentUtil} from '../../util/content-util';
@@ -156,36 +149,22 @@ export class ExtractPayloads {
         return Promise.resolve(response);
     }
 
-    private constructContentDBModel(identifier, manifestVersion, localData,
-                                    mimeType, contentType, visibility, path,
-                                    refCount, contentState, audience, pragma, sizeOnDevice): ContentEntry.SchemaMap {
-        return {
-            [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
-            [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
-            [ContentEntry.COLUMN_NAME_PATH]: ContentUtil.getBasePath(path),
-            [ContentEntry.COLUMN_NAME_REF_COUNT]: refCount,
-            [ContentEntry.COLUMN_NAME_CONTENT_STATE]: contentState,
-            [ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]: sizeOnDevice,
-            [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: manifestVersion,
-            [ContentEntry.COLUMN_NAME_LOCAL_DATA]: localData,
-            [ContentEntry.COLUMN_NAME_MIME_TYPE]: mimeType,
-            [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: contentType,
-            [ContentEntry.COLUMN_NAME_VISIBILITY]: visibility,
-            [ContentEntry.COLUMN_NAME_AUDIENCE]: audience,
-            [ContentEntry.COLUMN_NAME_PRAGMA]: pragma,
-        };
-
-    }
-
     async copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string) {
-        if (asset) {
-            const iconSrc = tempLocationPath.concat(asset);
-            const iconDestination = payloadDestinationPath.concat(asset);
-            const folderContainingFile = asset.substring(0, asset.lastIndexOf('/'));
-            await this.fileService.createDir(payloadDestinationPath.concat(folderContainingFile), false);
-            // If source icon is not available then copy assets is failing and throwing exception.
-            await this.fileService.copyFile(tempLocationPath.concat(folderContainingFile), FileUtil.getFileName(asset),
-                payloadDestinationPath.concat(folderContainingFile), FileUtil.getFileName(asset));
+        try {
+            if (asset) {
+                const iconSrc = tempLocationPath.concat(asset);
+                const iconDestination = payloadDestinationPath.concat(asset);
+                const folderContainingFile = asset.substring(0, asset.lastIndexOf('/'));
+                await this.fileService.createDir(payloadDestinationPath.concat(folderContainingFile), false);
+                // If source icon is not available then copy assets is failing and throwing exception.
+                await this.fileService.copyFile(tempLocationPath.concat(folderContainingFile), FileUtil.getFileName(asset),
+                    payloadDestinationPath.concat(folderContainingFile), FileUtil.getFileName(asset));
+            }
+
+        } catch (e) {
+            console.error('cannot Copy asset');
+            return Promise.resolve();
+
         }
     }
 
@@ -249,6 +228,27 @@ export class ExtractPayloads {
             path = existingContentPath;
         }
         return path;
+    }
+
+    private constructContentDBModel(identifier, manifestVersion, localData,
+                                    mimeType, contentType, visibility, path,
+                                    refCount, contentState, audience, pragma, sizeOnDevice): ContentEntry.SchemaMap {
+        return {
+            [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
+            [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+            [ContentEntry.COLUMN_NAME_PATH]: ContentUtil.getBasePath(path),
+            [ContentEntry.COLUMN_NAME_REF_COUNT]: refCount,
+            [ContentEntry.COLUMN_NAME_CONTENT_STATE]: contentState,
+            [ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]: sizeOnDevice,
+            [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: manifestVersion,
+            [ContentEntry.COLUMN_NAME_LOCAL_DATA]: localData,
+            [ContentEntry.COLUMN_NAME_MIME_TYPE]: mimeType,
+            [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: contentType,
+            [ContentEntry.COLUMN_NAME_VISIBILITY]: visibility,
+            [ContentEntry.COLUMN_NAME_AUDIENCE]: audience,
+            [ContentEntry.COLUMN_NAME_PRAGMA]: pragma,
+        };
+
     }
 
 
