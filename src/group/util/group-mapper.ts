@@ -1,4 +1,4 @@
-import {GroupEntry} from '../../profile/db/schema';
+import {GroupEntry} from '../../group/db/schema';
 import {Group} from '..';
 
 export class GroupMapper {

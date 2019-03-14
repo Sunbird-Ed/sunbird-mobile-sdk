@@ -111,8 +111,8 @@ export namespace GroupEntry {
     export const COLUMN_NAME_NAME = 'name';
     export const COLUMN_NAME_SYLLABUS = 'syllabus';
     export const COLUMN_NAME_GRADE = 'grade';
-    export const COLUMN_NAME_GRADE_VALUE = 'gradeValue';
-    export const COLUMN_NAME_CREATED_AT = 'createdAt';
+    export const COLUMN_NAME_GRADE_VALUE = 'grade_value';
+    export const COLUMN_NAME_CREATED_AT = 'created_at';
     export const COLUMN_NAME_UPDATED_AT = 'updated_at';
 
     export interface SchemaMap {
