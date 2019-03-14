@@ -1,5 +1,5 @@
-import {OauthSession} from './oauth-session';
+import {OAuthSession} from './o-auth-session';
 
 export interface SessionProvider {
-    provide(): Promise<OauthSession>;
+    provide(): Promise<OAuthSession>;
 }

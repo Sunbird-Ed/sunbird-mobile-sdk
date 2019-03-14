@@ -72,4 +72,12 @@ export class ContentCache {
     identifier: string;
 }
 
+export class ReportDetailPerUser {
+    uid: string;
+    name: string;
+    totalTime: number;
+    totalScore: number;
+    maxTotalScore: number;
+    reportDetailsList: LearnerAssessmentDetails[] = [];
+}
 

@@ -56,6 +56,10 @@ import {SummarizerServiceImpl} from './summarizer/impl/summarizer-service-impl';
 import {Observable} from 'rxjs';
 import {DownloadService} from './util/download';
 import {DownloadServiceImpl} from './util/download/download-service-impl';
+import {AppInfo} from './util/app/def/app-info';
+import {AppInfoImpl} from './util/app/impl/app-info-impl';
+import {PlayerService} from './player/def/player-service';
+import {PlayerServiceImpl} from './player/impl/player-service-impl';
 
 export class SunbirdSdk {
 
@@ -92,6 +96,8 @@ export class SunbirdSdk {
     private _eventsBusService: EventsBusService;
     private _summarizerService: SummarizerService;
     private _downloadService: DownloadService;
+    private _appInfo: AppInfo;
+    private _playerService: PlayerService;
 
     get sdkConfig(): SdkConfig {
         return this._sdkConfig;
@@ -209,12 +215,14 @@ export class SunbirdSdk {
                 ]
             );
         }
+        this._appInfo = new AppInfoImpl(this._sdkConfig);
 
         await this._dbService.init();
+        await this._appInfo.init();
 
-        this._apiService = new ApiServiceImpl(sdkConfig.apiConfig, this._deviceInfo);
+        this._apiService = new ApiServiceImpl(sdkConfig.apiConfig, this._deviceInfo, this._sharedPreferences);
 
-        this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService);
+        this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService, this._sharedPreferences);
 
         this._keyValueStore = new KeyValueStoreImpl(this._dbService);
 
@@ -307,7 +315,6 @@ export class SunbirdSdk {
         );
 
 
-
         this._downloadService = new DownloadServiceImpl(this._eventsBusService, this._sharedPreferences);
 
         this._contentService = new ContentServiceImpl(
@@ -328,6 +335,8 @@ export class SunbirdSdk {
         this._summarizerService = new SummarizerServiceImpl(this._dbService, this.contentService, this._eventsBusService);
 
         this._downloadService.registerOnDownloadCompleteDelegate(this._contentService);
+        this._playerService = new PlayerServiceImpl(this._profileService, this._groupService,
+            this._sdkConfig, this._frameworkService, this._deviceInfo, this._appInfo);
 
         this.postInit();
     }

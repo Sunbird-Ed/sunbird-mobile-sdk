@@ -4,6 +4,8 @@ import {
     ContentData,
     ContentDecorateRequest,
     ContentDetailRequest,
+    ContentEvent,
+    ContentEventType,
     ContentFeedback,
     ContentFeedbackService,
     ContentMarker,
@@ -57,7 +59,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                                 selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
                                 selectionArgs: [localContent[ContentEntry.COLUMN_NAME_IDENTIFIER]],
                                 modelJson: localContent
-                            });
+                            }).toPromise();
                             if (ContentUtil.isUpdateAvailable(serverContent, localContent.contentData)) {
                                 this.eventsBusService.emit({
                                     namespace: EventNamespace.CONTENT,

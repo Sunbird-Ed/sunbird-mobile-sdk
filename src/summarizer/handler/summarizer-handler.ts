@@ -4,7 +4,7 @@ import {
     LearnerAssessmentDetails,
     LearnerAssessmentSummary,
     LearnerContentSummaryDetails,
-    QuestionSummary,
+    QuestionSummary, ReportDetailPerUser,
     UserReportSummary
 } from '../def/response';
 import {NumberUtil} from '../../util/number-util';
@@ -47,8 +47,10 @@ export class SummarizerHandler {
         };
     }
 
-    public static mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb: LearnerSummaryEntry.SchemaMap[], cache: Map<string, ContentCache>): LearnerAssessmentSummary[] {
+    public static mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb: LearnerSummaryEntry.SchemaMap[],
+                                                        cache: Map<string, ContentCache>): LearnerAssessmentSummary[] {
         return assesmentsInDb.map((assesment: LearnerSummaryEntry.SchemaMap) => {
+            const contentCache: ContentCache | undefined = cache.get(assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID]) ;
             return {
                 uid: assesment[LearnerSummaryEntry.COLUMN_NAME_UID].toString(),
                 contentId: assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID].toString(),
@@ -58,31 +60,46 @@ export class SummarizerHandler {
                 hierarchyData: assesment[LearnerSummaryEntry.COLUMN_NAME_HIERARCHY_DATA].toString(),
                 totalMaxScore: NumberUtil.toPrecision(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_MAX_SCORE]),
                 totalScore: NumberUtil.toPrecision(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_SCORE]),
-                name: cache[assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID].toString()]
+                name: contentCache!.name
             };
         });
     }
 
     public static mapDBEntriesToLearnerAssesmentDetails(assesmentDetailsInDb: LearnerAssessmentsEntry.SchemaMap[]):
-        LearnerAssessmentDetails[] {
-        return assesmentDetailsInDb.map((assesmentDetail: LearnerAssessmentsEntry.SchemaMap) => {
-            return {
-                uid: assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_UID],
-                contentId: assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID],
-                qid: assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_QID],
-                qindex: Number(assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_Q_INDEX]),
-                correct: NumberUtil.parseInt(assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_CORRECT]),
-                score: NumberUtil.toPrecision(assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_SCORE]),
-                timespent: Number(assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_TIME_SPENT]),
-                res: assesmentDetail[LearnerAssessmentsEntry[LearnerAssessmentsEntry.COLUMN_NAME_RES]],
-                timestamp: Number(assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_TIMESTAMP]),
-                qdesc: assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_Q_DESC],
-                qtitle: assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_Q_TITLE],
-                maxScore: NumberUtil.toPrecision(assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE]),
-                hierarchyData: assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA],
-                total_ts: Number(assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS])
+        Map<string, ReportDetailPerUser> {
+        const map = new Map<string, ReportDetailPerUser>();
+        assesmentDetailsInDb.map((assesmentDetailInDb: LearnerAssessmentsEntry.SchemaMap) => {
+            const assesmentDetails: LearnerAssessmentDetails = {
+                uid: assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_UID],
+                contentId: assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID],
+                qid: assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_QID],
+                qindex: Number(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_Q_INDEX]),
+                correct: NumberUtil.parseInt(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_CORRECT]),
+                score: NumberUtil.toPrecision(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_SCORE]),
+                timespent: Number(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_TIME_SPENT]),
+                res: assesmentDetailInDb[LearnerAssessmentsEntry[LearnerAssessmentsEntry.COLUMN_NAME_RES]],
+                timestamp: Number(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_TIMESTAMP]),
+                qdesc: assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_Q_DESC],
+                qtitle: assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_Q_TITLE],
+                maxScore: NumberUtil.toPrecision(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE]),
+                hierarchyData: assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA],
+                total_ts: Number(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS])
             };
+            let reportPerUser: ReportDetailPerUser = map.get(assesmentDetails.uid)!;
+            if (reportPerUser === undefined) {
+                reportPerUser = new ReportDetailPerUser();
+                reportPerUser.uid = assesmentDetails.uid;
+                reportPerUser.totalScore = 0;
+                reportPerUser.maxTotalScore = 0;
+            }
+            reportPerUser.reportDetailsList.push(assesmentDetails);
+            reportPerUser.totalScore += assesmentDetails.score;
+            reportPerUser.totalTime = assesmentDetails.total_ts!;
+            reportPerUser.maxTotalScore += assesmentDetails.maxScore;
+            reportPerUser.totalScore = parseFloat(reportPerUser.totalScore.toFixed(2));
+            map.set(assesmentDetails.uid, reportPerUser);
         });
+        return map;
     }
 
     public static mapDBEntriesToQuestionReports(accuracyMap: { [p: string]: any },

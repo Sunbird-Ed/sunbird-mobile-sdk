@@ -1,6 +1,5 @@
-import {ContentRequest, ContentSortCriteria, SortOrder} from '..';
+import {ContentRequest, ContentSortCriteria, SortOrder, State, Visibility} from '..';
 import {ContentAccessEntry, ContentEntry, ContentMarkerEntry} from '../db/schema';
-import {State, Visibility} from '../util/content-constants';
 import {ArrayUtil} from '../../util/array-util';
 
 export class GetContentsHandler {
@@ -31,7 +30,7 @@ export class GetContentsHandler {
         }
         let whereClause = `WHERE (${filter})`;
         let query = '';
-        const orderBy = this.generateSortByQuery(request.sortCriteria!, uid!);
+        const orderBy = request.resourcesOnly ? '' : this.generateSortByQuery(request.sortCriteria!, uid!);
         if (request.recentlyViewed) {
             if (uid) {
                 contentTypeFilter = `ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_TYPE} IN (${contentTypesStr.toLowerCase()})`;

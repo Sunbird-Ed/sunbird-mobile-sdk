@@ -1,15 +1,18 @@
 import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../api';
-import {OauthSession} from '..';
+import {OAuthSession} from '..';
 import {ApiKeys} from '../../app-config';
 import {NoActiveSessionError} from '../../profile';
 import {AuthEndPoints} from '../def/auth-end-points';
+import {SharedPreferences} from '../../util/shared-preferences';
 
 export class AuthUtil {
-    constructor(private apiConfig: ApiConfig, private apiService: ApiService) {
+    constructor(private apiConfig: ApiConfig, private apiService: ApiService, private sharedPreferences: SharedPreferences) {
     }
 
-    public async refreshSession(): Promise<undefined> {
-        if (!this.hasExistingSession()) {
+    public async refreshSession(): Promise<void> {
+        let sessionData = await this.getSessionData();
+
+        if (!sessionData) {
             throw new NoActiveSessionError('No Active Sessions found');
         }
 
@@ -18,7 +21,7 @@ export class AuthUtil {
             .withType(HttpRequestType.POST)
             .withSerializer(HttpSerializer.URLENCODED)
             .withBody({
-                refresh_token: localStorage.getItem(ApiKeys.KEY_REFRESH_TOKEN),
+                refresh_token: sessionData.refresh_token,
                 grant_type: 'refresh_token',
                 client_id: 'android'
             })
@@ -27,42 +30,36 @@ export class AuthUtil {
 
         const response: Response = await this.apiService.fetch(request).toPromise();
 
-        const sessionData: OauthSession = {
+        sessionData = {
             ...response.body,
-            userToken: JWTUtil.parseUserTokenFromAccessToken(response.body.accessToken)
+            userToken: JWTUtil.parseUserTokenFromAccessToken(response.body.access_token)
         };
 
-        await this.startSession(sessionData);
+        await this.startSession(sessionData!);
 
         return;
     }
 
-    public startSession(sessionData: OauthSession) {
-        localStorage.setItem(ApiKeys.KEY_ACCESS_TOKEN, sessionData.accessToken);
-        localStorage.setItem(ApiKeys.KEY_REFRESH_TOKEN, sessionData.refreshToken);
-        localStorage.setItem(ApiKeys.KEY_USER_ID, sessionData.userToken);
+    public async startSession(sessionData: OAuthSession): Promise<void> {
+        await this.sharedPreferences.putString(ApiKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
     }
 
-    public async endSession(): Promise<undefined> {
-        return new Promise<undefined>(((resolve, reject) => {
+    public async endSession(): Promise<void> {
+        return new Promise<void>(((resolve, reject) => {
             const launchUrl = this.apiConfig.host +
                 this.apiConfig.user_authentication.authUrl + AuthEndPoints.LOGOUT + '?redirect_uri=' +
                 this.apiConfig.user_authentication.redirectUrl;
 
             customtabs.isAvailable(() => {
-                customtabs.launch(launchUrl!!, success => {
-                    localStorage.removeItem(ApiKeys.KEY_ACCESS_TOKEN);
-                    localStorage.removeItem(ApiKeys.KEY_REFRESH_TOKEN);
-                    localStorage.removeItem(ApiKeys.KEY_USER_ID);
+                customtabs.launch(launchUrl!!, async () => {
+                    await this.sharedPreferences.putString(ApiKeys.KEY_OAUTH_SESSION, '');
                     resolve();
                 }, error => {
                     reject(error);
                 });
             }, error => {
-                customtabs.launchInBrowser(launchUrl!!, callbackUrl => {
-                    localStorage.removeItem(ApiKeys.KEY_ACCESS_TOKEN);
-                    localStorage.removeItem(ApiKeys.KEY_REFRESH_TOKEN);
-                    localStorage.removeItem(ApiKeys.KEY_USER_ID);
+                customtabs.launchInBrowser(launchUrl!!, async () => {
+                    await this.sharedPreferences.putString(ApiKeys.KEY_OAUTH_SESSION, '');
                     resolve();
                 }, err => {
                     reject(err);
@@ -71,21 +68,13 @@ export class AuthUtil {
         }));
     }
 
-    public async getSessionData(): Promise<OauthSession | undefined> {
-        if (!this.hasExistingSession()) {
+    public async getSessionData(): Promise<OAuthSession | undefined> {
+        const stringifiedSessionData = await this.sharedPreferences.getString(ApiKeys.KEY_OAUTH_SESSION).toPromise();
+
+        if (!stringifiedSessionData) {
             return undefined;
         }
 
-        return {
-            accessToken: localStorage.getItem(ApiKeys.KEY_ACCESS_TOKEN)!,
-            refreshToken: localStorage.getItem(ApiKeys.KEY_REFRESH_TOKEN)!,
-            userToken: localStorage.getItem(ApiKeys.KEY_USER_ID)!
-        };
-    }
-
-    private hasExistingSession(): boolean {
-        return !!(localStorage.getItem(ApiKeys.KEY_ACCESS_TOKEN) &&
-            localStorage.getItem(ApiKeys.KEY_REFRESH_TOKEN) &&
-            localStorage.getItem(ApiKeys.KEY_USER_ID));
+        return JSON.parse(stringifiedSessionData);
     }
 }

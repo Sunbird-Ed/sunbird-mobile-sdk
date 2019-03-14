@@ -1,5 +1,5 @@
 import {ApiConfig, ApiService} from '../../api';
-import {OauthSession} from '..';
+import {OAuthSession} from '..';
 import {GoogleSessionProvider} from './google-session-provider';
 import {KeycloakSessionProvider} from './keycloak-session-provider';
 import {StateLoginSessionProvider} from './state-login-session-provider';
@@ -32,7 +32,7 @@ export class OAuthDelegate {
         return !!paramsObject.ssoUrl;
     }
 
-    doOAuthStepOne(): Promise<OauthSession> {
+    doOAuthStepOne(): Promise<OAuthSession> {
         return new Promise((resolve, reject) => {
             const launchUrl = this.apiConfig.host +
                 this.apiConfig.user_authentication.authUrl + AuthEndPoints.LOGIN + '?redirect_uri=' +
@@ -55,7 +55,7 @@ export class OAuthDelegate {
         });
     }
 
-    private async doOAuthStepTwo(params: string): Promise<OauthSession> {
+    private async doOAuthStepTwo(params: string): Promise<OAuthSession> {
         const paramsObject: StepOneCallbackType = qs.parse(params.split('?')[1]);
 
         if (OAuthDelegate.isGoogleSignup(paramsObject)) {

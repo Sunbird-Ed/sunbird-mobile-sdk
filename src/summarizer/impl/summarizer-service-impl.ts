@@ -5,7 +5,7 @@ import {
     LearnerAssessmentDetails,
     LearnerAssessmentSummary,
     LearnerContentSummaryDetails,
-    QuestionSummary
+    QuestionSummary, ReportDetailPerUser
 } from '../def/response';
 import {SummaryRequest} from '../def/request';
 import {SummarizerHandler} from '../handler/summarizer-handler';
@@ -36,12 +36,11 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver {
             SummarizerHandler.mapDBEntriesToQuestionDetails(questionSummaries));
     }
 
-    getLearnerAssessmentDetails(request: SummaryRequest): Observable<LearnerAssessmentDetails[]> {
+    getLearnerAssessmentDetails(request: SummaryRequest): Observable<Map<string, ReportDetailPerUser>> {
         const query = SummarizerQueries.getDetailReportsQuery(request.uids, request.contentId);
         return this.dbService.execute(query).map((assessmentDetailsInDb: LearnerAssessmentsEntry.SchemaMap[]) =>
             SummarizerHandler.mapDBEntriesToLearnerAssesmentDetails(assessmentDetailsInDb));
     }
-
     getReportByQuestions(request: SummaryRequest): Observable<{ [p: string]: any }[]> {
         const questionReportQuery = SummarizerQueries.getQuetsionDetailsQuery(request.uids, request.contentId, request.qId);
         const accuracyQuery = SummarizerQueries.getReportAccuracyQuery(request.uids, request.contentId);

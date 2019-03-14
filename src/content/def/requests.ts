@@ -48,7 +48,7 @@ export enum SortOrder {
 export interface ChildContentRequest {
     contentId: string;
     hierarchyInfo: HierarchyInfo[];
-    level: number;
+    level?: number;
 }
 
 

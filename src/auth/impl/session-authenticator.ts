@@ -12,26 +12,31 @@ import {
 import {Observable} from 'rxjs';
 import {ApiKeys} from '../../app-config';
 import {Connection} from '../../api/def/connection';
-import {OauthSession} from '..';
+import {OAuthSession} from '..';
+import {SharedPreferences} from '../../util/shared-preferences';
 
 export class SessionAuthenticator implements RequestInterceptor, ResponseInterceptor {
 
 
-    constructor(private apiConfig: ApiConfig, private connection: Connection) {
+    constructor(private sharedPreferences: SharedPreferences, private apiConfig: ApiConfig, private connection: Connection) {
     }
 
-    interceptRequest(request: Request): Request {
-        const sessionToken = localStorage.getItem(ApiKeys.KEY_ACCESS_TOKEN);
+    interceptRequest(request: Request): Observable<Request> {
+        return this.sharedPreferences.getString(ApiKeys.KEY_OAUTH_SESSION)
+            .map((stringifiedSessionData?: string) => {
+                if (stringifiedSessionData) {
+                    const sessionData: OAuthSession = JSON.parse(stringifiedSessionData);
 
-        if (sessionToken) {
-            const existingHeaders = request.headers;
-            existingHeaders['X-Authenticated-User-Token'] = sessionToken;
-            request.headers = existingHeaders;
-        } else {
-            throw new Error('No Session Found');
-        }
+                    const existingHeaders = request.headers;
+                    existingHeaders['X-Authenticated-User-Token'] = sessionData.access_token;
 
-        return request;
+                    request.headers = existingHeaders;
+                } else {
+                    throw new Error('No Session Found');
+                }
+
+                return request;
+            });
     }
 
     interceptResponse(request: Request, response: Response): Observable<Response> {
@@ -48,33 +53,37 @@ export class SessionAuthenticator implements RequestInterceptor, ResponseInterce
     }
 
     private async invokeRefreshSessionTokenApi() {
-        const request = new Request.Builder()
-            .withPath(this.apiConfig.user_authentication.authUrl + '/token')
-            .withType(HttpRequestType.POST)
-            .withSerializer(HttpSerializer.URLENCODED)
-            .withBody({
-                refresh_token: localStorage.getItem(ApiKeys.KEY_REFRESH_TOKEN),
-                grant_type: 'refresh_token',
-                client_id: 'android'
-            })
-            .build();
+        const stringifiedSessionData = await this.sharedPreferences.getString(ApiKeys.KEY_OAUTH_SESSION).toPromise();
 
-        const response: Response = await this.connection.invoke(request).toPromise();
+        if (stringifiedSessionData) {
+            let sessionData: OAuthSession = JSON.parse(stringifiedSessionData);
 
-        const sessionData: OauthSession = {
-            ...response.body,
-            userToken: JWTUtil.parseUserTokenFromAccessToken(response.body.accessToken)
-        };
+            const request = new Request.Builder()
+                .withPath(this.apiConfig.user_authentication.authUrl + '/token')
+                .withType(HttpRequestType.POST)
+                .withSerializer(HttpSerializer.URLENCODED)
+                .withBody({
+                    refresh_token: sessionData.refresh_token,
+                    grant_type: 'refresh_token',
+                    client_id: 'android'
+                })
+                .build();
 
-        await this.startSession(sessionData);
+            const response: Response = await this.connection.invoke(request).toPromise();
+
+            sessionData = {
+                ...response.body,
+                userToken: JWTUtil.parseUserTokenFromAccessToken(response.body.access_token)
+            };
+
+            await this.startSession(sessionData);
+        }
 
         return;
     }
 
-    private async startSession(sessionData: OauthSession): Promise<undefined> {
-        localStorage.setItem(ApiKeys.KEY_ACCESS_TOKEN, sessionData.accessToken);
-        localStorage.setItem(ApiKeys.KEY_REFRESH_TOKEN, sessionData.refreshToken);
-        localStorage.setItem(ApiKeys.KEY_USER_ID, sessionData.userToken);
+    private async startSession(sessionData: OAuthSession): Promise<undefined> {
+        this.sharedPreferences.putString(ApiKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData));
 
         return;
     }
