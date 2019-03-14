@@ -1,6 +1,6 @@
 export interface ContentEvent {
     type: ContentEventType;
-    event: any;
+    contentId: string;
 }
 
 export enum ContentEventType {

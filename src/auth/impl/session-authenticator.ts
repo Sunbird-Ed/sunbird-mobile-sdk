@@ -10,7 +10,7 @@ import {
     ResponseInterceptor
 } from '../../api';
 import {Observable} from 'rxjs';
-import {ApiKeys} from '../../app-config';
+import {ApiKeys} from '../../preference-keys';
 import {Connection} from '../../api/def/connection';
 import {OAuthSession} from '..';
 import {SharedPreferences} from '../../util/shared-preferences';

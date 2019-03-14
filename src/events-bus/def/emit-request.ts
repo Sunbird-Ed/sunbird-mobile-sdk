@@ -1,4 +1,4 @@
-export interface EmitRequest {
+export interface EmitRequest<T> {
     namespace: string;
-    event: any;
+    event: T;
 }

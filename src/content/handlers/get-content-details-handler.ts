@@ -4,7 +4,6 @@ import {
     ContentData,
     ContentDecorateRequest,
     ContentDetailRequest,
-    ContentEvent,
     ContentEventType,
     ContentFeedback,
     ContentFeedbackService,
@@ -63,7 +62,10 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                             if (ContentUtil.isUpdateAvailable(serverContent, localContent.contentData)) {
                                 this.eventsBusService.emit({
                                     namespace: EventNamespace.CONTENT,
-                                    event: serverContent
+                                    event: {
+                                        type: ContentEventType.UPDATE,
+                                        contentId: serverContent.identifier
+                                    }
                                 });
                             }
                         });

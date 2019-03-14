@@ -1,6 +1,6 @@
 import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../api';
 import {OAuthSession} from '..';
-import {ApiKeys} from '../../app-config';
+import {ApiKeys} from '../../preference-keys';
 import {NoActiveSessionError} from '../../profile';
 import {AuthEndPoints} from '../def/auth-end-points';
 import {SharedPreferences} from '../../util/shared-preferences';
