@@ -1,4 +1,4 @@
-import {EventNamespace, EventsBusService} from '..';
+import {EventBusEvent, EventNamespace, EventsBusService} from '..';
 import {Observable, Subject} from 'rxjs';
 import {EmitRequest} from '../def/emit-request';
 import {RegisterObserverRequest} from '../def/register-observer-request';
@@ -33,7 +33,7 @@ export class EventsBusServiceImpl implements EventsBusService {
             .map((eventContainer) => eventContainer.event);
     }
 
-    emit({namespace, event}: EmitRequest): void {
+    emit({namespace, event}: EmitRequest<EventBusEvent>): void {
         this.eventsBus.next({
             namespace,
             event
