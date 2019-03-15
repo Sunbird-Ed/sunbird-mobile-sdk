@@ -7,7 +7,8 @@ import {
     ContentDeleteStatus,
     ContentDetailRequest,
     ContentDownloadRequest,
-    ContentErrorCode, ContentEventType,
+    ContentErrorCode,
+    ContentEventType,
     ContentExportRequest,
     ContentFeedbackService,
     ContentImport,
@@ -20,10 +21,10 @@ import {
     ContentSearchResult,
     ContentService,
     ContentServiceConfig,
+    ContentsGroupedByPageSection,
     EcarImportRequest,
     ExportContentContext,
     FileExtension,
-    GroupByPageResult,
     HierarchyInfo,
     ImportContentContext,
     MimeType,
@@ -75,8 +76,11 @@ import {GenerateImportShareTelemetry} from '../handlers/import/generate-import-s
 import {GenerateExportShareTelemetry} from '../handlers/export/generate-export-share-telemetry';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {GenerateInteractTelemetry} from '../handlers/import/generate-interact-telemetry';
+import {CachedItemStore} from '../../key-value-store';
+import * as SHA1 from 'crypto-js/sha1';
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
+    private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
     private readonly getContentDetailsHandler: GetContentDetailsHandler;
 
     constructor(private contentServiceConfig: ContentServiceConfig,
@@ -91,10 +95,21 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 private contentFeedbackService: ContentFeedbackService,
                 private downloadService: DownloadService,
                 private sharedPreferences: SharedPreferences,
-                private eventsBusService: EventsBusService) {
+                private eventsBusService: EventsBusService,
+                private cachedItemStore: CachedItemStore<ContentsGroupedByPageSection>) {
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
             this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
+    }
+
+    private static getIdForDb(request: ContentSearchCriteria): string {
+        const key = {
+            framework: request.framework || '',
+            board: request.board || '',
+            medium: request.medium || '',
+            grade: request.grade || '',
+        };
+        return SHA1(JSON.stringify(key)).toString();
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
@@ -228,13 +243,14 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]> {
         const searchContentHandler = new SearchContentHandler(this.appConfig, this.contentServiceConfig, this.telemetryService);
         const contentIds: string[] = contentImportRequest.contentImportArray.map((i) => i.contentId);
-        const contentImportResponse: ContentImportResponse[] = [];
         const filter: SearchRequest = searchContentHandler.getContentSearchFilter(
             contentIds, contentImportRequest.contentStatusArray);
         return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig).handle(filter)
             .map((searchResponse: SearchResponse) => {
                 return searchResponse.result.content;
-            }).mergeMap(async (contents: ContentData[]) => {
+            }).mergeMap((contents: ContentData[]) => Observable.defer(async () => {
+                const contentImportResponses: ContentImportResponse[] = [];
+
                 if (contents && contents.length) {
                     const downloadRequestList: DownloadRequest[] = [];
                     for (const contentId of contentIds) {
@@ -257,13 +273,14 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                 };
                                 downloadRequestList.push(downloadRequest);
                             }
-                            contentImportResponse.push({identifier: contentId, status: status});
+                            contentImportResponses.push({identifier: contentId, status: status});
                         }
                     }
                     await this.downloadService.download(downloadRequestList).toPromise();
                 }
-                return contentImportResponse;
-            });
+
+                return contentImportResponses;
+            }));
 
     }
 
@@ -413,31 +430,13 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         });
     }
 
-    getGroupByPage(request: ContentSearchCriteria): Observable<GroupByPageResult> {
-        return this.searchContent(request).map((result: ContentSearchResult) => {
-            const filterValues = result.filterCriteria.facetFilters![0].values;
-            const allContent = result.contentDataList;
-            const pageSectionList: PageSection[] = [];
-            // forming response same as PageService.getPageAssemble format
-            for (let i = 0; i < filterValues.length; i++) {
-                const pageSection: PageSection = {};
-                const contents = allContent.filter((content) => {
-                    return content.subject.toLowerCase().trim() === filterValues[i].name.toLowerCase().trim();
-                });
-                delete filterValues[i].apply;
-                pageSection.contents = contents;
-                pageSection.name = filterValues[i].name.charAt(0).toUpperCase() + filterValues[i].name.slice(1);
-                // TODO : need to handle localization
-                pageSection.display = {name: {en: filterValues[i].name}};
-                pageSectionList.push(pageSection);
-            }
-
-            return {
-                name: 'Resource',
-                sections: pageSectionList
-            };
-        });
-
+    searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection> {
+        return this.cachedItemStore.getCached(
+            ContentServiceImpl.getIdForDb(request),
+            this.SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY,
+            'ttl_' + this.SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY,
+            () => this.searchContentAndGroupByPageSection(request)
+        );
     }
 
     onDownloadCompletion(request: ContentDownloadRequest): Observable<undefined> {
@@ -450,5 +449,32 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return this.importEcar(importEcarRequest).mapTo(undefined).catch(() => {
             return Observable.of(undefined);
         });
+    }
+
+    private searchContentAndGroupByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection> {
+        return this.searchContent(request)
+            .map((result: ContentSearchResult) => {
+                const filterValues = result.filterCriteria.facetFilters![0].values;
+                const allContent = result.contentDataList;
+                const pageSectionList: PageSection[] = [];
+                // forming response same as PageService.getPageAssemble format
+                for (let i = 0; i < filterValues.length; i++) {
+                    const pageSection: PageSection = {};
+                    const contents = allContent.filter((content) => {
+                        return content.subject.toLowerCase().trim() === filterValues[i].name.toLowerCase().trim();
+                    });
+                    delete filterValues[i].apply;
+                    pageSection.contents = contents;
+                    pageSection.name = filterValues[i].name.charAt(0).toUpperCase() + filterValues[i].name.slice(1);
+                    // TODO : need to handle localization
+                    pageSection.display = {name: {en: filterValues[i].name}};
+                    pageSectionList.push(pageSection);
+                }
+
+                return {
+                    name: 'Resource',
+                    sections: pageSectionList
+                };
+            });
     }
 }

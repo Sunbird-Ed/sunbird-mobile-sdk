@@ -3,7 +3,7 @@ export interface ContentEvent {
     contentId: string;
 }
 
-export interface ImportProgress {
+export interface ContentImportProgress {
     type: ContentEventType;
     currentCount: number;
     totalCount: number;
