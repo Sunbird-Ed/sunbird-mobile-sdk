@@ -31,22 +31,23 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     download(downloadRequests: DownloadRequest[]): Observable<undefined> {
         return this.currentDownloadRequest$
             .take(1)
-            .mergeMap((currentDownloadRequest?: DownloadRequest) => {
+            .do(async (currentDownloadRequest?: DownloadRequest) => {
                 if (currentDownloadRequest) {
-                    return this.addToDownloadList(downloadRequests);
+                    return await this.addToDownloadList(downloadRequests).toPromise();
                 }
 
-                return this.addToDownloadList(downloadRequests)
-                    .mergeMap(() => this.switchToNextDownloadRequest());
-            });
+                return await this.addToDownloadList(downloadRequests)
+                    .mergeMap(() => this.switchToNextDownloadRequest()).toPromise();
+            })
+            .mapTo(undefined);
     }
 
     cancel(downloadCancelRequest: DownloadCancelRequest): Observable<undefined> {
         return this.currentDownloadRequest$
             .take(1)
-            .mergeMap((currentDownloadRequest?: DownloadRequest) => {
+            .do(async (currentDownloadRequest?: DownloadRequest) => {
                 if (currentDownloadRequest && currentDownloadRequest.identifier === downloadCancelRequest.identifier) {
-                    return Observable.create((observer) => {
+                    return await Observable.create((observer) => {
                         downloadManager.remove([currentDownloadRequest.downloadId!], (err, removeCount) => {
                             if (err) {
                                 observer.error(err);
@@ -55,13 +56,14 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                             observer.next(!!removeCount);
                             observer.complete();
                         });
-                    })
-                        .mergeMap(() => this.removeFromDownloadList(downloadCancelRequest))
-                        .mergeMap(() => this.switchToNextDownloadRequest());
+                    }).mergeMap(() => this.removeFromDownloadList(downloadCancelRequest))
+                        .mergeMap(() => this.switchToNextDownloadRequest())
+                        .toPromise();
                 }
 
-                return this.removeFromDownloadList(downloadCancelRequest);
-            });
+                return await this.removeFromDownloadList(downloadCancelRequest).toPromise();
+            })
+            .mapTo(undefined);
     }
 
     registerOnDownloadCompleteDelegate(downloadCompleteDelegate: DownloadCompleteDelegate): void {
