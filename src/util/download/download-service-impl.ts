@@ -25,7 +25,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     }
 
     onInit(): Observable<undefined> {
-        return this.listenForDownloadProgressesChanges();
+        return this.listenForDownloadProgressChanges();
     }
 
     download(downloadRequests: DownloadRequest[]): Observable<undefined> {
@@ -37,7 +37,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                 }
 
                 return this.addToDownloadList(downloadRequests)
-                    .do(async () => await this.switchToNextDownloadRequest().toPromise());
+                    .mergeMap(() => this.switchToNextDownloadRequest());
             });
     }
 
@@ -57,7 +57,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         });
                     })
                         .mergeMap(() => this.removeFromDownloadList(downloadCancelRequest))
-                        .do(async () => await this.switchToNextDownloadRequest().toPromise());
+                        .mergeMap(() => this.switchToNextDownloadRequest());
                 }
 
                 return this.removeFromDownloadList(downloadCancelRequest);
@@ -194,16 +194,17 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         return Observable.create((observer) => {
             downloadManager.query({ids: [downloadRequest.downloadId!]}, (err, entries) => {
                 if (err) {
-                    return observer.next({
+                    observer.next({
                         type: DownloadEventType.PROGRESS,
                         payload: {
                             downloadId: downloadRequest.downloadId,
                             identifier: downloadRequest.identifier,
                             progress: -1,
-                            status: DownloadStatus.STATUS_PENDING
+                            status: DownloadStatus.STATUS_FAILED
                         }
                     } as DownloadProgress);
                     observer.complete();
+                    return;
                 }
 
                 const entry = entries[0];
@@ -222,7 +223,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         });
     }
 
-    private listenForDownloadProgressesChanges(): Observable<undefined> {
+    private listenForDownloadProgressChanges(): Observable<undefined> {
         return this.currentDownloadRequest$
             .switchMap((currentDownloadRequest: DownloadRequest | undefined) => {
                 if (!currentDownloadRequest) {
@@ -233,8 +234,9 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     .mergeMap(() => {
                         return this.getDownloadProgress(currentDownloadRequest);
                     })
-                    .distinctUntilChanged((prev, next) =>
-                        Collections.util.makeString(prev) === Collections.util.makeString(next))
+                    .distinctUntilChanged((prev, next) => {
+                        return JSON.stringify(prev) === JSON.stringify(next);
+                    })
                     .do((p) => console.log(p))
                     .mergeMap((downloadProgress) => {
                         return Observable.zip(
