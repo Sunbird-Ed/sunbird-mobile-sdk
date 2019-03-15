@@ -4,9 +4,9 @@ import {EmitRequest} from './emit-request';
 import {RegisterObserverRequest} from './register-observer-request';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {DownloadProgress} from '../../util/download';
-import {ContentEvent, ImportProgress} from '../../content';
+import {ContentEvent, ContentImportProgress} from '../../content';
 
-export type EventBusEvent = DownloadProgress | ContentEvent | ImportProgress;
+export type EventBusEvent = DownloadProgress | ContentEvent | ContentImportProgress;
 
 export interface EventsBusService extends SdkServiceOnInitDelegate {
     events(namespace?: EventNamespace): Observable<EventBusEvent>;
