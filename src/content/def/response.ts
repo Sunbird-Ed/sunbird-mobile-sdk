@@ -11,7 +11,7 @@ export interface ContentSearchResult {
     collectionDataList?: ContentData[];
 }
 
-export interface GroupByPageResult {
+export interface ContentsGroupedByPageSection {
     name: string;
     sections: PageSection[];
 }
