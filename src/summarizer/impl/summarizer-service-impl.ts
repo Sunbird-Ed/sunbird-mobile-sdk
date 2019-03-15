@@ -42,10 +42,10 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver {
             SummarizerHandler.mapDBEntriesToLearnerAssesmentDetails(assessmentDetailsInDb));
     }
     getReportByQuestions(request: SummaryRequest): Observable<{ [p: string]: any }[]> {
-        const questionReportQuery = SummarizerQueries.getQuetsionDetailsQuery(request.uids, request.contentId, request.qId);
+        const questionReportQuery = SummarizerQueries.getQuestionReportsQuery(request.uids, request.contentId);
         const accuracyQuery = SummarizerQueries.getReportAccuracyQuery(request.uids, request.contentId);
         return this.dbService.execute(accuracyQuery).map((accuracyReports: LearnerAssessmentsEntry.AccuracySchema[]) =>
-            SummarizerHandler.mapDBEntriesToAccuracy(accuracyReports)).mergeMap((accuracyMap: { [p: string]: any }) => {
+            SummarizerHandler.mapDBEntriesToAccuracy(accuracyReports)).mergeMap((accuracyMap: { [key: string]: any }) => {
             return this.dbService.execute(questionReportQuery).map((assessmentDetailsInDb:
                                                                         LearnerAssessmentsEntry.QuestionReportsSchema[]) =>
                 SummarizerHandler.mapDBEntriesToQuestionReports(accuracyMap, assessmentDetailsInDb));

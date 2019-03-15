@@ -126,9 +126,9 @@ export class SummarizerHandler {
                 maxScore: NumberUtil.toPrecision(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE]),
                 hierarchyData: questionReport[LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA],
                 total_ts: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS]),
-                marks: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS]),
-                occurenceCount: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS]),
-                sum_max_score: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS]),
+                marks: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_MARKS]),
+                occurenceCount: questionReport[LearnerAssessmentsEntry.COLUMN_NAME_COUNT],
+                sum_max_score: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_MAX_SCORE]),
                 correct_users_count: correctUserCount
             };
         });
@@ -138,7 +138,7 @@ export class SummarizerHandler {
         { [key: string]: string } {
         const accuracy: { [key: string]: any } = {};
         accuracyReportsInDb.map((accuracyReport: LearnerAssessmentsEntry.AccuracySchema) => {
-            accuracy[LearnerAssessmentsEntry.COLUMN_NAME_QID] =
+            accuracy[accuracyReport[LearnerAssessmentsEntry.COLUMN_NAME_QID]] =
                 NumberUtil.parseInt(accuracyReport[LearnerAssessmentsEntry.COLUMN_NAME_USERS_COUNT]);
         });
         return accuracy;
@@ -150,7 +150,7 @@ export class SummarizerHandler {
                 uid: questionSummary.uid,
                 time: Number(questionSummary.time),
                 result: NumberUtil.parseInt(questionSummary.result),
-                maxScore: NumberUtil.parseInt(questionSummary.maxScore)
+                max_score: NumberUtil.parseInt(questionSummary.max_score)
             };
         });
     }

@@ -15,10 +15,10 @@ export class TelemetryInteractRequest {
     type: InteractType;
     subType: InteractSubtype;
     id: string;
-    pageId: PageId;
+    pageId: string;
     pos: Array<{ [index: string]: string }> = [];
     values: Array<{ [index: string]: any }> = [];
-    env: Environment;
+    env: string;
     rollup: Rollup;
     valueMap: { [index: string]: any };
     correlationData: Array<CorrelationData>;
@@ -31,7 +31,7 @@ export class TelemetryErrorRequest {
     errorCode: string;
     errorType: string;
     stacktrace: string;
-    pageId: PageId;
+    pageId: string;
     env: Environment;
 }
 
@@ -41,7 +41,7 @@ export class TelemetryImpressionRequest {
     pageId: PageId;
     uri: string;
     visits: Visit[];
-    env: Environment;
+    env: string;
     objId: string;
     objType: string;
     objVer: string;
@@ -55,7 +55,7 @@ export class TelemetryStartRequest {
     loc: string;
     mode: string;
     duration: number;
-    pageId: PageId;
+    pageId: string;
     env: Environment;
     objId: string;
     objType: string;
@@ -69,7 +69,7 @@ export class TelemetryEndRequest {
     type: string;
     mode: string;
     duration: number;
-    pageId: PageId;
+    pageId: string;
     objId: string;
     objType: string;
     objVer: string;
@@ -92,7 +92,7 @@ export class TelemetryLogRequest {
     type: LogType;
     level: LogLevel;
     message: string;
-    pageId: PageId;
+    pageId: string;
     params: Array<{ [index: string]: any }>;
     env: Environment;
     actorType: string;

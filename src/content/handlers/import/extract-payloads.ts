@@ -1,13 +1,6 @@
-import {ImportContentContext} from '../..';
+import {ContentEventType, ImportContentContext} from '../..';
 import {Response} from '../../../api';
-import {
-    ContentDisposition,
-    ContentEncoding,
-    ContentStatus,
-    MimeType,
-    State,
-    Visibility
-} from '../../util/content-constants';
+import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
 import {DbService} from '../../../db';
 import {ContentUtil} from '../../util/content-util';
@@ -23,6 +16,7 @@ import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
+import {EventNamespace, EventsBusService} from '../../../events-bus';
 
 export class ExtractPayloads {
 
@@ -31,12 +25,17 @@ export class ExtractPayloads {
                 private appConfig: AppConfig,
                 private dbService: DbService,
                 private deviceInfo: DeviceInfo,
-                private getContentDetailsHandler: GetContentDetailsHandler) {
+                private getContentDetailsHandler: GetContentDetailsHandler,
+                private eventsBusService: EventsBusService) {
     }
 
     public async execute(importContext: ImportContentContext): Promise<Response> {
         const response: Response = new Response();
         importContext.identifiers = [];
+        // this count is for maintaining how many contents are imported so far
+        let currentCount = 0;
+        // post event before starting with how many imports are to be done totally
+        this.postImportProgressEvent(currentCount, importContext.items!.length);
         for (const e of importContext.items!) {
             let element = e as any;
             const identifier = element.identifier;
@@ -150,42 +149,41 @@ export class ExtractPayloads {
                 }).toPromise();
             }
             importContext.identifiers.push(identifier);
-
+            // increase the current count
+            currentCount++;
+            this.postImportProgressEvent(currentCount, importContext.items!.length);
         }
         response.body = importContext;
         return Promise.resolve(response);
     }
 
-    private constructContentDBModel(identifier, manifestVersion, localData,
-                                    mimeType, contentType, visibility, path,
-                                    refCount, contentState, audience, pragma, sizeOnDevice): ContentEntry.SchemaMap {
-        return {
-            [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
-            [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
-            [ContentEntry.COLUMN_NAME_PATH]: ContentUtil.getBasePath(path),
-            [ContentEntry.COLUMN_NAME_REF_COUNT]: refCount,
-            [ContentEntry.COLUMN_NAME_CONTENT_STATE]: contentState,
-            [ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]: sizeOnDevice,
-            [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: manifestVersion,
-            [ContentEntry.COLUMN_NAME_LOCAL_DATA]: localData,
-            [ContentEntry.COLUMN_NAME_MIME_TYPE]: mimeType,
-            [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: contentType,
-            [ContentEntry.COLUMN_NAME_VISIBILITY]: visibility,
-            [ContentEntry.COLUMN_NAME_AUDIENCE]: audience,
-            [ContentEntry.COLUMN_NAME_PRAGMA]: pragma,
-        };
-
+    private postImportProgressEvent(currentCount, totalCount) {
+        this.eventsBusService.emit({
+            namespace: EventNamespace.CONTENT,
+            event: {
+                type: ContentEventType.IMPORT_PROGRESS,
+                totalCount: totalCount,
+                currentCount: currentCount
+            }
+        });
     }
 
     async copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string) {
-        if (asset) {
-            const iconSrc = tempLocationPath.concat(asset);
-            const iconDestination = payloadDestinationPath.concat(asset);
-            const folderContainingFile = asset.substring(0, asset.lastIndexOf('/'));
-            await this.fileService.createDir(payloadDestinationPath.concat(folderContainingFile), false);
-            // If source icon is not available then copy assets is failing and throwing exception.
-            await this.fileService.copyFile(tempLocationPath.concat(folderContainingFile), FileUtil.getFileName(asset),
-                payloadDestinationPath.concat(folderContainingFile), FileUtil.getFileName(asset));
+        try {
+            if (asset) {
+                const iconSrc = tempLocationPath.concat(asset);
+                const iconDestination = payloadDestinationPath.concat(asset);
+                const folderContainingFile = asset.substring(0, asset.lastIndexOf('/'));
+                await this.fileService.createDir(payloadDestinationPath.concat(folderContainingFile), false);
+                // If source icon is not available then copy assets is failing and throwing exception.
+                await this.fileService.copyFile(tempLocationPath.concat(folderContainingFile), FileUtil.getFileName(asset),
+                    payloadDestinationPath.concat(folderContainingFile), FileUtil.getFileName(asset));
+            }
+
+        } catch (e) {
+            console.error('cannot Copy asset');
+            return Promise.resolve();
+
         }
     }
 
@@ -249,6 +247,27 @@ export class ExtractPayloads {
             path = existingContentPath;
         }
         return path;
+    }
+
+    private constructContentDBModel(identifier, manifestVersion, localData,
+                                    mimeType, contentType, visibility, path,
+                                    refCount, contentState, audience, pragma, sizeOnDevice): ContentEntry.SchemaMap {
+        return {
+            [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
+            [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+            [ContentEntry.COLUMN_NAME_PATH]: ContentUtil.getBasePath(path),
+            [ContentEntry.COLUMN_NAME_REF_COUNT]: refCount,
+            [ContentEntry.COLUMN_NAME_CONTENT_STATE]: contentState,
+            [ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]: sizeOnDevice,
+            [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: manifestVersion,
+            [ContentEntry.COLUMN_NAME_LOCAL_DATA]: localData,
+            [ContentEntry.COLUMN_NAME_MIME_TYPE]: mimeType,
+            [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: contentType,
+            [ContentEntry.COLUMN_NAME_VISIBILITY]: visibility,
+            [ContentEntry.COLUMN_NAME_AUDIENCE]: audience,
+            [ContentEntry.COLUMN_NAME_PRAGMA]: pragma,
+        };
+
     }
 
 

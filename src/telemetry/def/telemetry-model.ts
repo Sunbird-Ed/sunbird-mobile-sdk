@@ -110,10 +110,10 @@ export class CorrelationData {
 }
 
 export class Rollup {
-    l1: string;
-    l2: string;
-    l3: string;
-    l4: string;
+    l1?: string;
+    l2?: string;
+    l3?: string;
+    l4?: string;
 }
 
 export class Visit {
@@ -131,9 +131,9 @@ export class Interrupt {
 }
 
 export class ProducerData {
-      id: string ;
-      pid: string;
-      ver: string;
+    id: string;
+    pid: string;
+    ver: string;
 
     ProducerData() {
         this.id = '';
@@ -184,7 +184,7 @@ export class Search {
 // }
 
 export class TelemetryObject {
-    public  rollup?: Rollup;
+    public rollup?: Rollup;
     public readonly id: string;
     public readonly type: string;
     public readonly version: string;
@@ -327,7 +327,8 @@ export namespace TelemetryEvents {
         rollup: Rollup;
         correlationData: Array<CorrelationData>;
 
-        public constructor(type: string, mode: string, duration: number, pageid: PageId, summaryList: {}[]) {
+        public constructor(type: string, mode: string, duration: number, pageid: string, summaryList: {}[], env: string,
+                           objId: string, objType: string, objVer: string, rollup: Rollup, correlationData: Array<CorrelationData>) {
             super(End.EID);
             this.setEdata({
                 ...(type ? {type} : {}),
@@ -336,6 +337,9 @@ export namespace TelemetryEvents {
                 ...(mode ? {mode} : {}),
                 ...(summaryList ? {summaryList} : {})
             });
+            this.setCoRrelationdata(correlationData);
+            this.setEnvironment(env);
+            this.setObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '', rollup ? rollup : {});
         }
     }
 
@@ -356,7 +360,8 @@ export namespace TelemetryEvents {
         correlationData: Array<CorrelationData>;
 
 
-        constructor(type: string, dSpec: DeviceSpecification, loc: string, mode: string, duration: number, pageId: PageId) {
+        constructor(type: string, dSpec: DeviceSpecification, loc: string, mode: string, duration: number, pageId: string, env: string,
+                    objId: string, objType: string, objVer: string, rollup: Rollup, correlationData: Array<CorrelationData>) {
             super(Start.EID);
             this.setEdata({
                 ...(type ? {type} : {type: ''}),
@@ -366,13 +371,15 @@ export namespace TelemetryEvents {
                 ...(duration ? {mode} : {}),
                 ...(pageId ? {pageId} : {})
             });
+            this.setCoRrelationdata(correlationData);
+            this.setEnvironment(env);
+            this.setObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '', rollup ? rollup : {});
         }
     }
 
     export class Interact extends Telemetry {
         private static readonly EID = 'INTERACT';
 
-        env: string;
         type: string;
         subType: string;
         id: string;
@@ -380,13 +387,9 @@ export namespace TelemetryEvents {
         pos: Array<{ [index: string]: string }> = [];
         values: Array<{ [index: string]: any }> = [];
         valueMap: { [index: string]: any };
-        correlationData: Array<CorrelationData>;
-        objId: string;
-        objType: string;
-        objVer: string;
-        rollup: Rollup;
 
-        constructor(type: string, subtype: string, id: string, pageid: PageId, pos: { [key: string]: string }[], values: {}[]) {
+        constructor(type: string, subtype: string, id: string, pageid: string, pos: { [key: string]: string }[], values: {}[], env: string,
+                    objId: string, objType: string, objVer: string, rollup: Rollup, correlationData: Array<CorrelationData>) {
             super(Interact.EID);
             this.setEdata({
                 ...(type ? {type} : {type: ''}),
@@ -398,6 +401,9 @@ export namespace TelemetryEvents {
                     ...(values ? {values} : {}),
                 }
             });
+            this.setCoRrelationdata(correlationData);
+            this.setEnvironment(env);
+            this.setObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '', rollup ? rollup : {});
         }
     }
 
@@ -415,7 +421,8 @@ export namespace TelemetryEvents {
         rollup?: Rollup;
         env: string;
 
-        public constructor(type: string, subtype: string, pageid: PageId, uri: string, visits: Visit[]) {
+        public constructor(type: string, subtype: string, pageid: string, uri: string, visits: Visit[], env: string,
+                           objId: string, objType: string, objVer: string, rollup: Rollup, correlationData: Array<CorrelationData>) {
             super(Impression.EID);
             this.setEdata({
                 ...(type ? {type} : {type: ''}),
@@ -438,7 +445,7 @@ export namespace TelemetryEvents {
         params: Array<{ [index: string]: any }>;
         actorType: string;
 
-        constructor(type: string, level: LogLevel, message: string, pageid: PageId, params: {}[]) {
+        constructor(type: string, level: LogLevel, message: string, pageid: string, params: {}[], env: string, actorType) {
             super(Log.EID);
             this.setEdata({
                 ...(type ? {type} : {type: ''}),
@@ -447,6 +454,10 @@ export namespace TelemetryEvents {
                 ...(pageid ? {pageid} : {}),
                 ...(params ? {params} : {}),
             });
+            this.setEnvironment(env);
+            const actor: Actor = new Actor();
+            actor.type = actorType;
+            this.setActor(actor);
         }
     }
 
@@ -459,7 +470,7 @@ export namespace TelemetryEvents {
         pageId: string;
         env: string;
 
-        constructor(errorCode: string, errorType: string, stacktrace: string, pageid: PageId) {
+        constructor(errorCode: string, errorType: string, stacktrace: string, pageid: string) {
             super(Error.EID);
 
             this.setEdata({
@@ -522,17 +533,21 @@ export namespace TelemetryEvents {
 
         rating: number;
         comments: string;
-        env: string
+        env: string;
         objId: string;
         objType: string;
         objVer: string;
-        constructor(rating: number, comments: string) {
+
+        constructor(rating: number, comments: string, env: string,
+                    objId: string, objType: string, objVer: string) {
             super(Feedback.EID);
 
             this.setEdata({
                 ...(rating ? {rating: rating} : {}),
                 ...(comments ? {comments: comments} : {}),
             });
+            this.setEnvironment(env);
+            this.setObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '', {});
         }
     }
 }

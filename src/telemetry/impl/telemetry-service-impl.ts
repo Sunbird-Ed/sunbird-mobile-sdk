@@ -59,14 +59,8 @@ export class TelemetryServiceImpl implements TelemetryService, EventObserver {
             type, mode, duration, pageId, summaryList, env,
             objId, objType, objVer, rollup, correlationData
         }: TelemetryEndRequest): Observable<boolean> {
-        const end = new TelemetryEvents.End(type, mode, duration, pageId, summaryList);
-        end.env = env;
-        end.objId = objId;
-        end.objType = objType;
-        end.objId = objId;
-        end.objVer = objVer;
-        end.rollup = rollup;
-        end.correlationData = correlationData;
+        const end = new TelemetryEvents.End(type, mode, duration, pageId, summaryList, env, objId,
+            objType, objVer, rollup, correlationData);
         return this.save(end);
     }
 
@@ -80,13 +74,8 @@ export class TelemetryServiceImpl implements TelemetryService, EventObserver {
                    type, subType, pageId, uri, visits, env, objId,
                    objType, objVer, rollup, correlationData
                }: TelemetryImpressionRequest): Observable<boolean> {
-        const impression = new TelemetryEvents.Impression(type, subType, pageId, uri, visits);
-        impression.env = env;
-        impression.objId = objId;
-        impression.objType = objType;
-        impression.objVer = objVer;
-        impression.rollup = rollup;
-        impression.correlationData = correlationData;
+        const impression = new TelemetryEvents.Impression(type, subType, pageId, uri, visits, env, objId,
+            objType, objVer, rollup!, correlationData);
         return this.save(impression);
     }
 
@@ -94,21 +83,14 @@ export class TelemetryServiceImpl implements TelemetryService, EventObserver {
                  type, subType, id, pageId, pos, values, env, rollup,
                  valueMap, correlationData, objId, objType, objVer
              }: TelemetryInteractRequest): Observable<boolean> {
-        const interact = new TelemetryEvents.Interact(type, subType, id, pageId, pos, values);
-        interact.env = env;
-        interact.rollup = rollup;
+        const interact = new TelemetryEvents.Interact(type, subType, id, pageId, pos, values, env, objId,
+            objType, objVer, rollup, correlationData);
         interact.valueMap = valueMap;
-        interact.correlationData = correlationData;
-        interact.objId = objId;
-        interact.objType = objType;
-        interact.objVer = objVer;
         return this.save(interact);
     }
 
     log({type, level, message, pageId, params, env, actorType}: TelemetryLogRequest): Observable<boolean> {
-        const log = new TelemetryEvents.Log(type, level, message, pageId, params);
-        log.env = env;
-        log.actorType = actorType;
+        const log = new TelemetryEvents.Log(type, level, message, pageId, params, env, actorType);
         return this.save(log);
     }
 
@@ -121,11 +103,8 @@ export class TelemetryServiceImpl implements TelemetryService, EventObserver {
     }
 
     feedback({rating, comments, env, objId, objType, objVer}: TelemetryFeedbackRequest): Observable<boolean> {
-        const feedback = new TelemetryEvents.Feedback(rating, comments);
-        feedback.env = env;
-        feedback.objId = objId;
-        feedback.objType = objType;
-        feedback.objVer = objVer;
+        const feedback = new TelemetryEvents.Feedback(rating, comments, env, objId,
+            objType, objVer);
         return this.save(feedback);
     }
 
@@ -133,13 +112,8 @@ export class TelemetryServiceImpl implements TelemetryService, EventObserver {
               type, deviceSpecification, loc, mode, duration, pageId, env,
               objId, objType, objVer, rollup, correlationData
           }: TelemetryStartRequest): Observable<boolean> {
-        const start = new TelemetryEvents.Start(type, deviceSpecification, loc, mode, duration, pageId);
-        start.env = env;
-        start.objId = objId;
-        start.objType = objType;
-        start.objVer = objVer;
-        start.rollup = rollup;
-        start.correlationData = correlationData;
+        const start = new TelemetryEvents.Start(type, deviceSpecification, loc, mode, duration, pageId, env, objId,
+            objType, objVer, rollup, correlationData);
         return this.save(start);
     }
 

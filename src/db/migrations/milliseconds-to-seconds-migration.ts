@@ -1,8 +1,5 @@
 import {DbService, Migration} from '..';
-import {LearnerAssessmentSummary} from '../../summarizer/def/response';
-import {LearnerAssessmentsEntry, LearnerSummaryEntry, ProfileEntry} from '../../profile/db/schema';
-import {SummarizerHandler} from '../../summarizer/handler/summarizer-handler';
-import {ProfileMapper} from '../../profile/util/profile-mapper';
+import {LearnerAssessmentsEntry, LearnerSummaryEntry} from '../../profile/db/schema';
 
 export class MillisecondsToSecondsMigration extends Migration {
 

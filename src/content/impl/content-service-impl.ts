@@ -74,6 +74,7 @@ import { EventNamespace, EventsBusService } from '../../events-bus';
 import { GenerateImportShareTelemetry } from '../handlers/import/generate-import-share-telemetry';
 import { GenerateExportShareTelemetry } from '../handlers/export/generate-export-share-telemetry';
 import { SharedPreferences } from '../../util/shared-preferences';
+import {GenerateInteractTelemetry} from '../handlers/import/generate-interact-telemetry';
 import { CachedItemStore } from '../../key-value-store';
 import * as SHA1 from 'crypto-js/sha1';
 
@@ -288,36 +289,40 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 ecarFilePath: ecarImportRequest.sourceFilePath,
                 destinationFolder: ecarImportRequest.destinationFolder
             };
-            return this.fileService.getTempLocation(ecarImportRequest.destinationFolder).then((tempLocation: DirectoryEntry) => {
-                importContentContext.tmpLocation = tempLocation.nativeURL;
-                return new ExtractEcar(this.fileService, this.zipService).execute(importContentContext);
-            }).then((importResponse: Response) => {
-                return new ValidateEcar(this.fileService, this.dbService, this.appConfig,
-                    this.getContentDetailsHandler).execute(importResponse.body);
-            }).then((importResponse: Response) => {
-                return new ExtractPayloads(this.fileService, this.zipService, this.appConfig,
-                    this.dbService, this.deviceInfo, this.getContentDetailsHandler).execute(importResponse.body);
-            }).then((importResponse: Response) => {
-                const response: Response = new Response();
-                return new CreateContentImportManifest(this.dbService, this.deviceInfo, this.fileService).execute(importResponse.body);
-            }).then((importResponse: Response) => {
-                return new EcarCleanup(this.fileService).execute(importResponse.body);
-            }).then((importResponse: Response) => {
-                return new UpdateSizeOnDevice(this.dbService).execute(importResponse.body);
-            }).then((importResponse: Response) => {
-                return new GenerateImportShareTelemetry(this.telemetryService).execute(importResponse.body);
-            }).then((importResponse: Response<ImportContentContext>) => {
-                const response: Response = new Response();
-                response.errorMesg = importResponse.errorMesg;
-                this.eventsBusService.emit({
-                    namespace: EventNamespace.CONTENT,
-                    event: {
-                        type: ContentEventType.IMPORT_COMPLETED,
-                        contentId: importContentContext.identifiers![0]
-                    }
+            return new GenerateInteractTelemetry(this.telemetryService).execute(importContentContext, 'ContentImport-Initiated')
+                .then(() => {
+                    return this.fileService.getTempLocation(ecarImportRequest.destinationFolder);
+                }).then((tempLocation: DirectoryEntry) => {
+                    importContentContext.tmpLocation = tempLocation.nativeURL;
+                    return new ExtractEcar(this.fileService, this.zipService).execute(importContentContext);
+                }).then((importResponse: Response) => {
+                    return new ValidateEcar(this.fileService, this.dbService, this.appConfig,
+                        this.getContentDetailsHandler).execute(importResponse.body);
+                }).then((importResponse: Response) => {
+                    return new ExtractPayloads(this.fileService, this.zipService, this.appConfig,
+                        this.dbService, this.deviceInfo, this.getContentDetailsHandler, this.eventsBusService).execute(importResponse.body);
+                }).then((importResponse: Response) => {
+                    const response: Response = new Response();
+                    return new CreateContentImportManifest(this.dbService, this.deviceInfo, this.fileService).execute(importResponse.body);
+                }).then((importResponse: Response) => {
+                    return new EcarCleanup(this.fileService).execute(importResponse.body);
+                }).then((importResponse: Response) => {
+                    return new UpdateSizeOnDevice(this.dbService).execute(importResponse.body);
+                }).then((importResponse: Response) => {
+                    return new GenerateImportShareTelemetry(this.telemetryService).execute(importResponse.body);
+                }).then((importResponse: Response) => {
+                    return new GenerateInteractTelemetry(this.telemetryService).execute(importResponse.body, 'ContentImport-Success');
+                }).then((importResponse: Response<ImportContentContext>) => {
+                    const response: Response = new Response();
+                    this.eventsBusService.emit({
+                        namespace: EventNamespace.CONTENT,
+                        event: {
+                            type: ContentEventType.IMPORT_COMPLETED,
+                            contentId: importContentContext.identifiers![0]
+                        }
+                    });
+                    return response;
                 });
-                return response;
-            });
         }).catch((error) => {
             console.log('error', error);
             const response: Response = new Response();

@@ -564,25 +564,31 @@ export class FileServiceImpl implements FileService {
     }
 
     getDirectorySize(path: string): Promise<number> {
-        return Promise.resolve(0);
+        return this.resolveDirectoryUrl(path).then((directoryEntry: DirectoryEntry) => {
+            return this.size(directoryEntry);
+        }).catch(() => {
+            return 0;
+        });
     }
 
-    // size(entry: Entry): Promise<number> {
-    //     if (entry.isFile) {
-    //         return new Promise<number>((resolve, reject) => {
-    //             entry.getMetadata(f => resolve(f.size), error => reject(error));
-    //         });
-    //     } else if (entry.isDirectory) {
-    //         return new Promise<number>((resolve, reject) => {
-    //             const directoryReader = (entry as DirectoryEntry).createReader();
-    //             directoryReader.readEntries((entries: Entry[]) => {
-    //                     Promise.all(entries.map(e => this.size(e))).then((size: number[]) => {
-    //                         const dirSize = size.reduce((prev, current) => prev + current, 0);
-    //                         resolve(dirSize);
-    //                     }).catch(err => reject(err));
-    //                 },
-    //                 (error) => reject(error));
-    //         });
-    //     }
-    // }
+    size(entry: Entry): Promise<number> {
+        if (entry.isFile) {
+            return new Promise<number>((resolve, reject) => {
+                entry.getMetadata(f => resolve(f.size), error => reject(error));
+            });
+        } else if (entry.isDirectory) {
+            return new Promise<number>((resolve, reject) => {
+                const directoryReader = (entry as DirectoryEntry).createReader();
+                directoryReader.readEntries((entries: Entry[]) => {
+                        Promise.all(entries.map(e => this.size(e))).then((size: number[]) => {
+                            const dirSize = size.reduce((prev, current) => prev + current, 0);
+                            resolve(dirSize);
+                        }).catch(err => reject(err));
+                    },
+                    (error) => reject(error));
+            });
+        } else {
+            return Promise.resolve(0);
+        }
+    }
 }

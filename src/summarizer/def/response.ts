@@ -53,7 +53,7 @@ export interface QuestionSummary {
     uid: string;
     time: number;
     result: number;
-    maxScore: number;
+    max_score: number;
 }
 
 export interface UserReportSummary {

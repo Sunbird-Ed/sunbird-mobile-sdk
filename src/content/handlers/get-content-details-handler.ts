@@ -56,8 +56,8 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                             await this.dbService.update({
                                 table: ContentEntry.TABLE_NAME,
                                 selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
-                                selectionArgs: [localContent[ContentEntry.COLUMN_NAME_IDENTIFIER]],
-                                modelJson: localContent
+                                selectionArgs: [contentDbEntry[ContentEntry.COLUMN_NAME_IDENTIFIER]],
+                                modelJson: contentDbEntry
                             }).toPromise();
                             if (ContentUtil.isUpdateAvailable(serverContentData, localContent.contentData)) {
                                 this.eventsBusService.emit({
