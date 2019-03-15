@@ -37,7 +37,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                 }
 
                 return this.addToDownloadList(downloadRequests)
-                    .mergeMap(() => this.switchToNextDownloadRequest());
+                    .do(async () => await this.switchToNextDownloadRequest().toPromise());
             });
     }
 
@@ -57,7 +57,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         });
                     })
                         .mergeMap(() => this.removeFromDownloadList(downloadCancelRequest))
-                        .mergeMap(() => this.switchToNextDownloadRequest());
+                        .do(async () => await this.switchToNextDownloadRequest().toPromise());
                 }
 
                 return this.removeFromDownloadList(downloadCancelRequest);
