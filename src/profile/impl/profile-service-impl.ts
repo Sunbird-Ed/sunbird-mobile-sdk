@@ -62,8 +62,9 @@ export class ProfileServiceImpl implements ProfileService {
 
     onInit(): Observable<undefined> {
         return this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION)
-            .mergeMap((response) => {
-                if (!response) {
+            .map((s) => s && JSON.parse(s))
+            .mergeMap((profileSession: ProfileSession) => {
+                if (!profileSession) {
                     const request: Profile = {
                         uid: '',
                         handle: '',
@@ -78,7 +79,11 @@ export class ProfileServiceImpl implements ProfileService {
                         .mapTo(undefined);
                 }
 
-                return Observable.of(undefined);
+                return this.getActiveProfileSession()
+                    .mergeMap((session: ProfileSession) => {
+                        return this.setActiveSessionForProfile(session.uid);
+                    })
+                    .mapTo(undefined);
             });
     }
 
