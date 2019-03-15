@@ -17,6 +17,12 @@ export interface ContentImportProgress extends ContentEvent {
     };
 }
 
+export interface ContentImportCompleted extends ContentEvent {
+    payload: {
+        contentId: string;
+    };
+}
+
 export enum ContentEventType {
     UPDATE = 'UPDATE',
     IMPORT_COMPLETED = 'IMPORT_COMPLETED',
