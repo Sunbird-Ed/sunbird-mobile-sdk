@@ -46,8 +46,7 @@ export class HttpClientImpl implements HttpClient {
             try {
                 r.body = JSON.parse(response.data);
             } catch (e) {
-                console.error(response, e);
-                throw e;
+                r.body = response.data;
             }
 
             r.responseCode = response.status;
