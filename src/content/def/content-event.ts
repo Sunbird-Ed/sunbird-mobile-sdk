@@ -1,12 +1,20 @@
-export interface ContentEvent {
+import {EventBusEvent} from '../../events-bus/def/event-bus-event';
+
+export interface ContentEvent extends EventBusEvent {
     type: ContentEventType;
-    contentId: string;
 }
 
-export interface ContentImportProgress {
-    type: ContentEventType;
-    currentCount: number;
-    totalCount: number;
+export interface ContentUpdate extends ContentEvent {
+    payload: {
+        contentId: string;
+    };
+}
+
+export interface ContentImportProgress extends ContentEvent {
+    payload: {
+        currentCount: number;
+        totalCount: number;
+    };
 }
 
 export enum ContentEventType {

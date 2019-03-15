@@ -1,6 +1,13 @@
 import {ContentEventType, ImportContentContext} from '../..';
 import {Response} from '../../../api';
-import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../../util/content-constants';
+import {
+    ContentDisposition,
+    ContentEncoding,
+    ContentStatus,
+    MimeType,
+    State,
+    Visibility
+} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
 import {DbService} from '../../../db';
 import {ContentUtil} from '../../util/content-util';
@@ -11,12 +18,12 @@ import {DirectoryEntry, Metadata} from '../../../util/file';
 import {AppConfig} from '../../../api/config/app-config';
 import {FileUtil} from '../../../util/file/util/file-util';
 import {DeviceInfo} from '../../../util/device/def/device-info';
+import {EventNamespace, EventsBusService} from '../../../events-bus';
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
-import {EventNamespace, EventsBusService} from '../../../events-bus';
 
 export class ExtractPayloads {
 
@@ -162,8 +169,10 @@ export class ExtractPayloads {
             namespace: EventNamespace.CONTENT,
             event: {
                 type: ContentEventType.IMPORT_PROGRESS,
-                totalCount: totalCount,
-                currentCount: currentCount
+                payload: {
+                    totalCount: totalCount,
+                    currentCount: currentCount
+                }
             }
         });
     }
