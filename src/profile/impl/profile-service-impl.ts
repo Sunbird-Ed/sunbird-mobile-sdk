@@ -28,12 +28,12 @@ import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-i
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
-import {ProfileMapper} from '../util/profile-mapper';
+import {ProfileDbEntryMapper} from '../util/profile-db-entry-mapper';
 import {ContentAccessFilterCriteria} from '../def/content-access-filter-criteria';
 import {ContentAccess, ContentAccessStatus} from '../def/content-access';
 import {AcceptTermConditionHandler} from '../handler/accept-term-condition-handler';
 import {ProfileHandler} from '../handler/profile-handler';
-import {ContentAccessEntry, ContentFeedbackEntry} from '../../content/db/schema';
+import {ContentAccessEntry} from '../../content/db/schema';
 import {InvalidProfileError} from '../errors/invalid-profile-error';
 import {UniqueId} from '../../db/util/unique-id';
 import {ProfileExistsResponse} from '../def/profile-exists-response';
@@ -113,7 +113,7 @@ export class ProfileServiceImpl implements ProfileService {
 
         return this.dbService.insert({
             table: ProfileEntry.TABLE_NAME,
-            modelJson: ProfileMapper.mapProfileToProfileDBEntry(profile)
+            modelJson: ProfileDbEntryMapper.mapProfileToProfileDBEntry(profile)
         }).mergeMap(() => Observable.of(profile));
     }
 
@@ -126,7 +126,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     updateProfile(profile: Profile): Observable<Profile> {
-        const profileDBEntry = ProfileMapper.mapProfileToProfileDBEntry(profile);
+        const profileDBEntry = ProfileDbEntryMapper.mapProfileToProfileDBEntry(profile);
         delete profileDBEntry[ProfileEntry.COLUMN_NAME_CREATED_AT];
 
         return this.dbService.update({
@@ -207,7 +207,7 @@ export class ProfileServiceImpl implements ProfileService {
                         throw new NoProfileFoundError(`No profile found for profileSession with uid ${profileSession.uid}`);
                     }
 
-                    return ProfileMapper.mapProfileDBEntryToProfile(profileDBEntry);
+                    return ProfileDbEntryMapper.mapProfileDBEntryToProfile(profileDBEntry);
                 }).mergeMap((profile: Profile) => {
                     if (profile.source === ProfileSource.SERVER) {
                         return this.getServerProfilesDetails({
@@ -232,7 +232,7 @@ export class ProfileServiceImpl implements ProfileService {
                 selectionArgs: [profileUid]
             })
             .map((rows: ProfileEntry.SchemaMap[]) =>
-                rows && rows[0] && ProfileMapper.mapProfileDBEntryToProfile(rows[0])
+                rows && rows[0] && ProfileDbEntryMapper.mapProfileDBEntryToProfile(rows[0])
             )
             .map((profile: Profile | undefined) => {
                 if (!profile) {
@@ -311,7 +311,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
-        return profiles.map((profile: ProfileEntry.SchemaMap) => ProfileMapper.mapProfileDBEntryToProfile(profile));
+        return profiles.map((profile: ProfileEntry.SchemaMap) => ProfileDbEntryMapper.mapProfileDBEntryToProfile(profile));
     }
 
     addContentAccess(contentAccess: ContentAccess): Observable<boolean> {

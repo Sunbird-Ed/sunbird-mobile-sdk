@@ -1,7 +1,7 @@
 import {ProfileEntry} from '../db/schema';
 import {Profile, ProfileSource, ProfileType} from '..';
 
-export class ProfileMapper {
+export class ProfileDbEntryMapper {
     public static mapProfileDBEntryToProfile(profileEntry: ProfileEntry.SchemaMap): Profile {
         return {
             uid: profileEntry[ProfileEntry.COLUMN_NAME_UID],
