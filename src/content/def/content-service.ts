@@ -12,7 +12,7 @@ import {
 import {Response} from '../../api';
 import {Observable} from 'rxjs';
 import {Content, HierarchyInfo} from './content';
-import {ContentDeleteResponse, ContentImportResponse, ContentSearchResult, GroupByPageResult} from './response';
+import {ContentDeleteResponse, ContentImportResponse, ContentSearchResult, ContentsGroupedByPageSection} from './response';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
 
 
@@ -26,7 +26,7 @@ export interface ContentService extends DownloadCompleteDelegate {
 
     searchContent(criteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult>;
 
-    getGroupByPage(request: ContentSearchCriteria): Observable<GroupByPageResult>;
+    searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection>;
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
 
