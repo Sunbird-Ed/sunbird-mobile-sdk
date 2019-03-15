@@ -13,6 +13,7 @@ export * from './sdk';
 export * from './sdk-config';
 export * from './events-bus';
 export * from './system-settings';
+export * from './summarizer';
 // utils
 export * from './util/shared-preferences';
 export * from './util/download';

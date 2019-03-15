@@ -30,7 +30,7 @@ export class SummarizerQueries {
                 FROM  ${LearnerAssessmentsEntry.TABLE_NAME} la
                 LEFT JOIN ${LearnerSummaryEntry.TABLE_NAME} lcs
                 ON (la.${LearnerSummaryEntry.COLUMN_NAME_UID} = lcs.${LearnerAssessmentsEntry.COLUMN_NAME_UID})
-                AND la.${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} = lcs.${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID})
+                AND la.${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} = lcs.${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID}
                 WHERE la.${LearnerAssessmentsEntry.COLUMN_NAME_UID} IN(${ArrayUtil.joinPreservingQuotes(uids)})
                 AND la.${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID}='${contentId}'`;
     }

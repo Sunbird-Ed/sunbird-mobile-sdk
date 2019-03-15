@@ -138,7 +138,7 @@ export class SummarizerHandler {
         { [key: string]: string } {
         const accuracy: { [key: string]: any } = {};
         accuracyReportsInDb.map((accuracyReport: LearnerAssessmentsEntry.AccuracySchema) => {
-            accuracy[LearnerAssessmentsEntry.COLUMN_NAME_QID] =
+            accuracy[accuracyReport[LearnerAssessmentsEntry.COLUMN_NAME_QID]] =
                 NumberUtil.parseInt(accuracyReport[LearnerAssessmentsEntry.COLUMN_NAME_USERS_COUNT]);
         });
         return accuracy;
@@ -150,7 +150,7 @@ export class SummarizerHandler {
                 uid: questionSummary.uid,
                 time: Number(questionSummary.time),
                 result: NumberUtil.parseInt(questionSummary.result),
-                maxScore: NumberUtil.parseInt(questionSummary.maxScore)
+                max_score: NumberUtil.parseInt(questionSummary.max_score)
             };
         });
     }
