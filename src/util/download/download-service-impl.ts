@@ -168,7 +168,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         return this.currentDownloadRequest$
             .take(1)
             .mergeMap((currentDownloadRequest) => {
-                if (downloadProgress.status === DownloadStatus.STATUS_SUCCESSFUL) {
+                if (downloadProgress.payload.status === DownloadStatus.STATUS_SUCCESSFUL) {
                     return Observable.if(
                         () => !!this.downloadCompleteDelegate,
                         Observable.defer(() => this.downloadCompleteDelegate!.onDownloadCompletion(currentDownloadRequest!)),

@@ -321,7 +321,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         namespace: EventNamespace.CONTENT,
                         event: {
                             type: ContentEventType.IMPORT_COMPLETED,
-                            contentId: importContentContext.identifiers![0]
+                            payload: {
+                                contentId: importContentContext.identifiers![0]
+                            }
                         }
                     });
                     return response;
