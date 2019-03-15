@@ -1,6 +1,6 @@
 import {DownloadService} from './def/download-service';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {DownloadProgress} from './download-progress';
+import {DownloadEventType, DownloadProgress} from './download-progress';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {DownloadCancelRequest, DownloadRequest} from './def/requests';
 import {DownloadStatus} from './def/download-status';
@@ -195,22 +195,28 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             downloadManager.query({ids: [downloadRequest.downloadId!]}, (err, entries) => {
                 if (err) {
                     return observer.next({
-                        downloadId: downloadRequest.downloadId,
-                        identifier: downloadRequest.identifier,
-                        progress: -1,
-                        status: DownloadStatus.STATUS_PENDING,
-                    });
+                        type: DownloadEventType.PROGRESS,
+                        payload: {
+                            downloadId: downloadRequest.downloadId,
+                            identifier: downloadRequest.identifier,
+                            progress: -1,
+                            status: DownloadStatus.STATUS_PENDING
+                        }
+                    } as DownloadProgress);
                     observer.complete();
                 }
 
                 const entry = entries[0];
 
                 observer.next({
-                    downloadId: downloadRequest.downloadId,
-                    identifier: downloadRequest.identifier,
-                    progress: entry.totalSizeBytes >= 0 ? (entry.bytesDownloadedSoFar / entry.totalSizeBytes) * 100 : -1,
-                    status: entry.status,
-                });
+                    type: DownloadEventType.PROGRESS,
+                    payload: {
+                        downloadId: downloadRequest.downloadId,
+                        identifier: downloadRequest.identifier,
+                        progress: entry.totalSizeBytes >= 0 ? (entry.bytesDownloadedSoFar / entry.totalSizeBytes) * 100 : -1,
+                        status: entry.status
+                    }
+                } as DownloadProgress);
                 observer.complete();
             });
         });
