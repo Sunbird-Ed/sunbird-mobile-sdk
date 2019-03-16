@@ -16,7 +16,7 @@ import {
 import {TelemetryExportResponse} from './response';
 
 export interface TelemetryService {
-    save(request: string): Observable<boolean>;
+    saveTelemetry(request: string): Observable<boolean>;
 
     start(request: TelemetryStartRequest): Observable<boolean>;
 

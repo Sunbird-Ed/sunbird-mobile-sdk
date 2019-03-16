@@ -53,9 +53,16 @@ export class TelemetryServiceImpl implements TelemetryService {
                 private fileService: FileService) {
     }
 
-    save(request: string): Observable<boolean> {
-        // TODO
-        throw new Error('Not Implemented');
+    saveTelemetry(request: string): Observable<boolean> {
+        return Observable.defer(() => {
+            try {
+                const telemetry: SunbirdTelemetry.Telemetry = JSON.parse(request);
+                return this.decorateAndPersist(telemetry);
+            } catch (e) {
+                console.error(e);
+                return Observable.of(false);
+            }
+        });
     }
 
     end({
