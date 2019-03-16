@@ -64,16 +64,16 @@ export class TelemetryStartRequest {
 
 export class TelemetryEndRequest {
     env: Environment;
-    type: string;
-    mode: string;
-    duration: number;
-    pageId: string;
-    objId: string;
-    objType: string;
-    objVer: string;
-    rollup: Rollup;
-    summaryList: Array<{ [index: string]: any }>;
-    correlationData: Array<CorrelationData>;
+    type?: string;
+    mode?: string;
+    duration?: number;
+    pageId?: string;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
+    rollup?: Rollup;
+    summaryList?: Array<{ [index: string]: any }>;
+    correlationData?: Array<CorrelationData>;
 }
 
 export class TelemetryFeedbackRequest {
