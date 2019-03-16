@@ -1,8 +1,8 @@
-import {Actor, Context, ProducerData, TelemetryDecorator, TelemetryEvents} from '..';
+import {Actor, Context, ProducerData, SunbirdTelemetry, TelemetryDecorator} from '..';
 import {ApiConfig} from '../../api';
 import {DeviceInfo} from '../../util/device/def/device-info';
-import Telemetry = TelemetryEvents.Telemetry;
 import {AppInfo} from '../../util/app/def/app-info';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 export class TelemetryDecoratorImpl implements TelemetryDecorator {
 
@@ -24,11 +24,11 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
     }
 
     patchActor(event: Telemetry, uid: string) {
-        if (!event.getActor()) {
-            event.setActor(new Actor());
+        if (!event.actor) {
+            event.actor = new Actor();
         }
 
-        const actor: Actor = event.getActor();
+        const actor: Actor = event.actor;
 
         if (!actor.id) {
             actor.id = uid;
@@ -36,14 +36,14 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
     }
 
     patchContext(event: Telemetry, sid) {
-        if (!event.getContext()) {
-            event.setContext(new Context());
+        if (!event.context) {
+            event.context = new Context();
         }
-        const context: Context = event.getContext();
+        const context: Context = event.context;
         context.channel = this.apiConfig.api_authentication.channelId;
         this.patchPData(context);
-        if (!context.getEnvironment()) {
-            context.setEnvironment('app');
+        if (!context.env) {
+            context.env = 'app';
         }
         context.sid = sid;
         context.did = this.deviceInfo.getDeviceID();
@@ -54,11 +54,11 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
             event.pdata = new ProducerData();
         }
         const pData: ProducerData = event.pdata;
-        if (!pData.getId()) {
+        if (!pData.id) {
             pData.id = this.apiConfig.api_authentication.producerId;
         }
 
-        const pid = pData.getPid();
+        const pid = pData.pid;
         if (pid) {
             pData.pid = pid;
         } else if (this.apiConfig.api_authentication.producerUniqueId) {
@@ -73,10 +73,9 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
     }
 
     prepare(event: Telemetry, priority) {
-        console.log('event', JSON.stringify(event));
         return {
             event: JSON.stringify(event),
-            event_type: event.getEid(),
+            event_type: event.eid,
             timestamp: Date.now(),
             priority: 1
         };

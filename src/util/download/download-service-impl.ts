@@ -1,6 +1,6 @@
 import {DownloadService} from './def/download-service';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {DownloadEventType, DownloadProgress} from './download-progress';
+import {DownloadEventType, DownloadProgress} from './download-event';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {DownloadCancelRequest, DownloadRequest} from './def/requests';
 import {DownloadStatus} from './def/download-status';
@@ -237,7 +237,6 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     .distinctUntilChanged((prev, next) => {
                         return JSON.stringify(prev) === JSON.stringify(next);
                     })
-                    .do((p) => console.log(p))
                     .mergeMap((downloadProgress) => {
                         return Observable.zip(
                             this.handleDownloadCompletion(downloadProgress!),

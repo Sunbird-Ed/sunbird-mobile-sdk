@@ -2,10 +2,10 @@ import {DbService, InsertQuery} from '../../db';
 import {
     ExportTelemetryContext,
     ImportTelemetryContext,
+    SunbirdTelemetry,
     TelemetryDecorator,
     TelemetryEndRequest,
     TelemetryErrorRequest,
-    TelemetryEvents,
     TelemetryExportRequest,
     TelemetryFeedbackRequest,
     TelemetryImportRequest,
@@ -28,7 +28,6 @@ import {ApiService, Response} from '../../api';
 import {TelemetryConfig} from '../config/telemetry-config';
 import {DeviceInfo} from '../../util/device/def/device-info';
 import {EventNamespace, EventsBusService} from '../../events-bus';
-import {EventObserver} from '../../events-bus/def/event-observer';
 import {FileService} from '../../util/file/def/file-service';
 import {CreateTelemetryExportFile} from '../handler/export/create-telemetry-export-file';
 import {TelemetryExportResponse} from '../def/response';
@@ -38,8 +37,9 @@ import {CleanupExportedFile} from '../handler/export/cleanup-exported-file';
 import {CleanCurrentDatabase} from '../handler/export/clean-current-database';
 import {GenerateShareTelemetry} from '../handler/export/generate-share-telemetry';
 import {ValidateTelemetryMetadata} from '../handler/import/validate-telemetry-metadata';
+import {TelemetryEventType} from '../def/telemetry-event';
 
-export class TelemetryServiceImpl implements TelemetryService, EventObserver {
+export class TelemetryServiceImpl implements TelemetryService {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
 
     constructor(private dbService: DbService,
@@ -52,69 +52,80 @@ export class TelemetryServiceImpl implements TelemetryService, EventObserver {
                 private deviceInfo: DeviceInfo,
                 private eventsBusService: EventsBusService,
                 private fileService: FileService) {
-        this.eventsBusService.registerObserver({namespace: EventNamespace.TELEMETRY, observer: this});
+    }
+
+    saveTelemetry(request: string): Observable<boolean> {
+        return Observable.defer(() => {
+            try {
+                const telemetry: SunbirdTelemetry.Telemetry = JSON.parse(request);
+                return this.decorateAndPersist(telemetry);
+            } catch (e) {
+                console.error(e);
+                return Observable.of(false);
+            }
+        });
     }
 
     end({
             type, mode, duration, pageId, summaryList, env,
             objId, objType, objVer, rollup, correlationData
         }: TelemetryEndRequest): Observable<boolean> {
-        const end = new TelemetryEvents.End(type, mode, duration, pageId, summaryList, env, objId,
+        const end = new SunbirdTelemetry.End(type, mode, duration, pageId, summaryList, env, objId,
             objType, objVer, rollup, correlationData);
-        return this.save(end);
+        return this.decorateAndPersist(end);
     }
 
     error({errorCode, errorType, stacktrace, pageId, env}: TelemetryErrorRequest): Observable<boolean> {
-        const error = new TelemetryEvents.Error(errorCode, errorType, stacktrace, pageId);
+        const error = new SunbirdTelemetry.Error(errorCode, errorType, stacktrace, pageId);
         error.env = env;
-        return this.save(error);
+        return this.decorateAndPersist(error);
     }
 
     impression({
                    type, subType, pageId, uri, visits, env, objId,
                    objType, objVer, rollup, correlationData
                }: TelemetryImpressionRequest): Observable<boolean> {
-        const impression = new TelemetryEvents.Impression(type, subType, pageId, uri, visits, env, objId,
+        const impression = new SunbirdTelemetry.Impression(type, subType, pageId, uri, visits, env, objId,
             objType, objVer, rollup!, correlationData);
-        return this.save(impression);
+        return this.decorateAndPersist(impression);
     }
 
     interact({
                  type, subType, id, pageId, pos, values, env, rollup,
                  valueMap, correlationData, objId, objType, objVer
              }: TelemetryInteractRequest): Observable<boolean> {
-        const interact = new TelemetryEvents.Interact(type, subType, id, pageId, pos, values, env, objId,
+        const interact = new SunbirdTelemetry.Interact(type, subType, id, pageId, pos, values, env, objId,
             objType, objVer, rollup, correlationData);
         interact.valueMap = valueMap;
-        return this.save(interact);
+        return this.decorateAndPersist(interact);
     }
 
     log({type, level, message, pageId, params, env, actorType}: TelemetryLogRequest): Observable<boolean> {
-        const log = new TelemetryEvents.Log(type, level, message, pageId, params, env, actorType);
-        return this.save(log);
+        const log = new SunbirdTelemetry.Log(type, level, message, pageId, params, env, actorType);
+        return this.decorateAndPersist(log);
     }
 
     share({dir, type, items}: TelemetryShareRequest): Observable<boolean> {
-        const share = new TelemetryEvents.Share(dir, type, []);
+        const share = new SunbirdTelemetry.Share(dir, type, []);
         items.forEach((item) => {
             share.addItem(item.type, item.origin, item.identifier, item.pkgVersion, item.transferCount, item.size);
         });
-        return this.save(share);
+        return this.decorateAndPersist(share);
     }
 
     feedback({rating, comments, env, objId, objType, objVer}: TelemetryFeedbackRequest): Observable<boolean> {
-        const feedback = new TelemetryEvents.Feedback(rating, comments, env, objId,
+        const feedback = new SunbirdTelemetry.Feedback(rating, comments, env, objId,
             objType, objVer);
-        return this.save(feedback);
+        return this.decorateAndPersist(feedback);
     }
 
     start({
               type, deviceSpecification, loc, mode, duration, pageId, env,
               objId, objType, objVer, rollup, correlationData
           }: TelemetryStartRequest): Observable<boolean> {
-        const start = new TelemetryEvents.Start(type, deviceSpecification, loc, mode, duration, pageId, env, objId,
+        const start = new SunbirdTelemetry.Start(type, deviceSpecification, loc, mode, duration, pageId, env, objId,
             objType, objVer, rollup, correlationData);
-        return this.save(start);
+        return this.decorateAndPersist(start);
     }
 
     importTelemetry(importTelemetryRequest: TelemetryImportRequest): Observable<boolean> {
@@ -199,12 +210,7 @@ export class TelemetryServiceImpl implements TelemetryService, EventObserver {
             );
     }
 
-    onEvent(telemetry: TelemetryEvents.Telemetry): Observable<undefined> {
-        return this.save(telemetry)
-            .mapTo(undefined);
-    }
-
-    private save(telemetry: TelemetryEvents.Telemetry): Observable<boolean> {
+    private decorateAndPersist(telemetry: SunbirdTelemetry.Telemetry): Observable<boolean> {
         return Observable.zip(
             this.profileService.getActiveProfileSession(),
             this.groupService.getActiveGroupSession()
@@ -218,7 +224,15 @@ export class TelemetryServiceImpl implements TelemetryService, EventObserver {
                     profileSession!.sid, groupSession && groupSession.gid), 1)
             };
 
-            return this.dbService.insert(insertQuery).map((count) => count > 1);
+            return this.dbService.insert(insertQuery)
+                .do(() => this.eventsBusService.emit({
+                    namespace: EventNamespace.TELEMETRY,
+                    event: {
+                        type: TelemetryEventType.SAVE,
+                        payload: telemetry
+                    }
+                }))
+                .map((count) => count > 1);
         });
     }
 

@@ -174,9 +174,13 @@ export class ContentUtil {
     }
 
     public static readAudience(contentData): string {
-        let audienceList: string[] = contentData.audience;
-        if (!audienceList) {
-            audienceList = ['Learner'];
+        const audience = contentData.audience;
+        const audienceList: string[] = [];
+        if (typeof audience === 'string') {
+            audienceList.push(audience);
+        }
+        if (!audienceList || !audienceList.length) {
+            audienceList.push('Learner');
         }
         audienceList.sort();
         return audienceList.join(',');

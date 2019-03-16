@@ -4,12 +4,13 @@ import {
     LearnerAssessmentDetails,
     LearnerAssessmentSummary,
     LearnerContentSummaryDetails,
-    QuestionSummary, ReportDetailPerUser,
+    QuestionSummary,
+    ReportDetailPerUser,
     UserReportSummary
 } from '../def/response';
 import {NumberUtil} from '../../util/number-util';
-import {CorrelationData, TelemetryEvents} from '../../telemetry';
-import Telemetry = TelemetryEvents.Telemetry;
+import {CorrelationData, SunbirdTelemetry} from '../../telemetry';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 export class SummarizerHandler {
     constructor() {
@@ -171,32 +172,32 @@ export class SummarizerHandler {
     }
 
     public static mapTelemetryToContentSummaryDetails(telemetry: Telemetry): LearnerContentSummaryDetails {
-        const eData = telemetry.getEData();
+        const eData = telemetry.edata;
         const question = eData.item;
-        const cDataList: Array<CorrelationData> = telemetry.getContext().getCData();
+        const cDataList: Array<CorrelationData> = telemetry.context.cdata;
         return {
-            uid: telemetry.getActor().id,
-            contentId: telemetry.getObject().id,
+            uid: telemetry.actor.id,
+            contentId: telemetry.object.id,
             timespent: Number(eData.duration),
-            timestamp: telemetry.getTimeStamp(),
+            timestamp: telemetry.ets,
             hierarchyData: this.getHierarchyData(cDataList)
         };
 
     }
 
     public static mapTelemetryToLearnerAssesmentDetails(telemetry: Telemetry): LearnerAssessmentDetails {
-        const eData = telemetry.getEData();
+        const eData = telemetry.edata;
         const question = eData.item;
-        const cDataList: Array<CorrelationData> = telemetry.getContext().getCData();
+        const cDataList: Array<CorrelationData> = telemetry.context.cdata;
         return {
-            uid: telemetry.getActor().id,
-            contentId: telemetry.getObject().id,
+            uid: telemetry.actor.id,
+            contentId: telemetry.object.id,
             qid: question.id,
             qindex: Number(eData.index),
             correct: eData.pass === 'Yes' ? 1 : 0,
             score: Number(eData.score),
             timespent: Number(eData.duration),
-            timestamp: telemetry.getTimeStamp(),
+            timestamp: telemetry.ets,
             res: JSON.stringify(eData.resvalues),
             qdesc: question.desc,
             qtitle: question.title,

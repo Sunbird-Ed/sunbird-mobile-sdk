@@ -1,8 +1,8 @@
 import {ApiRequestHandler} from '../../api';
-import {ProducerData, TelemetryEvents} from '../../telemetry';
+import {ProducerData, SunbirdTelemetry} from '../../telemetry';
 import {Observable} from 'rxjs';
-import {SummarizerService} from '../def/summarizer-service';
-import Telemetry = TelemetryEvents.Telemetry;
+import {SummarizerService} from '..';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -14,43 +14,54 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     }
 
     private static checkPData(pdata: ProducerData): boolean {
-        if (pdata != null && pdata.getPid() != null) {
-            return pdata.getPid().includes(SummaryTelemetryEventHandler.CONTENT_PLAYER_PID);
+        if (pdata != null && pdata.pid !== null) {
+            return pdata.pid.includes(SummaryTelemetryEventHandler.CONTENT_PLAYER_PID);
         }
         return false;
     }
 
-    handle(event: TelemetryEvents.Telemetry): Observable<undefined> {
-        if (SummaryTelemetryEventHandler.checkPData(event.getContext().getPData())) {
-            return this.processEvent(event);
+    private static checkIsCourse(event: SunbirdTelemetry.Telemetry): boolean {
+        if (event.object != null && event.object.type && event.object.type.toLowerCase() === 'course') {
+            return true;
         }
 
-        return Observable.of(undefined);
+        return false;
     }
 
-    private processEvent(event: Telemetry): Observable<undefined> {
-        switch (event.getEid()) {
-            case 'START': {
-                return this.processOEStart(event)
-                    .mergeMap(() => this.summarizerService.saveLearnerAssessmentDetails(event).mapTo(undefined));
-            }
-            case 'ASSESS': {
-                return this.processOEAssess(event)
-                    .mergeMap(() => this.summarizerService.saveLearnerAssessmentDetails(event).mapTo(undefined));
-            }
-            case 'END': {
-                return this.processOEEnd(event)
-                    .mergeMap(() => this.summarizerService.saveLearnerAssessmentDetails(event).mapTo(undefined));
-            }
-            default: {
-                return Observable.of(undefined);
-            }
+    handle(event: SunbirdTelemetry.Telemetry): Observable<undefined> {
+        if (event.eid === 'START' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
+            // TODO: Swayangjit
+
+            // getContentContextMap(appContext);
+            //
+            // if (contentContextMap != null && !contentContextMap.isEmpty()) {
+            //     callUpdateContentStateAPI(event, event.eid);
+            // }
+
+            return this.processOEStart(event)
+                .mergeMap(() => this.summarizerService.saveLearnerAssessmentDetails(event).mapTo(undefined));
+        } else if (event.eid === 'START' && SummaryTelemetryEventHandler.checkIsCourse(event)) {
+            // TODO: Swayangjit
+
+            return Observable.of(undefined);
+        } else if (event.eid === 'ASSESS' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
+            return this.processOEAssess(event)
+                .mergeMap(() => this.summarizerService.saveLearnerAssessmentDetails(event).mapTo(undefined));
+        } else if (event.eid === 'END' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
+            return this.processOEEnd(event)
+                .mergeMap(() => this.summarizerService.saveLearnerAssessmentDetails(event).mapTo(undefined));
+        } else if (event.eid === 'END' && SummaryTelemetryEventHandler.checkIsCourse(event)) {
+            // TODO: Swayangjit
+
+            return Observable.of(undefined);
+        } else {
+            return Observable.of(undefined);
         }
     }
 
     private processOEStart(event: Telemetry): Observable<undefined> {
-        this.currentUID = event.getActor().id;
-        this.currentContentID = event.getObject().id;
+        this.currentUID = event.actor.id;
+        this.currentContentID = event.object.id;
 
         return Observable.of(undefined);
     }
@@ -58,8 +69,8 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     private processOEAssess(event: Telemetry): Observable<undefined> {
         if (
             this.currentUID && this.currentContentID &&
-            this.currentUID.toLocaleLowerCase() === event.getActor().id.toLocaleLowerCase() &&
-            this.currentContentID.toLocaleLowerCase() === event.getObject().id.toLocaleLowerCase()
+            this.currentUID.toLocaleLowerCase() === event.actor.id.toLocaleLowerCase() &&
+            this.currentContentID.toLocaleLowerCase() === event.object.id.toLocaleLowerCase()
         ) {
             return this.summarizerService.deletePreviousAssessmentDetails(
                 this.currentUID,

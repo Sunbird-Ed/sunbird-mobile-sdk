@@ -1,23 +1,29 @@
-import {EventBusEvent, EventNamespace, EventsBusService} from '..';
+import {EventNamespace, EventsBusEvent, EventsBusService} from '..';
 import {Observable, Subject} from 'rxjs';
 import {EmitRequest} from '../def/emit-request';
 import {RegisterObserverRequest} from '../def/register-observer-request';
 import {EventObserver} from '../def/event-observer';
+import {EventsBusConfig} from '../config/events-bus-config';
 
 interface EventContainer {
     namespace: string;
-    event: any;
+    event: EventsBusEvent;
 }
 
 export class EventsBusServiceImpl implements EventsBusService {
     private eventsBus = new Subject<EventContainer>();
-    private eventDelegates: { namespace: EventNamespace, observer: EventObserver }[] = [];
+    private eventDelegates: { namespace: EventNamespace, observer: EventObserver<EventsBusEvent> }[] = [];
 
-    constructor() {
+    constructor(private eventsBusConfig: EventsBusConfig) {
     }
 
     onInit(): Observable<undefined> {
         return this.eventsBus
+            .do((eventContainer: EventContainer) => {
+                if (this.eventsBusConfig.debugMode === true) {
+                    console.log(eventContainer);
+                }
+            })
             .mergeMap((eventContainer: EventContainer) => {
                 const delegateHandlers = this.eventDelegates
                     .filter((d) => d.namespace === eventContainer.namespace)
@@ -33,7 +39,7 @@ export class EventsBusServiceImpl implements EventsBusService {
             .map((eventContainer) => eventContainer.event);
     }
 
-    emit({namespace, event}: EmitRequest<EventBusEvent>): void {
+    emit({namespace, event}: EmitRequest<EventsBusEvent>): void {
         this.eventsBus.next({
             namespace,
             event
