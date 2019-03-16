@@ -1,10 +1,11 @@
 import * as moment from 'moment';
 import {ProcessedEventModel} from '..';
+import {UniqueId} from '../../db/util/unique-id';
 
 export class EventProcessor {
 
     process(eventJsonArray: Array<any>) {
-        const mesgId = this.uuid();
+        const mesgId = UniqueId.generateUniqueId();
         const processedEventMap = {
             id: 'ekstep.telemetry',
             ver: '1.0',
@@ -32,15 +33,6 @@ export class EventProcessor {
         const time = new Date();
         const format = `yyyy-MM-dd'T'HH:mm:ssZZ`;
         return moment(time).format(format);
-    }
-
-    private uuid() {
-        const s4 = () => {
-            return Math.floor((1 + Math.random()) * 0x10000)
-                .toString(16)
-                .substring(1);
-        };
-        return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
     }
 
 }
