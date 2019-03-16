@@ -81,7 +81,8 @@ export class ProfileServiceImpl implements ProfileService {
 
                 return this.getActiveProfileSession()
                     .mergeMap((session: ProfileSession) => {
-                        return this.setActiveSessionForProfile(session.uid);
+                        return this.endActiveSession()
+                            .mergeMap(() => this.setActiveSessionForProfile(session.uid));
                     })
                     .mapTo(undefined);
             });
@@ -271,6 +272,10 @@ export class ProfileServiceImpl implements ProfileService {
                     createdTime: profileSession.createdTime
                 })).mapTo(true);
             });
+    }
+
+    endActiveSession(): Observable<undefined> {
+        return this.sharedPreferences.putString(ProfileServiceImpl.KEY_USER_SESSION, '');
     }
 
     getActiveProfileSession(): Observable<ProfileSession> {
