@@ -165,6 +165,7 @@ export namespace SunbirdTelemetry {
         private static readonly TELEMETRY_VERSION: string = '3.0';
 
         public eid: string;
+        public mid: string;
         public ets: number;
         public ver: string = Telemetry.TELEMETRY_VERSION;
         public actor: Actor;
