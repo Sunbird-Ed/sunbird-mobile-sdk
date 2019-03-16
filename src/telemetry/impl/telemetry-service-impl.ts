@@ -75,9 +75,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         return this.decorateAndPersist(end);
     }
 
-    error({errorCode, errorType, stacktrace, pageId, env}: TelemetryErrorRequest): Observable<boolean> {
+    error({errorCode, errorType, stacktrace, pageId}: TelemetryErrorRequest): Observable<boolean> {
         const error = new SunbirdTelemetry.Error(errorCode, errorType, stacktrace, pageId);
-        error.env = env;
         return this.decorateAndPersist(error);
     }
 
@@ -85,18 +84,17 @@ export class TelemetryServiceImpl implements TelemetryService {
                    type, subType, pageId, uri, visits, env, objId,
                    objType, objVer, rollup, correlationData
                }: TelemetryImpressionRequest): Observable<boolean> {
-        const impression = new SunbirdTelemetry.Impression(type, subType, pageId, uri, visits, env, objId,
+        const impression = new SunbirdTelemetry.Impression(type, subType, pageId, visits, env, objId,
             objType, objVer, rollup!, correlationData);
         return this.decorateAndPersist(impression);
     }
 
     interact({
-                 type, subType, id, pageId, pos, values, env, rollup,
+                 type, subType, id, pageId, pos, env, rollup,
                  valueMap, correlationData, objId, objType, objVer
              }: TelemetryInteractRequest): Observable<boolean> {
-        const interact = new SunbirdTelemetry.Interact(type, subType, id, pageId, pos, values, env, objId,
+        const interact = new SunbirdTelemetry.Interact(type, subType, id, pageId, pos, valueMap, env, objId,
             objType, objVer, rollup, correlationData);
-        interact.valueMap = valueMap;
         return this.decorateAndPersist(interact);
     }
 

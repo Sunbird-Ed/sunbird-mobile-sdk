@@ -1,8 +1,4 @@
-export class Workflows {
-    APP = 'app';
-    SESSION = 'session';
-    QR = 'qr';
-}
+export type Workflows = string;
 
 export type Environment = string;
 

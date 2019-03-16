@@ -17,7 +17,6 @@ export class TelemetryInteractRequest {
     id: string;
     pageId: string;
     pos: Array<{ [index: string]: string }> = [];
-    values: Array<{ [index: string]: any }> = [];
     env: string;
     rollup: Rollup;
     valueMap: { [index: string]: any };
@@ -32,7 +31,6 @@ export class TelemetryErrorRequest {
     errorType: string;
     stacktrace: string;
     pageId: string;
-    env: Environment;
 }
 
 export class TelemetryImpressionRequest {
