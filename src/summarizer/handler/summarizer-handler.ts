@@ -32,7 +32,6 @@ export class SummarizerHandler {
             [LearnerAssessmentsEntry.COLUMN_NAME_Q_TITLE]: learnerAssessmentDetails.qtitle,
             [LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE]: learnerAssessmentDetails.maxScore,
             [LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA]: learnerAssessmentDetails.hierarchyData,
-            [LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS]: learnerAssessmentDetails.total_ts!
         };
     }
 

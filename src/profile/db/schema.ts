@@ -210,7 +210,6 @@ export namespace LearnerAssessmentsEntry {
         [COLUMN_NAME_Q_DESC]: string;
         [COLUMN_NAME_Q_TITLE]: string;
         [COLUMN_NAME_HIERARCHY_DATA]: string;
-        [COLUMN_NAME_TOTAL_TS]: number;
     }
 
     export interface QuestionReportsSchema extends SchemaMap {

@@ -105,7 +105,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
         const query = SummarizerQueries.getLearnerAssessmentsQuery(filter);
         return this.dbService.execute(query)
             .mergeMap((rows: LearnerAssessmentsEntry.SchemaMap[]) => {
-                if (rows) {
+                if (rows && rows.length) {
                     return this.dbService.update({
                         table: LearnerAssessmentsEntry.TABLE_NAME,
                         selection: SummarizerQueries.getUpdateSelection(),
