@@ -7,11 +7,11 @@ export class Workflows {
 export type Environment = string;
 
 export enum ObjectType {
-     NOTIFICATION = 'notification',
-     USER = 'User',
-     GROUP = 'Group',
-     CONTENT = 'Content',
-     QUESTION = 'Question'
+    NOTIFICATION = 'notification',
+    USER = 'User',
+    GROUP = 'Group',
+    CONTENT = 'Content',
+    QUESTION = 'Question'
 }
 
 export enum Mode {
@@ -56,16 +56,19 @@ export class LogMessage {
     DISPLAYED = 'Displayed';
 }
 
-export type ImpressionType = string;
-
-export type ImpressionSubtype = string;
 
 export enum InteractType {
     TOUCH = 'TOUCH',
     OTHER = 'OTHER'
 }
 
-export type InteractSubtype = string;
+export enum InteractSubType {
+    SUBTYPE_SPINE = 'spine',
+    ONLINE = 'online',
+    FULL = 'full',
+    CONTENT_VARIANT = 'content-variant-download'
+}
+
 
 export enum TelemetryErrorCode {
     ERR_DOWNLOAD_FAILED = 'ERR_DOWNLOAD_FAILED'
@@ -74,3 +77,4 @@ export enum TelemetryErrorCode {
 export enum ErrorType {
     SYSTEM = 'SYSTEM'
 }
+

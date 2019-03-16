@@ -1,8 +1,5 @@
 import {
     Environment,
-    ImpressionSubtype,
-    ImpressionType,
-    InteractSubtype,
     InteractType,
     LogLevel,
     LogType,
@@ -13,7 +10,7 @@ import {CorrelationData, DeviceSpecification, Rollup, Visit} from './telemetry-m
 
 export class TelemetryInteractRequest {
     type: InteractType;
-    subType: InteractSubtype;
+    subType: string;
     id: string;
     pageId: string;
     pos: Array<{ [index: string]: string }> = [];
@@ -36,8 +33,8 @@ export class TelemetryErrorRequest {
 }
 
 export class TelemetryImpressionRequest {
-    type: ImpressionType;
-    subType: ImpressionSubtype;
+    type: string;
+    subType: string;
     pageId: PageId;
     uri: string;
     visits: Visit[];
@@ -65,7 +62,7 @@ export class TelemetryStartRequest {
 }
 
 export class TelemetryEndRequest {
-    env: Environment;
+    env: string;
     type: string;
     mode: string;
     duration: number;

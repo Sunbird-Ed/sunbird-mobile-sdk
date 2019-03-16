@@ -1,7 +1,6 @@
 import {
     CorrelationData,
     Environment,
-    ImpressionSubtype,
     PageId,
     Rollup,
     TelemetryImpressionRequest,
@@ -16,7 +15,7 @@ export class TelemetryRequestFactory {
     }
 
     public static generatePageViewTelemetry(
-        pageId: PageId, env: Environment, subType?: ImpressionSubtype
+        pageId: PageId, env: Environment, subType?: string
     ): TelemetryImpressionRequest {
         return {} as any;
     }

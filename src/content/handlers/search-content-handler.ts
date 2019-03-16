@@ -13,7 +13,7 @@ import {
 import {AppConfig} from '../../api/config/app-config';
 import {MimeType} from '../util/content-constants';
 import {SearchFilter, SearchRequest} from '../def/search-request';
-import {InteractSubtype, InteractType, PageId, TelemetryInteractRequest, TelemetryService} from '../../telemetry';
+import {InteractType, PageId, TelemetryInteractRequest, TelemetryService} from '../../telemetry';
 import {NumberUtil} from '../../util/number-util';
 
 export class SearchContentHandler {
@@ -338,8 +338,8 @@ export class SearchContentHandler {
     buildContentLoadingEvent(subtype: string, identifier: string): Promise<boolean> {
         const telemetryInteractRequest = new TelemetryInteractRequest();
         telemetryInteractRequest.type = InteractType.OTHER;
-        telemetryInteractRequest.subType = InteractSubtype.ABOUT_APP_CLICKED;
-        telemetryInteractRequest.pageId = PageId.ABOUT_APP;
+        telemetryInteractRequest.subType = subtype;
+        telemetryInteractRequest.pageId = 'ImportContent';
         telemetryInteractRequest.objId = identifier;
         telemetryInteractRequest.objType = 'Content';
         return this.telemetryService.interact(telemetryInteractRequest).toPromise();
