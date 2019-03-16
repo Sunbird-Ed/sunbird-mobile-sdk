@@ -1,11 +1,4 @@
-import {
-    Environment,
-    InteractType,
-    LogLevel,
-    LogType,
-    PageId,
-    ShareItemType
-} from './telemetry-constants';
+import {Environment, InteractType, LogLevel, LogType, PageId, ShareItemType} from './telemetry-constants';
 import {CorrelationData, DeviceSpecification, Rollup, Visit} from './telemetry-model';
 
 export class TelemetryInteractRequest {
@@ -45,18 +38,18 @@ export class TelemetryImpressionRequest {
 }
 
 export class TelemetryStartRequest {
-    type: string;
-    deviceSpecification: DeviceSpecification;
-    loc: string;
-    mode: string;
-    duration: number;
-    pageId: string;
+    type?: string;
+    deviceSpecification?: DeviceSpecification;
+    loc?: string;
+    mode?: string;
+    duration?: number;
+    pageId?: string;
     env: Environment;
-    objId: string;
-    objType: string;
-    objVer: string;
-    rollup: Rollup;
-    correlationData: Array<CorrelationData>;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
+    rollup?: Rollup;
+    correlationData?: Array<CorrelationData>;
 }
 
 export class TelemetryEndRequest {
