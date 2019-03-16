@@ -265,8 +265,6 @@ export class SunbirdSdk {
             this._frameworkService
         );
 
-        await this._profileService.onInit().toPromise();
-
         this._groupService = new GroupServiceImpl(
             this._dbService,
             this._profileService,
@@ -343,6 +341,8 @@ export class SunbirdSdk {
         this._downloadService.registerOnDownloadCompleteDelegate(this._contentService);
         this._playerService = new PlayerServiceImpl(this._profileService, this._groupService,
             this._sdkConfig, this._frameworkService, this._deviceInfo, this._appInfo);
+
+        await this._profileService.onInit().toPromise();
 
         this.postInit();
     }
