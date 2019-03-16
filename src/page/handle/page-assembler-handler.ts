@@ -19,13 +19,16 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
 
     private static getIdForDb(request: PageAssembleCriteria): string {
         const key = request.name +
-        (request.source || '') +
+        (request.source || 'app') +
         (request.mode || '') +
         request.filters ? SHA1(JSON.stringify(request.filters)).toString() : '';
         return key;
     }
 
     handle(request: PageAssembleCriteria): Observable<PageAssemble> {
+        if (!request.source) {
+            request.source = 'app';
+        }
         return this.cachedItemStore.getCached(
             PageAssemblerHandler.getIdForDb(request),
             this.PAGE_ASSEMBLE_LOCAL_KEY,
@@ -41,7 +44,7 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
             .withApiToken(true)
             .withBody({request})
             .build();
-        return this.apiService.fetch<{ result: {response: PageAssemble }}>(apiRequest).map((success) => {
+        return this.apiService.fetch<{ result: { response: PageAssemble } }>(apiRequest).map((success) => {
             return success.body.result.response;
         });
     }

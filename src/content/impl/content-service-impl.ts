@@ -242,7 +242,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]> {
         const searchContentHandler = new SearchContentHandler(this.appConfig, this.contentServiceConfig, this.telemetryService);
-        const contentIds: string[] = contentImportRequest.contentImportArray.map((i) => i.contentId);
+        const contentIds: string[] = ArrayUtil.deDupe(contentImportRequest.contentImportArray.map((i) => i.contentId));
         const filter: SearchRequest = searchContentHandler.getContentSearchFilter(
             contentIds, contentImportRequest.contentStatusArray);
         return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig).handle(filter)
