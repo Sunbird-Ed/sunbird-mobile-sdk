@@ -73,7 +73,6 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
     }
 
     prepare(event: Telemetry, priority) {
-        console.log('event', JSON.stringify(event));
         return {
             event: JSON.stringify(event),
             event_type: event.getEid(),
