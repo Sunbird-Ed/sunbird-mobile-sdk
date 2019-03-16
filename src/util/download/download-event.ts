@@ -1,7 +1,7 @@
 import {DownloadStatus} from './def/download-status';
-import {EventBusEvent} from '../../events-bus/def/event-bus-event';
+import {EventsBusEvent} from '../../events-bus';
 
-export interface DownloadEvent extends EventBusEvent {
+export interface DownloadEvent extends EventsBusEvent {
     type: DownloadEventType;
 }
 

@@ -1,8 +1,8 @@
 import {Observable} from 'rxjs';
-import {LearnerAssessmentDetails, LearnerAssessmentSummary, ReportDetailPerUser} from './response';
-import { SummaryRequest} from './request';
-import {TelemetryEvents} from '../../telemetry';
-import Telemetry = TelemetryEvents.Telemetry;
+import {LearnerAssessmentSummary, ReportDetailPerUser} from './response';
+import {SummaryRequest} from './request';
+import {SunbirdTelemetry} from '../../telemetry';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 
 export interface SummarizerService {

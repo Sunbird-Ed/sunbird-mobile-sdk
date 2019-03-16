@@ -1,5 +1,5 @@
-import {TelemetryEvents} from './telemetry-model';
-import Telemetry = TelemetryEvents.Telemetry;
+import {SunbirdTelemetry} from './telemetry-model';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 export abstract class TelemetryDecorator {
 

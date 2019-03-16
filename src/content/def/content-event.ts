@@ -1,6 +1,6 @@
-import {EventBusEvent} from '../../events-bus/def/event-bus-event';
+import {EventsBusEvent} from '../../events-bus';
 
-export interface ContentEvent extends EventBusEvent {
+export interface ContentEvent extends EventsBusEvent {
     type: ContentEventType;
 }
 

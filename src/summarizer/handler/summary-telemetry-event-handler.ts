@@ -1,8 +1,8 @@
 import {ApiRequestHandler} from '../../api';
-import {ProducerData, TelemetryEvents} from '../../telemetry';
+import {ProducerData, SunbirdTelemetry} from '../../telemetry';
 import {Observable} from 'rxjs';
 import {SummarizerService} from '../def/summarizer-service';
-import Telemetry = TelemetryEvents.Telemetry;
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -20,7 +20,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         return false;
     }
 
-    handle(event: TelemetryEvents.Telemetry): Observable<undefined> {
+    handle(event: SunbirdTelemetry.Telemetry): Observable<undefined> {
         if (SummaryTelemetryEventHandler.checkPData(event.getContext().getPData())) {
             return this.processEvent(event);
         }

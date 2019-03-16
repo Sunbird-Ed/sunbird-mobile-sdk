@@ -1,4 +1,4 @@
-import {LogLevel, PageId, ShareItemType} from './telemetry-constants';
+import {LogLevel, ShareItemType} from './telemetry-constants';
 import {NumberUtil} from '../../util/number-util';
 
 export class Actor {
@@ -207,7 +207,7 @@ export class ProcessedEventModel {
     priority: number;
 }
 
-export namespace TelemetryEvents {
+export namespace SunbirdTelemetry {
     export abstract class Telemetry {
         private static readonly TELEMETRY_VERSION: string = '3.0';
 

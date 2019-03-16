@@ -4,12 +4,13 @@ import {
     LearnerAssessmentDetails,
     LearnerAssessmentSummary,
     LearnerContentSummaryDetails,
-    QuestionSummary, ReportDetailPerUser,
+    QuestionSummary,
+    ReportDetailPerUser,
     UserReportSummary
 } from '../def/response';
 import {NumberUtil} from '../../util/number-util';
-import {CorrelationData, TelemetryEvents} from '../../telemetry';
-import Telemetry = TelemetryEvents.Telemetry;
+import {CorrelationData, SunbirdTelemetry} from '../../telemetry';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 export class SummarizerHandler {
     constructor() {

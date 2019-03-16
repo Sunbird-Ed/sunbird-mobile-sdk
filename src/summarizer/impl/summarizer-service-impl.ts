@@ -1,27 +1,29 @@
-import {SummarizerService} from '../def/summarizer-service';
-import {Observable} from 'rxjs';
 import {
     ContentCache,
     LearnerAssessmentDetails,
     LearnerAssessmentSummary,
     LearnerContentSummaryDetails,
-    QuestionSummary, ReportDetailPerUser
-} from '../def/response';
-import {SummaryRequest} from '../def/request';
-import {SummarizerHandler} from '../handler/summarizer-handler';
+    QuestionSummary,
+    ReportDetailPerUser,
+    SummarizerHandler,
+    SummarizerQueries,
+    SummarizerService,
+    SummaryRequest,
+    SummaryTelemetryEventHandler
+} from '..';
+import {Observable} from 'rxjs';
 import {DbService} from '../../db';
 import {LearnerAssessmentsEntry, LearnerSummaryEntry} from '../../profile/db/schema';
-import {TelemetryEvents} from '../../telemetry';
-import {SummarizerQueries} from '../handler/summarizer-queries';
+import {SunbirdTelemetry} from '../../telemetry';
 import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 import {NumberUtil} from '../../util/number-util';
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {EventObserver} from '../../events-bus/def/event-observer';
-import {SummaryTelemetryEventHandler} from '../handler/summary-telemetry-event-handler';
-import Telemetry = TelemetryEvents.Telemetry;
 import {Content, ContentRequest, ContentService} from '../../content';
+import {TelemetryEvent, TelemetryEventType} from '../../telemetry/def/telemetry-event';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
-export class SummarizerServiceImpl implements SummarizerService, EventObserver {
+export class SummarizerServiceImpl implements SummarizerService, EventObserver<TelemetryEvent> {
     private contentMap: Map<string, ContentCache>;
 
     constructor(private dbService: DbService,
@@ -41,6 +43,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver {
         return this.dbService.execute(query).map((assessmentDetailsInDb: LearnerAssessmentsEntry.SchemaMap[]) =>
             SummarizerHandler.mapDBEntriesToLearnerAssesmentDetails(assessmentDetailsInDb));
     }
+
     getReportByQuestions(request: SummaryRequest): Observable<{ [p: string]: any }[]> {
         const questionReportQuery = SummarizerQueries.getQuestionReportsQuery(request.uids, request.contentId);
         const accuracyQuery = SummarizerQueries.getReportAccuracyQuery(request.uids, request.contentId);
@@ -200,7 +203,11 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver {
         });
     }
 
-    onEvent(event: TelemetryEvents.Telemetry): Observable<undefined> {
-        return new SummaryTelemetryEventHandler(this).handle(event);
+    onEvent(event: TelemetryEvent): Observable<undefined> {
+        if (event.type === TelemetryEventType.SAVE) {
+            return new SummaryTelemetryEventHandler(this).handle(event.payload);
+        }
+
+        return Observable.of(undefined);
     }
 }

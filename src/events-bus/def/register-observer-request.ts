@@ -3,5 +3,5 @@ import {EventObserver} from './event-observer';
 
 export interface RegisterObserverRequest {
     namespace: EventNamespace;
-    observer: EventObserver;
+    observer: EventObserver<any>;
 }

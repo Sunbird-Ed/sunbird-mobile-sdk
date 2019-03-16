@@ -1,8 +1,8 @@
-import {Actor, Context, ProducerData, TelemetryDecorator, TelemetryEvents} from '..';
+import {Actor, Context, ProducerData, SunbirdTelemetry, TelemetryDecorator} from '..';
 import {ApiConfig} from '../../api';
 import {DeviceInfo} from '../../util/device/def/device-info';
-import Telemetry = TelemetryEvents.Telemetry;
 import {AppInfo} from '../../util/app/def/app-info';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 export class TelemetryDecoratorImpl implements TelemetryDecorator {
 
