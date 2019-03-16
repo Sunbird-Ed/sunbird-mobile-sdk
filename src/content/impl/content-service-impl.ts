@@ -145,7 +145,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]> {
         const contentDeleteResponse: ContentDeleteResponse[] = [];
-        const deleteContentHandler = new DeleteContentHandler(this.dbService, this.fileService, this.sharedPreferences);
+        const deleteContentHandler = new DeleteContentHandler(this.dbService, this.fileService, this.sharedPreferences, this.zipService);
         contentDeleteRequest.contentDeleteList.forEach(async (contentDelete) => {
             const contentInDb = await this.getContentDetailsHandler.fetchFromDB(contentDelete.contentId).toPromise();
             if (contentInDb) {
@@ -276,7 +276,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             contentImportResponses.push({identifier: contentId, status: status});
                         }
                     }
-                    await this.downloadService.download(downloadRequestList).toPromise();
+                    this.downloadService.download(downloadRequestList).toPromise().then();
                 }
 
                 return contentImportResponses;
@@ -341,10 +341,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
-
-                return childContentHandler.getNextContentFromDB(hierarchyInfo,
-                    currentContentIdentifier,
-                    contentKeyList);
+                const nextContentIdentifier = childContentHandler.getNextContentIdentifier(hierarchyInfo,
+                    currentContentIdentifier, contentKeyList);
+                return childContentHandler.getContentFromDB(hierarchyInfo, nextContentIdentifier);
             });
     }
 
@@ -353,10 +352,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
-
-                return childContentHandler.getNextContentFromDB(hierarchyInfo,
-                    currentContentIdentifier,
-                    contentKeyList);
+                const previousContentIdentifier = childContentHandler.getPreviuosContentIdentifier(hierarchyInfo,
+                    currentContentIdentifier, contentKeyList);
+                return childContentHandler.getContentFromDB(hierarchyInfo, previousContentIdentifier);
             });
     }
 

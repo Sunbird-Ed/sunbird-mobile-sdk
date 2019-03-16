@@ -21,3 +21,7 @@ export namespace FrameworkKeys {
 export namespace DownloadKeys {
     export const KEY_TO_DOWNLOAD_LIST = 'to_download_list';
 }
+
+export namespace ContentKeys {
+    export const KEY_LAST_MODIFIED = 'last_modified';
+}
