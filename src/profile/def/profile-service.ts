@@ -40,8 +40,6 @@ export interface ProfileService extends SdkServiceOnInitDelegate {
 
     setActiveSessionForProfile(profileUid: string): Observable<boolean>;
 
-    endActiveSession(): Observable<undefined>;
-
     getActiveProfileSession(): Observable<ProfileSession>;
 
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]>;

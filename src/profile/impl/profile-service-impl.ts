@@ -80,11 +80,12 @@ export class ProfileServiceImpl implements ProfileService {
                         .mapTo(undefined);
                 }
 
-                return this.getActiveProfileSession()
-                    .mergeMap((session: ProfileSession) => {
-                        return this.endActiveSession()
-                            .mergeMap(() => this.setActiveSessionForProfile(session.uid));
-                    })
+                return this.setActiveSessionForProfile(profileSession.uid)
+                    .do(async () => await TelemetryLogger.log.end({
+                        type: 'session',
+                        env: 'sdk',
+                        duration: Math.floor((Date.now() - profileSession.createdTime) / 1000)
+                    }).toPromise())
                     .mapTo(undefined);
             });
     }
@@ -276,15 +277,6 @@ export class ProfileServiceImpl implements ProfileService {
             .do(async () => await TelemetryLogger.log.start({
                 type: 'session', env: 'sdk'
             }).toPromise());
-    }
-
-    endActiveSession(): Observable<undefined> {
-        return this.getActiveProfileSession().mergeMap((session) => {
-            return this.sharedPreferences.putString(ProfileServiceImpl.KEY_USER_SESSION, '')
-                .do(async () => await TelemetryLogger.log.end({
-                    type: 'session', env: 'sdk', duration: Math.floor((Date.now() - session.createdTime) / 1000)
-                }).toPromise());
-        });
     }
 
     getActiveProfileSession(): Observable<ProfileSession> {
