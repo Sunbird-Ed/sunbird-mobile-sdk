@@ -16,7 +16,7 @@ import {GenerateOtpRequest} from './generate-otp-request';
 import {VerifyOtpRequest} from './verify-otp-request';
 import {LocationSearchCriteria} from './location-search-criteria';
 import {LocationSearchResult} from './location-search-result';
-import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
+import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 
 
 export interface ProfileService extends SdkServiceOnInitDelegate {
@@ -39,6 +39,8 @@ export interface ProfileService extends SdkServiceOnInitDelegate {
     getActiveSessionProfile(): Observable<Profile>;
 
     setActiveSessionForProfile(profileUid: string): Observable<boolean>;
+
+    endActiveSession(): Observable<undefined>;
 
     getActiveProfileSession(): Observable<ProfileSession>;
 

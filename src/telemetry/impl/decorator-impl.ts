@@ -3,6 +3,7 @@ import {ApiConfig} from '../../api';
 import {DeviceInfo} from '../../util/device/def/device-info';
 import {AppInfo} from '../../util/app/def/app-info';
 import Telemetry = SunbirdTelemetry.Telemetry;
+import {UniqueId} from '../../db/util/unique-id';
 
 export class TelemetryDecoratorImpl implements TelemetryDecorator {
 
@@ -12,6 +13,9 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
     }
 
     decorate(event: Telemetry, uid: string, sid: string, gid?: string): any {
+        if (!event.mid) {
+            event.mid = UniqueId.generateUniqueId();
+        }
         if (uid) {
             this.patchActor(event, uid);
         } else {

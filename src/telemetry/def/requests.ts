@@ -1,23 +1,12 @@
-import {
-    Environment,
-    ImpressionSubtype,
-    ImpressionType,
-    InteractSubtype,
-    InteractType,
-    LogLevel,
-    LogType,
-    PageId,
-    ShareItemType
-} from './telemetry-constants';
+import {Environment, InteractType, LogLevel, LogType, PageId, ShareItemType} from './telemetry-constants';
 import {CorrelationData, DeviceSpecification, Rollup, Visit} from './telemetry-model';
 
 export class TelemetryInteractRequest {
     type: InteractType;
-    subType: InteractSubtype;
+    subType: string;
     id: string;
     pageId: string;
     pos: Array<{ [index: string]: string }> = [];
-    values: Array<{ [index: string]: any }> = [];
     env: string;
     rollup: Rollup;
     valueMap: { [index: string]: any };
@@ -32,12 +21,11 @@ export class TelemetryErrorRequest {
     errorType: string;
     stacktrace: string;
     pageId: string;
-    env: Environment;
 }
 
 export class TelemetryImpressionRequest {
-    type: ImpressionType;
-    subType: ImpressionSubtype;
+    type: string;
+    subType: string;
     pageId: PageId;
     uri: string;
     visits: Visit[];
@@ -50,32 +38,32 @@ export class TelemetryImpressionRequest {
 }
 
 export class TelemetryStartRequest {
-    type: string;
-    deviceSpecification: DeviceSpecification;
-    loc: string;
-    mode: string;
-    duration: number;
-    pageId: string;
+    type?: string;
+    deviceSpecification?: DeviceSpecification;
+    loc?: string;
+    mode?: string;
+    duration?: number;
+    pageId?: string;
     env: Environment;
-    objId: string;
-    objType: string;
-    objVer: string;
-    rollup: Rollup;
-    correlationData: Array<CorrelationData>;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
+    rollup?: Rollup;
+    correlationData?: Array<CorrelationData>;
 }
 
 export class TelemetryEndRequest {
     env: Environment;
-    type: string;
-    mode: string;
-    duration: number;
-    pageId: string;
-    objId: string;
-    objType: string;
-    objVer: string;
-    rollup: Rollup;
-    summaryList: Array<{ [index: string]: any }>;
-    correlationData: Array<CorrelationData>;
+    type?: string;
+    mode?: string;
+    duration?: number;
+    pageId?: string;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
+    rollup?: Rollup;
+    summaryList?: Array<{ [index: string]: any }>;
+    correlationData?: Array<CorrelationData>;
 }
 
 export class TelemetryFeedbackRequest {

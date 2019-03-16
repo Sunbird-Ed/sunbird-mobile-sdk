@@ -24,13 +24,18 @@ export class EventsBusServiceImpl implements EventsBusService {
                     console.log(eventContainer);
                 }
             })
-            .mergeMap((eventContainer: EventContainer) => {
+            .do(async (eventContainer: EventContainer) => {
                 const delegateHandlers = this.eventDelegates
                     .filter((d) => d.namespace === eventContainer.namespace)
-                    .map((d) => d.observer.onEvent(eventContainer.event));
+                    .map((d) => d.observer.onEvent(eventContainer.event).take(1));
 
-                return Observable.zip(...delegateHandlers).mapTo(undefined);
-            });
+                try {
+                    await Observable.zip(...delegateHandlers).toPromise();
+                } catch (e) {
+                    console.error(e);
+                }
+            })
+            .mapTo(undefined);
     }
 
     events(filter?: string): Observable<any> {

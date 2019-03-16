@@ -1,5 +1,7 @@
 import {
     AcceptTermsConditionRequest,
+    ContentAccess,
+    ContentAccessStatus,
     GenerateOtpRequest,
     GetAllProfileRequest,
     IsProfileAlreadyInUseRequest,
@@ -30,7 +32,6 @@ import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-deta
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {ProfileDbEntryMapper} from '../util/profile-db-entry-mapper';
 import {ContentAccessFilterCriteria} from '../def/content-access-filter-criteria';
-import {ContentAccess, ContentAccessStatus} from '../def/content-access';
 import {AcceptTermConditionHandler} from '../handler/accept-term-condition-handler';
 import {ProfileHandler} from '../handler/profile-handler';
 import {ContentAccessEntry} from '../../content/db/schema';
@@ -46,7 +47,7 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {FrameworkService} from '../../framework';
 import {ContentUtil} from '../../content/util/content-util';
 import {ProfileKeys} from '../../preference-keys';
-
+import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
 
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
@@ -81,7 +82,8 @@ export class ProfileServiceImpl implements ProfileService {
 
                 return this.getActiveProfileSession()
                     .mergeMap((session: ProfileSession) => {
-                        return this.setActiveSessionForProfile(session.uid);
+                        return this.endActiveSession()
+                            .mergeMap(() => this.setActiveSessionForProfile(session.uid));
                     })
                     .mapTo(undefined);
             });
@@ -270,7 +272,19 @@ export class ProfileServiceImpl implements ProfileService {
                     sid: profileSession.sid,
                     createdTime: profileSession.createdTime
                 })).mapTo(true);
-            });
+            })
+            .do(async () => await TelemetryLogger.log.start({
+                type: 'session', env: 'sdk'
+            }).toPromise());
+    }
+
+    endActiveSession(): Observable<undefined> {
+        return this.getActiveProfileSession().mergeMap((session) => {
+            return this.sharedPreferences.putString(ProfileServiceImpl.KEY_USER_SESSION, '')
+                .do(async () => await TelemetryLogger.log.end({
+                    type: 'session', env: 'sdk', duration: Math.floor((Date.now() - session.createdTime) / 1000)
+                }).toPromise());
+        });
     }
 
     getActiveProfileSession(): Observable<ProfileSession> {

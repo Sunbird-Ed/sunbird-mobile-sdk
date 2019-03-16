@@ -164,41 +164,14 @@ export namespace SunbirdTelemetry {
     export abstract class Telemetry {
         private static readonly TELEMETRY_VERSION: string = '3.0';
 
-        /**
-         * unique event ID.
-         */
         public eid: string;
-
-        /**
-         * epoch timestamp of event capture in epoch format (time in milli-seconds. For ex: 1442816723).
-         */
+        public mid: string;
         public ets: number;
-
-        /**
-         * version of the event data structure, currently "3".
-         */
         public ver: string = Telemetry.TELEMETRY_VERSION;
-
-        /**
-         * Who did the event
-         * Actor of the event
-         */
         public actor: Actor;
-
-        /**
-         * Who did the event
-         * Context in which the event has occured.
-         */
         public context: Context;
-
-        /**
-         * What is the target of the event
-         * Object which is the subject of the event
-         */
         public object: TelemetryObject;
-
         public edata: any;
-
         public tags: string[];
 
         protected constructor(eid: string) {
@@ -213,20 +186,17 @@ export namespace SunbirdTelemetry {
     export class End extends Telemetry {
         private static readonly EID = 'END';
 
-        type: string;
-        mode: string;
-        duration: number;
-        pageId: string;
-        summaryList: Array<{ [index: string]: any }>;
-        env: string;
-        objId: string;
-        objType: string;
-        objVer: string;
-        rollup: Rollup;
-        correlationData: Array<CorrelationData>;
-
-        public constructor(type: string, mode: string, duration: number, pageid: string, summaryList: {}[], env: string,
-                           objId: string, objType: string, objVer: string, rollup: Rollup, correlationData: Array<CorrelationData>) {
+        public constructor(type: string | undefined,
+                           mode: string | undefined,
+                           duration: number | undefined,
+                           pageid: string | undefined,
+                           summaryList: {}[] | undefined,
+                           env: string,
+                           objId: string = '',
+                           objType: string = '',
+                           objVer: string = '',
+                           rollup: Rollup = {},
+                           correlationData: Array<CorrelationData> = []) {
             super(End.EID);
             this.edata = {
                 ...(type ? {type} : {}),
@@ -238,30 +208,26 @@ export namespace SunbirdTelemetry {
             this.context.cdata = correlationData;
             this.context.env = env;
 
-            this.object = new TelemetryObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '');
-            this.object.rollup = rollup ? rollup : {};
+            this.object = new TelemetryObject(objId, objType, objVer);
+            this.object.rollup = rollup;
         }
     }
 
     export class Start extends Telemetry {
         private static readonly EID = 'START';
 
-        env: string;
-        type: string;
-        deviceSpecification: DeviceSpecification;
-        loc: string;
-        mode: string;
-        duration: number;
-        pageId: string;
-        objId: string;
-        objType: string;
-        objVer: string;
-        rollup: Rollup;
-        correlationData: Array<CorrelationData>;
-
-
-        constructor(type: string, dSpec: DeviceSpecification, loc: string, mode: string, duration: number, pageId: string, env: string,
-                    objId: string, objType: string, objVer: string, rollup: Rollup, correlationData: Array<CorrelationData>) {
+        constructor(type: string = '',
+                    dSpec: DeviceSpecification | undefined,
+                    loc: string | undefined,
+                    mode: string | undefined,
+                    duration: number | undefined,
+                    pageId: string | undefined,
+                    env: string,
+                    objId: string = '',
+                    objType: string = '',
+                    objVer: string = '',
+                    rollup: Rollup = {},
+                    correlationData: Array<CorrelationData> = []) {
             super(Start.EID);
             this.edata = {
                 ...(type ? {type} : {type: ''}),
@@ -273,7 +239,7 @@ export namespace SunbirdTelemetry {
             };
             this.context.cdata = correlationData;
             this.context.env = env;
-            this.object = new TelemetryObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '');
+            this.object = new TelemetryObject(objId, objType, objVer);
             this.object.rollup = rollup ? rollup : {};
         }
     }
@@ -281,16 +247,18 @@ export namespace SunbirdTelemetry {
     export class Interact extends Telemetry {
         private static readonly EID = 'INTERACT';
 
-        type: string;
-        subType: string;
-        id: string;
-        pageId: string;
-        pos: Array<{ [index: string]: string }> = [];
-        values: Array<{ [index: string]: any }> = [];
-        valueMap: { [index: string]: any };
-
-        constructor(type: string, subtype: string, id: string, pageid: string, pos: { [key: string]: string }[], values: {}[], env: string,
-                    objId: string, objType: string, objVer: string, rollup: Rollup, correlationData: Array<CorrelationData>) {
+        constructor(type: string | undefined,
+                    subtype: string | undefined,
+                    id: string | undefined,
+                    pageid: string | undefined,
+                    pos: { [key: string]: string }[] | undefined,
+                    valuesMap: { [key: string]: any } | undefined,
+                    env: string,
+                    objId: string = '',
+                    objType: string = '',
+                    objVer: string = '',
+                    rollup: Rollup = {},
+                    correlationData: Array<CorrelationData> = []) {
             super(Interact.EID);
             this.edata = {
                 ...(type ? {type} : {type: ''}),
@@ -299,8 +267,36 @@ export namespace SunbirdTelemetry {
                 ...(pageid ? {pageid} : {}),
                 extra: {
                     ...(pos ? {pos} : {}),
-                    ...(values ? {values} : {}),
+                    ...(valuesMap ? {values: [valuesMap]} : {}),
                 }
+            };
+            this.context.cdata = correlationData;
+            this.context.env = env;
+            this.object = new TelemetryObject(objId, objType, objVer);
+            this.object.rollup = rollup ? rollup : {};
+        }
+    }
+
+    export class Impression extends Telemetry {
+        private static readonly EID = 'IMPRESSION';
+
+        public constructor(type: string | undefined,
+                           subtype: string | undefined,
+                           pageid: string | undefined,
+                           visits: Visit[] | undefined,
+                           env: string,
+                           objId: string = '',
+                           objType: string = '',
+                           objVer: string = '',
+                           rollup: Rollup = {},
+                           correlationData: Array<CorrelationData> = []) {
+            super(Impression.EID);
+            this.edata = {
+                ...(type ? {type} : {type: ''}),
+                ...(subtype ? {subtype} : {}),
+                ...(pageid ? {pageid} : {}),
+                ...(pageid ? {uri: pageid} : {}),
+                ...(visits ? {visits} : {}),
             };
             this.context.cdata = correlationData;
             this.context.env = env;
@@ -309,45 +305,16 @@ export namespace SunbirdTelemetry {
         }
     }
 
-    export class Impression extends Telemetry {
-        private static readonly EID = 'IMPRESSION';
-
-        type: string;
-        pageId: string;
-        subType: string;
-        uri: string;
-        objId: string;
-        correlationData: Array<CorrelationData>;
-        objType: string;
-        objVer: string;
-        rollup?: Rollup;
-        env: string;
-
-        public constructor(type: string, subtype: string, pageid: string, uri: string, visits: Visit[], env: string,
-                           objId: string, objType: string, objVer: string, rollup: Rollup, correlationData: Array<CorrelationData>) {
-            super(Impression.EID);
-            this.edata = {
-                ...(type ? {type} : {type: ''}),
-                ...(subtype ? {subtype} : {}),
-                ...(pageid ? {pageid} : {}),
-                ...(uri ? {uri: pageid} : {}),
-                ...(visits ? {visits} : {}),
-            };
-        }
-    }
-
     export class Log extends Telemetry {
         private static readonly EID = 'LOG';
 
-        env: string;
-        type: string;
-        level: LogLevel;
-        message: string;
-        pageId: string;
-        params: Array<{ [index: string]: any }>;
-        actorType: string;
-
-        constructor(type: string, level: LogLevel, message: string, pageid: string, params: {}[], env: string, actorType) {
+        constructor(type: string | undefined,
+                    level: LogLevel | undefined,
+                    message: string | undefined,
+                    pageid: string | undefined,
+                    params: {}[] | undefined,
+                    env: string,
+                    actorType) {
             super(Log.EID);
             this.edata = {
                 ...(type ? {type} : {type: ''}),
@@ -366,13 +333,10 @@ export namespace SunbirdTelemetry {
     export class Error extends Telemetry {
         private static readonly EID = 'ERROR';
 
-        errorCode: string;
-        errorType: string;
-        stacktrace: string;
-        pageId: string;
-        env: string;
-
-        constructor(errorCode: string, errorType: string, stacktrace: string, pageid: string) {
+        constructor(errorCode: string | undefined,
+                    errorType: string | undefined,
+                    stacktrace: string | undefined,
+                    pageid: string | undefined) {
             super(Error.EID);
 
             this.edata = {
@@ -387,11 +351,9 @@ export namespace SunbirdTelemetry {
     export class Share extends Telemetry {
         private static readonly EID = 'SHARE';
 
-        dir: string;
-        type: string;
-        items: Array<{ [index: string]: any }> = [];
-
-        constructor(dir: string, type: string, items: Array<{ [index: string]: any }>) {
+        constructor(dir: string | undefined,
+                    type: string | undefined,
+                    items: Array<{ [index: string]: any }> | undefined) {
             super(Share.EID);
 
             this.edata = {
@@ -422,7 +384,7 @@ export namespace SunbirdTelemetry {
             originMap['type'] = 'Device';
             item['origin'] = originMap;
 
-            this.items.push(item);
+            this.edata.items.push(item);
         }
 
         capitalize(input): string {
@@ -433,15 +395,12 @@ export namespace SunbirdTelemetry {
     export class Feedback extends Telemetry {
         private static readonly EID = 'FEEDBACK';
 
-        rating: number;
-        comments: string;
-        env: string;
-        objId: string;
-        objType: string;
-        objVer: string;
-
-        constructor(rating: number, comments: string, env: string,
-                    objId: string, objType: string, objVer: string) {
+        constructor(rating: number | undefined,
+                    comments: string | undefined,
+                    env: string,
+                    objId: string = '',
+                    objType: string = '',
+                    objVer: string = '') {
             super(Feedback.EID);
 
             this.edata = {
@@ -449,7 +408,7 @@ export namespace SunbirdTelemetry {
                 ...(comments ? {comments: comments} : {}),
             };
             this.context.env = env;
-            this.object = new TelemetryObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '');
+            this.object = new TelemetryObject(objId, objType, objVer);
             this.object.rollup = {};
         }
     }
