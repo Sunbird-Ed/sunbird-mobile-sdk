@@ -27,7 +27,7 @@ import {KeyValueStore} from '../../key-value-store';
 import {ApiService, Response} from '../../api';
 import {TelemetryConfig} from '../config/telemetry-config';
 import {DeviceInfo} from '../../util/device/def/device-info';
-import {EventsBusService} from '../../events-bus';
+import {EventNamespace, EventsBusService} from '../../events-bus';
 import {FileService} from '../../util/file/def/file-service';
 import {CreateTelemetryExportFile} from '../handler/export/create-telemetry-export-file';
 import {TelemetryExportResponse} from '../def/response';
@@ -37,6 +37,7 @@ import {CleanupExportedFile} from '../handler/export/cleanup-exported-file';
 import {CleanCurrentDatabase} from '../handler/export/clean-current-database';
 import {GenerateShareTelemetry} from '../handler/export/generate-share-telemetry';
 import {ValidateTelemetryMetadata} from '../handler/import/validate-telemetry-metadata';
+import {TelemetryEventType} from '../def/telemetry-event';
 
 export class TelemetryServiceImpl implements TelemetryService {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
@@ -223,7 +224,15 @@ export class TelemetryServiceImpl implements TelemetryService {
                     profileSession!.sid, groupSession && groupSession.gid), 1)
             };
 
-            return this.dbService.insert(insertQuery).map((count) => count > 1);
+            return this.dbService.insert(insertQuery)
+                .do(() => this.eventsBusService.emit({
+                    namespace: EventNamespace.TELEMETRY,
+                    event: {
+                        type: TelemetryEventType.SAVE,
+                        payload: telemetry
+                    }
+                }))
+                .map((count) => count > 1);
         });
     }
 
