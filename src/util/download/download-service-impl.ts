@@ -237,7 +237,6 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     .distinctUntilChanged((prev, next) => {
                         return JSON.stringify(prev) === JSON.stringify(next);
                     })
-                    .do((p) => console.log(p))
                     .mergeMap((downloadProgress) => {
                         return Observable.zip(
                             this.handleDownloadCompletion(downloadProgress!),

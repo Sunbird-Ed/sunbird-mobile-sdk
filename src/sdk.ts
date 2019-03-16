@@ -11,7 +11,7 @@ import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/impl/auth-service-impl';
-import {ContentFeedbackService, ContentService, ContentSearchResult, ContentsGroupedByPageSection} from './content';
+import {ContentFeedbackService, ContentService, ContentsGroupedByPageSection} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
 import {
@@ -194,7 +194,7 @@ export class SunbirdSdk {
             this._sharedPreferences = new SharedPreferencesAndroid();
         }
 
-        this._eventsBusService = new EventsBusServiceImpl();
+        this._eventsBusService = new EventsBusServiceImpl(this.sdkConfig.eventsBusConfig);
 
         if (sdkConfig.dbConfig.debugMode === true) {
             this._dbService = new DbWebSqlService(
