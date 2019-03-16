@@ -47,8 +47,7 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {FrameworkService} from '../../framework';
 import {ContentUtil} from '../../content/util/content-util';
 import {ProfileKeys} from '../../preference-keys';
-import {TelemetryService} from '../../telemetry';
-
+import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
 
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
@@ -59,8 +58,7 @@ export class ProfileServiceImpl implements ProfileService {
                 private cachedItemStore: CachedItemStore<ServerProfile>,
                 private keyValueStore: KeyValueStore,
                 private sharedPreferences: SharedPreferences,
-                private frameworkService: FrameworkService,
-                private telemetryService: TelemetryService) {
+                private frameworkService: FrameworkService) {
     }
 
     onInit(): Observable<undefined> {
@@ -275,7 +273,7 @@ export class ProfileServiceImpl implements ProfileService {
                     createdTime: profileSession.createdTime
                 })).mapTo(true);
             })
-            .do(async () => await this.telemetryService.start({
+            .do(async () => await TelemetryLogger.log.start({
                 type: 'session', env: 'sdk'
             }).toPromise());
     }
@@ -283,7 +281,7 @@ export class ProfileServiceImpl implements ProfileService {
     endActiveSession(): Observable<undefined> {
         return this.getActiveProfileSession().mergeMap((session) => {
             return this.sharedPreferences.putString(ProfileServiceImpl.KEY_USER_SESSION, '')
-                .do(async () => await this.telemetryService.end({
+                .do(async () => await TelemetryLogger.log.end({
                     type: 'session', env: 'sdk', duration: Math.floor((Date.now() - session.createdTime) / 1000)
                 }).toPromise());
         });
