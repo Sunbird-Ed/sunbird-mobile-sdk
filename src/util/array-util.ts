@@ -11,4 +11,10 @@ export class ArrayUtil {
     public static contains(array: string[], item: string): boolean {
         return array && array.indexOf(item) !== -1;
     }
+
+    public static deDupe(array): string[] {
+        return array.filter((value, index, arr) => {
+            return arr.indexOf(value) === index;
+        });
+    }
 }
