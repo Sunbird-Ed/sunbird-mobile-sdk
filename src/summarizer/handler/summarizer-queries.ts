@@ -85,7 +85,7 @@ export class SummarizerQueries {
         const uidFilter = `${LearnerAssessmentsEntry.COLUMN_NAME_UID} = '${uid}'`;
         const contentIdFilter = `${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = '${contentId}'`;
         const hDataFilter = `${LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA} = '${hierarchyData ? hierarchyData : ''}'`;
-        const filter = `WHERE ${uidFilter} AND ${contentIdFilter} AND ${hDataFilter}` + qid ? ` AND ${qidFilter}` : '';
+        const filter = `WHERE ${uidFilter} AND ${contentIdFilter} AND ${hDataFilter} ${qid ? ` AND ${qidFilter}` : ''}`;
         return filter;
     }
 
