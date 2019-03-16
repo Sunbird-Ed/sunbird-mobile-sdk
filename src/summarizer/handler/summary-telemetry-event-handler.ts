@@ -14,14 +14,14 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     }
 
     private static checkPData(pdata: ProducerData): boolean {
-        if (pdata != null && pdata.getPid() != null) {
-            return pdata.getPid().includes(SummaryTelemetryEventHandler.CONTENT_PLAYER_PID);
+        if (pdata != null && pdata.pid !== null) {
+            return pdata.pid.includes(SummaryTelemetryEventHandler.CONTENT_PLAYER_PID);
         }
         return false;
     }
 
     private static checkIsCourse(event: SunbirdTelemetry.Telemetry): boolean {
-        if (event.getObject() != null && event.getObject().type && event.getObject().type.toLowerCase() === 'course') {
+        if (event.object != null && event.object.type && event.object.type.toLowerCase() === 'course') {
             return true;
         }
 
@@ -29,28 +29,28 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     }
 
     handle(event: SunbirdTelemetry.Telemetry): Observable<undefined> {
-        if (event.getEid() === 'START' && SummaryTelemetryEventHandler.checkPData(event.getContext().getPData())) {
+        if (event.eid === 'START' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
             // TODO: Swayangjit
 
             // getContentContextMap(appContext);
             //
             // if (contentContextMap != null && !contentContextMap.isEmpty()) {
-            //     callUpdateContentStateAPI(event, event.getEid());
+            //     callUpdateContentStateAPI(event, event.eid);
             // }
 
             return this.processOEStart(event)
                 .mergeMap(() => this.summarizerService.saveLearnerAssessmentDetails(event).mapTo(undefined));
-        } else if (event.getEid() === 'START' && SummaryTelemetryEventHandler.checkIsCourse(event)) {
+        } else if (event.eid === 'START' && SummaryTelemetryEventHandler.checkIsCourse(event)) {
             // TODO: Swayangjit
 
             return Observable.of(undefined);
-        } else if (event.getEid() === 'ASSESS' && SummaryTelemetryEventHandler.checkPData(event.getContext().getPData())) {
+        } else if (event.eid === 'ASSESS' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
             return this.processOEAssess(event)
                 .mergeMap(() => this.summarizerService.saveLearnerAssessmentDetails(event).mapTo(undefined));
-        } else if (event.getEid() === 'END' && SummaryTelemetryEventHandler.checkPData(event.getContext().getPData())) {
+        } else if (event.eid === 'END' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
             return this.processOEEnd(event)
                 .mergeMap(() => this.summarizerService.saveLearnerAssessmentDetails(event).mapTo(undefined));
-        } else if (event.getEid() === 'END' && SummaryTelemetryEventHandler.checkIsCourse(event)) {
+        } else if (event.eid === 'END' && SummaryTelemetryEventHandler.checkIsCourse(event)) {
             // TODO: Swayangjit
 
             return Observable.of(undefined);
@@ -60,8 +60,8 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     }
 
     private processOEStart(event: Telemetry): Observable<undefined> {
-        this.currentUID = event.getActor().id;
-        this.currentContentID = event.getObject().id;
+        this.currentUID = event.actor.id;
+        this.currentContentID = event.object.id;
 
         return Observable.of(undefined);
     }
@@ -69,8 +69,8 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     private processOEAssess(event: Telemetry): Observable<undefined> {
         if (
             this.currentUID && this.currentContentID &&
-            this.currentUID.toLocaleLowerCase() === event.getActor().id.toLocaleLowerCase() &&
-            this.currentContentID.toLocaleLowerCase() === event.getObject().id.toLocaleLowerCase()
+            this.currentUID.toLocaleLowerCase() === event.actor.id.toLocaleLowerCase() &&
+            this.currentContentID.toLocaleLowerCase() === event.object.id.toLocaleLowerCase()
         ) {
             return this.summarizerService.deletePreviousAssessmentDetails(
                 this.currentUID,

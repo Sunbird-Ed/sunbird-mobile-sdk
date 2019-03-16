@@ -34,34 +34,12 @@ export class Audit {
 }
 
 export class Context {
-    private env: string;
-    private cdata: Array<CorrelationData>;
-
+    env: string;
+    cdata: Array<CorrelationData>;
     channel: string;
     pdata: ProducerData;
     sid: string;
     did: string;
-
-
-    getEnvironment(): string {
-        return this.env;
-    }
-
-    public getCData(): Array<CorrelationData> {
-        return this.cdata;
-    }
-
-    public getPData(): ProducerData {
-        return this.pdata;
-    }
-
-    public setEnvironment(value: string) {
-        this.env = value;
-    }
-
-    public setCdata(value: Array<CorrelationData>) {
-        this.cdata = value;
-    }
 }
 
 export class DeviceSpecification {
@@ -140,31 +118,6 @@ export class ProducerData {
         this.pid = '';
         this.ver = '';
     }
-
-    getId(): string {
-        return this.id;
-    }
-
-    getPid(): string {
-        return this.pid;
-    }
-
-    getVersion(): string {
-        return this.ver;
-    }
-
-
-    setId(value: string) {
-        this.id = value;
-    }
-
-    setPid(value: string) {
-        this.pid = value;
-    }
-
-    setVersion(value: string) {
-        this.ver = value;
-    }
 }
 
 export class Search {
@@ -214,39 +167,39 @@ export namespace SunbirdTelemetry {
         /**
          * unique event ID.
          */
-        private eid: string;
+        public eid: string;
 
         /**
          * epoch timestamp of event capture in epoch format (time in milli-seconds. For ex: 1442816723).
          */
-        private ets: number;
+        public ets: number;
 
         /**
          * version of the event data structure, currently "3".
          */
-        private ver: string = Telemetry.TELEMETRY_VERSION;
+        public ver: string = Telemetry.TELEMETRY_VERSION;
 
         /**
          * Who did the event
          * Actor of the event
          */
-        private actor: Actor;
+        public actor: Actor;
 
         /**
          * Who did the event
          * Context in which the event has occured.
          */
-        private context: Context;
+        public context: Context;
 
         /**
          * What is the target of the event
          * Object which is the subject of the event
          */
-        private object: TelemetryObject;
+        public object: TelemetryObject;
 
-        private edata: {};
+        public edata: any;
 
-        private tags: string[];
+        public tags: string[];
 
         protected constructor(eid: string) {
             this.eid = eid;
@@ -254,61 +207,6 @@ export namespace SunbirdTelemetry {
             this.actor = new Actor();
             this.context = new Context();
             this.edata = {};
-        }
-
-
-        public getEid(): string {
-            return this.eid;
-        }
-
-        public setActor(value: Actor) {
-            this.actor = value;
-        }
-
-        public setContext(value: Context) {
-            this.context = value;
-        }
-
-        public setEdata(value: {}) {
-            this.edata = value;
-        }
-
-        public setTags(value: string[]) {
-            this.tags = value;
-        }
-
-        public setEnvironment(env: string) {
-            this.context.setEnvironment(env);
-        }
-
-        public setCoRrelationdata(correlationData: CorrelationData[]) {
-            this.context.setCdata(correlationData);
-        }
-
-        public setObject(id: string, type: string, ver: string, rollup: Rollup) {
-            this.object = new TelemetryObject(id, type, ver);
-            this.object.setRollup(rollup);
-        }
-
-
-        public getActor(): Actor {
-            return this.actor;
-        }
-
-        public getEData(): any {
-            return this.edata;
-        }
-
-        public getContext(): Context {
-            return this.context;
-        }
-
-        public getObject(): TelemetryObject {
-            return this.object;
-        }
-
-        public getTimeStamp(): number {
-            return this.ets;
         }
     }
 
@@ -330,16 +228,18 @@ export namespace SunbirdTelemetry {
         public constructor(type: string, mode: string, duration: number, pageid: string, summaryList: {}[], env: string,
                            objId: string, objType: string, objVer: string, rollup: Rollup, correlationData: Array<CorrelationData>) {
             super(End.EID);
-            this.setEdata({
+            this.edata = {
                 ...(type ? {type} : {}),
                 ...(duration ? {duration} : {}),
                 ...(pageid ? {pageid} : {}),
                 ...(mode ? {mode} : {}),
                 ...(summaryList ? {summaryList} : {})
-            });
-            this.setCoRrelationdata(correlationData);
-            this.setEnvironment(env);
-            this.setObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '', rollup ? rollup : {});
+            };
+            this.context.cdata = correlationData;
+            this.context.env = env;
+
+            this.object = new TelemetryObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '');
+            this.object.rollup = rollup ? rollup : {};
         }
     }
 
@@ -363,17 +263,18 @@ export namespace SunbirdTelemetry {
         constructor(type: string, dSpec: DeviceSpecification, loc: string, mode: string, duration: number, pageId: string, env: string,
                     objId: string, objType: string, objVer: string, rollup: Rollup, correlationData: Array<CorrelationData>) {
             super(Start.EID);
-            this.setEdata({
+            this.edata = {
                 ...(type ? {type} : {type: ''}),
                 ...(dSpec ? {dSpec} : {}),
                 ...(loc ? {loc} : {}),
                 ...(mode ? {mode} : {}),
                 ...(duration ? {mode} : {}),
                 ...(pageId ? {pageId} : {})
-            });
-            this.setCoRrelationdata(correlationData);
-            this.setEnvironment(env);
-            this.setObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '', rollup ? rollup : {});
+            };
+            this.context.cdata = correlationData;
+            this.context.env = env;
+            this.object = new TelemetryObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '');
+            this.object.rollup = rollup ? rollup : {};
         }
     }
 
@@ -391,7 +292,7 @@ export namespace SunbirdTelemetry {
         constructor(type: string, subtype: string, id: string, pageid: string, pos: { [key: string]: string }[], values: {}[], env: string,
                     objId: string, objType: string, objVer: string, rollup: Rollup, correlationData: Array<CorrelationData>) {
             super(Interact.EID);
-            this.setEdata({
+            this.edata = {
                 ...(type ? {type} : {type: ''}),
                 ...(subtype ? {subtype} : {}),
                 ...(id ? {id} : {}),
@@ -400,10 +301,11 @@ export namespace SunbirdTelemetry {
                     ...(pos ? {pos} : {}),
                     ...(values ? {values} : {}),
                 }
-            });
-            this.setCoRrelationdata(correlationData);
-            this.setEnvironment(env);
-            this.setObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '', rollup ? rollup : {});
+            };
+            this.context.cdata = correlationData;
+            this.context.env = env;
+            this.object = new TelemetryObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '');
+            this.object.rollup = rollup ? rollup : {};
         }
     }
 
@@ -424,13 +326,13 @@ export namespace SunbirdTelemetry {
         public constructor(type: string, subtype: string, pageid: string, uri: string, visits: Visit[], env: string,
                            objId: string, objType: string, objVer: string, rollup: Rollup, correlationData: Array<CorrelationData>) {
             super(Impression.EID);
-            this.setEdata({
+            this.edata = {
                 ...(type ? {type} : {type: ''}),
                 ...(subtype ? {subtype} : {}),
                 ...(pageid ? {pageid} : {}),
                 ...(uri ? {uri: pageid} : {}),
                 ...(visits ? {visits} : {}),
-            });
+            };
         }
     }
 
@@ -447,17 +349,17 @@ export namespace SunbirdTelemetry {
 
         constructor(type: string, level: LogLevel, message: string, pageid: string, params: {}[], env: string, actorType) {
             super(Log.EID);
-            this.setEdata({
+            this.edata = {
                 ...(type ? {type} : {type: ''}),
                 ...(level ? {level} : {}),
                 ...(message ? {message} : {}),
                 ...(pageid ? {pageid} : {}),
                 ...(params ? {params} : {}),
-            });
-            this.setEnvironment(env);
+            };
+            this.context.env = env;
             const actor: Actor = new Actor();
             actor.type = actorType;
-            this.setActor(actor);
+            this.actor = actor;
         }
     }
 
@@ -473,12 +375,12 @@ export namespace SunbirdTelemetry {
         constructor(errorCode: string, errorType: string, stacktrace: string, pageid: string) {
             super(Error.EID);
 
-            this.setEdata({
+            this.edata = {
                 ...(errorCode ? {err: errorCode} : {}),
                 ...(errorType ? {errtype: errorType} : {}),
                 ...(stacktrace ? {stacktrace} : {}),
                 ...(pageid ? {pageid} : {}),
-            });
+            };
         }
     }
 
@@ -492,11 +394,11 @@ export namespace SunbirdTelemetry {
         constructor(dir: string, type: string, items: Array<{ [index: string]: any }>) {
             super(Share.EID);
 
-            this.setEdata({
+            this.edata = {
                 ...(dir ? {dir: dir} : {}),
                 ...(type ? {type: type} : {}),
                 ...(items ? {items: items} : {})
-            });
+            };
         }
 
         addItem(type: ShareItemType, origin: string, identifier: string, pkgVersion: number,
@@ -542,12 +444,13 @@ export namespace SunbirdTelemetry {
                     objId: string, objType: string, objVer: string) {
             super(Feedback.EID);
 
-            this.setEdata({
+            this.edata = {
                 ...(rating ? {rating: rating} : {}),
                 ...(comments ? {comments: comments} : {}),
-            });
-            this.setEnvironment(env);
-            this.setObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '', {});
+            };
+            this.context.env = env;
+            this.object = new TelemetryObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '');
+            this.object.rollup = {};
         }
     }
 }
