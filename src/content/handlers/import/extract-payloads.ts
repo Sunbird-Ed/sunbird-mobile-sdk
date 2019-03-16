@@ -24,6 +24,7 @@ import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
+import moment from 'moment';
 
 export class ExtractPayloads {
 
@@ -103,13 +104,13 @@ export class ExtractPayloads {
                                     isUnzippingSuccessfull = true;
                                     resolve();
                                 }, () => {
-                                    reject();
+                                    resolve();
                                 });
                             });
                         } else if (ContentUtil.isInlineIdentity(contentDisposition, contentEncoding)) {
                             try {
                                 await this.copyAssets(importContext.tmpLocation!, artifactUrl, payloadDestination);
-                                isUnzippingSuccessfull = false;
+                                isUnzippingSuccessfull = true;
                             } catch (e) {
                                 isUnzippingSuccessfull = false;
                             }
@@ -275,6 +276,7 @@ export class ExtractPayloads {
             [ContentEntry.COLUMN_NAME_VISIBILITY]: visibility,
             [ContentEntry.COLUMN_NAME_AUDIENCE]: audience,
             [ContentEntry.COLUMN_NAME_PRAGMA]: pragma,
+            [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ssZ')
         };
 
     }

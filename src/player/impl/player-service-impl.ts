@@ -28,6 +28,7 @@ export class PlayerServiceImpl implements PlayerService {
         pData.pid = this.config.apiConfig.api_authentication.producerUniqueId;
         pData.ver = this.appInfo.getVersionName();
         context.pdata = pData;
+
         const playerInput: PlayerInput = {};
         content.rollup = ContentUtil.getRollup(content.identifier, content.hierarchyInfo!);
         playerInput.metaData = content;
@@ -47,6 +48,11 @@ export class PlayerServiceImpl implements PlayerService {
             corRelationList.push({id: isStreaming ? 'streaming' : 'offline', type: 'PlayerLaunch'});
             context.cdata = corRelationList;
             playerInput.context = context;
+            const appContext: { [key: string]: any } = {};
+            appContext['local'] = true;
+            appContext['server'] = false;
+            appContext['groupId'] = groupSession ? groupSession.gid : '';
+            playerInput.appContext = appContext;
             return this.frameworkService.getActiveChannelId();
         }).mergeMap((channelId: string) => {
             context.channel = channelId ? channelId : this.config.apiConfig.api_authentication.channelId;

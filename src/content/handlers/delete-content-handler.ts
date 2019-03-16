@@ -14,17 +14,19 @@ import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 import {FileService} from '../../util/file/def/file-service';
 import {SharedPreferences} from '../../util/shared-preferences';
+import {ContentKeys} from '../../preference-keys';
+import KEY_LAST_MODIFIED = ContentKeys.KEY_LAST_MODIFIED;
+import {ArrayUtil} from '../../util/array-util';
+import {ZipService} from '../../util/zip/def/zip-service';
 
 export class DeleteContentHandler {
 
     constructor(private dbService: DbService,
                 private fileService: FileService,
-                private sharedPreferences: SharedPreferences) {
+                private sharedPreferences: SharedPreferences,
+                private zipService: ZipService) {
     }
 
-    async deleteAllPreRequisites(row: ContentEntry.SchemaMap, isChildContent: boolean) {
-
-    }
 
     async deleteAllChildren(row: ContentEntry.SchemaMap, isChildContent: boolean) {
         const contentInDbList = new Stack<ContentEntry.SchemaMap>();
@@ -38,7 +40,9 @@ export class DeleteContentHandler {
                     node[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
                 const contentsInDB: ContentEntry.SchemaMap[] = await this.findAllContentsFromDbWithIdentifiers(
                     childContentsIdentifiers);
-                contentInDbList.addAll(contentsInDB);
+                contentsInDB.forEach((contentInDb: ContentEntry.SchemaMap) => {
+                    contentInDbList.push(contentInDb);
+                });
             }
 
             // Deleting only child content
@@ -55,7 +59,7 @@ export class DeleteContentHandler {
         let visibility: string = contentInDb[COLUMN_NAME_VISIBILITY]!;
         const mimeType: string = contentInDb[COLUMN_NAME_MIME_TYPE];
         const path: string = contentInDb[COLUMN_NAME_PATH]!;
-        if (Boolean(isChildContent)) {
+        if (isChildContent) {
             // If visibility is Default it means this content was visible in my downloads.
             // After deleting artifact for this content it should not visible as well so reduce the refCount also for this.
             if (refCount > 1 && visibility === Visibility.DEFAULT.valueOf()) {
@@ -74,9 +78,9 @@ export class DeleteContentHandler {
         } else {
             // TODO: This check should be before updating the existing refCount.
             // Do not update the content state if mimeType is "application/vnd.ekstep.content-collection" and refCount is more than 1.
-            if (mimeType === MimeType.COLLECTION && refCount > 1) {
+            if (mimeType === MimeType.COLLECTION.valueOf() && refCount > 1) {
                 contentState = State.ARTIFACT_AVAILABLE.valueOf();
-            } else if (refCount > 1 && Boolean(isChildItems)) {
+            } else if (refCount > 1 && isChildItems) {
                 // Visibility will remain Default only.
                 contentState = State.ARTIFACT_AVAILABLE.valueOf();
             } else {
@@ -95,10 +99,9 @@ export class DeleteContentHandler {
         if (path) {
             if (contentState === State.ONLY_SPINE.valueOf()) {
                 await this.fileService.removeRecursively(ContentUtil.getBasePath(path));
-                // FileUtil.rm(new File(contentModel.getPath()), contentModel.getIdentifier());
                 const contentRootPath: string | undefined = ContentUtil.getFirstPartOfThePathNameOnLastDelimiter(path);
                 if (contentRootPath) {
-                   await this.updateLastModifiedTime(contentRootPath);
+                    await this.updateLastModifiedTime(contentRootPath);
                 }
             }
             const directoryMetaData: Metadata = await this.fileService.getMetaData(ContentUtil.getBasePath(path));
@@ -116,11 +119,13 @@ export class DeleteContentHandler {
             return Observable.of(false).toPromise();
         }
     }
+
     private async updateLastModifiedTime(path: string): Promise<undefined> {
         return this.fileService.exists(path).then((entry) => {
             return this.fileService.getMetaData(path);
         }).then((metaData: Metadata) => {
-            return this.sharedPreferences.putString('last_modified', metaData.modificationTime + '').toPromise();
+            return this.sharedPreferences.putString(KEY_LAST_MODIFIED,
+                new Date(metaData.modificationTime).getMilliseconds() + '').toPromise();
         });
     }
 
@@ -128,11 +133,12 @@ export class DeleteContentHandler {
         return this.dbService.read({
             table: ContentEntry.TABLE_NAME,
             selection: new QueryBuilder()
-                .where('? in (\'?\') AND ? > 0')
-                .args([ContentEntry.COLUMN_NAME_IDENTIFIER, childContentsIdentifiers.join(','), ContentEntry.COLUMN_NAME_REF_COUNT])
+                .where('? in (?) AND ? > 0')
+                .args([ContentEntry.COLUMN_NAME_IDENTIFIER, ArrayUtil.joinPreservingQuotes(childContentsIdentifiers)
+                    , ContentEntry.COLUMN_NAME_REF_COUNT])
                 .end()
                 .build(),
-            orderBy: `order by ${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} desc, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} desc`
+            orderBy: `${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} desc, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} desc`
         }).toPromise();
 
     }

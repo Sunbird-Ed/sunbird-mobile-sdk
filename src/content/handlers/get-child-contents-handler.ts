@@ -65,17 +65,17 @@ export class ChildContentsHandler {
         });
 
         const childIdentifiers: string[] = [];
-        const whennAndThen = '';
+        let whennAndThen = '';
         let i = 0;
         childContents.forEach(childContent => {
             childIdentifiers.push(childContent.identifier);
-            whennAndThen.concat(' WHEN ' + '\'' + childContent.identifier + '\'' + ' THEN ' + i);
+            whennAndThen = whennAndThen.concat(` WHEN '${childContent.identifier}' THEN ${i}`);
             i = i + 1;
         });
 
-        const orderBy = '';
+        let orderBy = '';
         if (i > 0) {
-            orderBy.concat(' ORDER BY CASE ' + ContentEntry.COLUMN_NAME_IDENTIFIER + ' ' + whennAndThen + ' END');
+            orderBy = orderBy.concat(` ORDER BY CASE  ${ContentEntry.COLUMN_NAME_IDENTIFIER}  ${whennAndThen}  END`);
         }
 
         let filter = '';
@@ -111,10 +111,10 @@ export class ChildContentsHandler {
                 const childContentsInDb: ContentEntry.SchemaMap[] = await this.getSortedChildrenList(
                     node[ContentEntry.COLUMN_NAME_LOCAL_DATA],
                     ChildContents.ALL);
-                contentStack.addAll(childContentsInDb);
-                childContentsInDb.forEach(() => {
+                childContentsInDb.forEach((childContentInDb) => {
+                    contentStack.push(childContentInDb);
                     parentChildRelation.push(node[ContentEntry.COLUMN_NAME_IDENTIFIER].concat('/',
-                        childContentsInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]));
+                        childContentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]));
                 });
 
             }
@@ -125,7 +125,7 @@ export class ChildContentsHandler {
                 let tempKey: string;
                 for (let i: number = key.split('/').length - 1; i >= 0; i--) {
                     const immediateParent: string = key.split('/')[i];
-                    if (parentChildRelation.indexOf(immediateParent + '/' + node[ContentEntry.COLUMN_NAME_IDENTIFIER])) {
+                    if (ArrayUtil.contains(parentChildRelation, immediateParent.concat('/', node[ContentEntry.COLUMN_NAME_IDENTIFIER]))) {
                         break;
                     } else {
                         key = key.substring(0, key.lastIndexOf('/'));
@@ -144,14 +144,13 @@ export class ChildContentsHandler {
         return contentKeyList;
     }
 
-    async getNextContentFromDB(hierarchyInfoList: HierarchyInfo[],
-                               currentIdentifier: string,
-                               contentKeyList: string[]): Promise<Content> {
+
+    async getContentFromDB(hierarchyInfoList: HierarchyInfo[], identifier: string): Promise<Content> {
         const nextContentHierarchyList: HierarchyInfo[] = [];
         let nextContent;
-        const nextContentIdentifier = this.getNextContentIdentifier(hierarchyInfoList, currentIdentifier, contentKeyList);
-        if (nextContentIdentifier) {
-            const nextContentIdentifierList: string[] = nextContentIdentifier.split('/');
+        // const nextContentIdentifier = this.getPreviuosContentIdentifier(hierarchyInfoList, currentIdentifier, contentKeyList);
+        if (identifier) {
+            const nextContentIdentifierList: string[] = identifier.split('/');
             const idCount: number = nextContentIdentifierList.length;
             let isAllHierarchyContentFound = true;
             for (let i = 0; i < (idCount - 1); i++) {
@@ -167,7 +166,7 @@ export class ChildContentsHandler {
                     break;
                 }
             }
-            if (Boolean(isAllHierarchyContentFound)) {
+            if (isAllHierarchyContentFound) {
                 const nextContentInDb = await this.getContentDetailsHandler.fetchFromDB(
                     nextContentIdentifierList[idCount - 1]).toPromise();
                 if (nextContentInDb) {
@@ -198,6 +197,27 @@ export class ChildContentsHandler {
             nextContentIdentifier = contentKeyList[indexOfCurrentContentIdentifier - 1];
         }
         return nextContentIdentifier;
+    }
+
+    public getPreviuosContentIdentifier(hierarchyInfoList: HierarchyInfo[],
+                                         currentIdentifier: string,
+                                         contentKeyList: string[]): string {
+
+        let currentIdentifiers = '';
+        let previousContentIdentifier;
+        hierarchyInfoList.forEach((hierarchyItem) => {
+            if (!currentIdentifiers) {
+                currentIdentifiers = hierarchyItem.identifier;
+            } else {
+                currentIdentifiers = currentIdentifiers.concat('/', hierarchyItem.identifier);
+            }
+        });
+        currentIdentifiers = currentIdentifiers.concat('/', currentIdentifier);
+        const indexOfCurrentContentIdentifier = contentKeyList.indexOf(currentIdentifiers);
+        if (indexOfCurrentContentIdentifier !== -1 && indexOfCurrentContentIdentifier < (contentKeyList.length - 1)) {
+            previousContentIdentifier = contentKeyList[indexOfCurrentContentIdentifier + 1];
+        }
+        return previousContentIdentifier;
     }
 
 }
