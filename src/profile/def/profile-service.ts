@@ -17,6 +17,10 @@ import {VerifyOtpRequest} from './verify-otp-request';
 import {LocationSearchCriteria} from './location-search-criteria';
 import {LocationSearchResult} from './location-search-result';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
+import {ProfileExportRequest} from './profile-export-request';
+import {ProfileExportResponse} from './profile-export-response';
+import {ProfileImportRequest} from './profile-import-request';
+import {ProfileImportResponse} from './profile-import-response';
 
 
 export interface ProfileService extends SdkServiceOnInitDelegate {
@@ -55,4 +59,8 @@ export interface ProfileService extends SdkServiceOnInitDelegate {
     verifyOTP(verifyOTPRequest: VerifyOtpRequest): Observable<boolean>;
 
     searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult[]>;
+
+    exportProfile(profileExportRequest: ProfileExportRequest): Observable<ProfileExportResponse>;
+
+    importProfile(profileImportRequest: ProfileImportRequest): Observable<ProfileImportResponse>;
 }

@@ -49,7 +49,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                 .mergeMap(() => this.summarizerService.saveLearnerAssessmentDetails(event).mapTo(undefined));
         } else if (event.eid === 'END' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
             return this.processOEEnd(event)
-                .mergeMap(() => this.summarizerService.saveLearnerAssessmentDetails(event).mapTo(undefined));
+                .mergeMap(() => this.summarizerService.saveLearnerContentSummaryDetails(event).mapTo(undefined));
         } else if (event.eid === 'END' && SummaryTelemetryEventHandler.checkIsCourse(event)) {
             // TODO: Swayangjit
 

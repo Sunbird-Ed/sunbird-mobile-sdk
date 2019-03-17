@@ -5,7 +5,7 @@ import {ArrayUtil} from '../../../util/array-util';
 import {ImportProfileContext} from '../../def/import-profile-context';
 import {MetaEntry} from '../../../telemetry/db/schema';
 
-export class ValidateTelemetryMetadata {
+export class ValidateProfileMetadata {
 
     constructor(private dbService: DbService) {
     }
@@ -22,9 +22,12 @@ export class ValidateTelemetryMetadata {
                 response.errorMesg = ErrorCode.IMPORT_FAILED.valueOf();
                 throw response;
             }
-            const result = results[0];
-            importContext.metadata = result;
-            const importTypes: string[] = this.getImportTypes(results[0]);
+            const metaData: { [key: string]: any } = {};
+            results.forEach((result) => {
+                metaData[result['key']] = result['value'];
+            });
+            importContext.metadata = metaData;
+            const importTypes: string[] = this.getImportTypes(metaData);
             if (importTypes && !ArrayUtil.contains(importTypes, 'userprofile')) {
                 response.errorMesg = ErrorCode.IMPORT_FAILED.valueOf();
                 throw response;
@@ -34,10 +37,10 @@ export class ValidateTelemetryMetadata {
         });
     }
 
-    private getImportTypes(result: MetaEntry.SchemaMap): string[] {
+    private getImportTypes(result): string[] {
         let importTypes: string[] = [];
         if (result.hasOwnProperty('types')) {
-            importTypes = result['types'];
+            importTypes = JSON.parse(result['types']);
         }
         return importTypes;
 

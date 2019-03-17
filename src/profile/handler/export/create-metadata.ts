@@ -31,8 +31,8 @@ export class CreateMetaData {
 
     private generateMetaData(userIds: string[], groupIds: string[]): { [key: string]: any } {
         const metaData: { [key: string]: any } = {};
-        metaData['version'] = 1;
-        metaData['types'] = ['telemetry'];
+        metaData['version'] = 20;
+        metaData['types'] = JSON.stringify(['userprofile']);
         metaData['did'] = this.deviceInfo.getDeviceID();
         metaData['export_id'] = UniqueId.generateUniqueId();
         if (!groupIds) {

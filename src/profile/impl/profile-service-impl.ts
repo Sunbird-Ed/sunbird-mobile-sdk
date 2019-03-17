@@ -48,6 +48,28 @@ import {FrameworkService} from '../../framework';
 import {ContentUtil} from '../../content/util/content-util';
 import {ProfileKeys} from '../../preference-keys';
 import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
+import {ProfileExportRequest} from '../def/profile-export-request';
+import {ProfileExportResponse} from '../def/profile-export-response';
+import {ProfileImportRequest} from '../def/profile-import-request';
+import {ProfileImportResponse} from '../def/profile-import-response';
+import {ExportProfileContext} from '../def/export-profile-context';
+import {GetEparFilePath} from '../handler/export/get-epar-file-path';
+import {FileService} from '../../util/file/def/file-service';
+import {Response} from '../../api';
+import {CopyDatabase} from '../handler/export/copy-database';
+import {CreateMetaData} from '../handler/export/create-metadata';
+import {DeviceInfo} from '../../util/device';
+import {CleanupExportedFile} from '../handler/export/clean-up-exported-file';
+import {GenerateProfileImportTelemetry} from '../handler/import/generate-profile-import-telemetry';
+import {GenerateProfileExportTelemetry} from '../handler/export/generate-profile-export-telemetry';
+import {ImportProfileContext} from '../def/import-profile-context';
+import {ValidateProfileMetadata} from '../handler/import/validate-profile-metadata';
+import {TransportUser} from '../handler/import/transport-user';
+import {TransportGroup} from '../handler/import/transport-group';
+import {TransportGroupProfile} from '../handler/import/transport-group-profile';
+import {TransportFrameworkNChannel} from '../handler/import/transport-framework-n-channel';
+import {TransportAssesments} from '../handler/import/transport-assesments';
+import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-profile-metadata';
 
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
@@ -58,7 +80,9 @@ export class ProfileServiceImpl implements ProfileService {
                 private cachedItemStore: CachedItemStore<ServerProfile>,
                 private keyValueStore: KeyValueStore,
                 private sharedPreferences: SharedPreferences,
-                private frameworkService: FrameworkService) {
+                private frameworkService: FrameworkService,
+                private fileService: FileService,
+                private  deviceInfo: DeviceInfo) {
     }
 
     onInit(): Observable<undefined> {
@@ -366,5 +390,59 @@ export class ProfileServiceImpl implements ProfileService {
             });
 
 
+    }
+
+    exportProfile(profileExportRequest: ProfileExportRequest): Observable<ProfileExportResponse> {
+        const exportProfileContext: ExportProfileContext = {
+            userIds: profileExportRequest.userIds,
+            destinationFolder: profileExportRequest.destinationFolder,
+            groupIds: profileExportRequest.groupIds!
+        };
+
+        return Observable.fromPromise(
+            new GetEparFilePath(this.fileService).execute(exportProfileContext).then((exportResponse: Response) => {
+
+                return new CopyDatabase(this.dbService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                const response: ProfileExportResponse = {exportedFilePath: ''};
+                return new CreateMetaData(this.dbService, this.fileService, this.deviceInfo).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                const response: ProfileExportResponse = {exportedFilePath: ''};
+                return new CleanupExportedFile(this.dbService, this.fileService).execute(exportResponse.body);
+            }).then((exportResponse: Response) => {
+                return new GenerateProfileExportTelemetry(this.dbService).execute(exportResponse.body);
+            }).then((exportResponse: Response<ExportProfileContext>) => {
+                return {exportedFilePath: exportResponse.body.destinationDBFilePath!};
+            }));
+    }
+
+    importProfile(profileImportRequest: ProfileImportRequest): Observable<ProfileImportResponse> {
+        const importProfileContext: ImportProfileContext = {
+            sourceDBFilePath: profileImportRequest.sourceFilePath,
+
+        };
+        return Observable.fromPromise(
+            new ValidateProfileMetadata(this.dbService).execute(importProfileContext).then((importResponse: Response) => {
+                return new TransportUser(this.dbService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                const response: ProfileExportResponse = {exportedFilePath: ''};
+                return new TransportGroup(this.dbService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                const response: ProfileExportResponse = {exportedFilePath: ''};
+                return new TransportGroupProfile(this.dbService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                const response: ProfileExportResponse = {exportedFilePath: ''};
+                return new TransportFrameworkNChannel(this.dbService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                const response: ProfileExportResponse = {exportedFilePath: ''};
+                return new TransportAssesments(this.dbService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                const response: ProfileExportResponse = {exportedFilePath: ''};
+                return new UpdateImportedProfileMetadata(this.dbService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                return new GenerateProfileImportTelemetry(this.dbService).execute(importResponse.body);
+            }).then((importResponse: Response<ImportProfileContext>) => {
+                return {failed: importResponse.body.failed!, imported: importResponse.body.imported!};
+            }));
     }
 }

@@ -18,3 +18,4 @@ export * from './summarizer';
 export * from './util/shared-preferences';
 export * from './util/download';
 export * from './util/device';
+export * from './player';

@@ -118,7 +118,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
 
                 } else {
                     return this.dbService.insert({
-                        table: KeyValueStoreEntry.TABLE_NAME,
+                        table: LearnerAssessmentsEntry.TABLE_NAME,
                         modelJson: learnerAssessmentDbSchema
                     }).map(v => v > 0);
                 }
@@ -136,14 +136,14 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
                 learnerContentSummaryDetails.contentId,
                 learnerContentSummaryDetails.hierarchyData]
         }).mergeMap((rows: LearnerAssessmentsEntry.SchemaMap[]) => {
-            if (rows) {
+            if (rows && rows.length) {
+                learnerAssessmentDbSchema.sessions = rows[0][LearnerSummaryEntry.COLUMN_NAME_SESSIONS] + 1;
                 learnerAssessmentDbSchema.avg_ts = NumberUtil.toPrecision(learnerContentSummaryDetails.timespent /
                     learnerContentSummaryDetails.sessions!);
-                learnerAssessmentDbSchema.sessions = learnerContentSummaryDetails.sessions! + 1;
                 learnerAssessmentDbSchema.total_ts = learnerContentSummaryDetails.timespent;
                 learnerAssessmentDbSchema.last_updated_on = learnerContentSummaryDetails.timestamp;
                 return this.dbService.update({
-                    table: LearnerAssessmentsEntry.TABLE_NAME,
+                    table: LearnerSummaryEntry.TABLE_NAME,
                     selection: SummarizerQueries.getLearnerSummaryReadSelection(learnerContentSummaryDetails.hierarchyData),
                     selectionArgs: [learnerContentSummaryDetails.uid,
                         learnerContentSummaryDetails.contentId,
@@ -157,7 +157,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
                 learnerAssessmentDbSchema.total_ts = learnerContentSummaryDetails.timespent;
                 learnerAssessmentDbSchema.last_updated_on = learnerContentSummaryDetails.timestamp;
                 return this.dbService.insert({
-                    table: KeyValueStoreEntry.TABLE_NAME,
+                    table: LearnerSummaryEntry.TABLE_NAME,
                     modelJson: learnerAssessmentDbSchema
                 }).map(v => v > 0);
             }

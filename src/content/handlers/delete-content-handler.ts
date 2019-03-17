@@ -53,7 +53,7 @@ export class DeleteContentHandler {
     }
 
     async deleteOrUpdateContent(contentInDb: ContentEntry.SchemaMap,
-                                isChildItems: boolean, isChildContent: boolean): Promise<boolean> {
+                                isChildItems: boolean, isChildContent: boolean) {
         let refCount: number = contentInDb[COLUMN_NAME_REF_COUNT]!;
         let contentState: number;
         let visibility: string = contentInDb[COLUMN_NAME_VISIBILITY]!;
@@ -97,26 +97,29 @@ export class DeleteContentHandler {
         }
         // if there are no entry in DB for any content then on this case contentModel.getPath() will be null
         if (path) {
+            let directoryMetaData: Metadata;
             if (contentState === State.ONLY_SPINE.valueOf()) {
-                await this.fileService.removeRecursively(ContentUtil.getBasePath(path));
+                await this.rm(ContentUtil.getBasePath(path), contentInDb[COLUMN_NAME_IDENTIFIER]);
                 const contentRootPath: string | undefined = ContentUtil.getFirstPartOfThePathNameOnLastDelimiter(path);
                 if (contentRootPath) {
-                    await this.updateLastModifiedTime(contentRootPath);
+                    try {
+                        await this.updateLastModifiedTime(ContentUtil.getBasePath(contentRootPath));
+                        directoryMetaData = await this.fileService.getMetaData(ContentUtil.getBasePath(path));
+                    } catch (e) {
+                        console.log('Error', e);
+                    }
                 }
             }
-            const directoryMetaData: Metadata = await this.fileService.getMetaData(ContentUtil.getBasePath(path));
             contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY] = visibility;
             contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT] = ContentUtil.addOrUpdateRefCount(refCount);
             contentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] = contentState;
-            contentInDb[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = directoryMetaData.size;
-            return this.dbService.update({
+            contentInDb[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = directoryMetaData! ? directoryMetaData!.size : 0;
+            await this.dbService.update({
                 table: ContentEntry.TABLE_NAME,
                 modelJson: contentInDb,
                 selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
                 selectionArgs: [contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]]
             }).map(v => v > 0).toPromise();
-        } else {
-            return Observable.of(false).toPromise();
         }
     }
 
@@ -129,18 +132,29 @@ export class DeleteContentHandler {
         });
     }
 
-    findAllContentsFromDbWithIdentifiers(childContentsIdentifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
-        return this.dbService.read({
-            table: ContentEntry.TABLE_NAME,
-            selection: new QueryBuilder()
-                .where('? in (?) AND ? > 0')
-                .args([ContentEntry.COLUMN_NAME_IDENTIFIER, ArrayUtil.joinPreservingQuotes(childContentsIdentifiers)
-                    , ContentEntry.COLUMN_NAME_REF_COUNT])
-                .end()
-                .build(),
-            orderBy: `${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} desc, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} desc`
-        }).toPromise();
+    findAllContentsFromDbWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
+        const identifiersStr = ArrayUtil.joinPreservingQuotes(identifiers);
+        const orderby = ` ORDER BY ${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} DESC, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} DESC`;
+        const filter = ` WHERE ${COLUMN_NAME_IDENTIFIER} IN (${identifiersStr}) AND ${COLUMN_NAME_REF_COUNT} > 0`;
+        const query = `SELECT * FROM ${ContentEntry.TABLE_NAME} ${filter} ${orderby}`;
+        return this.dbService.execute(query).toPromise();
+    }
 
+    /** @internal */
+    private rm(directoryPath, direcoryToBeSkipped): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            try {
+                buildconfigreader.rm(directoryPath, direcoryToBeSkipped, (status: boolean) => {
+                    resolve(status);
+                }, (err: boolean) => {
+                    console.error(err);
+                    reject(false);
+                });
+            } catch (xc) {
+                console.error(xc);
+                reject(false);
+            }
+        });
     }
 
 }

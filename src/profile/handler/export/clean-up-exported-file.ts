@@ -183,10 +183,13 @@ export class CleanupExportedFile {
 
 
     private async cleanTable(tableName: string, coloumn: string, entities: string[]) {
+        if (!entities || !entities.length) {
+            return;
+        }
         const entityFilter: string = ArrayUtil.joinPreservingQuotes(entities);
         const query =
             `DELETE FROM ${tableName}
-             WHERE ${coloumn} = NOT IN(${entityFilter})`;
+             WHERE ${coloumn}  NOT IN(${entityFilter})`;
         await this.dbService.execute(query, true).toPromise();
     }
 }
