@@ -183,6 +183,10 @@ export class SunbirdSdk {
         return this._playerService;
     }
 
+    get deviceInfo(): DeviceInfo {
+        return this._deviceInfo;
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._sdkConfig = Object.freeze(sdkConfig);
 
