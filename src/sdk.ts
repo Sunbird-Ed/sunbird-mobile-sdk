@@ -266,7 +266,9 @@ export class SunbirdSdk {
             new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
             this._keyValueStore,
             this._sharedPreferences,
-            this._frameworkService
+            this._frameworkService,
+            this._fileService,
+            this._deviceInfo
         );
 
         this._groupService = new GroupServiceImpl(

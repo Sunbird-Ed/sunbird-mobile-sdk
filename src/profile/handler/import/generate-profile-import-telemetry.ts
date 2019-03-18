@@ -10,10 +10,10 @@ import {
     TelemetryService,
     TelemetryShareRequest
 } from '../../../telemetry';
+import {TelemetryLogger} from '../../../telemetry/util/telemetry-logger';
 
-export class GenerateShareTelemetry {
-    constructor(private dbService: DbService,
-                private telemetryService: TelemetryService) {
+export class GenerateProfileImportTelemetry {
+    constructor(private dbService: DbService) {
     }
 
     public execute(importContext: ImportTelemetryContext): Promise<Response> {
@@ -39,7 +39,7 @@ export class GenerateShareTelemetry {
                 items: items,
                 env: 'sdk'
             };
-            return this.telemetryService.share(req).toPromise();
+            return TelemetryLogger.log.share(req).toPromise();
         }).then(() => {
             response.body = importContext;
             return response;

@@ -31,10 +31,10 @@ export class TransportAssesments {
         const uidsFilter: string = ArrayUtil.joinPreservingQuotes(userIds);
         const learnerAssesmentDeleteQuery =
             `DELETE FROM ${LearnerAssessmentsEntry.TABLE_NAME}
-             WHERE ${LearnerAssessmentsEntry.COLUMN_NAME_UID} = NOT IN(${uidsFilter})`;
+             WHERE ${LearnerAssessmentsEntry.COLUMN_NAME_UID}  NOT IN(${uidsFilter})`;
         const learnerSummaryDeleteQuery =
             `DELETE FROM ${LearnerSummaryEntry.TABLE_NAME}
-             WHERE ${LearnerSummaryEntry.COLUMN_NAME_UID} = NOT IN(${uidsFilter})`;
+             WHERE ${LearnerSummaryEntry.COLUMN_NAME_UID}  NOT IN(${uidsFilter})`;
         await this.dbService.execute(learnerAssesmentDeleteQuery, true).toPromise();
         await this.dbService.execute(learnerSummaryDeleteQuery, true).toPromise();
     }
