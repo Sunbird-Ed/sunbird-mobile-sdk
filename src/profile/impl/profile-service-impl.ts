@@ -25,7 +25,7 @@ import {Observable} from 'rxjs';
 import {GroupProfileEntry, ProfileEntry} from '../db/schema';
 import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
-import {ApiService} from '../../api';
+import {ApiService, Response} from '../../api';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
@@ -55,7 +55,6 @@ import {ProfileImportResponse} from '../def/profile-import-response';
 import {ExportProfileContext} from '../def/export-profile-context';
 import {GetEparFilePath} from '../handler/export/get-epar-file-path';
 import {FileService} from '../../util/file/def/file-service';
-import {Response} from '../../api';
 import {CopyDatabase} from '../handler/export/copy-database';
 import {CreateMetaData} from '../handler/export/create-metadata';
 import {DeviceInfo} from '../../util/device';
@@ -401,7 +400,6 @@ export class ProfileServiceImpl implements ProfileService {
 
         return Observable.fromPromise(
             new GetEparFilePath(this.fileService).execute(exportProfileContext).then((exportResponse: Response) => {
-
                 return new CopyDatabase(this.dbService).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
                 const response: ProfileExportResponse = {exportedFilePath: ''};
