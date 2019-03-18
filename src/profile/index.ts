@@ -16,3 +16,5 @@ export * from './def/is-profile-already-in-use-request';
 export * from './def/location-search-criteria';
 export * from './def/generate-otp-request';
 export * from './def/verify-otp-request';
+export * from './def/profile-export-request';
+export * from './def/profile-export-response';
