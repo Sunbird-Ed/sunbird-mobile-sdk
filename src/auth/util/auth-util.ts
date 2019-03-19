@@ -52,14 +52,14 @@ export class AuthUtil {
 
             customtabs.isAvailable(() => {
                 customtabs.launch(launchUrl!!, async () => {
-                    await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '');
+                    await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '').toPromise();
                     resolve();
                 }, error => {
                     reject(error);
                 });
             }, error => {
                 customtabs.launchInBrowser(launchUrl!!, async () => {
-                    await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '');
+                    await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '').toPromise();
                     resolve();
                 }, err => {
                     reject(err);
