@@ -83,8 +83,7 @@ export class SessionAuthenticator implements RequestInterceptor, ResponseInterce
     }
 
     private async startSession(sessionData: OAuthSession): Promise<undefined> {
-        this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData));
-
+        await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
         return;
     }
 }
