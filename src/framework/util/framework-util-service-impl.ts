@@ -55,6 +55,7 @@ export class FrameworkUtilServiceImpl implements FrameworkUtilService {
         return new GetFrameworkCategoryTermsHandler(
             this,
             this.frameworkService,
+            this.sharedPreferences
         ).handle(request);
     }
 }
