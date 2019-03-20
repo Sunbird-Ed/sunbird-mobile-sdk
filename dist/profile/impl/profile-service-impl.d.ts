@@ -1,15 +1,20 @@
-import { AcceptTermsConditionRequest, GenerateOtpRequest, GetAllProfileRequest, IsProfileAlreadyInUseRequest, LocationSearchCriteria, Profile, ProfileService, ProfileServiceConfig, ProfileSession, ProfileSource, ServerProfile, ServerProfileDetailsRequest, ServerProfileSearchCriteria, UpdateServerProfileInfoRequest, VerifyOtpRequest } from '..';
+import { AcceptTermsConditionRequest, ContentAccess, GenerateOtpRequest, GetAllProfileRequest, IsProfileAlreadyInUseRequest, LocationSearchCriteria, Profile, ProfileService, ProfileServiceConfig, ProfileSession, ProfileSource, ServerProfile, ServerProfileDetailsRequest, ServerProfileSearchCriteria, UpdateServerProfileInfoRequest, VerifyOtpRequest } from '..';
 import { DbService } from '../../db';
 import { Observable } from 'rxjs';
 import { TenantInfo } from '../def/tenant-info';
 import { ApiService } from '../../api';
 import { CachedItemStore, KeyValueStore } from '../../key-value-store';
 import { ContentAccessFilterCriteria } from '../def/content-access-filter-criteria';
-import { ContentAccess } from '../def/content-access';
 import { ProfileExistsResponse } from '../def/profile-exists-response';
 import { LocationSearchResult } from '../def/location-search-result';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { FrameworkService } from '../../framework';
+import { ProfileExportRequest } from '../def/profile-export-request';
+import { ProfileExportResponse } from '../def/profile-export-response';
+import { ProfileImportRequest } from '../def/profile-import-request';
+import { ProfileImportResponse } from '../def/profile-import-response';
+import { FileService } from '../../util/file/def/file-service';
+import { DeviceInfo } from '../../util/device';
 export declare class ProfileServiceImpl implements ProfileService {
     private profileServiceConfig;
     private dbService;
@@ -18,8 +23,11 @@ export declare class ProfileServiceImpl implements ProfileService {
     private keyValueStore;
     private sharedPreferences;
     private frameworkService;
+    private fileService;
+    private deviceInfo;
     private static readonly KEY_USER_SESSION;
-    constructor(profileServiceConfig: ProfileServiceConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences, frameworkService: FrameworkService);
+    constructor(profileServiceConfig: ProfileServiceConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences, frameworkService: FrameworkService, fileService: FileService, deviceInfo: DeviceInfo);
+    onInit(): Observable<undefined>;
     createProfile(profile: Profile, profileSource?: ProfileSource): Observable<Profile>;
     deleteProfile(uid: string): Observable<undefined>;
     updateProfile(profile: Profile): Observable<Profile>;
@@ -30,12 +38,15 @@ export declare class ProfileServiceImpl implements ProfileService {
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile>;
     getActiveSessionProfile(): Observable<Profile>;
     setActiveSessionForProfile(profileUid: string): Observable<boolean>;
-    getActiveProfileSession(): Observable<ProfileSession | undefined>;
+    getActiveProfileSession(): Observable<ProfileSession>;
     acceptTermsAndConditions(acceptTermsConditions: AcceptTermsConditionRequest): Observable<boolean>;
     isProfileAlreadyInUse(isProfileAlreadyInUseRequest: IsProfileAlreadyInUseRequest): Observable<ProfileExistsResponse>;
     generateOTP(generateOtpRequest: GenerateOtpRequest): Observable<boolean>;
     verifyOTP(verifyOTPRequest: VerifyOtpRequest): Observable<boolean>;
-    searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult>;
+    searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult[]>;
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]>;
     private mapDbProfileEntriesToProfiles;
+    addContentAccess(contentAccess: ContentAccess): Observable<boolean>;
+    exportProfile(profileExportRequest: ProfileExportRequest): Observable<ProfileExportResponse>;
+    importProfile(profileImportRequest: ProfileImportRequest): Observable<ProfileImportResponse>;
 }

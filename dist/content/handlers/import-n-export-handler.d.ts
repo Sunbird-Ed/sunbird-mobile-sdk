@@ -7,7 +7,9 @@ export declare class ImportNExportHandler {
     private static readonly EKSTEP_CONTENT_ARCHIVE;
     private static readonly SUPPORTED_MANIFEST_VERSION;
     constructor(deviceInfo: DeviceInfo, dbService?: DbService | undefined);
-    populateContents(contentsInDb: ContentEntry.SchemaMap[]): any[];
+    populateItems(contentsInDb: ContentEntry.SchemaMap[]): {
+        [key: string]: any;
+    }[];
     getContentExportDBModeltoExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]>;
     generateManifestForArchive(items: any[]): {
         [key: string]: any;

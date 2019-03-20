@@ -5,15 +5,17 @@ export declare class DbCordovaService implements DbService {
     private dBVersion;
     private appMigrationList;
     constructor(context: DbConfig, dBVersion: number, appMigrationList: Migration[]);
-    update(updateQuery: UpdateQuery): Observable<boolean>;
+    update(updateQuery: UpdateQuery): Observable<number>;
     init(): Promise<undefined>;
     private hasInitialized;
     delete(deleteQuery: DeleteQuery): Observable<undefined>;
     private onCreate;
     private onUpgrade;
-    execute(query: string): Observable<any>;
+    execute(query: string, useExternalDb?: boolean): Observable<any>;
     read(readQuery: ReadQuery): Observable<any[]>;
     insert(inserQuery: InsertQuery): Observable<number>;
     beginTransaction(): void;
-    endTransaction(isOperationSuccessful: boolean): void;
+    endTransaction(isOperationSuccessful: boolean, useExternalDb?: boolean): void;
+    copyDatabase(destination: string): Observable<boolean>;
+    open(dbFilePath: string): Promise<undefined>;
 }

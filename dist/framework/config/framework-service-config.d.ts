@@ -4,4 +4,5 @@ export interface FrameworkServiceConfig {
     frameworkConfigDirPath: string;
     channelConfigDirPath: string;
     searchOrganizationApiPath: string;
+    systemSettingsDefaultChannelIdKey: string;
 }

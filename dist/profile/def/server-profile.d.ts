@@ -9,6 +9,8 @@ export interface ServerProfile {
     tncLatestVersion: string;
     promptTnC: boolean;
     tncLatestVersionUrl: string;
+    id: string;
+    avatar: string;
 }
 export interface RootOrg {
     rootOrgId?: string;

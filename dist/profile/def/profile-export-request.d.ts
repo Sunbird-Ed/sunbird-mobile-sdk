@@ -1,6 +1,6 @@
 export interface ProfileExportRequest {
     userIds: string[];
-    groupIds: string[];
+    groupIds?: string[];
     destinationFolder: string;
 }
 export interface ExportProfileContext {

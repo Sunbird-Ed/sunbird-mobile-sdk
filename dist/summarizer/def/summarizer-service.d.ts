@@ -1,13 +1,13 @@
 import { Observable } from 'rxjs';
-import { LearnerAssessmentDetails, LearnerAssessmentSummary } from './response';
+import { LearnerAssessmentSummary, ReportDetailPerUser } from './response';
 import { SummaryRequest } from './request';
-import { TelemetryEvents } from '../../telemetry';
-import Telemetry = TelemetryEvents.Telemetry;
+import { SunbirdTelemetry } from '../../telemetry';
+import Telemetry = SunbirdTelemetry.Telemetry;
 export interface SummarizerService {
     getSummary(request: SummaryRequest): Observable<LearnerAssessmentSummary[]>;
-    getLearnerAssessmentDetails(request: SummaryRequest): Observable<LearnerAssessmentDetails[]>;
-    saveLearnerAssessmentDetails(event: Telemetry): any;
-    saveLearnerContentSummaryDetails(event: Telemetry): any;
+    getLearnerAssessmentDetails(request: SummaryRequest): Observable<Map<string, ReportDetailPerUser>>;
+    saveLearnerAssessmentDetails(event: Telemetry): Observable<boolean>;
+    saveLearnerContentSummaryDetails(event: Telemetry): Observable<boolean>;
     getReportsByUser(request: SummaryRequest): Observable<{
         [key: string]: any;
     }[]>;
@@ -17,4 +17,5 @@ export interface SummarizerService {
     getDetailsPerQuestion(request: SummaryRequest): Observable<{
         [key: string]: any;
     }[]>;
+    deletePreviousAssessmentDetails(uid: string, contentId: string): Observable<undefined>;
 }

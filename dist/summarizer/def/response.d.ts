@@ -7,6 +7,8 @@ export interface LearnerAssessmentSummary {
     hierarchyData: string;
     totalMaxScore: number;
     totalScore: number;
+    name?: string;
+    lastUsedTime?: number;
 }
 export interface LearnerAssessmentDetails {
     id?: number;
@@ -23,7 +25,7 @@ export interface LearnerAssessmentDetails {
     qtitle: string;
     maxScore: number;
     hierarchyData: string;
-    total_ts: number;
+    total_ts?: number;
     marks?: number;
     occurenceCount?: number;
     sum_max_score?: number;
@@ -32,20 +34,20 @@ export interface LearnerAssessmentDetails {
 export interface LearnerContentSummaryDetails {
     uid: string;
     contentId: string;
-    avgts: number;
-    sessions: number;
-    totalts: number;
-    lastUpdated: number;
+    avgts?: number;
+    sessions?: number;
+    totalts?: number;
+    lastUpdated?: number;
     timespent: number;
     timestamp: number;
-    ver: string;
+    ver?: string;
     hierarchyData: string;
 }
 export interface QuestionSummary {
     uid: string;
     time: number;
     result: number;
-    maxScore: number;
+    max_score: number;
 }
 export interface UserReportSummary {
     totalTimespent: number;
@@ -55,4 +57,17 @@ export interface UserReportSummary {
     uid: string;
     userName: string;
     timespent: number;
+}
+export declare class ContentCache {
+    lastUsedTime: number;
+    name: string;
+    identifier: string;
+}
+export declare class ReportDetailPerUser {
+    uid: string;
+    name: string;
+    totalTime: number;
+    totalScore: number;
+    maxTotalScore: number;
+    reportDetailsList: LearnerAssessmentDetails[];
 }

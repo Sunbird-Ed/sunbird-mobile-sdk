@@ -26,7 +26,7 @@ export declare namespace ContentEntry {
         [COLUMN_NAME_PATH]?: string;
         [COLUMN_NAME_INDEX]?: string;
         [COLUMN_NAME_VISIBILITY]?: string;
-        [COLUMN_NAME_SERVER_LAST_UPDATED_ON]: string;
+        [COLUMN_NAME_SERVER_LAST_UPDATED_ON]?: string;
         [COLUMN_NAME_LOCAL_LAST_UPDATED_ON]?: string;
         [COLUMN_NAME_MANIFEST_VERSION]: string;
         [COLUMN_NAME_REF_COUNT]?: number;
@@ -54,7 +54,7 @@ export declare namespace ContentAccessEntry {
         [COLUMN_NAME_UID]: string;
         [COLUMN_NAME_CONTENT_IDENTIFIER]: string;
         [COLUMN_NAME_EPOCH_TIMESTAMP]: number;
-        [COLUMN_NAME_STATUS]: string;
+        [COLUMN_NAME_STATUS]: number;
         [COLUMN_NAME_CONTENT_TYPE]: string;
         [COLUMN_NAME_LEARNER_STATE]: string;
     }
@@ -72,7 +72,7 @@ export declare namespace ContentFeedbackEntry {
     interface SchemaMap {
         [COLUMN_NAME_CONTENT_ID]: string;
         [COLUMN_NAME_UID]: string;
-        [COLUMN_NAME_RATING]: string;
+        [COLUMN_NAME_RATING]: number;
         [COLUMN_NAME_COMMENTS]: string;
         [COLUMN_NAME_CREATED_AT]: number;
     }

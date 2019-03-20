@@ -12,8 +12,9 @@ export declare class DebugPromptFileService implements FileService {
     getTempLocation(destinationPath: string): Promise<DirectoryEntry>;
     readAsText(path: string, file: string): Promise<string>;
     removeDir(path: string, dirName: string): Promise<RemoveResult>;
-    removeFile(path: string, fileName: string): Promise<RemoveResult>;
+    removeFile(path: string): Promise<RemoveResult>;
     removeRecursively(path: string): Promise<RemoveResult>;
     listDir(directoryPath: string): Promise<Entry[]>;
     writeFile(path: string, fileName: string, text: string, options: IWriteOptions): Promise<string>;
+    getDirectorySize(path: string): Promise<number>;
 }

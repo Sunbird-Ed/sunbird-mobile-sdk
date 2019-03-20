@@ -4,16 +4,12 @@ import { CategoryTerm, Channel, Framework, FrameworkService, GetFrameworkCategor
 import { Observable } from 'rxjs';
 import { GetSuggestedFrameworksRequest } from './requests';
 import { ProfileService } from '../../profile';
-import { SystemSettingsService } from '../../system-settings';
 export declare class FrameworkUtilServiceImpl implements FrameworkUtilService {
     private sharedPreferences;
     private frameworkService;
     private profileService;
-    private systemSettingsService;
-    private readonly SYSTEM_SETTINGS_CUSTODIAN_ORG_ID_KEY;
-    constructor(sharedPreferences: SharedPreferences, frameworkService: FrameworkService, profileService: ProfileService, systemSettingsService: SystemSettingsService);
+    constructor(sharedPreferences: SharedPreferences, frameworkService: FrameworkService, profileService: ProfileService);
     getActiveChannel(): Observable<Channel>;
     getActiveChannelSuggestedFrameworkList(getSuggestedFrameworksRequest: GetSuggestedFrameworksRequest): Observable<Framework[]>;
     getFrameworkCategoryTerms(request: GetFrameworkCategoryTermsRequest): Observable<CategoryTerm[]>;
-    private getCustodianChannel;
 }

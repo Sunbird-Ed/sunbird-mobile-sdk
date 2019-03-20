@@ -13,6 +13,11 @@ import { KeyValueStore } from './key-value-store';
 import { PageAssembleService } from './page';
 import { GroupService } from './group';
 import { SystemSettingsService } from './system-settings';
+import { DeviceInfo } from './util/device/def/device-info';
+import { EventsBusService } from './events-bus';
+import { SummarizerService } from './summarizer/def/summarizer-service';
+import { DownloadService } from './util/download';
+import { PlayerService } from './player/def/player-service';
 export declare class SunbirdSdk {
     private static _instance?;
     static readonly instance: SunbirdSdk;
@@ -36,6 +41,11 @@ export declare class SunbirdSdk {
     private _deviceInfo;
     private _sdkConfig;
     private _contentFeedbackService;
+    private _eventsBusService;
+    private _summarizerService;
+    private _downloadService;
+    private _appInfo;
+    private _playerService;
     readonly sdkConfig: SdkConfig;
     readonly pageAssembleService: PageAssembleService;
     readonly dbService: DbService;
@@ -53,6 +63,11 @@ export declare class SunbirdSdk {
     readonly frameworkUtilService: FrameworkUtilService;
     readonly sharedPreferences: SharedPreferences;
     readonly systemSettingsService: SystemSettingsService;
+    readonly eventsBusService: EventsBusService;
+    readonly summarizerService: SummarizerService;
+    readonly downloadService: DownloadService;
+    readonly playerService: PlayerService;
+    readonly deviceInfo: DeviceInfo;
     init(sdkConfig: SdkConfig): Promise<void>;
     private postInit;
 }

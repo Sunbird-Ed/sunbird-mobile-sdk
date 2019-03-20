@@ -25,7 +25,7 @@ export declare class FileServiceImpl implements FileService {
      * @param {string} fileName Name of file to remove
      * @returns {Promise<RemoveResult>} Returns a Promise that resolves to a RemoveResult or rejects with an error.
      */
-    removeFile(path: string, fileName: string): Promise<RemoveResult>;
+    removeFile(path: string): Promise<RemoveResult>;
     createDir(path: string, replace: boolean): Promise<DirectoryEntry>;
     /**
      * List files and directory from a given path.
@@ -93,4 +93,6 @@ export declare class FileServiceImpl implements FileService {
     private writeFileEntry;
     private write;
     getExternalApplicationStorageDirectory(): string;
+    getDirectorySize(path: string): Promise<number>;
+    size(entry: Entry): Promise<number>;
 }

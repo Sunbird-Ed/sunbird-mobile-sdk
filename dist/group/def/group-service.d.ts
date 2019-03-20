@@ -12,4 +12,5 @@ export interface GroupService {
     getActiveGroupSession(): Observable<GroupSession | undefined>;
     getAllGroups(getAllGroupRequest?: GetAllGroupRequest): Observable<Group[]>;
     addProfilesToGroup(profilesToGroupRequest: ProfilesToGroupRequest): Observable<number>;
+    removeActiveGroupSession(): Observable<undefined>;
 }

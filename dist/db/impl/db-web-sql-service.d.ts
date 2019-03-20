@@ -10,10 +10,12 @@ export declare class DbWebSqlService implements DbService {
     read(readQuery: ReadQuery): Observable<any[]>;
     insert(inserQuery: InsertQuery): Observable<number>;
     execute(query: string): Observable<any>;
-    update(updateQuery: UpdateQuery): Observable<boolean>;
+    update(updateQuery: UpdateQuery): Observable<number>;
     delete(deleteQuery: DeleteQuery): Observable<undefined>;
     beginTransaction(): void;
     endTransaction(isOperationSuccessful: boolean): void;
     private hasInitialized;
     private onCreate;
+    copyDatabase(): Observable<boolean>;
+    open(dbFilePath: string): Promise<undefined>;
 }

@@ -51,3 +51,16 @@ export declare namespace TelemetryTagEntry {
     const getCreateEntry: (() => string);
     const getDeleteEntry: (() => string);
 }
+export declare namespace MetaEntry {
+    const _ID = "_id";
+    const TABLE_NAME = "meta_data";
+    const COLUMN_NAME_MSG_ID = "key";
+    const COLUMN_NAME_DATA = "value";
+    interface SchemaMap {
+        [_ID]: string;
+        [COLUMN_NAME_MSG_ID]: string;
+        [COLUMN_NAME_DATA]: string;
+    }
+    const getCreateEntry: (() => string);
+    const getDeleteEntry: (() => string);
+}

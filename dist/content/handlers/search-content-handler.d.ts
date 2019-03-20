@@ -1,31 +1,34 @@
-import { ContentSearchCriteria, ContentSearchFilter, ContentSearchResult, ContentServiceConfig, ContentSortCriteria, FilterValue } from '..';
-import { Request } from '../../api';
+import { ContentData, ContentSearchCriteria, ContentSearchFilter, ContentSearchResult, ContentServiceConfig, ContentSortCriteria, FilterValue, SearchResponse } from '..';
 import { AppConfig } from '../../api/config/app-config';
+import { SearchFilter, SearchRequest } from '../def/search-request';
+import { TelemetryService } from '../../telemetry';
 export declare class SearchContentHandler {
     private appConfig;
     private contentServiceConfig;
+    private telemetryService;
     static readonly AUDIENCE_LEARNER: string[];
     static readonly AUDIENCE_INSTRUCTOR: string[];
     private readonly SEARCH_ENDPOINT;
-    constructor(appConfig: AppConfig, contentServiceConfig: ContentServiceConfig);
-    getSearchContentRequest(criteria: ContentSearchCriteria): any;
-    getSearchFilter(criteria: ContentSearchCriteria): any;
-    getFilterRequest(criteria: ContentSearchCriteria): any;
-    addFiltersToRequest(searchRequest: any, filter: ContentSearchFilter[]): void;
-    getSearchRequest(criteria: ContentSearchCriteria): any;
+    constructor(appConfig: AppConfig, contentServiceConfig: ContentServiceConfig, telemetryService: TelemetryService);
+    getSearchCriteria(requestMap: {
+        [key: string]: any;
+    }): ContentSearchCriteria;
+    private getSortOrder;
+    private getSearchType;
+    getSearchContentRequest(criteria: ContentSearchCriteria): SearchRequest;
+    getSearchFilter(criteria: ContentSearchCriteria): SearchFilter;
+    getFilterRequest(criteria: ContentSearchCriteria): SearchFilter;
+    addFiltersToRequest(searchFilter: SearchFilter, filter: ContentSearchFilter[]): void;
+    getSearchRequest(criteria: ContentSearchCriteria): SearchFilter;
     getSortByRequest(sortCriteria: ContentSortCriteria[]): any;
     getCompatibilityLevelFilter(): any;
-    getRequest(request: any, framework: string, langCode: string): Request;
-    createFiilterCriteria(previouscriteria: ContentSearchCriteria, facets: ContentSearchFilter[], filters: any): {
-        query: string;
-        limit: number;
-        offset: number;
-        facets: string[];
-        sort: ContentSortCriteria[];
-        mode: string;
-        facetFilters: never[];
-    };
+    createFilterCriteria(previouscriteria: ContentSearchCriteria, facets: ContentSearchFilter[], appliedFilterMap: SearchFilter): ContentSearchCriteria;
+    private getSortedFilterValuesWithAppliedFilters;
+    private mapFilterValues;
     addFilterValue(facets: ContentSearchFilter[], filters: any): void;
     getFilterValuesWithAppliedFilter(facetValues: FilterValue[], appliedFilter: string[]): FilterValue[];
-    mapSearchResponse(searchResponse: any, searchRequest: any): ContentSearchResult;
+    mapSearchResponse(previousContentCriteria: ContentSearchCriteria, searchResponse: SearchResponse, searchRequest: SearchRequest): ContentSearchResult;
+    getContentSearchFilter(contentIds: string[], status: string[]): SearchRequest;
+    getDownloadUrl(contentData: ContentData): Promise<string>;
+    buildContentLoadingEvent(subtype: string, identifier: string): Promise<boolean>;
 }

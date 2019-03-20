@@ -1,5 +1,5 @@
-import { TelemetryEvents } from './telemetry-model';
-import Telemetry = TelemetryEvents.Telemetry;
+import { SunbirdTelemetry } from './telemetry-model';
+import Telemetry = SunbirdTelemetry.Telemetry;
 export declare abstract class TelemetryDecorator {
     abstract decorate(event: Telemetry, uid: string, sid: string, gid?: string): any;
     abstract prepare(event: Telemetry, priority: number): {

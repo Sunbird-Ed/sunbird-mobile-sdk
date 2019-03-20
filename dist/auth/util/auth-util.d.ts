@@ -1,12 +1,13 @@
 import { ApiConfig, ApiService } from '../../api';
-import { OauthSession } from '..';
+import { OAuthSession } from '..';
+import { SharedPreferences } from '../../util/shared-preferences';
 export declare class AuthUtil {
     private apiConfig;
     private apiService;
-    constructor(apiConfig: ApiConfig, apiService: ApiService);
-    refreshSession(): Promise<undefined>;
-    startSession(sessionData: OauthSession): void;
-    endSession(): Promise<undefined>;
-    getSessionData(): Promise<OauthSession | undefined>;
-    private hasExistingSession;
+    private sharedPreferences;
+    constructor(apiConfig: ApiConfig, apiService: ApiService, sharedPreferences: SharedPreferences);
+    refreshSession(): Promise<void>;
+    startSession(sessionData: OAuthSession): Promise<void>;
+    endSession(): Promise<void>;
+    getSessionData(): Promise<OAuthSession | undefined>;
 }

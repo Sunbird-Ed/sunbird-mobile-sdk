@@ -1,17 +1,28 @@
 import { ApiRequestHandler, ApiService } from '../../api';
-import { Content, ContentDetailRequest, ContentServiceConfig } from '..';
+import { Content, ContentData, ContentDecorateRequest, ContentDetailRequest, ContentFeedbackService, ContentServiceConfig } from '..';
 import { Observable } from 'rxjs';
 import { DbService, ReadQuery } from '../../db';
 import { ContentEntry } from '../db/schema';
+import { ProfileService } from '../../profile';
+import { EventsBusService } from '../../events-bus';
 export declare class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
+    private contentFeedbackService;
+    private profileService;
+    private apiService;
+    private contentServiceConfig;
     private dbService;
-    private contentServiceConfig?;
-    private apiService?;
+    private eventsBusService;
     private readonly GET_CONTENT_DETAILS_ENDPOINT;
-    constructor(dbService: DbService, contentServiceConfig?: ContentServiceConfig | undefined, apiService?: ApiService | undefined);
+    constructor(contentFeedbackService: ContentFeedbackService, profileService: ProfileService, apiService: ApiService, contentServiceConfig: ContentServiceConfig, dbService: DbService, eventsBusService: EventsBusService);
     static getReadContentQuery(identifier: string): ReadQuery;
     handle(request: ContentDetailRequest): Observable<Content>;
-    private readContentFromDB;
-    getContentFromDB(contentId: string): Promise<ContentEntry.SchemaMap[]>;
-    private fetchFromServer;
+    /** @internal */
+    fetchFromDB(contentId: string): Observable<ContentEntry.SchemaMap | undefined>;
+    fetchFromServer(request: ContentDetailRequest): Observable<ContentData>;
+    fetchAndDecorate(request: ContentDetailRequest): Observable<Content>;
+    /** @internal */
+    decorateContent(request: ContentDecorateRequest): Observable<Content>;
+    private attachContentAccess;
+    private attachFeedback;
+    private attachContentMarker;
 }

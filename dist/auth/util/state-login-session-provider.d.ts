@@ -1,4 +1,4 @@
-import { OauthSession, SessionProvider } from '..';
+import { OAuthSession, SessionProvider } from '..';
 import { ApiConfig, ApiService } from '../../api';
 import { StepOneCallbackType } from './o-auth-delegate';
 export declare class StateLoginSessionProvider implements SessionProvider {
@@ -6,6 +6,6 @@ export declare class StateLoginSessionProvider implements SessionProvider {
     private apiConfig;
     private apiService;
     constructor(params: StepOneCallbackType, apiConfig: ApiConfig, apiService: ApiService);
-    provide(): Promise<OauthSession>;
+    provide(): Promise<OAuthSession>;
     private openInAppBrowser;
 }

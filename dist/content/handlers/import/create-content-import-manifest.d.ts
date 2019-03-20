@@ -12,5 +12,5 @@ export declare class CreateContentImportManifest {
     constructor(dbService: DbService, deviceInfo: DeviceInfo, fileService: FileService);
     execute(importContentContext: ImportContentContext): Promise<Response>;
     findAllContentsWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]>;
-    createnWriteManifest(contentsInDb: ContentEntry.SchemaMap[]): void;
+    private createnWriteManifest;
 }

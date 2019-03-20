@@ -6,7 +6,6 @@ export declare namespace KeyValueStoreEntry {
     const getCreateEntry: (() => string);
     const getDeleteEntry: (() => string);
     interface SchemaMap {
-        [_ID]: string;
         [COLUMN_NAME_KEY]: string;
         [COLUMN_NAME_VALUE]: string;
     }

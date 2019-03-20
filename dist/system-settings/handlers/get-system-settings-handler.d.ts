@@ -1,6 +1,6 @@
 import { CachedItemStore } from '../../key-value-store';
 import { FileService } from '../../util/file/def/file-service';
-import { SystemSettings, GetSystemSettingsRequest, SystemSettingsConfig } from '..';
+import { GetSystemSettingsRequest, SystemSettings, SystemSettingsConfig } from '..';
 import { ApiRequestHandler, ApiService } from '../../api';
 import { Observable } from 'rxjs';
 export declare class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSettingsRequest, SystemSettings> {
