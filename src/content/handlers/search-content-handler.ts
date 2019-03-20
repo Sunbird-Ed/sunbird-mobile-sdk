@@ -190,7 +190,9 @@ export class SearchContentHandler {
         }
         const attribute = sortCriteria[0].sortAttribute;
         const sortOrder: SortOrder = sortCriteria[0].sortOrder;
-        return {attribute: sortOrder};
+        const sortByFilter = {};
+        sortByFilter[attribute] = sortOrder;
+        return sortByFilter;
     }
 
     getCompatibilityLevelFilter(): any {
