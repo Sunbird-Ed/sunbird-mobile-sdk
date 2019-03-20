@@ -48,7 +48,6 @@ export class ChildContentsHandler {
         } else {
             content.hierarchyInfo = sourceInfoList;
         }
-        console.log('content', content);
         return content;
     }
 

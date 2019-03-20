@@ -1,5 +1,5 @@
 import {ContentSearchCriteria, ContentSearchFilter} from './requests';
-import {ContentData} from './content';
+import {Content, ContentData} from './content';
 import {ContentImportStatus} from '../util/content-constants';
 
 export interface ContentSearchResult {
@@ -68,3 +68,11 @@ export interface ContentMarker {
     marker: number;
 }
 
+export interface ContentExportResponse {
+    exportedFilePath: string;
+}
+
+export interface RelevantContentResponse {
+    nextContent?: Content;
+    previousContent?: Content;
+}
