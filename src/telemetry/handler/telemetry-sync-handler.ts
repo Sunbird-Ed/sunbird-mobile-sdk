@@ -7,7 +7,7 @@ import {ByteArrayToBinaryStringPreprocessor} from '../impl/byte-array-to-binary-
 import {TelemetryEntriesToStringPreprocessor} from '../impl/telemetry-entries-to-string-preprocessor';
 import {KeyValueStore} from '../../key-value-store';
 import {TelemetryConfig} from '../config/telemetry-config';
-import {DeviceInfo} from '../../util/device/def/device-info';
+import {DeviceInfo} from '../../util/device';
 import {DbService, InsertQuery} from '../../db';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {UniqueId} from '../../db/util/unique-id';
@@ -211,6 +211,13 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
                                 syncedFileSize: 0
                             })
                     )
+                    .catch(() => {
+                        return Observable.of({
+                            syncedEventCount: 0,
+                            syncTime: Date.now(),
+                            syncedFileSize: 0
+                        });
+                    })
             );
     }
 

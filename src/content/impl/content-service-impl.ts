@@ -78,6 +78,7 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {GenerateInteractTelemetry} from '../handlers/import/generate-interact-telemetry';
 import {CachedItemStore} from '../../key-value-store';
 import * as SHA1 from 'crypto-js/sha1';
+import {FrameworkKeys} from '../../preference-keys';
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
@@ -375,11 +376,14 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         }
 
         const searchRequest = searchHandler.getSearchContentRequest(contentSearchCriteria);
-        return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig,
-            contentSearchCriteria.framework, contentSearchCriteria.languageCode)
-            .handle(searchRequest)
-            .map((searchResponse: SearchResponse) => {
-                return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
+
+        return this.sharedPreferences.getString(FrameworkKeys.KEY_ACTIVE_CHANNEL_ACTIVE_FRAMEWORK_ID)
+            .mergeMap((frameworkId?: string) => {
+                return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig, frameworkId!, contentSearchCriteria.languageCode)
+                    .handle(searchRequest)
+                    .map((searchResponse: SearchResponse) => {
+                        return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
+                    });
             });
     }
 
