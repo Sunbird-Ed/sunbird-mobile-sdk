@@ -25,13 +25,13 @@ export class ChildContentsHandler {
             await this.getSortedChildrenList(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA], ChildContents.ALL);
 
         if (childContentModels && childContentModels.length) {
-            if (!hierarchyInfoList) {
-                content.hierarchyInfo = [
-                    {
-                        identifier: contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER],
-                        contentType: contentInDb[ContentEntry.COLUMN_NAME_CONTENT_TYPE]
-                    }
-                ];
+            if (hierarchyInfoList) {
+                const newHierachyInfoList = hierarchyInfoList;
+                newHierachyInfoList.push({
+                    identifier: contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER],
+                    contentType: contentInDb[ContentEntry.COLUMN_NAME_CONTENT_TYPE]
+                });
+                content.hierarchyInfo = newHierachyInfoList;
             }
 
             if (level === -1 || currentLevel <= level) {

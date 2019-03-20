@@ -116,20 +116,26 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
     /** @internal */
     public decorateContent(request: ContentDecorateRequest): Observable<Content> {
         return Observable.of(request.content)
-            .mergeMap(async (content) => {
+            .mergeMap((content) => {
                 if (request.attachContentAccess) {
-                    content = await this.attachContentAccess(content).toPromise();
+                    return this.attachContentAccess(content);
                 }
 
+                return Observable.of(content);
+            })
+            .mergeMap((content) => {
                 if (request.attachFeedback) {
-                    content = await this.attachFeedback(content).toPromise();
+                    return this.attachFeedback(content);
                 }
 
+                return Observable.of(content);
+            })
+            .mergeMap((content) => {
                 if (request.attachContentMarker) {
-                    content = await this.attachContentMarker(content).toPromise();
+                    return this.attachContentMarker(content);
                 }
 
-                return content;
+                return Observable.of(content);
             });
     }
 
