@@ -1,15 +1,13 @@
 import { LearnerAssessmentsEntry, LearnerSummaryEntry } from '../../profile/db/schema';
-import { LearnerAssessmentDetails, LearnerAssessmentSummary, QuestionSummary, UserReportSummary } from '../def/response';
+import { ContentCache, LearnerAssessmentDetails, LearnerAssessmentSummary, LearnerContentSummaryDetails, QuestionSummary, ReportDetailPerUser, UserReportSummary } from '../def/response';
+import { SunbirdTelemetry } from '../../telemetry';
+import Telemetry = SunbirdTelemetry.Telemetry;
 export declare class SummarizerHandler {
-    static getChildProgressQuery(uids: string[]): string;
-    static getContentProgressQuery(contentId: string): string;
-    static getDetailReportsQuery(uids: string[], contentId: string): string;
-    static getReportsByUserQuery(uids: string[], contentId: string): string;
-    static getQuetsionDetailsQuery(uids: string[], contentId: string, qid: string): string;
-    static getReportAccuracyQuery(uids: string[], contentId: string): string;
-    static getQuestionReportsQuery(uids: string[], contentId: string): string;
-    static mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb: LearnerSummaryEntry.SchemaMap[]): LearnerAssessmentSummary[];
-    static mapDBEntriesToLearnerAssesmentDetails(assesmentDetailsInDb: LearnerAssessmentsEntry.SchemaMap[]): LearnerAssessmentDetails[];
+    constructor();
+    static mapLearnerAssesmentDetailsToDbEntries(learnerAssessmentDetails: LearnerAssessmentDetails): LearnerAssessmentsEntry.SchemaMap;
+    static mapContentSummaryDetailsToDbEntries(learnerContentSummaryDetails: LearnerContentSummaryDetails): LearnerSummaryEntry.SchemaMap;
+    static mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb: LearnerSummaryEntry.SchemaMap[], cache: Map<string, ContentCache>): LearnerAssessmentSummary[];
+    static mapDBEntriesToLearnerAssesmentDetails(assesmentDetailsInDb: LearnerAssessmentsEntry.SchemaMap[]): Map<string, ReportDetailPerUser>;
     static mapDBEntriesToQuestionReports(accuracyMap: {
         [p: string]: any;
     }, questionReportsInDb: LearnerAssessmentsEntry.QuestionReportsSchema[]): LearnerAssessmentDetails[];
@@ -18,4 +16,7 @@ export declare class SummarizerHandler {
     };
     static mapDBEntriesToQuestionDetails(questionSummaries: QuestionSummary[]): QuestionSummary[];
     static mapDBEntriesToUserReports(userReportsInDb: LearnerAssessmentsEntry.UserReportSchema[]): UserReportSummary[];
+    static mapTelemetryToContentSummaryDetails(telemetry: Telemetry): LearnerContentSummaryDetails;
+    static mapTelemetryToLearnerAssesmentDetails(telemetry: Telemetry): LearnerAssessmentDetails;
+    private static getHierarchyData;
 }

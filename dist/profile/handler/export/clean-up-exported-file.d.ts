@@ -1,14 +1,20 @@
-import { ExportProfileContext } from '../../def/profile-export-request';
 import { DbService } from '../../../db';
-export declare class CleanUpExportedFile {
+import { FileService } from '../../../util/file/def/file-service';
+import { Response } from '../../../api';
+import { ExportProfileContext } from '../../def/export-profile-context';
+export declare class CleanupExportedFile {
     private dbService;
-    constructor(dbService: DbService);
-    execute(profileExportContext: ExportProfileContext): void;
-    getAllTablesToExclude(): string[];
-    getAllTables(): Promise<string[]>;
-    dropTables(allTables: string[], allTablesToExclude: string[]): void;
-    cleanTable(tableName: string): Promise<any>;
-    deleteUnWantedProfilesAndUsers(userIds: string[]): void;
-    deleteUnwantedGroupProfileMapping(groupIds: string[]): void;
-    keepAllFrameworkAndChannel(): Promise<any>;
+    private fileService;
+    constructor(dbService: DbService, fileService: FileService);
+    execute(exportContext: ExportProfileContext): Promise<Response>;
+    private getAllTables;
+    private getAllTablesToExclude;
+    private removeTables;
+    private populateMetaData;
+    private deleteUnwantedProfilesAndUsers;
+    private deleteUnwantedProfileSummary;
+    private deleteUnwantedGroups;
+    private deleteUnwantedGroupProfiles;
+    private keepAllFrameworknChannel;
+    private cleanTable;
 }

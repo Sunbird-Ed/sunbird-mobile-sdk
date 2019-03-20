@@ -19,4 +19,5 @@ export declare class GroupServiceImpl implements GroupService {
     getActiveGroupSession(): Observable<GroupSession | undefined>;
     getAllGroups(groupRequest?: GetAllGroupRequest): Observable<Group[]>;
     addProfilesToGroup(profileToGroupRequest: ProfilesToGroupRequest): Observable<number>;
+    removeActiveGroupSession(): Observable<undefined>;
 }

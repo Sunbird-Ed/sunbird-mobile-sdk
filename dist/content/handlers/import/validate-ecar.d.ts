@@ -3,12 +3,15 @@ import { Response } from '../../../api';
 import { FileService } from '../../../util/file/def/file-service';
 import { AppConfig } from '../../../api/config/app-config';
 import { DbService } from '../../../db';
+import { GetContentDetailsHandler } from '../get-content-details-handler';
 export declare class ValidateEcar {
     private fileService;
     private dbService;
+    private appConfig;
+    private getContentDetailsHandler;
     private readonly MANIFEST_FILE_NAME;
-    constructor(fileService: FileService, dbService: DbService);
-    execute(tempLocationPath: string, importContext: ImportContentContext, appConfig: AppConfig): Promise<Response>;
+    constructor(fileService: FileService, dbService: DbService, appConfig: AppConfig, getContentDetailsHandler: GetContentDetailsHandler);
+    execute(importContext: ImportContentContext): Promise<Response>;
     /**
      * Skip the content.
      */

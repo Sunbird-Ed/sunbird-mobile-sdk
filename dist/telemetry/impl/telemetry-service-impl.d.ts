@@ -1,5 +1,5 @@
 import { DbService } from '../../db';
-import { TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryLogRequest, TelemetryService, TelemetryStartRequest, TelemetryStat, TelemetrySyncStat } from '..';
+import { TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryLogRequest, TelemetryService, TelemetryShareRequest, TelemetryStartRequest, TelemetryStat, TelemetrySyncStat } from '..';
 import { Observable } from 'rxjs';
 import { ProfileService } from '../../profile';
 import { GroupService } from '../../group';
@@ -7,6 +7,9 @@ import { KeyValueStore } from '../../key-value-store';
 import { ApiService } from '../../api';
 import { TelemetryConfig } from '../config/telemetry-config';
 import { DeviceInfo } from '../../util/device/def/device-info';
+import { EventsBusService } from '../../events-bus';
+import { FileService } from '../../util/file/def/file-service';
+import { TelemetryExportResponse } from '../def/response';
 export declare class TelemetryServiceImpl implements TelemetryService {
     private dbService;
     private decorator;
@@ -16,18 +19,22 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     private apiService;
     private telemetryConfig;
     private deviceInfo;
+    private eventsBusService;
+    private fileService;
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP;
-    constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, telemetryConfig: TelemetryConfig, deviceInfo: DeviceInfo);
+    constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, telemetryConfig: TelemetryConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService);
+    saveTelemetry(request: string): Observable<boolean>;
     end({ type, mode, duration, pageId, summaryList, env, objId, objType, objVer, rollup, correlationData }: TelemetryEndRequest): Observable<boolean>;
-    error({ errorCode, errorType, stacktrace, pageId, env }: TelemetryErrorRequest): Observable<boolean>;
+    error({ errorCode, errorType, stacktrace, pageId }: TelemetryErrorRequest): Observable<boolean>;
     impression({ type, subType, pageId, uri, visits, env, objId, objType, objVer, rollup, correlationData }: TelemetryImpressionRequest): Observable<boolean>;
-    interact({ type, subType, id, pageId, pos, values, env, rollup, valueMap, correlationData, objId, objType, objVer }: TelemetryInteractRequest): Observable<boolean>;
+    interact({ type, subType, id, pageId, pos, env, rollup, valueMap, correlationData, objId, objType, objVer }: TelemetryInteractRequest): Observable<boolean>;
     log({ type, level, message, pageId, params, env, actorType }: TelemetryLogRequest): Observable<boolean>;
+    share({ dir, type, items }: TelemetryShareRequest): Observable<boolean>;
+    feedback({ rating, comments, env, objId, objType, objVer }: TelemetryFeedbackRequest): Observable<boolean>;
     start({ type, deviceSpecification, loc, mode, duration, pageId, env, objId, objType, objVer, rollup, correlationData }: TelemetryStartRequest): Observable<boolean>;
-    import(sourcePath: string): Observable<boolean>;
-    export(destPath: string): Observable<boolean>;
+    importTelemetry(importTelemetryRequest: TelemetryImportRequest): Observable<boolean>;
+    exportTelemetry(telemetryExportRequest: TelemetryExportRequest): Observable<TelemetryExportResponse>;
     getTelemetryStat(): Observable<TelemetryStat>;
     sync(): Observable<TelemetrySyncStat>;
-    event(telemetry: any): Observable<number>;
-    private save;
+    private decorateAndPersist;
 }

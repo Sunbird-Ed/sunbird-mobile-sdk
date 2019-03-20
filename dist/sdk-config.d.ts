@@ -10,6 +10,9 @@ import { AppConfig } from './api/config/app-config';
 import { FileConfig } from './util/file/config/file-config';
 import { SystemSettingsConfig } from './system-settings';
 import { TelemetryConfig } from './telemetry/config/telemetry-config';
+import { SharedPreferencesConfig } from './util/shared-preferences';
+import { PlayerConfig } from './player/def/response';
+import { EventsBusConfig } from './events-bus/config/events-bus-config';
 export interface SdkConfig {
     apiConfig: ApiConfig;
     dbConfig: DbConfig;
@@ -23,4 +26,7 @@ export interface SdkConfig {
     appConfig: AppConfig;
     systemSettingsConfig: SystemSettingsConfig;
     telemetryConfig: TelemetryConfig;
+    sharedPreferencesConfig: SharedPreferencesConfig;
+    playerConfig?: PlayerConfig;
+    eventsBusConfig: EventsBusConfig;
 }

@@ -1,4 +1,4 @@
-import { LogLevel, PageId } from './telemetry-constants';
+import { LogLevel, ShareItemType } from './telemetry-constants';
 export declare class Actor {
     static readonly TYPE_SYSTEM: string;
     static readonly TYPE_USER: string;
@@ -26,15 +26,12 @@ export declare class Audit {
     actorType: string;
 }
 export declare class Context {
-    private env;
-    private cdata;
+    env: string;
+    cdata: Array<CorrelationData>;
     channel: string;
     pdata: ProducerData;
     sid: string;
     did: string;
-    getEnvironment(): string;
-    setEnvironment(value: string): void;
-    setCdata(value: Array<CorrelationData>): void;
 }
 export declare class DeviceSpecification {
     os: string;
@@ -58,14 +55,6 @@ export declare class ExData {
     type: string;
     data: string;
 }
-export declare class Feedback {
-    env: string;
-    rating: number;
-    comments: string;
-    id: string;
-    version: string;
-    type: string;
-}
 export declare class GameData {
     id: string;
     ver: string;
@@ -75,10 +64,10 @@ export declare class CorrelationData {
     type: string;
 }
 export declare class Rollup {
-    l1: string;
-    l2: string;
-    l3: string;
-    l4: string;
+    l1?: string;
+    l2?: string;
+    l3?: string;
+    l4?: string;
 }
 export declare class Visit {
     objid: string;
@@ -97,12 +86,6 @@ export declare class ProducerData {
     pid: string;
     ver: string;
     ProducerData(): void;
-    getId(): string;
-    getPid(): string;
-    getVersion(): string;
-    setId(value: string): void;
-    setPid(value: string): void;
-    setVersion(value: string): void;
 }
 export declare class Search {
     type: string;
@@ -116,16 +99,8 @@ export declare class Search {
     correlationid: string;
     size: number;
 }
-export declare class Share {
-    env: string;
-    direction: string;
-    dataType: string;
-    items: Array<{
-        [index: string]: any;
-    }>;
-}
 export declare class TelemetryObject {
-    private rollup?;
+    rollup?: Rollup;
     readonly id: string;
     readonly type: string;
     readonly version: string;
@@ -138,142 +113,58 @@ export declare class ProcessedEventModel {
     numberOfEvents: number;
     priority: number;
 }
-export declare namespace TelemetryEvents {
+export declare namespace SunbirdTelemetry {
     abstract class Telemetry {
         private static readonly TELEMETRY_VERSION;
-        /**
-         * unique event ID.
-         */
-        private eid;
-        /**
-         * epoch timestamp of event capture in epoch format (time in milli-seconds. For ex: 1442816723).
-         */
-        private ets;
-        /**
-         * version of the event data structure, currently "3".
-         */
-        private ver;
-        /**
-         * Who did the event
-         * Actor of the event
-         */
-        private actor;
-        /**
-         * Who did the event
-         * Context in which the event has occured.
-         */
-        private context;
-        /**
-         * What is the target of the event
-         * Object which is the subject of the event
-         */
-        private object;
-        private edata;
-        private tags;
+        eid: string;
+        mid: string;
+        ets: number;
+        ver: string;
+        actor: Actor;
+        context: Context;
+        object: TelemetryObject;
+        edata: any;
+        tags: string[];
         protected constructor(eid: string);
-        getEid(): string;
-        setActor(value: Actor): void;
-        setContext(value: Context): void;
-        setEdata(value: {}): void;
-        setTags(value: string[]): void;
-        setEnvironment(env: string): void;
-        setCoRrelationdata(correlationData: CorrelationData[]): void;
-        setObject(id: string, type: string, ver: string, rollup: Rollup): void;
-        getActor(): Actor;
-        getContext(): Context;
     }
     class End extends Telemetry {
         private static readonly EID;
-        type: string;
-        mode: string;
-        duration: number;
-        pageId: string;
-        summaryList: Array<{
-            [index: string]: any;
-        }>;
-        env: string;
-        objId: string;
-        objType: string;
-        objVer: string;
-        rollup: Rollup;
-        correlationData: Array<CorrelationData>;
-        constructor(type: string, mode: string, duration: number, pageid: PageId, summaryList: {}[]);
+        constructor(type: string | undefined, mode: string | undefined, duration: number | undefined, pageid: string | undefined, summaryList: {}[] | undefined, env: string, objId?: string, objType?: string, objVer?: string, rollup?: Rollup, correlationData?: Array<CorrelationData>);
     }
     class Start extends Telemetry {
         private static readonly EID;
-        env: string;
-        type: string;
-        deviceSpecification: DeviceSpecification;
-        loc: string;
-        mode: string;
-        duration: number;
-        pageId: string;
-        objId: string;
-        objType: string;
-        objVer: string;
-        rollup: Rollup;
-        correlationData: Array<CorrelationData>;
-        constructor(type: string, dSpec: DeviceSpecification, loc: string, mode: string, duration: number, pageId: PageId);
+        constructor(type: string | undefined, dSpec: DeviceSpecification | undefined, loc: string | undefined, mode: string | undefined, duration: number | undefined, pageId: string | undefined, env: string, objId?: string, objType?: string, objVer?: string, rollup?: Rollup, correlationData?: Array<CorrelationData>);
     }
     class Interact extends Telemetry {
         private static readonly EID;
-        env: string;
-        type: string;
-        subType: string;
-        id: string;
-        pageId: string;
-        pos: Array<{
-            [index: string]: string;
-        }>;
-        values: Array<{
-            [index: string]: any;
-        }>;
-        valueMap: {
-            [index: string]: any;
-        };
-        correlationData: Array<CorrelationData>;
-        objId: string;
-        objType: string;
-        objVer: string;
-        rollup: Rollup;
-        constructor(type: string, subtype: string, id: string, pageid: PageId, pos: {
+        constructor(type: string | undefined, subtype: string | undefined, id: string | undefined, pageid: string | undefined, pos: {
             [key: string]: string;
-        }[], values: {}[]);
+        }[] | undefined, valuesMap: {
+            [key: string]: any;
+        } | undefined, env: string, objId?: string, objType?: string, objVer?: string, rollup?: Rollup, correlationData?: Array<CorrelationData>);
     }
     class Impression extends Telemetry {
         private static readonly EID;
-        type: string;
-        pageId: string;
-        subType: string;
-        uri: string;
-        objId: string;
-        correlationData: Array<CorrelationData>;
-        objType: string;
-        objVer: string;
-        rollup?: Rollup;
-        env: string;
-        constructor(type: string, subtype: string, pageid: PageId, uri: string, visits: Visit[]);
+        constructor(type: string | undefined, subtype: string | undefined, pageid: string | undefined, visits: Visit[] | undefined, env: string, objId?: string, objType?: string, objVer?: string, rollup?: Rollup, correlationData?: Array<CorrelationData>);
     }
     class Log extends Telemetry {
         private static readonly EID;
-        env: string;
-        type: string;
-        level: LogLevel;
-        message: string;
-        pageId: string;
-        params: Array<{
-            [index: string]: any;
-        }>;
-        actorType: string;
-        constructor(type: string, level: LogLevel, message: string, pageid: PageId, params: {}[]);
+        constructor(type: string | undefined, level: LogLevel | undefined, message: string | undefined, pageid: string | undefined, params: {}[] | undefined, env: string, actorType: any);
     }
     class Error extends Telemetry {
         private static readonly EID;
-        errorCode: string;
-        errorType: string;
-        stacktrace: string;
-        pageId: string;
-        env: string;
-        constructor(errorCode: string, errorType: string, stacktrace: string, pageid: PageId);
+        constructor(errorCode: string | undefined, errorType: string | undefined, stacktrace: string | undefined, pageid: string | undefined);
+    }
+    class Share extends Telemetry {
+        private static readonly EID;
+        constructor(dir: string | undefined, type: string | undefined, items: Array<{
+            [index: string]: any;
+        }> | undefined);
+        addItem(type: ShareItemType, origin: string, identifier: string, pkgVersion: number, transferCount: number, size: string): void;
+        capitalize(input: any): string;
+    }
+    class Feedback extends Telemetry {
+        private static readonly EID;
+        constructor(rating: number | undefined, comments: string | undefined, env: string, objId?: string, objType?: string, objVer?: string);
     }
 }

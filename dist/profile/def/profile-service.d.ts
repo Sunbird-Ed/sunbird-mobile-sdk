@@ -16,7 +16,12 @@ import { GenerateOtpRequest } from './generate-otp-request';
 import { VerifyOtpRequest } from './verify-otp-request';
 import { LocationSearchCriteria } from './location-search-criteria';
 import { LocationSearchResult } from './location-search-result';
-export interface ProfileService {
+import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
+import { ProfileExportRequest } from './profile-export-request';
+import { ProfileExportResponse } from './profile-export-response';
+import { ProfileImportRequest } from './profile-import-request';
+import { ProfileImportResponse } from './profile-import-response';
+export interface ProfileService extends SdkServiceOnInitDelegate {
     createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
     deleteProfile(uid: string): Observable<undefined>;
     updateProfile(profile: Profile): Observable<Profile>;
@@ -27,11 +32,14 @@ export interface ProfileService {
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile>;
     getActiveSessionProfile(): Observable<Profile>;
     setActiveSessionForProfile(profileUid: string): Observable<boolean>;
-    getActiveProfileSession(): Observable<ProfileSession | undefined>;
+    getActiveProfileSession(): Observable<ProfileSession>;
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]>;
+    addContentAccess(contentAccess: ContentAccess): Observable<boolean>;
     acceptTermsAndConditions(acceptTermsConditions: AcceptTermsConditionRequest): Observable<boolean>;
     isProfileAlreadyInUse(isProfileAlreadyInUseRequest: IsProfileAlreadyInUseRequest): Observable<ProfileExistsResponse>;
     generateOTP(generateOtpRequest: GenerateOtpRequest): Observable<boolean>;
     verifyOTP(verifyOTPRequest: VerifyOtpRequest): Observable<boolean>;
-    searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult>;
+    searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult[]>;
+    exportProfile(profileExportRequest: ProfileExportRequest): Observable<ProfileExportResponse>;
+    importProfile(profileImportRequest: ProfileImportRequest): Observable<ProfileImportResponse>;
 }

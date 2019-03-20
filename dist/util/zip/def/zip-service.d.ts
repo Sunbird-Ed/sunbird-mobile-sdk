@@ -1,4 +1,4 @@
 export interface ZipService {
-    unzip(sourceZip: string, destUrl: string, onProgress?: Function): Promise<number>;
-    zip(sourceFolderPath: string, zipFilePath: string, directoriesToBeSkipped?: string[], filesToBeSkipped?: string[]): Promise<boolean>;
+    unzip(sourceZip: string, option: any, successCallback?: any, errorCallback?: any): any;
+    zip(sourceFolderPath: string, option: any, directoriesToBeSkipped?: string[], filesToBeSkipped?: string[], successCallback?: any, errorCallback?: any): any;
 }

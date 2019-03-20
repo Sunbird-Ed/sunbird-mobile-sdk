@@ -29,6 +29,7 @@ export interface CategoryTerm {
     index: number;
     category: string;
     status: string;
+    children?: CategoryAssociation[];
 }
 export interface CategoryAssociation {
     identifier: string;

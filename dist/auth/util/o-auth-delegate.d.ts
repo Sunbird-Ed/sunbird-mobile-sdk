@@ -1,5 +1,5 @@
 import { ApiConfig, ApiService } from '../../api';
-import { OauthSession } from '..';
+import { OAuthSession } from '..';
 export interface StepOneCallbackType {
     code?: string;
     access_token?: string;
@@ -13,6 +13,6 @@ export declare class OAuthDelegate {
     private static isKeyCloakSignup;
     private static isGoogleSignup;
     private static isStateLogin;
-    doOAuthStepOne(): Promise<OauthSession>;
+    doOAuthStepOne(): Promise<OAuthSession>;
     private doOAuthStepTwo;
 }

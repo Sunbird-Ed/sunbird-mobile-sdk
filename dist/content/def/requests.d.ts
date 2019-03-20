@@ -1,8 +1,15 @@
-import { SearchType } from '../util/content-constants';
-import { HierarchyInfo } from './content';
+import { SearchType } from '..';
+import { Content, HierarchyInfo } from './content';
 import { CorrelationData } from '../../telemetry';
 import { ContentImportResponse } from './response';
 import { ContentEntry } from '../db/schema';
+import { DownloadRequest } from '../../util/download';
+export interface ContentDecorateRequest {
+    content: Content;
+    attachFeedback?: boolean;
+    attachContentAccess?: boolean;
+    attachContentMarker?: boolean;
+}
 export interface ContentDetailRequest {
     contentId: string;
     attachFeedback?: boolean;
@@ -10,16 +17,18 @@ export interface ContentDetailRequest {
     attachContentMarker?: boolean;
 }
 export interface ContentRequest {
-    uid: string;
+    uid?: string;
     contentTypes: string[];
-    audience: string[];
-    pragma: string[];
+    audience?: string[];
+    pragma?: string[];
+    exclPragma?: string[];
     attachFeedback?: boolean;
     attachContentAccess?: boolean;
     attachContentMarker?: boolean;
     sortCriteria?: ContentSortCriteria[];
     recentlyViewed?: boolean;
     localOnly?: boolean;
+    resourcesOnly?: boolean;
     limit?: number;
 }
 export interface ContentSortCriteria {
@@ -33,7 +42,7 @@ export declare enum SortOrder {
 export interface ChildContentRequest {
     contentId: string;
     hierarchyInfo: HierarchyInfo[];
-    level: number;
+    level?: number;
 }
 export interface ContentDeleteRequest {
     contentDeleteList: ContentDelete[];
@@ -49,27 +58,18 @@ export interface EcarImportRequest {
     correlationData: CorrelationData[];
 }
 export interface ContentImportRequest {
-    contentImportMap?: {
-        [index: string]: any;
-    };
+    contentImportArray: ContentImport[];
     contentStatusArray: string[];
+}
+export interface ContentImport {
+    isChildContent: boolean;
+    destinationFolder: string;
+    contentId: string;
+    correlationData?: CorrelationData[];
 }
 export interface ContentExportRequest {
     destinationFolder: string;
     contentIds: string[];
-}
-export declare enum ContentImportStatus {
-    NOT_FOUND = -1,
-    ENQUEUED_FOR_DOWNLOAD = 0,
-    DOWNLOAD_STARTED = 1,
-    DOWNLOAD_FAILED = 2,
-    DOWNLOAD_COMPLETED = 3,
-    IMPORT_STARTED = 4,
-    IMPORT_FAILED = 5,
-    NOT_COMPATIBLE = 6,
-    CONTENT_EXPIRED = 7,
-    ALREADY_EXIST = 8,
-    IMPORT_COMPLETED = 100
 }
 export interface ContentExportResponse {
     exportedFilePath: string;
@@ -81,40 +81,47 @@ export interface ContentMarkerRequest {
     extraInfo: {
         [key: string]: any;
     };
-    marker: number;
+    marker: MarkerType;
     isMarked: boolean;
 }
+export declare enum MarkerType {
+    NOTHING = 0,
+    PREVIEWED = 1,
+    BOOKMARKED = 2
+}
 export interface ContentSearchCriteria {
-    query: string;
-    exists: string[];
-    offset: number;
-    limit: number;
-    mode: string;
-    age: number;
-    grade: string[];
-    medium: string[];
-    board: string[];
-    createdBy: string[];
-    audience: string[];
-    channel: string[];
-    purpose: string[];
-    topic: string[];
-    pragma: string[];
-    exclPragma: string[];
-    contentStatusArray: string[];
-    facets: string[];
-    contentTypes: string[];
-    keywords: string[];
-    dialCodes: string[];
-    language: string[];
-    offlineSearch: boolean;
-    facetFilters: ContentSearchFilter[];
-    impliedFilters: ContentSearchFilter[];
-    impliedFiltersMap: Array<any>;
-    sortCriteria: ContentSortCriteria[];
-    searchType: SearchType;
-    framework: string;
-    languageCode: string;
+    query?: string;
+    exists?: string[];
+    offset?: number;
+    limit?: number;
+    mode?: string;
+    age?: number;
+    grade?: string[];
+    medium?: string[];
+    board?: string[];
+    createdBy?: string[];
+    audience?: string[];
+    channel?: string[];
+    purpose?: string[];
+    topic?: string[];
+    pragma?: string[];
+    exclPragma?: string[];
+    contentStatusArray?: string[];
+    facets?: string[];
+    contentTypes?: string[];
+    keywords?: string[];
+    dialCodes?: string[];
+    language?: string[];
+    offlineSearch?: boolean;
+    facetFilters?: ContentSearchFilter[];
+    impliedFilters?: ContentSearchFilter[];
+    impliedFiltersMap?: {
+        [key: string]: any;
+    }[];
+    sortCriteria?: ContentSortCriteria[];
+    searchType?: SearchType;
+    framework?: string;
+    languageCode?: string;
 }
 export interface ContentSearchFilter {
     name: string;
@@ -122,9 +129,11 @@ export interface ContentSearchFilter {
 }
 export interface FilterValue {
     name: string;
-    count: number;
+    count?: number;
     apply: boolean;
-    translations: string;
+    translations?: string;
+    description?: string;
+    index?: number;
 }
 export interface ContentSortCriteria {
     sortAttribute: string;
@@ -134,12 +143,13 @@ export interface ImportContentContext {
     isChildContent: boolean;
     ecarFilePath: string;
     destinationFolder: string;
-    metadata: any;
-    manifestVersion: string;
-    skippedItemsIdentifier: string[];
-    items: any[];
-    identifiers: string[];
-    contentImportResponseList: ContentImportResponse[];
+    metadata?: any;
+    manifestVersion?: string;
+    skippedItemsIdentifier?: string[];
+    items?: any[];
+    identifiers?: string[];
+    contentImportResponseList?: ContentImportResponse[];
+    tmpLocation?: string;
 }
 export interface ExportContentContext {
     ecarFilePath?: string;
@@ -151,4 +161,8 @@ export interface ExportContentContext {
         [key: string]: any;
     };
     manifest?: any;
+}
+export interface ContentDownloadRequest extends DownloadRequest {
+    isChildContent?: boolean;
+    correlationData?: CorrelationData[];
 }

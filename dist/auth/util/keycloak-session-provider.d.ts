@@ -1,4 +1,4 @@
-import { OauthSession, SessionProvider } from '..';
+import { OAuthSession, SessionProvider } from '..';
 import { ApiConfig, ApiService } from '../../api';
 import { StepOneCallbackType } from './o-auth-delegate';
 export declare class KeycloakSessionProvider implements SessionProvider {
@@ -6,5 +6,5 @@ export declare class KeycloakSessionProvider implements SessionProvider {
     private apiConfig;
     private apiService;
     constructor(paramsObj: StepOneCallbackType, apiConfig: ApiConfig, apiService: ApiService);
-    provide(): Promise<OauthSession>;
+    provide(): Promise<OAuthSession>;
 }

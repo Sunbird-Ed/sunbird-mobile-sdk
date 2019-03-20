@@ -1,17 +1,14 @@
-import { Environment, ImpressionSubtype, ImpressionType, InteractSubtype, InteractType, LogLevel, LogType, PageId } from './telemetry-constants';
+import { Environment, InteractType, LogLevel, LogType, PageId, ShareItemType } from './telemetry-constants';
 import { CorrelationData, DeviceSpecification, Rollup, Visit } from './telemetry-model';
 export declare class TelemetryInteractRequest {
     type: InteractType;
-    subType: InteractSubtype;
+    subType: string;
     id: string;
-    pageId: PageId;
+    pageId: string;
     pos: Array<{
         [index: string]: string;
     }>;
-    values: Array<{
-        [index: string]: any;
-    }>;
-    env: Environment;
+    env: string;
     rollup: Rollup;
     valueMap: {
         [index: string]: any;
@@ -25,16 +22,15 @@ export declare class TelemetryErrorRequest {
     errorCode: string;
     errorType: string;
     stacktrace: string;
-    pageId: PageId;
-    env: Environment;
+    pageId: string;
 }
 export declare class TelemetryImpressionRequest {
-    type: ImpressionType;
-    subType: ImpressionSubtype;
+    type: string;
+    subType: string;
     pageId: PageId;
     uri: string;
     visits: Visit[];
-    env: Environment;
+    env: string;
     objId: string;
     objType: string;
     objVer: string;
@@ -42,42 +38,84 @@ export declare class TelemetryImpressionRequest {
     rollup?: Rollup;
 }
 export declare class TelemetryStartRequest {
-    type: string;
-    deviceSpecification: DeviceSpecification;
-    loc: string;
-    mode: string;
-    duration: number;
-    pageId: PageId;
+    type?: string;
+    deviceSpecification?: DeviceSpecification;
+    loc?: string;
+    mode?: string;
+    duration?: number;
+    pageId?: string;
     env: Environment;
-    objId: string;
-    objType: string;
-    objVer: string;
-    rollup: Rollup;
-    correlationData: Array<CorrelationData>;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
+    rollup?: Rollup;
+    correlationData?: Array<CorrelationData>;
 }
 export declare class TelemetryEndRequest {
     env: Environment;
-    type: string;
-    mode: string;
-    duration: number;
-    pageId: PageId;
+    type?: string;
+    mode?: string;
+    duration?: number;
+    pageId?: string;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
+    rollup?: Rollup;
+    summaryList?: Array<{
+        [index: string]: any;
+    }>;
+    correlationData?: Array<CorrelationData>;
+}
+export declare class TelemetryFeedbackRequest {
+    env: string;
+    rating: number;
+    comments: string;
     objId: string;
     objType: string;
     objVer: string;
-    rollup: Rollup;
-    summaryList: Array<{
-        [index: string]: any;
-    }>;
-    correlationData: Array<CorrelationData>;
 }
 export declare class TelemetryLogRequest {
     type: LogType;
     level: LogLevel;
     message: string;
-    pageId: PageId;
+    pageId: string;
     params: Array<{
         [index: string]: any;
     }>;
     env: Environment;
     actorType: string;
+}
+export declare class TelemetryShareRequest {
+    dir: string;
+    type: string;
+    items: Array<Item>;
+    env: string;
+}
+export interface Item {
+    type: ShareItemType;
+    origin: string;
+    identifier: string;
+    pkgVersion: number;
+    transferCount: number;
+    size: string;
+}
+export interface ExportTelemetryContext {
+    destinationFolder: string;
+    destinationDBFilePath?: string;
+    metadata?: {
+        [index: string]: any;
+    };
+    size?: string;
+}
+export interface ImportTelemetryContext {
+    sourceDBFilePath: string;
+    metadata?: {
+        [index: string]: any;
+    };
+}
+export interface TelemetryExportRequest {
+    destinationFolder: string;
+}
+export interface TelemetryImportRequest {
+    sourceFilePath: string;
 }

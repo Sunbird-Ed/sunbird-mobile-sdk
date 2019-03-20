@@ -1,7 +1,7 @@
-import { CorrelationData, Environment, ImpressionSubtype, PageId, Rollup, TelemetryImpressionRequest, TelemetryInteractRequest } from '..';
+import { CorrelationData, Environment, PageId, Rollup, TelemetryImpressionRequest, TelemetryInteractRequest } from '..';
 export declare class TelemetryRequestFactory {
     static generateBackClickedTelemetry(pageId: PageId, env: Environment, isNavBack: boolean, identifier?: string, corRelationList?: CorrelationData[]): TelemetryInteractRequest;
-    static generatePageViewTelemetry(pageId: PageId, env: Environment, subType?: ImpressionSubtype): TelemetryImpressionRequest;
+    static generatePageViewTelemetry(pageId: PageId, env: Environment, subType?: string): TelemetryImpressionRequest;
     static generateSpineLoadingTelemetry(content: any, isFirstTime: boolean): TelemetryInteractRequest;
     static generateCancelDownloadTelemetry(content: any): TelemetryInteractRequest;
     static generateDownloadAllClickTelemetry(pageId: PageId, content: any, downloadingIdentifier: any, childrenCount: number): TelemetryInteractRequest;

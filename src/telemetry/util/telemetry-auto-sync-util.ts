@@ -13,7 +13,9 @@ export class TelemetryAutoSyncUtil {
         return Observable
             .interval(interval)
             .filter(() => this.shouldSync)
-            .mergeMap(() => this.telemetryService.sync());
+            .do(() => this.shouldSync = false)
+            .mergeMap(() => this.telemetryService.sync()
+                .finally(() => this.shouldSync = true));
     }
 
     pause(): void {

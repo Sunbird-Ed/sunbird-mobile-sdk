@@ -1,7 +1,6 @@
 import { ApiRequestHandler, ApiService } from '../../api';
-import { ServerProfileSearchCriteria } from '..';
+import { ProfileServiceConfig, ServerProfileSearchCriteria } from '..';
 import { ServerProfile } from '../def/server-profile';
-import { ProfileServiceConfig } from '..';
 import { Observable } from 'rxjs';
 export declare class SearchServerProfileHandler implements ApiRequestHandler<ServerProfileSearchCriteria, ServerProfile[]> {
     private apiService;

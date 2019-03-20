@@ -1,6 +1,6 @@
-import { ErrorCode, ErrorType } from './telemetry-constants';
+import { ErrorType, TelemetryErrorCode } from './telemetry-constants';
 export declare class TelemetryError extends Error {
-    errorCode: ErrorCode;
+    errorCode: TelemetryErrorCode;
     errorType: ErrorType;
-    constructor(errorCode: ErrorCode, errorType: ErrorType);
+    constructor(errorCode: TelemetryErrorCode, errorType: ErrorType);
 }

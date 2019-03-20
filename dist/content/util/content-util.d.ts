@@ -9,9 +9,9 @@ export declare class ContentUtil {
     private static readonly MAX_CONTENT_NAME;
     static isAvailableLocally(contentState: number): boolean;
     static isUpdateAvailable(serverData: ContentData, localData: ContentData): boolean;
-    static hasChildren(localData: string): boolean;
+    static hasChildren(localData: any): boolean;
     static getContentRollup(identifier: string, hierarchyInfoList: HierarchyInfo[]): Rollup;
-    static getChildContentsIdentifiers(localData: string): string[];
+    static getChildContentsIdentifiers(localData: any): string[];
     /**
      * This method gets you the first part of the string that is divided after last index of "/"
      *
@@ -29,7 +29,7 @@ export declare class ContentUtil {
      * If status is DRAFT and pkgVersion == 0 then don't do the duplicate check..
      */
     static isDuplicateCheckRequired(isDraftContent: any, pkgVersion: number): boolean;
-    static isImportFileExist(oldContentModel: ContentEntry.SchemaMap, contentData: any): boolean;
+    static isImportFileExist(oldContentModel: ContentEntry.SchemaMap | undefined, contentData: any): boolean;
     static readPkgVersion(contentData: any): number;
     static readContentType(contentData: any): string;
     static readAudience(contentData: any): string;
@@ -41,7 +41,7 @@ export declare class ContentUtil {
      * @param newIdentifier New content identifier
      * @return True - if file exists, False- does not exists
      */
-    static doesContentExist(existingContentInDB: ContentEntry.SchemaMap, newIdentifier: string, newPkgVersion: number, keepLowerVersion: boolean): boolean;
+    static doesContentExist(existingContentInDB: ContentEntry.SchemaMap | undefined, newIdentifier: string, newPkgVersion: number, keepLowerVersion: boolean): boolean;
     static getContentRootDir(rootFilePath: string): string;
     private static transferCount;
     private static isContentMetadataAbsent;
@@ -60,4 +60,11 @@ export declare class ContentUtil {
     static addOrUpdateDialcodeMapping(jsonStr: string, identifier: string, rootNodeIdentifier: string): string;
     static deDupe<T>(array: T[], property: any): T[];
     static getExportedFileName(contentsInDb: ContentEntry.SchemaMap[]): string;
+    static readOriginFromContentMap(item: any): string;
+    static readTransferCountFromContentMap(item: any): number;
+    static readSizeFromContentMap(item: any): string;
+    static getUidnIdentifierFiler(uid: string, identifier: any): string;
+    static getBasePath(basePath: string): string;
+    static getRollup(identifier: string, hierachyInfo: HierarchyInfo[]): Rollup;
+    static addOrUpdateRefCount(refCount: number): number;
 }

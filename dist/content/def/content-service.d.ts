@@ -2,19 +2,23 @@ import { ChildContentRequest, ContentDeleteRequest, ContentDetailRequest, Conten
 import { Response } from '../../api';
 import { Observable } from 'rxjs';
 import { Content, HierarchyInfo } from './content';
-import { ContentDeleteResponse, ContentSearchResult } from './response';
-export interface ContentService {
+import { ContentDeleteResponse, ContentImportResponse, ContentSearchResult, ContentsGroupedByPageSection } from './response';
+import { DownloadCompleteDelegate } from '../../util/download/def/download-complete-delegate';
+export interface ContentService extends DownloadCompleteDelegate {
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
-    getContents(criteria: ContentRequest): Observable<Content>;
+    getContents(criteria: ContentRequest): Observable<Content[]>;
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
-    searchContent(criteria: ContentSearchCriteria): Observable<ContentSearchResult>;
+    searchContent(criteria: ContentSearchCriteria, request?: {
+        [key: string]: any;
+    }): Observable<ContentSearchResult>;
+    searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection>;
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
     importEcar(ecarImportRequest: EcarImportRequest): Observable<Response>;
-    importContent(contentImportRequest: ContentImportRequest): Observable<Response>;
+    importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]>;
     subscribeForImportStatus(contentId: string): Observable<Response>;
-    cancelImport(contentId: string): any;
+    cancelImport(contentId: string): Observable<any>;
     exportContent(contentExportRequest: ContentExportRequest): Observable<Response>;
     getDownloadState(): Promise<Response>;
     cancelDownload(contentId: string): Observable<undefined>;

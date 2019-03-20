@@ -33,6 +33,9 @@ export declare namespace UserEntry {
     const _ID = "_id";
     const TABLE_NAME = "users";
     const COLUMN_NAME_UID = "uid";
+    interface SchemaMap {
+        [COLUMN_NAME_UID]: string;
+    }
     const getCreateEntry: (() => string);
     const deleteTable: (() => string);
 }
@@ -55,8 +58,8 @@ export declare namespace GroupEntry {
     const COLUMN_NAME_NAME = "name";
     const COLUMN_NAME_SYLLABUS = "syllabus";
     const COLUMN_NAME_GRADE = "grade";
-    const COLUMN_NAME_GRADE_VALUE = "gradeValue";
-    const COLUMN_NAME_CREATED_AT = "createdAt";
+    const COLUMN_NAME_GRADE_VALUE = "grade_value";
+    const COLUMN_NAME_CREATED_AT = "created_at";
     const COLUMN_NAME_UPDATED_AT = "updated_at";
     interface SchemaMap {
         [COLUMN_NAME_GID]: string;
@@ -76,6 +79,11 @@ export declare namespace ImportedMetadataEntry {
     const COLUMN_NAME_IMPORTED_ID = "imported_id";
     const COLUMN_NAME_DEVICE_ID = "device_id";
     const COLUMN_NAME_COUNT = "count";
+    interface SchemaMap {
+        [COLUMN_NAME_IMPORTED_ID]: string;
+        [COLUMN_NAME_DEVICE_ID]: string;
+        [COLUMN_NAME_COUNT]: string;
+    }
     const getCreateEntry: (() => string);
     const getDeleteEntry: (() => string);
 }
@@ -97,8 +105,8 @@ export declare namespace LearnerAssessmentsEntry {
     const COLUMN_NAME_HIERARCHY_DATA = "h_data";
     const COLUMN_NAME_TOTAL_TS = "total_ts";
     const COLUMN_NAME_MARKS = "marks";
-    const COLUMN_NAME_COUNT = "count";
-    const COLUMN_NAME_TOTAL_MAX_SCORE = "maxscore";
+    const COLUMN_NAME_COUNT = "occurence_count";
+    const COLUMN_NAME_TOTAL_MAX_SCORE = "sum_max_score";
     const COLUMN_NAME_USERS_COUNT = "users_count";
     const COLUMN_NAME_HANDLE = "handle";
     interface SchemaMap {
@@ -115,7 +123,6 @@ export declare namespace LearnerAssessmentsEntry {
         [COLUMN_NAME_Q_DESC]: string;
         [COLUMN_NAME_Q_TITLE]: string;
         [COLUMN_NAME_HIERARCHY_DATA]: string;
-        [COLUMN_NAME_TOTAL_TS]: number;
     }
     interface QuestionReportsSchema extends SchemaMap {
         [COLUMN_NAME_MARKS]: number;
@@ -156,13 +163,16 @@ export declare namespace LearnerSummaryEntry {
     interface SchemaMap {
         [COLUMN_NAME_UID]: string;
         [COLUMN_NAME_CONTENT_ID]: string;
-        [COLUMN_NAME_CONTENT_ID]: string;
-        [COLUMN_NAME_NO_OF_QUESTIONS]: number;
-        [COLUMN_NAME_CORRECT_ANSWERS]: number;
-        [COLUMN_NAME_TOTAL_TIME_SPENT]: number;
+        [COLUMN_NAME_AVG_TS]: number;
+        [COLUMN_NAME_SESSIONS]?: number;
+        [COLUMN_NAME_TOTAL_TS]: number;
+        [COLUMN_NAME_LAST_UPDATED_ON]: number;
         [COLUMN_NAME_HIERARCHY_DATA]: string;
-        [COLUMN_NAME_TOTAL_MAX_SCORE]: number;
-        [COLUMN_NAME_TOTAL_SCORE]: number;
+        [COLUMN_NAME_NO_OF_QUESTIONS]?: number;
+        [COLUMN_NAME_CORRECT_ANSWERS]?: number;
+        [COLUMN_NAME_TOTAL_TIME_SPENT]?: number;
+        [COLUMN_NAME_TOTAL_MAX_SCORE]?: number;
+        [COLUMN_NAME_TOTAL_SCORE]?: number;
     }
     const getCreateEntry: (() => string);
     const getDeleteEntry: (() => string);
