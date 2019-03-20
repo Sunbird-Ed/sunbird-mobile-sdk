@@ -32,7 +32,7 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
             return this.getActiveChannelTranslatedDefaultFrameworkDetails(request.requiredCategories, request.language);
         }) as () => Observable<Framework>)()
             .do(async (framework: Framework) =>
-                await this.sharedPreferences.putString(FrameworkKeys.KEY_ACTIVE_CHANNEL_FRAMERORK_ID, framework.identifier).toPromise()
+                await this.sharedPreferences.putString(FrameworkKeys.KEY_ACTIVE_CHANNEL_ACTIVE_FRAMEWORK_ID, framework.identifier).toPromise()
             )
             .map((framework: Framework) => {
                 let terms: CategoryTerm[] = [];
