@@ -13,11 +13,14 @@ import {
 import {Observable} from 'rxjs';
 import * as Collections from 'typescript-collections';
 import {FrameworkMapper} from '../util/framework-mapper';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {FrameworkKeys} from '../../preference-keys';
 
 export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFrameworkCategoryTermsRequest, CategoryTerm[]> {
 
     constructor(private frameworkUtilService: FrameworkUtilService,
-                private frameworkService: FrameworkService) {
+                private frameworkService: FrameworkService,
+                private sharedPreferences: SharedPreferences) {
     }
 
     handle(request: GetFrameworkCategoryTermsRequest): Observable<CategoryTerm[]> {
@@ -28,6 +31,9 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
 
             return this.getActiveChannelTranslatedDefaultFrameworkDetails(request.requiredCategories, request.language);
         }) as () => Observable<Framework>)()
+            .do(async (framework: Framework) =>
+                await this.sharedPreferences.putString(FrameworkKeys.KEY_ACTIVE_CHANNEL_FRAMERORK_ID, framework.identifier).toPromise()
+            )
             .map((framework: Framework) => {
                 let terms: CategoryTerm[] = [];
 

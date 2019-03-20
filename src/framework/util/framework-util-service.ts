@@ -7,5 +7,10 @@ export interface FrameworkUtilService {
 
     getActiveChannelSuggestedFrameworkList(getSuggestedFrameworksRequest: GetSuggestedFrameworksRequest): Observable<Framework[]>;
 
+    /**
+     * @param {GetFrameworkCategoryTermsRequest} getFrameworkCategoriesRequest
+     *  - @optional frameworkId
+     *      - when not present, use active channel default framework
+     * */
     getFrameworkCategoryTerms(getFrameworkCategoriesRequest: GetFrameworkCategoryTermsRequest): Observable<CategoryTerm[]>;
 }
