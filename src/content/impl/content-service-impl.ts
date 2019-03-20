@@ -120,23 +120,25 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     getContents(request: ContentRequest): Observable<Content[]> {
         const query = new GetContentsHandler().getAllLocalContentQuery(request);
         return this.dbService.execute(query)
-            .mergeMap(async (contentsInDb: ContentEntry.SchemaMap[]) => {
-                const contents: Content[] = [];
+            .mergeMap((contentsInDb: ContentEntry.SchemaMap[]) => {
+                return Observable.defer(async () => {
+                    const contents: Content[] = [];
 
-                for (const contentInDb of contentsInDb) {
-                    let content = ContentMapper.mapContentDBEntryToContent(contentInDb);
+                    for (const contentInDb of contentsInDb) {
+                        let content = ContentMapper.mapContentDBEntryToContent(contentInDb);
 
-                    content = await this.getContentDetailsHandler.decorateContent({
-                        content,
-                        attachContentAccess: request.attachContentAccess,
-                        attachContentMarker: request.attachContentAccess,
-                        attachFeedback: request.attachFeedback
-                    }).toPromise();
+                        content = await this.getContentDetailsHandler.decorateContent({
+                            content,
+                            attachContentAccess: request.attachContentAccess,
+                            attachContentMarker: request.attachContentAccess,
+                            attachFeedback: request.attachFeedback
+                        }).toPromise();
 
-                    contents.push(content);
-                }
+                        contents.push(content);
+                    }
 
-                return contents;
+                    return contents;
+                });
             });
     }
 
