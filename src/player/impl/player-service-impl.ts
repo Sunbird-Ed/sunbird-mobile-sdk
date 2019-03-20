@@ -31,6 +31,10 @@ export class PlayerServiceImpl implements PlayerService {
 
         const playerInput: PlayerInput = {};
         content.rollup = ContentUtil.getRollup(content.identifier, content.hierarchyInfo!);
+        if (content.isAvailableLocally) {
+            content.contentData.streamingUrl = content.basePath;
+            content.contentData.previewUrl = content.basePath;
+        }
         playerInput.metaData = content;
         playerInput.config = this.config.playerConfig;
         return this.profileService.getActiveProfileSession().mergeMap((session: ProfileSession | undefined) => {
