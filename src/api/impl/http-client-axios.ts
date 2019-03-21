@@ -1,4 +1,4 @@
-import {HttpClient, HttpSerializer, Response} from '..';
+import {HttpClient, HttpSerializer, NetworkError, Response} from '..';
 import {Observable} from 'rxjs';
 import * as axios from 'axios';
 import {AxiosError, AxiosResponse, AxiosStatic} from 'axios';
@@ -47,15 +47,24 @@ export class HttpClientAxios implements HttpClient {
                 return sunbirdResponse;
             })
                 .catch(async (e: AxiosError) => {
-                    if (e.response) {
+                    if (!e.response) {
+                        throw new NetworkError(`
+                            ${e.config.url} -
+                            ${e || ''}
+                        `);
+                    }
+
+                    if (typeof e.response.data === 'object') {
                         const sunbirdResponse = new Response<any>();
-                        sunbirdResponse.errorMesg = 'NETWORK ERROR';
+                        sunbirdResponse.errorMesg = 'SERVER_ERROR';
                         sunbirdResponse.responseCode = e.response.status;
                         sunbirdResponse.body = e.response.data;
                         return sunbirdResponse;
+                    } else {
+                        throw new NetworkError(`
+                            ${e.config.url}
+                        `);
                     }
-
-                    throw e;
                 })
         );
     }
