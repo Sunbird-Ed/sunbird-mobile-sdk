@@ -7,7 +7,7 @@ import {
     ContentMarkerRequest,
     ContentRequest,
     ContentSearchCriteria,
-    EcarImportRequest
+    EcarImportRequest, RelevantContentRequest
 } from './requests';
 import {Response} from '../../api';
 import {Observable} from 'rxjs';
@@ -17,7 +17,7 @@ import {
     ContentExportResponse,
     ContentImportResponse,
     ContentSearchResult,
-    ContentsGroupedByPageSection
+    ContentsGroupedByPageSection, RelevantContentResponse
 } from './response';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
 
@@ -39,6 +39,8 @@ export interface ContentService extends DownloadCompleteDelegate {
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
 
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
+
+    getRelevantContent(relevantContentRequest: RelevantContentRequest): Observable<RelevantContentResponse>;
 
     importEcar(ecarImportRequest: EcarImportRequest): Observable<Response>;
 

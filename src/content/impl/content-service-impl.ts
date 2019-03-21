@@ -360,7 +360,28 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     getRelevantContent(request: RelevantContentRequest): Observable<RelevantContentResponse> {
-        throw Error('');
+        const relevantContentResponse: RelevantContentResponse = {};
+        return Observable.of(relevantContentResponse)
+            .mergeMap((content) => {
+                if (request.next) {
+                    return this.nextContent(request.hierarchyInfo!, request.contentIdentifier!).map((nextContet: Content) => {
+                        relevantContentResponse.nextContent = nextContet;
+                        return relevantContentResponse;
+                    });
+                }
+
+                return Observable.of(relevantContentResponse);
+            })
+            .mergeMap((content) => {
+                if (request.prev) {
+                    return this.prevContent(request.hierarchyInfo!, request.contentIdentifier!).map((prevContent: Content) => {
+                        relevantContentResponse.previousContent = prevContent;
+                        return relevantContentResponse;
+                    });
+                }
+
+                return Observable.of(relevantContentResponse);
+            });
     }
 
     subscribeForImportStatus(contentId: string): Observable<any> {
