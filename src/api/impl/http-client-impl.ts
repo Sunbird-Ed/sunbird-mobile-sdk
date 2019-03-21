@@ -65,7 +65,13 @@ export class HttpClientImpl implements HttpClient {
             const r = new Response();
 
             if (response.status === 0) {
-                throw new NetworkError(`${url}`);
+                observable.error(new NetworkError(`
+                    ${url} -
+                    ${response.error || ''}
+                `));
+                observable.complete();
+
+                return;
             }
 
 
@@ -76,8 +82,11 @@ export class HttpClientImpl implements HttpClient {
                 observable.next(r);
                 observable.complete();
             } catch (e) {
-                console.error(response, e);
-                throw e;
+                observable.error(new NetworkError(`
+                    ${url} -
+                    ${response.error || ''}
+                `));
+                observable.complete();
             }
         });
 
