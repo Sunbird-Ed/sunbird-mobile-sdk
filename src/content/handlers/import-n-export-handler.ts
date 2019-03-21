@@ -26,7 +26,7 @@ export class ImportNExportHandler {
     populateItems(contentsInDb: ContentEntry.SchemaMap[]): { [key: string]: any }[] {
         const items: any[] = [];
         const allContentsIdentifier: string[] = [];
-        const childIdentifiers: string[] = [];
+        let childIdentifiers: string[] = [];
         const contentIndex: { [key: string]: any } = {};
         contentsInDb.forEach((contentInDb) => {
             // item local data
@@ -38,7 +38,7 @@ export class ImportNExportHandler {
             if (ContentUtil.hasChildren(item)) {
                 // store children identifiers
                 const childContentIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(item);
-                childIdentifiers.concat(childContentIdentifiers);
+                childIdentifiers =  childIdentifiers.concat(childContentIdentifiers);
             }
 
             allContentsIdentifier.push(contentInDb[COLUMN_NAME_IDENTIFIER]);
@@ -102,9 +102,9 @@ export class ImportNExportHandler {
     }
 
     findAllContentsWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
-        const identifiersStr = identifiers.join(',');
+        const identifiersStr = ArrayUtil.joinPreservingQuotes(identifiers);
         const orderby = ` order by ${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} desc, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} desc`;
-        const filter = ` where ${COLUMN_NAME_IDENTIFIER} in ('${identifiersStr}') AND ${COLUMN_NAME_REF_COUNT} > 0`;
+        const filter = ` where ${COLUMN_NAME_IDENTIFIER} in (${identifiersStr}) AND ${COLUMN_NAME_REF_COUNT} > 0`;
         const query = `select * from ${ContentEntry.TABLE_NAME} ${filter} ${orderby}`;
         return this.dbService!.execute(query).toPromise();
     }

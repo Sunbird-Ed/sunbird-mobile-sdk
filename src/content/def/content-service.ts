@@ -7,12 +7,18 @@ import {
     ContentMarkerRequest,
     ContentRequest,
     ContentSearchCriteria,
-    EcarImportRequest
+    EcarImportRequest, RelevantContentRequest
 } from './requests';
 import {Response} from '../../api';
 import {Observable} from 'rxjs';
 import {Content, HierarchyInfo} from './content';
-import {ContentDeleteResponse, ContentImportResponse, ContentSearchResult, ContentsGroupedByPageSection} from './response';
+import {
+    ContentDeleteResponse,
+    ContentExportResponse,
+    ContentImportResponse,
+    ContentSearchResult,
+    ContentsGroupedByPageSection, RelevantContentResponse
+} from './response';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
 
 
@@ -34,6 +40,8 @@ export interface ContentService extends DownloadCompleteDelegate {
 
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
 
+    getRelevantContent(relevantContentRequest: RelevantContentRequest): Observable<RelevantContentResponse>;
+
     importEcar(ecarImportRequest: EcarImportRequest): Observable<Response>;
 
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]>;
@@ -42,7 +50,7 @@ export interface ContentService extends DownloadCompleteDelegate {
 
     cancelImport(contentId: string): Observable<any>;
 
-    exportContent(contentExportRequest: ContentExportRequest): Observable<Response>;
+    exportContent(contentExportRequest: ContentExportRequest): Observable<ContentExportResponse>;
 
     getDownloadState(): Promise<Response>;
 

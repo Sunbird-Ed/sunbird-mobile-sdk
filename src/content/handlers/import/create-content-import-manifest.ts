@@ -54,7 +54,7 @@ export class CreateContentImportManifest {
             const queue: Queue<ContentEntry.SchemaMap> = new Queue();
             queue.add(contentInDb);
             let node: ContentEntry.SchemaMap;
-            const contentWithAllChildren: ContentEntry.SchemaMap[] = [];
+            let contentWithAllChildren: ContentEntry.SchemaMap[] = [];
             contentWithAllChildren.push(contentInDb);
             while (!queue.isEmpty()) {
                 node = queue.dequeue()!;
@@ -67,7 +67,7 @@ export class CreateContentImportManifest {
                         contentModelListInDB.forEach((contentModelInDb) => {
                             queue.add(contentModelInDb);
                         });
-                        contentWithAllChildren.concat(contentModelListInDB);
+                        contentWithAllChildren = contentWithAllChildren.concat(contentModelListInDB);
                     }
                 }
             }

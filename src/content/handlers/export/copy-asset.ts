@@ -20,7 +20,12 @@ export class CopyAsset {
                 const contentData = exportContentContext.items![i];
                 const appIcon = contentData['appIcon'];
                 if (appIcon) {
-                    await this.copyAsset(contentInDb[COLUMN_NAME_PATH]!, exportContentContext.tmpLocationPath!, appIcon);
+                    try {
+                    await this.copyAsset(ContentUtil.getBasePath(contentInDb[COLUMN_NAME_PATH]!),
+                        exportContentContext.tmpLocationPath!, appIcon);
+                    } catch (e) {
+                        console.error(e);
+                    }
                 }
 
                 const contentDisposition: string = contentData['contentDisposition'];
@@ -28,7 +33,13 @@ export class CopyAsset {
                 if (ContentUtil.isInlineIdentity(contentDisposition, contentEncoding)) {
                     const artifactUrl: string = contentData['artifactUrl'];
                     if (artifactUrl) {
-                        await this.copyAsset(contentInDb[COLUMN_NAME_PATH]!, exportContentContext.tmpLocationPath!, artifactUrl);
+                        try {
+                            await this.copyAsset(ContentUtil.getBasePath(contentInDb[COLUMN_NAME_PATH]!),
+                                exportContentContext.tmpLocationPath!, artifactUrl);
+                        } catch (e) {
+                            console.error(e);
+                        }
+
                     }
                 }
                 i++;
@@ -44,7 +55,7 @@ export class CopyAsset {
 
     private async copyAsset(sourcePath: string, destinationPath: string, fileName: string): Promise<Entry> {
         return this.fileService.exists(sourcePath.concat(fileName)).then((entry: Entry) => {
-                return this.fileService.createDir(destinationPath, true);
+            return this.fileService.createDir(destinationPath, true);
         }).then(() => {
             return this.fileService.copyFile(sourcePath, fileName, destinationPath, fileName);
         });

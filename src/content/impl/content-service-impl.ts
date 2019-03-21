@@ -9,7 +9,7 @@ import {
     ContentDownloadRequest,
     ContentErrorCode,
     ContentEventType,
-    ContentExportRequest,
+    ContentExportRequest, ContentExportResponse,
     ContentFeedbackService,
     ContentImport,
     ContentImportRequest,
@@ -28,7 +28,7 @@ import {
     HierarchyInfo,
     ImportContentContext,
     MimeType,
-    PageSection,
+    PageSection, RelevantContentRequest, RelevantContentResponse,
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
@@ -174,12 +174,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return Observable.of(contentDeleteResponse);
     }
 
-    exportContent(contentExportRequest: ContentExportRequest): Observable<Response> {
+    exportContent(contentExportRequest: ContentExportRequest): Observable<ContentExportResponse> {
         const response: Response = new Response();
-        if (!contentExportRequest.contentIds.length) {
-            response.body = ContentErrorCode.EXPORT_FAILED_NOTHING_TO_EXPORT;
-            return Observable.of(response);
-        }
         const exportHandler = new ImportNExportHandler(this.deviceInfo, this.dbService);
         return Observable.fromPromise(exportHandler.getContentExportDBModeltoExport(
             contentExportRequest.contentIds).then((contentsInDb: ContentEntry.SchemaMap[]) => {
@@ -213,6 +209,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
                 return new GenerateExportShareTelemetry(this.telemetryService).execute(exportResponse.body);
+            }).then((exportResponse: Response<ContentExportResponse>) => {
+                return exportResponse.body;
             });
         }));
     }
@@ -361,6 +359,31 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             });
     }
 
+    getRelevantContent(request: RelevantContentRequest): Observable<RelevantContentResponse> {
+        const relevantContentResponse: RelevantContentResponse = {};
+        return Observable.of(relevantContentResponse)
+            .mergeMap((content) => {
+                if (request.next) {
+                    return this.nextContent(request.hierarchyInfo!, request.contentIdentifier!).map((nextContet: Content) => {
+                        relevantContentResponse.nextContent = nextContet;
+                        return relevantContentResponse;
+                    });
+                }
+
+                return Observable.of(relevantContentResponse);
+            })
+            .mergeMap((content) => {
+                if (request.prev) {
+                    return this.prevContent(request.hierarchyInfo!, request.contentIdentifier!).map((prevContent: Content) => {
+                        relevantContentResponse.previousContent = prevContent;
+                        return relevantContentResponse;
+                    });
+                }
+
+                return Observable.of(relevantContentResponse);
+            });
+    }
+
     subscribeForImportStatus(contentId: string): Observable<any> {
         // TODO
         throw new Error('Not Implemented yet');
@@ -381,7 +404,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
         return this.sharedPreferences.getString(FrameworkKeys.KEY_ACTIVE_CHANNEL_ACTIVE_FRAMEWORK_ID)
             .mergeMap((frameworkId?: string) => {
-                return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig, frameworkId!, contentSearchCriteria.languageCode)
+                return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig, frameworkId!,
+                    contentSearchCriteria.languageCode)
                     .handle(searchRequest)
                     .map((searchResponse: SearchResponse) => {
                         return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
