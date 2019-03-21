@@ -1,7 +1,7 @@
-import { CachedItemStore, KeyValueStore } from '..';
-import { Observable } from 'rxjs';
-import { ApiConfig } from '../../api';
-import { SharedPreferences } from '../../util/shared-preferences';
+import {CachedItemStore, KeyValueStore} from '..';
+import {Observable} from 'rxjs';
+import {ApiConfig} from '../../api';
+import {SharedPreferences} from '../../util/shared-preferences';
 
 export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
 
@@ -26,11 +26,10 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
                             if (isItemTTLExpired) {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id)
                                     .map((v) => JSON.parse(v!))
-                                    .do(() => {
-                                        fromServer().switchMap((item: T) => {
+                                    .do(async () => {
+                                        await fromServer().switchMap((item: T) => {
                                             return this.saveItem(id, timeToLiveKey, noSqlkey, item);
-                                        }).subscribe(() => {
-                                        });
+                                        }).toPromise();
                                     });
                             } else {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id)
