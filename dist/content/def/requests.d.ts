@@ -71,9 +71,6 @@ export interface ContentExportRequest {
     destinationFolder: string;
     contentIds: string[];
 }
-export interface ContentExportResponse {
-    exportedFilePath: string;
-}
 export interface ContentMarkerRequest {
     contentId: string;
     uid: string;
@@ -165,4 +162,10 @@ export interface ExportContentContext {
 export interface ContentDownloadRequest extends DownloadRequest {
     isChildContent?: boolean;
     correlationData?: CorrelationData[];
+}
+export interface RelevantContentRequest extends DownloadRequest {
+    hierarchyInfo?: HierarchyInfo[];
+    contentIdentifier?: string;
+    next?: boolean;
+    prev?: boolean;
 }

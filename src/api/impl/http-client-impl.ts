@@ -1,5 +1,12 @@
 import {HttpClient, HttpRequestType, HttpSerializer, Response} from '..';
 import {Observable, Subject} from 'rxjs';
+import {NetworkError} from '../errors/network-error';
+
+interface CordovaHttpClientResponse {
+    data?: string;
+    error?: string;
+    status: number;
+}
 
 export class HttpClientImpl implements HttpClient {
 
@@ -40,33 +47,47 @@ export class HttpClientImpl implements HttpClient {
                           headers: { [key: string]: string }): Observable<Response> {
         const observable = new Subject<Response>();
 
-        this.http[type.toLowerCase()](url, parametersOrData, headers, (response) => {
+        this.http[type.toLowerCase()](url, parametersOrData, headers, (response: CordovaHttpClientResponse) => {
             const r = new Response();
 
             try {
-                r.body = JSON.parse(response.data);
+                r.body = JSON.parse(response.data!);
             } catch (e) {
                 r.body = response.data;
             }
 
             r.responseCode = response.status;
-            r.errorMesg = response.error;
+            r.errorMesg = '';
             observable.next(r);
             observable.complete();
-        }, (response) => {
+
+        }, (response: CordovaHttpClientResponse) => {
             const r = new Response();
 
-            try {
-                r.body = JSON.parse(response.error);
-            } catch (e) {
-                console.error(response, e);
-                throw e;
+            if (response.status === 0) {
+                observable.error(new NetworkError(`
+                    ${url} -
+                    ${response.error || ''}
+                `));
+                observable.complete();
+
+                return;
             }
 
-            r.responseCode = response.status;
-            r.errorMesg = 'NETWORK ERROR';
-            observable.next(r);
-            observable.complete();
+
+            try {
+                r.body = JSON.parse(response.error!);
+                r.responseCode = response.status;
+                r.errorMesg = 'SERVER_ERROR';
+                observable.next(r);
+                observable.complete();
+            } catch (e) {
+                observable.error(new NetworkError(`
+                    ${url} -
+                    ${response.error || ''}
+                `));
+                observable.complete();
+            }
         });
 
         return observable;

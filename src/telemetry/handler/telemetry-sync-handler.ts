@@ -15,6 +15,7 @@ import COLUMN_NAME_MSG_ID = TelemetryProcessedEntry.COLUMN_NAME_MSG_ID;
 import COLUMN_NAME_NUMBER_OF_EVENTS = TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS;
 import COLUMN_NAME_PRIORITY = TelemetryEntry.COLUMN_NAME_PRIORITY;
 import COLUMN_NAME_DATA = TelemetryProcessedEntry.COLUMN_NAME_DATA;
+import COLUMN_NAME_EVENT = TelemetryEntry.COLUMN_NAME_EVENT;
 
 interface ProcessedEventsMeta {
     processedEvents?: string;
@@ -156,7 +157,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
                 id: 'ekstep.telemetry',
                 ver: '1.0',
                 ts: Date.now(),
-                data: events,
+                events: events.map((e) => JSON.parse(e[COLUMN_NAME_EVENT])),
                 params: {
                     did: this.deviceInfo.getDeviceID(),
                     msgid: messageId,

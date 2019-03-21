@@ -1,4 +1,4 @@
-import { ChildContentRequest, Content, ContentDeleteRequest, ContentDeleteResponse, ContentDetailRequest, ContentDownloadRequest, ContentExportRequest, ContentFeedbackService, ContentImportRequest, ContentImportResponse, ContentMarkerRequest, ContentRequest, ContentSearchCriteria, ContentSearchResult, ContentService, ContentServiceConfig, ContentsGroupedByPageSection, EcarImportRequest, HierarchyInfo } from '..';
+import { ChildContentRequest, Content, ContentDeleteRequest, ContentDeleteResponse, ContentDetailRequest, ContentDownloadRequest, ContentExportRequest, ContentExportResponse, ContentFeedbackService, ContentImportRequest, ContentImportResponse, ContentMarkerRequest, ContentRequest, ContentSearchCriteria, ContentSearchResult, ContentService, ContentServiceConfig, ContentsGroupedByPageSection, EcarImportRequest, HierarchyInfo, RelevantContentRequest, RelevantContentResponse } from '..';
 import { Observable } from 'rxjs';
 import { ApiService, Response } from '../../api';
 import { ProfileService } from '../../profile';
@@ -36,13 +36,14 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     getContents(request: ContentRequest): Observable<Content[]>;
     cancelImport(contentId: string): Observable<any>;
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
-    exportContent(contentExportRequest: ContentExportRequest): Observable<Response>;
+    exportContent(contentExportRequest: ContentExportRequest): Observable<ContentExportResponse>;
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
     getDownloadState(): Promise<any>;
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]>;
     importEcar(ecarImportRequest: EcarImportRequest): Observable<Response>;
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
+    getRelevantContent(request: RelevantContentRequest): Observable<RelevantContentResponse>;
     subscribeForImportStatus(contentId: string): Observable<any>;
     searchContent(contentSearchCriteria: ContentSearchCriteria, request?: {
         [key: string]: any;
