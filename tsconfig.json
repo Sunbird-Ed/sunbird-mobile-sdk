@@ -26,16 +26,7 @@
   },
   "include": [
     "./src/**/*",
-    "./plugins/sb-cordova-plugin-db.d.ts",
-    "./plugins/sb-cordova-plugin-customtabs.d.ts",
-    "./plugins/cordova-plugin-advanced-http.d.ts",
-    "./plugins/cordova-plugin-file.d.ts",
-    "./plugins/cordova-plugin-awesome-shared-preferences.d.ts",
-    "./plugins/cordova-plugin-android-downloadmanager.d.ts",
-    "./plugins/jjdltc-cordova-plugin-zip.d.ts",
-    "./plugins/cordova-plugin-buildconfig-reader.d.ts",
-    "./plugins/cordova-plugin-appversion.d.ts",
-    "./plugins/cordova.d.ts"
+    "./plugins/*.d.ts"
   ],
   "exclude": [
     "node_modules",

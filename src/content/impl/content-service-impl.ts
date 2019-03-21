@@ -9,7 +9,8 @@ import {
     ContentDownloadRequest,
     ContentErrorCode,
     ContentEventType,
-    ContentExportRequest, ContentExportResponse,
+    ContentExportRequest,
+    ContentExportResponse,
     ContentFeedbackService,
     ContentImport,
     ContentImportRequest,
@@ -28,7 +29,9 @@ import {
     HierarchyInfo,
     ImportContentContext,
     MimeType,
-    PageSection, RelevantContentRequest, RelevantContentResponse,
+    PageSection,
+    RelevantContentRequest,
+    RelevantContentResponse,
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
@@ -147,31 +150,34 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]> {
-        const contentDeleteResponse: ContentDeleteResponse[] = [];
-        const deleteContentHandler = new DeleteContentHandler(this.dbService, this.fileService, this.sharedPreferences, this.zipService);
-        contentDeleteRequest.contentDeleteList.forEach(async (contentDelete) => {
-            const contentInDb = await this.getContentDetailsHandler.fetchFromDB(contentDelete.contentId).toPromise();
-            if (contentInDb) {
-                contentDeleteResponse.push({
-                    identifier: contentDelete.contentId,
-                    status: ContentDeleteStatus.DELETED_SUCCESSFULLY
-                });
+        return Observable.defer(async () => {
+            const contentDeleteResponse: ContentDeleteResponse[] = [];
+            const deleteContentHandler = new DeleteContentHandler(this.dbService, this.fileService, this.sharedPreferences, this.zipService);
 
-                if (ContentUtil.hasChildren(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
-                    await deleteContentHandler.deleteAllChildren(contentInDb, contentDelete.isChildContent);
+            for (const contentDelete of contentDeleteRequest.contentDeleteList) {
+                const contentInDb = await this.getContentDetailsHandler.fetchFromDB(contentDelete.contentId).toPromise();
+                if (contentInDb) {
+                    contentDeleteResponse.push({
+                        identifier: contentDelete.contentId,
+                        status: ContentDeleteStatus.DELETED_SUCCESSFULLY
+                    });
+
+                    if (ContentUtil.hasChildren(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
+                        await deleteContentHandler.deleteAllChildren(contentInDb, contentDelete.isChildContent);
+                    }
+
+                    await deleteContentHandler.deleteOrUpdateContent(contentInDb, false, contentDelete.isChildContent);
+
+                } else {
+                    contentDeleteResponse.push({
+                        identifier: contentDelete.contentId,
+                        status: ContentDeleteStatus.NOT_FOUND
+                    });
                 }
-
-                await deleteContentHandler.deleteOrUpdateContent(contentInDb, false, contentDelete.isChildContent);
-
-            } else {
-                contentDeleteResponse.push({
-                    identifier: contentDelete.contentId,
-                    status: ContentDeleteStatus.NOT_FOUND
-                });
             }
-        });
 
-        return Observable.of(contentDeleteResponse);
+            return contentDeleteResponse;
+        });
     }
 
     exportContent(contentExportRequest: ContentExportRequest): Observable<ContentExportResponse> {
