@@ -9,7 +9,7 @@ import {
     ContentDownloadRequest,
     ContentErrorCode,
     ContentEventType,
-    ContentExportRequest,
+    ContentExportRequest, ContentExportResponse,
     ContentFeedbackService,
     ContentImport,
     ContentImportRequest,
@@ -28,7 +28,7 @@ import {
     HierarchyInfo,
     ImportContentContext,
     MimeType,
-    PageSection,
+    PageSection, RelevantContentRequest, RelevantContentResponse,
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
@@ -78,6 +78,7 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {GenerateInteractTelemetry} from '../handlers/import/generate-interact-telemetry';
 import {CachedItemStore} from '../../key-value-store';
 import * as SHA1 from 'crypto-js/sha1';
+import {FrameworkKeys} from '../../preference-keys';
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
@@ -119,23 +120,25 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     getContents(request: ContentRequest): Observable<Content[]> {
         const query = new GetContentsHandler().getAllLocalContentQuery(request);
         return this.dbService.execute(query)
-            .mergeMap(async (contentsInDb: ContentEntry.SchemaMap[]) => {
-                const contents: Content[] = [];
+            .mergeMap((contentsInDb: ContentEntry.SchemaMap[]) => {
+                return Observable.defer(async () => {
+                    const contents: Content[] = [];
 
-                for (const contentInDb of contentsInDb) {
-                    let content = ContentMapper.mapContentDBEntryToContent(contentInDb);
+                    for (const contentInDb of contentsInDb) {
+                        let content = ContentMapper.mapContentDBEntryToContent(contentInDb);
 
-                    content = await this.getContentDetailsHandler.decorateContent({
-                        content,
-                        attachContentAccess: request.attachContentAccess,
-                        attachContentMarker: request.attachContentAccess,
-                        attachFeedback: request.attachFeedback
-                    }).toPromise();
+                        content = await this.getContentDetailsHandler.decorateContent({
+                            content,
+                            attachContentAccess: request.attachContentAccess,
+                            attachContentMarker: request.attachContentAccess,
+                            attachFeedback: request.attachFeedback
+                        }).toPromise();
 
-                    contents.push(content);
-                }
+                        contents.push(content);
+                    }
 
-                return contents;
+                    return contents;
+                });
             });
     }
 
@@ -171,12 +174,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return Observable.of(contentDeleteResponse);
     }
 
-    exportContent(contentExportRequest: ContentExportRequest): Observable<Response> {
+    exportContent(contentExportRequest: ContentExportRequest): Observable<ContentExportResponse> {
         const response: Response = new Response();
-        if (!contentExportRequest.contentIds.length) {
-            response.body = ContentErrorCode.EXPORT_FAILED_NOTHING_TO_EXPORT;
-            return Observable.of(response);
-        }
         const exportHandler = new ImportNExportHandler(this.deviceInfo, this.dbService);
         return Observable.fromPromise(exportHandler.getContentExportDBModeltoExport(
             contentExportRequest.contentIds).then((contentsInDb: ContentEntry.SchemaMap[]) => {
@@ -210,6 +209,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
                 return new GenerateExportShareTelemetry(this.telemetryService).execute(exportResponse.body);
+            }).then((exportResponse: Response<ContentExportResponse>) => {
+                return exportResponse.body;
             });
         }));
     }
@@ -358,6 +359,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             });
     }
 
+    getRelevantContent(request: RelevantContentRequest): Observable<RelevantContentResponse> {
+        throw Error('');
+    }
+
     subscribeForImportStatus(contentId: string): Observable<any> {
         // TODO
         throw new Error('Not Implemented yet');
@@ -375,11 +380,15 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         }
 
         const searchRequest = searchHandler.getSearchContentRequest(contentSearchCriteria);
-        return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig,
-            contentSearchCriteria.framework, contentSearchCriteria.languageCode)
-            .handle(searchRequest)
-            .map((searchResponse: SearchResponse) => {
-                return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
+
+        return this.sharedPreferences.getString(FrameworkKeys.KEY_ACTIVE_CHANNEL_ACTIVE_FRAMEWORK_ID)
+            .mergeMap((frameworkId?: string) => {
+                return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig, frameworkId!,
+                    contentSearchCriteria.languageCode)
+                    .handle(searchRequest)
+                    .map((searchResponse: SearchResponse) => {
+                        return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
+                    });
             });
     }
 

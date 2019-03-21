@@ -11,9 +11,9 @@ export class DeviceMemoryCheck {
         const response: Response = new Response();
         return this.fileService.getFreeDiskSpace().then((freeSpace) => {
             const fileSize: number = this.getFileSize(exportContentContext.items!);
-            if (!FileUtil.isFreeSpaceAvailable(freeSpace, fileSize, 0)) {
-                throw response;
-            }
+            // if (!FileUtil.isFreeSpaceAvailable(freeSpace, fileSize, 0)) {
+            //     throw response;
+            // }
             response.body = exportContentContext;
             return response;
         });

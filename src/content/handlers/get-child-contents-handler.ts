@@ -19,26 +19,25 @@ export class ChildContentsHandler {
     public async fetchChildrenOfContent(contentInDb: ContentEntry.SchemaMap,
                                         currentLevel: number,
                                         level: number,
-                                        hierarchyInfoList?: HierarchyInfo[]): Promise<Content> {
+                                        sourceInfoList?: HierarchyInfo[]): Promise<Content> {
         const content: Content = ContentMapper.mapContentDBEntryToContent(contentInDb);
         const childContentModels: ContentEntry.SchemaMap[] =
             await this.getSortedChildrenList(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA], ChildContents.ALL);
 
         if (childContentModels && childContentModels.length) {
-            if (!hierarchyInfoList) {
-                content.hierarchyInfo = [
-                    {
-                        identifier: contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER],
-                        contentType: contentInDb[ContentEntry.COLUMN_NAME_CONTENT_TYPE]
-                    }
-                ];
-            }
+            let hierarchyInfoList: HierarchyInfo[] = [];
+            hierarchyInfoList = hierarchyInfoList.concat(sourceInfoList!);
+            hierarchyInfoList.push({
+                identifier: contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER],
+                contentType: contentInDb[ContentEntry.COLUMN_NAME_CONTENT_TYPE]
+            });
+            content.hierarchyInfo = hierarchyInfoList!;
 
             if (level === -1 || currentLevel <= level) {
                 const childContents: Content[] = [];
                 for (const element of childContentModels) {
                     const childContentModel = element as ContentEntry.SchemaMap;
-                    const childContent: Content = await this.fetchChildrenOfContent(element,
+                    const childContent: Content = await this.fetchChildrenOfContent(childContentModel,
                         currentLevel + 1,
                         level,
                         hierarchyInfoList);
@@ -47,9 +46,8 @@ export class ChildContentsHandler {
                 content.children = childContents;
             }
         } else {
-            content.hierarchyInfo = hierarchyInfoList;
+            content.hierarchyInfo = sourceInfoList;
         }
-
         return content;
     }
 
@@ -200,8 +198,8 @@ export class ChildContentsHandler {
     }
 
     public getPreviuosContentIdentifier(hierarchyInfoList: HierarchyInfo[],
-                                         currentIdentifier: string,
-                                         contentKeyList: string[]): string {
+                                        currentIdentifier: string,
+                                        contentKeyList: string[]): string {
 
         let currentIdentifiers = '';
         let previousContentIdentifier;
