@@ -152,7 +152,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]> {
         return Observable.defer(async () => {
             const contentDeleteResponse: ContentDeleteResponse[] = [];
-            const deleteContentHandler = new DeleteContentHandler(this.dbService, this.fileService, this.sharedPreferences, this.zipService);
+            const deleteContentHandler = new DeleteContentHandler(this.dbService, this.fileService,
+                this.sharedPreferences, this.zipService);
 
             for (const contentDelete of contentDeleteRequest.contentDeleteList) {
                 const contentInDb = await this.getContentDetailsHandler.fetchFromDB(contentDelete.contentId).toPromise();
@@ -365,7 +366,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             });
     }
 
-    getRelevantContent(request: RelevantContentRequest): Observable<RelevantContentResponse> {
+    getRelevantContent(request: RelevantContentRequest): Observable<{ [key: string]: any }> {
         const relevantContentResponse: RelevantContentResponse = {};
         return Observable.of(relevantContentResponse)
             .mergeMap((content) => {
@@ -387,6 +388,15 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }
 
                 return Observable.of(relevantContentResponse);
+            }).mapTo((contentResponse: RelevantContentResponse) => {
+                const response: { [key: string]: any } = {};
+                const nextContent: { [key: string]: any } = {};
+                nextContent['content'] = contentResponse.nextContent;
+                response['next'] = nextContent;
+                const prevContent: { [key: string]: any } = {};
+                prevContent['content'] = contentResponse.previousContent;
+                response['next'] = prevContent;
+                return response;
             });
     }
 
