@@ -123,10 +123,14 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
                     }).map(v => v > 0);
 
                 } else {
-                    return this.dbService.insert({
-                        table: LearnerAssessmentsEntry.TABLE_NAME,
-                        modelJson: learnerAssessmentDbSchema
-                    }).map(v => v > 0);
+                    if (learnerAssesmentDetils.qid) {
+                        return this.dbService.insert({
+                            table: LearnerAssessmentsEntry.TABLE_NAME,
+                            modelJson: learnerAssessmentDbSchema
+                        }).map(v => v > 0);
+                    }
+
+                    return Observable.of(false);
                 }
             });
     }
