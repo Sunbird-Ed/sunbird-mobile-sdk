@@ -114,9 +114,10 @@ export class BaseConnection implements Connection {
         return new Promise<Response>((resolve, reject) => {
             const xhr = new XMLHttpRequest;
             xhr.open(HttpRequestType.POST, (request.host || this.apiConfig.host) + request.path, false);
-            Object.keys(request.headers).forEach((header) => {
-                xhr.setRequestHeader(header, request.headers[header]);
-            });
+
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('Content-Encoding', 'gzip');
+
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {

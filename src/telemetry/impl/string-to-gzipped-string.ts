@@ -2,10 +2,10 @@ import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
 import {InvalidInputForSyncPreprocessorError} from '../errors/invalid-input-for-sync-preprocessor-error';
 import * as pako from 'pako';
 
-export class ByteArrayToBinaryStringPreprocessor implements TelemetrySyncPreprocessor {
+export class StringToGzippedString implements TelemetrySyncPreprocessor {
     process(input: any): any {
-        if (!(input instanceof Uint8Array)) {
-            throw new InvalidInputForSyncPreprocessorError('ByteArrayToBinaryStringPreprocessor expects input of type "UInt8Array"');
+        if (!(typeof input === 'string')) {
+            throw new InvalidInputForSyncPreprocessorError('StringToGzippedString expects input of type "string"');
         }
 
         return pako.gzip(input, {to: 'string'});

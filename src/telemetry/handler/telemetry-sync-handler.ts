@@ -2,8 +2,7 @@ import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api
 import {TelemetrySyncStat} from '..';
 import {Observable} from 'rxjs';
 import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
-import {StringToByteArrayPreprocessor} from '../impl/string-to-byte-array-preprocessor';
-import {ByteArrayToBinaryStringPreprocessor} from '../impl/byte-array-to-binary-string-preprocessor';
+import {StringToGzippedString} from '../impl/string-to-gzipped-string';
 import {TelemetryEntriesToStringPreprocessor} from '../impl/telemetry-entries-to-string-preprocessor';
 import {KeyValueStore} from '../../key-value-store';
 import {TelemetryConfig} from '../config/telemetry-config';
@@ -42,8 +41,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
                 private apiService?: ApiService) {
         this.preprocessors = [
             new TelemetryEntriesToStringPreprocessor(),
-            new StringToByteArrayPreprocessor(),
-            new ByteArrayToBinaryStringPreprocessor()
+            new StringToGzippedString()
         ];
     }
 
@@ -239,12 +237,15 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
             return Observable.of(undefined);
         }
 
-        const body = new TextEncoder().encode(processedEventsBatchEntry[COLUMN_NAME_DATA]);
+        const gzippedCharData = processedEventsBatchEntry[COLUMN_NAME_DATA].split('').map((c) => {
+            return c.charCodeAt(0);
+        });
+        const body = new Uint8Array(gzippedCharData);
+
         // const body = JSON.parse(pako.ungzip(processedEventsBatchEntry[COLUMN_NAME_DATA], {to: 'string'}));
 
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
-            .withHeaders({'Content-Encoding': 'gzip'})
             .withPath(this.telemetryConfig.telemetryApiPath +
                 TelemetrySyncHandler.TELEMETRY_ENDPOINT)
             .withBody(body)
