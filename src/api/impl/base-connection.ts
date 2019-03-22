@@ -115,6 +115,11 @@ export class BaseConnection implements Connection {
             const xhr = new XMLHttpRequest;
             xhr.open(HttpRequestType.POST, (request.host || this.apiConfig.host) + request.path, false);
 
+            Object.keys(request.headers).filter((header) => header !== 'Content-Type' && header !== 'Content-Encoding')
+                .forEach((header) => {
+                    xhr.setRequestHeader(header, request.headers[header]);
+                });
+
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.setRequestHeader('Content-Encoding', 'gzip');
 
