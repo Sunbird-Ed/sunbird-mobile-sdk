@@ -6,7 +6,7 @@ export declare class ChildContentsHandler {
     private dbService;
     private getContentDetailsHandler;
     constructor(dbService: DbService, getContentDetailsHandler: GetContentDetailsHandler);
-    fetchChildrenOfContent(contentInDb: ContentEntry.SchemaMap, currentLevel: number, level: number, hierarchyInfoList?: HierarchyInfo[]): Promise<Content>;
+    fetchChildrenOfContent(contentInDb: ContentEntry.SchemaMap, currentLevel: number, level: number, sourceInfoList?: HierarchyInfo[]): Promise<Content>;
     private getSortedChildrenList;
     getContentsKeyList(contentInDb: ContentEntry.SchemaMap): Promise<string[]>;
     getContentFromDB(hierarchyInfoList: HierarchyInfo[], identifier: string): Promise<Content>;

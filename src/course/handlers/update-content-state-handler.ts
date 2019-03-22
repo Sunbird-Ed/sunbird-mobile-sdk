@@ -1,8 +1,9 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {Batch, CourseServiceConfig, UpdateContentStateRequest} from '..';
+import {Batch, ContentState, CourseServiceConfig, UpdateContentStateAPIRequest, UpdateContentStateRequest} from '..';
 import {Observable} from 'rxjs';
+import {CourseUtil} from '../course-util';
 
-export class UpdateContentStateHandler implements ApiRequestHandler<UpdateContentStateRequest, boolean> {
+export class UpdateContentStateHandler implements ApiRequestHandler<UpdateContentStateAPIRequest, boolean> {
     private readonly UPDATE_CONTENT_STATE_ENDPOINT = '/content/state/update';
 
 
@@ -10,7 +11,7 @@ export class UpdateContentStateHandler implements ApiRequestHandler<UpdateConten
                 private courseServiceConfig: CourseServiceConfig) {
     }
 
-    public handle(request: UpdateContentStateRequest): Observable<boolean> {
+    public handle(request: UpdateContentStateAPIRequest): Observable<boolean> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.PATCH)
             .withPath(this.courseServiceConfig.apiPath + this.UPDATE_CONTENT_STATE_ENDPOINT)
@@ -23,4 +24,5 @@ export class UpdateContentStateHandler implements ApiRequestHandler<UpdateConten
             return !!response.body.result.response;
         });
     }
-}
+
+    }

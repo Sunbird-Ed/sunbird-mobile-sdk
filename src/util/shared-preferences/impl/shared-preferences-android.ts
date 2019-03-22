@@ -28,4 +28,26 @@ export class SharedPreferencesAndroid implements SharedPreferences {
             });
         });
     }
+
+    public putBoolean(key: string, value: boolean): Observable<boolean> {
+        return Observable.create((observer) => {
+            this.sharedPreferences.putBoolean(key, value, () => {
+                observer.next(true);
+                observer.complete();
+            }, (e) => {
+                observer.error(false);
+            });
+        });
+    }
+
+    public getBoolean(key: string): Observable<boolean> {
+        return Observable.create((observer) => {
+            this.sharedPreferences.getBoolean(key, (value) => {
+                observer.next(value);
+                observer.complete();
+            }, (e) => {
+                observer.error(e);
+            });
+        });
+    }
 }

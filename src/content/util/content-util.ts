@@ -433,7 +433,7 @@ export class ContentUtil {
             l1 = identifier;
         } else {
             let i;
-            for (i = 0; i <= hierachyInfo.length; i++) {
+            for (i = 0; i < hierachyInfo.length; i++) {
                 switch (i) {
                     case 0:
                         l1 = hierachyInfo[i].identifier;

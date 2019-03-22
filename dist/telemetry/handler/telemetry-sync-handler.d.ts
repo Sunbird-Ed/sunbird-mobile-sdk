@@ -3,7 +3,7 @@ import { TelemetrySyncStat } from '..';
 import { Observable } from 'rxjs';
 import { KeyValueStore } from '../../key-value-store';
 import { TelemetryConfig } from '../config/telemetry-config';
-import { DeviceInfo } from '../../util/device/def/device-info';
+import { DeviceInfo } from '../../util/device';
 import { DbService } from '../../db';
 export declare class TelemetrySyncHandler implements ApiRequestHandler<undefined, TelemetrySyncStat> {
     private dbService;

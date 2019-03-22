@@ -22,14 +22,20 @@ import {EventObserver} from '../../events-bus/def/event-observer';
 import {Content, ContentRequest, ContentService} from '../../content';
 import {TelemetryEvent, TelemetryEventType} from '../../telemetry/def/telemetry-event';
 import Telemetry = SunbirdTelemetry.Telemetry;
+import {CourseService} from '../../course';
+import {SharedPreferences} from '../../util/shared-preferences';
 
 export class SummarizerServiceImpl implements SummarizerService, EventObserver<TelemetryEvent> {
     private contentMap: Map<string, ContentCache>;
+    private summarizerTelemetryHandler: SummaryTelemetryEventHandler;
 
     constructor(private dbService: DbService,
                 private contenService: ContentService,
-                private eventsBusService: EventsBusService) {
+                private eventsBusService: EventsBusService,
+                private courseService: CourseService,
+                private sharedPreference: SharedPreferences) {
         this.eventsBusService.registerObserver({namespace: EventNamespace.TELEMETRY, observer: this});
+        this.summarizerTelemetryHandler = new SummaryTelemetryEventHandler(this.courseService, this.sharedPreference, this);
     }
 
     getDetailsPerQuestion(request: SummaryRequest): Observable<{ [p: string]: any }[]> {
@@ -167,9 +173,9 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
     deletePreviousAssessmentDetails(uid: string, contentId: string): Observable<undefined> {
         return this.dbService.read({
             table: LearnerSummaryEntry.TABLE_NAME,
-            selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} =?
+            selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} = ?
             AND ${LearnerSummaryEntry.COLUMN_NAME_UID} = ?
-            AND ${LearnerSummaryEntry.COLUMN_NAME_HIERARCHY_DATA}`,
+            AND ${LearnerSummaryEntry.COLUMN_NAME_HIERARCHY_DATA} = ?`,
             selectionArgs: [uid, contentId, '']
         }).mergeMap((summariesinDb: LearnerSummaryEntry.SchemaMap[]) => {
             if (summariesinDb && summariesinDb.length) {
@@ -205,7 +211,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
 
     onEvent(event: TelemetryEvent): Observable<undefined> {
         if (event.type === TelemetryEventType.SAVE) {
-            return new SummaryTelemetryEventHandler(this).handle(event.payload);
+            return this.summarizerTelemetryHandler.handle(event.payload);
         }
 
         return Observable.of(undefined);
