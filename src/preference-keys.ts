@@ -1,9 +1,9 @@
 export namespace ApiKeys {
-    export const KEY_API_TOKEN = 'key_api_token';
+    export const KEY_API_TOKEN = 'api_bearer_token';
 }
 
 export namespace AuthKeys {
-    export const KEY_OAUTH_SESSION = 'key_oauth_session';
+    export const KEY_OAUTH_SESSION = 'oauth_token';
 }
 
 export namespace GroupKeys {
@@ -16,7 +16,7 @@ export namespace ProfileKeys {
 
 export namespace FrameworkKeys {
     export const KEY_ACTIVE_CHANNEL_ID = 'channelId';
-    export const KEY_ACTIVE_CHANNEL_ACTIVE_FRAMEWORK_ID = 'active_channel_active_framework_id';
+    export const KEY_ACTIVE_CHANNEL_ACTIVE_FRAMEWORK_ID = 'sunbirdcurrent_framework_id';
 }
 
 export namespace DownloadKeys {
@@ -25,4 +25,6 @@ export namespace DownloadKeys {
 
 export namespace ContentKeys {
     export const KEY_LAST_MODIFIED = 'last_modified';
+    export const UPDATE_CONTENT_STATE = 'update_content_state';
+    export const COURSE_CONTEXT = 'course_context';
 }

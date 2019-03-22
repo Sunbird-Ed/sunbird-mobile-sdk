@@ -11,4 +11,13 @@ export class SharedPreferencesLocalStorage implements SharedPreferences {
         return Observable.defer(() => Observable.of(localStorage.setItem(key, value))
             .mapTo(undefined));
     }
+
+    public putBoolean(key: string, value: boolean): Observable<boolean> {
+        return Observable.defer(() => Observable.of(localStorage.setItem(key, value + ''))
+            .mapTo(true));
+    }
+
+    public getBoolean(key: string): Observable<boolean> {
+        return Observable.defer(() => Observable.of(Boolean(localStorage.getItem(key))));
+    }
 }

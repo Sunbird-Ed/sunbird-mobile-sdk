@@ -1,8 +1,9 @@
 import {
+    ContentStateResponse,
     CourseBatchDetailsRequest,
     CourseBatchesRequest,
     EnrollCourseRequest,
-    FetchEnrolledCourseRequest,
+    FetchEnrolledCourseRequest, GetContentStateRequest,
     UpdateContentStateRequest
 } from './request-types';
 import {Observable} from 'rxjs';
@@ -22,4 +23,6 @@ export interface CourseService {
     enrollCourse(request: EnrollCourseRequest): Observable<boolean>;
 
     unenrollCourse(unenrollCourseRequest: UnenrollCourseRequest): Observable<boolean>;
+
+    getContentState(contentStateRequest: GetContentStateRequest): Observable<ContentStateResponse | undefined>;
 }

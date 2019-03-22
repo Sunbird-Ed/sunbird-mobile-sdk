@@ -246,6 +246,7 @@ export class ProfileServiceImpl implements ProfileService {
                             requiredFields: []
                         }).map((serverProfile: ServerProfile) => ({
                             ...profile,
+                            handle: serverProfile.firstName + ', ' + serverProfile.lastName,
                             serverProfile
                         }));
                     }

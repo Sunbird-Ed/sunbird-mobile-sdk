@@ -12,6 +12,7 @@ export declare namespace ProfileKeys {
 }
 export declare namespace FrameworkKeys {
     const KEY_ACTIVE_CHANNEL_ID = "channelId";
+    const KEY_ACTIVE_CHANNEL_ACTIVE_FRAMEWORK_ID = "active_channel_active_framework_id";
 }
 export declare namespace DownloadKeys {
     const KEY_TO_DOWNLOAD_LIST = "to_download_list";
