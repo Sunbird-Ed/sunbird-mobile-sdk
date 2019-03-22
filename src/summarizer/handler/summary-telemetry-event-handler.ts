@@ -2,11 +2,10 @@ import {ApiRequestHandler} from '../../api';
 import {ProducerData, SunbirdTelemetry} from '../../telemetry';
 import {Observable} from 'rxjs';
 import {SummarizerService} from '..';
-import Telemetry = SunbirdTelemetry.Telemetry;
 import {ContentState, ContentStateResponse, CourseService, GetContentStateRequest, UpdateContentStateRequest} from '../../course';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {ContentKeys} from '../../preference-keys';
-import {AssesmentAnalyzer} from '../assesment-analyzer';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -58,10 +57,12 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
 
     handle(event: SunbirdTelemetry.Telemetry): Observable<undefined> {
         if (event.eid === 'START' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
-
-
             return this.processOEStart(event)
-                .do(() => this.summarizerService.saveLearnerAssessmentDetails(event).mapTo(undefined))
+                .do(async () => {
+                    await this.summarizerService.saveLearnerAssessmentDetails(event)
+                        .mapTo(undefined)
+                        .toPromise();
+                })
                 .do(async () => {
                     await this.getCourseContext().mergeMap(() => {
                         return this.updateContentState(event);
@@ -71,14 +72,18 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
             return this.getCourseContext().mapTo(undefined);
         } else if (event.eid === 'ASSESS' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
             return this.processOEAssess(event)
-                .do(async () => this.summarizerService.saveLearnerAssessmentDetails(event)
-                    .mapTo(undefined).toPromise()
-                );
+                .do(async () => {
+                    await this.summarizerService.saveLearnerAssessmentDetails(event)
+                        .mapTo(undefined)
+                        .toPromise();
+                });
         } else if (event.eid === 'END' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
             return this.processOEEnd(event)
-                .do(async () => this.summarizerService.saveLearnerContentSummaryDetails(event)
-                    .mapTo(undefined).toPromise()
-                )
+                .do(async () => {
+                    await this.summarizerService.saveLearnerContentSummaryDetails(event)
+                        .mapTo(undefined)
+                        .toPromise();
+                })
                 .do(async () => {
                     await this.getCourseContext().mergeMap(() => {
                         return this.updateContentState(event);
