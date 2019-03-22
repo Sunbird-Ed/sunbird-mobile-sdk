@@ -1,5 +1,6 @@
 export interface FetchEnrolledCourseRequest {
     userId: string;
+    returnFreshCourses ?: boolean;
 }
 
 export interface EnrollCourseRequest {
@@ -26,6 +27,13 @@ export interface CourseBatchesRequest {
     filters: CourseBatchesRequestFilters;
 }
 
+export interface UpdateContentStateAPIRequest {
+    userId: string;
+    contents: ContentState[];
+}
+
+
+
 export interface CourseBatchDetailsRequest {
     batchId: string;
 }
@@ -35,7 +43,14 @@ export interface GetContentStateRequest {
     batchId: string;
     courseIds: string[];
     contentIds: string[];
-    returnRefreshedContentStates: boolean;
+    returnRefreshedContentStates?: boolean;
+}
+
+export interface CourseBatchesRequestFilters {
+    courseId: string[] | string;
+    status?: string[];
+    enrollmentType?: string;
+    sortBy?: string;
 }
 
 export interface CourseBatchesRequestFilters {
@@ -54,4 +69,25 @@ export enum CourseBatchStatus {
     NOT_STARTED = '0',
     IN_PROGRESS = '1',
     COMPLETED = '2'
+}
+
+export interface ContentState {
+    lastAccessTime?: string;
+    contentId?: string;
+    batchId?: string;
+    completedCount?: number;
+    result?: string;
+    score?: string;
+    grade?: string;
+    progress?: number;
+    id?: string;
+    viewCount?: number;
+    contentVersion?: string;
+    courseId?: string;
+    lastCompletedTime?: string;
+    status?: number;
+}
+
+export interface ContentStateResponse {
+    contentList: ContentState[];
 }

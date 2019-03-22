@@ -60,6 +60,7 @@ import {AppInfo} from './util/app/def/app-info';
 import {AppInfoImpl} from './util/app/impl/app-info-impl';
 import {PlayerService} from './player/def/player-service';
 import {PlayerServiceImpl} from './player/impl/player-service-impl';
+import {SummaryTelemetryEventHandler} from './summarizer';
 
 export class SunbirdSdk {
 
@@ -295,13 +296,6 @@ export class SunbirdSdk {
 
         this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService, this._telemetryService);
 
-        this._courseService = new CourseServiceImpl(
-            sdkConfig.courseServiceConfig,
-            this._apiService,
-            this._profileService,
-            this._keyValueStore
-        );
-
         this._formService = new FormServiceImpl(
             sdkConfig.formServiceConfig,
             this._apiService,
@@ -342,8 +336,17 @@ export class SunbirdSdk {
             new CachedItemStoreImpl<ContentsGroupedByPageSection>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences)
         );
 
-        this._summarizerService = new SummarizerServiceImpl(this._dbService, this.contentService, this._eventsBusService);
-
+        this._courseService = new CourseServiceImpl(
+            sdkConfig.courseServiceConfig,
+            this._apiService,
+            this._profileService,
+            this._keyValueStore,
+            this._dbService,
+            this._sharedPreferences,
+            this._contentService
+        );
+        this._summarizerService = new SummarizerServiceImpl(this._dbService, this.contentService,
+            this._eventsBusService, this._courseService, this._sharedPreferences);
         this._downloadService.registerOnDownloadCompleteDelegate(this._contentService);
         this._playerService = new PlayerServiceImpl(this._profileService, this._groupService,
             this._sdkConfig, this._frameworkService, this._deviceInfo, this._appInfo);

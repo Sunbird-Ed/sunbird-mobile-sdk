@@ -25,4 +25,6 @@ export namespace DownloadKeys {
 
 export namespace ContentKeys {
     export const KEY_LAST_MODIFIED = 'last_modified';
+    export const UPDATE_CONTENT_STATE = 'update_content_state';
+    export const COURSE_CONTEXT = 'course_context';
 }

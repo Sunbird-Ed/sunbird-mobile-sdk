@@ -191,16 +191,16 @@ export class SummarizerHandler {
         return {
             uid: telemetry.actor.id,
             contentId: telemetry.object.id,
-            qid: question.id,
+            qid: question && question.id,
             qindex: Number(eData.index),
             correct: eData.pass === 'Yes' ? 1 : 0,
             score: Number(eData.score),
             timespent: Number(eData.duration),
             timestamp: telemetry.ets,
             res: JSON.stringify(eData.resvalues),
-            qdesc: question.desc,
-            qtitle: question.title,
-            maxScore: Number(question.maxscore),
+            qdesc:  question && question.desc,
+            qtitle: question && question.title,
+            maxScore:  question && Number(question.maxscore),
             hierarchyData: this.getHierarchyData(cDataList)
         };
 
