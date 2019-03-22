@@ -42,7 +42,7 @@ export interface GetContentStateRequest {
     userId: string;
     batchId: string;
     courseIds: string[];
-    contentIds: string[];
+    contentIds?: string[];
     returnRefreshedContentStates?: boolean;
 }
 

@@ -51,43 +51,43 @@ export class CourseServiceImpl implements CourseService {
     }
 
     updateContentState(request: UpdateContentStateRequest): Observable<boolean> {
+        const offlineContentStateHandler: OfflineContentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
         return new UpdateContentStateHandler(this.apiService, this.courseServiceConfig)
             .handle(CourseUtil.getUpdateContentStateRequest(request))
-            .mergeMap((updateContentResponse: boolean) => {
-                const whereClause = ` WHERE ${KeyValueStoreEntry.COLUMN_NAME_KEY}
-                                      LIKE '%%${CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX}%%'`;
-                if (updateContentResponse) {
-                    const query = `SELECT * FROM ${KeyValueStoreEntry.TABLE_NAME}
-                                   WHERE ${KeyValueStoreEntry.COLUMN_NAME_KEY}
-                                   LIKE '%%${CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX}%%'`;
-                    return this.dbService.execute(query).mergeMap((keyValueEntries: KeyValueStoreEntry.SchemaMap[]) => {
-                        if (keyValueEntries && keyValueEntries.length) {
-                            const deleteQuery = `DELETE FROM ${KeyValueStoreEntry.TABLE_NAME} ${whereClause}`;
-                            return this.dbService.execute(deleteQuery);
-                        } else {
-                            return Observable.of(false);
-                        }
-
-                    }).mergeMap((isDeleted: boolean) => {
-                        return this.sharedPreferences.putBoolean(ContentKeys.UPDATE_CONTENT_STATE, false);
-                    });
-                } else {
-                    return Observable.of(false);
-                }
-            })
+            // .mergeMap((updateContentResponse: boolean) => {
+            //     const whereClause = ` WHERE ${KeyValueStoreEntry.COLUMN_NAME_KEY}
+            //                           LIKE '%%${CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX}%%'`;
+            //     if (updateContentResponse) {
+            //         const query = `SELECT * FROM ${KeyValueStoreEntry.TABLE_NAME}
+            //                        WHERE ${KeyValueStoreEntry.COLUMN_NAME_KEY}
+            //                        LIKE '%%${CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX}%%'`;
+            //         return this.dbService.execute(query).mergeMap((keyValueEntries: KeyValueStoreEntry.SchemaMap[]) => {
+            //             if (keyValueEntries && keyValueEntries.length) {
+            //                 const deleteQuery = `DELETE FROM ${KeyValueStoreEntry.TABLE_NAME} ${whereClause}`;
+            //                 return this.dbService.execute(deleteQuery);
+            //             } else {
+            //                 return Observable.of(false);
+            //             }
+            //
+            //         }).mergeMap((isDeleted: boolean) => {
+            //             return this.sharedPreferences.putBoolean(ContentKeys.UPDATE_CONTENT_STATE, false);
+            //         });
+            //     } else {
+            //         return Observable.of(false);
+            //     }
+            // })
             .catch(() => {
                 const key = CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX.concat(request.userId,
                     request.courseId, request.contentId, request.batchId);
-                const offlineContentStateHandler: OfflineContentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
                 return this.keyValueStore.getValue(key).mergeMap((value: string | undefined) => {
                     return this.keyValueStore.setValue(key, JSON.stringify(request));
                 }).mergeMap(() => {
                     return this.sharedPreferences.putBoolean(ContentKeys.UPDATE_CONTENT_STATE, true);
-                }).mergeMap(() => {
-                    return offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request);
-                }).mergeMap(() => {
-                    return offlineContentStateHandler.manipulateGetContentStateResponseLocally(request);
                 });
+            }).mergeMap(() => {
+                return offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request);
+            }).mergeMap(() => {
+                return offlineContentStateHandler.manipulateGetContentStateResponseLocally(request);
             });
     }
 
