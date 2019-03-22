@@ -31,7 +31,7 @@ import {
     MimeType,
     PageSection,
     RelevantContentRequest,
-    RelevantContentResponse,
+    RelevantContentResponse, RelevantContentResponsePlayer,
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
@@ -366,7 +366,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             });
     }
 
-    getRelevantContent(request: RelevantContentRequest): Observable<{ [key: string]: any }> {
+    getRelevantContent(request: RelevantContentRequest): Observable<RelevantContentResponsePlayer> {
         const relevantContentResponse: RelevantContentResponse = {};
         return Observable.of(relevantContentResponse)
             .mergeMap((content) => {
@@ -388,14 +388,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }
 
                 return Observable.of(relevantContentResponse);
-            }).mapTo((contentResponse: RelevantContentResponse) => {
-                const response: { [key: string]: any } = {};
-                const nextContent: { [key: string]: any } = {};
-                nextContent['content'] = contentResponse.nextContent;
-                response['next'] = nextContent;
-                const prevContent: { [key: string]: any } = {};
-                prevContent['content'] = contentResponse.previousContent;
-                response['next'] = prevContent;
+            }).map((contentResponse: RelevantContentResponse) => {
+                const response: RelevantContentResponsePlayer = {};
+                response.next = {content: contentResponse.nextContent!};
+                response.prev = {content: contentResponse.previousContent!};
                 return response;
             });
     }
