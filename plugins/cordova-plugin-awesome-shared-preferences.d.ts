@@ -11,9 +11,9 @@ interface SharedPreferences {
                  successCallback: (response: string) => void,
                  errorCallback: (response: string) => void) => void;
 
-    getBoolean: (key: string,
-                successCallback: (response: boolean) => void,
-                errorCallback: (response: string) => void) => void;
+    getBoolean: (key: string, defaultValue: boolean,
+                 successCallback: (response: boolean) => void,
+                 errorCallback: (response: string) => void) => void;
 }
 
 declare var plugins: {

@@ -42,7 +42,7 @@ export class SharedPreferencesAndroid implements SharedPreferences {
 
     public getBoolean(key: string): Observable<boolean> {
         return Observable.create((observer) => {
-            this.sharedPreferences.getBoolean(key, (value) => {
+            this.sharedPreferences.getBoolean(key, false, (value) => {
                 observer.next(value);
                 observer.complete();
             }, (e) => {
