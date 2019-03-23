@@ -34,7 +34,12 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
                             ).mapTo(courses.result);
                         });
                 } else {
-                    return Observable.of(JSON.parse(value)['result']['courses']);
+                    // TODO
+                    const courses = JSON.parse(value);
+                    if (courses.result) {
+                        return Observable.of(courses.result['courses']);
+                    }
+                    return Observable.of(courses['courses']);
                 }
             });
     }

@@ -11,18 +11,25 @@ export class OfflineContentStateHandler {
     public getLocalContentStateResponse(request: GetContentStateRequest): Observable<ContentStateResponse> {
         const key = CourseServiceImpl.GET_CONTENT_STATE_KEY_PREFIX.concat(request.userId, request.courseIds[0]);
         return this.keyValueStore.getValue(key).map((value: string | undefined) => {
+            const responseContentState: ContentStateResponse = {contentList: []};
             if (value) {
                 const response = JSON.parse(value);
-                const result: ContentStateResponse = response['result'] as ContentStateResponse;
-                return response;
+                const result = response['result'];
+                if (result && result.hasOwnProperty('contentList')) {
+                    responseContentState.contentList = result['contentList'];
+                    return responseContentState;
+                } else {
+                    responseContentState.contentList = response['contentList'];
+                    return responseContentState;
+                }
             }
-            return Observable.of({contentList: []});
+            return responseContentState;
         });
 
     }
 
     public manipulateEnrolledCoursesResponseLocally(updateContentStateRequest: UpdateContentStateRequest): Observable<boolean> {
-        const key = CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX.concat(updateContentStateRequest.userId);
+        const key = CourseServiceImpl.GET_ENROLLED_COURSE_KEY_PREFIX.concat(updateContentStateRequest.userId);
         return this.keyValueStore.getValue(key)
             .mergeMap((value: string | undefined) => {
                 if (value) {
@@ -32,6 +39,9 @@ export class OfflineContentStateHandler {
                         let newCourses: Course[] = [];
                         newCourses = newCourses.concat(courses);
                         courses.forEach((course: Course) => {
+                            if (!course.contentsPlayedOffline || !course.contentsPlayedOffline!.size) {
+                                course.contentsPlayedOffline = new Set<string>();
+                            }
                             if (course.contentsPlayedOffline!.size === 0 ||
                                 (course.contentsPlayedOffline!.size > 0 &&
                                     !course.contentsPlayedOffline!.has(updateContentStateRequest.contentId))) {
@@ -78,8 +88,14 @@ export class OfflineContentStateHandler {
         return this.keyValueStore.getValue(key)
             .mergeMap((value: string | undefined) => {
                 if (value) {
+                    const contentStateResponse: ContentStateResponse = {contentList: []};
                     const response = JSON.parse(value);
-                    const contentStateResponse: ContentStateResponse = response['result'] as ContentStateResponse;
+                    const result = response['result'];
+                    if (result && result.hasOwnProperty('contentList')) {
+                        contentStateResponse.contentList = result['contentList'];
+                    } else {
+                        contentStateResponse.contentList = response['contentList'];
+                    }
                     if (contentStateResponse) {
                         let contentStateList: ContentState[] = contentStateResponse.contentList;
                         let newContentState: ContentState;
@@ -94,6 +110,9 @@ export class OfflineContentStateHandler {
                                 if (contentState.contentId === updateContentStateRequest.contentId) {
                                     if (contentState.status !== updateContentStateRequest.status) {
                                         newContentState = this.getContentState(updateContentStateRequest);
+                                        contentStateList = contentStateList.filter((el: ContentState) => {
+                                            return el.courseId !== contentState.courseId;
+                                        });
                                     }
                                 } else {
                                     newContentState = this.getContentState(updateContentStateRequest);
