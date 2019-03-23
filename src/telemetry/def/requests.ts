@@ -24,10 +24,9 @@ export class TelemetryErrorRequest {
 }
 
 export class TelemetryImpressionRequest {
-    type: string;
-    subType: string;
-    pageId: PageId;
-    uri: string;
+    type?: string;
+    subType?: string;
+    pageId?: PageId;
     visits: Visit[];
     env: string;
     objId: string;

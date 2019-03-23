@@ -81,7 +81,7 @@ export class TelemetryServiceImpl implements TelemetryService {
     }
 
     impression({
-                   type, subType, pageId, uri, visits, env, objId,
+                   type, subType, pageId, visits, env, objId,
                    objType, objVer, rollup, correlationData
                }: TelemetryImpressionRequest): Observable<boolean> {
         const impression = new SunbirdTelemetry.Impression(type, subType, pageId, visits, env, objId,
