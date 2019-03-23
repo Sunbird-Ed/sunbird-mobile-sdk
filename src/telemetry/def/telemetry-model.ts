@@ -247,8 +247,8 @@ export namespace SunbirdTelemetry {
     export class Interact extends Telemetry {
         private static readonly EID = 'INTERACT';
 
-        constructor(type: string | undefined,
-                    subtype: string | undefined,
+        constructor(type: string,
+                    subtype: string,
                     id: string | undefined,
                     pageid: string | undefined,
                     pos: { [key: string]: string }[] | undefined,
@@ -261,8 +261,8 @@ export namespace SunbirdTelemetry {
                     correlationData: Array<CorrelationData> = []) {
             super(Interact.EID);
             this.edata = {
-                ...(type ? {type} : {type: ''}),
-                ...(subtype ? {subtype} : {}),
+                ...{type},
+                ...{subtype},
                 ...(id ? {id} : {}),
                 ...(pageid ? {pageid} : {}),
                 extra: {

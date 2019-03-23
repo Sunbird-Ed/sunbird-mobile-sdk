@@ -4,16 +4,16 @@ import {CorrelationData, DeviceSpecification, Rollup, Visit} from './telemetry-m
 export class TelemetryInteractRequest {
     type: InteractType;
     subType: string;
-    id: string;
-    pageId: string;
-    pos: Array<{ [index: string]: string }> = [];
+    id?: string;
+    pageId?: string;
+    pos?: Array<{ [index: string]: string }> = [];
     env: string;
-    rollup: Rollup;
-    valueMap: { [index: string]: any };
-    correlationData: Array<CorrelationData>;
-    objId: string;
-    objType: string;
-    objVer: string;
+    rollup?: Rollup;
+    valueMap?: { [index: string]: any };
+    correlationData?: Array<CorrelationData>;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
 }
 
 export class TelemetryErrorRequest {
