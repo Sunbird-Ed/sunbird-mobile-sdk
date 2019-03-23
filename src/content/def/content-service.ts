@@ -17,7 +17,7 @@ import {
     ContentExportResponse,
     ContentImportResponse,
     ContentSearchResult,
-    ContentsGroupedByPageSection, RelevantContentResponse
+    ContentsGroupedByPageSection, RelevantContentResponse, RelevantContentResponsePlayer
 } from './response';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
 
@@ -40,7 +40,7 @@ export interface ContentService extends DownloadCompleteDelegate {
 
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
 
-    getRelevantContent(relevantContentRequest: RelevantContentRequest): Observable<RelevantContentResponse>;
+    getRelevantContent(relevantContentRequest: RelevantContentRequest): Observable<RelevantContentResponsePlayer>;
 
     importEcar(ecarImportRequest: EcarImportRequest): Observable<Response>;
 
