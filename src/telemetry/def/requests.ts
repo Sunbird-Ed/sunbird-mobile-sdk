@@ -27,12 +27,12 @@ export class TelemetryImpressionRequest {
     type?: string;
     subType?: string;
     pageId?: PageId;
-    visits: Visit[];
+    visits?: Visit[];
     env: string;
-    objId: string;
-    objType: string;
-    objVer: string;
-    correlationData: Array<CorrelationData>;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
+    correlationData?: Array<CorrelationData>;
     rollup?: Rollup;
 }
 
