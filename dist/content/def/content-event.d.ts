@@ -21,5 +21,6 @@ export interface ContentImportCompleted extends ContentEvent {
 export declare enum ContentEventType {
     UPDATE = "UPDATE",
     IMPORT_COMPLETED = "IMPORT_COMPLETED",
-    IMPORT_PROGRESS = "IMPORT_PROGRESS"
+    IMPORT_PROGRESS = "IMPORT_PROGRESS",
+    STREAMING_URL_AVAILABLE = "STREAMING_URL_AVAILABLE"
 }

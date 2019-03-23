@@ -2,7 +2,7 @@ import { ChildContentRequest, ContentDeleteRequest, ContentDetailRequest, Conten
 import { Response } from '../../api';
 import { Observable } from 'rxjs';
 import { Content, HierarchyInfo } from './content';
-import { ContentDeleteResponse, ContentExportResponse, ContentImportResponse, ContentSearchResult, ContentsGroupedByPageSection, RelevantContentResponse } from './response';
+import { ContentDeleteResponse, ContentExportResponse, ContentImportResponse, ContentSearchResult, ContentsGroupedByPageSection, RelevantContentResponsePlayer } from './response';
 import { DownloadCompleteDelegate } from '../../util/download/def/download-complete-delegate';
 export interface ContentService extends DownloadCompleteDelegate {
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
@@ -15,7 +15,7 @@ export interface ContentService extends DownloadCompleteDelegate {
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
-    getRelevantContent(relevantContentRequest: RelevantContentRequest): Observable<RelevantContentResponse>;
+    getRelevantContent(relevantContentRequest: RelevantContentRequest): Observable<RelevantContentResponsePlayer>;
     importEcar(ecarImportRequest: EcarImportRequest): Observable<Response>;
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]>;
     subscribeForImportStatus(contentId: string): Observable<Response>;

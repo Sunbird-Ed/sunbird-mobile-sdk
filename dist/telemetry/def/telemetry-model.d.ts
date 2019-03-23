@@ -137,7 +137,7 @@ export declare namespace SunbirdTelemetry {
     }
     class Interact extends Telemetry {
         private static readonly EID;
-        constructor(type: string | undefined, subtype: string | undefined, id: string | undefined, pageid: string | undefined, pos: {
+        constructor(type: string, subtype: string, id: string | undefined, pageid: string | undefined, pos: {
             [key: string]: string;
         }[] | undefined, valuesMap: {
             [key: string]: any;

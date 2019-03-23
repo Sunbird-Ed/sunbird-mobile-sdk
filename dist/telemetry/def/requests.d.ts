@@ -3,20 +3,20 @@ import { CorrelationData, DeviceSpecification, Rollup, Visit } from './telemetry
 export declare class TelemetryInteractRequest {
     type: InteractType;
     subType: string;
-    id: string;
-    pageId: string;
-    pos: Array<{
+    id?: string;
+    pageId?: string;
+    pos?: Array<{
         [index: string]: string;
     }>;
     env: string;
-    rollup: Rollup;
-    valueMap: {
+    rollup?: Rollup;
+    valueMap?: {
         [index: string]: any;
     };
-    correlationData: Array<CorrelationData>;
-    objId: string;
-    objType: string;
-    objVer: string;
+    correlationData?: Array<CorrelationData>;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
 }
 export declare class TelemetryErrorRequest {
     errorCode: string;
@@ -25,16 +25,15 @@ export declare class TelemetryErrorRequest {
     pageId: string;
 }
 export declare class TelemetryImpressionRequest {
-    type: string;
-    subType: string;
-    pageId: PageId;
-    uri: string;
-    visits: Visit[];
+    type?: string;
+    subType?: string;
+    pageId?: PageId;
+    visits?: Visit[];
     env: string;
-    objId: string;
-    objType: string;
-    objVer: string;
-    correlationData: Array<CorrelationData>;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
+    correlationData?: Array<CorrelationData>;
     rollup?: Rollup;
 }
 export declare class TelemetryStartRequest {

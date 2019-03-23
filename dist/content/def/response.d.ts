@@ -72,3 +72,11 @@ export interface RelevantContentResponse {
     nextContent?: Content;
     previousContent?: Content;
 }
+export interface RelevantContentResponsePlayer {
+    prev?: {
+        content: Content;
+    };
+    next?: {
+        content: Content;
+    };
+}

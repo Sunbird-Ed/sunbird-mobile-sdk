@@ -7,12 +7,17 @@ import { EventObserver } from '../../events-bus/def/event-observer';
 import { ContentService } from '../../content';
 import { TelemetryEvent } from '../../telemetry/def/telemetry-event';
 import Telemetry = SunbirdTelemetry.Telemetry;
+import { CourseService } from '../../course';
+import { SharedPreferences } from '../../util/shared-preferences';
 export declare class SummarizerServiceImpl implements SummarizerService, EventObserver<TelemetryEvent> {
     private dbService;
     private contenService;
     private eventsBusService;
+    private courseService;
+    private sharedPreference;
     private contentMap;
-    constructor(dbService: DbService, contenService: ContentService, eventsBusService: EventsBusService);
+    private summarizerTelemetryHandler;
+    constructor(dbService: DbService, contenService: ContentService, eventsBusService: EventsBusService, courseService: CourseService, sharedPreference: SharedPreferences);
     getDetailsPerQuestion(request: SummaryRequest): Observable<{
         [p: string]: any;
     }[]>;

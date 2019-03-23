@@ -1,4 +1,4 @@
-import { ChildContentRequest, Content, ContentDeleteRequest, ContentDeleteResponse, ContentDetailRequest, ContentDownloadRequest, ContentExportRequest, ContentExportResponse, ContentFeedbackService, ContentImportRequest, ContentImportResponse, ContentMarkerRequest, ContentRequest, ContentSearchCriteria, ContentSearchResult, ContentService, ContentServiceConfig, ContentsGroupedByPageSection, EcarImportRequest, HierarchyInfo, RelevantContentRequest, RelevantContentResponse } from '..';
+import { ChildContentRequest, Content, ContentDeleteRequest, ContentDeleteResponse, ContentDetailRequest, ContentDownloadRequest, ContentExportRequest, ContentExportResponse, ContentFeedbackService, ContentImportRequest, ContentImportResponse, ContentMarkerRequest, ContentRequest, ContentSearchCriteria, ContentSearchResult, ContentService, ContentServiceConfig, ContentsGroupedByPageSection, EcarImportRequest, HierarchyInfo, RelevantContentRequest, RelevantContentResponsePlayer } from '..';
 import { Observable } from 'rxjs';
 import { ApiService, Response } from '../../api';
 import { ProfileService } from '../../profile';
@@ -43,7 +43,7 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     importEcar(ecarImportRequest: EcarImportRequest): Observable<Response>;
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
-    getRelevantContent(request: RelevantContentRequest): Observable<RelevantContentResponse>;
+    getRelevantContent(request: RelevantContentRequest): Observable<RelevantContentResponsePlayer>;
     subscribeForImportStatus(contentId: string): Observable<any>;
     searchContent(contentSearchCriteria: ContentSearchCriteria, request?: {
         [key: string]: any;

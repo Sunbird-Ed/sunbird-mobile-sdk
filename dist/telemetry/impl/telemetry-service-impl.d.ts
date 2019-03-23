@@ -26,7 +26,7 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     saveTelemetry(request: string): Observable<boolean>;
     end({ type, mode, duration, pageId, summaryList, env, objId, objType, objVer, rollup, correlationData }: TelemetryEndRequest): Observable<boolean>;
     error({ errorCode, errorType, stacktrace, pageId }: TelemetryErrorRequest): Observable<boolean>;
-    impression({ type, subType, pageId, uri, visits, env, objId, objType, objVer, rollup, correlationData }: TelemetryImpressionRequest): Observable<boolean>;
+    impression({ type, subType, pageId, visits, env, objId, objType, objVer, rollup, correlationData }: TelemetryImpressionRequest): Observable<boolean>;
     interact({ type, subType, id, pageId, pos, env, rollup, valueMap, correlationData, objId, objType, objVer }: TelemetryInteractRequest): Observable<boolean>;
     log({ type, level, message, pageId, params, env, actorType }: TelemetryLogRequest): Observable<boolean>;
     share({ dir, type, items }: TelemetryShareRequest): Observable<boolean>;
