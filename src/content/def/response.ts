@@ -64,7 +64,7 @@ export enum ContentDeleteStatus {
 export interface ContentMarker {
     contentId: string;
     uid: string;
-    extraInfoMap: {[key: string]: any};
+    extraInfoMap: { [key: string]: any };
     marker: number;
 }
 
@@ -75,4 +75,9 @@ export interface ContentExportResponse {
 export interface RelevantContentResponse {
     nextContent?: Content;
     previousContent?: Content;
+}
+
+export interface RelevantContentResponsePlayer {
+    prev?: { content: Content };
+    next?: { content: Content };
 }

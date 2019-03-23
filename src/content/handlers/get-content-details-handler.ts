@@ -48,7 +48,23 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             .mergeMap((contentDbEntry) => {
                 if (contentDbEntry) {
                     return Observable.of(ContentMapper.mapContentDBEntryToContent(contentDbEntry))
-                        .do(async (localContent) => {
+                        .mergeMap((content: Content) => {
+                            return this.decorateContent({
+                                content,
+                                attachFeedback: request.attachFeedback,
+                                attachContentAccess: request.attachContentAccess,
+                                attachContentMarker: request.attachContentMarker
+                            });
+                        }).do(async (localContent) => {
+
+                            let sendStreamUrlEvent = false;
+                            const serverDataInDb: ContentData = contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA] &&
+                                JSON.parse(contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA]);
+                            if (!serverDataInDb) {
+                                sendStreamUrlEvent = true;
+                            } else if (!serverDataInDb.streamingUrl) {
+                                sendStreamUrlEvent = true;
+                            }
                             const serverContentData: ContentData = await this.fetchFromServer(request).toPromise();
                             contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA] = JSON.stringify(serverContentData);
                             contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON] = serverContentData['lastUpdatedOn'];
@@ -69,6 +85,21 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                                         }
                                     }
                                 });
+                            }
+
+                            if (sendStreamUrlEvent) {
+                                if (serverContentData.streamingUrl) {
+                                    this.eventsBusService.emit({
+                                        namespace: EventNamespace.CONTENT,
+                                        event: {
+                                            type: ContentEventType.STREAMING_URL_AVAILABLE,
+                                            payload: {
+                                                contentId: serverContentData.identifier,
+                                                streamingUrl: serverContentData.streamingUrl
+                                            }
+                                        }
+                                    });
+                                }
                             }
                         });
                 }
