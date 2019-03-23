@@ -31,7 +31,8 @@ import {
     MimeType,
     PageSection,
     RelevantContentRequest,
-    RelevantContentResponse, RelevantContentResponsePlayer,
+    RelevantContentResponse,
+    RelevantContentResponsePlayer,
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
@@ -298,7 +299,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             const importContentContext: ImportContentContext = {
                 isChildContent: ecarImportRequest.isChildContent,
                 ecarFilePath: ecarImportRequest.sourceFilePath,
-                destinationFolder: ecarImportRequest.destinationFolder
+                destinationFolder: ecarImportRequest.destinationFolder,
+                skippedItemsIdentifier: [],
+                items: []
             };
             return new GenerateInteractTelemetry(this.telemetryService).execute(importContentContext, 'ContentImport-Initiated')
                 .then(() => {
