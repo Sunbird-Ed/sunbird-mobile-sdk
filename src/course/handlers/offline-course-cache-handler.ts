@@ -4,6 +4,7 @@ import {Content, ContentService} from '../../content';
 import {Observable} from 'rxjs';
 import {KeyValueStore} from '../../key-value-store';
 import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
+import {ContentUtil} from '../../content/util/content-util';
 
 export class OfflineCourseCacheHandler {
     private static readonly GET_ENROLLED_COURSES_KEY_PREFIX = 'enrolledCourses';
@@ -60,14 +61,18 @@ export class OfflineCourseCacheHandler {
             return this.contentService.getContentDetails({contentId: enrollCourseRequest.courseId}).mergeMap((content: Content) => {
                 const course: Course = {};
                 course.progress = 0;
-                course.userId = '';
-                course.batchId = '';
-                course.courseId = '';
-                course.contentId = '';
+                course.userId = enrollCourseRequest.userId;
+                course.batchId = enrollCourseRequest.batchId;
+                course.courseId = enrollCourseRequest.courseId;
+                course.contentId = enrollCourseRequest.contentId;
                 course.leafNodesCount = leafNodeCount;
                 if (content) {
                     course.courseName = content.contentData.name;
-                    course.courseLogoUrl = content.basePath.concat('/', content.contentData.appIcon);
+                    if (content.contentData.appIcon.startsWith('https://')) {
+                        course.courseLogoUrl = content.contentData.appIcon;
+                    } else {
+                        course.courseLogoUrl = ContentUtil.getBasePath(content.basePath.concat('/', content.contentData.appIcon));
+                    }
                 }
                 return Observable.of(course);
             });

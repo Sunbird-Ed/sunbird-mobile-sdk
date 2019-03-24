@@ -210,16 +210,17 @@ export class ContentUtil {
         }
 
         let doestExist = false;
-        const oldIdentifier = existingContentInDB[COLUMN_NAME_IDENTIFIER];
+        const oldIdentifier = existingContentInDB[ContentEntry.COLUMN_NAME_IDENTIFIER];
+        const contentData = JSON.parse(existingContentInDB[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
         if (oldIdentifier === newIdentifier) {
             let overrideDB = false;
             if (keepLowerVersion) {
-                if ((ContentUtil.readPkgVersion(JSON.parse(existingContentInDB[COLUMN_NAME_LOCAL_DATA]) < newPkgVersion))) {
+                if (ContentUtil.readPkgVersion(contentData) < newPkgVersion) {
                     overrideDB = false;
                 } else {
                     overrideDB = true;
                 }
-            } else if ((ContentUtil.readPkgVersion(JSON.parse(existingContentInDB[COLUMN_NAME_LOCAL_DATA]) < newPkgVersion))) {
+            } else  if (ContentUtil.readPkgVersion(contentData) < newPkgVersion) {
                 overrideDB = true;
             }
 

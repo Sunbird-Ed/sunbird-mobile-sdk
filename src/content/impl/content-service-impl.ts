@@ -298,7 +298,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             const importContentContext: ImportContentContext = {
                 isChildContent: ecarImportRequest.isChildContent,
                 ecarFilePath: ecarImportRequest.sourceFilePath,
-                destinationFolder: ecarImportRequest.destinationFolder
+                destinationFolder: ecarImportRequest.destinationFolder,
+                skippedItemsIdentifier: [],
+                items: [],
+                contentImportResponseList:[]
             };
             return new GenerateInteractTelemetry(this.telemetryService).execute(importContentContext, 'ContentImport-Initiated')
                 .then(() => {

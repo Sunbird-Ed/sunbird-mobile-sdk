@@ -111,7 +111,7 @@ export class OfflineContentStateHandler {
                                     if (contentState.status !== updateContentStateRequest.status) {
                                         newContentState = this.getContentState(updateContentStateRequest);
                                         contentStateList = contentStateList.filter((el: ContentState) => {
-                                            return el.courseId !== contentState.courseId;
+                                            return el.contentId !== contentState.contentId;
                                         });
                                     }
                                 } else {
