@@ -75,15 +75,15 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
         } else if (request.contentId) {
             query = SummarizerQueries.getContentProgressQuery(request.contentId);
         }
-        return this.getContentCache(ArrayUtil.joinPreservingQuotes(request.uids)).mergeMap((cache: Map<string, ContentCache>) => {
+        return this.getContentCache(request.uids).mergeMap((cache: Map<string, ContentCache>) => {
             return this.dbService.execute(query).map((assesmentsInDb: LearnerSummaryEntry.SchemaMap[]) =>
                 SummarizerHandler.mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb, cache));
         });
 
     }
 
-    getContentCache(uids): Observable<Map<string, ContentCache>> {
-        if (this.contentMap) {
+    getContentCache(uids: string[]): Observable<Map<string, ContentCache>> {
+        if (this.contentMap && Object.keys(this.contentMap).length) {
             return Observable.of(this.contentMap);
         } else {
             this.contentMap = new Map<string, ContentCache>();

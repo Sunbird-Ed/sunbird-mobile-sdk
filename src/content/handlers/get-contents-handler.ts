@@ -89,15 +89,21 @@ export class GetContentsHandler {
                 ${whereClause} ${orderBy} LIMIT ${limit}`;
     }
 
-    private getLocalOnlyQuery(whereClause: string, orderBy: string, uid: string): string {
+    private getLocalOnlyQuery(whereClause: string, orderBy: string, uid: string | string[]): string {
+        let uidFilter = '';
+        if (Array.isArray(uid)) {
+            uidFilter = `ca.${ContentAccessEntry.COLUMN_NAME_UID} IN (${ArrayUtil.joinPreservingQuotes(uid)})`;
+        } else {
+            uidFilter = `ca.${ContentAccessEntry.COLUMN_NAME_UID} ='${uid}'`;
+        }
         return `SELECT c.*, ca.${ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP}
                 FROM ${ContentEntry.TABLE_NAME} c LEFT JOIN ${ContentAccessEntry.TABLE_NAME} ca
                 ON c.${ContentEntry.COLUMN_NAME_IDENTIFIER} = ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_IDENTIFIER}
-                AND ca.${ContentAccessEntry.COLUMN_NAME_UID} ='${uid}'
+                AND ${uidFilter}
                 ${whereClause} ${orderBy}`;
     }
 
-    private generateSortByQuery(sortCriteriaList: ContentSortCriteria[], uid: string): string {
+    private generateSortByQuery(sortCriteriaList: ContentSortCriteria[], uid: string | string[]): string {
         let orderBy = '';
         let i = 0;
         if (!sortCriteriaList) {

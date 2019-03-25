@@ -140,6 +140,28 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
                         contents.push(content);
                     }
+                    if (request.resourcesOnly) {
+                        const uids = request.uid as string[];
+                        const contentMarkerQuery = `SELECT * FROM ${ContentMarkerEntry.TABLE_NAME}
+                                                    WHERE UID IN (${ArrayUtil.joinPreservingQuotes(uids)})`;
+                        const entries: ContentMarkerEntry.SchemaMap[] = await this.dbService.execute(contentMarkerQuery).toPromise();
+                        entries.forEach((entry: ContentMarkerEntry.SchemaMap) => {
+                            const content: Content = {
+                                identifier: entry[ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER],
+                                contentData: JSON.parse(entry[ContentMarkerEntry.COLUMN_NAME_DATA]),
+                                isUpdateAvailable: false,
+                                mimeType: '',
+                                basePath: '',
+                                contentType: '',
+                                isAvailableLocally: false,
+                                referenceCount: 0,
+                                sizeOnDevice: 0,
+                                lastUsedTime: 0,
+                                lastUpdatedTime: 0,
+                            };
+                            contents.push(content);
+                        });
+                    }
 
                     return contents;
                 });

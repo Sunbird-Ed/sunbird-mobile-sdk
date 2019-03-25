@@ -20,7 +20,7 @@ export interface ContentDetailRequest {
 }
 
 export interface ContentRequest {
-    uid?: string;
+    uid?: string | string[];
     contentTypes: string[];
     audience?: string[];
     pragma?: string[];
