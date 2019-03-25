@@ -29,7 +29,7 @@ export declare class SummarizerServiceImpl implements SummarizerService, EventOb
         [p: string]: any;
     }[]>;
     getSummary(request: SummaryRequest): Observable<LearnerAssessmentSummary[]>;
-    getContentCache(): Observable<Map<string, ContentCache>>;
+    getContentCache(uids: any): Observable<Map<string, ContentCache>>;
     saveLearnerAssessmentDetails(event: Telemetry): Observable<boolean>;
     saveLearnerContentSummaryDetails(event: Telemetry): Observable<boolean>;
     deletePreviousAssessmentDetails(uid: string, contentId: string): Observable<undefined>;
