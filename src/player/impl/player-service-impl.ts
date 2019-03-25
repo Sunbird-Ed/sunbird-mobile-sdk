@@ -35,6 +35,7 @@ export class PlayerServiceImpl implements PlayerService {
             content.contentData.streamingUrl = content.basePath;
             content.contentData.previewUrl = content.basePath;
         }
+        content.basePath = content.basePath.replace(/\/$/, '');
         playerInput.metaData = content;
         playerInput.config = this.config.playerConfig;
         return this.profileService.getActiveProfileSession().mergeMap((session: ProfileSession | undefined) => {
