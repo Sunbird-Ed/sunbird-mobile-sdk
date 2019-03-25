@@ -6,5 +6,5 @@ export declare class UpdateContentStateHandler implements ApiRequestHandler<Upda
     private courseServiceConfig;
     private readonly UPDATE_CONTENT_STATE_ENDPOINT;
     constructor(apiService: ApiService, courseServiceConfig: CourseServiceConfig);
-    handle(request: UpdateContentStateAPIRequest): Observable<boolean>;
+    handle(updateContentStateAPIRequest: UpdateContentStateAPIRequest): Observable<boolean>;
 }

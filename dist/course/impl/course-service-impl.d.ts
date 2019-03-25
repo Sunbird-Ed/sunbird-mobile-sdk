@@ -1,7 +1,5 @@
-import { ContentStateResponse, CourseService, GetContentStateRequest } from '..';
+import { Batch, ContentStateResponse, Course, CourseBatchDetailsRequest, CourseBatchesRequest, CourseService, CourseServiceConfig, EnrollCourseRequest, FetchEnrolledCourseRequest, GetContentStateRequest, UpdateContentStateRequest } from '..';
 import { Observable } from 'rxjs';
-import { CourseBatchDetailsRequest, CourseBatchesRequest, EnrollCourseRequest, FetchEnrolledCourseRequest, UpdateContentStateRequest } from '..';
-import { Batch, Course, CourseServiceConfig } from '..';
 import { ProfileService } from '../../profile';
 import { KeyValueStore } from '../../key-value-store';
 import { ApiService } from '../../api';
@@ -18,6 +16,7 @@ export declare class CourseServiceImpl implements CourseService {
     private sharedPreferences;
     private contentService;
     static readonly GET_CONTENT_STATE_KEY_PREFIX: string;
+    static readonly GET_ENROLLED_COURSE_KEY_PREFIX: string;
     static readonly UPDATE_CONTENT_STATE_KEY_PREFIX: string;
     constructor(courseServiceConfig: CourseServiceConfig, apiService: ApiService, profileService: ProfileService, keyValueStore: KeyValueStore, dbService: DbService, sharedPreferences: SharedPreferences, contentService: ContentService);
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;

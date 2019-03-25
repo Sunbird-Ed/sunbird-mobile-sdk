@@ -4,20 +4,21 @@ import { AuthService } from './auth';
 import { TelemetryService } from './telemetry';
 import { SharedPreferences } from './util/shared-preferences';
 import { SdkConfig } from './sdk-config';
-import { ContentFeedbackService, ContentService } from './content';
+import { ContentFeedbackService, ContentService, ContentServiceConfig } from './content';
 import { CourseService } from './course';
 import { FormService } from './form';
 import { FrameworkService, FrameworkUtilService } from './framework';
 import { ProfileService } from './profile';
 import { KeyValueStore } from './key-value-store';
-import { PageAssembleService } from './page';
+import { PageAssembleService, PageServiceConfig } from './page';
 import { GroupService } from './group';
 import { SystemSettingsService } from './system-settings';
-import { DeviceInfo } from './util/device/def/device-info';
+import { DeviceInfo } from './util/device';
 import { EventsBusService } from './events-bus';
-import { SummarizerService } from './summarizer/def/summarizer-service';
+import { SummarizerService } from './summarizer';
 import { DownloadService } from './util/download';
-import { PlayerService } from './player/def/player-service';
+import { PlayerService } from './player';
+import { TelemetryConfig } from './telemetry/config/telemetry-config';
 export declare class SunbirdSdk {
     private static _instance?;
     static readonly instance: SunbirdSdk;
@@ -69,5 +70,8 @@ export declare class SunbirdSdk {
     readonly playerService: PlayerService;
     readonly deviceInfo: DeviceInfo;
     init(sdkConfig: SdkConfig): Promise<void>;
+    updateTelemetryConfig(update: Partial<TelemetryConfig>): void;
+    updateContentServiceConfig(update: Partial<ContentServiceConfig>): void;
+    updatePageServiceConfig(update: Partial<PageServiceConfig>): void;
     private postInit;
 }

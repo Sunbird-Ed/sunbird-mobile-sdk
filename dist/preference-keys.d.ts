@@ -20,5 +20,5 @@ export declare namespace DownloadKeys {
 export declare namespace ContentKeys {
     const KEY_LAST_MODIFIED = "last_modified";
     const UPDATE_CONTENT_STATE = "update_content_state";
-    const COURSE_CONTEXT = "course_context";
+    const COURSE_CONTEXT = "sunbirdcontent_context";
 }
