@@ -11,7 +11,7 @@ import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/impl/auth-service-impl';
-import {ContentFeedbackService, ContentService, ContentsGroupedByPageSection} from './content';
+import {ContentFeedbackService, ContentService, ContentServiceConfig, ContentsGroupedByPageSection} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
 import {Channel, Framework, FrameworkService, FrameworkServiceImpl, FrameworkUtilService, FrameworkUtilServiceImpl} from './framework';
@@ -22,7 +22,7 @@ import {KeyValueStoreImpl} from './key-value-store/impl/key-value-store-impl';
 import {FormServiceImpl} from './form/impl/form-service-impl';
 import {FileService} from './util/file/def/file-service';
 import {CachedItemStoreImpl} from './key-value-store/impl/cached-item-store-impl';
-import {PageAssemble, PageAssembleService} from './page';
+import {PageAssemble, PageAssembleService, PageServiceConfig} from './page';
 import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
 import {SharedPreferencesLocalStorage} from './util/shared-preferences/impl/shared-preferences-local-storage';
 import {SharedPreferencesAndroid} from './util/shared-preferences/impl/shared-preferences-android';
@@ -50,6 +50,7 @@ import {DownloadServiceImpl} from './util/download/download-service-impl';
 import {AppInfo} from './util/app/def/app-info';
 import {AppInfoImpl} from './util/app/impl/app-info-impl';
 import {PlayerService, PlayerServiceImpl} from './player';
+import {TelemetryConfig} from './telemetry/config/telemetry-config';
 
 export class SunbirdSdk {
 
@@ -345,6 +346,27 @@ export class SunbirdSdk {
         await this._profileService.onInit().toPromise();
 
         this.postInit();
+    }
+
+    public updateTelemetryConfig(update: Partial<TelemetryConfig>) {
+        this._sdkConfig.telemetryConfig = {
+            ...this._sdkConfig.telemetryConfig,
+            ...update
+        };
+    }
+
+    public updateContentServiceConfig(update: Partial<ContentServiceConfig>) {
+        this._sdkConfig.contentServiceConfig = {
+            ...this._sdkConfig.contentServiceConfig,
+            ...update
+        };
+    }
+
+    public updatePageServiceConfig(update: Partial<PageServiceConfig>) {
+        this._sdkConfig.pageServiceConfig = {
+            ...this._sdkConfig.pageServiceConfig,
+            ...update
+        };
     }
 
     private postInit() {
