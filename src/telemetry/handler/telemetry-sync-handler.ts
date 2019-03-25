@@ -245,6 +245,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
         // const body = JSON.parse(pako.ungzip(processedEventsBatchEntry[COLUMN_NAME_DATA], {to: 'string'}));
 
         const apiRequest: Request = new Request.Builder()
+            .withHost(this.telemetryConfig.host)
             .withType(HttpRequestType.POST)
             .withPath(this.telemetryConfig.telemetryApiPath +
                 TelemetrySyncHandler.TELEMETRY_ENDPOINT)
