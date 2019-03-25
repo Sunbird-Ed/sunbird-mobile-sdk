@@ -24,6 +24,7 @@ import {TelemetryEvent, TelemetryEventType} from '../../telemetry/def/telemetry-
 import Telemetry = SunbirdTelemetry.Telemetry;
 import {CourseService} from '../../course';
 import {SharedPreferences} from '../../util/shared-preferences';
+import {ArrayUtil} from '../../util/array-util';
 
 export class SummarizerServiceImpl implements SummarizerService, EventObserver<TelemetryEvent> {
     private contentMap: Map<string, ContentCache>;
@@ -74,19 +75,19 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
         } else if (request.contentId) {
             query = SummarizerQueries.getContentProgressQuery(request.contentId);
         }
-        return this.getContentCache().mergeMap((cache: Map<string, ContentCache>) => {
+        return this.getContentCache(ArrayUtil.joinPreservingQuotes(request.uids)).mergeMap((cache: Map<string, ContentCache>) => {
             return this.dbService.execute(query).map((assesmentsInDb: LearnerSummaryEntry.SchemaMap[]) =>
                 SummarizerHandler.mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb, cache));
         });
 
     }
 
-    getContentCache(): Observable<Map<string, ContentCache>> {
+    getContentCache(uids): Observable<Map<string, ContentCache>> {
         if (this.contentMap) {
             return Observable.of(this.contentMap);
         } else {
             this.contentMap = new Map<string, ContentCache>();
-            const contentRequest: ContentRequest = {resourcesOnly: true, contentTypes: []};
+            const contentRequest: ContentRequest = {resourcesOnly: true, contentTypes: [], uid: uids};
             return this.contenService.getContents(contentRequest).map((results: Content[]) => {
                 results.forEach(element => {
                     const cacheContent = new ContentCache();
