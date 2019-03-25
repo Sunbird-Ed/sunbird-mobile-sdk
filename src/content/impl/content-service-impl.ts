@@ -394,8 +394,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return Observable.of(relevantContentResponse);
             }).map((contentResponse: RelevantContentResponse) => {
                 const response: RelevantContentResponsePlayer = {};
-                response.next = {content: contentResponse.nextContent!};
-                response.prev = {content: contentResponse.previousContent!};
+                response.next = contentResponse.nextContent ? {content: contentResponse.nextContent!} : undefined;
+                response.prev = contentResponse.previousContent! ? {content: contentResponse.previousContent!} : undefined;
                 return response;
             });
     }
