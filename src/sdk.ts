@@ -14,14 +14,7 @@ import {AuthServiceImpl} from './auth/impl/auth-service-impl';
 import {ContentFeedbackService, ContentService, ContentsGroupedByPageSection} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
-import {
-    Channel,
-    Framework,
-    FrameworkService,
-    FrameworkServiceImpl,
-    FrameworkUtilService,
-    FrameworkUtilServiceImpl
-} from './framework';
+import {Channel, Framework, FrameworkService, FrameworkServiceImpl, FrameworkUtilService, FrameworkUtilServiceImpl} from './framework';
 import {ContentServiceImpl} from './content/impl/content-service-impl';
 import {ProfileService, ProfileServiceImpl, ServerProfile} from './profile';
 import {KeyValueStore} from './key-value-store';
@@ -29,9 +22,8 @@ import {KeyValueStoreImpl} from './key-value-store/impl/key-value-store-impl';
 import {FormServiceImpl} from './form/impl/form-service-impl';
 import {FileService} from './util/file/def/file-service';
 import {CachedItemStoreImpl} from './key-value-store/impl/cached-item-store-impl';
-import {PageAssembleService} from './page';
+import {PageAssemble, PageAssembleService} from './page';
 import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
-import {PageAssemble} from './page/def/page-assemble';
 import {SharedPreferencesLocalStorage} from './util/shared-preferences/impl/shared-preferences-local-storage';
 import {SharedPreferencesAndroid} from './util/shared-preferences/impl/shared-preferences-android';
 import {FileServiceImpl} from './util/file/impl/file-service-impl';
@@ -45,22 +37,19 @@ import {GroupServiceImpl} from './group/impl/group-service-impl';
 import {DebugPromptFileService} from './util/file/impl/debug-prompt-file-service';
 import {SystemSettings, SystemSettingsService, SystemSettingsServiceImpl} from './system-settings';
 import {ZipService} from './util/zip/def/zip-service';
-import {DeviceInfo} from './util/device/def/device-info';
+import {DeviceInfo} from './util/device';
 import {ZipServiceImpl} from './util/zip/impl/zip-service-impl';
 import {DeviceInfoImpl} from './util/device/impl/device-info-impl';
 import {ContentFeedbackServiceImpl} from './content/impl/content-feedback-service-impl';
 import {EventsBusService} from './events-bus';
 import {EventsBusServiceImpl} from './events-bus/impl/events-bus-service-impl';
-import {SummarizerService} from './summarizer/def/summarizer-service';
-import {SummarizerServiceImpl} from './summarizer/impl/summarizer-service-impl';
+import {SummarizerService, SummarizerServiceImpl} from './summarizer';
 import {Observable} from 'rxjs';
 import {DownloadService} from './util/download';
 import {DownloadServiceImpl} from './util/download/download-service-impl';
 import {AppInfo} from './util/app/def/app-info';
 import {AppInfoImpl} from './util/app/impl/app-info-impl';
-import {PlayerService} from './player/def/player-service';
-import {PlayerServiceImpl} from './player/impl/player-service-impl';
-import {SummaryTelemetryEventHandler} from './summarizer';
+import {PlayerService, PlayerServiceImpl} from './player';
 
 export class SunbirdSdk {
 
@@ -101,7 +90,9 @@ export class SunbirdSdk {
     private _playerService: PlayerService;
 
     get sdkConfig(): SdkConfig {
-        return this._sdkConfig;
+        return {
+            ...this._sdkConfig
+        };
     }
 
     get pageAssembleService(): PageAssembleService {
