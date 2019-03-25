@@ -3,7 +3,7 @@ import {Actor, CorrelationData, ProducerData} from '../../telemetry';
 
 export interface PlayerInput {
     context?: Context;
-    metaData?: Content;
+    metadata?: Content;
     config?: PlayerConfig;
     appContext?: { [key: string]: any };
 }

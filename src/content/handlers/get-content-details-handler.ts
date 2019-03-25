@@ -121,6 +121,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
     fetchFromServer(request: ContentDetailRequest): Observable<ContentData> {
         return this.apiService.fetch<{ result: { content: ContentData } }>(
             new Request.Builder()
+                .withHost(this.contentServiceConfig.host)
                 .withType(HttpRequestType.GET)
                 .withPath(this.contentServiceConfig.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + '/' + request.contentId)
                 .withApiToken(true)

@@ -39,6 +39,7 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
 
     private fetchFromServer(request: PageAssembleCriteria): Observable<PageAssemble> {
         const apiRequest: Request = new Request.Builder()
+            .withHost(this.pageApiServiceConfig.host)
             .withType(HttpRequestType.POST)
             .withPath(this.pageApiServiceConfig.apiPath + this.PAGE_ASSEMBLE_ENDPOINT)
             .withApiToken(true)
