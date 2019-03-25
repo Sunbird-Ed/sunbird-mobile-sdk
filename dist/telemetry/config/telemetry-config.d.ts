@@ -1,4 +1,5 @@
-export interface TelemetryConfig {
+import { OpenRapConfigurable } from '../../open-rap-configurable';
+export interface TelemetryConfig extends OpenRapConfigurable {
     deviceRegisterHost: string;
     deviceRegisterApiPath: string;
     telemetryApiPath: string;
