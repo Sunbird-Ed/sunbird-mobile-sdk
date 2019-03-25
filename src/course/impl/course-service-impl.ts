@@ -1,14 +1,18 @@
-import {ContentStateResponse, CourseService, GetContentStateRequest} from '..';
-import {Observable} from 'rxjs';
 import {
+    Batch,
+    ContentStateResponse,
+    Course,
     CourseBatchDetailsRequest,
     CourseBatchesRequest,
+    CourseService,
+    CourseServiceConfig,
     EnrollCourseRequest,
     FetchEnrolledCourseRequest,
+    GetContentStateRequest,
     UpdateContentStateRequest
 } from '..';
-import {Batch, Course, CourseServiceConfig} from '..';
-import {Profile, ProfileService, ProfileSession} from '../../profile';
+import {Observable} from 'rxjs';
+import {ProfileService} from '../../profile';
 import {GetBatchDetailsHandler} from '../handlers/get-batch-details-handler';
 import {UpdateContentStateHandler} from '../handlers/update-content-state-handler';
 import {GetCourseBatchesHandler} from '../handlers/get-course-batches-handler';
@@ -19,12 +23,10 @@ import {ApiService} from '../../api';
 import {UnenrollCourseRequest} from '../def/unenrollCourseRequest';
 import {UnenrollCourseHandler} from '../handlers/unenroll-course-handler';
 import {DbService} from '../../db';
-import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 import {ContentKeys} from '../../preference-keys';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {OfflineCourseCacheHandler} from '../handlers/offline-course-cache-handler';
 import {ContentService} from '../../content';
-import {GetContentsHandler} from '../../content/handlers/get-contents-handler';
 import {GetContentStateHandler} from '../handlers/get-content-state-handler';
 import {UpdateEnrolledCoursesHandler} from '../handlers/update-enrolled-courses-handler';
 import {OfflineContentStateHandler} from '../handlers/offline-content-state-handler';
@@ -34,6 +36,7 @@ import {ContentStatesHandler} from '../handlers/content-states-handler';
 export class CourseServiceImpl implements CourseService {
 
     public static readonly GET_CONTENT_STATE_KEY_PREFIX = 'getContentState';
+    public static readonly GET_ENROLLED_COURSE_KEY_PREFIX = 'enrolledCourses';
     public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
 
     constructor(private courseServiceConfig: CourseServiceConfig,

@@ -23,7 +23,7 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
                             return this.keyValueStore.setValue(
                                 this.STORED_ENROLLED_COURSES_PREFIX + request.userId,
                                 JSON.stringify(courses)
-                            ).mapTo(courses.result);
+                            ).mapTo(courses.result.courses);
                         });
                 } else if (request.returnFreshCourses) {
                     return this.fetchFromServer(request)
@@ -31,10 +31,15 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
                             return this.keyValueStore.setValue(
                                 this.STORED_ENROLLED_COURSES_PREFIX + request.userId,
                                 JSON.stringify(courses)
-                            ).mapTo(courses.result);
+                            ).mapTo(courses.result.courses);
                         });
                 } else {
-                    return Observable.of(JSON.parse(value)['result']['courses']);
+                    // TODO
+                    const courses = JSON.parse(value);
+                    if (courses.result) {
+                        return Observable.of(courses.result['courses']);
+                    }
+                    return Observable.of(courses['courses']);
                 }
             });
     }

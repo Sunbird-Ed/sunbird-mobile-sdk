@@ -72,7 +72,7 @@ export class ExtractPayloads {
             const existingContentModel = await this.getContentDetailsHandler.fetchFromDB(identifier).toPromise();
             let existingContentPath;
             if (existingContentModel) {
-                existingContentPath = existingContentModel[COLUMN_NAME_PATH];
+                existingContentPath = ContentUtil.getBasePath(existingContentModel[COLUMN_NAME_PATH]!);
             }
 
             let doesContentExist: boolean = ContentUtil.doesContentExist(existingContentModel, identifier, pkgVersion, false);
@@ -141,7 +141,7 @@ export class ExtractPayloads {
             ContentUtil.addOrUpdateViralityMetadata(element, this.deviceInfo.getDeviceID().toString());
             const sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
             const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
-                JSON.stringify(element), mimeType, contentType, visibility, payloadDestination,
+                JSON.stringify(element), mimeType, contentType, visibility, basePath,
                 referenceCount, contentState, audience, pragma, sizeOnDevice);
             if (!existingContentModel) {
                 await this.dbService.insert({
@@ -191,7 +191,7 @@ export class ExtractPayloads {
             }
 
         } catch (e) {
-            console.error('cannot Copy asset');
+            console.error('Cannot Copy Asset');
             return Promise.resolve();
 
         }

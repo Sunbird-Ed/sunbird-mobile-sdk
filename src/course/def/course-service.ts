@@ -10,7 +10,7 @@ import {Observable} from 'rxjs';
 import {Batch} from './batch';
 import {Course} from './course';
 import {UnenrollCourseRequest} from './unenrollCourseRequest';
-
+import {ApiService, Response} from '../../api';
 export interface CourseService {
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
 

@@ -110,15 +110,17 @@ export class GetContentsHandler {
                 if ('lastUsedOn' === sortCriteria.sortAttribute.valueOf() && uid) {
                     orderBy = this.generateOrderByQuery(i, orderBy, ` ca.${ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP}`,
                         sortCriteria.sortOrder.valueOf());
+                    i++;
                 } else if ('localLastUpdatedOn' === sortCriteria.sortAttribute.valueOf()) {
                     orderBy = this.generateOrderByQuery(i, orderBy, ` c.${ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON}`,
                         sortCriteria.sortOrder.valueOf());
+                    i++;
                 } else if ('sizeOnDevice' === sortCriteria.sortAttribute.valueOf()) {
                     orderBy = this.generateOrderByQuery(i, orderBy, ` c.${ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE}`,
                         sortCriteria.sortOrder.valueOf());
+                    i++;
                 }
             }
-            i++;
         });
         return orderBy;
 
