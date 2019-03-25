@@ -1,8 +1,7 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request, Response} from '../../../api';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../../api';
 import {ContentServiceConfig, SearchResponse} from '../..';
 import {Observable} from 'rxjs';
 import {SearchRequest} from '../../def/search-request';
-import {ProfileServiceConfig} from '../../../profile';
 
 export class ContentSearchApiHandler implements ApiRequestHandler<SearchRequest, SearchResponse> {
     private readonly SEARCH_ENDPOINT = '/search';
@@ -16,6 +15,7 @@ export class ContentSearchApiHandler implements ApiRequestHandler<SearchRequest,
     handle(request: SearchRequest): Observable<SearchResponse> {
         const additionalPath = this.framework && this.langCode && `?framework=${this.framework}&lang=${this.langCode}`;
         const apiRequest: Request = new Request.Builder()
+            .withHost(this.contentServiceConfig.host)
             .withType(HttpRequestType.POST)
             .withPath(this.contentServiceConfig.searchApiPath.concat(this.SEARCH_ENDPOINT).concat(additionalPath ? additionalPath : ''))
             .withApiToken(true)
