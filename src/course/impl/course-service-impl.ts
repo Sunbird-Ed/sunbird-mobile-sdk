@@ -136,6 +136,8 @@ export class CourseServiceImpl implements CourseService {
                     .handle(request).mergeMap((response: any) => {
                         if (response) {
                             return this.keyValueStore.setValue(key, JSON.stringify(response)).mergeMap(() => {
+                                return offlinecontentStateHandler.getLocalContentStateResponse(request);
+                            }).do(() => {
                                 return updateCourseHandler.updateEnrollCourses(request);
                             });
                         } else {
