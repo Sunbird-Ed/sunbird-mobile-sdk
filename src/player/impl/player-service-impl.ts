@@ -3,7 +3,7 @@ import {Content} from '../../content';
 import {ProfileService, ProfileSession} from '../../profile';
 import {GroupService, GroupSession} from '../../group';
 import {Observable} from 'rxjs';
-import {Context, PlayerConfig, PlayerInput} from '../def/response';
+import {Context, PlayerInput} from '../def/response';
 import {DeviceInfo} from '../../util/device/def/device-info';
 import {Actor, CorrelationData, ProducerData} from '../../telemetry';
 import {SdkConfig} from '../../sdk-config';
@@ -36,7 +36,7 @@ export class PlayerServiceImpl implements PlayerService {
             content.contentData.previewUrl = content.basePath;
         }
         content.basePath = content.basePath.replace(/\/$/, '');
-        playerInput.metaData = content;
+        playerInput.metadata = content;
         playerInput.config = this.config.playerConfig;
         return this.profileService.getActiveProfileSession().mergeMap((session: ProfileSession | undefined) => {
             context.sid = session ? session.sid : '';
