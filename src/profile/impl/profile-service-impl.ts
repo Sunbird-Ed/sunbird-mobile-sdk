@@ -69,6 +69,7 @@ import {TransportGroupProfile} from '../handler/import/transport-group-profile';
 import {TransportFrameworkNChannel} from '../handler/import/transport-framework-n-channel';
 import {TransportAssesments} from '../handler/import/transport-assesments';
 import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-profile-metadata';
+import {CachedItemRequest, CachedItemRequestSourceFrom} from '../../key-value-store/def/cached-item-request';
 
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
@@ -219,9 +220,12 @@ export class ProfileServiceImpl implements ProfileService {
         `).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriesToProfiles(profiles));
     }
 
-    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {
+    getServerProfilesDetails(
+        serverProfileDetailsRequest: ServerProfileDetailsRequest,
+        cachedItemRequest: CachedItemRequest = {from: CachedItemRequestSourceFrom.CACHE}
+    ): Observable<ServerProfile> {
         return new GetServerProfileDetailsHandler(this.apiService, this.profileServiceConfig, this.cachedItemStore)
-            .handle(serverProfileDetailsRequest);
+            .handle({serverProfileDetailsRequest, cachedItemRequest});
     }
 
     getActiveSessionProfile({requiredFields}: Pick<ServerProfileDetailsRequest, 'requiredFields'>): Observable<Profile> {

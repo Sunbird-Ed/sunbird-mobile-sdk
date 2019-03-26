@@ -21,7 +21,7 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
         return this.isItemCachedInDb(timeToLiveKey, id)
             .mergeMap((isItemCachedInDb: boolean) => {
                 if (isItemCachedInDb) {
-                    return this.isItemTTLExpired(timeToLiveKey, id, timeToLive || this.apiConfig.cached_requests.timeToLive)
+                    return this.isItemTTLExpired(timeToLiveKey, id, !isNaN(timeToLive!) ? timeToLive! : this.apiConfig.cached_requests.timeToLive)
                         .mergeMap((isItemTTLExpired: boolean) => {
                             if (isItemTTLExpired) {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id)

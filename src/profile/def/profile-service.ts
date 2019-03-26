@@ -21,6 +21,7 @@ import {ProfileExportRequest} from './profile-export-request';
 import {ProfileExportResponse} from './profile-export-response';
 import {ProfileImportRequest} from './profile-import-request';
 import {ProfileImportResponse} from './profile-import-response';
+import {CachedItemRequest} from '../../key-value-store/def/cached-item-request';
 
 
 export interface ProfileService extends SdkServiceOnInitDelegate {
@@ -38,7 +39,9 @@ export interface ProfileService extends SdkServiceOnInitDelegate {
 
     getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]>;
 
-    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile>;
+    getServerProfilesDetails(
+        serverProfileDetailsRequest: ServerProfileDetailsRequest, cachedItemRequest: CachedItemRequest
+    ): Observable<ServerProfile>;
 
     getActiveSessionProfile(activeSessionProfileRequest: Pick<ServerProfileDetailsRequest, 'requiredFields'>): Observable<Profile>;
 
