@@ -224,7 +224,7 @@ export class ProfileServiceImpl implements ProfileService {
         serverProfileDetailsRequest: ServerProfileDetailsRequest,
         cachedItemRequest: CachedItemRequest = {from: CachedItemRequestSourceFrom.CACHE}
     ): Observable<ServerProfile> {
-        return new GetServerProfileDetailsHandler(this.apiService, this.profileServiceConfig, this.cachedItemStore)
+        return new GetServerProfileDetailsHandler(this.apiService, this.profileServiceConfig, this.cachedItemStore, this.keyValueStore)
             .handle({serverProfileDetailsRequest, cachedItemRequest});
     }
 

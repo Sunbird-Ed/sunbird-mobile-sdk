@@ -14,6 +14,7 @@ export * from './sdk-config';
 export * from './events-bus';
 export * from './system-settings';
 export * from './summarizer';
+export * from './key-value-store';
 // utils
 export * from './util/shared-preferences';
 export * from './util/download';
