@@ -28,15 +28,13 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
                             return this.keyValueStore.setValue(
                                 this.USER_PROFILE_DETAILS_KEY_PREFIX + '-' + profile.id, JSON.stringify(profile)
                             ).toPromise();
+                        })
+                        .catch(() => {
+                            return this.fetchFromCache(serverProfileDetailsRequest);
                         });
                 }
 
-                return this.cachedItemStore.getCached(
-                    serverProfileDetailsRequest.userId,
-                    this.USER_PROFILE_DETAILS_KEY_PREFIX,
-                    this.USER_PROFILE_DETAILS_KEY_PREFIX,
-                    () => this.fetchFromServer(serverProfileDetailsRequest)
-                );
+                return this.fetchFromCache(serverProfileDetailsRequest);
             });
     }
 
@@ -54,5 +52,14 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
         return this.apiService.fetch<{ result: { response: ServerProfile } }>(apiRequest).map((success) => {
             return success.body.result.response;
         });
+    }
+
+    private fetchFromCache(request: ServerProfileDetailsRequest): Observable<ServerProfile> {
+        return this.cachedItemStore.getCached(
+            request.userId,
+            this.USER_PROFILE_DETAILS_KEY_PREFIX,
+            this.USER_PROFILE_DETAILS_KEY_PREFIX,
+            () => this.fetchFromServer(request)
+        );
     }
 }

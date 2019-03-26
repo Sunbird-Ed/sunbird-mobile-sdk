@@ -27,9 +27,13 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id)
                                     .map((v) => JSON.parse(v!))
                                     .do(async () => {
-                                        await fromServer().switchMap((item: T) => {
-                                            return this.saveItem(id, timeToLiveKey, noSqlkey, item);
-                                        }).toPromise();
+                                        try {
+                                            await fromServer().switchMap((item: T) => {
+                                                return this.saveItem(id, timeToLiveKey, noSqlkey, item);
+                                            }).toPromise();
+                                        } catch (e) {
+                                            console.error(e);
+                                        }
                                     });
                             } else {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id)
