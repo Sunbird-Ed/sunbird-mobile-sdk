@@ -17,24 +17,24 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
     ) {
     }
 
-    private static getIdForDb(request: PageAssembleCriteria): string {
-        const key = request.name +
-        (request.source || 'app') +
-        (request.mode || '') +
-        request.filters ? SHA1(JSON.stringify(request.filters)).toString() : '';
-        return key;
-    }
-
     handle(request: PageAssembleCriteria): Observable<PageAssemble> {
         if (!request.source) {
             request.source = 'app';
         }
         return this.cachedItemStore.getCached(
-            PageAssemblerHandler.getIdForDb(request),
+            this.getIdForDb(request),
             this.PAGE_ASSEMBLE_LOCAL_KEY,
             'ttl_' + this.PAGE_ASSEMBLE_LOCAL_KEY,
             () => this.fetchFromServer(request)
         );
+    }
+
+    private getIdForDb(request: PageAssembleCriteria): string {
+        const key = (this.pageApiServiceConfig.host || '') + request.name +
+        (request.source || 'app') +
+        (request.mode || '') +
+        request.filters ? SHA1(JSON.stringify(request.filters)).toString() : '';
+        return key;
     }
 
     private fetchFromServer(request: PageAssembleCriteria): Observable<PageAssemble> {
