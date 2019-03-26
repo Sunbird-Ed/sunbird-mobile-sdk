@@ -1,6 +1,7 @@
-import {HttpClient, HttpRequestType, HttpSerializer, Response} from '..';
+import {HttpClient, HttpRequestType, HttpSerializer, Response, ResponseCode} from '..';
 import {Observable, Subject} from 'rxjs';
 import {NetworkError} from '../errors/network-error';
+import {ServerError} from '../errors/server-error';
 
 interface CordovaHttpClientResponse {
     data?: string;
@@ -79,8 +80,16 @@ export class HttpClientImpl implements HttpClient {
                 r.body = JSON.parse(response.error!);
                 r.responseCode = response.status;
                 r.errorMesg = 'SERVER_ERROR';
-                observable.next(r);
-                observable.complete();
+
+                if (r.responseCode === ResponseCode.HTTP_UNAUTHORISED) {
+                    observable.next(r);
+                    observable.complete();
+                } else {
+                    observable.error(new ServerError(`
+                        ${url} -
+                        ${response.error || ''}
+                    `, r));
+                }
             } catch (e) {
                 observable.error(new NetworkError(`
                     ${url} -
