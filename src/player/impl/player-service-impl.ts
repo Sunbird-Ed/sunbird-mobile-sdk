@@ -31,11 +31,11 @@ export class PlayerServiceImpl implements PlayerService {
 
         const playerInput: PlayerInput = {};
         content.rollup = ContentUtil.getRollup(content.identifier, content.hierarchyInfo!);
+        content.basePath = content.basePath.replace(/\/$/, '');
         if (content.isAvailableLocally) {
             content.contentData.streamingUrl = content.basePath;
             content.contentData.previewUrl = content.basePath;
         }
-        content.basePath = content.basePath.replace(/\/$/, '');
         playerInput.metadata = content;
         playerInput.config = this.config.playerConfig;
         return this.profileService.getActiveProfileSession().mergeMap((session: ProfileSession | undefined) => {
