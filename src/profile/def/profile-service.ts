@@ -40,7 +40,7 @@ export interface ProfileService extends SdkServiceOnInitDelegate {
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile>;
 
-    getActiveSessionProfile(): Observable<Profile>;
+    getActiveSessionProfile(activeSessionProfileRequest: Pick<ServerProfileDetailsRequest, 'requiredFields'>): Observable<Profile>;
 
     setActiveSessionForProfile(profileUid: string): Observable<boolean>;
 

@@ -224,7 +224,7 @@ export class ProfileServiceImpl implements ProfileService {
             .handle(serverProfileDetailsRequest);
     }
 
-    getActiveSessionProfile(): Observable<Profile> {
+    getActiveSessionProfile({requiredFields}: Pick<ServerProfileDetailsRequest, 'requiredFields'>): Observable<Profile> {
         return this.getActiveProfileSession()
             .mergeMap((profileSession: ProfileSession) => {
                 return this.dbService.read({
@@ -243,7 +243,7 @@ export class ProfileServiceImpl implements ProfileService {
                     if (profile.source === ProfileSource.SERVER) {
                         return this.getServerProfilesDetails({
                             userId: profile.uid,
-                            requiredFields: []
+                            requiredFields
                         }).map((serverProfile: ServerProfile) => ({
                             ...profile,
                             handle: serverProfile.firstName + ', ' + serverProfile.lastName,
@@ -350,8 +350,8 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     addContentAccess(contentAccess: ContentAccess): Observable<boolean> {
-        return this.getActiveSessionProfile()
-            .mergeMap(({uid}: Profile) => {
+        return this.getActiveProfileSession()
+            .mergeMap(({uid}: ProfileSession) => {
                 return this.dbService.read({
                     table: ContentAccessEntry.TABLE_NAME,
                     selection:

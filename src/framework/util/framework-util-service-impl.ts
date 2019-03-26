@@ -21,7 +21,7 @@ export class FrameworkUtilServiceImpl implements FrameworkUtilService {
     }
 
     public getActiveChannelSuggestedFrameworkList(getSuggestedFrameworksRequest: GetSuggestedFrameworksRequest): Observable<Framework[]> {
-        return this.profileService.getActiveSessionProfile()
+        return this.profileService.getActiveSessionProfile({requiredFields: []})
             .mergeMap((profile: Profile) =>
                 Observable.if(
                     () => !!profile.serverProfile,

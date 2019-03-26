@@ -15,7 +15,7 @@ import {DbService, ReadQuery} from '../../db';
 import {ContentEntry} from '../db/schema';
 import {QueryBuilder} from '../../db/util/query-builder';
 import {ContentMapper} from '../util/content-mapper';
-import {ContentAccess, Profile, ProfileService} from '../../profile';
+import {ContentAccess, ProfileService, ProfileSession} from '../../profile';
 import {ContentMarkerHandler} from './content-marker-handler';
 import {ContentUtil} from '../util/content-util';
 import {EventNamespace, EventsBusService} from '../../events-bus';
@@ -172,8 +172,8 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
     }
 
     private attachContentAccess(content: Content): Observable<Content> {
-        return this.profileService.getActiveSessionProfile()
-            .mergeMap(({uid}: Profile) => {
+        return this.profileService.getActiveProfileSession()
+            .mergeMap(({uid}: ProfileSession) => {
                 return this.profileService.getAllContentAccess({
                     contentId: content.identifier,
                     uid
@@ -187,8 +187,8 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
     }
 
     private attachFeedback(content: Content): Observable<Content> {
-        return this.profileService.getActiveSessionProfile()
-            .mergeMap(({uid}: Profile) => {
+        return this.profileService.getActiveProfileSession()
+            .mergeMap(({uid}: ProfileSession) => {
                 return this.contentFeedbackService.getFeedback({
                     contentId: content.identifier,
                     uid
@@ -202,8 +202,8 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
     }
 
     private attachContentMarker(content: Content): Observable<Content> {
-        return this.profileService.getActiveSessionProfile()
-            .mergeMap(({uid}: Profile) => {
+        return this.profileService.getActiveProfileSession()
+            .mergeMap(({uid}: ProfileSession) => {
                 return new ContentMarkerHandler(this.dbService).getContentMarker(content.identifier, uid)
                     .map
                     ((contentMarkers: ContentMarker[]) => {
