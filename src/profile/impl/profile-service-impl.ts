@@ -86,7 +86,10 @@ export class ProfileServiceImpl implements ProfileService {
                 private frameworkService: FrameworkService,
                 private fileService: FileService,
                 private deviceInfo: DeviceInfo) {
-        this.telemetryService = SunbirdSdk.instance.telemetryService;
+    }
+
+    public registerTelemetryService(telemetryService: TelemetryService) {
+        this.telemetryService = telemetryService;
     }
 
     onInit(): Observable<undefined> {

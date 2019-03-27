@@ -1,7 +1,7 @@
 export interface UpdateServerProfileInfoRequest {
     userId: string;
     phone?: string;
-    emailId?: string;
+    email?: string;
     phoneVerified?: boolean;
     emailVerified?: boolean;
     locationCodes?: Array<string>;
