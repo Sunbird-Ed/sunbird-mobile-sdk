@@ -18,13 +18,6 @@ export declare class ReportSummary {
     totalMaxScore: number;
     totalScore: number;
 }
-export declare class Audit {
-    env: string;
-    props: Array<string>;
-    currentState: string;
-    prevState: string;
-    actorType: string;
-}
 export declare class Context {
     env: string;
     cdata: Array<CorrelationData>;
@@ -113,6 +106,11 @@ export declare class ProcessedEventModel {
     numberOfEvents: number;
     priority: number;
 }
+export declare enum AuditState {
+    AUDIT_CREATED = "Created",
+    AUDIT_UPDATED = "Updated",
+    AUDIT_DELETED = "Deleted"
+}
 export declare namespace SunbirdTelemetry {
     abstract class Telemetry {
         private static readonly TELEMETRY_VERSION;
@@ -166,5 +164,9 @@ export declare namespace SunbirdTelemetry {
     class Feedback extends Telemetry {
         private static readonly EID;
         constructor(rating: number | undefined, comments: string | undefined, env: string, objId?: string, objType?: string, objVer?: string);
+    }
+    class Audit extends Telemetry {
+        private static readonly EID;
+        constructor(env: string, actor: Actor, currentState: AuditState, updatedProperties: string[] | undefined, objId?: string, objType?: string, objVer?: string);
     }
 }

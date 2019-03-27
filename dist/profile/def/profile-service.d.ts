@@ -1,3 +1,4 @@
+import { TelemetryService } from './../../telemetry/def/telemetry-service';
 import { Profile, ProfileSource } from './profile';
 import { Observable } from 'rxjs';
 import { TenantInfo } from './tenant-info';
@@ -21,7 +22,6 @@ import { ProfileExportRequest } from './profile-export-request';
 import { ProfileExportResponse } from './profile-export-response';
 import { ProfileImportRequest } from './profile-import-request';
 import { ProfileImportResponse } from './profile-import-response';
-import { CachedItemRequest } from '../../key-value-store/def/cached-item-request';
 export interface ProfileService extends SdkServiceOnInitDelegate {
     createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
     deleteProfile(uid: string): Observable<undefined>;
@@ -30,7 +30,7 @@ export interface ProfileService extends SdkServiceOnInitDelegate {
     getTenantInfo(): Observable<TenantInfo>;
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
     getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]>;
-    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest, cachedItemRequest?: CachedItemRequest): Observable<ServerProfile>;
+    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile>;
     getActiveSessionProfile(activeSessionProfileRequest: Pick<ServerProfileDetailsRequest, 'requiredFields'>): Observable<Profile>;
     setActiveSessionForProfile(profileUid: string): Observable<boolean>;
     getActiveProfileSession(): Observable<ProfileSession>;
@@ -43,4 +43,5 @@ export interface ProfileService extends SdkServiceOnInitDelegate {
     searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult[]>;
     exportProfile(profileExportRequest: ProfileExportRequest): Observable<ProfileExportResponse>;
     importProfile(profileImportRequest: ProfileImportRequest): Observable<ProfileImportResponse>;
+    registerTelemetryService(telemetryService: TelemetryService): void;
 }
