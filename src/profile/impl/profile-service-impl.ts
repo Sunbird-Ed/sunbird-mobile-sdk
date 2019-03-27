@@ -154,7 +154,7 @@ export class ProfileServiceImpl implements ProfileService {
             await this.getActiveProfileSession()
                 .map((session) => session.uid)
                 .catch((e) => {
-                    if (e instanceof NoProfileFoundError) {
+                    if (e instanceof NoActiveSessionError) {
                         return Observable.of(profile.uid);
                     }
 
