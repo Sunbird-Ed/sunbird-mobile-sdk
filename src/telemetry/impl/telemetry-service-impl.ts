@@ -3,6 +3,7 @@ import {
     ExportTelemetryContext,
     ImportTelemetryContext,
     SunbirdTelemetry,
+    TelemetryAuditRequest,
     TelemetryDecorator,
     TelemetryEndRequest,
     TelemetryErrorRequest,
@@ -64,6 +65,11 @@ export class TelemetryServiceImpl implements TelemetryService {
                 return Observable.of(false);
             }
         });
+    }
+
+    audit({env, actorType, currentState, updatedProperties, objId, objType, objVer}: TelemetryAuditRequest): Observable<boolean> {
+        const audit = new SunbirdTelemetry.Audit(env, actorType, currentState, updatedProperties, objId, objType, objVer);
+        return this.decorateAndPersist(audit);
     }
 
     end({

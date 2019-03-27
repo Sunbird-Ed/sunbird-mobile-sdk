@@ -25,14 +25,6 @@ export declare class ReportSummary {
     totalScore: number;
 }
 
-export class Audit {
-    env: string;
-    props: Array<string>;
-    currentState: string;
-    prevState: string;
-    actorType: string;
-}
-
 export class Context {
     env: string;
     cdata: Array<CorrelationData>;
@@ -158,6 +150,12 @@ export class ProcessedEventModel {
     data: string;
     numberOfEvents: number;
     priority: number;
+}
+
+export enum AuditState {
+    AUDIT_CREATED = 'Created',
+    AUDIT_UPDATED = 'Updated',
+    AUDIT_DELETED = 'Deleted'
 }
 
 export namespace SunbirdTelemetry {
@@ -410,6 +408,31 @@ export namespace SunbirdTelemetry {
             this.context.env = env;
             this.object = new TelemetryObject(objId, objType, objVer);
             this.object.rollup = {};
+        }
+    }
+
+    export class Audit extends Telemetry {
+        private static readonly EID = 'AUDIT';
+
+        constructor(env: string,
+                    actorType: string,
+                    currentState: AuditState,
+                    updatedProperties: string[] | undefined,
+                    objId: string = '',
+                    objType: string = '',
+                    objVer: string = '') {
+            super(Audit.EID);
+
+            this.edata = {
+                ...{currentState},
+                ...(updatedProperties ? {updatedProperties} : {}),
+            };
+            this.context.env = env;
+            this.object = new TelemetryObject(objId, objType, objVer);
+            this.object.rollup = {};
+            const actor: Actor = new Actor();
+            actor.type = actorType;
+            this.actor = actor;
         }
     }
 }

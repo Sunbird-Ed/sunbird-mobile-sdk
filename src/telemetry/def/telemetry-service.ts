@@ -2,6 +2,7 @@ import {TelemetryStat} from './telemetry-stat';
 import {TelemetrySyncStat} from './telemetry-sync-stat';
 import {Observable} from 'rxjs';
 import {
+    TelemetryAuditRequest,
     TelemetryEndRequest,
     TelemetryErrorRequest,
     TelemetryExportRequest,
@@ -17,6 +18,8 @@ import {TelemetryExportResponse} from './response';
 
 export interface TelemetryService {
     saveTelemetry(request: string): Observable<boolean>;
+
+    audit(request: TelemetryAuditRequest): Observable<boolean>;
 
     start(request: TelemetryStartRequest): Observable<boolean>;
 
