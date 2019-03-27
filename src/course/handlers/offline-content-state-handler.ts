@@ -33,41 +33,55 @@ export class OfflineContentStateHandler {
         return this.keyValueStore.getValue(key)
             .mergeMap((value: string | undefined) => {
                 if (value) {
-                    const result = JSON.parse(value);
-                    const courses: Course[] = result['courses'];
+                    const response = JSON.parse(value);
+                    const result = response['result'];
+                    let courses: Course[];
+                    if (result && result.hasOwnProperty('courses')) {
+                        courses = result['courses'];
+                    } else {
+                        courses = response['courses'];
+                    }
                     if (courses && courses.length) {
                         let newCourses: Course[] = [];
                         newCourses = newCourses.concat(courses);
                         courses.forEach((course: Course) => {
-                            if (!course.contentsPlayedOffline || !course.contentsPlayedOffline!.size) {
-                                course.contentsPlayedOffline = new Set<string>();
-                            }
-                            if (course.contentsPlayedOffline!.size === 0 ||
-                                (course.contentsPlayedOffline!.size > 0 &&
-                                    !course.contentsPlayedOffline!.has(updateContentStateRequest.contentId))) {
-                                const progress = (course.progress ? course.progress : 0) + 1;
-                                const updatedCourse: Course = course;
-                                let playedOffline: Set<string> = updatedCourse.contentsPlayedOffline!;
-                                if (!playedOffline) {
-                                    playedOffline = new Set<string>();
+                            if (course.courseId === updateContentStateRequest.courseId) {
+                                if (!course.contentsPlayedOffline || !course.contentsPlayedOffline!.size) {
+                                    course.contentsPlayedOffline = new Set<string>();
                                 }
-                                playedOffline.add(updateContentStateRequest.contentId);
-                                updatedCourse.contentsPlayedOffline = playedOffline;
-                                updatedCourse.progress = progress;
+                                if (course.contentsPlayedOffline!.size === 0 ||
+                                    (course.contentsPlayedOffline!.size > 0 &&
+                                        !course.contentsPlayedOffline!.has(updateContentStateRequest.contentId))) {
+                                    course.progress = course.progress ? course.progress : 0;
+                                    course.progress = course.progress + 1;
+                                    const updatedCourse: Course = course;
+                                    let playedOffline: Set<string> = updatedCourse.contentsPlayedOffline!;
+                                    if (!playedOffline) {
+                                        playedOffline = new Set<string>();
+                                    }
+                                    playedOffline.add(updateContentStateRequest.contentId);
+                                    updatedCourse.contentsPlayedOffline = playedOffline;
+                                    updatedCourse.progress = course.progress;
 
-                                // remove old course
-                                newCourses = newCourses.filter((el: Course) => {
-                                    return el.courseId !== course.courseId;
-                                });
-                                // add new course
-                                newCourses.push(updatedCourse);
+                                    // remove old course
+                                    newCourses = newCourses.filter((el: Course) => {
+                                        return el.contentId !== course.contentId;
+                                    });
+                                    // add new course
+                                    newCourses.push(updatedCourse);
+                                }
+
                             }
 
                         });
 
                         if (newCourses && newCourses.length) {
-                            result['courses'] = newCourses;
-                            return this.keyValueStore.setValue(key, JSON.stringify(result));
+                            if (result && result.hasOwnProperty('courses')) {
+                                result['courses'] = newCourses;
+                            } else {
+                                response['courses'] = newCourses;
+                            }
+                            return this.keyValueStore.setValue(key, JSON.stringify(response));
                         } else {
                             return Observable.of(false);
                         }

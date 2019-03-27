@@ -36,7 +36,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
                 private courseService: CourseService,
                 private sharedPreference: SharedPreferences) {
         this.eventsBusService.registerObserver({namespace: EventNamespace.TELEMETRY, observer: this});
-        this.summarizerTelemetryHandler = new SummaryTelemetryEventHandler(this.courseService, this.sharedPreference, this);
+        this.summarizerTelemetryHandler = new SummaryTelemetryEventHandler(this.courseService, this.sharedPreference, this, this.eventsBusService);
     }
 
     getDetailsPerQuestion(request: SummaryRequest): Observable<{ [p: string]: any }[]> {
