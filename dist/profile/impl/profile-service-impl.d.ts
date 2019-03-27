@@ -15,6 +15,7 @@ import { ProfileImportRequest } from '../def/profile-import-request';
 import { ProfileImportResponse } from '../def/profile-import-response';
 import { FileService } from '../../util/file/def/file-service';
 import { DeviceInfo } from '../../util/device';
+import { CachedItemRequest } from '../../key-value-store/def/cached-item-request';
 export declare class ProfileServiceImpl implements ProfileService {
     private profileServiceConfig;
     private dbService;
@@ -35,8 +36,8 @@ export declare class ProfileServiceImpl implements ProfileService {
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
     getTenantInfo(): Observable<TenantInfo>;
     getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]>;
-    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile>;
-    getActiveSessionProfile(): Observable<Profile>;
+    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest, cachedItemRequest?: CachedItemRequest): Observable<ServerProfile>;
+    getActiveSessionProfile({ requiredFields }: Pick<ServerProfileDetailsRequest, 'requiredFields'>): Observable<Profile>;
     setActiveSessionForProfile(profileUid: string): Observable<boolean>;
     getActiveProfileSession(): Observable<ProfileSession>;
     acceptTermsAndConditions(acceptTermsConditions: AcceptTermsConditionRequest): Observable<boolean>;

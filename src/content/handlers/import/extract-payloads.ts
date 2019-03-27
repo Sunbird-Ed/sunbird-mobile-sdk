@@ -91,7 +91,10 @@ export class ExtractPayloads {
                 const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(
                     ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier), false);
                 payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
-                await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination);
+                try {
+                    await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination);
+                } catch (e) {
+                }
                 if (ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
                     let isUnzippingSuccessfull = false;
                     if (artifactUrl) {
@@ -128,9 +131,12 @@ export class ExtractPayloads {
                         contentState = State.ONLY_SPINE.valueOf();
                     }
                 }
-                await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination);
-                await this.copyAssets(importContext.tmpLocation!, posterImage, payloadDestination);
-                await this.copyAssets(importContext.tmpLocation!, grayScaleAppIcon, payloadDestination);
+                try {
+                    await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination);
+                    await this.copyAssets(importContext.tmpLocation!, posterImage, payloadDestination);
+                    await this.copyAssets(importContext.tmpLocation!, grayScaleAppIcon, payloadDestination);
+                } catch (e) {
+                }
             }
 
             const referenceCount = this.getReferenceCount(existingContentModel, visibility, importContext.isChildContent);
@@ -192,7 +198,7 @@ export class ExtractPayloads {
 
         } catch (e) {
             console.error('Cannot Copy Asset');
-            return Promise.resolve();
+            throw e;
 
         }
     }

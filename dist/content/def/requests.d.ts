@@ -17,7 +17,7 @@ export interface ContentDetailRequest {
     attachContentMarker?: boolean;
 }
 export interface ContentRequest {
-    uid?: string;
+    uid?: string | string[];
     contentTypes: string[];
     audience?: string[];
     pragma?: string[];
