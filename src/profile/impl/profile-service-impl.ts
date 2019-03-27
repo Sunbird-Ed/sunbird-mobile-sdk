@@ -86,7 +86,10 @@ export class ProfileServiceImpl implements ProfileService {
                 private frameworkService: FrameworkService,
                 private fileService: FileService,
                 private deviceInfo: DeviceInfo) {
-        this.telemetryService = SunbirdSdk.instance.telemetryService;
+    }
+
+    public registerTelemetryService(telemetryService: TelemetryService) {
+        this.telemetryService = telemetryService;
     }
 
     onInit(): Observable<undefined> {
@@ -154,7 +157,7 @@ export class ProfileServiceImpl implements ProfileService {
             await this.getActiveProfileSession()
                 .map((session) => session.uid)
                 .catch((e) => {
-                    if (e instanceof NoProfileFoundError) {
+                    if (e instanceof NoActiveSessionError) {
                         return Observable.of(profile.uid);
                     }
 
