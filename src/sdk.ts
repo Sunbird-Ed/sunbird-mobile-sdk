@@ -298,8 +298,9 @@ export class SunbirdSdk {
         this._pageAssembleService = new PageAssembleServiceImpl(
             this._apiService,
             sdkConfig.pageServiceConfig,
-            this._fileService,
-            new CachedItemStoreImpl<PageAssemble>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences)
+            new CachedItemStoreImpl<PageAssemble>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
+            this._keyValueStore,
+            this._sharedPreferences
         );
 
         this._frameworkUtilService = new FrameworkUtilServiceImpl(
