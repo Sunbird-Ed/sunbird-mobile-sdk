@@ -31,7 +31,7 @@ import {ApiService, Response} from '../../api';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
-import {CachedItemRequest, CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
+import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {ProfileDbEntryMapper} from '../util/profile-db-entry-mapper';
 import {ContentAccessFilterCriteria} from '../def/content-access-filter-criteria';
 import {AcceptTermConditionHandler} from '../handler/accept-term-condition-handler';
@@ -289,12 +289,9 @@ export class ProfileServiceImpl implements ProfileService {
         `).map((profiles: ProfileEntry.SchemaMap[]) => this.mapDbProfileEntriesToProfiles(profiles));
     }
 
-    getServerProfilesDetails(
-        serverProfileDetailsRequest: ServerProfileDetailsRequest,
-        cachedItemRequest: CachedItemRequest = {from: CachedItemRequestSourceFrom.CACHE}
-    ): Observable<ServerProfile> {
+    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {
         return new GetServerProfileDetailsHandler(this.apiService, this.profileServiceConfig, this.cachedItemStore, this.keyValueStore)
-            .handle({serverProfileDetailsRequest, cachedItemRequest});
+            .handle(serverProfileDetailsRequest);
     }
 
     getActiveSessionProfile({requiredFields}: Pick<ServerProfileDetailsRequest, 'requiredFields'>): Observable<Profile> {

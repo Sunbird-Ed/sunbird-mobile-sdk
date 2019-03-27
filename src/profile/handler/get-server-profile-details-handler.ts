@@ -1,8 +1,7 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {ProfileServiceConfig, ServerProfile, ServerProfileDetailsRequest} from '..';
-import {CachedItemStore, KeyValueStore} from '../../key-value-store';
+import {CachedItemRequest, CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {Observable} from 'rxjs';
-import {CachedItemRequest, CachedItemRequestSourceFrom} from '../../key-value-store/def/cached-item-request';
 
 export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
     serverProfileDetailsRequest: ServerProfileDetailsRequest,
@@ -19,8 +18,11 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
         private keyValueStore: KeyValueStore) {
     }
 
-    handle({serverProfileDetailsRequest, cachedItemRequest}): Observable<ServerProfile> {
-        return Observable.of(cachedItemRequest.from)
+    handle(serverProfileDetailsRequest): Observable<ServerProfile> {
+
+        serverProfileDetailsRequest.from = serverProfileDetailsRequest.from || CachedItemRequestSourceFrom.CACHE;
+
+        return Observable.of(serverProfileDetailsRequest.from)
             .mergeMap((from: CachedItemRequestSourceFrom) => {
                 if (from === CachedItemRequestSourceFrom.SERVER) {
                     return this.fetchFromServer(serverProfileDetailsRequest)
