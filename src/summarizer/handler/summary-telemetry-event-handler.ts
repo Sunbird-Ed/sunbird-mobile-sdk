@@ -6,6 +6,8 @@ import {ContentState, ContentStateResponse, CourseService, GetContentStateReques
 import {SharedPreferences} from '../../util/shared-preferences';
 import {ContentKeys} from '../../preference-keys';
 import Telemetry = SunbirdTelemetry.Telemetry;
+import {EventNamespace, EventsBusService} from '../../events-bus';
+import {ContentEventType} from '../../content';
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -16,7 +18,8 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
 
     constructor(private courseService: CourseService,
                 private sharedPreference: SharedPreferences,
-                private summarizerService: SummarizerService) {
+                private summarizerService: SummarizerService,
+                private eventBusService: EventsBusService) {
     }
 
     private static checkPData(pdata: ProducerData): boolean {
@@ -77,7 +80,17 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                             };
 
                             return this.courseService.updateContentState(updateContentStateRequest)
-                                .mapTo(undefined);
+                                .do(() => {
+                                    this.eventBusService.emit({
+                                        namespace: EventNamespace.CONTENT,
+                                        event: {
+                                            type: ContentEventType.COURSE_STATE_UPDATED,
+                                            payload: {
+                                                contentId: updateContentStateRequest.courseId
+                                            }
+                                        }
+                                    });
+                                }).mapTo(undefined);
                         } else {
                             return Observable.of(undefined);
                         }

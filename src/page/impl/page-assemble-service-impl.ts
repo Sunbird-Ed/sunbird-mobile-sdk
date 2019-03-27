@@ -3,21 +3,23 @@ import {PageAssemble} from '../def/page-assemble';
 import {Observable} from 'rxjs';
 import {PageAssemblerHandler} from '../handle/page-assembler-handler';
 import {ApiService} from '../../api';
-import {FileService} from '../../util/file/def/file-service';
-import {CachedItemStore} from '../../key-value-store';
+import {CachedItemStore, KeyValueStore} from '../../key-value-store';
+import { SharedPreferences } from '../../util/shared-preferences';
 
 export class PageAssembleServiceImpl implements PageAssembleService {
 
 
     constructor(private apiService: ApiService,
                 private pageAssembleServiceConfig: PageServiceConfig,
-                private fileService: FileService,
-                private cachedItemStore: CachedItemStore<PageAssemble>) {
+                private cachedItemStore: CachedItemStore<PageAssemble>,
+                private keyValueStore: KeyValueStore,
+                private sharedPreferences: SharedPreferences
+                ) {
     }
 
     getPageAssemble(criteria: PageAssembleCriteria): Observable<PageAssemble> {
         return new PageAssemblerHandler(this.apiService, this.pageAssembleServiceConfig,
-            this.fileService, this.cachedItemStore).handle(criteria);
+            this.cachedItemStore, this.keyValueStore, this.sharedPreferences).handle(criteria);
     }
 
 }

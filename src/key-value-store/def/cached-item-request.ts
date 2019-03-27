@@ -4,5 +4,5 @@ export enum CachedItemRequestSourceFrom {
 }
 
 export interface CachedItemRequest {
-    from: CachedItemRequestSourceFrom;
+    from?: CachedItemRequestSourceFrom;
 }
