@@ -415,7 +415,7 @@ export namespace SunbirdTelemetry {
         private static readonly EID = 'AUDIT';
 
         constructor(env: string,
-                    actorType: string,
+                    actor: Actor,
                     currentState: AuditState,
                     updatedProperties: string[] | undefined,
                     objId: string = '',
@@ -430,8 +430,6 @@ export namespace SunbirdTelemetry {
             this.context.env = env;
             this.object = new TelemetryObject(objId, objType, objVer);
             this.object.rollup = {};
-            const actor: Actor = new Actor();
-            actor.type = actorType;
             this.actor = actor;
         }
     }

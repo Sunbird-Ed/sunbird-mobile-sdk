@@ -1,9 +1,9 @@
 import {Environment, InteractType, LogLevel, LogType, PageId, ShareItemType} from './telemetry-constants';
-import {AuditState, CorrelationData, DeviceSpecification, Rollup, Visit} from './telemetry-model';
+import {Actor, AuditState, CorrelationData, DeviceSpecification, Rollup, Visit} from './telemetry-model';
 
 export interface TelemetryAuditRequest {
     env: string;
-    actorType: string;
+    actor: Actor;
     currentState: AuditState;
     updatedProperties?: string[];
     objId?: string;
