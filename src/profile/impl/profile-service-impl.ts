@@ -152,9 +152,17 @@ export class ProfileServiceImpl implements ProfileService {
             modelJson: ProfileDbEntryMapper.mapProfileToProfileDBEntry(profile)
         }).do(async () => {
             await this.getActiveProfileSession()
-                .mergeMap((session: ProfileSession) => {
+                .map((session) => session.uid)
+                .catch((e) => {
+                    if (e instanceof NoProfileFoundError) {
+                        return Observable.of(profile.uid);
+                    }
+
+                    return Observable.throw(e);
+                })
+                .mergeMap((uid) => {
                     const actor = new Actor();
-                    actor.id = session.uid;
+                    actor.id = uid;
                     actor.type = Actor.TYPE_SYSTEM;
 
                     const auditRequest: TelemetryAuditRequest = {
