@@ -9,6 +9,8 @@ import {
     NoActiveSessionError,
     NoProfileFoundError,
     Profile,
+    ProfileExportRequest,
+    ProfileExportResponse,
     ProfileService,
     ProfileServiceConfig,
     ProfileSession,
@@ -29,7 +31,7 @@ import {ApiService, Response} from '../../api';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
-import {CachedItemStore, KeyValueStore} from '../../key-value-store';
+import {CachedItemRequest, CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {ProfileDbEntryMapper} from '../util/profile-db-entry-mapper';
 import {ContentAccessFilterCriteria} from '../def/content-access-filter-criteria';
 import {AcceptTermConditionHandler} from '../handler/accept-term-condition-handler';
@@ -48,8 +50,6 @@ import {FrameworkService} from '../../framework';
 import {ContentUtil} from '../../content/util/content-util';
 import {ProfileKeys} from '../../preference-keys';
 import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
-import {ProfileExportRequest} from '../def/profile-export-request';
-import {ProfileExportResponse} from '../def/profile-export-response';
 import {ProfileImportRequest} from '../def/profile-import-request';
 import {ProfileImportResponse} from '../def/profile-import-response';
 import {ExportProfileContext} from '../def/export-profile-context';
@@ -69,10 +69,13 @@ import {TransportGroupProfile} from '../handler/import/transport-group-profile';
 import {TransportFrameworkNChannel} from '../handler/import/transport-framework-n-channel';
 import {TransportAssesments} from '../handler/import/transport-assesments';
 import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-profile-metadata';
-import {CachedItemRequest, CachedItemRequestSourceFrom} from '../../key-value-store/def/cached-item-request';
+import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} from '../../telemetry';
+import {ProfileTelemetryUtil} from '../util/profile-telemetry-util';
+import {SunbirdSdk} from '../../sdk';
 
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
+    private telemetryService: TelemetryService;
 
     constructor(private profileServiceConfig: ProfileServiceConfig,
                 private dbService: DbService,
@@ -82,7 +85,8 @@ export class ProfileServiceImpl implements ProfileService {
                 private sharedPreferences: SharedPreferences,
                 private frameworkService: FrameworkService,
                 private fileService: FileService,
-                private  deviceInfo: DeviceInfo) {
+                private deviceInfo: DeviceInfo) {
+        this.telemetryService = SunbirdSdk.instance.telemetryService;
     }
 
     onInit(): Observable<undefined> {
@@ -146,6 +150,24 @@ export class ProfileServiceImpl implements ProfileService {
         return this.dbService.insert({
             table: ProfileEntry.TABLE_NAME,
             modelJson: ProfileDbEntryMapper.mapProfileToProfileDBEntry(profile)
+        }).do(async () => {
+            await this.getActiveProfileSession()
+                .mergeMap((session: ProfileSession) => {
+                    const actor = new Actor();
+                    actor.id = session.uid;
+                    actor.type = Actor.TYPE_SYSTEM;
+
+                    const auditRequest: TelemetryAuditRequest = {
+                        env: 'sdk',
+                        actor,
+                        currentState: AuditState.AUDIT_CREATED,
+                        updatedProperties: ProfileTelemetryUtil.getTruthyProps(profile),
+                        objId: profile.uid,
+                        objType: ObjectType.USER
+                    };
+
+                    return this.telemetryService.audit(auditRequest);
+                }).toPromise();
         }).mergeMap(() => Observable.of(profile));
     }
 
@@ -154,19 +176,66 @@ export class ProfileServiceImpl implements ProfileService {
             table: ProfileEntry.TABLE_NAME,
             selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
             selectionArgs: [uid]
+        }).do(async () => {
+            await this.getActiveProfileSession()
+                .mergeMap((session: ProfileSession) => {
+                    const actor = new Actor();
+                    actor.id = session.uid;
+                    actor.type = Actor.TYPE_SYSTEM;
+
+                    const auditRequest: TelemetryAuditRequest = {
+                        env: 'sdk',
+                        actor,
+                        currentState: AuditState.AUDIT_DELETED,
+                        objId: uid,
+                        objType: ObjectType.USER
+                    };
+
+                    return this.telemetryService.audit(auditRequest);
+                }).toPromise();
         });
     }
 
     updateProfile(profile: Profile): Observable<Profile> {
-        const profileDBEntry = ProfileDbEntryMapper.mapProfileToProfileDBEntry(profile);
-        delete profileDBEntry[ProfileEntry.COLUMN_NAME_CREATED_AT];
-
-        return this.dbService.update({
+        return this.dbService.read({
             table: ProfileEntry.TABLE_NAME,
             selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
             selectionArgs: [profile.uid],
-            modelJson: profileDBEntry
-        }).mergeMap(() => Observable.of(profile));
+        }).map((rows) => {
+            if (!rows || !rows[0]) {
+                return Observable.throw(new NoProfileFoundError(`No Profile found with ID ${profile.uid}`));
+            }
+
+            return rows[0];
+        }).do(async (prevProfile) => {
+            await this.getActiveProfileSession()
+                .mergeMap((session: ProfileSession) => {
+                    const actor = new Actor();
+                    actor.id = session.uid;
+                    actor.type = Actor.TYPE_SYSTEM;
+
+                    const auditRequest: TelemetryAuditRequest = {
+                        env: 'sdk',
+                        actor,
+                        currentState: AuditState.AUDIT_UPDATED,
+                        updatedProperties: ProfileTelemetryUtil.getPropDiff(profile, prevProfile),
+                        objId: profile.uid,
+                        objType: ObjectType.USER
+                    };
+
+                    return this.telemetryService.audit(auditRequest);
+                }).toPromise();
+        }).mergeMap(() => {
+            const profileDBEntry = ProfileDbEntryMapper.mapProfileToProfileDBEntry(profile);
+            delete profileDBEntry[ProfileEntry.COLUMN_NAME_CREATED_AT];
+
+            return this.dbService.update({
+                table: ProfileEntry.TABLE_NAME,
+                selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
+                selectionArgs: [profile.uid],
+                modelJson: profileDBEntry
+            }).mergeMap(() => Observable.of(profile));
+        });
     }
 
     updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<Profile> {
