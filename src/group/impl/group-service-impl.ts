@@ -13,13 +13,16 @@ import {
 import {GroupMapper} from '../util/group-mapper';
 import {UniqueId} from '../../db/util/unique-id';
 import {KeyValueStore} from '../../key-value-store';
-import {ProfileService} from '../../profile';
+import {ProfileService, ProfileSession} from '../../profile';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {GroupKeys} from '../../preference-keys';
+import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} from '../../telemetry';
+import {ObjectUtil} from '../../util/object-util';
 
 
 export class GroupServiceImpl implements GroupService {
     private static readonly KEY_GROUP_SESSION = GroupKeys.KEY_GROUP_SESSION;
+    private telemetryService: TelemetryService;
 
     constructor(private dbService: DbService,
                 private profileService: ProfileService,
@@ -27,15 +30,38 @@ export class GroupServiceImpl implements GroupService {
                 private sharedPreferences: SharedPreferences) {
     }
 
+    public registerTelemetryService(telemetryService: TelemetryService) {
+        this.telemetryService = telemetryService;
+    }
+
     createGroup(group: Group): Observable<Group> {
         group.gid = UniqueId.generateUniqueId();
         group.createdAt = Date.now();
         group.updatedAt = Date.now();
-        this.dbService.insert({
+
+        return this.dbService.insert({
             table: GroupEntry.TABLE_NAME,
             modelJson: GroupMapper.mapGroupToGroupDBEntry(group)
-        });
-        return Observable.of(group);
+        }).do(async () => {
+            await this.profileService.getActiveProfileSession()
+                .map((session) => session.uid)
+                .mergeMap((uid) => {
+                    const actor = new Actor();
+                    actor.id = uid;
+                    actor.type = Actor.TYPE_SYSTEM;
+
+                    const auditRequest: TelemetryAuditRequest = {
+                        env: 'sdk',
+                        actor,
+                        currentState: AuditState.AUDIT_CREATED,
+                        updatedProperties: ObjectUtil.getTruthyProps(group),
+                        objId: group.gid,
+                        objType: ObjectType.GROUP
+                    };
+
+                    return this.telemetryService.audit(auditRequest);
+                }).toPromise();
+        }).map(() => group);
     }
 
     deleteGroup(gid: string): Observable<undefined> {
@@ -56,6 +82,23 @@ export class GroupServiceImpl implements GroupService {
                 ).mapTo(undefined);
             }).do(() => {
                 this.dbService.endTransaction(true);
+            }).do(async () => {
+                await this.profileService.getActiveProfileSession()
+                    .mergeMap((session: ProfileSession) => {
+                        const actor = new Actor();
+                        actor.id = session.uid;
+                        actor.type = Actor.TYPE_SYSTEM;
+
+                        const auditRequest: TelemetryAuditRequest = {
+                            env: 'sdk',
+                            actor,
+                            currentState: AuditState.AUDIT_DELETED,
+                            objId: gid,
+                            objType: ObjectType.GROUP
+                        };
+
+                        return this.telemetryService.audit(auditRequest);
+                    }).toPromise();
             }).catch((e) => {
                 this.dbService.endTransaction(false);
                 return Observable.throw(e);
@@ -63,19 +106,48 @@ export class GroupServiceImpl implements GroupService {
     }
 
     updateGroup(group: Group): Observable<Group> {
-        this.dbService.update({
+        return this.dbService.read({
             table: GroupEntry.TABLE_NAME,
             selection: 'gid = ?',
             selectionArgs: [group.gid],
-            modelJson: {
-                [GroupEntry.COLUMN_NAME_NAME]: group.name,
-                [GroupEntry.COLUMN_NAME_SYLLABUS]: group.syllabus.join(','),
-                [GroupEntry.COLUMN_NAME_UPDATED_AT]: Date.now(),
-                [GroupEntry.COLUMN_NAME_GRADE]: group.grade.join(','),
-                [GroupEntry.COLUMN_NAME_GRADE_VALUE]: JSON.stringify(group.gradeValue)
+        }).map((rows) => {
+            if (!rows || !rows[0]) {
+                return Observable.throw(new NoGroupFoundError(`No Group found with ID ${group.gid}`));
             }
+
+            return GroupMapper.mapGroupDBEntryToGroup(rows[0]);
+        }).do(async (prevGroup) => {
+            await this.profileService.getActiveProfileSession()
+                .mergeMap((session: ProfileSession) => {
+                    const actor = new Actor();
+                    actor.id = session.uid;
+                    actor.type = Actor.TYPE_SYSTEM;
+
+                    const auditRequest: TelemetryAuditRequest = {
+                        env: 'sdk',
+                        actor,
+                        currentState: AuditState.AUDIT_UPDATED,
+                        updatedProperties: ObjectUtil.getPropDiff(group, prevGroup),
+                        objId: group.gid,
+                        objType: ObjectType.GROUP
+                    };
+
+                    return this.telemetryService.audit(auditRequest);
+                }).toPromise();
+        }).mergeMap(() => {
+            return this.dbService.update({
+                table: GroupEntry.TABLE_NAME,
+                selection: 'gid = ?',
+                selectionArgs: [group.gid],
+                modelJson: {
+                    [GroupEntry.COLUMN_NAME_NAME]: group.name,
+                    [GroupEntry.COLUMN_NAME_SYLLABUS]: group.syllabus.join(','),
+                    [GroupEntry.COLUMN_NAME_UPDATED_AT]: Date.now(),
+                    [GroupEntry.COLUMN_NAME_GRADE]: group.grade.join(','),
+                    [GroupEntry.COLUMN_NAME_GRADE_VALUE]: JSON.stringify(group.gradeValue)
+                }
+            }).mapTo(group);
         });
-        return Observable.of(group);
     }
 
     getActiveSessionGroup(): Observable<Group> {

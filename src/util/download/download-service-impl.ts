@@ -214,7 +214,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     payload: {
                         downloadId: downloadRequest.downloadId,
                         identifier: downloadRequest.identifier,
-                        progress: entry.totalSizeBytes >= 0 ? (entry.bytesDownloadedSoFar / entry.totalSizeBytes) * 100 : -1,
+                        progress: Math.round(entry.totalSizeBytes >= 0 ? (entry.bytesDownloadedSoFar / entry.totalSizeBytes) * 100 : -1),
                         status: entry.status
                     }
                 } as DownloadProgress);

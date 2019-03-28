@@ -70,8 +70,7 @@ import {TransportFrameworkNChannel} from '../handler/import/transport-framework-
 import {TransportAssesments} from '../handler/import/transport-assesments';
 import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-profile-metadata';
 import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} from '../../telemetry';
-import {ProfileTelemetryUtil} from '../util/profile-telemetry-util';
-import {SunbirdSdk} from '../../sdk';
+import {ObjectUtil} from '../../util/object-util';
 
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
@@ -172,7 +171,7 @@ export class ProfileServiceImpl implements ProfileService {
                         env: 'sdk',
                         actor,
                         currentState: AuditState.AUDIT_CREATED,
-                        updatedProperties: ProfileTelemetryUtil.getTruthyProps(profile),
+                        updatedProperties: ObjectUtil.getTruthyProps(profile),
                         objId: profile.uid,
                         objType: ObjectType.USER
                     };
@@ -217,7 +216,7 @@ export class ProfileServiceImpl implements ProfileService {
                 return Observable.throw(new NoProfileFoundError(`No Profile found with ID ${profile.uid}`));
             }
 
-            return rows[0];
+            return ProfileDbEntryMapper.mapProfileDBEntryToProfile(rows[0]);
         }).do(async (prevProfile) => {
             await this.getActiveProfileSession()
                 .mergeMap((session: ProfileSession) => {
@@ -229,7 +228,7 @@ export class ProfileServiceImpl implements ProfileService {
                         env: 'sdk',
                         actor,
                         currentState: AuditState.AUDIT_UPDATED,
-                        updatedProperties: ProfileTelemetryUtil.getPropDiff(profile, prevProfile),
+                        updatedProperties: ObjectUtil.getPropDiff(profile, prevProfile),
                         objId: profile.uid,
                         objType: ObjectType.USER
                     };

@@ -5,15 +5,17 @@ import { SummarizerService } from '..';
 import { CourseService } from '../../course';
 import { SharedPreferences } from '../../util/shared-preferences';
 import Telemetry = SunbirdTelemetry.Telemetry;
+import { EventsBusService } from '../../events-bus';
 export declare class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private courseService;
     private sharedPreference;
     private summarizerService;
+    private eventBusService;
     private static readonly CONTENT_PLAYER_PID;
     private currentUID?;
     private currentContentID?;
     private courseContext;
-    constructor(courseService: CourseService, sharedPreference: SharedPreferences, summarizerService: SummarizerService);
+    constructor(courseService: CourseService, sharedPreference: SharedPreferences, summarizerService: SummarizerService, eventBusService: EventsBusService);
     private static checkPData;
     private static checkIsCourse;
     private setCourseContextEmpty;

@@ -1,4 +1,4 @@
-import { AcceptTermsConditionRequest, ContentAccess, GenerateOtpRequest, GetAllProfileRequest, IsProfileAlreadyInUseRequest, LocationSearchCriteria, Profile, ProfileService, ProfileServiceConfig, ProfileSession, ProfileSource, ServerProfile, ServerProfileDetailsRequest, ServerProfileSearchCriteria, UpdateServerProfileInfoRequest, VerifyOtpRequest } from '..';
+import { AcceptTermsConditionRequest, ContentAccess, GenerateOtpRequest, GetAllProfileRequest, IsProfileAlreadyInUseRequest, LocationSearchCriteria, Profile, ProfileExportRequest, ProfileExportResponse, ProfileService, ProfileServiceConfig, ProfileSession, ProfileSource, ServerProfile, ServerProfileDetailsRequest, ServerProfileSearchCriteria, UpdateServerProfileInfoRequest, VerifyOtpRequest } from '..';
 import { DbService } from '../../db';
 import { Observable } from 'rxjs';
 import { TenantInfo } from '../def/tenant-info';
@@ -9,13 +9,11 @@ import { ProfileExistsResponse } from '../def/profile-exists-response';
 import { LocationSearchResult } from '../def/location-search-result';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { FrameworkService } from '../../framework';
-import { ProfileExportRequest } from '../def/profile-export-request';
-import { ProfileExportResponse } from '../def/profile-export-response';
 import { ProfileImportRequest } from '../def/profile-import-request';
 import { ProfileImportResponse } from '../def/profile-import-response';
 import { FileService } from '../../util/file/def/file-service';
 import { DeviceInfo } from '../../util/device';
-import { CachedItemRequest } from '../../key-value-store/def/cached-item-request';
+import { TelemetryService } from '../../telemetry';
 export declare class ProfileServiceImpl implements ProfileService {
     private profileServiceConfig;
     private dbService;
@@ -27,7 +25,9 @@ export declare class ProfileServiceImpl implements ProfileService {
     private fileService;
     private deviceInfo;
     private static readonly KEY_USER_SESSION;
+    private telemetryService;
     constructor(profileServiceConfig: ProfileServiceConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences, frameworkService: FrameworkService, fileService: FileService, deviceInfo: DeviceInfo);
+    registerTelemetryService(telemetryService: TelemetryService): void;
     onInit(): Observable<undefined>;
     createProfile(profile: Profile, profileSource?: ProfileSource): Observable<Profile>;
     deleteProfile(uid: string): Observable<undefined>;
@@ -36,7 +36,7 @@ export declare class ProfileServiceImpl implements ProfileService {
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
     getTenantInfo(): Observable<TenantInfo>;
     getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]>;
-    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest, cachedItemRequest?: CachedItemRequest): Observable<ServerProfile>;
+    getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile>;
     getActiveSessionProfile({ requiredFields }: Pick<ServerProfileDetailsRequest, 'requiredFields'>): Observable<Profile>;
     setActiveSessionForProfile(profileUid: string): Observable<boolean>;
     getActiveProfileSession(): Observable<ProfileSession>;

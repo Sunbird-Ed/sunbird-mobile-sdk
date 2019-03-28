@@ -1,10 +1,11 @@
 import { TelemetryStat } from './telemetry-stat';
 import { TelemetrySyncStat } from './telemetry-sync-stat';
 import { Observable } from 'rxjs';
-import { TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryLogRequest, TelemetryShareRequest, TelemetryStartRequest } from './requests';
+import { TelemetryAuditRequest, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryLogRequest, TelemetryShareRequest, TelemetryStartRequest } from './requests';
 import { TelemetryExportResponse } from './response';
 export interface TelemetryService {
     saveTelemetry(request: string): Observable<boolean>;
+    audit(request: TelemetryAuditRequest): Observable<boolean>;
     start(request: TelemetryStartRequest): Observable<boolean>;
     interact(request: TelemetryInteractRequest): Observable<boolean>;
     impression(request: TelemetryImpressionRequest): Observable<boolean>;

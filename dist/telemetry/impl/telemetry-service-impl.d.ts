@@ -1,5 +1,5 @@
 import { DbService } from '../../db';
-import { TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryLogRequest, TelemetryService, TelemetryShareRequest, TelemetryStartRequest, TelemetryStat, TelemetrySyncStat } from '..';
+import { TelemetryAuditRequest, TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryLogRequest, TelemetryService, TelemetryShareRequest, TelemetryStartRequest, TelemetryStat, TelemetrySyncStat } from '..';
 import { Observable } from 'rxjs';
 import { ProfileService } from '../../profile';
 import { GroupService } from '../../group';
@@ -24,6 +24,7 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP;
     constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, telemetryConfig: TelemetryConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService);
     saveTelemetry(request: string): Observable<boolean>;
+    audit({ env, actor, currentState, updatedProperties, objId, objType, objVer }: TelemetryAuditRequest): Observable<boolean>;
     end({ type, mode, duration, pageId, summaryList, env, objId, objType, objVer, rollup, correlationData }: TelemetryEndRequest): Observable<boolean>;
     error({ errorCode, errorType, stacktrace, pageId }: TelemetryErrorRequest): Observable<boolean>;
     impression({ type, subType, pageId, visits, env, objId, objType, objVer, rollup, correlationData }: TelemetryImpressionRequest): Observable<boolean>;

@@ -3,5 +3,5 @@ export declare enum CachedItemRequestSourceFrom {
     CACHE = "cache"
 }
 export interface CachedItemRequest {
-    from: CachedItemRequestSourceFrom;
+    from?: CachedItemRequestSourceFrom;
 }

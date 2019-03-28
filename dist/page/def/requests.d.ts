@@ -1,3 +1,4 @@
+import { CachedItemRequest } from '../../key-value-store';
 export interface PageAssembleFilter {
     subject?: Array<string>;
     board?: Array<string>;
@@ -11,7 +12,7 @@ export interface PageAssembleFilter {
     ownership?: Array<string>;
     dialcodes?: string;
 }
-export interface PageAssembleCriteria {
+export interface PageAssembleCriteria extends CachedItemRequest {
     name: PageName;
     source?: 'app' | 'web';
     mode?: 'soft' | 'hard';
