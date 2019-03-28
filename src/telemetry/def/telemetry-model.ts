@@ -424,8 +424,8 @@ export namespace SunbirdTelemetry {
             super(Audit.EID);
 
             this.edata = {
-                ...{currentState},
-                ...(updatedProperties ? {updatedProperties} : {}),
+                ...{state: currentState},
+                ...(updatedProperties ? {props: updatedProperties} : {}),
             };
             this.context.env = env;
             this.object = new TelemetryObject(objId, objType, objVer);
