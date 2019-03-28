@@ -117,7 +117,7 @@ export class GroupServiceImpl implements GroupService {
                 [GroupEntry.COLUMN_NAME_GRADE]: group.grade.join(','),
                 [GroupEntry.COLUMN_NAME_GRADE_VALUE]: JSON.stringify(group.gradeValue)
             }
-        }).do(async (prevProfile) => {
+        }).do(async (prevGroup) => {
             await this.profileService.getActiveProfileSession()
                 .mergeMap((session: ProfileSession) => {
                     const actor = new Actor();
@@ -128,7 +128,7 @@ export class GroupServiceImpl implements GroupService {
                         env: 'sdk',
                         actor,
                         currentState: AuditState.AUDIT_UPDATED,
-                        updatedProperties: ObjectUtil.getPropDiff(group, prevProfile),
+                        updatedProperties: ObjectUtil.getPropDiff(group, prevGroup),
                         objId: group.gid,
                         objType: ObjectType.GROUP
                     };
