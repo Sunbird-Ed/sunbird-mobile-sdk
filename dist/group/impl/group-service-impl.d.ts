@@ -4,13 +4,16 @@ import { GetAllGroupRequest, Group, GroupService, GroupSession, ProfilesToGroupR
 import { KeyValueStore } from '../../key-value-store';
 import { ProfileService } from '../../profile';
 import { SharedPreferences } from '../../util/shared-preferences';
+import { TelemetryService } from '../../telemetry';
 export declare class GroupServiceImpl implements GroupService {
     private dbService;
     private profileService;
     private keyValueStore;
     private sharedPreferences;
     private static readonly KEY_GROUP_SESSION;
+    private telemetryService;
     constructor(dbService: DbService, profileService: ProfileService, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences);
+    registerTelemetryService(telemetryService: TelemetryService): void;
     createGroup(group: Group): Observable<Group>;
     deleteGroup(gid: string): Observable<undefined>;
     updateGroup(group: Group): Observable<Group>;
