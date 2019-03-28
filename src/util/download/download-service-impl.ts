@@ -185,7 +185,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         return Observable.defer(() => {
             return Observable.of(this.eventsBusService.emit({
                 namespace: EventNamespace.DOWNLOADS,
-                event: downloadProgress
+                event: Math.round(downloadProgress)
             })).mapTo(undefined);
         });
     }
