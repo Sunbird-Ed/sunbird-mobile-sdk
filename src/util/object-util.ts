@@ -41,9 +41,9 @@ export class ObjectUtil {
         return objectEquals(a, b);
     }
 
-    public static getPropDiff(prevProfile: {}, newProfile: {}): string[] {
-        return ObjectUtil.getTruthyProps(prevProfile).reduce<string[]>((acc: string[], key) => {
-            if (!ObjectUtil.equals(prevProfile[key], newProfile[key])) {
+    public static getPropDiff(newObj: {}, oldObj: {}): string[] {
+        return Object.keys(newObj).reduce<string[]>((acc: string[], key) => {
+            if (ObjectUtil.equals(newObj[key], oldObj[key])) {
                 return acc;
             }
 
@@ -52,7 +52,7 @@ export class ObjectUtil {
         }, []);
     }
 
-    public static getTruthyProps(profile: {}): string[] {
-        return Object.keys(profile).filter((key) => !!profile[key]);
+    public static getTruthyProps(obj: {}): string[] {
+        return Object.keys(obj).filter((key) => !!obj[key]);
     }
 }
