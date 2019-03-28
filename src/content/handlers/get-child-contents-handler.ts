@@ -169,7 +169,7 @@ export class ChildContentsHandler {
                     nextContentIdentifierList[idCount - 1]).toPromise();
                 if (nextContentInDb) {
                     nextContent = ContentMapper.mapContentDBEntryToContent(nextContentInDb);
-                    nextContent.hierarchyInfo = hierarchyInfoList;
+                    nextContent.hierarchyInfo = nextContentHierarchyList;
                     nextContent.rollup = ContentUtil.getContentRollup(nextContent.identifier, nextContent.hierarchyInfo);
                 }
             }
