@@ -106,17 +106,16 @@ export class GroupServiceImpl implements GroupService {
     }
 
     updateGroup(group: Group): Observable<Group> {
-        return this.dbService.update({
+        return this.dbService.read({
             table: GroupEntry.TABLE_NAME,
             selection: 'gid = ?',
             selectionArgs: [group.gid],
-            modelJson: {
-                [GroupEntry.COLUMN_NAME_NAME]: group.name,
-                [GroupEntry.COLUMN_NAME_SYLLABUS]: group.syllabus.join(','),
-                [GroupEntry.COLUMN_NAME_UPDATED_AT]: Date.now(),
-                [GroupEntry.COLUMN_NAME_GRADE]: group.grade.join(','),
-                [GroupEntry.COLUMN_NAME_GRADE_VALUE]: JSON.stringify(group.gradeValue)
+        }).map((rows) => {
+            if (!rows || !rows[0]) {
+                return Observable.throw(new NoGroupFoundError(`No Group found with ID ${group.gid}`));
             }
+
+            return GroupMapper.mapGroupDBEntryToGroup(rows[0]);
         }).do(async (prevGroup) => {
             await this.profileService.getActiveProfileSession()
                 .mergeMap((session: ProfileSession) => {
@@ -135,7 +134,20 @@ export class GroupServiceImpl implements GroupService {
 
                     return this.telemetryService.audit(auditRequest);
                 }).toPromise();
-        }).mapTo(group);
+        }).mergeMap(() => {
+            return this.dbService.update({
+                table: GroupEntry.TABLE_NAME,
+                selection: 'gid = ?',
+                selectionArgs: [group.gid],
+                modelJson: {
+                    [GroupEntry.COLUMN_NAME_NAME]: group.name,
+                    [GroupEntry.COLUMN_NAME_SYLLABUS]: group.syllabus.join(','),
+                    [GroupEntry.COLUMN_NAME_UPDATED_AT]: Date.now(),
+                    [GroupEntry.COLUMN_NAME_GRADE]: group.grade.join(','),
+                    [GroupEntry.COLUMN_NAME_GRADE_VALUE]: JSON.stringify(group.gradeValue)
+                }
+            }).mapTo(group);
+        });
     }
 
     getActiveSessionGroup(): Observable<Group> {

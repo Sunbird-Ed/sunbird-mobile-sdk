@@ -216,7 +216,7 @@ export class ProfileServiceImpl implements ProfileService {
                 return Observable.throw(new NoProfileFoundError(`No Profile found with ID ${profile.uid}`));
             }
 
-            return rows[0];
+            return ProfileDbEntryMapper.mapProfileDBEntryToProfile(rows[0]);
         }).do(async (prevProfile) => {
             await this.getActiveProfileSession()
                 .mergeMap((session: ProfileSession) => {
