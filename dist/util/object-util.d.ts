@@ -1,5 +1,5 @@
 export declare class ObjectUtil {
     static equals(a: any, b: any): boolean;
-    static getPropDiff(prevProfile: {}, newProfile: {}): string[];
-    static getTruthyProps(profile: {}): string[];
+    static getPropDiff(newObj: {}, oldObj: {}): string[];
+    static getTruthyProps(obj: {}): string[];
 }
