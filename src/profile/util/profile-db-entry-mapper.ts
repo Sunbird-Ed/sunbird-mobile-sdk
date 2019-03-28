@@ -7,12 +7,12 @@ export class ProfileDbEntryMapper {
             uid: profileEntry[ProfileEntry.COLUMN_NAME_UID],
             handle: profileEntry[ProfileEntry.COLUMN_NAME_HANDLE],
             createdAt: profileEntry[ProfileEntry.COLUMN_NAME_CREATED_AT],
-            medium: profileEntry[ProfileEntry.COLUMN_NAME_MEDIUM].split(','),
-            board: profileEntry[ProfileEntry.COLUMN_NAME_BOARD].split(','),
-            subject: profileEntry[ProfileEntry.COLUMN_NAME_SUBJECT].split(','),
+            medium: profileEntry[ProfileEntry.COLUMN_NAME_MEDIUM] ? profileEntry[ProfileEntry.COLUMN_NAME_MEDIUM].split(',') : [],
+            board: profileEntry[ProfileEntry.COLUMN_NAME_BOARD] ? profileEntry[ProfileEntry.COLUMN_NAME_BOARD].split(',') : [],
+            subject: profileEntry[ProfileEntry.COLUMN_NAME_SUBJECT] ? profileEntry[ProfileEntry.COLUMN_NAME_SUBJECT].split(',') : [],
             profileType: profileEntry[ProfileEntry.COLUMN_NAME_PROFILE_TYPE] as ProfileType,
-            grade: profileEntry[ProfileEntry.COLUMN_NAME_GRADE].split(','),
-            syllabus: profileEntry[ProfileEntry.COLUMN_NAME_SYLLABUS].split(','),
+            grade: profileEntry[ProfileEntry.COLUMN_NAME_GRADE] ? profileEntry[ProfileEntry.COLUMN_NAME_GRADE].split(',') : [],
+            syllabus: profileEntry[ProfileEntry.COLUMN_NAME_SYLLABUS] ? profileEntry[ProfileEntry.COLUMN_NAME_SYLLABUS].split(',') : [],
             source: profileEntry[ProfileEntry.COLUMN_NAME_SOURCE] as ProfileSource,
             gradeValue: profileEntry[ProfileEntry.COLUMN_NAME_GRADE_VALUE] && JSON.parse(profileEntry[ProfileEntry.COLUMN_NAME_GRADE_VALUE])
         };
