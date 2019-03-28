@@ -16,15 +16,21 @@ import {KeyValueStore} from '../../key-value-store';
 import {ProfileService} from '../../profile';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {GroupKeys} from '../../preference-keys';
+import {TelemetryService} from '../../telemetry';
 
 
 export class GroupServiceImpl implements GroupService {
     private static readonly KEY_GROUP_SESSION = GroupKeys.KEY_GROUP_SESSION;
+    private telemetryService: TelemetryService;
 
     constructor(private dbService: DbService,
                 private profileService: ProfileService,
                 private keyValueStore: KeyValueStore,
                 private sharedPreferences: SharedPreferences) {
+    }
+
+    public registerTelemetryService(telemetryService: TelemetryService) {
+        this.telemetryService = telemetryService;
     }
 
     createGroup(group: Group): Observable<Group> {

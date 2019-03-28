@@ -287,6 +287,7 @@ export class SunbirdSdk {
         );
 
         this._profileService.registerTelemetryService(this._telemetryService);
+        this._groupService.registerTelemetryService(this._telemetryService);
 
         this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService, this._telemetryService);
 
