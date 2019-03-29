@@ -164,7 +164,9 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.deviceInfo
         );
         return Observable.fromPromise(
-            telemetrySyncHandler.processEventsBatch().toPromise().then(() => {
+            telemetrySyncHandler.processEventsBatch().expand((processedEventsCount: number) =>
+                processedEventsCount ? telemetrySyncHandler.processEventsBatch() : Observable.empty()
+            ).toPromise().then(() => {
                 return new CreateTelemetryExportFile(this.fileService, this.deviceInfo).execute(exportTelemetryContext);
             }).then((exportResponse: Response) => {
                 const res: TelemetryExportResponse = {exportedFilePath: 'yep'};
