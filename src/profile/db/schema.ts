@@ -6,15 +6,26 @@ export namespace ProfileEntry {
     export const TABLE_NAME = 'profiles';
     export const COLUMN_NAME_UID = 'uid';
     export const COLUMN_NAME_HANDLE = 'handle';
+    export const COLUMN_NAME_AVATAR = 'avatar';
+    export const COLUMN_NAME_AGE = 'age';
+    export const COLUMN_NAME_GENDER = 'gender';
+    export const COLUMN_NAME_STANDARD = 'standard';
+    export const COLUMN_NAME_LANGUAGE = 'language';
+    export const COLUMN_NAME_DAY = 'day';
+    export const COLUMN_NAME_MONTH = 'month';
+    export const COLUMN_NAME_IS_GROUP_USER = 'is_group_user';
     export const COLUMN_NAME_CREATED_AT = 'created_at';
     export const COLUMN_NAME_MEDIUM = 'medium';
     export const COLUMN_NAME_BOARD = 'board';
+    export const COLUMN_NAME_PROFILE_IMAGE = 'profile_image';
     export const COLUMN_NAME_SUBJECT = 'subject';
     export const COLUMN_NAME_PROFILE_TYPE = 'profile_type'; // default TEACHER
     export const COLUMN_NAME_GRADE = 'grade';
     export const COLUMN_NAME_SYLLABUS = 'syllabus';
     export const COLUMN_NAME_SOURCE = 'source';
     export const COLUMN_NAME_GRADE_VALUE = 'grade_value';
+    export const COLUMN_VALUE = 'value';
+
 
     export interface SchemaMap {
         [COLUMN_NAME_UID]: string;
@@ -35,18 +46,27 @@ export namespace ProfileEntry {
             ProfileEntry._ID + DbConstants.SPACE + 'INTEGER PRIMARY KEY,' +
             COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' UNIQUE NOT NULL' + DbConstants.COMMA_SEP +
             COLUMN_NAME_HANDLE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_AVATAR + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_AGE + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_GENDER + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_STANDARD + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_LANGUAGE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_DAY + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT -1' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_MONTH + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT -1' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_IS_GROUP_USER + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT 0' + DbConstants.COMMA_SEP +
             COLUMN_NAME_CREATED_AT + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_MEDIUM + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_BOARD + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_SUBJECT + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_PROFILE_IMAGE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_PROFILE_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT "teacher"' + DbConstants.COMMA_SEP +
             COLUMN_NAME_GRADE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_SYLLABUS + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_SOURCE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_VALUE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT ""' + DbConstants.COMMA_SEP +
             COLUMN_NAME_GRADE_VALUE + DbConstants.SPACE + DbConstants.TEXT_TYPE +
             ')';
-    };
-    export const deleteTable: (() => string) = () => {
+    };    export const deleteTable: (() => string) = () => {
         return 'DROP TABLE IF EXISTS ' + ProfileEntry.TABLE_NAME;
 
     };
@@ -86,6 +106,7 @@ export namespace GroupProfileEntry {
     export const _ID = '_id';
     export const COLUMN_NAME_UID = 'uid';
     export const COLUMN_NAME_GID = 'gid';
+    export const COLUMN_NAME_EPOCH_TIMESTAMP = 'epoch_timestamp';
 
     export interface SchemaMap {
         [COLUMN_NAME_UID]: string;
@@ -95,8 +116,11 @@ export namespace GroupProfileEntry {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + GroupProfileEntry.TABLE_NAME + ' (' +
             GroupProfileEntry._ID + ' INTEGER PRIMARY KEY' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_GID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_GID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' )';
+            COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            'UNIQUE (' + COLUMN_NAME_GID + DbConstants.COMMA_SEP + COLUMN_NAME_UID + ') ON CONFLICT REPLACE' +
+            ')';
     };
     export const deleteTable: (() => string) = () => {
         return 'DROP TABLE IF EXISTS' + GroupProfileEntry.TABLE_NAME;

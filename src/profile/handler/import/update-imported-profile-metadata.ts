@@ -16,11 +16,11 @@ export class UpdateImportedProfileMetadata {
         const importMetaDataModel: ImportedMetadataEntry.SchemaMap = {
             imported_id: importId,
             device_id: did,
-            count: importContext.metadata!['events_count']
+            count: importContext.metadata!['profiles_count']
         };
         return this.dbService.read({
             table: ImportedMetadataEntry.TABLE_NAME,
-            selection: `${ImportedMetadataEntry.COLUMN_NAME_IMPORTED_ID} =? AND ${ImportedMetadataEntry.COLUMN_NAME_DEVICE_ID}`,
+            selection: `${ImportedMetadataEntry.COLUMN_NAME_IMPORTED_ID} =? AND ${ImportedMetadataEntry.COLUMN_NAME_DEVICE_ID} = ?`,
             selectionArgs: [importId, did],
             limit: '1'
         }).toPromise().then((results: ImportedMetadataEntry.SchemaMap[]) => {

@@ -504,19 +504,14 @@ export class ProfileServiceImpl implements ProfileService {
             new ValidateProfileMetadata(this.dbService).execute(importProfileContext).then((importResponse: Response) => {
                 return new TransportUser(this.dbService).execute(importResponse.body);
             }).then((importResponse: Response) => {
-                const response: ProfileExportResponse = {exportedFilePath: ''};
                 return new TransportGroup(this.dbService).execute(importResponse.body);
             }).then((importResponse: Response) => {
-                const response: ProfileExportResponse = {exportedFilePath: ''};
                 return new TransportGroupProfile(this.dbService).execute(importResponse.body);
             }).then((importResponse: Response) => {
-                const response: ProfileExportResponse = {exportedFilePath: ''};
                 return new TransportFrameworkNChannel(this.dbService).execute(importResponse.body);
             }).then((importResponse: Response) => {
-                const response: ProfileExportResponse = {exportedFilePath: ''};
                 return new TransportAssesments(this.dbService).execute(importResponse.body);
             }).then((importResponse: Response) => {
-                const response: ProfileExportResponse = {exportedFilePath: ''};
                 return new UpdateImportedProfileMetadata(this.dbService).execute(importResponse.body);
             }).then((importResponse: Response) => {
                 return new GenerateProfileImportTelemetry(this.dbService).execute(importResponse.body);

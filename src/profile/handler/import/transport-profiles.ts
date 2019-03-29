@@ -33,16 +33,19 @@ export class TransportProfiles {
             }).toPromise();
             if (!existingProfile || !existingProfile.length) {
                 if (!profile[ProfileEntry.COLUMN_NAME_CREATED_AT]) {
-                    profile[ProfileEntry.COLUMN_NAME_CREATED_AT] = Date.now();
+                    profile[ProfileEntry.COLUMN_NAME_CREATED_AT] = new Date().getTime();
                 }
+                delete profile[ProfileEntry._ID];
                 await this.dbService.insert({
                     table: ProfileEntry.TABLE_NAME,
                     modelJson: profile
                 });
                 imported++;
+                importContext.imported = imported;
 
             } else {
                 failed++;
+                importContext.failed = failed;
             }
 
         });

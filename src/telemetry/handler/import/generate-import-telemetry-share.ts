@@ -12,7 +12,7 @@ import {Response} from '../../../api';
 import {DbService} from '../../../db';
 import {ImportedMetadataEntry} from '../../../profile/db/schema';
 
-export class GenerateShareTelemetry {
+export class GenerateImportTelemetryShare {
     constructor(private dbService: DbService,
                 private telemetryService: TelemetryService) {
     }

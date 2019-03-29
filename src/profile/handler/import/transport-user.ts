@@ -22,6 +22,7 @@ export class TransportUser {
 
     private async saveUsersToDb(importContext: ImportProfileContext, users: UserEntry.SchemaMap[]) {
         users.forEach(async (user: UserEntry.SchemaMap) => {
+            delete user[UserEntry._ID];
             const existingUser: UserEntry.SchemaMap[] = await this.dbService.read({
                 table: ProfileEntry.TABLE_NAME,
                 selection: `${UserEntry.COLUMN_NAME_UID} = ?`,

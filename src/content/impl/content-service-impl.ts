@@ -315,7 +315,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     }
 
-    importEcar(ecarImportRequest: EcarImportRequest): Observable<Response> {
+    importEcar(ecarImportRequest: EcarImportRequest): Observable<ContentImportResponse[]> {
 
         return Observable.fromPromise(this.fileService.exists(ecarImportRequest.sourceFilePath).then((entry: Entry) => {
             const importContentContext: ImportContentContext = {
@@ -360,13 +360,11 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             }
                         }
                     });
-                    return response;
+                    return importResponse.body.contentImportResponseList;
                 });
         }).catch((error) => {
             console.log('error', error);
-            const response: Response = new Response();
-            response.errorMesg = ContentErrorCode.ECAR_NOT_FOUND.valueOf();
-            return response;
+            return [{identifier: '', status: ContentImportStatus.NOT_FOUND}];
         }));
     }
 

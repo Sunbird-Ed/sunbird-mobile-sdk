@@ -23,18 +23,20 @@ export class ValidateTelemetryMetadata {
                 response.errorMesg = ErrorCode.IMPORT_FAILED.valueOf();
                 throw response;
             }
-            const result = results[0];
-            importContext.metadata = result;
-            const importTypes: string[] = this.getImportTypes(results[0]);
+            const metaData: { [key: string]: any } = {};
+            results.forEach((result) => {
+                metaData[result['key']] = result['value'];
+            });
+            importContext.metadata = metaData;
+            const importTypes: string[] = this.getImportTypes(metaData);
             if (importTypes && ArrayUtil.contains(importTypes, 'telemetry')) {
-                const importId = result['export_id'];
-                const did = result['did'];
+                const importId = metaData['export_id'];
+                const did = metaData['did'];
                 return this.dbService.read({
                     table: ImportedMetadataEntry.TABLE_NAME,
                     selection: `${ImportedMetadataEntry.COLUMN_NAME_IMPORTED_ID} = ?
                     AND ${ImportedMetadataEntry.COLUMN_NAME_DEVICE_ID} = ?`,
-                    selectionArgs: [importId, did],
-                    useExternalDb: true
+                    selectionArgs: [importId, did]
                 }).toPromise();
             } else {
                 response.errorMesg = ErrorCode.IMPORT_FAILED.valueOf();
@@ -50,7 +52,7 @@ export class ValidateTelemetryMetadata {
         });
     }
 
-    private getImportTypes(result: MetaEntry.SchemaMap): string[] {
+    private getImportTypes(result): string[] {
         let importTypes: string[] = [];
         if (result.hasOwnProperty('types')) {
             importTypes = result['types'];

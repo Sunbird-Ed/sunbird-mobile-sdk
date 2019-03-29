@@ -39,6 +39,9 @@ import {CleanCurrentDatabase} from '../handler/export/clean-current-database';
 import {GenerateShareTelemetry} from '../handler/export/generate-share-telemetry';
 import {ValidateTelemetryMetadata} from '../handler/import/validate-telemetry-metadata';
 import {TelemetryEventType} from '../def/telemetry-event';
+import {TransportProcessedTelemetry} from '../handler/import/transport-processed-telemetry';
+import {UpdateImportedTelemetryMetadata} from '../handler/import/update-imported-telemetry-metadata';
+import {GenerateImportTelemetryShare} from '../handler/import/generate-import-telemetry-share';
 
 export class TelemetryServiceImpl implements TelemetryService {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
@@ -136,11 +139,21 @@ export class TelemetryServiceImpl implements TelemetryService {
         const importTelemetryContext: ImportTelemetryContext = {
             sourceDBFilePath: importTelemetryRequest.sourceFilePath
         };
-        Observable.fromPromise(
-            new ValidateTelemetryMetadata(this.dbService).execute(importTelemetryContext).then(() => {
+        return Observable.fromPromise(
+            new ValidateTelemetryMetadata(this.dbService).execute(importTelemetryContext).then((importResponse: Response) => {
+                return new TransportProcessedTelemetry(this.dbService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                return new UpdateImportedTelemetryMetadata(this.dbService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                return new UpdateImportedTelemetryMetadata(this.dbService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                return new GenerateImportTelemetryShare(this.dbService, this).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                return true;
+            }).catch(() => {
+                return false;
             })
         );
-        throw new Error('Method not implemented.');
     }
 
     exportTelemetry(telemetryExportRequest: TelemetryExportRequest): Observable<TelemetryExportResponse> {
@@ -160,8 +173,6 @@ export class TelemetryServiceImpl implements TelemetryService {
                 return new CreateMetaData(this.dbService, this.fileService, this.deviceInfo).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
                 return new CleanupExportedFile(this.dbService, this.fileService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new CleanCurrentDatabase(this.dbService).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
                 return new CleanCurrentDatabase(this.dbService).execute(exportResponse.body);
             }).then((exportResponse: Response) => {

@@ -6,6 +6,7 @@ export namespace GroupProfileEntry {
     export const _ID = '_id';
     export const COLUMN_NAME_UID = 'uid';
     export const COLUMN_NAME_GID = 'gid';
+    export const COLUMN_NAME_EPOCH_TIMESTAMP = 'epoch_timestamp';
 
     export interface SchemaMap {
         [COLUMN_NAME_UID]: string;
@@ -15,8 +16,11 @@ export namespace GroupProfileEntry {
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + GroupProfileEntry.TABLE_NAME + ' (' +
             GroupProfileEntry._ID + ' INTEGER PRIMARY KEY' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_GID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_GID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' )';
+            COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            'UNIQUE (' + COLUMN_NAME_GID + DbConstants.COMMA_SEP + COLUMN_NAME_UID + ') ON CONFLICT REPLACE' +
+            ')';
     };
     export const deleteTable: (() => string) = () => {
         return 'DROP TABLE IF EXISTS' + GroupProfileEntry.TABLE_NAME;

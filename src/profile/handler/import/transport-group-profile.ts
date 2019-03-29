@@ -24,6 +24,7 @@ export class TransportGroupProfile {
 
     private async saveGroupProfilesToDb(importContext: ImportProfileContext, groupProfiles: GroupProfileEntry.SchemaMap[]) {
         groupProfiles.forEach(async (groupProfile: GroupProfileEntry.SchemaMap) => {
+            delete groupProfile[GroupProfileEntry._ID];
             const existingGroupProfile: GroupProfileEntry.SchemaMap[] = await this.dbService.read({
                 table: GroupProfileEntry.TABLE_NAME,
                 selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ? AND ${GroupProfileEntry.COLUMN_NAME_UID} = ?`,

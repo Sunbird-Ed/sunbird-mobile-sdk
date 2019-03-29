@@ -42,7 +42,7 @@ export interface ContentService extends DownloadCompleteDelegate {
 
     getRelevantContent(relevantContentRequest: RelevantContentRequest): Observable<RelevantContentResponsePlayer>;
 
-    importEcar(ecarImportRequest: EcarImportRequest): Observable<Response>;
+    importEcar(ecarImportRequest: EcarImportRequest): Observable<ContentImportResponse[]>;
 
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]>;
 

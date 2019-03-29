@@ -35,9 +35,10 @@ export class CreateMetaData {
         metaData['types'] = ['telemetry'];
         metaData['did'] = this.deviceInfo.getDeviceID();
         metaData['export_id'] = UniqueId.generateUniqueId();
-        const query = `SELECT sum(${TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS}) from ${TelemetryProcessedEntry.TABLE_NAME}`;
+        const query = `SELECT sum(${TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS})  AS count
+                       FROM ${TelemetryProcessedEntry.TABLE_NAME}`;
         const result: any[] = await this.dbService.execute(query).toPromise();
-        metaData['events_count'] = result.length;
+        metaData['events_count'] = result[0]['count'];
         return metaData;
 
     }

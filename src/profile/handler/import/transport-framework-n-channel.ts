@@ -25,6 +25,7 @@ export class TransportFrameworkNChannel {
 
     private async saveNoSqlEntryToDb(keyValueStoreEntriesInExternalDb: KeyValueStoreEntry.SchemaMap[]) {
         keyValueStoreEntriesInExternalDb.forEach(async (keyValueStoreEntryInExternalDb: KeyValueStoreEntry.SchemaMap) => {
+            delete keyValueStoreEntryInExternalDb[KeyValueStoreEntry._ID];
             const existingKeyvalueStore: GroupProfileEntry.SchemaMap[] = await this.dbService.read({
                 table: KeyValueStoreEntry.TABLE_NAME,
                 selection: `${KeyValueStoreEntry.COLUMN_NAME_KEY} = ?`,
@@ -34,12 +35,13 @@ export class TransportFrameworkNChannel {
             if (!existingKeyvalueStore || !existingKeyvalueStore.length) {
                 await this.dbService.insert({
                     table: KeyValueStoreEntry.TABLE_NAME,
-                    modelJson: existingKeyvalueStore
+                    modelJson: keyValueStoreEntryInExternalDb
                 });
             }
         });
 
     }
+
 
 
 }
