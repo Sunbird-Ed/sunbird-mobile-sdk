@@ -1,7 +1,7 @@
 import { ImportTelemetryContext, TelemetryService } from '../..';
 import { Response } from '../../../api';
 import { DbService } from '../../../db';
-export declare class GenerateShareTelemetry {
+export declare class GenerateImportTelemetryShare {
     private dbService;
     private telemetryService;
     constructor(dbService: DbService, telemetryService: TelemetryService);

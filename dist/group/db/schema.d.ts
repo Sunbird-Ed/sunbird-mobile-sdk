@@ -3,6 +3,7 @@ export declare namespace GroupProfileEntry {
     const _ID = "_id";
     const COLUMN_NAME_UID = "uid";
     const COLUMN_NAME_GID = "gid";
+    const COLUMN_NAME_EPOCH_TIMESTAMP = "epoch_timestamp";
     interface SchemaMap {
         [COLUMN_NAME_UID]: string;
         [COLUMN_NAME_GID]: string;

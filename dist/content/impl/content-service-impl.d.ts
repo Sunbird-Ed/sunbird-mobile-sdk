@@ -1,6 +1,6 @@
 import { ChildContentRequest, Content, ContentDeleteRequest, ContentDeleteResponse, ContentDetailRequest, ContentDownloadRequest, ContentExportRequest, ContentExportResponse, ContentFeedbackService, ContentImportRequest, ContentImportResponse, ContentMarkerRequest, ContentRequest, ContentSearchCriteria, ContentSearchResult, ContentService, ContentServiceConfig, ContentsGroupedByPageSection, EcarImportRequest, HierarchyInfo, RelevantContentRequest, RelevantContentResponsePlayer } from '..';
 import { Observable } from 'rxjs';
-import { ApiService, Response } from '../../api';
+import { ApiService } from '../../api';
 import { ProfileService } from '../../profile';
 import { DbService } from '../../db';
 import { AppConfig } from '../../api/config/app-config';
@@ -40,7 +40,7 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
     getDownloadState(): Promise<any>;
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]>;
-    importEcar(ecarImportRequest: EcarImportRequest): Observable<Response>;
+    importEcar(ecarImportRequest: EcarImportRequest): Observable<ContentImportResponse[]>;
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
     getRelevantContent(request: RelevantContentRequest): Observable<RelevantContentResponsePlayer>;

@@ -16,7 +16,7 @@ export interface ContentService extends DownloadCompleteDelegate {
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
     getRelevantContent(relevantContentRequest: RelevantContentRequest): Observable<RelevantContentResponsePlayer>;
-    importEcar(ecarImportRequest: EcarImportRequest): Observable<Response>;
+    importEcar(ecarImportRequest: EcarImportRequest): Observable<ContentImportResponse[]>;
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]>;
     subscribeForImportStatus(contentId: string): Observable<Response>;
     cancelImport(contentId: string): Observable<any>;

@@ -145,7 +145,7 @@ export interface ImportContentContext {
     skippedItemsIdentifier?: string[];
     items?: any[];
     identifiers?: string[];
-    contentImportResponseList?: ContentImportResponse[];
+    contentImportResponseList: ContentImportResponse[];
     tmpLocation?: string;
 }
 export interface ExportContentContext {

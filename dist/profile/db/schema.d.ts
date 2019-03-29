@@ -3,15 +3,25 @@ export declare namespace ProfileEntry {
     const TABLE_NAME = "profiles";
     const COLUMN_NAME_UID = "uid";
     const COLUMN_NAME_HANDLE = "handle";
+    const COLUMN_NAME_AVATAR = "avatar";
+    const COLUMN_NAME_AGE = "age";
+    const COLUMN_NAME_GENDER = "gender";
+    const COLUMN_NAME_STANDARD = "standard";
+    const COLUMN_NAME_LANGUAGE = "language";
+    const COLUMN_NAME_DAY = "day";
+    const COLUMN_NAME_MONTH = "month";
+    const COLUMN_NAME_IS_GROUP_USER = "is_group_user";
     const COLUMN_NAME_CREATED_AT = "created_at";
     const COLUMN_NAME_MEDIUM = "medium";
     const COLUMN_NAME_BOARD = "board";
+    const COLUMN_NAME_PROFILE_IMAGE = "profile_image";
     const COLUMN_NAME_SUBJECT = "subject";
     const COLUMN_NAME_PROFILE_TYPE = "profile_type";
     const COLUMN_NAME_GRADE = "grade";
     const COLUMN_NAME_SYLLABUS = "syllabus";
     const COLUMN_NAME_SOURCE = "source";
     const COLUMN_NAME_GRADE_VALUE = "grade_value";
+    const COLUMN_VALUE = "value";
     interface SchemaMap {
         [COLUMN_NAME_UID]: string;
         [COLUMN_NAME_HANDLE]: string;
@@ -44,6 +54,7 @@ export declare namespace GroupProfileEntry {
     const _ID = "_id";
     const COLUMN_NAME_UID = "uid";
     const COLUMN_NAME_GID = "gid";
+    const COLUMN_NAME_EPOCH_TIMESTAMP = "epoch_timestamp";
     interface SchemaMap {
         [COLUMN_NAME_UID]: string;
         [COLUMN_NAME_GID]: string;
