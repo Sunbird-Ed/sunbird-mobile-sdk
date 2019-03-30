@@ -11,7 +11,7 @@ import {
     TelemetryFeedbackRequest,
     TelemetryImportRequest,
     TelemetryImpressionRequest,
-    TelemetryInteractRequest,
+    TelemetryInteractRequest, TelemetryInterruptRequest,
     TelemetryLogRequest,
     TelemetryService,
     TelemetryShareRequest,
@@ -133,6 +133,12 @@ export class TelemetryServiceImpl implements TelemetryService {
         const start = new SunbirdTelemetry.Start(type, deviceSpecification, loc, mode, duration, pageId, env, objId,
             objType, objVer, rollup, correlationData);
         return this.decorateAndPersist(start);
+    }
+
+
+    interrupt({type, pageId}: TelemetryInterruptRequest): Observable<boolean> {
+        const interrupt = new SunbirdTelemetry.Interrupt(type, pageId);
+        return this.decorateAndPersist(interrupt);
     }
 
     importTelemetry(importTelemetryRequest: TelemetryImportRequest): Observable<boolean> {

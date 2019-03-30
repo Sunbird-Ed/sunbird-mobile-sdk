@@ -33,6 +33,11 @@ export class TelemetryErrorRequest {
     pageId: string;
 }
 
+export class TelemetryInterruptRequest {
+    type: string;
+    pageId: string;
+}
+
 export class TelemetryImpressionRequest {
     type?: string;
     subType?: string;

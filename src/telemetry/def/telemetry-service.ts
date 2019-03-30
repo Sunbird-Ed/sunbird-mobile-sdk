@@ -9,7 +9,7 @@ import {
     TelemetryFeedbackRequest,
     TelemetryImportRequest,
     TelemetryImpressionRequest,
-    TelemetryInteractRequest,
+    TelemetryInteractRequest, TelemetryInterruptRequest,
     TelemetryLogRequest,
     TelemetryShareRequest,
     TelemetryStartRequest
@@ -36,6 +36,8 @@ export interface TelemetryService {
     share(request: TelemetryShareRequest): Observable<boolean>;
 
     error(request: TelemetryErrorRequest): Observable<boolean>;
+
+    interrupt(request: TelemetryInterruptRequest): Observable<boolean>;
 
     importTelemetry(telemetryImportRequest: TelemetryImportRequest): Observable<boolean>;
 

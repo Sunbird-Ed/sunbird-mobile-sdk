@@ -94,11 +94,6 @@ export class Visit {
     index: number;
 }
 
-export class Interrupt {
-    env: string;
-    type: string;
-    pageId: string;
-}
 
 export class ProducerData {
     id: string;
@@ -215,11 +210,11 @@ export namespace SunbirdTelemetry {
         private static readonly EID = 'START';
 
         constructor(type: string = '',
-                    dSpec: DeviceSpecification | undefined,
+                    dspec: DeviceSpecification | undefined,
                     loc: string | undefined,
                     mode: string | undefined,
                     duration: number | undefined,
-                    pageId: string | undefined,
+                    pageid: string | undefined,
                     env: string,
                     objId: string = '',
                     objType: string = '',
@@ -229,11 +224,11 @@ export namespace SunbirdTelemetry {
             super(Start.EID);
             this.edata = {
                 ...(type ? {type} : {type: ''}),
-                ...(dSpec ? {dSpec} : {}),
+                ...(dspec ? {dspec} : {}),
                 ...(loc ? {loc} : {}),
                 ...(mode ? {mode} : {}),
                 ...(duration ? {mode} : {}),
-                ...(pageId ? {pageId} : {})
+                ...(pageid ? {pageid} : {})
             };
             this.context.cdata = correlationData;
             this.context.env = env;
@@ -342,6 +337,20 @@ export namespace SunbirdTelemetry {
                 ...(errorType ? {errtype: errorType} : {}),
                 ...(stacktrace ? {stacktrace} : {}),
                 ...(pageid ? {pageid} : {}),
+            };
+        }
+    }
+
+    export class Interrupt extends Telemetry {
+        private static readonly EID = 'INTERRUPT';
+
+        constructor(type: string,
+                    pageid: string | undefined) {
+            super(Interrupt.EID);
+
+            this.edata = {
+                ...{type},
+                ...(pageid ? {pageid} : {})
             };
         }
     }
