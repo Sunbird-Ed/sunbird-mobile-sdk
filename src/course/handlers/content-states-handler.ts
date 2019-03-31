@@ -22,7 +22,14 @@ export class ContentStatesHandler {
                 return this.prepareContentStateRequest()
                     .mergeMap((updateContentRequestMap: { [key: string]: UpdateContentStateRequest[] }) => {
                         return Observable.fromPromise(this.invokeContentStateAPI(updateContentRequestMap))
-                            .mapTo(true);
+                            .mergeMap(() => {
+                                const deleteQuery = `DELETE FROM ${KeyValueStoreEntry.TABLE_NAME}
+                                                     WHERE ${KeyValueStoreEntry.COLUMN_NAME_KEY}
+                                                     LIKE '%%${CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX}%%' `;
+                                return this.dbService.execute(deleteQuery);
+                            }).mergeMap(() => {
+                                return this.sharedPreferences.putBoolean(ContentKeys.UPDATE_CONTENT_STATE, false);
+                            });
                     });
             } else {
                 return Observable.of(false);

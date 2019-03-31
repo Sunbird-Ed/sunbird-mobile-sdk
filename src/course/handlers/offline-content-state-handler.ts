@@ -1,6 +1,7 @@
 import {KeyValueStore} from '../../key-value-store';
 import {ContentState, ContentStateResponse, Course, CourseServiceImpl, GetContentStateRequest, UpdateContentStateRequest} from '..';
 import {Observable} from 'rxjs';
+import {ArrayUtil} from '../../util/array-util';
 
 export class OfflineContentStateHandler {
 
@@ -46,20 +47,20 @@ export class OfflineContentStateHandler {
                         newCourses = newCourses.concat(courses);
                         courses.forEach((course: Course) => {
                             if (course.courseId === updateContentStateRequest.courseId) {
-                                if (!course.contentsPlayedOffline || !course.contentsPlayedOffline!.size) {
-                                    course.contentsPlayedOffline = new Set<string>();
+                                if (!course.contentsPlayedOffline || !course.contentsPlayedOffline!.length) {
+                                    course.contentsPlayedOffline = [];
                                 }
-                                if (course.contentsPlayedOffline!.size === 0 ||
-                                    (course.contentsPlayedOffline!.size > 0 &&
-                                        !course.contentsPlayedOffline!.has(updateContentStateRequest.contentId))) {
+                                if (course.contentsPlayedOffline!.length === 0 ||
+                                    (course.contentsPlayedOffline!.length > 0 &&
+                                        !ArrayUtil.contains(course.contentsPlayedOffline, updateContentStateRequest.contentId))) {
                                     course.progress = course.progress ? course.progress : 0;
                                     course.progress = course.progress + 1;
                                     const updatedCourse: Course = course;
-                                    let playedOffline: Set<string> = updatedCourse.contentsPlayedOffline!;
+                                    let playedOffline: string[] = updatedCourse.contentsPlayedOffline!;
                                     if (!playedOffline) {
-                                        playedOffline = new Set<string>();
+                                        playedOffline = [];
                                     }
-                                    playedOffline.add(updateContentStateRequest.contentId);
+                                    playedOffline.push(updateContentStateRequest.contentId);
                                     updatedCourse.contentsPlayedOffline = playedOffline;
                                     updatedCourse.progress = course.progress;
 

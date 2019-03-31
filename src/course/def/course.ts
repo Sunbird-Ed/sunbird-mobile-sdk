@@ -19,5 +19,6 @@ export interface    Course {
     lastReadContentId?: string;
     courseId?: string;
     status?: number;
-    contentsPlayedOffline?: Set<string>;
+    contentsPlayedOffline?: string[];
+    batch?: {[key: string]: any};
 }

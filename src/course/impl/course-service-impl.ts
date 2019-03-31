@@ -57,36 +57,19 @@ export class CourseServiceImpl implements CourseService {
         const offlineContentStateHandler: OfflineContentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
         return new UpdateContentStateHandler(this.apiService, this.courseServiceConfig)
             .handle(CourseUtil.getUpdateContentStateRequest(request))
-            // .mergeMap((updateContentResponse: boolean) => {
-            //     const whereClause = ` WHERE ${KeyValueStoreEntry.COLUMN_NAME_KEY}
-            //                           LIKE '%%${CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX}%%'`;
-            //     if (updateContentResponse) {
-            //         const query = `SELECT * FROM ${KeyValueStoreEntry.TABLE_NAME}
-            //                        WHERE ${KeyValueStoreEntry.COLUMN_NAME_KEY}
-            //                        LIKE '%%${CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX}%%'`;
-            //         return this.dbService.execute(query).mergeMap((keyValueEntries: KeyValueStoreEntry.SchemaMap[]) => {
-            //             if (keyValueEntries && keyValueEntries.length) {
-            //                 const deleteQuery = `DELETE FROM ${KeyValueStoreEntry.TABLE_NAME} ${whereClause}`;
-            //                 return this.dbService.execute(deleteQuery);
-            //             } else {
-            //                 return Observable.of(false);
-            //             }
-            //
-            //         }).mergeMap((isDeleted: boolean) => {
-            //             return this.sharedPreferences.putBoolean(ContentKeys.UPDATE_CONTENT_STATE, false);
-            //         });
-            //     } else {
-            //         return Observable.of(false);
-            //     }
-            // })
-            .catch(() => {
-                const key = CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX.concat(request.userId,
-                    request.courseId, request.contentId, request.batchId);
-                return this.keyValueStore.getValue(key).mergeMap((value: string | undefined) => {
-                    return this.keyValueStore.setValue(key, JSON.stringify(request));
-                }).mergeMap(() => {
-                    return this.sharedPreferences.putBoolean(ContentKeys.UPDATE_CONTENT_STATE, true);
-                });
+            .catch((error) => {
+                if (error && error.code === 'NETWORK_ERROR') {
+                    const key = CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX.concat(request.userId,
+                        request.courseId, request.contentId, request.batchId);
+                    return this.keyValueStore.getValue(key).mergeMap((value: string | undefined) => {
+                        return this.keyValueStore.setValue(key, JSON.stringify(request));
+                    }).mergeMap(() => {
+                        return this.sharedPreferences.putBoolean(ContentKeys.UPDATE_CONTENT_STATE, true);
+                    });
+                } else {
+                    return Observable.of(false);
+                }
+
             }).mergeMap(() => {
                 return offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request);
             }).mergeMap(() => {
@@ -118,6 +101,7 @@ export class CourseServiceImpl implements CourseService {
                 courseContext['userId'] = request.userId;
                 courseContext['courseId'] = request.courseId;
                 courseContext['batchId'] = request.batchId;
+                courseContext['batchStatus'] = request.batchStatus;
                 return this.sharedPreferences.putString(ContentKeys.COURSE_CONTEXT, JSON.stringify(courseContext));
             }).mergeMap(() => {
                 return new OfflineCourseCacheHandler(this.dbService, this.contentService, this.keyValueStore)
@@ -137,8 +121,21 @@ export class CourseServiceImpl implements CourseService {
                         if (response) {
                             return this.keyValueStore.setValue(key, JSON.stringify(response)).mergeMap(() => {
                                 return offlinecontentStateHandler.getLocalContentStateResponse(request);
-                            }).do(async () => {
-                                await updateCourseHandler.updateEnrollCourses(request).toPromise();
+                            }).mergeMap(() => {
+                                return updateCourseHandler.updateEnrollCourses(request);
+                            });
+                        } else {
+                            return Observable.of<ContentStateResponse | undefined>(undefined);
+                        }
+                    });
+            } else if (request.returnRefreshedContentStates) {
+                return new GetContentStateHandler(this.apiService, this.courseServiceConfig)
+                    .handle(request).mergeMap((response: any) => {
+                        if (response) {
+                            return this.keyValueStore.setValue(key, JSON.stringify(response)).mergeMap(() => {
+                                return offlinecontentStateHandler.getLocalContentStateResponse(request);
+                            }).mergeMap(() => {
+                                return updateCourseHandler.updateEnrollCourses(request);
                             });
                         } else {
                             return Observable.of<ContentStateResponse | undefined>(undefined);

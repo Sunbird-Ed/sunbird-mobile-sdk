@@ -8,6 +8,7 @@ export interface EnrollCourseRequest {
     courseId: string;
     contentId: string;
     batchId: string;
+    batchStatus?: number;
 }
 
 

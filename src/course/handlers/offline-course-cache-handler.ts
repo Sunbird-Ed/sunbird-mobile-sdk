@@ -66,6 +66,10 @@ export class OfflineCourseCacheHandler {
                 course.courseId = enrollCourseRequest.courseId;
                 course.contentId = enrollCourseRequest.contentId;
                 course.leafNodesCount = leafNodeCount;
+                const batch: {[key: string]: any} = {};
+                batch['identifier'] = enrollCourseRequest.batchId;
+                batch['status'] = enrollCourseRequest.batchStatus;
+                course.batch = batch;
                 if (content) {
                     course.courseName = content.contentData.name;
                     if (content.contentData.appIcon.startsWith('https://')) {
