@@ -2,7 +2,7 @@ export interface ServerProfile {
     userId: string;
     identifier: string;
     firstName: string;
-    lastName: string;
+    lastName?: string;
     rootOrg: RootOrg;
     tncAcceptedVersion: string;
     tncAcceptedOn: string;
