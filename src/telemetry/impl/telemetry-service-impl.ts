@@ -8,10 +8,12 @@ import {
     TelemetryEndRequest,
     TelemetryErrorRequest,
     TelemetryExportRequest,
+    TelemetryExportResponse,
     TelemetryFeedbackRequest,
     TelemetryImportRequest,
     TelemetryImpressionRequest,
-    TelemetryInteractRequest, TelemetryInterruptRequest,
+    TelemetryInteractRequest,
+    TelemetryInterruptRequest,
     TelemetryLogRequest,
     TelemetryService,
     TelemetryShareRequest,
@@ -27,11 +29,10 @@ import {TelemetrySyncHandler} from '../handler/telemetry-sync-handler';
 import {KeyValueStore} from '../../key-value-store';
 import {ApiService, Response} from '../../api';
 import {TelemetryConfig} from '../config/telemetry-config';
-import {DeviceInfo} from '../../util/device/def/device-info';
+import {DeviceInfo} from '../../util/device';
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {FileService} from '../../util/file/def/file-service';
 import {CreateTelemetryExportFile} from '../handler/export/create-telemetry-export-file';
-import {TelemetryExportResponse} from '../def/response';
 import {CopyDatabase} from '../handler/export/copy-database';
 import {CreateMetaData} from '../handler/export/create-meta-data';
 import {CleanupExportedFile} from '../handler/export/cleanup-exported-file';
@@ -156,7 +157,8 @@ export class TelemetryServiceImpl implements TelemetryService {
                 return new GenerateImportTelemetryShare(this.dbService, this).execute(importResponse.body);
             }).then((importResponse: Response) => {
                 return true;
-            }).catch(() => {
+            }).catch((e) => {
+                console.error(e);
                 return false;
             })
         );

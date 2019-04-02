@@ -1,13 +1,11 @@
 import {DbService} from '../../../db';
 import {Response} from '../../../api';
 import {ImportTelemetryContext} from '../..';
-import {TelemetryProcessedEntry} from '../../db/schema';
 import {ImportedMetadataEntry} from '../../../profile/db/schema';
 
 export class UpdateImportedTelemetryMetadata {
 
     constructor(private dbService: DbService) {
-
     }
 
     public execute(importContext: ImportTelemetryContext): Promise<Response> {
@@ -21,7 +19,7 @@ export class UpdateImportedTelemetryMetadata {
         };
         return this.dbService.read({
             table: ImportedMetadataEntry.TABLE_NAME,
-            selection: `${ImportedMetadataEntry.COLUMN_NAME_IMPORTED_ID} =? AND ${ImportedMetadataEntry.COLUMN_NAME_DEVICE_ID}`,
+            selection: `${ImportedMetadataEntry.COLUMN_NAME_IMPORTED_ID} = ? AND ${ImportedMetadataEntry.COLUMN_NAME_DEVICE_ID} = ?`,
             selectionArgs: [importId, did],
             limit: '1'
         }).toPromise().then((results: ImportedMetadataEntry.SchemaMap[]) => {
