@@ -71,6 +71,7 @@ import {TransportAssesments} from '../handler/import/transport-assesments';
 import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-profile-metadata';
 import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} from '../../telemetry';
 import {ObjectUtil} from '../../util/object-util';
+import {TransportProfiles} from '../handler/import/transport-profiles';
 
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
@@ -503,6 +504,8 @@ export class ProfileServiceImpl implements ProfileService {
         return Observable.fromPromise(
             new ValidateProfileMetadata(this.dbService).execute(importProfileContext).then((importResponse: Response) => {
                 return new TransportUser(this.dbService).execute(importResponse.body);
+            }).then((importResponse: Response) => {
+                return new TransportProfiles(this.dbService).execute(importResponse.body);
             }).then((importResponse: Response) => {
                 return new TransportGroup(this.dbService).execute(importResponse.body);
             }).then((importResponse: Response) => {
