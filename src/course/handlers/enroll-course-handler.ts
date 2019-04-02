@@ -11,6 +11,7 @@ export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseReques
     }
 
     handle(request: EnrollCourseRequest): Observable<boolean> {
+        delete request.batchStatus;
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.courseServiceConfig.apiPath + this.ENROL_ENDPOINT)
@@ -19,8 +20,8 @@ export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseReques
             .withBody({request})
             .build();
 
-        return this.apiService.fetch(apiRequest).map(() => {
-            return true;
+        return this.apiService.fetch<{ result: { response: string } }>(apiRequest).map((success) => {
+            return success.body.result.response === 'SUCCESS';
         });
     }
 }
