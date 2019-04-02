@@ -96,11 +96,9 @@ export class CourseServiceImpl implements CourseService {
 
     enrollCourse(request: EnrollCourseRequest): Observable<boolean> {
         return new EnrollCourseHandler(this.apiService, this.courseServiceConfig)
-            .handle(request).mergeMap((enrollCourseResponse: boolean) => {
+            .handle(request).mergeMap(() => {
                 const courseContext: { [key: string]: any } = {};
                 courseContext['userId'] = request.userId;
-                courseContext['courseId'] = request.courseId;
-                courseContext['batchId'] = request.batchId;
                 courseContext['batchStatus'] = request.batchStatus;
                 return this.sharedPreferences.putString(ContentKeys.COURSE_CONTEXT, JSON.stringify(courseContext));
             }).mergeMap(() => {
