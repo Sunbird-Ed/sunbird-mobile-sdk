@@ -32,7 +32,7 @@ export class CreateMetaData {
     private async generateMetaData(): Promise<{ [key: string]: any }> {
         const metaData: { [key: string]: any } = {};
         metaData['version'] = 1;
-        metaData['types'] = ['telemetry'];
+        metaData['types'] = JSON.stringify(['telemetry']);
         metaData['did'] = this.deviceInfo.getDeviceID();
         metaData['export_id'] = UniqueId.generateUniqueId();
         const query = `SELECT sum(${TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS})  AS count
