@@ -138,6 +138,12 @@ export class CourseServiceImpl implements CourseService {
                         } else {
                             return Observable.of<ContentStateResponse | undefined>(undefined);
                         }
+                    }).catch((error) => {
+                        if (error && error.code === 'NETWORK_ERROR') {
+                            return offlinecontentStateHandler.getLocalContentStateResponse(request);
+                        } else {
+                            return Observable.of<ContentStateResponse | undefined>(undefined);
+                        }
                     });
             } else {
                 return offlinecontentStateHandler.getLocalContentStateResponse(request);
