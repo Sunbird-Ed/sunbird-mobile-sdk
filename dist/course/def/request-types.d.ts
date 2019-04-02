@@ -7,6 +7,7 @@ export interface EnrollCourseRequest {
     courseId: string;
     contentId: string;
     batchId: string;
+    batchStatus?: number;
 }
 export interface UpdateContentStateRequest {
     userId: string;

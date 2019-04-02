@@ -69,11 +69,6 @@ export declare class Visit {
     section: string;
     index: number;
 }
-export declare class Interrupt {
-    env: string;
-    type: string;
-    pageId: string;
-}
 export declare class ProducerData {
     id: string;
     pid: string;
@@ -131,7 +126,7 @@ export declare namespace SunbirdTelemetry {
     }
     class Start extends Telemetry {
         private static readonly EID;
-        constructor(type: string | undefined, dSpec: DeviceSpecification | undefined, loc: string | undefined, mode: string | undefined, duration: number | undefined, pageId: string | undefined, env: string, objId?: string, objType?: string, objVer?: string, rollup?: Rollup, correlationData?: Array<CorrelationData>);
+        constructor(type: string | undefined, dspec: DeviceSpecification | undefined, loc: string | undefined, mode: string | undefined, duration: number | undefined, pageid: string | undefined, env: string, objId?: string, objType?: string, objVer?: string, rollup?: Rollup, correlationData?: Array<CorrelationData>);
     }
     class Interact extends Telemetry {
         private static readonly EID;
@@ -152,6 +147,10 @@ export declare namespace SunbirdTelemetry {
     class Error extends Telemetry {
         private static readonly EID;
         constructor(errorCode: string | undefined, errorType: string | undefined, stacktrace: string | undefined, pageid: string | undefined);
+    }
+    class Interrupt extends Telemetry {
+        private static readonly EID;
+        constructor(type: string, pageid: string | undefined);
     }
     class Share extends Telemetry {
         private static readonly EID;

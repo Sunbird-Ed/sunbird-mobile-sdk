@@ -33,6 +33,10 @@ export declare class TelemetryErrorRequest {
     stacktrace: string;
     pageId: string;
 }
+export declare class TelemetryInterruptRequest {
+    type: string;
+    pageId: string;
+}
 export declare class TelemetryImpressionRequest {
     type?: string;
     subType?: string;

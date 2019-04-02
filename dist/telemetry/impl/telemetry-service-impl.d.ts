@@ -1,15 +1,14 @@
 import { DbService } from '../../db';
-import { TelemetryAuditRequest, TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryLogRequest, TelemetryService, TelemetryShareRequest, TelemetryStartRequest, TelemetryStat, TelemetrySyncStat } from '..';
+import { TelemetryAuditRequest, TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryExportResponse, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryInterruptRequest, TelemetryLogRequest, TelemetryService, TelemetryShareRequest, TelemetryStartRequest, TelemetryStat, TelemetrySyncStat } from '..';
 import { Observable } from 'rxjs';
 import { ProfileService } from '../../profile';
 import { GroupService } from '../../group';
 import { KeyValueStore } from '../../key-value-store';
 import { ApiService } from '../../api';
 import { TelemetryConfig } from '../config/telemetry-config';
-import { DeviceInfo } from '../../util/device/def/device-info';
+import { DeviceInfo } from '../../util/device';
 import { EventsBusService } from '../../events-bus';
 import { FileService } from '../../util/file/def/file-service';
-import { TelemetryExportResponse } from '../def/response';
 export declare class TelemetryServiceImpl implements TelemetryService {
     private dbService;
     private decorator;
@@ -33,6 +32,7 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     share({ dir, type, items }: TelemetryShareRequest): Observable<boolean>;
     feedback({ rating, comments, env, objId, objType, objVer }: TelemetryFeedbackRequest): Observable<boolean>;
     start({ type, deviceSpecification, loc, mode, duration, pageId, env, objId, objType, objVer, rollup, correlationData }: TelemetryStartRequest): Observable<boolean>;
+    interrupt({ type, pageId }: TelemetryInterruptRequest): Observable<boolean>;
     importTelemetry(importTelemetryRequest: TelemetryImportRequest): Observable<boolean>;
     exportTelemetry(telemetryExportRequest: TelemetryExportRequest): Observable<TelemetryExportResponse>;
     getTelemetryStat(): Observable<TelemetryStat>;
