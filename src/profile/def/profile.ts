@@ -1,13 +1,13 @@
 import {ServerProfile} from './server-profile';
 
 export enum ProfileType {
-    STUDENT = 'STUDENT',
-    TEACHER = 'TEACHER'
+    STUDENT = 'student',
+    TEACHER = 'teacher'
 }
 
 export enum ProfileSource {
-    SERVER = 'SERVER',
-    LOCAL = 'LOCAL'
+    SERVER = 'server',
+    LOCAL = 'local'
 }
 
 export interface Profile {
