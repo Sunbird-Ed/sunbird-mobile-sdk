@@ -3,7 +3,6 @@ import {Course, EnrollCourseRequest} from '..';
 import {Content, ContentService} from '../../content';
 import {Observable} from 'rxjs';
 import {KeyValueStore} from '../../key-value-store';
-import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 import {ContentUtil} from '../../content/util/content-util';
 
 export class OfflineCourseCacheHandler {
@@ -66,7 +65,7 @@ export class OfflineCourseCacheHandler {
                 course.courseId = enrollCourseRequest.courseId;
                 course.contentId = enrollCourseRequest.contentId;
                 course.leafNodesCount = leafNodeCount;
-                const batch: {[key: string]: any} = {};
+                const batch: { [key: string]: any } = {};
                 batch['identifier'] = enrollCourseRequest.batchId;
                 batch['status'] = enrollCourseRequest.batchStatus;
                 course.batch = batch;
@@ -83,16 +82,16 @@ export class OfflineCourseCacheHandler {
         });
     }
 
-    private getLeafNodeCount(content: Content): number {
-        let leafNodeCount = 0;
-        if (!content.children || !content.children.length) {
-            leafNodeCount++;
-        } else {
-            content.children.forEach((child: Content) => {
-                this.getLeafNodeCount(child);
-            });
+    private getLeafNodeCount(obj: Content): number {
+        if (!obj.children || !obj.children.length) {
+            return 1;
         }
-        return leafNodeCount;
+
+        return obj.children.reduce((acc, child) => {
+            acc += this.getLeafNodeCount(child);
+
+            return acc;
+        }, 0);
     }
 
 }
