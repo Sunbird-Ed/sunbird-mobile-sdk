@@ -58,8 +58,8 @@ export class SummarizerHandler {
                 correctAnswers: NumberUtil.parseInt(assesment[LearnerSummaryEntry.COLUMN_NAME_CORRECT_ANSWERS]),
                 totalTimespent: Number(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_TIME_SPENT]),
                 hierarchyData: assesment[LearnerSummaryEntry.COLUMN_NAME_HIERARCHY_DATA].toString(),
-                totalMaxScore: NumberUtil.toPrecision(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_MAX_SCORE]),
-                totalScore: NumberUtil.toPrecision(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_SCORE]),
+                totalMaxScore: NumberUtil.toFixed(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_MAX_SCORE]),
+                totalScore: NumberUtil.toFixed(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_SCORE]),
                 name: contentCache!.name
             };
         });
@@ -75,13 +75,13 @@ export class SummarizerHandler {
                 qid: assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_QID],
                 qindex: Number(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_Q_INDEX]),
                 correct: NumberUtil.parseInt(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_CORRECT]),
-                score: NumberUtil.toPrecision(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_SCORE]),
+                score: NumberUtil.toFixed(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_SCORE]),
                 timespent: Number(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_TIME_SPENT]),
                 res: assesmentDetailInDb[LearnerAssessmentsEntry[LearnerAssessmentsEntry.COLUMN_NAME_RES]],
                 timestamp: Number(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_TIMESTAMP]),
                 qdesc: assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_Q_DESC],
                 qtitle: assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_Q_TITLE],
-                maxScore: NumberUtil.toPrecision(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE]),
+                maxScore: NumberUtil.toFixed(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE]),
                 hierarchyData: assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA],
                 total_ts: Number(assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS])
             };
@@ -117,13 +117,13 @@ export class SummarizerHandler {
                 qid: questionReport[LearnerAssessmentsEntry.COLUMN_NAME_QID],
                 qindex: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_Q_INDEX]),
                 correct: NumberUtil.parseInt(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_CORRECT]),
-                score: NumberUtil.toPrecision(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_SCORE]),
+                score: NumberUtil.toFixed(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_SCORE]),
                 timespent: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TIME_SPENT]),
                 res: questionReport[LearnerAssessmentsEntry[LearnerAssessmentsEntry.COLUMN_NAME_RES]],
                 timestamp: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TIMESTAMP]),
                 qdesc: questionReport[LearnerAssessmentsEntry.COLUMN_NAME_Q_DESC],
                 qtitle: questionReport[LearnerAssessmentsEntry.COLUMN_NAME_Q_TITLE],
-                maxScore: NumberUtil.toPrecision(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE]),
+                maxScore: NumberUtil.toFixed(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE]),
                 hierarchyData: questionReport[LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA],
                 total_ts: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS]),
                 marks: Number(questionReport[LearnerAssessmentsEntry.COLUMN_NAME_MARKS]),
@@ -160,7 +160,7 @@ export class SummarizerHandler {
         return userReportsInDb.map((assesmentDetail: LearnerAssessmentsEntry.UserReportSchema) => {
             return {
                 totalTimespent: Number(assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_TOTAL_TS]),
-                score: NumberUtil.toPrecision(assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_SCORE]),
+                score: NumberUtil.toFixed(assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_SCORE]),
                 hData: assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA],
                 contentId: assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID],
                 uid: assesmentDetail[LearnerAssessmentsEntry.COLUMN_NAME_UID],

@@ -36,7 +36,8 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
                 private courseService: CourseService,
                 private sharedPreference: SharedPreferences) {
         this.eventsBusService.registerObserver({namespace: EventNamespace.TELEMETRY, observer: this});
-        this.summarizerTelemetryHandler = new SummaryTelemetryEventHandler(this.courseService, this.sharedPreference, this, this.eventsBusService);
+        this.summarizerTelemetryHandler = new SummaryTelemetryEventHandler(this.courseService, this.sharedPreference, this,
+            this.eventsBusService);
     }
 
     getDetailsPerQuestion(request: SummaryRequest): Observable<{ [p: string]: any }[]> {
@@ -149,7 +150,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
         }).mergeMap((rows: LearnerAssessmentsEntry.SchemaMap[]) => {
             if (rows && rows.length) {
                 learnerAssessmentDbSchema.sessions = rows[0][LearnerSummaryEntry.COLUMN_NAME_SESSIONS] + 1;
-                learnerAssessmentDbSchema.avg_ts = NumberUtil.toPrecision(learnerContentSummaryDetails.timespent /
+                learnerAssessmentDbSchema.avg_ts = NumberUtil.toFixed(learnerContentSummaryDetails.timespent /
                     learnerContentSummaryDetails.sessions!);
                 learnerAssessmentDbSchema.total_ts = learnerContentSummaryDetails.timespent;
                 learnerAssessmentDbSchema.last_updated_on = learnerContentSummaryDetails.timestamp;
