@@ -9,9 +9,11 @@ export class JWTUtil {
         return jwt.sign(subject, secretKey, {algorithm: tokenType});
     }
 
+    public static getJWTPayload(token: string): any {
+        return jwt.decode(token, {json: true});
+    }
+
     public static parseUserTokenFromAccessToken(accessToken: string): string {
-        let uid = accessToken.substring(accessToken.indexOf('.') + 1, accessToken.lastIndexOf('.'));
-        uid = decodeURIComponent(escape(atob(uid)));
-        return JSON.parse(uid).sub;
+        return JWTUtil.getJWTPayload(accessToken).sub;
     }
 }
