@@ -26,7 +26,8 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
         timeToLiveKey: string,
         fromServer: () => Observable<T>,
         initial?: () => Observable<T>,
-        timeToLive?: number
+        timeToLive?: number,
+        emptyCondition?: (item: T) => boolean
     ): Observable<T> {
         return this.isItemCachedInDb(timeToLiveKey, id)
             .mergeMap((isItemCachedInDb: boolean) => {
@@ -39,7 +40,7 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
                                     .do(async () => {
                                         try {
                                             await fromServer().switchMap((item: T) => {
-                                                return this.saveItem(id, timeToLiveKey, noSqlkey, item);
+                                                return this.saveItem(id, timeToLiveKey, noSqlkey, item, emptyCondition);
                                             }).toPromise();
                                         } catch (e) {
                                             console.error(e);
@@ -53,17 +54,17 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
                 } else {
                     if (initial) {
                         return initial().switchMap((item: T) => {
-                            return this.saveItem(id, timeToLiveKey, noSqlkey, item);
+                            return this.saveItem(id, timeToLiveKey, noSqlkey, item, emptyCondition);
                         }).catch((e) => {
                             return fromServer()
                                 .switchMap((item: T) => {
-                                    return this.saveItem(id, timeToLiveKey, noSqlkey, item);
+                                    return this.saveItem(id, timeToLiveKey, noSqlkey, item, emptyCondition);
                                 });
                         });
                     } else {
                         return fromServer()
                             .switchMap((item: T) => {
-                                return this.saveItem(id, timeToLiveKey, noSqlkey, item);
+                                return this.saveItem(id, timeToLiveKey, noSqlkey, item, emptyCondition);
                             });
                     }
                 }
@@ -94,8 +95,8 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
         });
     }
 
-    private saveItem(id: string, timeToLiveKey: string, noSqlkey: string, item: T) {
-        if (CachedItemStoreImpl.isItemEmpty(item)) {
+    private saveItem(id: string, timeToLiveKey: string, noSqlkey: string, item: T, emptyCondition?: (item: T) => boolean) {
+        if (CachedItemStoreImpl.isItemEmpty(item) || (emptyCondition && emptyCondition(item))) {
             return Observable.of(item);
         }
 
