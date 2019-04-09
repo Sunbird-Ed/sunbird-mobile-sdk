@@ -1,5 +1,5 @@
 import {ContentData, HierarchyInfo} from '../def/content';
-import {ContentDisposition, ContentEncoding, ContentStatus, State, Visibility} from './content-constants';
+import {ContentDisposition, ContentEncoding, ContentStatus, State, Visibility, MimeType} from './content-constants';
 import {ChildContent} from '../def/response';
 import {Rollup} from '../../telemetry';
 import {AppConfig} from '../../api/config/app-config';
@@ -462,6 +462,10 @@ export class ContentUtil {
             refCount = 0;
         }
         return refCount;
+    }
+
+    public static isNotUnit(mimeType, visibility): boolean {
+        return !(MimeType.COLLECTION.valueOf() === mimeType && Visibility.PARENT.valueOf() === visibility);
     }
 
 }

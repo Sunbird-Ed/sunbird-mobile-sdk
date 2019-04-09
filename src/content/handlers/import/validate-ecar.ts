@@ -8,6 +8,7 @@ import {DbService} from '../../../db';
 import {GetContentDetailsHandler} from '../get-content-details-handler';
 import {ContentEntry} from '../../db/schema';
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
+import {ArrayUtil} from '../../../util/array-util';
 
 export class ValidateEcar {
     private readonly MANIFEST_FILE_NAME = 'manifest.json';
@@ -46,6 +47,23 @@ export class ValidateEcar {
         importContext.manifestVersion = manifestJson.ver;
         importContext.items = [];
 
+        const contentIds: string[] = [];
+        for (const e of items) {
+            const element = e as any;
+            const identifier = element.identifier;
+            const visibility = ContentUtil.readVisibility(element);
+            if (ContentUtil.isNotUnit(element.mimeType, visibility)) {
+                contentIds.push(identifier);
+            }
+        }
+        const query = ArrayUtil.joinPreservingQuotes(contentIds);
+        const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
+        console.log(existingContentModels.length);
+
+        const result = existingContentModels.reduce((map, obj) => {
+            map[obj.identifier] = obj;
+            return map;
+        }, {});
         for (const e of items) {
             const element = e as any;
             const identifier = element.identifier;

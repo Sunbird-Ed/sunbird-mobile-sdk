@@ -25,6 +25,7 @@ import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 import moment from 'moment';
+import {ArrayUtil} from '../../../util/array-util';
 
 export class ExtractPayloads {
 
@@ -44,6 +45,25 @@ export class ExtractPayloads {
         let currentCount = 0;
         // post event before starting with how many imports are to be done totally
         this.postImportProgressEvent(currentCount, importContext.items!.length);
+        const contentIds: string[] = [];
+        for (const e of importContext.items!) {
+            const element = e as any;
+            const identifier = element.identifier;
+            const visibility = ContentUtil.readVisibility(element);
+            if (ContentUtil.isNotUnit(element.mimeType, visibility)) {
+                contentIds.push(identifier);
+            }
+        }
+        const query = ArrayUtil.joinPreservingQuotes(contentIds);
+        const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
+        console.log(existingContentModels.length);
+
+        const result = existingContentModels.reduce((map, obj) => {
+            map[obj.identifier] = obj;
+            return map;
+        }, {});
+
+        await this.fileService.createDir(ContentUtil.getContentRootDir(importContext.destinationFolder), false);
         for (const e of importContext.items!) {
             let element = e as any;
             const identifier = element.identifier;
@@ -87,14 +107,12 @@ export class ExtractPayloads {
                 }
             } else {
                 doesContentExist = false;
-                await this.fileService.createDir(ContentUtil.getContentRootDir(importContext.destinationFolder), false);
-                const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(
-                    ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier), false);
-                payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
-                try {
-                    await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination);
-                } catch (e) {
+                if (ContentUtil.isNotUnit(mimeType, visibility)) {
+                    const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(
+                        ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier), false);
+                    payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
                 }
+
                 if (ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
                     let isUnzippingSuccessfull = false;
                     if (artifactUrl) {
@@ -112,7 +130,7 @@ export class ExtractPayloads {
                             });
                         } else if (ContentUtil.isInlineIdentity(contentDisposition, contentEncoding)) {
                             try {
-                                await this.copyAssets(importContext.tmpLocation!, artifactUrl, payloadDestination);
+                                await this.copyAssets(importContext.tmpLocation!, artifactUrl, payloadDestination!);
                                 isUnzippingSuccessfull = true;
                             } catch (e) {
                                 isUnzippingSuccessfull = false;
@@ -131,11 +149,11 @@ export class ExtractPayloads {
                         contentState = State.ONLY_SPINE.valueOf();
                     }
                 }
-                try {
-                    await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination);
-                    await this.copyAssets(importContext.tmpLocation!, posterImage, payloadDestination);
-                    await this.copyAssets(importContext.tmpLocation!, grayScaleAppIcon, payloadDestination);
-                } catch (e) {
+                if (ContentUtil.isNotUnit(mimeType, visibility)) {
+                    try {
+                        await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination!);
+                    } catch (e) {
+                    }
                 }
             }
 
@@ -143,7 +161,6 @@ export class ExtractPayloads {
             visibility = this.getContentVisibility(existingContentModel, element['objectType'], importContext.isChildContent, visibility);
             contentState = this.getContentState(existingContentModel, contentState);
             const basePath = this.getBasePath(payloadDestination, doesContentExist, existingContentPath);
-            const sizeMetaData: Metadata = await this.fileService.getMetaData(basePath);
             ContentUtil.addOrUpdateViralityMetadata(element, this.deviceInfo.getDeviceID().toString());
             const sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
             const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
@@ -162,7 +179,10 @@ export class ExtractPayloads {
                     modelJson: newContentModel
                 }).toPromise();
             }
-            importContext.identifiers.push(identifier);
+
+            if (ContentUtil.isNotUnit(mimeType, visibility)) {
+                importContext.identifiers.push(identifier);
+            }
             // increase the current count
             currentCount++;
             this.postImportProgressEvent(currentCount, importContext.items!.length);
