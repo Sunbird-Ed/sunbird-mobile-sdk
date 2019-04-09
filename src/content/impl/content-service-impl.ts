@@ -7,7 +7,6 @@ import {
     ContentDeleteStatus,
     ContentDetailRequest,
     ContentDownloadRequest,
-    ContentErrorCode,
     ContentEventType,
     ContentExportRequest,
     ContentExportResponse,
@@ -501,7 +500,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             ContentServiceImpl.getIdForDb(request),
             this.SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY,
             'ttl_' + this.SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY,
-            () => this.searchContentAndGroupByPageSection(request)
+            () => this.searchContentAndGroupByPageSection(request),
+            undefined,
+            undefined,
+            (contentsGroupedByPageSection: ContentsGroupedByPageSection) => contentsGroupedByPageSection.sections.length === 0
         );
     }
 
