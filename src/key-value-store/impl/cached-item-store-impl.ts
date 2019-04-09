@@ -10,6 +10,16 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
         private sharedPreferences: SharedPreferences) {
     }
 
+    private static isItemEmpty(item: any) {
+        if (Array.isArray(item) && item.length === 0) {
+            return true;
+        } else if (typeof item === 'object' && Object.keys(item).length === 0) {
+            return true;
+        }
+
+        return false;
+    }
+
     public getCached(
         id: string,
         noSqlkey: string,
@@ -85,6 +95,10 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
     }
 
     private saveItem(id: string, timeToLiveKey: string, noSqlkey: string, item: T) {
+        if (CachedItemStoreImpl.isItemEmpty(item)) {
+            return Observable.of(item);
+        }
+
         return Observable.zip(
             this.saveItemTTL(id, timeToLiveKey),
             this.saveItemToDb(id, noSqlkey, item)
