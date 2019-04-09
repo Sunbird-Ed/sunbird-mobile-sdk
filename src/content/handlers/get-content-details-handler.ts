@@ -44,37 +44,46 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
     }
 
     public handle(request: ContentDetailRequest): Observable<Content> {
+        request.emitUpdateIfAny = request.emitUpdateIfAny === undefined ? true : request.emitUpdateIfAny;
+
         return this.fetchFromDB(request.contentId)
             .mergeMap((contentDbEntry) => {
-                if (contentDbEntry) {
-                    return Observable.of(ContentMapper.mapContentDBEntryToContent(contentDbEntry))
-                        .mergeMap((content: Content) => {
-                            return this.decorateContent({
-                                content,
-                                attachFeedback: request.attachFeedback,
-                                attachContentAccess: request.attachContentAccess,
-                                attachContentMarker: request.attachContentMarker
-                            });
-                        }).do(async (localContent) => {
+                if (!contentDbEntry) {
+                    return this.fetchAndDecorate(request);
+                }
 
+                return Observable.of(ContentMapper.mapContentDBEntryToContent(contentDbEntry))
+                    .mergeMap((content: Content) => {
+                        return this.decorateContent({
+                            content,
+                            attachFeedback: request.attachFeedback,
+                            attachContentAccess: request.attachContentAccess,
+                            attachContentMarker: request.attachContentMarker
+                        });
+                    }).do(async (localContent) => {
+                        if (request.emitUpdateIfAny) {
                             let sendStreamUrlEvent = false;
                             const serverDataInDb: ContentData = contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA] &&
                                 JSON.parse(contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA]);
+
                             if (!serverDataInDb) {
                                 sendStreamUrlEvent = true;
                             } else if (!serverDataInDb.streamingUrl) {
                                 sendStreamUrlEvent = true;
                             }
+
                             const serverContentData: ContentData = await this.fetchFromServer(request).toPromise();
                             contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA] = JSON.stringify(serverContentData);
                             contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON] = serverContentData['lastUpdatedOn'];
                             contentDbEntry[ContentEntry.COLUMN_NAME_AUDIENCE] = ContentUtil.readAudience(serverContentData);
+
                             await this.dbService.update({
                                 table: ContentEntry.TABLE_NAME,
                                 selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
                                 selectionArgs: [contentDbEntry[ContentEntry.COLUMN_NAME_IDENTIFIER]],
                                 modelJson: contentDbEntry
                             }).toPromise();
+
                             if (ContentUtil.isUpdateAvailable(serverContentData, localContent.contentData)) {
                                 this.eventsBusService.emit({
                                     namespace: EventNamespace.CONTENT,
@@ -87,24 +96,20 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                                 });
                             }
 
-                            if (sendStreamUrlEvent) {
-                                if (serverContentData.streamingUrl) {
-                                    this.eventsBusService.emit({
-                                        namespace: EventNamespace.CONTENT,
-                                        event: {
-                                            type: ContentEventType.STREAMING_URL_AVAILABLE,
-                                            payload: {
-                                                contentId: serverContentData.identifier,
-                                                streamingUrl: serverContentData.streamingUrl
-                                            }
+                            if (sendStreamUrlEvent && serverContentData.streamingUrl) {
+                                this.eventsBusService.emit({
+                                    namespace: EventNamespace.CONTENT,
+                                    event: {
+                                        type: ContentEventType.STREAMING_URL_AVAILABLE,
+                                        payload: {
+                                            contentId: serverContentData.identifier,
+                                            streamingUrl: serverContentData.streamingUrl
                                         }
-                                    });
-                                }
+                                    }
+                                });
                             }
-                        });
-                }
-
-                return this.fetchAndDecorate(request);
+                        }
+                    });
             });
     }
 
