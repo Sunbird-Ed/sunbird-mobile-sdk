@@ -83,13 +83,14 @@ export class ExtractPayloads {
             const pkgVersion = element.pkgVersion;
             const artifactUrl = element.artifactUrl;
             const appIcon = element.appIcon;
-            const posterImage = element.posterImage;
-            const grayScaleAppIcon = element.grayScaleAppIcon;
-            const dialCodes = element.dialcodes;
+            // const posterImage = element.posterImage;
+            // const grayScaleAppIcon = element.grayScaleAppIcon;
+            // const dialCodes = element.dialcodes;
             let contentState = State.ONLY_SPINE.valueOf();
             let payloadDestination: string | undefined;
 
-            const existingContentModel = await this.getContentDetailsHandler.fetchFromDB(identifier).toPromise();
+            // const existingContentModel = await this.getContentDetailsHandler.fetchFromDB(identifier).toPromise();
+            const existingContentModel = result[identifier];
             let existingContentPath;
             if (existingContentModel) {
                 existingContentPath = ContentUtil.getBasePath(existingContentModel[COLUMN_NAME_PATH]!);
@@ -151,7 +152,9 @@ export class ExtractPayloads {
                 }
                 if (ContentUtil.isNotUnit(mimeType, visibility)) {
                     try {
-                        await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination!);
+                        if (!appIcon.startsWith('https:')) {
+                            await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination!);
+                        }
                     } catch (e) {
                     }
                 }

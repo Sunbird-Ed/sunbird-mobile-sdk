@@ -1,15 +1,16 @@
 import {PlayerService} from '../def/player-service';
 import {Content} from '../../content';
-import {ProfileService, ProfileSession} from '../../profile';
+import {Profile, ProfileService, ProfileSession} from '../../profile';
 import {GroupService, GroupSession} from '../../group';
 import {Observable} from 'rxjs';
 import {Context, PlayerInput} from '../def/response';
 import {DeviceInfo} from '../../util/device/def/device-info';
-import {Actor, CorrelationData, ProducerData} from '../../telemetry';
+import {Actor, CorrelationData, ProducerData, Rollup} from '../../telemetry';
 import {SdkConfig} from '../../sdk-config';
 import {FrameworkService} from '../../framework';
 import {ContentUtil} from '../../content/util/content-util';
 import {AppInfo} from '../../util/app/def/app-info';
+import {CachedItemRequestSourceFrom} from '../../key-value-store';
 
 export class PlayerServiceImpl implements PlayerService {
     constructor(private profileService: ProfileService,
@@ -31,6 +32,7 @@ export class PlayerServiceImpl implements PlayerService {
 
         const playerInput: PlayerInput = {};
         content.rollup = ContentUtil.getRollup(content.identifier, content.hierarchyInfo!);
+        context.objectRollup = content.rollup;
         content.basePath = content.basePath.replace(/\/$/, '');
         if (content.isAvailableLocally) {
             content.contentData.streamingUrl = content.basePath;
@@ -45,6 +47,15 @@ export class PlayerServiceImpl implements PlayerService {
             context.actor = actor;
             const deeplinkBasePath = this.config.appConfig.deepLinkBasePath;
             context.deeplinkBasePath = deeplinkBasePath ? deeplinkBasePath : '';
+            return this.profileService.getActiveSessionProfile({requiredFields: []});
+        }).mergeMap((profile: Profile) => {
+            if (profile && profile.serverProfile) {
+                const organisations = profile.serverProfile['organisations'];
+                if (organisations) {
+                    const orgId = organisations[0] && organisations[0]['organisationId'];
+                    context.contextRollup = {l1: orgId};
+                }
+            }
             return this.groupService.getActiveGroupSession();
         }).mergeMap((groupSession: GroupSession | undefined) => {
             const corRelationList: CorrelationData[] = [];
