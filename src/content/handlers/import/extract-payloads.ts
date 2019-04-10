@@ -1,31 +1,24 @@
 import {ContentEventType, ImportContentContext} from '../..';
 import {Response} from '../../../api';
-import {
-    ContentDisposition,
-    ContentEncoding,
-    ContentStatus,
-    MimeType,
-    State,
-    Visibility
-} from '../../util/content-constants';
+import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
 import {DbService} from '../../../db';
 import {ContentUtil} from '../../util/content-util';
 import {GetContentDetailsHandler} from '../get-content-details-handler';
 import {ContentEntry} from '../../db/schema';
 import {ZipService} from '../../../util/zip/def/zip-service';
-import {DirectoryEntry, Metadata} from '../../../util/file';
+import {DirectoryEntry} from '../../../util/file';
 import {AppConfig} from '../../../api/config/app-config';
 import {FileUtil} from '../../../util/file/util/file-util';
 import {DeviceInfo} from '../../../util/device/def/device-info';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
+import moment from 'moment';
+import {ArrayUtil} from '../../../util/array-util';
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
-import moment from 'moment';
-import {ArrayUtil} from '../../../util/array-util';
 
 export class ExtractPayloads {
 
@@ -54,6 +47,11 @@ export class ExtractPayloads {
                 contentIds.push(identifier);
             }
         }
+
+        // Create all the directories for content.
+        const createdDirectories = await this.createDirectories(ContentUtil.getContentRootDir(importContext.destinationFolder),
+            contentIds);
+
         const query = ArrayUtil.joinPreservingQuotes(contentIds);
         const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
         console.log(existingContentModels.length);
@@ -109,9 +107,13 @@ export class ExtractPayloads {
             } else {
                 doesContentExist = false;
                 if (ContentUtil.isNotUnit(mimeType, visibility)) {
-                    const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(
-                        ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier), false);
-                    payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
+                    if (createdDirectories[identifier] && createdDirectories[identifier].path) {
+                        payloadDestination = createdDirectories[identifier].path;
+                    } else {
+                        const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(
+                            ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier), false);
+                        payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
+                    }
                 }
 
                 if (ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
@@ -192,19 +194,6 @@ export class ExtractPayloads {
         }
         response.body = importContext;
         return Promise.resolve(response);
-    }
-
-    private postImportProgressEvent(currentCount, totalCount) {
-        this.eventsBusService.emit({
-            namespace: EventNamespace.CONTENT,
-            event: {
-                type: ContentEventType.IMPORT_PROGRESS,
-                payload: {
-                    totalCount: totalCount,
-                    currentCount: currentCount
-                }
-            }
-        });
     }
 
     async copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string) {
@@ -288,6 +277,19 @@ export class ExtractPayloads {
         return path;
     }
 
+    private postImportProgressEvent(currentCount, totalCount) {
+        this.eventsBusService.emit({
+            namespace: EventNamespace.CONTENT,
+            event: {
+                type: ContentEventType.IMPORT_PROGRESS,
+                payload: {
+                    totalCount: totalCount,
+                    currentCount: currentCount
+                }
+            }
+        });
+    }
+
     private constructContentDBModel(identifier, manifestVersion, localData,
                                     mimeType, contentType, visibility, path,
                                     refCount, contentState, audience, pragma, sizeOnDevice): ContentEntry.SchemaMap {
@@ -310,5 +312,18 @@ export class ExtractPayloads {
 
     }
 
+    // TODO: move this method to file-service
+    private async createDirectories(parentDirectoryPath: string,
+                                    listOfFolder: string[]): Promise<{ [key: string]: { path: string | undefined } }> {
+        return new Promise<{ [key: string]: { path: string | undefined } }>((resolve, reject) => {
+            buildconfigreader.createDirectories(ContentUtil.getBasePath(parentDirectoryPath), listOfFolder,
+                (entry) => {
+                    resolve(entry);
+                }, err => {
+                    console.error(err);
+                    reject(err);
+                });
+        });
+    }
 
 }
