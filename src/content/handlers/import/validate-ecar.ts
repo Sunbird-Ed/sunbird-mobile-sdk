@@ -83,8 +83,9 @@ export class ValidateEcar {
                 continue;
             }
 
-            const contentDetailsHandler = this.getContentDetailsHandler;
-            const existingContentModel = await contentDetailsHandler.fetchFromDB(identifier).toPromise();
+            // const contentDetailsHandler = this.getContentDetailsHandler;
+            // const existingContentModel = await contentDetailsHandler.fetchFromDB(identifier).toPromise();
+            const existingContentModel = result[identifier];
             let existingContentPath;
 
             if (existingContentModel) {
