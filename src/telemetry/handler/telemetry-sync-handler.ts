@@ -25,7 +25,17 @@ interface ProcessedEventsMeta {
     messageId?: string;
 }
 
+interface DeviceRegisterResponse {
+    id: string ;
+    params: {any};
+    responseCode: string;
+    result: {any};
+    ts: string;
+    ver: string;
+}
+
 export class TelemetrySyncHandler implements ApiRequestHandler<undefined, TelemetrySyncStat> {
+    public static readonly TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY = 'offset_key';
     private static readonly LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY = 'last_synced_device_register_time_stamp';
     private static readonly DEVICE_REGISTER_ENDPOINT = '/register';
     private static readonly TELEMETRY_ENDPOINT = '/telemetry';
@@ -43,6 +53,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
             new TelemetryEntriesToStringPreprocessor(),
             new StringToGzippedString()
         ];
+        this.registerDevice().toPromise();
     }
 
     handle(): Observable<TelemetrySyncStat> {
@@ -95,11 +106,22 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
                     .withApiToken(true)
                     .build();
 
-                return this.apiService!.fetch(apiRequest)
-                    .mergeMap(() =>
-                        this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY,
+                return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
+                    .do(async (res) => {
+                        const serverTime = new Date(res.body.ts).getTime();
+                        const now = Date.now();
+                        const currentOffset = serverTime - now;
+                        const allowedOffset =
+                            Math.abs(currentOffset) > this.telemetryConfig.telemetryLogMinAllowedOffset ? currentOffset : 0;
+                        if (allowedOffset) {
+                            await this.keyValueStore!.
+                            setValue(TelemetrySyncHandler.TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY, allowedOffset + '').toPromise();
+                        }
+                    })
+                    .mergeMap((res) => {
+                        return this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY,
                             Date.now() + TelemetrySyncHandler.REGISTER_API_SUCCESS_TTL + '')
-                            .map(() => undefined)
+                            .map(() => undefined); }
                     )
                     .catch(() =>
                         this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY,

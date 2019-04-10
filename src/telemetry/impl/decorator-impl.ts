@@ -12,7 +12,8 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
                 private appInfo: AppInfo) {
     }
 
-    decorate(event: Telemetry, uid: string, sid: string, gid?: string): any {
+    decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset: number = 0): any {
+        event.ets += offset;
         if (!event.mid) {
             event.mid = UniqueId.generateUniqueId();
         }
