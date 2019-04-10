@@ -9,6 +9,7 @@ export interface CachedItemStore<T> {
      *  @param fromServer: function returning server-request-observable for the item
      *  @param initial?: optional function returning initial-source-observable for the item; typically a file
      *  @param timeToLive?: optional timeToLive override in milliseconds
+     *  @param emptyCondition?: optional emptyCondition predicate - when true, item won't be cached
      * */
     getCached(
         id: string,
@@ -16,6 +17,7 @@ export interface CachedItemStore<T> {
         timeToLiveKey: string,
         fromServer: () => Observable<T>,
         initial?: () => Observable<T>,
-        timeToLive?: number
+        timeToLive?: number,
+        emptyCondition?: (item: T) => boolean
     ): Observable<T>;
 }
