@@ -1,6 +1,6 @@
 export interface FetchEnrolledCourseRequest {
     userId: string;
-    returnFreshCourses ?: boolean;
+    returnFreshCourses?: boolean;
 }
 
 export interface EnrollCourseRequest {
@@ -26,13 +26,13 @@ export interface UpdateContentStateRequest {
 
 export interface CourseBatchesRequest {
     filters: CourseBatchesRequestFilters;
+    fields: string[];
 }
 
 export interface UpdateContentStateAPIRequest {
     userId: string;
     contents: ContentState[];
 }
-
 
 
 export interface CourseBatchDetailsRequest {
