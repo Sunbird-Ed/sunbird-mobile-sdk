@@ -82,6 +82,8 @@ import {GenerateInteractTelemetry} from '../handlers/import/generate-interact-te
 import {CachedItemStore} from '../../key-value-store';
 import * as SHA1 from 'crypto-js/sha1';
 import {FrameworkKeys} from '../../preference-keys';
+import {CreateHierarchy} from '../handlers/import/create-hierarchy';
+import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
@@ -341,6 +343,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     const response: Response = new Response();
                     return new CreateContentImportManifest(this.dbService, this.deviceInfo, this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
+                    return new CreateHierarchy(this.dbService, this.fileService).execute(importResponse.body);
+                }).then((importResponse: Response) => {
                     return new EcarCleanup(this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
                     return new UpdateSizeOnDevice(this.dbService).execute(importResponse.body);
@@ -349,7 +353,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }).then((importResponse: Response) => {
                     return new GenerateInteractTelemetry(this.telemetryService).execute(importResponse.body, 'ContentImport-Success');
                 }).then((importResponse: Response<ImportContentContext>) => {
-                    const response: Response = new Response();
                     this.eventsBusService.emit({
                         namespace: EventNamespace.CONTENT,
                         event: {

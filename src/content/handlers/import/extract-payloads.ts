@@ -35,6 +35,10 @@ export class ExtractPayloads {
     public async execute(importContext: ImportContentContext): Promise<Response> {
         const response: Response = new Response();
         importContext.identifiers = [];
+        const insertNewContentModels: ContentEntry.SchemaMap[] = [];
+        const updateNewContentModels: ContentEntry.SchemaMap[] = [];
+        let rootContentPath;
+
         // this count is for maintaining how many contents are imported so far
         let currentCount = 0;
         // post event before starting with how many imports are to be done totally
@@ -62,8 +66,6 @@ export class ExtractPayloads {
             map[obj.identifier] = obj;
             return map;
         }, {});
-
-        let rootContentPath;
 
         for (const e of importContext.items!) {
             let element = e as any;
@@ -170,25 +172,19 @@ export class ExtractPayloads {
             contentState = this.getContentState(existingContentModel, contentState);
             const basePath = this.getBasePath(payloadDestination, doesContentExist, existingContentPath);
             ContentUtil.addOrUpdateViralityMetadata(element, this.deviceInfo.getDeviceID().toString());
+
             let sizeOnDevice = 0;
             if (ContentUtil.isNotUnit(mimeType, visibility)) {
                 sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
             }
+
             const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
                 JSON.stringify(element), mimeType, contentType, visibility, basePath,
                 referenceCount, contentState, audience, pragma, sizeOnDevice);
             if (!existingContentModel) {
-                await this.dbService.insert({
-                    table: ContentEntry.TABLE_NAME,
-                    modelJson: newContentModel
-                }).toPromise();
+                insertNewContentModels.push(newContentModel);
             } else {
-                this.dbService.update({
-                    table: ContentEntry.TABLE_NAME,
-                    selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
-                    selectionArgs: [identifier],
-                    modelJson: newContentModel
-                }).toPromise();
+                updateNewContentModels.push(newContentModel);
             }
 
             if (visibility === Visibility.DEFAULT.valueOf()) {
@@ -201,6 +197,30 @@ export class ExtractPayloads {
             // increase the current count
             currentCount++;
             this.postImportProgressEvent(currentCount, importContext.items!.length);
+        }
+
+        if (insertNewContentModels.length || updateNewContentModels.length) {
+            this.dbService.beginTransaction();
+            // Insert into DB
+            for (const e of insertNewContentModels) {
+                const newContentModel = e as ContentEntry.SchemaMap;
+                await this.dbService.insert({
+                    table: ContentEntry.TABLE_NAME,
+                    modelJson: newContentModel
+                }).toPromise();
+            }
+
+            // Update existing content in DB
+            for (const e of updateNewContentModels) {
+                const newContentModel = e as ContentEntry.SchemaMap;
+                this.dbService.update({
+                    table: ContentEntry.TABLE_NAME,
+                    selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
+                    selectionArgs: [newContentModel[ContentEntry.COLUMN_NAME_IDENTIFIER]],
+                    modelJson: newContentModel
+                }).toPromise();
+            }
+            this.dbService.endTransaction(true);
         }
 
         if (rootContentPath) {
