@@ -1,18 +1,16 @@
 import {ContentEntry} from '../db/schema';
 import Queue from 'typescript-collections/dist/lib/Queue';
 import {ContentUtil} from '../util/content-util';
-import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import {Visibility} from '../util/content-constants';
-import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import {DeviceInfo} from '../../util/device/def/device-info';
 import moment from 'moment';
-import {FileService} from '../../util/file/def/file-service';
+import {DbService} from '../../db';
+import {ArrayUtil} from '../../util/array-util';
+import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
+import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_LOCAL_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON;
 import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
-import {DbService} from '../../db';
-import {Observable} from 'rxjs';
-import {ArrayUtil} from '../../util/array-util';
 
 export class ImportNExportHandler {
     private static readonly EKSTEP_CONTENT_ARCHIVE = 'ekstep.content.archive';
@@ -38,7 +36,7 @@ export class ImportNExportHandler {
             if (ContentUtil.hasChildren(item)) {
                 // store children identifiers
                 const childContentIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(item);
-                childIdentifiers =  childIdentifiers.concat(childContentIdentifiers);
+                childIdentifiers = childIdentifiers.concat(childContentIdentifiers);
             }
 
             allContentsIdentifier.push(contentInDb[COLUMN_NAME_IDENTIFIER]);
@@ -55,6 +53,38 @@ export class ImportNExportHandler {
             console.log(e);
         }
 
+
+        return items;
+    }
+
+    populateItemList(contentWithAllChildren: { [key: string]: any }[]): { [key: string]: any }[] {
+        const items: any[] = [];
+        const allContentsIdentifier: string[] = [];
+        let childIdentifiers: string[] = [];
+        const contentIndex: { [key: string]: any } = {};
+        contentWithAllChildren.forEach((item) => {
+            contentIndex[item['identifier']] = item;
+            ContentUtil.addViralityMetadataIfMissing(item, this.deviceInfo!.getDeviceID());
+            // get item's children only to mark children with visibility as Parent
+            if (ContentUtil.hasChildren(item)) {
+                // store children identifiers
+                const childContentIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(item);
+                childIdentifiers = childIdentifiers.concat(childContentIdentifiers);
+            }
+
+            allContentsIdentifier.push(item['identifier']);
+        });
+        try {
+            allContentsIdentifier.forEach((identifier) => {
+                const contentData = contentIndex[identifier];
+                if (ArrayUtil.contains(childIdentifiers, identifier)) {
+                    contentData['visibility'] = Visibility.PARENT.valueOf();
+                }
+                items.push(contentData);
+            });
+        } catch (e) {
+            console.log(e);
+        }
 
         return items;
     }

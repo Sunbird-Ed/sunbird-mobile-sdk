@@ -29,9 +29,9 @@ export class KeycloakSessionProvider implements SessionProvider {
         return await this.apiService.fetch(apiRequest)
             .toPromise()
             .then((response: Response<{ access_token: string, refresh_token: string }>) => {
-                const payload: { sub: string, userId: string } = JWTUtil.getJWTPayload(response.body.access_token);
+                const payload: { sub: string } = JWTUtil.getJWTPayload(response.body.access_token);
 
-                const userToken = payload.userId ? <string>payload.userId.split(':').pop() : payload.sub;
+                const userToken = payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub;
 
                 return {
                     access_token: response.body.access_token,
