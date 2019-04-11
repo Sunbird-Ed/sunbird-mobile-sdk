@@ -8,4 +8,10 @@ declare var buildconfigreader: {
 
     rm: (directoryPath: string, direcoryToBeSkipped: string, success:
         (callbackUrl: boolean) => void, error: (error: boolean) => void) => void;
+
+    createDirectories: (parentDirectoryPath: string, listOfFolder: string[], success:
+        (callbackUrl: any) => void, error: (error: string) => void) => void;
+
+    writeFile: (fileMapList: any[], success:
+        (callbackUrl: void) => void, error: (error: string) => void) => void;
 };
