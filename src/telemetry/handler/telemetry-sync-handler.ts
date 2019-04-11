@@ -53,7 +53,6 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
             new TelemetryEntriesToStringPreprocessor(),
             new StringToGzippedString()
         ];
-        this.registerDevice().toPromise();
     }
 
     handle(): Observable<TelemetrySyncStat> {
