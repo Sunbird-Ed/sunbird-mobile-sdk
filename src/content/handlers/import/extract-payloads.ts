@@ -167,7 +167,10 @@ export class ExtractPayloads {
             contentState = this.getContentState(existingContentModel, contentState);
             const basePath = this.getBasePath(payloadDestination, doesContentExist, existingContentPath);
             ContentUtil.addOrUpdateViralityMetadata(element, this.deviceInfo.getDeviceID().toString());
-            const sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
+            let sizeOnDevice = 0;
+            if (ContentUtil.isNotUnit(mimeType, visibility)) {
+                sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
+            }
             const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
                 JSON.stringify(element), mimeType, contentType, visibility, basePath,
                 referenceCount, contentState, audience, pragma, sizeOnDevice);
