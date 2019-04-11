@@ -60,7 +60,8 @@ export class SummarizerHandler {
                 hierarchyData: assesment[LearnerSummaryEntry.COLUMN_NAME_HIERARCHY_DATA].toString(),
                 totalMaxScore: NumberUtil.toFixed(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_MAX_SCORE]),
                 totalScore: NumberUtil.toFixed(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_SCORE]),
-                name: contentCache!.name
+                totalQuestionsScore: contentCache!.totalScore,
+                name: contentCache!.name,
             };
         });
     }

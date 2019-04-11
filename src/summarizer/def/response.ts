@@ -5,6 +5,7 @@ export interface LearnerAssessmentSummary {
     correctAnswers: number;
     totalTimespent: number;
     hierarchyData: string;
+    totalQuestionsScore: number;
     totalMaxScore: number;
     totalScore: number;
     name?: string;
@@ -70,6 +71,7 @@ export class ContentCache {
     lastUsedTime: number;
     name: string;
     identifier: string;
+    totalScore: number;
 }
 
 export class ReportDetailPerUser {
@@ -78,6 +80,8 @@ export class ReportDetailPerUser {
     totalTime: number;
     totalScore: number;
     maxTotalScore: number;
+    totalMaxScore: number;
+    totalQuestionsScore: number;
     reportDetailsList: LearnerAssessmentDetails[] = [];
 }
 
