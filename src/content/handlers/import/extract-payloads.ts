@@ -7,7 +7,6 @@ import {ContentUtil} from '../../util/content-util';
 import {GetContentDetailsHandler} from '../get-content-details-handler';
 import {ContentEntry} from '../../db/schema';
 import {ZipService} from '../../../util/zip/def/zip-service';
-import {DirectoryEntry} from '../../../util/file';
 import {AppConfig} from '../../../api/config/app-config';
 import {FileUtil} from '../../../util/file/util/file-util';
 import {DeviceInfo} from '../../../util/device/def/device-info';
@@ -21,6 +20,8 @@ import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 
 export class ExtractPayloads {
+
+    private readonly MANIFEST_FILE_NAME = 'manifest.json';
 
     constructor(private fileService: FileService,
                 private zipService: ZipService,
@@ -48,6 +49,7 @@ export class ExtractPayloads {
             }
         }
 
+        // await this.fileService.createDir(ContentUtil.getContentRootDir(importContext.destinationFolder), false);
         // Create all the directories for content.
         const createdDirectories = await this.createDirectories(ContentUtil.getContentRootDir(importContext.destinationFolder),
             contentIds);
@@ -61,7 +63,8 @@ export class ExtractPayloads {
             return map;
         }, {});
 
-        await this.fileService.createDir(ContentUtil.getContentRootDir(importContext.destinationFolder), false);
+        let rootContentPath;
+
         for (const e of importContext.items!) {
             let element = e as any;
             const identifier = element.identifier;
@@ -188,13 +191,25 @@ export class ExtractPayloads {
                 }).toPromise();
             }
 
-            if (ContentUtil.isNotUnit(mimeType, visibility)) {
-                importContext.identifiers.push(identifier);
+            if (visibility === Visibility.DEFAULT.valueOf()) {
+                rootContentPath = basePath;
+            } else {
+                if (ContentUtil.isNotUnit(mimeType, visibility)) {
+                    importContext.identifiers.push(identifier);
+                }
             }
             // increase the current count
             currentCount++;
             this.postImportProgressEvent(currentCount, importContext.items!.length);
         }
+
+        if (rootContentPath) {
+            await this.fileService.copyFile(importContext.tmpLocation!,
+                this.MANIFEST_FILE_NAME,
+                rootContentPath,
+                this.MANIFEST_FILE_NAME);
+        }
+
         response.body = importContext;
         return Promise.resolve(response);
     }
@@ -202,9 +217,10 @@ export class ExtractPayloads {
     async copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string) {
         try {
             if (asset) {
-                const iconSrc = tempLocationPath.concat(asset);
-                const iconDestination = payloadDestinationPath.concat(asset);
+                // const iconSrc = tempLocationPath.concat(asset);
+                // const iconDestination = payloadDestinationPath.concat(asset);
                 const folderContainingFile = asset.substring(0, asset.lastIndexOf('/'));
+                // TODO: Can optimize folder creation
                 await this.fileService.createDir(payloadDestinationPath.concat(folderContainingFile), false);
                 // If source icon is not available then copy assets is failing and throwing exception.
                 await this.fileService.copyFile(tempLocationPath.concat(folderContainingFile), FileUtil.getFileName(asset),
