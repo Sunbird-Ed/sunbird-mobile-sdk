@@ -7,7 +7,8 @@ export declare class CachedItemStoreImpl<T> implements CachedItemStore<T> {
     private apiConfig;
     private sharedPreferences;
     constructor(keyValueStore: KeyValueStore, apiConfig: ApiConfig, sharedPreferences: SharedPreferences);
-    getCached(id: string, noSqlkey: string, timeToLiveKey: string, fromServer: () => Observable<T>, initial?: () => Observable<T>, timeToLive?: number): Observable<T>;
+    private static isItemEmpty;
+    getCached(id: string, noSqlkey: string, timeToLiveKey: string, fromServer: () => Observable<T>, initial?: () => Observable<T>, timeToLive?: number, emptyCondition?: (item: T) => boolean): Observable<T>;
     private isItemCachedInDb;
     private isItemTTLExpired;
     private saveItem;

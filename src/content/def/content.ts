@@ -32,9 +32,9 @@ export interface ContentData {
     size: string;
     owner: string;
     creator: string;
-    subject: string;
+    subject: string | string[];
     board: string;
-    medium: string;
+    medium: string | string[];
     publisher: string;
     me_totalRatings: string;
     me_averageRating: string;

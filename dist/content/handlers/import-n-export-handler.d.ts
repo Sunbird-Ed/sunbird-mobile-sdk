@@ -10,6 +10,11 @@ export declare class ImportNExportHandler {
     populateItems(contentsInDb: ContentEntry.SchemaMap[]): {
         [key: string]: any;
     }[];
+    populateItemList(contentWithAllChildren: {
+        [key: string]: any;
+    }[]): {
+        [key: string]: any;
+    }[];
     getContentExportDBModeltoExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]>;
     generateManifestForArchive(items: any[]): {
         [key: string]: any;
