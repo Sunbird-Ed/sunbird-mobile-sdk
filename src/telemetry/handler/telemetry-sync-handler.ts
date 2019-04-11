@@ -35,7 +35,7 @@ interface DeviceRegisterResponse {
 }
 
 export class TelemetrySyncHandler implements ApiRequestHandler<undefined, TelemetrySyncStat> {
-    public static readonly TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY = 'offset_key';
+    public static readonly TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY = 'telemetry_log_min_allowed_offset_key';
     private static readonly LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY = 'last_synced_device_register_time_stamp';
     private static readonly DEVICE_REGISTER_ENDPOINT = '/register';
     private static readonly TELEMETRY_ENDPOINT = '/telemetry';
