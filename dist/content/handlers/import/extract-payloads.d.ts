@@ -17,7 +17,6 @@ export declare class ExtractPayloads {
     private eventsBusService;
     constructor(fileService: FileService, zipService: ZipService, appConfig: AppConfig, dbService: DbService, deviceInfo: DeviceInfo, getContentDetailsHandler: GetContentDetailsHandler, eventsBusService: EventsBusService);
     execute(importContext: ImportContentContext): Promise<Response>;
-    private postImportProgressEvent;
     copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string): Promise<void>;
     /**
      * add or update the reference count for the content
@@ -36,5 +35,7 @@ export declare class ExtractPayloads {
      */
     getContentState(existingContentInDb: any, contentState: number): number;
     getBasePath(payLoadDestinationPath: any, doesContentExist: boolean, existingContentPath: string): string;
+    private postImportProgressEvent;
     private constructContentDBModel;
+    private createDirectories;
 }

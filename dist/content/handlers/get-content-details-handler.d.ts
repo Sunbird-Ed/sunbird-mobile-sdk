@@ -18,6 +18,7 @@ export declare class GetContentDetailsHandler implements ApiRequestHandler<Conte
     handle(request: ContentDetailRequest): Observable<Content>;
     /** @internal */
     fetchFromDB(contentId: string): Observable<ContentEntry.SchemaMap | undefined>;
+    fetchFromDBForAll(contentIds: string): Observable<ContentEntry.SchemaMap[]>;
     fetchFromServer(request: ContentDetailRequest): Observable<ContentData>;
     fetchAndDecorate(request: ContentDetailRequest): Observable<Content>;
     /** @internal */
