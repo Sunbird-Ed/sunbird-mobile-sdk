@@ -358,7 +358,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         event: {
                             type: ContentEventType.IMPORT_COMPLETED,
                             payload: {
-                                contentId: importContentContext.identifiers![0]
+                                contentId: importContentContext.rootIdentifier
                             }
                         }
                     });

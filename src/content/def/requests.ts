@@ -52,7 +52,6 @@ export interface ChildContentRequest {
     level?: number;
 }
 
-
 export interface ContentDeleteRequest {
     contentDeleteList: ContentDelete[];
 }
@@ -68,7 +67,6 @@ export interface EcarImportRequest {
     sourceFilePath: string;
     correlationData: CorrelationData[];
 }
-
 
 export interface ContentImportRequest {
     contentImportArray: ContentImport[];
@@ -103,7 +101,6 @@ export enum MarkerType {
 }
 
 export interface ContentSearchCriteria {
-
     query?: string;
     exists?: string[];
     offset?: number;
@@ -167,6 +164,7 @@ export interface ImportContentContext {
     identifiers?: string[];
     contentImportResponseList: ContentImportResponse[];
     tmpLocation?: string;
+    rootIdentifier?: string;
 }
 
 export interface ExportContentContext {
@@ -190,4 +188,3 @@ export interface RelevantContentRequest extends DownloadRequest {
     next?: boolean;
     prev?: boolean;
 }
-

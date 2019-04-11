@@ -189,6 +189,7 @@ export class ExtractPayloads {
 
             if (visibility === Visibility.DEFAULT.valueOf()) {
                 rootContentPath = basePath;
+                importContext.rootIdentifier = identifier;
             } else {
                 if (ContentUtil.isNotUnit(mimeType, visibility)) {
                     importContext.identifiers.push(identifier);
