@@ -524,20 +524,24 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             .map((result: ContentSearchResult) => {
                 const filterValues = result.filterCriteria.facetFilters![0].values;
                 const allContent = result.contentDataList;
-                const pageSectionList: PageSection[] = [];
-                // forming response same as PageService.getPageAssemble format
-                for (let i = 0; i < filterValues.length; i++) {
-                    const pageSection: PageSection = {};
+
+                const pageSectionList: PageSection[] = filterValues.map((filterValue) => {
                     const contents = allContent.filter((content) => {
-                        return content.subject.toLowerCase().trim() === filterValues[i].name.toLowerCase().trim();
+                        if (Array.isArray(content.subject)) {
+                            return content.subject.find((sub) => {
+                                return sub.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
+                            });
+                        } else {
+                            return content.subject.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
+                        }
                     });
-                    delete filterValues[i].apply;
-                    pageSection.contents = contents;
-                    pageSection.name = filterValues[i].name.charAt(0).toUpperCase() + filterValues[i].name.slice(1);
-                    // TODO : need to handle localization
-                    pageSection.display = {name: {en: filterValues[i].name}};
-                    pageSectionList.push(pageSection);
-                }
+
+                    return {
+                        contents,
+                        name: filterValue.name.charAt(0).toUpperCase() + filterValue.name.slice(1),
+                        display: {name: {en: filterValue.name}} // TODO : need to handle localization
+                    };
+                });
 
                 return {
                     name: 'Resource',
