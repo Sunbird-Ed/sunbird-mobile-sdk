@@ -15,6 +15,7 @@ export declare class ExtractPayloads {
     private deviceInfo;
     private getContentDetailsHandler;
     private eventsBusService;
+    private readonly MANIFEST_FILE_NAME;
     constructor(fileService: FileService, zipService: ZipService, appConfig: AppConfig, dbService: DbService, deviceInfo: DeviceInfo, getContentDetailsHandler: GetContentDetailsHandler, eventsBusService: EventsBusService);
     execute(importContext: ImportContentContext): Promise<Response>;
     copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string): Promise<void>;
