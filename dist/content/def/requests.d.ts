@@ -148,6 +148,7 @@ export interface ImportContentContext {
     identifiers?: string[];
     contentImportResponseList: ContentImportResponse[];
     tmpLocation?: string;
+    rootIdentifier?: string;
 }
 export interface ExportContentContext {
     ecarFilePath?: string;

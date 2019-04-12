@@ -71,6 +71,7 @@ export interface ContentData {
     creators: string;
     contributors: string;
     streamingUrl: string;
+    totalScore: any;
 }
 export interface ContentFeedback {
     contentId: string;
