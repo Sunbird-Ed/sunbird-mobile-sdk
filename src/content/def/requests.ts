@@ -34,6 +34,9 @@ export interface ContentRequest {
     localOnly?: boolean;
     resourcesOnly?: boolean;
     limit?: number;
+    board?: string[];
+    medium?: string[];
+    grade?: string[];
 }
 
 export interface ContentSortCriteria {

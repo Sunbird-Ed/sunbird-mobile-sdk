@@ -220,7 +220,7 @@ export class ContentUtil {
                 } else {
                     overrideDB = true;
                 }
-            } else  if (ContentUtil.readPkgVersion(contentData) < newPkgVersion) {
+            } else if (ContentUtil.readPkgVersion(contentData) < newPkgVersion) {
                 overrideDB = true;
             }
 
@@ -466,6 +466,30 @@ export class ContentUtil {
 
     public static isNotUnit(mimeType, visibility): boolean {
         return !(MimeType.COLLECTION.valueOf() === mimeType && Visibility.PARENT.valueOf() === visibility);
+    }
+
+    public static getContentAttribute(data): string {
+        let value: string[] = [];
+        if (data) {
+            if (typeof data === 'string') {
+                value.push(data);
+            } else {
+                value = data;
+            }
+            if (value && value.length) {
+                value.sort();
+                let attribute = '';
+                for (let i = 0; i < value.length; i++) {
+                    if (i < value.length - 1) {
+                        attribute =  attribute.concat('~', value[i]);
+                    } else {
+                        attribute = attribute.concat('~', value[i], '~');
+                    }
+                }
+                return attribute.toLowerCase().trim();
+            }
+        }
+        return '';
     }
 
 }

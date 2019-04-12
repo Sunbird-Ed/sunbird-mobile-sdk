@@ -86,6 +86,9 @@ export class ExtractPayloads {
             const pkgVersion = element.pkgVersion;
             const artifactUrl = element.artifactUrl;
             const appIcon = element.appIcon;
+            const board = element.board;
+            const medium = element.medium;
+            const grade = element.gradeLevel;
             // const posterImage = element.posterImage;
             // const grayScaleAppIcon = element.grayScaleAppIcon;
             // const dialCodes = element.dialcodes;
@@ -180,7 +183,7 @@ export class ExtractPayloads {
 
             const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
                 JSON.stringify(element), mimeType, contentType, visibility, basePath,
-                referenceCount, contentState, audience, pragma, sizeOnDevice);
+                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade);
             if (!existingContentModel) {
                 insertNewContentModels.push(newContentModel);
             } else {
@@ -190,6 +193,7 @@ export class ExtractPayloads {
             if (visibility === Visibility.DEFAULT.valueOf()) {
                 rootContentPath = basePath;
                 importContext.rootIdentifier = identifier;
+
             } else {
                 if (ContentUtil.isNotUnit(mimeType, visibility)) {
                     importContext.identifiers.push(identifier);
@@ -332,7 +336,7 @@ export class ExtractPayloads {
 
     private constructContentDBModel(identifier, manifestVersion, localData,
                                     mimeType, contentType, visibility, path,
-                                    refCount, contentState, audience, pragma, sizeOnDevice): ContentEntry.SchemaMap {
+                                    refCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
@@ -347,7 +351,10 @@ export class ExtractPayloads {
             [ContentEntry.COLUMN_NAME_VISIBILITY]: visibility,
             [ContentEntry.COLUMN_NAME_AUDIENCE]: audience,
             [ContentEntry.COLUMN_NAME_PRAGMA]: pragma,
-            [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ssZ')
+            [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ssZ'),
+            [ContentEntry.COLUMN_NAME_BOARD]: ContentUtil.getContentAttribute(board),
+            [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
+            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade),
         };
 
     }

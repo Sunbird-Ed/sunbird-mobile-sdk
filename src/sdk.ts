@@ -51,6 +51,7 @@ import {AppInfo} from './util/app/def/app-info';
 import {AppInfoImpl} from './util/app/impl/app-info-impl';
 import {PlayerService, PlayerServiceImpl} from './player';
 import {TelemetryConfig} from './telemetry/config/telemetry-config';
+import {OfflineSearchTextbookMigration} from './db/migrations/offline-search-textbook-migration';
 
 export class SunbirdSdk {
 
@@ -207,12 +208,13 @@ export class SunbirdSdk {
         } else {
             this._dbService = new DbCordovaService(
                 sdkConfig.dbConfig,
-                20,
+                21,
                 [
                     new ProfileSyllabusMigration(),
                     new GroupProfileMigration(),
                     new MillisecondsToSecondsMigration(),
-                    new ContentMarkerMigration()
+                    new ContentMarkerMigration(),
+                    new OfflineSearchTextbookMigration()
                 ]
             );
         }
