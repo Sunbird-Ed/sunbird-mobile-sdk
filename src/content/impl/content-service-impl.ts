@@ -83,7 +83,6 @@ import {CachedItemStore} from '../../key-value-store';
 import * as SHA1 from 'crypto-js/sha1';
 import {FrameworkKeys} from '../../preference-keys';
 import {CreateHierarchy} from '../handlers/import/create-hierarchy';
-import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
@@ -102,7 +101,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 private downloadService: DownloadService,
                 private sharedPreferences: SharedPreferences,
                 private eventsBusService: EventsBusService,
-                private cachedItemStore: CachedItemStore<ContentsGroupedByPageSection>) {
+                private cachedItemStore: CachedItemStore<ContentSearchResult>) {
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
             this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
@@ -501,14 +500,26 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection> {
-        return this.cachedItemStore.getCached(
+        const offlineTextbookContents$: Observable<ContentData[]> = this.getContents({
+            contentTypes: ['TextBook'],
+            board: request.board,
+            medium: request.medium,
+            grade: request.grade
+        }).map((contents: Content[]) => contents.map((content) => content.contentData));
+
+        const onlineTextbookContents$: Observable<ContentSearchResult> = this.cachedItemStore.getCached(
             ContentServiceImpl.getIdForDb(request),
             this.SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY,
             'ttl_' + this.SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY,
-            () => this.searchContentAndGroupByPageSection(request),
+            () => this.searchContent(request),
             undefined,
             undefined,
-            (contentsGroupedByPageSection: ContentsGroupedByPageSection) => contentsGroupedByPageSection.sections.length === 0
+            (contentSearchResult: ContentSearchResult) => contentSearchResult.contentDataList.length === 0
+        );
+
+        return this.searchContentAndGroupByPageSection(
+            offlineTextbookContents$,
+            onlineTextbookContents$
         );
     }
 
@@ -524,34 +535,53 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         });
     }
 
-    private searchContentAndGroupByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection> {
-        return this.searchContent(request)
-            .map((result: ContentSearchResult) => {
-                const filterValues = result.filterCriteria.facetFilters![0].values;
-                const allContent = result.contentDataList;
+    private searchContentAndGroupByPageSection(
+        offlineTextbookContents$: Observable<ContentData[]>,
+        onlineTextbookContents$: Observable<ContentSearchResult>
+    ): Observable<ContentsGroupedByPageSection> {
+        return Observable.zip(
+            offlineTextbookContents$,
+            onlineTextbookContents$
+        ).map((results: [ContentData[], ContentSearchResult]) => {
+            const localTextBooksContentDataList = results[0];
 
-                const pageSectionList: PageSection[] = filterValues.map((filterValue) => {
-                    const contents = allContent.filter((content) => {
-                        if (Array.isArray(content.subject)) {
-                            return content.subject.find((sub) => {
-                                return sub.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
-                            });
-                        } else {
-                            return content.subject.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
-                        }
-                    });
+            const searchContentDataList = results[1].contentDataList.filter((contentData) => {
+                return !localTextBooksContentDataList.find((localContentData) => localContentData.identifier === contentData.identifier);
+            });
 
-                    return {
-                        contents,
-                        name: filterValue.name.charAt(0).toUpperCase() + filterValue.name.slice(1),
-                        display: {name: {en: filterValue.name}} // TODO : need to handle localization
-                    };
+            return {
+                ...results[1],
+                contentDataList: [
+                    ...localTextBooksContentDataList,
+                    ...searchContentDataList,
+                ]
+            } as ContentSearchResult;
+        }).map((result: ContentSearchResult) => {
+            const filterValues = result.filterCriteria.facetFilters![0].values;
+            const allContent = result.contentDataList;
+
+            const pageSectionList: PageSection[] = filterValues.map((filterValue) => {
+                const contents = allContent.filter((content) => {
+                    if (Array.isArray(content.subject)) {
+                        return content.subject.find((sub) => {
+                            return sub.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
+                        });
+                    } else {
+                        return content.subject.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
+                    }
                 });
 
                 return {
-                    name: 'Resource',
-                    sections: pageSectionList
+                    contents,
+                    name: filterValue.name.charAt(0).toUpperCase() + filterValue.name.slice(1),
+                    display: {name: {en: filterValue.name}} // TODO : need to handle localization
                 };
             });
+
+            return {
+                name: 'Resource',
+                sections: pageSectionList
+            };
+        });
     }
 }
