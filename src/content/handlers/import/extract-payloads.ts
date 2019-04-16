@@ -354,7 +354,7 @@ export class ExtractPayloads {
             [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ssZ'),
             [ContentEntry.COLUMN_NAME_BOARD]: ContentUtil.getContentAttribute(board),
             [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
-            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade),
+            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)
         };
 
     }
