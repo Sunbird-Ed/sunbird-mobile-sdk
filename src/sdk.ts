@@ -11,7 +11,7 @@ import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/impl/auth-service-impl';
-import {ContentFeedbackService, ContentService, ContentServiceConfig, ContentsGroupedByPageSection} from './content';
+import {ContentFeedbackService, ContentSearchResult, ContentService, ContentServiceConfig} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
 import {Channel, Framework, FrameworkService, FrameworkServiceImpl, FrameworkUtilService, FrameworkUtilServiceImpl} from './framework';
@@ -331,7 +331,7 @@ export class SunbirdSdk {
             this._downloadService,
             this._sharedPreferences,
             this._eventsBusService,
-            new CachedItemStoreImpl<ContentsGroupedByPageSection>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences)
+            new CachedItemStoreImpl<ContentSearchResult>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences)
         );
 
         this._courseService = new CourseServiceImpl(

@@ -24,7 +24,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
 
     private static checkPData(pdata: ProducerData): boolean {
         if (pdata != null && pdata.pid !== null) {
-            return pdata.pid.includes(SummaryTelemetryEventHandler.CONTENT_PLAYER_PID);
+            return pdata.pid.indexOf(SummaryTelemetryEventHandler.CONTENT_PLAYER_PID) !== -1;
         }
         return false;
     }

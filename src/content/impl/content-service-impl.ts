@@ -102,7 +102,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 private downloadService: DownloadService,
                 private sharedPreferences: SharedPreferences,
                 private eventsBusService: EventsBusService,
-                private cachedItemStore: CachedItemStore<ContentsGroupedByPageSection>) {
+                private cachedItemStore: CachedItemStore<ContentSearchResult>) {
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
             this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
@@ -248,23 +248,35 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content> {
-        if (!childContentRequest.level) {
-            childContentRequest.level = -1;
-        }
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
-        let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
-        if (!hierarchyInfoList) {
-            hierarchyInfoList = [];
-        } else if (hierarchyInfoList.length > 0) {
-            if (hierarchyInfoList[hierarchyInfoList.length - 1].identifier === childContentRequest.contentId) {
-                const length = hierarchyInfoList.length;
-                hierarchyInfoList.splice((length - 1), 1);
-            }
-        }
+        return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId!))
+            .mergeMap((contentInDb: ContentEntry.SchemaMap[]) => {
 
-        return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId))
-            .mergeMap((rows: ContentEntry.SchemaMap[]) => {
-                return childContentHandler.fetchChildrenOfContent(rows[0], 0, childContentRequest.level!, hierarchyInfoList);
+                return Observable.fromPromise(
+                    this.fileService.exists(ContentUtil.getBasePath(contentInDb[0][COLUMN_NAME_PATH]!))
+                        .then(() => {
+                            return this.fileService.readAsText(ContentUtil.getBasePath(contentInDb[0][COLUMN_NAME_PATH]!),
+                                'hierarchy.json');
+                        })
+                        .then((hierarchy: string) => {
+                            return JSON.parse(hierarchy) as Content;
+                        })
+                        .catch(() => {
+                            if (!childContentRequest.level) {
+                                childContentRequest.level = -1;
+                            }
+                            const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+                            let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
+                            if (!hierarchyInfoList) {
+                                hierarchyInfoList = [];
+                            } else if (hierarchyInfoList.length > 0) {
+                                if (hierarchyInfoList[hierarchyInfoList.length - 1].identifier === childContentRequest.contentId) {
+                                    const length = hierarchyInfoList.length;
+                                    hierarchyInfoList.splice((length - 1), 1);
+                                }
+                            }
+                            return childContentHandler.fetchChildrenOfContent(contentInDb[0], 0,
+                                childContentRequest.level!, hierarchyInfoList);
+                        }));
             });
     }
 
@@ -501,14 +513,26 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection> {
-        return this.cachedItemStore.getCached(
+        const offlineTextbookContents$: Observable<ContentData[]> = this.getContents({
+            contentTypes: ['TextBook'],
+            board: request.board,
+            medium: request.medium,
+            grade: request.grade
+        }).map((contents: Content[]) => contents.map((content) => content.contentData));
+
+        const onlineTextbookContents$: Observable<ContentSearchResult> = this.cachedItemStore.getCached(
             ContentServiceImpl.getIdForDb(request),
             this.SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY,
             'ttl_' + this.SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY,
-            () => this.searchContentAndGroupByPageSection(request),
+            () => this.searchContent(request),
             undefined,
             undefined,
-            (contentsGroupedByPageSection: ContentsGroupedByPageSection) => contentsGroupedByPageSection.sections.length === 0
+            (contentSearchResult: ContentSearchResult) => contentSearchResult.contentDataList.length === 0
+        );
+
+        return this.searchContentAndGroupByPageSection(
+            offlineTextbookContents$,
+            onlineTextbookContents$
         );
     }
 
@@ -524,34 +548,53 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         });
     }
 
-    private searchContentAndGroupByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection> {
-        return this.searchContent(request)
-            .map((result: ContentSearchResult) => {
-                const filterValues = result.filterCriteria.facetFilters![0].values;
-                const allContent = result.contentDataList;
+    private searchContentAndGroupByPageSection(
+        offlineTextbookContents$: Observable<ContentData[]>,
+        onlineTextbookContents$: Observable<ContentSearchResult>
+    ): Observable<ContentsGroupedByPageSection> {
+        return Observable.zip(
+            offlineTextbookContents$,
+            onlineTextbookContents$
+        ).map((results: [ContentData[], ContentSearchResult]) => {
+            const localTextBooksContentDataList = results[0];
 
-                const pageSectionList: PageSection[] = filterValues.map((filterValue) => {
-                    const contents = allContent.filter((content) => {
-                        if (Array.isArray(content.subject)) {
-                            return content.subject.find((sub) => {
-                                return sub.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
-                            });
-                        } else {
-                            return content.subject.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
-                        }
-                    });
+            const searchContentDataList = results[1].contentDataList.filter((contentData) => {
+                return !localTextBooksContentDataList.find((localContentData) => localContentData.identifier === contentData.identifier);
+            });
 
-                    return {
-                        contents,
-                        name: filterValue.name.charAt(0).toUpperCase() + filterValue.name.slice(1),
-                        display: {name: {en: filterValue.name}} // TODO : need to handle localization
-                    };
+            return {
+                ...results[1],
+                contentDataList: [
+                    ...localTextBooksContentDataList,
+                    ...searchContentDataList,
+                ]
+            } as ContentSearchResult;
+        }).map((result: ContentSearchResult) => {
+            const filterValues = result.filterCriteria.facetFilters![0].values;
+            const allContent = result.contentDataList;
+
+            const pageSectionList: PageSection[] = filterValues.map((filterValue) => {
+                const contents = allContent.filter((content) => {
+                    if (Array.isArray(content.subject)) {
+                        return content.subject.find((sub) => {
+                            return sub.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
+                        });
+                    } else {
+                        return content.subject.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
+                    }
                 });
 
                 return {
-                    name: 'Resource',
-                    sections: pageSectionList
+                    contents,
+                    name: filterValue.name.charAt(0).toUpperCase() + filterValue.name.slice(1),
+                    display: {name: {en: filterValue.name}} // TODO : need to handle localization
                 };
             });
+
+            return {
+                name: 'Resource',
+                sections: pageSectionList
+            };
+        });
     }
 }
