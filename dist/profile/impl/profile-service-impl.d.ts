@@ -46,8 +46,10 @@ export declare class ProfileServiceImpl implements ProfileService {
     verifyOTP(verifyOTPRequest: VerifyOtpRequest): Observable<boolean>;
     searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult[]>;
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]>;
-    private mapDbProfileEntriesToProfiles;
     addContentAccess(contentAccess: ContentAccess): Observable<boolean>;
     exportProfile(profileExportRequest: ProfileExportRequest): Observable<ProfileExportResponse>;
     importProfile(profileImportRequest: ProfileImportRequest): Observable<ProfileImportResponse>;
+    private mapDbProfileEntriesToProfiles;
+    private generateSessionStartTelemetry;
+    private generateSessionEndTelemetry;
 }
