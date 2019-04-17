@@ -68,4 +68,5 @@ export declare class ContentUtil {
     static getRollup(identifier: string, hierachyInfo: HierarchyInfo[]): Rollup;
     static addOrUpdateRefCount(refCount: number): number;
     static isNotUnit(mimeType: any, visibility: any): boolean;
+    static getContentAttribute(data: any): string;
 }

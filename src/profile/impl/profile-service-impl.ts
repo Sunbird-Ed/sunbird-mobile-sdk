@@ -95,7 +95,7 @@ export class ProfileServiceImpl implements ProfileService {
     onInit(): Observable<undefined> {
         return this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION)
             .map((s) => s && JSON.parse(s))
-            .mergeMap((profileSession: ProfileSession) => {
+            .mergeMap((profileSession?: ProfileSession) => {
                 if (!profileSession) {
                     const request: Profile = {
                         uid: '',
@@ -112,11 +112,6 @@ export class ProfileServiceImpl implements ProfileService {
                 }
 
                 return this.setActiveSessionForProfile(profileSession.uid)
-                    .do(async () => await TelemetryLogger.log.end({
-                        type: 'session',
-                        env: 'sdk',
-                        duration: Math.floor((Date.now() - profileSession.createdTime) / 1000)
-                    }).toPromise())
                     .mapTo(undefined);
             });
     }
@@ -338,11 +333,13 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     setActiveSessionForProfile(profileUid: string): Observable<boolean> {
-        return this.dbService
-            .read({
-                table: ProfileEntry.TABLE_NAME,
-                selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
-                selectionArgs: [profileUid]
+        return Observable.defer(() => this.generateSessionEndTelemetry())
+            .mergeMap(() => {
+                return this.dbService.read({
+                    table: ProfileEntry.TABLE_NAME,
+                    selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
+                    selectionArgs: [profileUid]
+                });
             })
             .map((rows: ProfileEntry.SchemaMap[]) =>
                 rows && rows[0] && ProfileDbEntryMapper.mapProfileDBEntryToProfile(rows[0])
@@ -379,9 +376,7 @@ export class ProfileServiceImpl implements ProfileService {
                     createdTime: profileSession.createdTime
                 })).mapTo(true);
             })
-            .do(async () => await TelemetryLogger.log.start({
-                type: 'session', env: 'sdk'
-            }).toPromise());
+            .do(async () => await this.generateSessionStartTelemetry());
     }
 
     getActiveProfileSession(): Observable<ProfileSession> {
@@ -424,10 +419,6 @@ export class ProfileServiceImpl implements ProfileService {
             return contentAccessList.map((contentAccess: ContentAccessEntry.SchemaMap) =>
                 ProfileHandler.mapDBEntryToContenetAccess(contentAccess));
         });
-    }
-
-    private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
-        return profiles.map((profile: ProfileEntry.SchemaMap) => ProfileDbEntryMapper.mapProfileDBEntryToProfile(profile));
     }
 
     addContentAccess(contentAccess: ContentAccess): Observable<boolean> {
@@ -521,5 +512,29 @@ export class ProfileServiceImpl implements ProfileService {
             }).then((importResponse: Response<ImportProfileContext>) => {
                 return {failed: importResponse.body.failed!, imported: importResponse.body.imported!};
             }));
+    }
+
+    private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
+        return profiles.map((profile: ProfileEntry.SchemaMap) => ProfileDbEntryMapper.mapProfileDBEntryToProfile(profile));
+    }
+
+    private async generateSessionStartTelemetry() {
+        return TelemetryLogger.log.start({
+            type: 'session', env: 'sdk'
+        }).toPromise();
+    }
+
+    private async generateSessionEndTelemetry() {
+        const sessionString = await this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION).toPromise();
+
+        if (sessionString) {
+            const profileSession = JSON.parse(sessionString);
+
+            await TelemetryLogger.log.end({
+                type: 'session',
+                env: 'sdk',
+                duration: Math.floor((Date.now() - profileSession.createdTime) / 1000)
+            }).toPromise();
+        }
     }
 }

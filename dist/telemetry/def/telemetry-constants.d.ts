@@ -49,7 +49,10 @@ export declare enum InteractSubType {
     SUBTYPE_SPINE = "spine",
     ONLINE = "online",
     FULL = "full",
-    CONTENT_VARIANT = "content-variant-download"
+    CONTENT_VARIANT = "content-variant-download",
+    CONTENT_DOWNLOAD_INITIATE = "ContentDownload-Initiate",
+    CONTENT_DOWNLOAD_SUCCESS = "ContentDownload-Success",
+    CONTENT_DOWNLOAD_CANCEL = "ContentDownload-Cancel"
 }
 export declare enum TelemetryErrorCode {
     ERR_DOWNLOAD_FAILED = "ERR_DOWNLOAD_FAILED"

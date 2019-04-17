@@ -20,7 +20,7 @@ export class EventsBusServiceImpl implements EventsBusService {
     onInit(): Observable<undefined> {
         return this.eventsBus
             .do((eventContainer: EventContainer) => {
-                if (this.eventsBusConfig.debugMode === true) {
+                if (this.eventsBusConfig.debugMode) {
                     console.log(eventContainer);
                 }
             })
@@ -35,7 +35,11 @@ export class EventsBusServiceImpl implements EventsBusService {
                         })
                     );
 
-                await Observable.zip(...delegateHandlers).toPromise();
+                try {
+                    await Observable.zip(...delegateHandlers).toPromise();
+                } catch (e) {
+                    console.error('EVENT_BUS_DELEGATE_ERROR', e);
+                }
             })
             .mapTo(undefined);
     }

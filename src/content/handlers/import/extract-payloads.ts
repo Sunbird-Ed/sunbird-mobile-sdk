@@ -218,7 +218,7 @@ export class ExtractPayloads {
             // Update existing content in DB
             for (const e of updateNewContentModels) {
                 const newContentModel = e as ContentEntry.SchemaMap;
-                this.dbService.update({
+                await this.dbService.update({
                     table: ContentEntry.TABLE_NAME,
                     selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
                     selectionArgs: [newContentModel[ContentEntry.COLUMN_NAME_IDENTIFIER]],
