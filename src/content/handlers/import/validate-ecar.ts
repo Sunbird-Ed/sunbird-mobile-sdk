@@ -7,9 +7,11 @@ import {AppConfig} from '../../../api/config/app-config';
 import {DbService} from '../../../db';
 import {GetContentDetailsHandler} from '../get-content-details-handler';
 import {ContentEntry} from '../../db/schema';
+import {ArrayUtil} from '../../../util/array-util';
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class ValidateEcar {
+
     private readonly MANIFEST_FILE_NAME = 'manifest.json';
 
     constructor(private fileService: FileService,
@@ -46,6 +48,26 @@ export class ValidateEcar {
         importContext.manifestVersion = manifestJson.ver;
         importContext.items = [];
 
+        const contentIds: string[] = [];
+        for (const e of items) {
+            const element = e as any;
+            const identifier = element.identifier;
+            const visibility = ContentUtil.readVisibility(element);
+            if (ContentUtil.isNotUnit(element.mimeType, visibility)) {
+                contentIds.push(identifier);
+            }
+        }
+        const query = ArrayUtil.joinPreservingQuotes(contentIds);
+        const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
+        console.log(existingContentModels.length);
+
+        const result = existingContentModels.reduce((map, obj) => {
+            map[obj.identifier] = obj;
+            return map;
+        }, {});
+
+        // TODO: Remove the item from items list which does not required any validation.
+        //  i.e. if(!this.isNotUnit(element.mimeType, visibility))
         for (const e of items) {
             const element = e as any;
             const identifier = element.identifier;
@@ -65,8 +87,7 @@ export class ValidateEcar {
                 continue;
             }
 
-            const contentDetailsHandler = this.getContentDetailsHandler;
-            const existingContentModel = await contentDetailsHandler.fetchFromDB(identifier).toPromise();
+            const existingContentModel = result[identifier];
             let existingContentPath;
 
             if (existingContentModel) {

@@ -8,7 +8,7 @@ export declare class TelemetryDecoratorImpl implements TelemetryDecorator {
     private deviceInfo;
     private appInfo;
     constructor(apiConfig: ApiConfig, deviceInfo: DeviceInfo, appInfo: AppInfo);
-    decorate(event: Telemetry, uid: string, sid: string, gid?: string): any;
+    decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset?: number): any;
     patchActor(event: Telemetry, uid: string): void;
     patchContext(event: Telemetry, sid: any): void;
     patchPData(event: Context): void;

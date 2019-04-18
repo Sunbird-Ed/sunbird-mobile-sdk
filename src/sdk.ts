@@ -11,7 +11,7 @@ import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/impl/auth-service-impl';
-import {ContentFeedbackService, ContentService, ContentServiceConfig, ContentsGroupedByPageSection} from './content';
+import {ContentFeedbackService, ContentSearchResult, ContentService, ContentServiceConfig} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
 import {Channel, Framework, FrameworkService, FrameworkServiceImpl, FrameworkUtilService, FrameworkUtilServiceImpl} from './framework';
@@ -51,6 +51,7 @@ import {AppInfo} from './util/app/def/app-info';
 import {AppInfoImpl} from './util/app/impl/app-info-impl';
 import {PlayerService, PlayerServiceImpl} from './player';
 import {TelemetryConfig} from './telemetry/config/telemetry-config';
+import {OfflineSearchTextbookMigration} from './db/migrations/offline-search-textbook-migration';
 
 export class SunbirdSdk {
 
@@ -207,12 +208,13 @@ export class SunbirdSdk {
         } else {
             this._dbService = new DbCordovaService(
                 sdkConfig.dbConfig,
-                20,
+                21,
                 [
                     new ProfileSyllabusMigration(),
                     new GroupProfileMigration(),
                     new MillisecondsToSecondsMigration(),
-                    new ContentMarkerMigration()
+                    new ContentMarkerMigration(),
+                    new OfflineSearchTextbookMigration()
                 ]
             );
         }
@@ -329,7 +331,7 @@ export class SunbirdSdk {
             this._downloadService,
             this._sharedPreferences,
             this._eventsBusService,
-            new CachedItemStoreImpl<ContentsGroupedByPageSection>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences)
+            new CachedItemStoreImpl<ContentSearchResult>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences)
         );
 
         this._courseService = new CourseServiceImpl(

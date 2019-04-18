@@ -30,7 +30,7 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     private cachedItemStore;
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY;
     private readonly getContentDetailsHandler;
-    constructor(contentServiceConfig: ContentServiceConfig, apiService: ApiService, dbService: DbService, profileService: ProfileService, appConfig: AppConfig, fileService: FileService, zipService: ZipService, deviceInfo: DeviceInfo, telemetryService: TelemetryService, contentFeedbackService: ContentFeedbackService, downloadService: DownloadService, sharedPreferences: SharedPreferences, eventsBusService: EventsBusService, cachedItemStore: CachedItemStore<ContentsGroupedByPageSection>);
+    constructor(contentServiceConfig: ContentServiceConfig, apiService: ApiService, dbService: DbService, profileService: ProfileService, appConfig: AppConfig, fileService: FileService, zipService: ZipService, deviceInfo: DeviceInfo, telemetryService: TelemetryService, contentFeedbackService: ContentFeedbackService, downloadService: DownloadService, sharedPreferences: SharedPreferences, eventsBusService: EventsBusService, cachedItemStore: CachedItemStore<ContentSearchResult>);
     private static getIdForDb;
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
     getContents(request: ContentRequest): Observable<Content[]>;

@@ -15,7 +15,7 @@ export declare class DownloadServiceImpl implements DownloadService, SdkServiceO
     constructor(eventsBusService: EventsBusService, sharedPreferences: SharedPreferences);
     onInit(): Observable<undefined>;
     download(downloadRequests: DownloadRequest[]): Observable<undefined>;
-    cancel(downloadCancelRequest: DownloadCancelRequest): Observable<undefined>;
+    cancel(downloadCancelRequest: DownloadCancelRequest, generateTelemetry?: boolean): Observable<undefined>;
     registerOnDownloadCompleteDelegate(downloadCompleteDelegate: DownloadCompleteDelegate): void;
     private switchToNextDownloadRequest;
     private addToDownloadList;
@@ -25,4 +25,7 @@ export declare class DownloadServiceImpl implements DownloadService, SdkServiceO
     private emitProgressInEventBus;
     private getDownloadProgress;
     private listenForDownloadProgressChanges;
+    private generateDownloadStartTelemetry;
+    private generateDownloadCompleteTelemetry;
+    private generateDownloadCancelTelemetry;
 }

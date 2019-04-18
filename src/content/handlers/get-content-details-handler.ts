@@ -123,6 +123,13 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
         }).map((contentsFromDB: ContentEntry.SchemaMap[]) => contentsFromDB[0]);
     }
 
+    public fetchFromDBForAll(contentIds: string): Observable<ContentEntry.SchemaMap[]> {
+        return this.dbService.read({
+            table: ContentEntry.TABLE_NAME,
+            selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} IN (${contentIds})`
+        });
+    }
+
     fetchFromServer(request: ContentDetailRequest): Observable<ContentData> {
         return this.apiService.fetch<{ result: { content: ContentData } }>(
             new Request.Builder()

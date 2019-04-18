@@ -12,6 +12,7 @@ export interface ContentDecorateRequest {
 }
 export interface ContentDetailRequest {
     contentId: string;
+    emitUpdateIfAny?: boolean;
     attachFeedback?: boolean;
     attachContentAccess?: boolean;
     attachContentMarker?: boolean;
@@ -30,6 +31,9 @@ export interface ContentRequest {
     localOnly?: boolean;
     resourcesOnly?: boolean;
     limit?: number;
+    board?: string[];
+    medium?: string[];
+    grade?: string[];
 }
 export interface ContentSortCriteria {
     sortAttribute: string;
@@ -147,6 +151,7 @@ export interface ImportContentContext {
     identifiers?: string[];
     contentImportResponseList: ContentImportResponse[];
     tmpLocation?: string;
+    rootIdentifier?: string;
 }
 export interface ExportContentContext {
     ecarFilePath?: string;

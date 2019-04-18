@@ -1,5 +1,5 @@
 import {ContentData, HierarchyInfo} from '../def/content';
-import {ContentDisposition, ContentEncoding, ContentStatus, State, Visibility} from './content-constants';
+import {ContentDisposition, ContentEncoding, ContentStatus, State, Visibility, MimeType} from './content-constants';
 import {ChildContent} from '../def/response';
 import {Rollup} from '../../telemetry';
 import {AppConfig} from '../../api/config/app-config';
@@ -220,7 +220,7 @@ export class ContentUtil {
                 } else {
                     overrideDB = true;
                 }
-            } else  if (ContentUtil.readPkgVersion(contentData) < newPkgVersion) {
+            } else if (ContentUtil.readPkgVersion(contentData) < newPkgVersion) {
                 overrideDB = true;
             }
 
@@ -462,6 +462,34 @@ export class ContentUtil {
             refCount = 0;
         }
         return refCount;
+    }
+
+    public static isNotUnit(mimeType, visibility): boolean {
+        return !(MimeType.COLLECTION.valueOf() === mimeType && Visibility.PARENT.valueOf() === visibility);
+    }
+
+    public static getContentAttribute(data): string {
+        let value: string[] = [];
+        if (data) {
+            if (typeof data === 'string') {
+                value.push(data);
+            } else {
+                value = data;
+            }
+            if (value && value.length) {
+                value.sort();
+                let attribute = '';
+                for (let i = 0; i < value.length; i++) {
+                    if (i < value.length - 1) {
+                        attribute =  attribute.concat('~', value[i]);
+                    } else {
+                        attribute = attribute.concat('~', value[i], '~');
+                    }
+                }
+                return attribute.toLowerCase().trim();
+            }
+        }
+        return '';
     }
 
 }

@@ -82,6 +82,8 @@ import {GenerateInteractTelemetry} from '../handlers/import/generate-interact-te
 import {CachedItemStore} from '../../key-value-store';
 import * as SHA1 from 'crypto-js/sha1';
 import {FrameworkKeys} from '../../preference-keys';
+import {CreateHierarchy} from '../handlers/import/create-hierarchy';
+import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
@@ -100,7 +102,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 private downloadService: DownloadService,
                 private sharedPreferences: SharedPreferences,
                 private eventsBusService: EventsBusService,
-                private cachedItemStore: CachedItemStore<ContentsGroupedByPageSection>) {
+                private cachedItemStore: CachedItemStore<ContentSearchResult>) {
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
             this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
@@ -208,60 +210,73 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         const exportHandler = new ImportNExportHandler(this.deviceInfo, this.dbService);
         return Observable.fromPromise(exportHandler.getContentExportDBModeltoExport(
             contentExportRequest.contentIds).then((contentsInDb: ContentEntry.SchemaMap[]) => {
-            return this.fileService.getTempLocation(contentExportRequest.destinationFolder).then((tempLocationPath: DirectoryEntry) => {
-                const metaData: { [key: string]: any } = {};
-                const fileName = ContentUtil.getExportedFileName(contentsInDb);
-                metaData['content_count'] = contentsInDb.length;
-                const exportContentContext: ExportContentContext = {
-                    metadata: metaData,
-                    ecarFilePath: tempLocationPath.nativeURL.concat(fileName),
-                    destinationFolder: contentExportRequest.destinationFolder,
-                    contentModelsToExport: contentsInDb,
-                    tmpLocationPath: tempLocationPath.nativeURL
-                };
-                return new CleanTempLoc(this.fileService).execute(exportContentContext);
-            }).then((exportResponse: Response) => {
-                return new CreateTempLoc(this.fileService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new CreateContentExportManifest(this.dbService, exportHandler).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new WriteManifest(this.fileService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new CompressContent(this.zipService, this.fileService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new DeviceMemoryCheck(this.fileService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new CopyAsset(this.fileService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new EcarBundle(this.fileService, this.zipService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new GenerateExportShareTelemetry(this.telemetryService).execute(exportResponse.body);
-            }).then((exportResponse: Response<ContentExportResponse>) => {
-                return exportResponse.body;
-            });
+            return this.fileService.getTempLocation(contentExportRequest.destinationFolder)
+                .then((tempLocationPath: DirectoryEntry) => {
+                    const metaData: { [key: string]: any } = {};
+                    const fileName = ContentUtil.getExportedFileName(contentsInDb);
+                    metaData['content_count'] = contentsInDb.length;
+                    const exportContentContext: ExportContentContext = {
+                        metadata: metaData,
+                        ecarFilePath: tempLocationPath.nativeURL.concat(fileName),
+                        destinationFolder: contentExportRequest.destinationFolder,
+                        contentModelsToExport: contentsInDb,
+                        tmpLocationPath: tempLocationPath.nativeURL
+                    };
+                    return new CleanTempLoc(this.fileService).execute(exportContentContext);
+                }).then((exportResponse: Response) => {
+                    return new CreateTempLoc(this.fileService).execute(exportResponse.body);
+                }).then((exportResponse: Response) => {
+                    return new CreateContentExportManifest(this.dbService, exportHandler).execute(exportResponse.body);
+                }).then((exportResponse: Response) => {
+                    return new WriteManifest(this.fileService).execute(exportResponse.body);
+                }).then((exportResponse: Response) => {
+                    return new CompressContent(this.zipService, this.fileService).execute(exportResponse.body);
+                }).then((exportResponse: Response) => {
+                    return new DeviceMemoryCheck(this.fileService).execute(exportResponse.body);
+                }).then((exportResponse: Response) => {
+                    return new CopyAsset(this.fileService).execute(exportResponse.body);
+                }).then((exportResponse: Response) => {
+                    return new EcarBundle(this.fileService, this.zipService).execute(exportResponse.body);
+                }).then((exportResponse: Response) => {
+                    return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
+                }).then((exportResponse: Response) => {
+                    return new GenerateExportShareTelemetry(this.telemetryService).execute(exportResponse.body);
+                }).then((exportResponse: Response<ContentExportResponse>) => {
+                    return exportResponse.body;
+                });
         }));
     }
 
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content> {
-        if (!childContentRequest.level) {
-            childContentRequest.level = -1;
-        }
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
-        let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
-        if (!hierarchyInfoList) {
-            hierarchyInfoList = [];
-        } else if (hierarchyInfoList.length > 0) {
-            if (hierarchyInfoList[hierarchyInfoList.length - 1].identifier === childContentRequest.contentId) {
-                const length = hierarchyInfoList.length;
-                hierarchyInfoList.splice((length - 1), 1);
-            }
-        }
+        return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId!))
+            .mergeMap((contentInDb: ContentEntry.SchemaMap[]) => {
 
-        return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId))
-            .mergeMap((rows: ContentEntry.SchemaMap[]) => {
-                return childContentHandler.fetchChildrenOfContent(rows[0], 0, childContentRequest.level!, hierarchyInfoList);
+                return Observable.fromPromise(
+                    this.fileService.exists(ContentUtil.getBasePath(contentInDb[0][COLUMN_NAME_PATH]!))
+                        .then(() => {
+                            return this.fileService.readAsText(ContentUtil.getBasePath(contentInDb[0][COLUMN_NAME_PATH]!),
+                                'hierarchy.json');
+                        })
+                        .then((hierarchy: string) => {
+                            return JSON.parse(hierarchy) as Content;
+                        })
+                        .catch(() => {
+                            if (!childContentRequest.level) {
+                                childContentRequest.level = -1;
+                            }
+                            const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+                            let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
+                            if (!hierarchyInfoList) {
+                                hierarchyInfoList = [];
+                            } else if (hierarchyInfoList.length > 0) {
+                                if (hierarchyInfoList[hierarchyInfoList.length - 1].identifier === childContentRequest.contentId) {
+                                    const length = hierarchyInfoList.length;
+                                    hierarchyInfoList.splice((length - 1), 1);
+                                }
+                            }
+                            return childContentHandler.fetchChildrenOfContent(contentInDb[0], 0,
+                                childContentRequest.level!, hierarchyInfoList);
+                        }));
             });
     }
 
@@ -341,6 +356,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     const response: Response = new Response();
                     return new CreateContentImportManifest(this.dbService, this.deviceInfo, this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
+                    return new CreateHierarchy(this.dbService, this.fileService).execute(importResponse.body);
+                }).then((importResponse: Response) => {
                     return new EcarCleanup(this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
                     return new UpdateSizeOnDevice(this.dbService).execute(importResponse.body);
@@ -349,13 +366,13 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }).then((importResponse: Response) => {
                     return new GenerateInteractTelemetry(this.telemetryService).execute(importResponse.body, 'ContentImport-Success');
                 }).then((importResponse: Response<ImportContentContext>) => {
-                    const response: Response = new Response();
                     this.eventsBusService.emit({
                         namespace: EventNamespace.CONTENT,
                         event: {
                             type: ContentEventType.IMPORT_COMPLETED,
                             payload: {
-                                contentId: importContentContext.identifiers![0]
+                                contentId: importContentContext.rootIdentifier ?
+                                    importContentContext.rootIdentifier : importContentContext.identifiers![0]
                             }
                         }
                     });
@@ -496,14 +513,26 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection> {
-        return this.cachedItemStore.getCached(
+        const offlineTextbookContents$: Observable<ContentData[]> = this.getContents({
+            contentTypes: ['TextBook'],
+            board: request.board,
+            medium: request.medium,
+            grade: request.grade
+        }).map((contents: Content[]) => contents.map((content) => content.contentData));
+
+        const onlineTextbookContents$: Observable<ContentSearchResult> = this.cachedItemStore.getCached(
             ContentServiceImpl.getIdForDb(request),
             this.SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY,
             'ttl_' + this.SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY,
-            () => this.searchContentAndGroupByPageSection(request),
+            () => this.searchContent(request),
             undefined,
             undefined,
-            (contentsGroupedByPageSection: ContentsGroupedByPageSection) => contentsGroupedByPageSection.sections.length === 0
+            (contentSearchResult: ContentSearchResult) => contentSearchResult.contentDataList.length === 0
+        );
+
+        return this.searchContentAndGroupByPageSection(
+            offlineTextbookContents$,
+            onlineTextbookContents$
         );
     }
 
@@ -519,30 +548,53 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         });
     }
 
-    private searchContentAndGroupByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection> {
-        return this.searchContent(request)
-            .map((result: ContentSearchResult) => {
-                const filterValues = result.filterCriteria.facetFilters![0].values;
-                const allContent = result.contentDataList;
-                const pageSectionList: PageSection[] = [];
-                // forming response same as PageService.getPageAssemble format
-                for (let i = 0; i < filterValues.length; i++) {
-                    const pageSection: PageSection = {};
-                    const contents = allContent.filter((content) => {
-                        return content.subject.toLowerCase().trim() === filterValues[i].name.toLowerCase().trim();
-                    });
-                    delete filterValues[i].apply;
-                    pageSection.contents = contents;
-                    pageSection.name = filterValues[i].name.charAt(0).toUpperCase() + filterValues[i].name.slice(1);
-                    // TODO : need to handle localization
-                    pageSection.display = {name: {en: filterValues[i].name}};
-                    pageSectionList.push(pageSection);
-                }
+    private searchContentAndGroupByPageSection(
+        offlineTextbookContents$: Observable<ContentData[]>,
+        onlineTextbookContents$: Observable<ContentSearchResult>
+    ): Observable<ContentsGroupedByPageSection> {
+        return Observable.zip(
+            offlineTextbookContents$,
+            onlineTextbookContents$
+        ).map((results: [ContentData[], ContentSearchResult]) => {
+            const localTextBooksContentDataList = results[0];
+
+            const searchContentDataList = results[1].contentDataList.filter((contentData) => {
+                return !localTextBooksContentDataList.find((localContentData) => localContentData.identifier === contentData.identifier);
+            });
+
+            return {
+                ...results[1],
+                contentDataList: [
+                    ...localTextBooksContentDataList,
+                    ...searchContentDataList,
+                ]
+            } as ContentSearchResult;
+        }).map((result: ContentSearchResult) => {
+            const filterValues = result.filterCriteria.facetFilters![0].values;
+            const allContent = result.contentDataList;
+
+            const pageSectionList: PageSection[] = filterValues.map((filterValue) => {
+                const contents = allContent.filter((content) => {
+                    if (Array.isArray(content.subject)) {
+                        return content.subject.find((sub) => {
+                            return sub.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
+                        });
+                    } else {
+                        return content.subject.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
+                    }
+                });
 
                 return {
-                    name: 'Resource',
-                    sections: pageSectionList
+                    contents,
+                    name: filterValue.name.charAt(0).toUpperCase() + filterValue.name.slice(1),
+                    display: {name: {en: filterValue.name}} // TODO : need to handle localization
                 };
             });
+
+            return {
+                name: 'Resource',
+                sections: pageSectionList
+            };
+        });
     }
 }

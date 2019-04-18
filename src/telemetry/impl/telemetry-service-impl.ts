@@ -243,21 +243,25 @@ export class TelemetryServiceImpl implements TelemetryService {
             const profileSession: ProfileSession | undefined = sessions[0];
             const groupSession: GroupSession | undefined = sessions[1];
 
-            const insertQuery: InsertQuery = {
-                table: TelemetryEntry.TABLE_NAME,
-                modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!.uid,
-                    profileSession!.sid, groupSession && groupSession.gid), 1)
-            };
+            return this.keyValueStore.getValue(TelemetrySyncHandler.TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY)
+                .mergeMap((offset?: string) => {
+                    offset = offset || '0';
 
-            return this.dbService.insert(insertQuery)
-                .do(() => this.eventsBusService.emit({
-                    namespace: EventNamespace.TELEMETRY,
-                    event: {
-                        type: TelemetryEventType.SAVE,
-                        payload: telemetry
-                    }
-                }))
-                .map((count) => count > 1);
+                    const insertQuery: InsertQuery = {
+                        table: TelemetryEntry.TABLE_NAME,
+                        modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!.uid,
+                            profileSession!.sid, groupSession && groupSession.gid, Number(offset)), 1)
+                    };
+                    return this.dbService.insert(insertQuery)
+                        .do(() => this.eventsBusService.emit({
+                            namespace: EventNamespace.TELEMETRY,
+                            event: {
+                                type: TelemetryEventType.SAVE,
+                                payload: telemetry
+                            }
+                        }))
+                        .map((count) => count > 1);
+                });
         });
     }
 

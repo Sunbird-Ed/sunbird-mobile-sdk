@@ -1,32 +1,27 @@
 import {ContentEventType, ImportContentContext} from '../..';
 import {Response} from '../../../api';
-import {
-    ContentDisposition,
-    ContentEncoding,
-    ContentStatus,
-    MimeType,
-    State,
-    Visibility
-} from '../../util/content-constants';
+import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
 import {DbService} from '../../../db';
 import {ContentUtil} from '../../util/content-util';
 import {GetContentDetailsHandler} from '../get-content-details-handler';
 import {ContentEntry} from '../../db/schema';
 import {ZipService} from '../../../util/zip/def/zip-service';
-import {DirectoryEntry, Metadata} from '../../../util/file';
 import {AppConfig} from '../../../api/config/app-config';
 import {FileUtil} from '../../../util/file/util/file-util';
 import {DeviceInfo} from '../../../util/device/def/device-info';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
+import moment from 'moment';
+import {ArrayUtil} from '../../../util/array-util';
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
-import moment from 'moment';
 
 export class ExtractPayloads {
+
+    private readonly MANIFEST_FILE_NAME = 'manifest.json';
 
     constructor(private fileService: FileService,
                 private zipService: ZipService,
@@ -40,10 +35,38 @@ export class ExtractPayloads {
     public async execute(importContext: ImportContentContext): Promise<Response> {
         const response: Response = new Response();
         importContext.identifiers = [];
+        const insertNewContentModels: ContentEntry.SchemaMap[] = [];
+        const updateNewContentModels: ContentEntry.SchemaMap[] = [];
+        let rootContentPath;
+
         // this count is for maintaining how many contents are imported so far
         let currentCount = 0;
         // post event before starting with how many imports are to be done totally
         this.postImportProgressEvent(currentCount, importContext.items!.length);
+        const contentIds: string[] = [];
+        for (const e of importContext.items!) {
+            const element = e as any;
+            const identifier = element.identifier;
+            const visibility = ContentUtil.readVisibility(element);
+            if (ContentUtil.isNotUnit(element.mimeType, visibility)) {
+                contentIds.push(identifier);
+            }
+        }
+
+        // await this.fileService.createDir(ContentUtil.getContentRootDir(importContext.destinationFolder), false);
+        // Create all the directories for content.
+        const createdDirectories = await this.createDirectories(ContentUtil.getContentRootDir(importContext.destinationFolder),
+            contentIds);
+
+        const query = ArrayUtil.joinPreservingQuotes(contentIds);
+        const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
+        console.log(existingContentModels.length);
+
+        const result = existingContentModels.reduce((map, obj) => {
+            map[obj.identifier] = obj;
+            return map;
+        }, {});
+
         for (const e of importContext.items!) {
             let element = e as any;
             const identifier = element.identifier;
@@ -63,13 +86,17 @@ export class ExtractPayloads {
             const pkgVersion = element.pkgVersion;
             const artifactUrl = element.artifactUrl;
             const appIcon = element.appIcon;
-            const posterImage = element.posterImage;
-            const grayScaleAppIcon = element.grayScaleAppIcon;
-            const dialCodes = element.dialcodes;
+            const board = element.board;
+            const medium = element.medium;
+            const grade = element.gradeLevel;
+            // const posterImage = element.posterImage;
+            // const grayScaleAppIcon = element.grayScaleAppIcon;
+            // const dialCodes = element.dialcodes;
             let contentState = State.ONLY_SPINE.valueOf();
             let payloadDestination: string | undefined;
 
-            const existingContentModel = await this.getContentDetailsHandler.fetchFromDB(identifier).toPromise();
+            // const existingContentModel = await this.getContentDetailsHandler.fetchFromDB(identifier).toPromise();
+            const existingContentModel = result[identifier];
             let existingContentPath;
             if (existingContentModel) {
                 existingContentPath = ContentUtil.getBasePath(existingContentModel[COLUMN_NAME_PATH]!);
@@ -87,14 +114,16 @@ export class ExtractPayloads {
                 }
             } else {
                 doesContentExist = false;
-                await this.fileService.createDir(ContentUtil.getContentRootDir(importContext.destinationFolder), false);
-                const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(
-                    ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier), false);
-                payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
-                try {
-                    await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination);
-                } catch (e) {
+                if (ContentUtil.isNotUnit(mimeType, visibility)) {
+                    if (createdDirectories[identifier] && createdDirectories[identifier].path) {
+                        payloadDestination = createdDirectories[identifier].path;
+                    } else {
+                        const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(
+                            ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier), false);
+                        payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
+                    }
                 }
+
                 if (ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
                     let isUnzippingSuccessfull = false;
                     if (artifactUrl) {
@@ -112,7 +141,7 @@ export class ExtractPayloads {
                             });
                         } else if (ContentUtil.isInlineIdentity(contentDisposition, contentEncoding)) {
                             try {
-                                await this.copyAssets(importContext.tmpLocation!, artifactUrl, payloadDestination);
+                                await this.copyAssets(importContext.tmpLocation!, artifactUrl, payloadDestination!);
                                 isUnzippingSuccessfull = true;
                             } catch (e) {
                                 isUnzippingSuccessfull = false;
@@ -131,11 +160,13 @@ export class ExtractPayloads {
                         contentState = State.ONLY_SPINE.valueOf();
                     }
                 }
-                try {
-                    await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination);
-                    await this.copyAssets(importContext.tmpLocation!, posterImage, payloadDestination);
-                    await this.copyAssets(importContext.tmpLocation!, grayScaleAppIcon, payloadDestination);
-                } catch (e) {
+                if (ContentUtil.isNotUnit(mimeType, visibility)) {
+                    try {
+                        if (!appIcon.startsWith('https:')) {
+                            await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination!);
+                        }
+                    } catch (e) {
+                    }
                 }
             }
 
@@ -143,53 +174,78 @@ export class ExtractPayloads {
             visibility = this.getContentVisibility(existingContentModel, element['objectType'], importContext.isChildContent, visibility);
             contentState = this.getContentState(existingContentModel, contentState);
             const basePath = this.getBasePath(payloadDestination, doesContentExist, existingContentPath);
-            const sizeMetaData: Metadata = await this.fileService.getMetaData(basePath);
             ContentUtil.addOrUpdateViralityMetadata(element, this.deviceInfo.getDeviceID().toString());
-            const sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
+
+            let sizeOnDevice = 0;
+            if (ContentUtil.isNotUnit(mimeType, visibility)) {
+                sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
+            }
+
             const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
                 JSON.stringify(element), mimeType, contentType, visibility, basePath,
-                referenceCount, contentState, audience, pragma, sizeOnDevice);
+                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade);
             if (!existingContentModel) {
-                await this.dbService.insert({
-                    table: ContentEntry.TABLE_NAME,
-                    modelJson: newContentModel
-                }).toPromise();
+                insertNewContentModels.push(newContentModel);
             } else {
-                this.dbService.update({
-                    table: ContentEntry.TABLE_NAME,
-                    selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
-                    selectionArgs: [identifier],
-                    modelJson: newContentModel
-                }).toPromise();
+                updateNewContentModels.push(newContentModel);
             }
-            importContext.identifiers.push(identifier);
+
+            if (visibility === Visibility.DEFAULT.valueOf()) {
+                rootContentPath = basePath;
+                importContext.rootIdentifier = identifier;
+
+            } else {
+                if (ContentUtil.isNotUnit(mimeType, visibility)) {
+                    importContext.identifiers.push(identifier);
+                }
+            }
             // increase the current count
             currentCount++;
             this.postImportProgressEvent(currentCount, importContext.items!.length);
         }
+
+        if (insertNewContentModels.length || updateNewContentModels.length) {
+            this.dbService.beginTransaction();
+            // Insert into DB
+            for (const e of insertNewContentModels) {
+                const newContentModel = e as ContentEntry.SchemaMap;
+                await this.dbService.insert({
+                    table: ContentEntry.TABLE_NAME,
+                    modelJson: newContentModel
+                }).toPromise();
+            }
+
+            // Update existing content in DB
+            for (const e of updateNewContentModels) {
+                const newContentModel = e as ContentEntry.SchemaMap;
+                await this.dbService.update({
+                    table: ContentEntry.TABLE_NAME,
+                    selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
+                    selectionArgs: [newContentModel[ContentEntry.COLUMN_NAME_IDENTIFIER]],
+                    modelJson: newContentModel
+                }).toPromise();
+            }
+            this.dbService.endTransaction(true);
+        }
+
+        if (rootContentPath) {
+            await this.fileService.copyFile(importContext.tmpLocation!,
+                this.MANIFEST_FILE_NAME,
+                rootContentPath,
+                this.MANIFEST_FILE_NAME);
+        }
+
         response.body = importContext;
         return Promise.resolve(response);
-    }
-
-    private postImportProgressEvent(currentCount, totalCount) {
-        this.eventsBusService.emit({
-            namespace: EventNamespace.CONTENT,
-            event: {
-                type: ContentEventType.IMPORT_PROGRESS,
-                payload: {
-                    totalCount: totalCount,
-                    currentCount: currentCount
-                }
-            }
-        });
     }
 
     async copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string) {
         try {
             if (asset) {
-                const iconSrc = tempLocationPath.concat(asset);
-                const iconDestination = payloadDestinationPath.concat(asset);
+                // const iconSrc = tempLocationPath.concat(asset);
+                // const iconDestination = payloadDestinationPath.concat(asset);
                 const folderContainingFile = asset.substring(0, asset.lastIndexOf('/'));
+                // TODO: Can optimize folder creation
                 await this.fileService.createDir(payloadDestinationPath.concat(folderContainingFile), false);
                 // If source icon is not available then copy assets is failing and throwing exception.
                 await this.fileService.copyFile(tempLocationPath.concat(folderContainingFile), FileUtil.getFileName(asset),
@@ -265,9 +321,22 @@ export class ExtractPayloads {
         return path;
     }
 
+    private postImportProgressEvent(currentCount, totalCount) {
+        this.eventsBusService.emit({
+            namespace: EventNamespace.CONTENT,
+            event: {
+                type: ContentEventType.IMPORT_PROGRESS,
+                payload: {
+                    totalCount: totalCount,
+                    currentCount: currentCount
+                }
+            }
+        });
+    }
+
     private constructContentDBModel(identifier, manifestVersion, localData,
                                     mimeType, contentType, visibility, path,
-                                    refCount, contentState, audience, pragma, sizeOnDevice): ContentEntry.SchemaMap {
+                                    refCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
@@ -282,10 +351,26 @@ export class ExtractPayloads {
             [ContentEntry.COLUMN_NAME_VISIBILITY]: visibility,
             [ContentEntry.COLUMN_NAME_AUDIENCE]: audience,
             [ContentEntry.COLUMN_NAME_PRAGMA]: pragma,
-            [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ssZ')
+            [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ssZ'),
+            [ContentEntry.COLUMN_NAME_BOARD]: ContentUtil.getContentAttribute(board),
+            [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
+            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)
         };
 
     }
 
+    // TODO: move this method to file-service
+    private async createDirectories(parentDirectoryPath: string,
+                                    listOfFolder: string[]): Promise<{ [key: string]: { path: string | undefined } }> {
+        return new Promise<{ [key: string]: { path: string | undefined } }>((resolve, reject) => {
+            buildconfigreader.createDirectories(ContentUtil.getBasePath(parentDirectoryPath), listOfFolder,
+                (entry) => {
+                    resolve(entry);
+                }, err => {
+                    console.error(err);
+                    reject(err);
+                });
+        });
+    }
 
 }

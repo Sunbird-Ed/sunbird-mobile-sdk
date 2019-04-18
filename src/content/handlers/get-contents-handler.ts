@@ -22,12 +22,18 @@ export class GetContentsHandler {
         const audienceFilter = this.getAudienceFilter(request.audience!);
         const pragmaFilter = this.getPragmaFilter(request.exclPragma!, request.pragma!);
 
+        const offlineSearchQuery = this.generateBoardMediumGradeQuery(request);
         if (audienceFilter) {
             filter = `${filter}  AND (${audienceFilter})`;
         }
         if (pragmaFilter) {
             filter = `${filter}  AND (${pragmaFilter})`;
         }
+
+        if (offlineSearchQuery) {
+            filter = `${filter}  AND (${offlineSearchQuery})`;
+        }
+        console.log('of', offlineSearchQuery);
         let whereClause = `WHERE (${filter})`;
         let query = '';
         const orderBy = request.resourcesOnly ? '' : this.generateSortByQuery(request.sortCriteria!, uid!);
@@ -141,6 +147,41 @@ export class GetContentsHandler {
         }
         orderByQuery = orderByQuery.concat(`${columnName} ${sortOrder}`);
         return orderByQuery;
+    }
+
+    private generateBoardMediumGradeQuery(request: ContentRequest): string {
+        let query = '';
+        if (request.board && request.board.length) {
+            query = query.concat(this.generateLikeQuery(request.board, ContentEntry.COLUMN_NAME_BOARD));
+        }
+
+        if (request.medium && request.medium.length) {
+            if (query) {
+                query = query.concat(` AND `);
+            }
+            query = query.concat(this.generateLikeQuery(request.medium, ContentEntry.COLUMN_NAME_MEDIUM));
+        }
+
+        if (request.grade && request.grade.length) {
+            if (query) {
+                query = query.concat(` AND `);
+            }
+            query = query.concat(this.generateLikeQuery(request.grade, ContentEntry.COLUMN_NAME_GRADE));
+        }
+        return query;
+    }
+
+    private generateLikeQuery(data: string[], coloumnName: string): string {
+        let likeQuery = '';
+        const initialQuery = `${coloumnName} LIKE `;
+        for (let i = 0; i < data.length; i++) {
+            if (i < data.length - 1) {
+                likeQuery = likeQuery.concat(initialQuery, `'%%~${data[i].toLowerCase().trim()}~%%' OR `);
+            } else {
+                likeQuery = likeQuery.concat(initialQuery, `'%%~${data[i].toLowerCase().trim()}~%%' `);
+            }
+        }
+        return likeQuery;
     }
 
 

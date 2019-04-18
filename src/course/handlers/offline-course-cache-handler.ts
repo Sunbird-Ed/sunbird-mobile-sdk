@@ -26,8 +26,14 @@ export class OfflineCourseCacheHandler {
                     return this.keyValueStore.setValue(key, JSON.stringify(list));
                 });
             } else {
-                const result = JSON.parse(enrolledCoursesInDB)['result'];
-                const courses: Course[] = result['courses'];
+                const response = JSON.parse(enrolledCoursesInDB);
+                const result = response['result'];
+                let courses: Course[];
+                if (result && result.hasOwnProperty('courses')) {
+                    courses = result['courses'];
+                } else {
+                    courses = response['courses'];
+                }
                 let isCourseAvailable = false;
                 courses.forEach((course: Course) => {
                     if (course.courseId === enrollCourseRequest.courseId) {
@@ -37,10 +43,14 @@ export class OfflineCourseCacheHandler {
                 if (!isCourseAvailable) {
                     return this.getNewlyAddedCourse(enrollCourseRequest).map((newCourse: Course) => {
                         courses.push(newCourse);
-                        result['courses'] = courses;
-                        return JSON.stringify(result);
-                    }).mergeMap((response: string) => {
-                        return this.keyValueStore.setValue(key, response);
+                        if (result && result.hasOwnProperty('courses')) {
+                            result['courses'] = courses;
+                        } else {
+                            response['courses'] = courses;
+                        }
+                        return JSON.stringify(response);
+                    }).mergeMap((value: string) => {
+                        return this.keyValueStore.setValue(key, value);
                     });
                 } else {
                     return Observable.of(true);

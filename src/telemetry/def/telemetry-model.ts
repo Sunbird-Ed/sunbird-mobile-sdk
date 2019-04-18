@@ -23,6 +23,7 @@ export declare class ReportSummary {
     hierarchyData: string;
     totalMaxScore: number;
     totalScore: number;
+    totalQuestionsScore: number;
 }
 
 export class Context {

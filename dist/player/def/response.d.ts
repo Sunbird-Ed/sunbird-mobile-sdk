@@ -1,5 +1,5 @@
 import { Content } from '../../content';
-import { Actor, CorrelationData, ProducerData } from '../../telemetry';
+import { Actor, CorrelationData, ProducerData, Rollup } from '../../telemetry';
 export interface PlayerInput {
     context?: Context;
     metadata?: Content;
@@ -16,6 +16,8 @@ export interface Context {
     pdata?: ProducerData;
     deeplinkBasePath?: string;
     cdata?: CorrelationData[];
+    contextRollup?: Rollup;
+    objectRollup?: Rollup;
 }
 export interface PlayerConfig {
     splash: {

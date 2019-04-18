@@ -17,6 +17,7 @@ export declare class ReportSummary {
     hierarchyData: string;
     totalMaxScore: number;
     totalScore: number;
+    totalQuestionsScore: number;
 }
 export declare class Context {
     env: string;

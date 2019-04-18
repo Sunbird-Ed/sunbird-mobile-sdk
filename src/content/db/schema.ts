@@ -23,6 +23,9 @@ export namespace ContentEntry {
     export const COLUMN_NAME_PRAGMA = 'pragma';   // external, ads
     export const COLUMN_NAME_UID = 'uid';   // list of comma separated uid
     export const COLUMN_NAME_SIZE_ON_DEVICE = 'size_on_device';   // list of comma separated uid
+    export const COLUMN_NAME_BOARD = 'board';
+    export const COLUMN_NAME_MEDIUM = 'medium';
+    export const COLUMN_NAME_GRADE = 'grade';
 
     export interface SchemaMap {
         [COLUMN_NAME_IDENTIFIER]: string;
@@ -41,6 +44,9 @@ export namespace ContentEntry {
         [COLUMN_NAME_AUDIENCE]?: string;
         [COLUMN_NAME_PRAGMA]?: string;
         [COLUMN_NAME_SIZE_ON_DEVICE]?: number;
+        [COLUMN_NAME_BOARD]?: string;
+        [COLUMN_NAME_MEDIUM]?: string;
+        [COLUMN_NAME_GRADE]?: string;
     }
 
     export const getCreateEntry: (() => string) = () => {
@@ -61,6 +67,9 @@ export namespace ContentEntry {
             COLUMN_NAME_AUDIENCE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT \'Learner\'' + DbConstants.COMMA_SEP +
             COLUMN_NAME_SIZE_ON_DEVICE + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT 0' + DbConstants.COMMA_SEP +
             COLUMN_NAME_PRAGMA + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_BOARD + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_MEDIUM + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_GRADE + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
             COLUMN_NAME_MANIFEST_VERSION + DbConstants.SPACE + DbConstants.TEXT_TYPE +
             ' )';
     };
@@ -75,6 +84,19 @@ export namespace ContentEntry {
 
     export const getAlterEntryForPragma: (() => string) = () => {
         return 'ALTER TABLE ' + TABLE_NAME + ' ADD COLUMN ' + COLUMN_NAME_PRAGMA + DbConstants.TEXT_TYPE + ' DEFAULT \'\';';
+    };
+
+
+    export const getAlterEntryForBoard: (() => string) = () => {
+        return `ALTER TABLE ${TABLE_NAME} ADD COLUMN ${COLUMN_NAME_BOARD} TEXT DEFAULT ''`;
+    };
+
+    export const getAlterEntryForMedium: (() => string) = () => {
+        return `ALTER TABLE ${TABLE_NAME} ADD COLUMN ${COLUMN_NAME_MEDIUM} TEXT DEFAULT ''`;
+    };
+
+    export const getAlterEntryForGrade: (() => string) = () => {
+        return `ALTER TABLE ${TABLE_NAME} ADD COLUMN ${COLUMN_NAME_GRADE} TEXT DEFAULT ''`;
     };
 
 }
