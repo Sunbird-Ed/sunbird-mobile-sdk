@@ -46,7 +46,8 @@ export class OfflineContentStateHandler {
                         let newCourses: Course[] = [];
                         newCourses = newCourses.concat(courses);
                         courses.forEach((course: Course) => {
-                            if (course.courseId === updateContentStateRequest.courseId) {
+                            if (course.courseId === updateContentStateRequest.courseId &&
+                                course.batchId === updateContentStateRequest.batchId) {
                                 if (!course.contentsPlayedOffline || !course.contentsPlayedOffline!.length) {
                                     course.contentsPlayedOffline = [];
                                 }
@@ -66,7 +67,7 @@ export class OfflineContentStateHandler {
 
                                     // remove old course
                                     newCourses = newCourses.filter((el: Course) => {
-                                        return el.contentId !== course.contentId;
+                                        return el.contentId !== course.contentId || el.batchId !== course.batchId;
                                     });
                                     // add new course
                                     newCourses.push(updatedCourse);
