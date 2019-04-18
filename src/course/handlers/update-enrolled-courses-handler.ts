@@ -43,7 +43,7 @@ export class UpdateEnrolledCoursesHandler {
                                 });
                                 // remove old course
                                 newCourses = newCourses.filter((el: Course) => {
-                                    return el.batchId !== course.batchId;
+                                    return el.courseId !== course.courseId || el.batchId !== course.batchId;
                                 });
                                 // add new course
                                 newCourses.push(updateCourse);
