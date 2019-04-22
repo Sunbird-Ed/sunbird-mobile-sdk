@@ -7,7 +7,8 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {ContentKeys} from '../../preference-keys';
 import Telemetry = SunbirdTelemetry.Telemetry;
 import {EventNamespace, EventsBusService} from '../../events-bus';
-import {ContentEventType} from '../../content';
+import {Content, ContentDetailRequest, ContentEventType, ContentMarkerRequest, ContentService, MarkerType} from '../../content';
+import {ContentAccess, ContentAccessStatus, ProfileService} from '../../profile';
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -19,7 +20,9 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     constructor(private courseService: CourseService,
                 private sharedPreference: SharedPreferences,
                 private summarizerService: SummarizerService,
-                private eventBusService: EventsBusService) {
+                private eventBusService: EventsBusService,
+                private contentService: ContentService,
+                private profileService: ProfileService) {
     }
 
     private static checkPData(pdata: ProducerData): boolean {
@@ -115,6 +118,9 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                     await this.getCourseContext().mergeMap(() => {
                         return this.updateContentState(event);
                     }).toPromise();
+                }).do(async () => {
+                    await this.markContentAsPlayed(event)
+                        .toPromise();
                 });
         } else if (event.eid === 'START' && SummaryTelemetryEventHandler.checkIsCourse(event)) {
             return this.getCourseContext().mapTo(undefined);
@@ -142,6 +148,32 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         } else {
             return Observable.of(undefined);
         }
+    }
+
+    private markContentAsPlayed(event): Observable<boolean> {
+        const uid = event.actor.id;
+        const identifier = event.object.id;
+        const request: ContentDetailRequest = {
+            contentId: identifier
+        };
+        return this.contentService.getContentDetails(request).mergeMap((content: Content) => {
+            const addContentAccessRequest: ContentAccess = {
+                status: ContentAccessStatus.PLAYED,
+                contentId: identifier,
+                contentType: content.contentType
+            };
+            return this.profileService.addContentAccess(addContentAccessRequest).mergeMap(() => {
+                const contentMarkerRequest: ContentMarkerRequest = {
+                    uid: uid,
+                    contentId: identifier,
+                    data: JSON.stringify(content.contentData),
+                    marker: MarkerType.PREVIEWED,
+                    isMarked: true,
+                    extraInfo: {}
+                };
+                return this.contentService.setContentMarker(contentMarkerRequest).mapTo(true);
+            });
+        });
     }
 
     // private updateContentState(eid: string, objId: string): Observable<boolean> {
