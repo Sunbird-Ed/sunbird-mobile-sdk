@@ -101,10 +101,9 @@ export class CourseServiceImpl implements CourseService {
                 courseContext['userId'] = request.userId;
                 courseContext['batchStatus'] = request.batchStatus;
                 return this.sharedPreferences.putString(ContentKeys.COURSE_CONTEXT, JSON.stringify(courseContext));
-            }).mergeMap(() => {
-                return new OfflineCourseCacheHandler(this.dbService, this.contentService, this.keyValueStore)
-                    .addNewlyEnrolledCourseToGetEnrolledCourses(request);
-            });
+            }).delay(2000).concatMap(() => {
+                return this.getEnrolledCourses({userId : request.userId, returnFreshCourses: true});
+            }).mapTo(true);
     }
 
     getContentState(request: GetContentStateRequest): Observable<ContentStateResponse | undefined> {
@@ -152,7 +151,10 @@ export class CourseServiceImpl implements CourseService {
     }
 
     unenrollCourse(unenrollCourseRequest: UnenrollCourseRequest): Observable<boolean> {
-        return new UnenrollCourseHandler(this.apiService, this.courseServiceConfig).handle(unenrollCourseRequest);
+        return new UnenrollCourseHandler(this.apiService, this.courseServiceConfig).handle(unenrollCourseRequest)
+            .delay(2000).concatMap(() => {
+                return this.getEnrolledCourses({userId : unenrollCourseRequest.userId, returnFreshCourses: true});
+            }).mapTo(true);
     }
 
     checkContentStatus(request: GetContentStateRequest): Observable<number> {
