@@ -48,22 +48,25 @@ export class AuthUtil {
         return new Promise<void>(((resolve, reject) => {
             const launchUrl = this.apiConfig.host +
                 this.apiConfig.user_authentication.authUrl + AuthEndPoints.LOGOUT + '?redirect_uri=' +
-                this.apiConfig.user_authentication.redirectUrl;
+                this.apiConfig.host + '/oauth2callback';
 
-            customtabs.isAvailable(() => {
-                customtabs.launch(launchUrl!!, async () => {
+            const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', 'zoom=no');
+
+
+            inAppBrowserRef.addEventListener('loadstart', async (event) => {
+                if ((<string>event.url).indexOf('/oauth2callback') > -1) {
                     await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '').toPromise();
+
+                    inAppBrowserRef.removeEventListener('exit', () => {
+                    });
+                    inAppBrowserRef.close();
+
                     resolve();
-                }, error => {
-                    reject(error);
-                });
-            }, error => {
-                customtabs.launchInBrowser(launchUrl!!, async () => {
-                    await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '').toPromise();
-                    resolve();
-                }, err => {
-                    reject(err);
-                });
+                }
+            });
+
+            inAppBrowserRef.addEventListener('exit', () => {
+                reject();
             });
         }));
     }
