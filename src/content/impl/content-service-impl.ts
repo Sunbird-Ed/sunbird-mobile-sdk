@@ -248,35 +248,23 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content> {
-        return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId!))
-            .mergeMap((contentInDb: ContentEntry.SchemaMap[]) => {
+        if (!childContentRequest.level) {
+            childContentRequest.level = -1;
+        }
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
+        if (!hierarchyInfoList) {
+            hierarchyInfoList = [];
+        } else if (hierarchyInfoList.length > 0) {
+            if (hierarchyInfoList[hierarchyInfoList.length - 1].identifier === childContentRequest.contentId) {
+                const length = hierarchyInfoList.length;
+                hierarchyInfoList.splice((length - 1), 1);
+            }
+        }
 
-                return Observable.fromPromise(
-                    this.fileService.exists(ContentUtil.getBasePath(contentInDb[0][COLUMN_NAME_PATH]!))
-                        .then(() => {
-                            return this.fileService.readAsText(ContentUtil.getBasePath(contentInDb[0][COLUMN_NAME_PATH]!),
-                                'hierarchy.json');
-                        })
-                        .then((hierarchy: string) => {
-                            return JSON.parse(hierarchy) as Content;
-                        })
-                        .catch(() => {
-                            if (!childContentRequest.level) {
-                                childContentRequest.level = -1;
-                            }
-                            const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
-                            let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
-                            if (!hierarchyInfoList) {
-                                hierarchyInfoList = [];
-                            } else if (hierarchyInfoList.length > 0) {
-                                if (hierarchyInfoList[hierarchyInfoList.length - 1].identifier === childContentRequest.contentId) {
-                                    const length = hierarchyInfoList.length;
-                                    hierarchyInfoList.splice((length - 1), 1);
-                                }
-                            }
-                            return childContentHandler.fetchChildrenOfContent(contentInDb[0], 0,
-                                childContentRequest.level!, hierarchyInfoList);
-                        }));
+        return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId))
+            .mergeMap((rows: ContentEntry.SchemaMap[]) => {
+                return childContentHandler.fetchChildrenOfContent(rows[0], 0, childContentRequest.level!, hierarchyInfoList);
             });
     }
 

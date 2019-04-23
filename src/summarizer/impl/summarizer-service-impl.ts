@@ -25,6 +25,7 @@ import Telemetry = SunbirdTelemetry.Telemetry;
 import {CourseService} from '../../course';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {ArrayUtil} from '../../util/array-util';
+import {ProfileService} from '../../profile';
 
 export class SummarizerServiceImpl implements SummarizerService, EventObserver<TelemetryEvent> {
     private contentMap: Map<string, ContentCache>;
@@ -34,10 +35,12 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
                 private contenService: ContentService,
                 private eventsBusService: EventsBusService,
                 private courseService: CourseService,
-                private sharedPreference: SharedPreferences) {
+                private sharedPreference: SharedPreferences,
+                private contentService: ContentService,
+                private profileService: ProfileService) {
         this.eventsBusService.registerObserver({namespace: EventNamespace.TELEMETRY, observer: this});
         this.summarizerTelemetryHandler = new SummaryTelemetryEventHandler(this.courseService, this.sharedPreference, this,
-            this.eventsBusService);
+            this.eventsBusService, this.contenService, this.profileService);
     }
 
     getDetailsPerQuestion(request: SummaryRequest): Observable<{ [p: string]: any }[]> {
