@@ -23,9 +23,11 @@ export class GoogleSessionProvider implements SessionProvider {
                 refresh_token: paramsObject.refresh_token,
                 userToken
             };
+        } else if (paramsObject.error_message) {
+            throw new SignInError(paramsObject.error_message);
         }
 
-        throw new SignInError('Google redirect uri Invalid response');
+        throw new SignInError('Server Error');
     }
 
     public async provide(): Promise<OAuthSession> {

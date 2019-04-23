@@ -11,6 +11,7 @@ export interface StepOneCallbackType {
     refresh_token?: string;
     id?: string;
     googleRedirectUrl?: string;
+    error_message?: string;
 }
 
 export interface OAuthRedirectUrlQueryParams {
