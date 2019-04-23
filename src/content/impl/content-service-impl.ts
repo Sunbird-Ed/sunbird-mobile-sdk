@@ -83,7 +83,6 @@ import {CachedItemStore} from '../../key-value-store';
 import * as SHA1 from 'crypto-js/sha1';
 import {FrameworkKeys} from '../../preference-keys';
 import {CreateHierarchy} from '../handlers/import/create-hierarchy';
-import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
@@ -176,8 +175,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]> {
         return Observable.defer(async () => {
             const contentDeleteResponse: ContentDeleteResponse[] = [];
-            const deleteContentHandler = new DeleteContentHandler(this.dbService, this.fileService,
-                this.sharedPreferences, this.zipService);
+            const deleteContentHandler = new DeleteContentHandler(this.dbService, this.fileService, this.sharedPreferences);
 
             for (const contentDelete of contentDeleteRequest.contentDeleteList) {
                 const contentInDb = await this.getContentDetailsHandler.fetchFromDB(contentDelete.contentId).toPromise();
@@ -192,7 +190,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     }
 
                     await deleteContentHandler.deleteOrUpdateContent(contentInDb, false, contentDelete.isChildContent);
-
                 } else {
                     contentDeleteResponse.push({
                         identifier: contentDelete.contentId,
