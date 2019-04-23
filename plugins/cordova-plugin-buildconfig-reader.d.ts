@@ -14,4 +14,8 @@ declare var buildconfigreader: {
 
     writeFile: (fileMapList: any[], success:
         (callbackUrl: void) => void, error: (error: string) => void) => void;
+
+    getMetaData: (fileMapList: any[], success:
+        (callbackUrl: any) => void, error: (error: string) => void) => void;
+
 };

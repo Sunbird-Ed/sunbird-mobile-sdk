@@ -1,59 +1,94 @@
 import {DbService} from '../../db';
 import {ContentEntry} from '../db/schema';
 import {ContentUtil} from '../util/content-util';
-import {QueryBuilder} from '../../db/util/query-builder';
 import {MimeType, State, Visibility} from '../util/content-constants';
-import {Observable} from 'rxjs';
-import {Stack} from '../util/stack';
-import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON;
-import COLUMN_NAME_LOCAL_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON;
+import Queue from 'typescript-collections/dist/lib/Queue';
+import {FileService} from '../../util/file/def/file-service';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {ContentKeys} from '../../preference-keys';
+import {ArrayUtil} from '../../util/array-util';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
-import {FileService} from '../../util/file/def/file-service';
-import {SharedPreferences} from '../../util/shared-preferences';
-import {ContentKeys} from '../../preference-keys';
 import KEY_LAST_MODIFIED = ContentKeys.KEY_LAST_MODIFIED;
-import {ArrayUtil} from '../../util/array-util';
-import {ZipService} from '../../util/zip/def/zip-service';
 
 export class DeleteContentHandler {
 
+    private updateNewContentModels: ContentEntry.SchemaMap[] = [];
+    private fileMapList: { [key: string]: any }[] = [];
+
     constructor(private dbService: DbService,
                 private fileService: FileService,
-                private sharedPreferences: SharedPreferences,
-                private zipService: ZipService) {
+                private sharedPreferences: SharedPreferences) {
     }
 
-
     async deleteAllChildren(row: ContentEntry.SchemaMap, isChildContent: boolean) {
-        const contentInDbList = new Stack<ContentEntry.SchemaMap>();
-        // TODO Add Linkedlist for ordering issue
-        contentInDbList.push(row);
+        let isUpdateLastModifiedTime = false;
+        const contentInDbList: Queue<ContentEntry.SchemaMap> = new Queue();
+        // TODO Add LinkedList for ordering issue
+        contentInDbList.add(row);
         let node: ContentEntry.SchemaMap | undefined;
         while (!contentInDbList.isEmpty()) {
-            node = contentInDbList.pop();
-            if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
+            node = contentInDbList.dequeue();
+            if (ContentUtil.hasChildren(node![ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
                 const childContentsIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(
-                    node[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
-                const contentsInDB: ContentEntry.SchemaMap[] = await this.findAllContentsFromDbWithIdentifiers(
-                    childContentsIdentifiers);
+                    node![ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+                const contentsInDB: ContentEntry.SchemaMap[] = await this.findAllContentsFromDbWithIdentifiers(childContentsIdentifiers);
                 contentsInDB.forEach((contentInDb: ContentEntry.SchemaMap) => {
-                    contentInDbList.push(contentInDb);
+                    contentInDbList.add(contentInDb);
                 });
             }
 
             // Deleting only child content
-            if (!(row[COLUMN_NAME_IDENTIFIER] === node[COLUMN_NAME_IDENTIFIER])) {
-                await this.deleteOrUpdateContent(node, true, isChildContent);
+            if (!(row[COLUMN_NAME_IDENTIFIER] === node![COLUMN_NAME_IDENTIFIER])) {
+                isUpdateLastModifiedTime = true;
+                await this.deleteOrUpdateContent(node!, true, isChildContent);
             }
+        }
+
+        const path: string = row[COLUMN_NAME_PATH]!;
+        if (path && isUpdateLastModifiedTime) {
+            const contentRootPath: string | undefined = ContentUtil.getFirstPartOfThePathNameOnLastDelimiter(path);
+            if (contentRootPath) {
+                try {
+                    // Update last modified time
+                    await this.sharedPreferences.putString(KEY_LAST_MODIFIED, new Date().getMilliseconds() + '').toPromise();
+                } catch (e) {
+                    console.log('Error', e);
+                }
+            }
+        }
+
+        const metaDataList = await this.getMetaData(this.fileMapList);
+        if (this.updateNewContentModels.length) {
+            this.dbService.beginTransaction();
+            // Update existing content in DB
+            for (const e of this.updateNewContentModels) {
+                const newContentModel = e as ContentEntry.SchemaMap;
+                const identifier = newContentModel[ContentEntry.COLUMN_NAME_IDENTIFIER];
+
+                let size = 0;
+                if (metaDataList) {
+                    size = metaDataList[identifier] ? metaDataList[identifier].size : 0;
+                    // metaDataList[identifier].lastModifiedTime
+                }
+                newContentModel[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = size;
+
+                await this.dbService.update({
+                    table: ContentEntry.TABLE_NAME,
+                    selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
+                    selectionArgs: [identifier],
+                    modelJson: newContentModel
+                }).toPromise();
+
+            }
+            this.dbService.endTransaction(true);
         }
     }
 
-    async deleteOrUpdateContent(contentInDb: ContentEntry.SchemaMap,
-                                isChildItems: boolean, isChildContent: boolean) {
+    async deleteOrUpdateContent(contentInDb: ContentEntry.SchemaMap, isChildItems: boolean, isChildContent: boolean) {
         let refCount: number = contentInDb[COLUMN_NAME_REF_COUNT]!;
         let contentState: number;
         let visibility: string = contentInDb[COLUMN_NAME_VISIBILITY]!;
@@ -97,54 +132,44 @@ export class DeleteContentHandler {
         }
         // if there are no entry in DB for any content then on this case contentModel.getPath() will be null
         if (path) {
-            let directoryMetaData: Metadata;
             if (contentState === State.ONLY_SPINE.valueOf()) {
                 await this.rm(ContentUtil.getBasePath(path), contentInDb[COLUMN_NAME_IDENTIFIER]);
-                const contentRootPath: string | undefined = ContentUtil.getFirstPartOfThePathNameOnLastDelimiter(path);
-                if (contentRootPath) {
-                    try {
-                        await this.updateLastModifiedTime(ContentUtil.getBasePath(contentRootPath));
-                        directoryMetaData = await this.fileService.getMetaData(ContentUtil.getBasePath(path));
-                    } catch (e) {
-                        console.log('Error', e);
-                    }
-                }
             }
             contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY] = visibility;
             contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT] = ContentUtil.addOrUpdateRefCount(refCount);
             contentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] = contentState;
-            contentInDb[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = directoryMetaData! ? directoryMetaData!.size : 0;
-            await this.dbService.update({
-                table: ContentEntry.TABLE_NAME,
-                modelJson: contentInDb,
-                selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
-                selectionArgs: [contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]]
-            }).map(v => v > 0).toPromise();
+            if (!isChildItems) {
+                contentInDb[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = 0;
+                await this.dbService.update({
+                    table: ContentEntry.TABLE_NAME,
+                    modelJson: contentInDb,
+                    selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
+                    selectionArgs: [contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]]
+                }).map(v => v > 0).toPromise();
+            } else {
+                const fileMap: { [key: string]: any } = {};
+                fileMap['identifier'] = contentInDb[COLUMN_NAME_IDENTIFIER];
+                fileMap['path'] = ContentUtil.getBasePath(path);
+
+                this.fileMapList.push(fileMap);
+
+                this.updateNewContentModels.push(contentInDb);
+            }
         }
     }
 
-    private async updateLastModifiedTime(path: string): Promise<undefined> {
-        return this.fileService.exists(path).then((entry) => {
-            return this.fileService.getMetaData(path);
-        }).then((metaData: Metadata) => {
-            return this.sharedPreferences.putString(KEY_LAST_MODIFIED,
-                new Date(metaData.modificationTime).getMilliseconds() + '').toPromise();
-        });
-    }
-
-    findAllContentsFromDbWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
+    private findAllContentsFromDbWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
         const identifiersStr = ArrayUtil.joinPreservingQuotes(identifiers);
-        const orderby = ` ORDER BY ${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} DESC, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} DESC`;
         const filter = ` WHERE ${COLUMN_NAME_IDENTIFIER} IN (${identifiersStr}) AND ${COLUMN_NAME_REF_COUNT} > 0`;
-        const query = `SELECT * FROM ${ContentEntry.TABLE_NAME} ${filter} ${orderby}`;
+        const query = `SELECT * FROM ${ContentEntry.TABLE_NAME} ${filter}`;
         return this.dbService.execute(query).toPromise();
     }
 
     /** @internal */
-    private rm(directoryPath, direcoryToBeSkipped): Promise<boolean> {
+    private rm(directoryPath, directoryToBeSkipped): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
             try {
-                buildconfigreader.rm(directoryPath, direcoryToBeSkipped, (status: boolean) => {
+                buildconfigreader.rm(directoryPath, directoryToBeSkipped, (status: boolean) => {
                     resolve(status);
                 }, (err: boolean) => {
                     console.error(err);
@@ -156,5 +181,19 @@ export class DeleteContentHandler {
             }
         });
     }
+
+    // TODO: move this method to file-service
+    private async getMetaData(fileMapList: any[]) {
+        return new Promise((resolve, reject) => {
+            buildconfigreader.getMetaData(fileMapList,
+                (entry) => {
+                    resolve();
+                }, err => {
+                    console.error(err);
+                    reject(err);
+                });
+        });
+    }
+
 
 }
