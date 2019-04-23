@@ -4,15 +4,20 @@ export interface StepOneCallbackType {
     code?: string;
     access_token?: string;
     refresh_token?: string;
-    ssoUrl?: string;
+    id?: string;
+    googleRedirectUrl?: string;
+}
+export interface OAuthRedirectUrlQueryParams {
+    redirect_uri: string;
+    error_callback?: string;
+    response_type: string;
+    scope: string;
+    client_id: string;
+    version: string;
 }
 export declare class OAuthDelegate {
     private apiConfig;
     private apiService;
     constructor(apiConfig: ApiConfig, apiService: ApiService);
-    private static isKeyCloakSignup;
-    private static isGoogleSignup;
-    private static isStateLogin;
     doOAuthStepOne(): Promise<OAuthSession>;
-    private doOAuthStepTwo;
 }
