@@ -10,27 +10,27 @@ export class SunbirdOAuthSessionProviderFactory {
     constructor(private apiConfig: ApiConfig, private apiService: ApiService, private inAppBrowserRef: InAppBrowserSession) {
     }
 
-    private static isKeyCloakLogin(paramsObject: StepOneCallbackType): boolean {
-        return !!paramsObject.code;
-    }
-
-    private static isGoogleLogin(paramsObject: StepOneCallbackType): boolean {
-        return !!paramsObject.googleRedirectUrl;
-    }
-
-    private static isStateLogin(paramsObject: StepOneCallbackType): boolean {
-        return !!paramsObject.id;
-    }
-
     public fromUrl(url: string): SessionProvider | undefined {
         const params = qs.parse(url.substring(url.indexOf('?') + 1));
 
-        if (SunbirdOAuthSessionProviderFactory.isGoogleLogin(params)) {
+        if (this.isGoogleLogin(url, params)) {
             return new GoogleSessionProvider(params, this.apiConfig, this.inAppBrowserRef);
-        } else if (SunbirdOAuthSessionProviderFactory.isKeyCloakLogin(params)) {
+        } else if (this.isKeyCloakLogin(url, params)) {
             return new KeycloakSessionProvider(params, this.apiConfig, this.apiService, this.inAppBrowserRef);
-        } else if (SunbirdOAuthSessionProviderFactory.isStateLogin(params)) {
-            return new StateLoginSessionProvider(params, this.apiConfig, this.apiService);
+        } else if (this.isStateLogin(url, params)) {
+            return new StateLoginSessionProvider(params, this.apiConfig, this.apiService, this.inAppBrowserRef);
         }
+    }
+
+    private isKeyCloakLogin(url: string, paramsObject: StepOneCallbackType): boolean {
+        return !!paramsObject.code && url.startsWith(`${this.apiConfig.host}/oauth2callback`);
+    }
+
+    private isGoogleLogin(url: string, paramsObject: StepOneCallbackType): boolean {
+        return !!paramsObject.googleRedirectUrl && url.startsWith(`${this.apiConfig.host}/oauth2callback`);
+    }
+
+    private isStateLogin(url: string, paramsObject: StepOneCallbackType): boolean {
+        return !!paramsObject.id && url.startsWith(`${this.apiConfig.host}/sso/sign-in/success`);
     }
 }
