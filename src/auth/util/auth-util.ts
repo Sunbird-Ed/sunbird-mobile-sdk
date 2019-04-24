@@ -1,5 +1,5 @@
 import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../api';
-import {OAuthSession} from '..';
+import {OAuthSession, SignInError} from '..';
 import {AuthKeys} from '../../preference-keys';
 import {NoActiveSessionError} from '../../profile';
 import {AuthEndPoints} from '../def/auth-end-points';
@@ -30,14 +30,22 @@ export class AuthUtil {
 
         const response: Response = await this.apiService.fetch(request).toPromise();
 
-        sessionData = {
-            ...response.body,
-            userToken: JWTUtil.parseUserTokenFromAccessToken(response.body.access_token)
-        };
+        if (response.body.access_token && response.body.refresh_token) {
+            const jwtPayload: { sub: string } = JWTUtil.getJWTPayload(response.body.access_token);
 
-        await this.startSession(sessionData!);
+            const userToken = jwtPayload.sub.split(':').length === 3 ? <string>jwtPayload.sub.split(':').pop() : jwtPayload.sub;
 
-        return;
+            sessionData = {
+                ...response.body,
+                userToken
+            };
+
+            await this.startSession(sessionData!);
+
+            return;
+        }
+
+        throw new SignInError('Server Error');
     }
 
     public async startSession(sessionData: OAuthSession): Promise<void> {

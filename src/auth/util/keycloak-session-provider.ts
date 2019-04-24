@@ -1,4 +1,4 @@
-import {OAuthSession, SessionProvider} from '..';
+import {OAuthSession, SessionProvider, SignInError} from '..';
 import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../api';
 import {StepOneCallbackType} from './o-auth-delegate';
 
@@ -30,25 +30,25 @@ export class KeycloakSessionProvider implements SessionProvider {
         return await this.apiService.fetch(apiRequest)
             .toPromise()
             .then((response: Response<{ access_token: string, refresh_token: string }>) => {
-                const payload: { sub: string } = JWTUtil.getJWTPayload(response.body.access_token);
+                if (response.body.access_token && response.body.refresh_token) {
+                    const payload: { sub: string } = JWTUtil.getJWTPayload(response.body.access_token);
 
-                const userToken = payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub;
+                    const userToken = payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub;
 
-                this.inAppBrowserRef.removeEventListener('exit', () => {
-                });
-                this.inAppBrowserRef.close();
+                    this.inAppBrowserRef.removeEventListener('exit', () => {
+                    });
+                    this.inAppBrowserRef.close();
 
-                return {
-                    access_token: response.body.access_token,
-                    refresh_token: response.body.refresh_token,
-                    userToken
-                };
-            }).catch(e => {
-                this.inAppBrowserRef.close();
+                    return {
+                        access_token: response.body.access_token,
+                        refresh_token: response.body.refresh_token,
+                        userToken
+                    };
+                }
 
-                console.error(e);
-
-                throw e;
+                throw new SignInError('Server Error');
+            }).catch(() => {
+                throw new SignInError('Server Error');
             });
     }
 }

@@ -26,7 +26,7 @@ export interface UpdateContentStateRequest {
 
 export interface CourseBatchesRequest {
     filters: CourseBatchesRequestFilters;
-    fields: string[];
+    // fields: string[];
 }
 
 export interface UpdateContentStateAPIRequest {
