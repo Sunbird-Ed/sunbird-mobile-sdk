@@ -5,6 +5,7 @@ export declare class StateLoginSessionProvider implements SessionProvider {
     private params;
     private apiConfig;
     private apiService;
-    constructor(params: StepOneCallbackType, apiConfig: ApiConfig, apiService: ApiService);
+    private inAppBrowserRef;
+    constructor(params: StepOneCallbackType, apiConfig: ApiConfig, apiService: ApiService, inAppBrowserRef: InAppBrowserSession);
     provide(): Promise<OAuthSession>;
 }

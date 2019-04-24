@@ -5,8 +5,8 @@ export declare class SunbirdOAuthSessionProviderFactory {
     private apiService;
     private inAppBrowserRef;
     constructor(apiConfig: ApiConfig, apiService: ApiService, inAppBrowserRef: InAppBrowserSession);
-    private static isKeyCloakLogin;
-    private static isGoogleLogin;
-    private static isStateLogin;
     fromUrl(url: string): SessionProvider | undefined;
+    private isKeyCloakLogin;
+    private isGoogleLogin;
+    private isStateLogin;
 }
