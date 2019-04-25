@@ -60,7 +60,6 @@ export class ExtractPayloads {
 
         const query = ArrayUtil.joinPreservingQuotes(contentIds);
         const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
-        console.log(existingContentModels.length);
 
         const result = existingContentModels.reduce((map, obj) => {
             map[obj.identifier] = obj;

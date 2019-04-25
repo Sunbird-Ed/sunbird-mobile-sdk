@@ -83,7 +83,6 @@ import {CachedItemStore} from '../../key-value-store';
 import * as SHA1 from 'crypto-js/sha1';
 import {FrameworkKeys} from '../../preference-keys';
 import {CreateHierarchy} from '../handlers/import/create-hierarchy';
-import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
@@ -176,8 +175,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]> {
         return Observable.defer(async () => {
             const contentDeleteResponse: ContentDeleteResponse[] = [];
-            const deleteContentHandler = new DeleteContentHandler(this.dbService, this.fileService,
-                this.sharedPreferences, this.zipService);
+            const deleteContentHandler = new DeleteContentHandler(this.dbService, this.fileService, this.sharedPreferences);
 
             for (const contentDelete of contentDeleteRequest.contentDeleteList) {
                 const contentInDb = await this.getContentDetailsHandler.fetchFromDB(contentDelete.contentId).toPromise();
@@ -192,7 +190,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     }
 
                     await deleteContentHandler.deleteOrUpdateContent(contentInDb, false, contentDelete.isChildContent);
-
                 } else {
                     contentDeleteResponse.push({
                         identifier: contentDelete.contentId,
@@ -248,35 +245,23 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content> {
-        return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId!))
-            .mergeMap((contentInDb: ContentEntry.SchemaMap[]) => {
+        if (!childContentRequest.level) {
+            childContentRequest.level = -1;
+        }
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
+        if (!hierarchyInfoList) {
+            hierarchyInfoList = [];
+        } else if (hierarchyInfoList.length > 0) {
+            if (hierarchyInfoList[hierarchyInfoList.length - 1].identifier === childContentRequest.contentId) {
+                const length = hierarchyInfoList.length;
+                hierarchyInfoList.splice((length - 1), 1);
+            }
+        }
 
-                return Observable.fromPromise(
-                    this.fileService.exists(ContentUtil.getBasePath(contentInDb[0][COLUMN_NAME_PATH]!))
-                        .then(() => {
-                            return this.fileService.readAsText(ContentUtil.getBasePath(contentInDb[0][COLUMN_NAME_PATH]!),
-                                'hierarchy.json');
-                        })
-                        .then((hierarchy: string) => {
-                            return JSON.parse(hierarchy) as Content;
-                        })
-                        .catch(() => {
-                            if (!childContentRequest.level) {
-                                childContentRequest.level = -1;
-                            }
-                            const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
-                            let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
-                            if (!hierarchyInfoList) {
-                                hierarchyInfoList = [];
-                            } else if (hierarchyInfoList.length > 0) {
-                                if (hierarchyInfoList[hierarchyInfoList.length - 1].identifier === childContentRequest.contentId) {
-                                    const length = hierarchyInfoList.length;
-                                    hierarchyInfoList.splice((length - 1), 1);
-                                }
-                            }
-                            return childContentHandler.fetchChildrenOfContent(contentInDb[0], 0,
-                                childContentRequest.level!, hierarchyInfoList);
-                        }));
+        return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId))
+            .mergeMap((rows: ContentEntry.SchemaMap[]) => {
+                return childContentHandler.fetchChildrenOfContent(rows[0], 0, childContentRequest.level!, hierarchyInfoList);
             });
     }
 
@@ -518,7 +503,12 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             board: request.board,
             medium: request.medium,
             grade: request.grade
-        }).map((contents: Content[]) => contents.map((content) => content.contentData));
+        }).map((contents: Content[]) => contents.map((content) => {
+            if (content.contentData.appIcon && content.contentData.appIcon.startsWith('https://')) {
+                content.contentData.appIcon = content.basePath + content.contentData.appIcon;
+            }
+            return content.contentData;
+        }));
 
         const onlineTextbookContents$: Observable<ContentSearchResult> = this.cachedItemStore.getCached(
             ContentServiceImpl.getIdForDb(request),

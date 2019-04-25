@@ -344,7 +344,7 @@ export class SunbirdSdk {
             this._contentService
         );
         this._summarizerService = new SummarizerServiceImpl(this._dbService, this.contentService,
-            this._eventsBusService, this._courseService, this._sharedPreferences);
+            this._eventsBusService, this._courseService, this._sharedPreferences,this._contentService, this._profileService);
         this._downloadService.registerOnDownloadCompleteDelegate(this._contentService);
         this._playerService = new PlayerServiceImpl(this._profileService, this._groupService,
             this._sdkConfig, this._frameworkService, this._deviceInfo, this._appInfo);
