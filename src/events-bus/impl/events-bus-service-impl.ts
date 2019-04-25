@@ -21,7 +21,7 @@ export class EventsBusServiceImpl implements EventsBusService {
         return this.eventsBus
             .do((eventContainer: EventContainer) => {
                 if (this.eventsBusConfig.debugMode) {
-                    console.log(eventContainer);
+                    console.log('SDK Telemetry Events', eventContainer);
                 }
             })
             .do(async (eventContainer: EventContainer) => {

@@ -5,6 +5,7 @@ export declare class KeycloakSessionProvider implements SessionProvider {
     private paramsObj;
     private apiConfig;
     private apiService;
-    constructor(paramsObj: StepOneCallbackType, apiConfig: ApiConfig, apiService: ApiService);
+    private inAppBrowserRef;
+    constructor(paramsObj: StepOneCallbackType, apiConfig: ApiConfig, apiService: ApiService, inAppBrowserRef: InAppBrowserSession);
     provide(): Promise<OAuthSession>;
 }

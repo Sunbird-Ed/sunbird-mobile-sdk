@@ -1,16 +1,26 @@
 import {ApiConfig, ApiService} from '../../api';
 import {OAuthSession} from '..';
-import {GoogleSessionProvider} from './google-session-provider';
-import {KeycloakSessionProvider} from './keycloak-session-provider';
-import {StateLoginSessionProvider} from './state-login-session-provider';
-import * as qs from 'qs';
 import {AuthEndPoints} from '../def/auth-end-points';
+import {SunbirdOAuthSessionProviderFactory} from './sunbird-o-auth-session-provider-factory';
+import {SignInError} from '../errors/sign-in-error';
+import * as qs from 'qs';
 
 export interface StepOneCallbackType {
     code?: string;
     access_token?: string;
     refresh_token?: string;
-    ssoUrl?: string;
+    id?: string;
+    googleRedirectUrl?: string;
+    error_message?: string;
+}
+
+export interface OAuthRedirectUrlQueryParams {
+    redirect_uri: string;
+    error_callback?: string;
+    response_type: string;
+    scope: string;
+    client_id: string;
+    version: string;
 }
 
 export class OAuthDelegate {
@@ -20,53 +30,44 @@ export class OAuthDelegate {
     ) {
     }
 
-    private static isKeyCloakSignup(paramsObject): boolean {
-        return !!paramsObject.code;
-    }
+    public async doOAuthStepOne(): Promise<OAuthSession> {
+        const oAuthRedirectUrlQueryParams: OAuthRedirectUrlQueryParams = {
+            redirect_uri: this.apiConfig.host + '/oauth2callback',
+            response_type: 'code',
+            scope: 'offline_access',
+            client_id: 'android',
+            version: '3'
+        };
 
-    private static isGoogleSignup(paramsObject): boolean {
-        return paramsObject.access_token && paramsObject.refresh_token;
-    }
+        const launchUrl =
+            this.apiConfig.host +
+            this.apiConfig.user_authentication.authUrl +
+            AuthEndPoints.LOGIN + '?' +
+            qs.stringify(oAuthRedirectUrlQueryParams, {encode: false});
 
-    private static isStateLogin(paramsObject): boolean {
-        return !!paramsObject.ssoUrl;
-    }
+        const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', 'zoom=no');
 
-    doOAuthStepOne(): Promise<OAuthSession> {
-        return new Promise((resolve, reject) => {
-            const launchUrl = this.apiConfig.host +
-                this.apiConfig.user_authentication.authUrl + AuthEndPoints.LOGIN + '?redirect_uri=' +
-                this.apiConfig.user_authentication.redirectUrl + '&response_type=code&scope=offline_access&client_id=android&version=2';
+        return new Promise<OAuthSession>((resolve, reject) => {
+            inAppBrowserRef.addEventListener('loadstart', (event) => {
+                if (event.url) {
+                    const sessionProvider = new SunbirdOAuthSessionProviderFactory(
+                        this.apiConfig, this.apiService, inAppBrowserRef
+                    ).fromUrl(event.url);
 
-            customtabs.isAvailable(() => {
-                // customTabs available
-                customtabs.launch(launchUrl, params => {
-                    resolve(this.doOAuthStepTwo(params));
-                }, error => {
-                    reject(error);
-                });
-            }, () => {
-                customtabs.launchInBrowser(launchUrl, params => {
-                    resolve(this.doOAuthStepTwo(params));
-                }, error => {
-                    reject(error);
-                });
+                    if ((event.url).indexOf('/sso/sign-in/error') !== -1) {
+                        reject(new SignInError('Server Error'));
+                    }
+
+                    if (sessionProvider) {
+                        resolve(sessionProvider.provide());
+                    }
+                }
             });
+        }).catch((e) => {
+            inAppBrowserRef.close();
+
+            throw e;
         });
-    }
-
-    private async doOAuthStepTwo(params: string): Promise<OAuthSession> {
-        const paramsObject: StepOneCallbackType = qs.parse(params.split('?')[1]);
-
-        if (OAuthDelegate.isGoogleSignup(paramsObject)) {
-            return new GoogleSessionProvider(paramsObject).provide();
-        } else if (OAuthDelegate.isKeyCloakSignup(paramsObject)) {
-            return new KeycloakSessionProvider(paramsObject, this.apiConfig, this.apiService).provide();
-        } else if (OAuthDelegate.isStateLogin(paramsObject)) {
-            return new StateLoginSessionProvider(paramsObject, this.apiConfig, this.apiService).provide();
-        }
-
-        throw new Error('to be implemented');
     }
 }
 

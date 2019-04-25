@@ -33,7 +33,6 @@ export class GetContentsHandler {
         if (offlineSearchQuery) {
             filter = `${filter}  AND (${offlineSearchQuery})`;
         }
-        console.log('of', offlineSearchQuery);
         let whereClause = `WHERE (${filter})`;
         let query = '';
         const orderBy = request.resourcesOnly ? '' : this.generateSortByQuery(request.sortCriteria!, uid!);
