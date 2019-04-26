@@ -27,16 +27,17 @@ interface ProcessedEventsMeta {
 
 interface DeviceRegisterResponse {
     id: string ;
-    params: {any};
+    params: any;
     responseCode: string;
-    result: {any};
+    result: any;
     ts: string;
     ver: string;
 }
 
 export class TelemetrySyncHandler implements ApiRequestHandler<undefined, TelemetrySyncStat> {
     public static readonly TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY = 'telemetry_log_min_allowed_offset_key';
-    private static readonly LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY = 'last_synced_device_register_time_stamp';
+    private static readonly LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY = 'last_synced_device_register_attempt_time_stamp';
+    private static readonly LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY = 'last_synced_device_register_is_successful';
     private static readonly DEVICE_REGISTER_ENDPOINT = '/register';
     private static readonly TELEMETRY_ENDPOINT = '/telemetry';
     private static readonly REGISTER_API_SUCCESS_TTL = 24 * 60 * 60 * 1000;
@@ -91,43 +92,61 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
     }
 
     private registerDevice(): Observable<undefined> {
-        return this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY)
-            .mergeMap((timestamp: string | undefined) => {
-                if (timestamp && (parseInt(timestamp, 10) > Date.now())) {
+        return Observable.zip(
+            this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY),
+            this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY)
+        ).mergeMap((results) => {
+            const lastSyncDeviceRegisterAttemptTimestamp = results[0];
+            const lastSyncDeviceRegisterIsSuccessful = results[1];
+
+            if (lastSyncDeviceRegisterAttemptTimestamp && lastSyncDeviceRegisterIsSuccessful) {
+                const offset = lastSyncDeviceRegisterIsSuccessful === 'false' ?
+                    TelemetrySyncHandler.REGISTER_API_FAILURE_TTL : TelemetrySyncHandler.REGISTER_API_SUCCESS_TTL;
+
+                if (Math.abs(parseInt(lastSyncDeviceRegisterAttemptTimestamp, 10) - Date.now()) < offset) {
                     return Observable.of(undefined);
                 }
+            }
 
-                const apiRequest: Request = new Request.Builder()
-                    .withType(HttpRequestType.POST)
-                    .withHost(this.telemetryConfig!.deviceRegisterHost)
-                    .withPath(this.telemetryConfig!.deviceRegisterApiPath +
-                        TelemetrySyncHandler.DEVICE_REGISTER_ENDPOINT + '/' + this.deviceInfo!.getDeviceID())
-                    .withApiToken(true)
-                    .build();
+            const apiRequest: Request = new Request.Builder()
+                .withType(HttpRequestType.POST)
+                .withHost(this.telemetryConfig!.deviceRegisterHost)
+                .withPath(this.telemetryConfig!.deviceRegisterApiPath +
+                    TelemetrySyncHandler.DEVICE_REGISTER_ENDPOINT + '/' + this.deviceInfo!.getDeviceID())
+                .withApiToken(true)
+                .build();
 
-                return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
-                    .do(async (res) => {
-                        const serverTime = new Date(res.body.ts).getTime();
-                        const now = Date.now();
-                        const currentOffset = serverTime - now;
-                        const allowedOffset =
-                            Math.abs(currentOffset) > this.telemetryConfig.telemetryLogMinAllowedOffset ? currentOffset : 0;
-                        if (allowedOffset) {
-                            await this.keyValueStore!.
-                            setValue(TelemetrySyncHandler.TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY, allowedOffset + '').toPromise();
-                        }
-                    })
-                    .mergeMap((res) => {
-                        return this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY,
-                            Date.now() + TelemetrySyncHandler.REGISTER_API_SUCCESS_TTL + '')
-                            .map(() => undefined); }
-                    )
-                    .catch(() =>
-                        this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY,
-                            Date.now() + TelemetrySyncHandler.REGISTER_API_FAILURE_TTL + '')
-                            .map(() => undefined)
-                    );
-            });
+            return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
+                .do(async (res) => {
+                    const serverTime = new Date(res.body.ts).getTime();
+                    const now = Date.now();
+                    const currentOffset = serverTime - now;
+                    const allowedOffset =
+                        Math.abs(currentOffset) > this.telemetryConfig.telemetryLogMinAllowedOffset ? currentOffset : 0;
+                    if (allowedOffset) {
+                        await this.keyValueStore!
+                            .setValue(TelemetrySyncHandler.TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY, allowedOffset + '').toPromise();
+                    }
+                })
+                .mergeMap(() => {
+                    return Observable.zip(
+                        this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY,
+                            Date.now() + ''),
+                        this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY,
+                            'true')
+                    ).mapTo(undefined);
+                })
+                .catch((e) => {
+                    console.error(e);
+
+                    return Observable.zip(
+                        this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY,
+                            Date.now() + ''),
+                        this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY,
+                            'false')
+                    ).mapTo(undefined);
+                });
+        });
     }
 
     public processEventsBatch(): Observable<number> {
