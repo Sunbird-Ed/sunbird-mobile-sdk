@@ -12,7 +12,8 @@ export declare class TelemetrySyncHandler implements ApiRequestHandler<undefined
     private keyValueStore?;
     private apiService?;
     static readonly TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY: string;
-    private static readonly LAST_SYNCED_DEVICE_REGISTER_TIME_STAMP_KEY;
+    private static readonly LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY;
+    private static readonly LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY;
     private static readonly DEVICE_REGISTER_ENDPOINT;
     private static readonly TELEMETRY_ENDPOINT;
     private static readonly REGISTER_API_SUCCESS_TTL;
