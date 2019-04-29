@@ -12,8 +12,7 @@ import {DownloadCompleteDelegate} from './def/download-complete-delegate';
 import {DownloadKeys} from '../../preference-keys';
 import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
 import {InteractSubType, InteractType, ObjectType} from '../../telemetry';
-import { AppStorageInfo } from './def/app-storage-info';
-import { ContentDownloadRequest } from '../../content';
+import {AppStorageInfo} from './def/app-storage-info';
 
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
     private static readonly KEY_TO_DOWNLOAD_LIST = DownloadKeys.KEY_TO_DOWNLOAD_LIST;
@@ -77,7 +76,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
      throw new Error('To be Implemented');
     }
 
-    getActiveDownloadRequest(): Observable<ContentDownloadRequest[]> {
+    getActiveDownloadRequests(): Observable<DownloadRequest[]> {
       throw new Error('To be Implemented');
     }
 
