@@ -273,8 +273,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]> {
         const searchContentHandler = new SearchContentHandler(this.appConfig, this.contentServiceConfig, this.telemetryService);
         const contentIds: string[] = ArrayUtil.deDupe(contentImportRequest.contentImportArray.map((i) => i.contentId));
-        const filter: SearchRequest = searchContentHandler.getContentSearchFilter(
-            contentIds, contentImportRequest.contentStatusArray);
+        const filter: SearchRequest =
+            searchContentHandler.getContentSearchFilter(contentIds, contentImportRequest.contentStatusArray, contentImportRequest.fields);
         return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig).handle(filter)
             .map((searchResponse: SearchResponse) => {
                 return searchResponse.result.content;
@@ -299,7 +299,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                     destinationFolder: contentImport.destinationFolder,
                                     isChildContent: contentImport.isChildContent,
                                     filename: contentId.concat('.', FileExtension.CONTENT),
-                                    correlationData: contentImport.correlationData
+                                    correlationData: contentImport.correlationData,
+                                    contentMeta: contentData
                                 };
                                 downloadRequestList.push(downloadRequest);
                             }
