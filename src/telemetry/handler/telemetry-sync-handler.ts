@@ -6,7 +6,7 @@ import {StringToGzippedString} from '../impl/string-to-gzipped-string';
 import {TelemetryEntriesToStringPreprocessor} from '../impl/telemetry-entries-to-string-preprocessor';
 import {KeyValueStore} from '../../key-value-store';
 import {TelemetryConfig} from '../config/telemetry-config';
-import {DeviceInfo} from '../../util/device';
+import {DeviceInfo, DeviceSpec} from '../../util/device';
 import {DbService, InsertQuery} from '../../db';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {UniqueId} from '../../db/util/unique-id';
@@ -139,6 +139,9 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
                         await this.keyValueStore!
                             .setValue(TelemetrySyncHandler.TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY, allowedOffset + '').toPromise();
                     }
+                })
+                .map(() => {
+                    throw new Error('Hellloooo');
                 })
                 .mergeMap(() => {
                     return Observable.zip(
@@ -297,7 +300,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
         // const body = JSON.parse(pako.ungzip(processedEventsBatchEntry[COLUMN_NAME_DATA], {to: 'string'}));
 
         const apiRequest: Request = new Request.Builder()
-            .withHost(this.telemetryConfig.host)
+            .withHost(this.telemetryConfig.host!)
             .withType(HttpRequestType.POST)
             .withPath(this.telemetryConfig.telemetryApiPath +
                 TelemetrySyncHandler.TELEMETRY_ENDPOINT)
@@ -306,6 +309,22 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
             .build();
 
         return this.apiService!.fetch(apiRequest)
+            .do(async (res) => {
+                const lastSyncDeviceRegisterIsSuccessful =
+                    await this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY).toPromise();
+
+                if (lastSyncDeviceRegisterIsSuccessful === 'false') {
+                    const serverTime = new Date(res.body.ets).getTime();
+                    const now = Date.now();
+                    const currentOffset = serverTime - now;
+                    const allowedOffset =
+                        Math.abs(currentOffset) > this.telemetryConfig.telemetryLogMinAllowedOffset ? currentOffset : 0;
+                    if (allowedOffset) {
+                        await this.keyValueStore!
+                            .setValue(TelemetrySyncHandler.TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY, allowedOffset + '').toPromise();
+                    }
+                }
+            })
             .map(() => ({
                 syncedEventCount: processedEventsBatchEntry[COLUMN_NAME_NUMBER_OF_EVENTS],
                 syncTime: Date.now(),

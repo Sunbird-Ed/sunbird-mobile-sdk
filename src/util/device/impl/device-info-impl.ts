@@ -1,4 +1,4 @@
-import {DeviceInfo} from '..';
+import {DeviceInfo, DeviceSpec} from '..';
 import * as SHA1 from 'crypto-js/sha1';
 import {SdkConfig} from '../../../sdk-config';
 import {Observable} from 'rxjs';

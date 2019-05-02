@@ -1,17 +1,3 @@
-interface DeviceSpec {
-    idisk: number;
-    cap: any[];
-    mem: number;
-    os: string;
-    cpu: string;
-    scrn: number;
-    sims: number;
-    id: string;
-    camera: string;
-    edisk: number;
-    make: string;
-}
-
 // @ts-ignore
 declare var buildconfigreader: {
     getBuildConfigValue: (packageName: string, property: string, success:
@@ -32,5 +18,5 @@ declare var buildconfigreader: {
     getMetaData: (fileMapList: any[], success:
         (callbackUrl: any) => void, error: (error: string) => void) => void;
 
-    getDeviceSpec: (callback: (deviceSpec: DeviceSpec) => void) => void;
+    getDeviceSpec: (callback: (deviceSpec: any) => void) => void;
 };
