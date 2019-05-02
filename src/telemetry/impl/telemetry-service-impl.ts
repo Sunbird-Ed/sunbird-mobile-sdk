@@ -43,6 +43,7 @@ import {TelemetryEventType} from '../def/telemetry-event';
 import {TransportProcessedTelemetry} from '../handler/import/transport-processed-telemetry';
 import {UpdateImportedTelemetryMetadata} from '../handler/import/update-imported-telemetry-metadata';
 import {GenerateImportTelemetryShare} from '../handler/import/generate-import-telemetry-share';
+import {FrameworkService} from '../../framework';
 
 export class TelemetryServiceImpl implements TelemetryService {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
@@ -56,7 +57,8 @@ export class TelemetryServiceImpl implements TelemetryService {
                 private telemetryConfig: TelemetryConfig,
                 private deviceInfo: DeviceInfo,
                 private eventsBusService: EventsBusService,
-                private fileService: FileService) {
+                private fileService: FileService,
+                private frameworkService: FrameworkService) {
     }
 
     saveTelemetry(request: string): Observable<boolean> {
@@ -169,7 +171,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         const telemetrySyncHandler: TelemetrySyncHandler = new TelemetrySyncHandler(
             this.dbService,
             this.telemetryConfig,
-            this.deviceInfo
+            this.deviceInfo,
+            this.frameworkService
         );
         return Observable.fromPromise(
             telemetrySyncHandler.processEventsBatch().expand((processedEventsCount: number) =>
@@ -226,6 +229,7 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.dbService,
             this.telemetryConfig,
             this.deviceInfo,
+            this.frameworkService,
             this.keyValueStore,
             this.apiService
         ).handle()

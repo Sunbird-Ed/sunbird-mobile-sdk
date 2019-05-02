@@ -11,6 +11,7 @@ import {DbService, InsertQuery} from '../../db';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {UniqueId} from '../../db/util/unique-id';
 import moment from 'moment';
+import {FrameworkService} from '../../framework';
 import COLUMN_NAME_MSG_ID = TelemetryProcessedEntry.COLUMN_NAME_MSG_ID;
 import COLUMN_NAME_NUMBER_OF_EVENTS = TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS;
 import COLUMN_NAME_PRIORITY = TelemetryEntry.COLUMN_NAME_PRIORITY;
@@ -48,6 +49,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
     constructor(private dbService: DbService,
                 private telemetryConfig: TelemetryConfig,
                 private deviceInfo: DeviceInfo,
+                private frameworkService: FrameworkService,
                 private keyValueStore?: KeyValueStore,
                 private apiService?: ApiService) {
         this.preprocessors = [
@@ -94,10 +96,14 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
     private registerDevice(): Observable<undefined> {
         return Observable.zip(
             this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY),
-            this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY)
+            this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY),
+            this.deviceInfo.getDeviceSpec(),
+            this.frameworkService.getActiveChannelId()
         ).mergeMap((results) => {
             const lastSyncDeviceRegisterAttemptTimestamp = results[0];
             const lastSyncDeviceRegisterIsSuccessful = results[1];
+            const deviceSpec: DeviceSpec = results[2];
+            const activeChannelId: string = results[3];
 
             if (lastSyncDeviceRegisterAttemptTimestamp && lastSyncDeviceRegisterIsSuccessful) {
                 const offset = lastSyncDeviceRegisterIsSuccessful === 'false' ?
@@ -114,6 +120,12 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
                 .withPath(this.telemetryConfig!.deviceRegisterApiPath +
                     TelemetrySyncHandler.DEVICE_REGISTER_ENDPOINT + '/' + this.deviceInfo!.getDeviceID())
                 .withApiToken(true)
+                .withBody({
+                    request: {
+                        dspec: deviceSpec,
+                        channel: activeChannelId
+                    }
+                })
                 .build();
 
             return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)

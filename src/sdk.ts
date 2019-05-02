@@ -285,7 +285,8 @@ export class SunbirdSdk {
             this._sdkConfig.telemetryConfig,
             this._deviceInfo,
             this._eventsBusService,
-            this._fileService
+            this._fileService,
+            this._frameworkService
         );
 
         this._profileService.registerTelemetryService(this._telemetryService);
