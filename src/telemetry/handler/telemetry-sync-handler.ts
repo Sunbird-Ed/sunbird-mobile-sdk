@@ -140,9 +140,6 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
                             .setValue(TelemetrySyncHandler.TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY, allowedOffset + '').toPromise();
                     }
                 })
-                .map(() => {
-                    throw new Error('Hellloooo');
-                })
                 .mergeMap(() => {
                     return Observable.zip(
                         this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY,
