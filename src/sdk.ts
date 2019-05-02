@@ -46,7 +46,7 @@ import {EventsBusServiceImpl} from './events-bus/impl/events-bus-service-impl';
 import {SummarizerService, SummarizerServiceImpl} from './summarizer';
 import {Observable} from 'rxjs';
 import {DownloadService} from './util/download';
-import {DownloadServiceImpl} from './util/download/download-service-impl';
+import {DownloadServiceImpl} from './util/download/impl/download-service-impl';
 import {AppInfo} from './util/app/def/app-info';
 import {AppInfoImpl} from './util/app/impl/app-info-impl';
 import {PlayerService, PlayerServiceImpl} from './player';
