@@ -57,4 +57,11 @@ export interface ContentService extends DownloadCompleteDelegate {
     cancelDownload(contentId: string): Observable<undefined>;
 
     setContentMarker(contentMarkerRequest: ContentMarkerRequest): Observable<boolean>;
+
+    cancelDownloads(contentIds: string[]): Observable<void>;
+
+    enqueueDeleteContent(contentIds: string[]): Observable<void>;
+
+    cancelEnqueueDeleteContent(): Observable<void>;
+
 }

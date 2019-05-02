@@ -538,6 +538,18 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         });
     }
 
+    cancelDownloads(contentIds: string[]): Observable<void> {
+        throw new Error('To be implemented');
+    }
+
+    enqueueDeleteContent(contentIds: string[]): Observable<void> {
+        throw new Error('To be Implemented');
+    }
+
+    cancelEnqueueDeleteContent(): Observable<void> {
+        throw new Error('To be Implemented');
+    }
+
     private searchContentAndGroupByPageSection(
         offlineTextbookContents$: Observable<ContentData[]>,
         onlineTextbookContents$: Observable<ContentSearchResult>
