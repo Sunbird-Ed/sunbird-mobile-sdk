@@ -36,7 +36,6 @@ import {CreateTelemetryExportFile} from '../handler/export/create-telemetry-expo
 import {CopyDatabase} from '../handler/export/copy-database';
 import {CreateMetaData} from '../handler/export/create-meta-data';
 import {CleanupExportedFile} from '../handler/export/cleanup-exported-file';
-import {CleanCurrentDatabase} from '../handler/export/clean-current-database';
 import {GenerateShareTelemetry} from '../handler/export/generate-share-telemetry';
 import {ValidateTelemetryMetadata} from '../handler/import/validate-telemetry-metadata';
 import {TelemetryEventType} from '../def/telemetry-event';
@@ -183,8 +182,6 @@ export class TelemetryServiceImpl implements TelemetryService {
                 return new CreateMetaData(this.dbService, this.fileService, this.deviceInfo).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
                 return new CleanupExportedFile(this.dbService, this.fileService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new CleanCurrentDatabase(this.dbService).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
                 return new GenerateShareTelemetry(this.dbService, this).execute(exportResponse.body);
             }).then((exportResponse: Response<ExportTelemetryContext>) => {
