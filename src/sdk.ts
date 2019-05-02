@@ -354,26 +354,29 @@ export class SunbirdSdk {
 
         this.postInit();
     }
-
+    // TODO Improve the logic
     public updateTelemetryConfig(update: Partial<TelemetryConfig>) {
-        this._sdkConfig.telemetryConfig = {
-            ...this._sdkConfig.telemetryConfig,
-            ...update
-        };
+        for (const key in update) {
+            if (update.hasOwnProperty(key)) {
+                this._sdkConfig.telemetryConfig[key] = update[key];
+            }
+        }
     }
-
+    // TODO Improve the logic
     public updateContentServiceConfig(update: Partial<ContentServiceConfig>) {
-        this._sdkConfig.contentServiceConfig = {
-            ...this._sdkConfig.contentServiceConfig,
-            ...update
-        };
+        for (const key in update) {
+            if (update.hasOwnProperty(key)) {
+                this._sdkConfig.contentServiceConfig[key] = update[key];
+            }
+        }
     }
-
+    // TODO Improve the logic
     public updatePageServiceConfig(update: Partial<PageServiceConfig>) {
-        this._sdkConfig.pageServiceConfig = {
-            ...this._sdkConfig.pageServiceConfig,
-            ...update
-        };
+        for (const key in update) {
+            if (update.hasOwnProperty(key)) {
+                this._sdkConfig.pageServiceConfig[key] = update[key];
+            }
+        }
     }
 
     private postInit() {
