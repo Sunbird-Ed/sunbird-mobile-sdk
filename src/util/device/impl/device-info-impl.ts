@@ -1,6 +1,7 @@
-import {DeviceInfo} from '../def/device-info';
+import {DeviceInfo, DeviceSpec} from '..';
 import * as SHA1 from 'crypto-js/sha1';
 import {SdkConfig} from '../../../sdk-config';
+import {Observable} from 'rxjs';
 
 declare const device: {
     uuid: string;
@@ -22,4 +23,12 @@ export class DeviceInfoImpl implements DeviceInfo {
         return this.deviceId;
     }
 
+    getDeviceSpec(): Observable<DeviceSpec> {
+        return Observable.create((observer) => {
+            buildconfigreader.getDeviceSpec((deviceSpec: DeviceSpec) => {
+                observer.next(deviceSpec);
+                observer.complete();
+            });
+        });
+    }
 }
