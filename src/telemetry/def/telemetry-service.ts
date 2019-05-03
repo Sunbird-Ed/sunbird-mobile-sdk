@@ -45,5 +45,5 @@ export interface TelemetryService {
 
     getTelemetryStat(): Observable<TelemetryStat>;
 
-    sync(): Observable<TelemetrySyncStat>;
+    sync(ignoreSyncThreshold?: boolean): Observable<TelemetrySyncStat>;
 }

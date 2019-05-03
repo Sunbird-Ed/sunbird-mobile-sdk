@@ -9,6 +9,7 @@ import { TelemetryConfig } from '../config/telemetry-config';
 import { DeviceInfo } from '../../util/device';
 import { EventsBusService } from '../../events-bus';
 import { FileService } from '../../util/file/def/file-service';
+import { FrameworkService } from '../../framework';
 export declare class TelemetryServiceImpl implements TelemetryService {
     private dbService;
     private decorator;
@@ -20,8 +21,9 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     private deviceInfo;
     private eventsBusService;
     private fileService;
+    private frameworkService;
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP;
-    constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, telemetryConfig: TelemetryConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService);
+    constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, telemetryConfig: TelemetryConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService, frameworkService: FrameworkService);
     saveTelemetry(request: string): Observable<boolean>;
     audit({ env, actor, currentState, updatedProperties, objId, objType, objVer }: TelemetryAuditRequest): Observable<boolean>;
     end({ type, mode, duration, pageId, summaryList, env, objId, objType, objVer, rollup, correlationData }: TelemetryEndRequest): Observable<boolean>;
@@ -36,6 +38,6 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     importTelemetry(importTelemetryRequest: TelemetryImportRequest): Observable<boolean>;
     exportTelemetry(telemetryExportRequest: TelemetryExportRequest): Observable<TelemetryExportResponse>;
     getTelemetryStat(): Observable<TelemetryStat>;
-    sync(): Observable<TelemetrySyncStat>;
+    sync(ignoreSyncThreshold?: boolean): Observable<TelemetrySyncStat>;
     private decorateAndPersist;
 }

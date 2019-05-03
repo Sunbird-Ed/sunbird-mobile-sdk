@@ -1,4 +1,4 @@
-import {DeviceInfo} from '../def/device-info';
+import {DeviceInfo, DeviceSpec} from '../def/device-info';
 import * as SHA1 from 'crypto-js/sha1';
 import {SdkConfig} from '../../../sdk-config';
 import {Observable} from 'rxjs';
@@ -23,6 +23,14 @@ export class DeviceInfoImpl implements DeviceInfo {
         return this.deviceId;
     }
 
+    getDeviceSpec(): Observable<DeviceSpec> {
+        return Observable.create((observer) => {
+            buildconfigreader.getDeviceSpec((deviceSpec: DeviceSpec) => {
+                observer.next(deviceSpec);
+                observer.complete();
+            });
+        });
+    }
     getAvailableInternalMemorySize(): Observable<string> {
         return Observable.create((observer) => {
             buildconfigreader.getAvailableInternalMemorySize((value) => {
