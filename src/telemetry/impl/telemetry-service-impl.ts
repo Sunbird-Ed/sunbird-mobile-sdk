@@ -224,7 +224,7 @@ export class TelemetryServiceImpl implements TelemetryService {
     }
 
 
-    sync(): Observable<TelemetrySyncStat> {
+    sync(ignoreSyncThreshold: boolean = false): Observable<TelemetrySyncStat> {
         return new TelemetrySyncHandler(
             this.dbService,
             this.telemetryConfig,
@@ -232,7 +232,7 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.frameworkService,
             this.keyValueStore,
             this.apiService
-        ).handle()
+        ).handle(ignoreSyncThreshold)
             .mergeMap((telemetrySyncStat) =>
                 this.keyValueStore.setValue(TelemetryServiceImpl.KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP, telemetrySyncStat.syncTime + '')
                     .mapTo(telemetrySyncStat)

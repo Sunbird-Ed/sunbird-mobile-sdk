@@ -35,7 +35,7 @@ interface DeviceRegisterResponse {
     ver: string;
 }
 
-export class TelemetrySyncHandler implements ApiRequestHandler<undefined, TelemetrySyncStat> {
+export class TelemetrySyncHandler implements ApiRequestHandler<boolean, TelemetrySyncStat> {
     public static readonly TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY = 'telemetry_log_min_allowed_offset_key';
     private static readonly LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY = 'last_synced_device_register_attempt_time_stamp';
     private static readonly LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY = 'last_synced_device_register_is_successful';
@@ -58,38 +58,40 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
         ];
     }
 
-    handle(): Observable<TelemetrySyncStat> {
-        return this.hasTelemetryThresholdCrossed()
-            .mergeMap((hasTelemetryThresholdCrossed: boolean) => {
-                if (hasTelemetryThresholdCrossed) {
-                    return this.registerDevice()
-                        .mergeMap(() => this.processEventsBatch())
-                        .expand((processedEventsCount: number) =>
-                            processedEventsCount ? this.processEventsBatch() : Observable.empty()
-                        )
-                        .reduce(() => undefined, undefined)
-                        .mergeMap(() => this.handleProcessedEventsBatch())
-                        .expand((syncStat: TelemetrySyncStat) =>
-                            syncStat.syncedEventCount ? this.handleProcessedEventsBatch() : Observable.empty()
-                        )
-                        .reduce((acc: TelemetrySyncStat, currentStat: TelemetrySyncStat) => {
-                            return ({
-                                syncedEventCount: acc.syncedEventCount + currentStat.syncedEventCount,
-                                syncTime: Date.now(),
-                                syncedFileSize: acc.syncedFileSize + currentStat.syncedFileSize
-                            });
-                        }, {
+    handle(ignoreSyncThreshold: boolean): Observable<TelemetrySyncStat> {
+        return this.registerDevice()
+            .mergeMap(() => {
+                return this.hasTelemetryThresholdCrossed()
+                    .mergeMap((hasTelemetryThresholdCrossed: boolean) => {
+                        if (hasTelemetryThresholdCrossed || ignoreSyncThreshold) {
+                            return this.processEventsBatch()
+                                .expand((processedEventsCount: number) =>
+                                    processedEventsCount ? this.processEventsBatch() : Observable.empty()
+                                )
+                                .reduce(() => undefined, undefined)
+                                .mergeMap(() => this.handleProcessedEventsBatch())
+                                .expand((syncStat: TelemetrySyncStat) =>
+                                    syncStat.syncedEventCount ? this.handleProcessedEventsBatch() : Observable.empty()
+                                )
+                                .reduce((acc: TelemetrySyncStat, currentStat: TelemetrySyncStat) => {
+                                    return ({
+                                        syncedEventCount: acc.syncedEventCount + currentStat.syncedEventCount,
+                                        syncTime: Date.now(),
+                                        syncedFileSize: acc.syncedFileSize + currentStat.syncedFileSize
+                                    });
+                                }, {
+                                    syncedEventCount: 0,
+                                    syncTime: Date.now(),
+                                    syncedFileSize: 0
+                                });
+                        }
+
+                        return Observable.of({
                             syncedEventCount: 0,
                             syncTime: Date.now(),
                             syncedFileSize: 0
                         });
-                }
-
-                return Observable.of({
-                    syncedEventCount: 0,
-                    syncTime: Date.now(),
-                    syncedFileSize: 0
-                });
+                    });
             });
     }
 
