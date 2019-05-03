@@ -18,4 +18,7 @@ declare var buildconfigreader: {
     getMetaData: (fileMapList: any[], success:
         (callbackUrl: any) => void, error: (error: string) => void) => void;
 
+    getAvailableInternalMemorySize: (success:
+        (callbackUrl: string) => void, error: (error: string) => void) => void;
+
 };

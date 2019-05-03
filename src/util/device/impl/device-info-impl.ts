@@ -1,6 +1,7 @@
 import {DeviceInfo} from '../def/device-info';
 import * as SHA1 from 'crypto-js/sha1';
 import {SdkConfig} from '../../../sdk-config';
+import {Observable} from 'rxjs';
 
 declare const device: {
     uuid: string;
@@ -20,6 +21,17 @@ export class DeviceInfoImpl implements DeviceInfo {
 
     getDeviceID(): string {
         return this.deviceId;
+    }
+
+    getAvailableInternalMemorySize(): Observable<string> {
+        return Observable.create((observer) => {
+            buildconfigreader.getAvailableInternalMemorySize((value) => {
+                observer.next(value);
+                observer.complete();
+            }, (e) => {
+                observer.error(e);
+            });
+        });
     }
 
 }

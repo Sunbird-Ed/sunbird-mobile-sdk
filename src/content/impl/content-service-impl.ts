@@ -21,7 +21,7 @@ import {
     ContentSearchResult,
     ContentService,
     ContentServiceConfig,
-    ContentsGroupedByPageSection,
+    ContentsGroupedByPageSection, ContentSpaceUsageSummaryRequest, ContentSpaceUsageSummaryResponse,
     EcarImportRequest,
     ExportContentContext,
     FileExtension,
@@ -83,6 +83,7 @@ import {CachedItemStore} from '../../key-value-store';
 import * as SHA1 from 'crypto-js/sha1';
 import {FrameworkKeys} from '../../preference-keys';
 import {CreateHierarchy} from '../handlers/import/create-hierarchy';
+import {ContentStorageHandler} from '../handlers/content-storage-handler';
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
@@ -586,5 +587,17 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 sections: pageSectionList
             };
         });
+    }
+
+    getContentSpaceUsageSummary(contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest):
+        Observable<ContentSpaceUsageSummaryResponse[]> {
+        const contentSpaceUsageSummaryList: ContentSpaceUsageSummaryResponse[] = [];
+        const storageHandler = new ContentStorageHandler(this.dbService);
+        contentSpaceUsageSummaryRequest.paths.forEach(async (path) => {
+            const size = await storageHandler.getUsgaeSpace(path.concat('content')).toPromise();
+            contentSpaceUsageSummaryList.push({path: path, sizeOnDevice: size});
+        });
+        return Observable.of(contentSpaceUsageSummaryList);
+
     }
 }
