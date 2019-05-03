@@ -27,12 +27,7 @@ interface ProcessedEventsMeta {
 }
 
 interface DeviceRegisterResponse {
-    id: string ;
-    params: any;
-    responseCode: string;
-    result: any;
     ts: string;
-    ver: string;
 }
 
 export class TelemetrySyncHandler implements ApiRequestHandler<boolean, TelemetrySyncStat> {
@@ -60,6 +55,10 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
 
     handle(ignoreSyncThreshold: boolean): Observable<TelemetrySyncStat> {
         return this.registerDevice()
+            .catch(() => {
+                ignoreSyncThreshold = true;
+                return Observable.of(undefined);
+            })
             .mergeMap(() => {
                 return this.hasTelemetryThresholdCrossed()
                     .mergeMap((hasTelemetryThresholdCrossed: boolean) => {
@@ -151,14 +150,15 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
                     ).mapTo(undefined);
                 })
                 .catch((e) => {
-                    console.error(e);
-
                     return Observable.zip(
                         this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY,
                             Date.now() + ''),
                         this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY,
                             'false')
-                    ).mapTo(undefined);
+                    ).mergeMap(() => {
+                        console.error(e);
+                        return Observable.throw(new Error('Device Registration Failed'));
+                    });
                 });
         });
     }
