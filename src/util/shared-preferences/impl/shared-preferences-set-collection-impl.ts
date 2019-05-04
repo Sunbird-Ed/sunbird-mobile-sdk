@@ -75,18 +75,10 @@ export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesS
             });
     }
 
-    asListChanges(): Observable<{ prev: T[]; next: T[] }> {
+    asListChanges(): Observable<T[]> {
         return this.changes.asObservable()
             .mergeMap(() => {
                 return this.asList();
-            })
-            .startWith([])
-            .pairwise()
-            .map((results) => {
-                return {
-                    prev: results[0],
-                    next: results[1],
-                };
             });
     }
 }

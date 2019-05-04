@@ -142,7 +142,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         throw new Error('To be Implemented');
     }
 
-    getActiveDownloadRequests(): Observable<{ prev: DownloadRequest[], next: DownloadRequest[] }> {
+    getActiveDownloadRequests(): Observable<DownloadRequest[]> {
         return this.sharedPreferencesSetCollection.asListChanges();
     }
 

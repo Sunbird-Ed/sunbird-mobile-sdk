@@ -16,5 +16,5 @@ export interface SharedPreferencesSetCollection<T> {
 
     asSet(): Observable<Collections.Set<T>>;
 
-    asListChanges(): Observable<{ prev: T[], next: T[] }>;
+    asListChanges(): Observable<T[]>;
 }

@@ -15,5 +15,5 @@ export interface DownloadService extends SdkServiceOnInitDelegate {
 
     getAppStorageInfo(): Observable<AppStorageInfo>;
 
-    getActiveDownloadRequests(): Observable<{ prev: DownloadRequest[], next: DownloadRequest[] }>;
+    getActiveDownloadRequests(): Observable<DownloadRequest[]>;
 }
