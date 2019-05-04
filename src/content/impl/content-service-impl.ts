@@ -593,11 +593,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         Observable<ContentSpaceUsageSummaryResponse[]> {
         const contentSpaceUsageSummaryList: ContentSpaceUsageSummaryResponse[] = [];
         const storageHandler = new ContentStorageHandler(this.dbService);
-        contentSpaceUsageSummaryRequest.paths.forEach(async (path) => {
-            const size = await storageHandler.getUsgaeSpace(path.concat('content')).toPromise();
-            contentSpaceUsageSummaryList.push({path: path, sizeOnDevice: size});
-        });
-        return Observable.of(contentSpaceUsageSummaryList);
-
+        return Observable.fromPromise(storageHandler.getContentUsageSummary(contentSpaceUsageSummaryRequest.paths));
     }
 }

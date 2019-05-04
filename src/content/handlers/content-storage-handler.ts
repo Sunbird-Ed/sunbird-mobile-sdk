@@ -1,6 +1,6 @@
 import {DbService} from '../../db';
 import {ContentEntry} from '../db/schema';
-import {MimeType} from '..';
+import {ContentSpaceUsageSummaryResponse, MimeType} from '..';
 import {Observable} from 'rxjs';
 
 export class ContentStorageHandler {
@@ -17,4 +17,12 @@ export class ContentStorageHandler {
         });
     }
 
+    public async getContentUsageSummary(paths: string[]): Promise<ContentSpaceUsageSummaryResponse[]> {
+        const contentSpaceUsageSummaryList: ContentSpaceUsageSummaryResponse[] = [];
+        for (const path of paths) {
+            const size = await this.getUsgaeSpace(path).toPromise();
+            contentSpaceUsageSummaryList.push({path: path, sizeOnDevice: size});
+        }
+        return contentSpaceUsageSummaryList;
+    }
 }
