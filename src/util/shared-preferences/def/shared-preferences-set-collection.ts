@@ -8,9 +8,13 @@ export interface SharedPreferencesSetCollection<T> {
 
     remove(item: T): Observable<boolean>;
 
+    clear(): Observable<void>;
+
     contains(item: T): Observable<boolean>;
 
     asList(): Observable<T[]>;
 
     asSet(): Observable<Collections.Set<T>>;
+
+    asListChanges(): Observable<{ prev: T[], next: T[] }>;
 }

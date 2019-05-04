@@ -31,7 +31,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         this.sharedPreferencesSetCollection = new SharedPreferencesSetCollectionImpl(
             this.sharedPreferences,
             DownloadServiceImpl.KEY_TO_DOWNLOAD_LIST,
-            (item) => Collections.util.makeString(item)
+            (item) => item.identifier
         );
     }
 
@@ -111,6 +111,29 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             });
     }
 
+    cancelAll(): Observable<void> {
+        return this.currentDownloadRequest$
+            .take(1)
+            .mergeMap((currentDownloadRequest?: DownloadRequest) => {
+                if (currentDownloadRequest) {
+                    return Observable.create((observer) => {
+                        downloadManager.remove([currentDownloadRequest.downloadId!], (err, removeCount) => {
+                            if (err) {
+                                observer.error(err);
+                            }
+
+                            observer.next(!!removeCount);
+                            observer.complete();
+                        });
+                    })
+                        .mergeMap(() => this.removeAllFromDownloadList())
+                        .mergeMap(() => this.switchToNextDownloadRequest());
+                }
+
+                return this.removeAllFromDownloadList();
+            });
+    }
+
     registerOnDownloadCompleteDelegate(downloadCompleteDelegate: DownloadCompleteDelegate): void {
         this.downloadCompleteDelegate = downloadCompleteDelegate;
     }
@@ -119,8 +142,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         throw new Error('To be Implemented');
     }
 
-    getActiveDownloadRequests(): Observable<DownloadRequest[]> {
-        return this.sharedPreferencesSetCollection.asList();
+    getActiveDownloadRequests(): Observable<{ prev: DownloadRequest[], next: DownloadRequest[] }> {
+        return this.sharedPreferencesSetCollection.asListChanges();
     }
 
     private switchToNextDownloadRequest(): Observable<undefined> {
@@ -186,6 +209,20 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                 return this.sharedPreferencesSetCollection.remove(toRemoveDownloadRequest).mapTo(undefined)
                     .do(async () => generateTelemetry
                         && await DownloadServiceImpl.generateDownloadCancelTelemetry(toRemoveDownloadRequest));
+            });
+    }
+
+    private removeAllFromDownloadList(): Observable<undefined> {
+        return this.sharedPreferencesSetCollection.asList()
+            .take(1)
+            .mergeMap((downloadRequests: DownloadRequest[]) => {
+
+                return this.sharedPreferencesSetCollection.clear()
+                    .mergeMap(() => {
+                        return Observable.from(downloadRequests)
+                            .do(async (downloadRequest) => await DownloadServiceImpl.generateDownloadCancelTelemetry(downloadRequest))
+                            .concatMapTo(Observable.of(undefined));
+                    });
             });
     }
 

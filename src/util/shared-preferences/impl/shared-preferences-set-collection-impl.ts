@@ -1,9 +1,11 @@
 import {SharedPreferencesSetCollection} from '../def/shared-preferences-set-collection';
 import {SharedPreferences} from '..';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import * as Collections from 'typescript-collections';
 
 export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesSetCollection<T> {
+    private changes: Subject<undefined> = new BehaviorSubject<undefined>(undefined);
+
     constructor(private sharedPreferences: SharedPreferences, private key: string, private toStringFunction?: (item: T) => string) {
     }
 
@@ -14,7 +16,8 @@ export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesS
 
                 return this.sharedPreferences.putString(this.key, JSON.stringify(set.toArray()))
                     .mapTo(undefined);
-            });
+            })
+            .do(() => this.changes.next(undefined));
     }
 
     add(item: T): Observable<void> {
@@ -24,7 +27,13 @@ export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesS
 
                 return this.sharedPreferences.putString(this.key, JSON.stringify(set.toArray()))
                     .mapTo(undefined);
-            });
+            })
+            .do(() => this.changes.next(undefined));
+    }
+
+    clear(): Observable<void> {
+        return this.sharedPreferences.putString(this.key, '[]')
+            .mapTo(undefined);
     }
 
     remove(item: T): Observable<boolean> {
@@ -34,7 +43,8 @@ export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesS
 
                 return this.sharedPreferences.putString(this.key, JSON.stringify(set.toArray()))
                     .mapTo(hasRemoved);
-            });
+            })
+            .do(() => this.changes.next(undefined));
     }
 
     contains(item: T): Observable<boolean> {
@@ -62,6 +72,21 @@ export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesS
                     acc.add(item);
                     return acc;
                 }, new Collections.Set<T>(this.toStringFunction));
+            });
+    }
+
+    asListChanges(): Observable<{ prev: T[]; next: T[] }> {
+        return this.changes.asObservable()
+            .mergeMap(() => {
+                return this.asList();
+            })
+            .startWith([])
+            .pairwise()
+            .map((results) => {
+                return {
+                    prev: results[0],
+                    next: results[1],
+                };
             });
     }
 }
