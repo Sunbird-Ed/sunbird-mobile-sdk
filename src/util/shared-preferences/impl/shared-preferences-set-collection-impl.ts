@@ -33,7 +33,8 @@ export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesS
 
     clear(): Observable<void> {
         return this.sharedPreferences.putString(this.key, '[]')
-            .mapTo(undefined);
+            .mapTo(undefined)
+            .do(() => this.changes.next(undefined));
     }
 
     remove(item: T): Observable<boolean> {
