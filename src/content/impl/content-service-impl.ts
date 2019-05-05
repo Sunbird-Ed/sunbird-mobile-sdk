@@ -2,6 +2,7 @@ import {
     ChildContentRequest,
     Content,
     ContentData,
+    ContentDelete,
     ContentDeleteRequest,
     ContentDeleteResponse,
     ContentDeleteStatus,
@@ -21,7 +22,9 @@ import {
     ContentSearchResult,
     ContentService,
     ContentServiceConfig,
-    ContentsGroupedByPageSection, ContentSpaceUsageSummaryRequest, ContentSpaceUsageSummaryResponse,
+    ContentsGroupedByPageSection,
+    ContentSpaceUsageSummaryRequest,
+    ContentSpaceUsageSummaryResponse,
     EcarImportRequest,
     ExportContentContext,
     FileExtension,
@@ -81,13 +84,19 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {GenerateInteractTelemetry} from '../handlers/import/generate-interact-telemetry';
 import {CachedItemStore} from '../../key-value-store';
 import * as SHA1 from 'crypto-js/sha1';
-import {FrameworkKeys} from '../../preference-keys';
+import {ContentKeys, FrameworkKeys} from '../../preference-keys';
 import {CreateHierarchy} from '../handlers/import/create-hierarchy';
 import {ContentStorageHandler} from '../handlers/content-storage-handler';
+import {SharedPreferencesSetCollection} from '../../util/shared-preferences/def/shared-preferences-set-collection';
+import {SharedPreferencesSetCollectionImpl} from '../../util/shared-preferences/impl/shared-preferences-set-collection-impl';
+import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 
-export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
+export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
+    private static readonly KEY_CONTENT_DELETE_REQUEST_LIST = ContentKeys.KEY_CONTENT_DELETE_REQUEST_LIST;
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
     private readonly getContentDetailsHandler: GetContentDetailsHandler;
+
+    private contentDeleteRequestSet: SharedPreferencesSetCollection<ContentDelete>;
 
     constructor(private contentServiceConfig: ContentServiceConfig,
                 private apiService: ApiService,
@@ -106,6 +115,12 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
             this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
+
+        this.contentDeleteRequestSet = new SharedPreferencesSetCollectionImpl(
+            this.sharedPreferences,
+            ContentServiceImpl.KEY_CONTENT_DELETE_REQUEST_LIST,
+            (item) => item.contentId
+        );
     }
 
     private static getIdForDb(request: ContentSearchCriteria): string {
@@ -116,6 +131,21 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             grade: request.grade || '',
         };
         return SHA1(JSON.stringify(key)).toString();
+    }
+
+    onInit(): Observable<undefined> {
+        return this.contentDeleteRequestSet.asListChanges()
+            .mergeMap((requests: ContentDelete[]) => {
+                const currentRequest = requests[0];
+
+                if (!currentRequest) {
+                    return Observable.of(undefined);
+                }
+
+                return this.deleteContent({contentDeleteList: [currentRequest]})
+                    .do(() => this.contentDeleteRequestSet.remove(currentRequest))
+                    .mapTo(undefined);
+            });
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
@@ -201,6 +231,18 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
             return contentDeleteResponse;
         });
+    }
+
+    enqueueContentDelete(contentDeleteRequest: ContentDeleteRequest): Observable<void> {
+        return this.contentDeleteRequestSet.addAll(contentDeleteRequest.contentDeleteList);
+    }
+
+    clearContentDeleteQueue(): Observable<void> {
+        return this.contentDeleteRequestSet.clear();
+    }
+
+    getContentDeleteQueue(): Observable<ContentDelete[]> {
+        return this.contentDeleteRequestSet.asListChanges();
     }
 
     exportContent(contentExportRequest: ContentExportRequest): Observable<ContentExportResponse> {

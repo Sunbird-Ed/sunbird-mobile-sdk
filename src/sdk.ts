@@ -383,7 +383,8 @@ export class SunbirdSdk {
         Observable.combineLatest(
             this._frameworkService.onInit(),
             this._eventsBusService.onInit(),
-            this._downloadService.onInit()
+            this._downloadService.onInit(),
+            this._contentService.onInit()
         ).subscribe();
     }
 }
