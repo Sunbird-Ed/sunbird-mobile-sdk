@@ -143,7 +143,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }
 
                 return this.deleteContent({contentDeleteList: [currentRequest]})
-                    .do(() => this.contentDeleteRequestSet.remove(currentRequest))
+                    .mergeMap(() => this.contentDeleteRequestSet.remove(currentRequest))
                     .mapTo(undefined);
             });
     }
