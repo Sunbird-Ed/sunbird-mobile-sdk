@@ -6,7 +6,7 @@ import {
     ContentImportRequest,
     ContentMarkerRequest,
     ContentRequest,
-    ContentSearchCriteria,
+    ContentSearchCriteria, ContentSpaceUsageSummaryRequest, ContentSpaceUsageSummaryResponse,
     EcarImportRequest, RelevantContentRequest
 } from './requests';
 import {Response} from '../../api';
@@ -57,4 +57,7 @@ export interface ContentService extends DownloadCompleteDelegate {
     cancelDownload(contentId: string): Observable<undefined>;
 
     setContentMarker(contentMarkerRequest: ContentMarkerRequest): Observable<boolean>;
+
+    getContentSpaceUsageSummary( contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest):
+        Observable<ContentSpaceUsageSummaryResponse[]>;
 }

@@ -193,3 +193,12 @@ export interface RelevantContentRequest extends DownloadRequest {
     next?: boolean;
     prev?: boolean;
 }
+
+export interface ContentSpaceUsageSummaryRequest {
+    paths: string[];
+}
+
+export interface ContentSpaceUsageSummaryResponse {
+    path: string;
+    sizeOnDevice: number;
+}

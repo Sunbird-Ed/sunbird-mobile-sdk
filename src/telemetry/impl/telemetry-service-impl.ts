@@ -36,13 +36,13 @@ import {CreateTelemetryExportFile} from '../handler/export/create-telemetry-expo
 import {CopyDatabase} from '../handler/export/copy-database';
 import {CreateMetaData} from '../handler/export/create-meta-data';
 import {CleanupExportedFile} from '../handler/export/cleanup-exported-file';
-import {CleanCurrentDatabase} from '../handler/export/clean-current-database';
 import {GenerateShareTelemetry} from '../handler/export/generate-share-telemetry';
 import {ValidateTelemetryMetadata} from '../handler/import/validate-telemetry-metadata';
 import {TelemetryEventType} from '../def/telemetry-event';
 import {TransportProcessedTelemetry} from '../handler/import/transport-processed-telemetry';
 import {UpdateImportedTelemetryMetadata} from '../handler/import/update-imported-telemetry-metadata';
 import {GenerateImportTelemetryShare} from '../handler/import/generate-import-telemetry-share';
+import {FrameworkService} from '../../framework';
 
 export class TelemetryServiceImpl implements TelemetryService {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
@@ -56,7 +56,8 @@ export class TelemetryServiceImpl implements TelemetryService {
                 private telemetryConfig: TelemetryConfig,
                 private deviceInfo: DeviceInfo,
                 private eventsBusService: EventsBusService,
-                private fileService: FileService) {
+                private fileService: FileService,
+                private frameworkService: FrameworkService) {
     }
 
     saveTelemetry(request: string): Observable<boolean> {
@@ -169,7 +170,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         const telemetrySyncHandler: TelemetrySyncHandler = new TelemetrySyncHandler(
             this.dbService,
             this.telemetryConfig,
-            this.deviceInfo
+            this.deviceInfo,
+            this.frameworkService
         );
         return Observable.fromPromise(
             telemetrySyncHandler.processEventsBatch().expand((processedEventsCount: number) =>
@@ -183,8 +185,6 @@ export class TelemetryServiceImpl implements TelemetryService {
                 return new CreateMetaData(this.dbService, this.fileService, this.deviceInfo).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
                 return new CleanupExportedFile(this.dbService, this.fileService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new CleanCurrentDatabase(this.dbService).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
                 return new GenerateShareTelemetry(this.dbService, this).execute(exportResponse.body);
             }).then((exportResponse: Response<ExportTelemetryContext>) => {
@@ -221,14 +221,15 @@ export class TelemetryServiceImpl implements TelemetryService {
     }
 
 
-    sync(): Observable<TelemetrySyncStat> {
+    sync(ignoreSyncThreshold: boolean = false): Observable<TelemetrySyncStat> {
         return new TelemetrySyncHandler(
             this.dbService,
             this.telemetryConfig,
             this.deviceInfo,
+            this.frameworkService,
             this.keyValueStore,
             this.apiService
-        ).handle()
+        ).handle(ignoreSyncThreshold)
             .mergeMap((telemetrySyncStat) =>
                 this.keyValueStore.setValue(TelemetryServiceImpl.KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP, telemetrySyncStat.syncTime + '')
                     .mapTo(telemetrySyncStat)
