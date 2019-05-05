@@ -12,7 +12,6 @@ import {DownloadCompleteDelegate} from '../def/download-complete-delegate';
 import {DownloadKeys} from '../../../preference-keys';
 import {TelemetryLogger} from '../../../telemetry/util/telemetry-logger';
 import {InteractSubType, InteractType, ObjectType} from '../../../telemetry';
-import {AppStorageInfo} from '../def/app-storage-info';
 import {SharedPreferencesSetCollection} from '../../shared-preferences/def/shared-preferences-set-collection';
 import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
 
@@ -136,10 +135,6 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
 
     registerOnDownloadCompleteDelegate(downloadCompleteDelegate: DownloadCompleteDelegate): void {
         this.downloadCompleteDelegate = downloadCompleteDelegate;
-    }
-
-    getAppStorageInfo(): Observable<AppStorageInfo> {
-        throw new Error('To be Implemented');
     }
 
     getActiveDownloadRequests(): Observable<DownloadRequest[]> {
