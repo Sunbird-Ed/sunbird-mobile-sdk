@@ -1,13 +1,17 @@
 import {
     ChildContentRequest,
+    ContentDelete,
     ContentDeleteRequest,
     ContentDetailRequest,
     ContentExportRequest,
     ContentImportRequest,
     ContentMarkerRequest,
     ContentRequest,
-    ContentSearchCriteria, ContentSpaceUsageSummaryRequest, ContentSpaceUsageSummaryResponse,
-    EcarImportRequest, RelevantContentRequest
+    ContentSearchCriteria,
+    ContentSpaceUsageSummaryRequest,
+    ContentSpaceUsageSummaryResponse,
+    EcarImportRequest,
+    RelevantContentRequest
 } from './requests';
 import {Response} from '../../api';
 import {Observable} from 'rxjs';
@@ -17,12 +21,14 @@ import {
     ContentExportResponse,
     ContentImportResponse,
     ContentSearchResult,
-    ContentsGroupedByPageSection, RelevantContentResponse, RelevantContentResponsePlayer
+    ContentsGroupedByPageSection,
+    RelevantContentResponsePlayer
 } from './response';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
+import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 
 
-export interface ContentService extends DownloadCompleteDelegate {
+export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnInitDelegate {
 
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
 
@@ -35,6 +41,12 @@ export interface ContentService extends DownloadCompleteDelegate {
     searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection>;
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
+
+    enqueueContentDelete(contentDeleteRequest: ContentDeleteRequest): Observable<void>;
+
+    clearContentDeleteQueue(): Observable<void>;
+
+    getContentDeleteQueue(): Observable<ContentDelete[]>;
 
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
 
@@ -58,6 +70,6 @@ export interface ContentService extends DownloadCompleteDelegate {
 
     setContentMarker(contentMarkerRequest: ContentMarkerRequest): Observable<boolean>;
 
-    getContentSpaceUsageSummary( contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest):
+    getContentSpaceUsageSummary(contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest):
         Observable<ContentSpaceUsageSummaryResponse[]>;
 }

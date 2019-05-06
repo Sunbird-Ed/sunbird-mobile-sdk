@@ -1,4 +1,4 @@
-import {SearchType} from '..';
+import {ContentData, SearchType} from '..';
 import {Content, HierarchyInfo} from './content';
 import {CorrelationData} from '../../telemetry';
 import {ContentImportResponse} from './response';
@@ -74,6 +74,7 @@ export interface EcarImportRequest {
 export interface ContentImportRequest {
     contentImportArray: ContentImport[];
     contentStatusArray: string[];
+    fields?: (keyof ContentData)[];
 }
 
 export interface ContentImport {
@@ -181,6 +182,7 @@ export interface ExportContentContext {
 }
 
 export interface ContentDownloadRequest extends DownloadRequest {
+    contentMeta: Partial<Content>;
     isChildContent?: boolean;
     correlationData?: CorrelationData[];
 }

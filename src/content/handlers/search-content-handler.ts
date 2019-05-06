@@ -13,7 +13,7 @@ import {
 import {AppConfig} from '../../api/config/app-config';
 import {MimeType} from '../util/content-constants';
 import {SearchFilter, SearchRequest} from '../def/search-request';
-import {InteractType, PageId, TelemetryInteractRequest, TelemetryService} from '../../telemetry';
+import {InteractType, TelemetryInteractRequest, TelemetryService} from '../../telemetry';
 import {NumberUtil} from '../../util/number-util';
 
 export class SearchContentHandler {
@@ -303,7 +303,7 @@ export class SearchContentHandler {
         return constentSearchResult;
     }
 
-    public getContentSearchFilter(contentIds: string[], status: string[]): SearchRequest {
+    public getContentSearchFilter(contentIds: string[], status: string[], fields: (keyof ContentData)[] = []): SearchRequest {
         return {
             filters: {
                 compatibilityLevel: this.getCompatibilityLevelFilter(),
@@ -311,7 +311,10 @@ export class SearchContentHandler {
                 status: status,
                 objectType: ['Content']
             },
-            fields: ['downloadUrl', 'variants', 'mimeType']
+            fields: [
+                ...fields,
+                'downloadUrl', 'variants', 'mimeType'
+            ]
         };
     }
 
