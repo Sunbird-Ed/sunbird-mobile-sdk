@@ -1,12 +1,19 @@
-import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../api';
-import {OAuthSession, SignInError} from '..';
+import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response, ResponseCode, ServerError} from '../../api';
+import {OAuthSession} from '..';
 import {AuthKeys} from '../../preference-keys';
 import {NoActiveSessionError} from '../../profile';
 import {AuthEndPoints} from '../def/auth-end-points';
 import {SharedPreferences} from '../../util/shared-preferences';
+import {AuthTokenRefreshErrorEvent, ErrorEventType, EventNamespace, EventsBusService} from '../../events-bus';
+import {AuthTokenRefreshError} from '../errors/auth-token-refresh-error';
 
 export class AuthUtil {
-    constructor(private apiConfig: ApiConfig, private apiService: ApiService, private sharedPreferences: SharedPreferences) {
+    constructor(
+        private apiConfig: ApiConfig,
+        private apiService: ApiService,
+        private sharedPreferences: SharedPreferences,
+        private eventsBusService: EventsBusService
+    ) {
     }
 
     public async refreshSession(): Promise<void> {
@@ -28,24 +35,44 @@ export class AuthUtil {
             .build();
 
 
-        const response: Response = await this.apiService.fetch(request).toPromise();
+        try {
+            await this.apiService.fetch(request).toPromise()
+                .catch((e) => {
+                    if (e instanceof ServerError && e.response.responseCode === ResponseCode.HTTP_BAD_REQUEST) {
+                        throw new AuthTokenRefreshError(e.message);
+                    }
 
-        if (response.body.access_token && response.body.refresh_token) {
-            const jwtPayload: { sub: string } = JWTUtil.getJWTPayload(response.body.access_token);
+                    throw e;
+                })
+                .then((response: Response) => {
+                    if (response.body.access_token && response.body.refresh_token) {
+                        const jwtPayload: { sub: string } = JWTUtil.getJWTPayload(response.body.access_token);
 
-            const userToken = jwtPayload.sub.split(':').length === 3 ? <string>jwtPayload.sub.split(':').pop() : jwtPayload.sub;
+                        const userToken = jwtPayload.sub.split(':').length === 3 ? <string>jwtPayload.sub.split(':').pop() : jwtPayload.sub;
 
-            sessionData = {
-                ...response.body,
-                userToken
-            };
+                        sessionData = {
+                            ...response.body,
+                            userToken
+                        };
 
-            await this.startSession(sessionData!);
+                        return this.startSession(sessionData!);
+                    }
 
-            return;
+                    throw new AuthTokenRefreshError('No token found in server response');
+                });
+        } catch (e) {
+            if (e instanceof AuthTokenRefreshError) {
+                this.eventsBusService.emit({
+                    namespace: EventNamespace.ERROR,
+                    event: {
+                        type: ErrorEventType.AUTH_TOKEN_REFRESH_ERROR,
+                        payload: e
+                    } as AuthTokenRefreshErrorEvent
+                });
+            }
+
+            throw e;
         }
-
-        throw new SignInError('Server Error');
     }
 
     public async startSession(sessionData: OAuthSession): Promise<void> {
