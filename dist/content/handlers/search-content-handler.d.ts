@@ -28,7 +28,7 @@ export declare class SearchContentHandler {
     addFilterValue(facets: ContentSearchFilter[], filters: any): void;
     getFilterValuesWithAppliedFilter(facetValues: FilterValue[], appliedFilter: string[]): FilterValue[];
     mapSearchResponse(previousContentCriteria: ContentSearchCriteria, searchResponse: SearchResponse, searchRequest: SearchRequest): ContentSearchResult;
-    getContentSearchFilter(contentIds: string[], status: string[]): SearchRequest;
+    getContentSearchFilter(contentIds: string[], status: string[], fields?: (keyof ContentData)[]): SearchRequest;
     getDownloadUrl(contentData: ContentData): Promise<string>;
     buildContentLoadingEvent(subtype: string, identifier: string): Promise<boolean>;
 }

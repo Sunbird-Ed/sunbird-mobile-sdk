@@ -15,4 +15,5 @@ export interface DeviceSpec {
 export interface DeviceInfo {
     getDeviceID(): string;
     getDeviceSpec(): Observable<DeviceSpec>;
+    getAvailableInternalMemorySize(): Observable<string>;
 }

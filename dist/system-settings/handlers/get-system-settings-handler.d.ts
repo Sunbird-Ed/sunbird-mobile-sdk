@@ -10,7 +10,7 @@ export declare class GetSystemSettingsHandler implements ApiRequestHandler<GetSy
     private cachedItemStore;
     private readonly SYSTEM_SETTINGS_FILE_KEY_PREFIX;
     private readonly SYSTEM_SETTINGS_LOCAL_KEY;
-    private readonly GET_FRAMEWORK_DETAILS_ENDPOINT;
+    private readonly GET_SYSTEM_SETTINGS_ENDPOINT;
     constructor(apiService: ApiService, systemSettingsConfig: SystemSettingsConfig, fileservice: FileService, cachedItemStore: CachedItemStore<SystemSettings>);
     handle(request: GetSystemSettingsRequest): Observable<SystemSettings>;
     private fetchFromServer;
