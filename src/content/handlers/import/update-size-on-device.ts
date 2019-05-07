@@ -13,9 +13,7 @@ export class UpdateSizeOnDevice {
     constructor(private dbService: DbService) {
     }
 
-    execute(importContentContext: ImportContentContext): Promise<Response> {
-        const response: Response = new Response();
-        response.body = importContentContext;
+    execute(): Promise<Response> {
         return this.updateSize().toPromise();
     }
 
