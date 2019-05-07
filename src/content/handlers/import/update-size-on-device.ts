@@ -1,4 +1,4 @@
-import { ImportContentContext, Visibility} from '../..';
+import {ImportContentContext, Visibility} from '../..';
 import {Response} from '../../../api';
 import {DbService} from '../../../db';
 import {ContentEntry} from '../../db/schema';
@@ -36,21 +36,22 @@ export class UpdateSizeOnDevice {
             for (const element of contentsInDb) {
                 const contentInDb = element as ContentEntry.SchemaMap;
                 if (ContentUtil.hasChildren(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
+                    let sizeOnDevice = 0;
                     const queue: Queue<ContentEntry.SchemaMap> = new Queue();
                     queue.add(contentInDb);
                     let node: ContentEntry.SchemaMap;
-                    let sizeOnDevice = 0;
                     while (!queue.isEmpty()) {
                         node = queue.dequeue()!;
-                        if (ContentUtil.hasChildren(node)) {
-                            const childContentsIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(node);
+                        if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
+                            const childContentsIdentifiers: string[] =
+                                ContentUtil.getChildContentsIdentifiers(node[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
                             const childContentsInDb: ContentEntry.SchemaMap[] = await this.findAllChildContents(childContentsIdentifiers);
                             childContentsInDb.forEach((childContentInDb) => {
                                 queue.add(childContentInDb);
                             });
 
                         }
-                        sizeOnDevice = await this.getSizeOnDevice(node);
+                        sizeOnDevice = sizeOnDevice + await this.getSizeOnDevice(node);
                     }
                     contentInDb[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = sizeOnDevice;
                 }
@@ -61,7 +62,7 @@ export class UpdateSizeOnDevice {
     }
 
     private async getSizeOnDevice(node): Promise<number> {
-        let sizeOnDevice = 0;
+        let size = 0;
         if (node[ContentEntry.COLUMN_NAME_MIME_TYPE] === MimeType.COLLECTION.valueOf()) {
             if (node[ContentEntry.COLUMN_NAME_VISIBILITY] === Visibility.DEFAULT.valueOf()) {
                 const fileMapList: { [key: string]: any }[] = [];
@@ -71,14 +72,12 @@ export class UpdateSizeOnDevice {
                 fileMap['path'] = node[ContentEntry.COLUMN_NAME_PATH]!;
                 fileMapList.push(fileMap);
                 const metaDataList = await this.getMetaData(fileMapList);
-                const size = metaDataList[identifier] ? metaDataList[identifier].size : 0;
-                sizeOnDevice = sizeOnDevice + size;
+                size = metaDataList[identifier] ? metaDataList[identifier].size : 0;
             }
         } else {
-            const size = node[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] ? node[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] : 0;
-            sizeOnDevice = sizeOnDevice + size!;
+            size = node[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] ? node[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] : 0;
         }
-        return Promise.resolve(sizeOnDevice);
+        return Promise.resolve(size ? size : 0);
     }
 
     private async updateInDb(contentsInDb: ContentEntry.SchemaMap[]) {
