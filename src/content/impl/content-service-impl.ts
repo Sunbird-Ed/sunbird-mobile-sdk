@@ -504,7 +504,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             medium: request.medium,
             grade: request.grade
         }).map((contents: Content[]) => contents.map((content) => {
-            if (content.contentData.appIcon && content.contentData.appIcon.startsWith('https://')) {
+            if (content.contentData.appIcon && !content.contentData.appIcon.startsWith('https://')) {
                 content.contentData.appIcon = content.basePath + content.contentData.appIcon;
             }
             return content.contentData;
