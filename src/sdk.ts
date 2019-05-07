@@ -225,12 +225,12 @@ export class SunbirdSdk {
 
         this._apiService = new ApiServiceImpl(sdkConfig.apiConfig, this._deviceInfo, this._sharedPreferences);
 
-        this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService, this._sharedPreferences);
+        this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService, this._sharedPreferences, this._eventsBusService);
 
         this._keyValueStore = new KeyValueStoreImpl(this._dbService);
 
 
-        if (sdkConfig.fileConfig.debugMode === true) {
+        if (sdkConfig.fileConfig.debugMode) {
             this._fileService = new DebugPromptFileService();
         } else {
             this._fileService = new FileServiceImpl();
@@ -345,7 +345,7 @@ export class SunbirdSdk {
             this._contentService
         );
         this._summarizerService = new SummarizerServiceImpl(this._dbService, this.contentService,
-            this._eventsBusService, this._courseService, this._sharedPreferences,this._contentService, this._profileService);
+            this._eventsBusService, this._courseService, this._sharedPreferences, this._contentService, this._profileService);
         this._downloadService.registerOnDownloadCompleteDelegate(this._contentService);
         this._playerService = new PlayerServiceImpl(this._profileService, this._groupService,
             this._sdkConfig, this._frameworkService, this._deviceInfo, this._appInfo);
