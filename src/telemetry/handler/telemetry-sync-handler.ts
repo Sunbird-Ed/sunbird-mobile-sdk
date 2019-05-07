@@ -6,11 +6,12 @@ import {StringToGzippedString} from '../impl/string-to-gzipped-string';
 import {TelemetryEntriesToStringPreprocessor} from '../impl/telemetry-entries-to-string-preprocessor';
 import {KeyValueStore} from '../../key-value-store';
 import {TelemetryConfig} from '../config/telemetry-config';
-import {DeviceInfo} from '../../util/device';
+import {DeviceInfo, DeviceSpec} from '../../util/device';
 import {DbService, InsertQuery} from '../../db';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {UniqueId} from '../../db/util/unique-id';
 import moment from 'moment';
+import {FrameworkService} from '../../framework';
 import COLUMN_NAME_MSG_ID = TelemetryProcessedEntry.COLUMN_NAME_MSG_ID;
 import COLUMN_NAME_NUMBER_OF_EVENTS = TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS;
 import COLUMN_NAME_PRIORITY = TelemetryEntry.COLUMN_NAME_PRIORITY;
@@ -26,15 +27,10 @@ interface ProcessedEventsMeta {
 }
 
 interface DeviceRegisterResponse {
-    id: string ;
-    params: any;
-    responseCode: string;
-    result: any;
     ts: string;
-    ver: string;
 }
 
-export class TelemetrySyncHandler implements ApiRequestHandler<undefined, TelemetrySyncStat> {
+export class TelemetrySyncHandler implements ApiRequestHandler<boolean, TelemetrySyncStat> {
     public static readonly TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY = 'telemetry_log_min_allowed_offset_key';
     private static readonly LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY = 'last_synced_device_register_attempt_time_stamp';
     private static readonly LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY = 'last_synced_device_register_is_successful';
@@ -48,6 +44,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
     constructor(private dbService: DbService,
                 private telemetryConfig: TelemetryConfig,
                 private deviceInfo: DeviceInfo,
+                private frameworkService: FrameworkService,
                 private keyValueStore?: KeyValueStore,
                 private apiService?: ApiService) {
         this.preprocessors = [
@@ -56,48 +53,58 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
         ];
     }
 
-    handle(): Observable<TelemetrySyncStat> {
-        return this.hasTelemetryThresholdCrossed()
-            .mergeMap((hasTelemetryThresholdCrossed: boolean) => {
-                if (hasTelemetryThresholdCrossed) {
-                    return this.registerDevice()
-                        .mergeMap(() => this.processEventsBatch())
-                        .expand((processedEventsCount: number) =>
-                            processedEventsCount ? this.processEventsBatch() : Observable.empty()
-                        )
-                        .reduce(() => undefined, undefined)
-                        .mergeMap(() => this.handleProcessedEventsBatch())
-                        .expand((syncStat: TelemetrySyncStat) =>
-                            syncStat.syncedEventCount ? this.handleProcessedEventsBatch() : Observable.empty()
-                        )
-                        .reduce((acc: TelemetrySyncStat, currentStat: TelemetrySyncStat) => {
-                            return ({
-                                syncedEventCount: acc.syncedEventCount + currentStat.syncedEventCount,
-                                syncTime: Date.now(),
-                                syncedFileSize: acc.syncedFileSize + currentStat.syncedFileSize
-                            });
-                        }, {
+    handle(ignoreSyncThreshold: boolean): Observable<TelemetrySyncStat> {
+        return this.registerDevice()
+            .catch(() => {
+                ignoreSyncThreshold = true;
+                return Observable.of(undefined);
+            })
+            .mergeMap(() => {
+                return this.hasTelemetryThresholdCrossed()
+                    .mergeMap((hasTelemetryThresholdCrossed: boolean) => {
+                        if (hasTelemetryThresholdCrossed || ignoreSyncThreshold) {
+                            return this.processEventsBatch()
+                                .expand((processedEventsCount: number) =>
+                                    processedEventsCount ? this.processEventsBatch() : Observable.empty()
+                                )
+                                .reduce(() => undefined, undefined)
+                                .mergeMap(() => this.handleProcessedEventsBatch())
+                                .expand((syncStat: TelemetrySyncStat) =>
+                                    syncStat.syncedEventCount ? this.handleProcessedEventsBatch() : Observable.empty()
+                                )
+                                .reduce((acc: TelemetrySyncStat, currentStat: TelemetrySyncStat) => {
+                                    return ({
+                                        syncedEventCount: acc.syncedEventCount + currentStat.syncedEventCount,
+                                        syncTime: Date.now(),
+                                        syncedFileSize: acc.syncedFileSize + currentStat.syncedFileSize
+                                    });
+                                }, {
+                                    syncedEventCount: 0,
+                                    syncTime: Date.now(),
+                                    syncedFileSize: 0
+                                });
+                        }
+
+                        return Observable.of({
                             syncedEventCount: 0,
                             syncTime: Date.now(),
                             syncedFileSize: 0
                         });
-                }
-
-                return Observable.of({
-                    syncedEventCount: 0,
-                    syncTime: Date.now(),
-                    syncedFileSize: 0
-                });
+                    });
             });
     }
 
     private registerDevice(): Observable<undefined> {
         return Observable.zip(
             this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY),
-            this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY)
+            this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY),
+            this.deviceInfo.getDeviceSpec(),
+            this.frameworkService.getActiveChannelId()
         ).mergeMap((results) => {
             const lastSyncDeviceRegisterAttemptTimestamp = results[0];
             const lastSyncDeviceRegisterIsSuccessful = results[1];
+            const deviceSpec: DeviceSpec = results[2];
+            const activeChannelId: string = results[3];
 
             if (lastSyncDeviceRegisterAttemptTimestamp && lastSyncDeviceRegisterIsSuccessful) {
                 const offset = lastSyncDeviceRegisterIsSuccessful === 'false' ?
@@ -114,6 +121,12 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
                 .withPath(this.telemetryConfig!.deviceRegisterApiPath +
                     TelemetrySyncHandler.DEVICE_REGISTER_ENDPOINT + '/' + this.deviceInfo!.getDeviceID())
                 .withApiToken(true)
+                .withBody({
+                    request: {
+                        dspec: deviceSpec,
+                        channel: activeChannelId
+                    }
+                })
                 .build();
 
             return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
@@ -137,14 +150,15 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
                     ).mapTo(undefined);
                 })
                 .catch((e) => {
-                    console.error(e);
-
                     return Observable.zip(
                         this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY,
                             Date.now() + ''),
                         this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY,
                             'false')
-                    ).mapTo(undefined);
+                    ).mergeMap(() => {
+                        console.error(e);
+                        return Observable.throw(new Error('Device Registration Failed'));
+                    });
                 });
         });
     }
@@ -285,7 +299,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
         // const body = JSON.parse(pako.ungzip(processedEventsBatchEntry[COLUMN_NAME_DATA], {to: 'string'}));
 
         const apiRequest: Request = new Request.Builder()
-            .withHost(this.telemetryConfig.host)
+            .withHost(this.telemetryConfig.host!)
             .withType(HttpRequestType.POST)
             .withPath(this.telemetryConfig.telemetryApiPath +
                 TelemetrySyncHandler.TELEMETRY_ENDPOINT)
@@ -294,6 +308,22 @@ export class TelemetrySyncHandler implements ApiRequestHandler<undefined, Teleme
             .build();
 
         return this.apiService!.fetch(apiRequest)
+            .do(async (res) => {
+                const lastSyncDeviceRegisterIsSuccessful =
+                    await this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY).toPromise();
+
+                if (lastSyncDeviceRegisterIsSuccessful === 'false') {
+                    const serverTime = new Date(res.body.ets).getTime();
+                    const now = Date.now();
+                    const currentOffset = serverTime - now;
+                    const allowedOffset =
+                        Math.abs(currentOffset) > this.telemetryConfig.telemetryLogMinAllowedOffset ? currentOffset : 0;
+                    if (allowedOffset) {
+                        await this.keyValueStore!
+                            .setValue(TelemetrySyncHandler.TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY, allowedOffset + '').toPromise();
+                    }
+                }
+            })
             .map(() => ({
                 syncedEventCount: processedEventsBatchEntry[COLUMN_NAME_NUMBER_OF_EVENTS],
                 syncTime: Date.now(),

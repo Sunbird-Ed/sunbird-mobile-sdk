@@ -18,5 +18,5 @@ export interface TelemetryService {
     importTelemetry(telemetryImportRequest: TelemetryImportRequest): Observable<boolean>;
     exportTelemetry(telemetryExportRequest: TelemetryExportRequest): Observable<TelemetryExportResponse>;
     getTelemetryStat(): Observable<TelemetryStat>;
-    sync(): Observable<TelemetrySyncStat>;
+    sync(ignoreSyncThreshold?: boolean): Observable<TelemetrySyncStat>;
 }

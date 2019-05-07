@@ -18,4 +18,5 @@ declare var buildconfigreader: {
     getMetaData: (fileMapList: any[], success:
         (callbackUrl: any) => void, error: (error: string) => void) => void;
 
+    getDeviceSpec: (callback: (deviceSpec: any) => void) => void;
 };
