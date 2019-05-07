@@ -5,12 +5,10 @@ import {GetSystemSettingsRequest, SystemSettings, SystemSettingsConfig} from '..
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
 
-
 export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSettingsRequest, SystemSettings> {
     private readonly SYSTEM_SETTINGS_FILE_KEY_PREFIX = 'system-setting-';
     private readonly SYSTEM_SETTINGS_LOCAL_KEY = 'system-settings-';
-    private readonly GET_FRAMEWORK_DETAILS_ENDPOINT = '/system/settings/get';
-
+    private readonly GET_SYSTEM_SETTINGS_ENDPOINT = '/system/settings/get';
 
     constructor(private apiService: ApiService,
                 private systemSettingsConfig: SystemSettingsConfig,
@@ -31,7 +29,7 @@ export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSett
     private fetchFromServer(request: GetSystemSettingsRequest): Observable<SystemSettings> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath(this.systemSettingsConfig.systemSettingsApiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + '/' + request.id)
+            .withPath(this.systemSettingsConfig.systemSettingsApiPath + this.GET_SYSTEM_SETTINGS_ENDPOINT + '/' + request.id)
             .withApiToken(true)
             .build();
 
