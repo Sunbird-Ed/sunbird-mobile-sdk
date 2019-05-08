@@ -1,16 +1,18 @@
-import {ImportContentContext, Visibility} from '../..';
+import {MimeType, Visibility} from '../..';
 import {Response} from '../../../api';
 import {DbService} from '../../../db';
 import {ContentEntry} from '../../db/schema';
 import {Observable} from 'rxjs';
 import {ContentUtil} from '../../util/content-util';
-import {MimeType} from '../../util/content-constants';
 import Queue from 'typescript-collections/dist/lib/Queue';
 import {ArrayUtil} from '../../../util/array-util';
+import {ContentKeys} from '../../../preference-keys';
+import {SharedPreferences} from '../../../util/shared-preferences';
 
 export class UpdateSizeOnDevice {
+    private static readonly KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL = ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL;
 
-    constructor(private dbService: DbService) {
+    constructor(private dbService: DbService, private sharedPreferences: SharedPreferences) {
     }
 
     execute(): Promise<Response> {
@@ -30,33 +32,41 @@ export class UpdateSizeOnDevice {
     }
 
     private updateSize(): Observable<any> {
-        return this.findAllContents().mergeMap(async (contentsInDb: ContentEntry.SchemaMap[]) => {
-            for (const element of contentsInDb) {
-                const contentInDb = element as ContentEntry.SchemaMap;
-                if (ContentUtil.hasChildren(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
-                    let sizeOnDevice = 0;
-                    const queue: Queue<ContentEntry.SchemaMap> = new Queue();
-                    queue.add(contentInDb);
-                    let node: ContentEntry.SchemaMap;
-                    while (!queue.isEmpty()) {
-                        node = queue.dequeue()!;
-                        if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
-                            const childContentsIdentifiers: string[] =
-                                ContentUtil.getChildContentsIdentifiers(node[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
-                            const childContentsInDb: ContentEntry.SchemaMap[] = await this.findAllChildContents(childContentsIdentifiers);
-                            childContentsInDb.forEach((childContentInDb) => {
-                                queue.add(childContentInDb);
-                            });
+        return this.findAllContents()
+            .do(async () =>
+                this.sharedPreferences.putBoolean(UpdateSizeOnDevice.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, false).toPromise()
+            )
+            .mergeMap(async (contentsInDb: ContentEntry.SchemaMap[]) => {
+                for (const element of contentsInDb) {
+                    const contentInDb = element as ContentEntry.SchemaMap;
+                    if (ContentUtil.hasChildren(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
+                        let sizeOnDevice = 0;
+                        const queue: Queue<ContentEntry.SchemaMap> = new Queue();
+                        queue.add(contentInDb);
+                        let node: ContentEntry.SchemaMap;
+                        while (!queue.isEmpty()) {
+                            node = queue.dequeue()!;
+                            if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
+                                const childContentsIdentifiers: string[] =
+                                    ContentUtil.getChildContentsIdentifiers(node[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+                                const childContentsInDb: ContentEntry.SchemaMap[] = await this.findAllChildContents(childContentsIdentifiers);
+                                childContentsInDb.forEach((childContentInDb) => {
+                                    queue.add(childContentInDb);
+                                });
 
+                            }
+                            sizeOnDevice = sizeOnDevice + await this.getSizeOnDevice(node);
                         }
-                        sizeOnDevice = sizeOnDevice + await this.getSizeOnDevice(node);
+                        contentInDb[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = sizeOnDevice;
                     }
-                    contentInDb[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = sizeOnDevice;
                 }
-            }
-            this.updateInDb(contentsInDb);
-        });
 
+                return contentsInDb;
+            })
+            .mergeMap((contentsInDb) => this.updateInDb(contentsInDb))
+            .do(async () =>
+                this.sharedPreferences.putBoolean(UpdateSizeOnDevice.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, true).toPromise()
+            );
     }
 
     private async getSizeOnDevice(node): Promise<number> {

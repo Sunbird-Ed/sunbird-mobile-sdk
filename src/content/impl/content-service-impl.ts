@@ -92,6 +92,7 @@ import {SharedPreferencesSetCollectionImpl} from '../../util/shared-preferences/
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
+    private static readonly KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL = ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL;
     private static readonly KEY_CONTENT_DELETE_REQUEST_LIST = ContentKeys.KEY_CONTENT_DELETE_REQUEST_LIST;
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
     private readonly getContentDetailsHandler: GetContentDetailsHandler;
@@ -134,18 +135,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     onInit(): Observable<undefined> {
-        return this.contentDeleteRequestSet.asListChanges()
-            .mergeMap((requests: ContentDelete[]) => {
-                const currentRequest = requests[0];
-
-                if (!currentRequest) {
-                    return Observable.of(undefined);
-                }
-
-                return this.deleteContent({contentDeleteList: [currentRequest]})
-                    .mergeMap(() => this.contentDeleteRequestSet.remove(currentRequest))
-                    .mapTo(undefined);
-            });
+        return Observable.combineLatest(
+            this.handleContentDeleteRequestSetChanges(),
+            this.handleUpdateSizeOnDeviceFail(),
+        ).mapTo(undefined);
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
@@ -228,7 +221,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     });
                 }
             }
-            new UpdateSizeOnDevice(this.dbService).execute();
+            new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
             return contentDeleteResponse;
         });
     }
@@ -389,7 +382,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }).then((importResponse: Response) => {
                     return new EcarCleanup(this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
-                    new UpdateSizeOnDevice(this.dbService).execute();
+                    new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
                     return importResponse;
                 }).then((importResponse: Response) => {
                     return new GenerateImportShareTelemetry(this.telemetryService).execute(importResponse.body);
@@ -638,5 +631,33 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         const contentSpaceUsageSummaryList: ContentSpaceUsageSummaryResponse[] = [];
         const storageHandler = new ContentStorageHandler(this.dbService);
         return Observable.fromPromise(storageHandler.getContentUsageSummary(contentSpaceUsageSummaryRequest.paths));
+    }
+
+    private handleContentDeleteRequestSetChanges(): Observable<undefined> {
+        return this.contentDeleteRequestSet.asListChanges()
+            .mergeMap((requests: ContentDelete[]) => {
+                const currentRequest = requests[0];
+
+                if (!currentRequest) {
+                    return Observable.of(undefined);
+                }
+
+                return this.deleteContent({contentDeleteList: [currentRequest]})
+                    .mergeMap(() => this.contentDeleteRequestSet.remove(currentRequest))
+                    .mapTo(undefined);
+            });
+    }
+
+    private handleUpdateSizeOnDeviceFail(): Observable<undefined> {
+        return this.sharedPreferences.getBoolean(ContentServiceImpl.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL)
+            .mergeMap((hasUpdated) => {
+                if (!hasUpdated) {
+                    return Observable.fromPromise(
+                        new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute()
+                    ).mapTo(undefined);
+                }
+
+                return Observable.of(undefined);
+            });
     }
 }
