@@ -150,7 +150,7 @@ export class SummarizerHandler {
             return {
                 uid: questionSummary.uid,
                 time: Number(questionSummary.time),
-                result: NumberUtil.parseInt(questionSummary.result),
+                result: NumberUtil.round(questionSummary.result),
                 max_score: NumberUtil.parseInt(questionSummary.max_score)
             };
         });
