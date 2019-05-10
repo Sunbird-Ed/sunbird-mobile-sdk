@@ -49,21 +49,26 @@ export class SummarizerHandler {
 
     public static mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb: LearnerSummaryEntry.SchemaMap[],
                                                         cache: Map<string, ContentCache>): LearnerAssessmentSummary[] {
-        return assesmentsInDb.map((assesment: LearnerSummaryEntry.SchemaMap) => {
-            const contentCache: ContentCache | undefined = cache.get(assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID]) ;
-            return {
-                uid: assesment[LearnerSummaryEntry.COLUMN_NAME_UID].toString(),
-                contentId: assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID].toString(),
-                noOfQuestions: NumberUtil.parseInt(assesment[LearnerSummaryEntry.COLUMN_NAME_NO_OF_QUESTIONS]),
-                correctAnswers: NumberUtil.parseInt(assesment[LearnerSummaryEntry.COLUMN_NAME_CORRECT_ANSWERS]),
-                totalTimespent: Number(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_TIME_SPENT]),
-                hierarchyData: assesment[LearnerSummaryEntry.COLUMN_NAME_HIERARCHY_DATA].toString(),
-                totalMaxScore: NumberUtil.toFixed(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_MAX_SCORE]),
-                totalScore: NumberUtil.toFixed(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_SCORE]),
-                totalQuestionsScore: contentCache!.totalScore,
-                name: contentCache!.name,
-            };
-        });
+        return assesmentsInDb
+            .filter((assesment: LearnerSummaryEntry.SchemaMap) => {
+                const contentCache: ContentCache | undefined = cache.get(assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID]);
+                return !!contentCache;
+            })
+            .map((assesment: LearnerSummaryEntry.SchemaMap) => {
+                const contentCache: ContentCache | undefined = cache.get(assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID]);
+                return {
+                    uid: assesment[LearnerSummaryEntry.COLUMN_NAME_UID].toString(),
+                    contentId: assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID].toString(),
+                    noOfQuestions: NumberUtil.parseInt(assesment[LearnerSummaryEntry.COLUMN_NAME_NO_OF_QUESTIONS]),
+                    correctAnswers: NumberUtil.parseInt(assesment[LearnerSummaryEntry.COLUMN_NAME_CORRECT_ANSWERS]),
+                    totalTimespent: Number(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_TIME_SPENT]),
+                    hierarchyData: assesment[LearnerSummaryEntry.COLUMN_NAME_HIERARCHY_DATA].toString(),
+                    totalMaxScore: NumberUtil.toFixed(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_MAX_SCORE]),
+                    totalScore: NumberUtil.toFixed(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_SCORE]),
+                    totalQuestionsScore: contentCache ? contentCache!.totalScore : 0,
+                    name: contentCache ? contentCache!.name : '',
+                };
+            });
     }
 
     public static mapDBEntriesToLearnerAssesmentDetails(assesmentDetailsInDb: LearnerAssessmentsEntry.SchemaMap[]):
@@ -199,9 +204,9 @@ export class SummarizerHandler {
             timespent: Number(eData.duration),
             timestamp: telemetry.ets,
             res: JSON.stringify(eData.resvalues),
-            qdesc:  question && question.desc,
+            qdesc: question && question.desc,
             qtitle: question && question.title,
-            maxScore:  question && Number(question.maxscore),
+            maxScore: question && Number(question.maxscore),
             hierarchyData: this.getHierarchyData(cDataList)
         };
 
