@@ -29,6 +29,7 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     private sharedPreferences;
     private eventsBusService;
     private cachedItemStore;
+    private static readonly KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL;
     private static readonly KEY_CONTENT_DELETE_REQUEST_LIST;
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY;
     private readonly getContentDetailsHandler;
@@ -61,4 +62,6 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     onDownloadCompletion(request: ContentDownloadRequest): Observable<undefined>;
     private searchContentAndGroupByPageSection;
     getContentSpaceUsageSummary(contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest): Observable<ContentSpaceUsageSummaryResponse[]>;
+    private handleContentDeleteRequestSetChanges;
+    private handleUpdateSizeOnDeviceFail;
 }

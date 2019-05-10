@@ -18,6 +18,7 @@ export declare namespace DownloadKeys {
     const KEY_TO_DOWNLOAD_LIST = "to_download_list";
 }
 export declare namespace ContentKeys {
+    const KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL = "is_update_size_on_device_successful";
     const KEY_CONTENT_DELETE_REQUEST_LIST = "content_delete_request_list";
     const KEY_LAST_MODIFIED = "last_modified";
     const UPDATE_CONTENT_STATE = "update_content_state";
