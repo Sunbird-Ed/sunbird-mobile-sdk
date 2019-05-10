@@ -5,7 +5,7 @@ export declare class TransportAssesments {
     private dbService;
     constructor(dbService: DbService);
     execute(importContext: ImportProfileContext): Promise<Response>;
-    private deleteUnwantedProfileSummary;
+    private deleteUnwantedAssesments;
     private saveLearnerAssesmentDetails;
     private saveLearnerSummary;
 }
