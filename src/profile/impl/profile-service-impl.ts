@@ -92,7 +92,7 @@ export class ProfileServiceImpl implements ProfileService {
         this.telemetryService = telemetryService;
     }
 
-    onInit(): Observable<undefined> {
+    preInit(): Observable<undefined> {
         return this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION)
             .map((s) => s && JSON.parse(s))
             .mergeMap((profileSession?: ProfileSession) => {

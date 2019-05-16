@@ -1,4 +1,4 @@
-import { TelemetryService } from './../../telemetry/def/telemetry-service';
+import {TelemetryService} from '../../telemetry';
 import {Profile, ProfileSource} from './profile';
 import {Observable} from 'rxjs';
 import {TenantInfo} from './tenant-info';
@@ -17,14 +17,14 @@ import {GenerateOtpRequest} from './generate-otp-request';
 import {VerifyOtpRequest} from './verify-otp-request';
 import {LocationSearchCriteria} from './location-search-criteria';
 import {LocationSearchResult} from './location-search-result';
-import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {ProfileExportRequest} from './profile-export-request';
 import {ProfileExportResponse} from './profile-export-response';
 import {ProfileImportRequest} from './profile-import-request';
 import {ProfileImportResponse} from './profile-import-response';
+import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
 
 
-export interface ProfileService extends SdkServiceOnInitDelegate {
+export interface ProfileService extends SdkServicePreInitDelegate {
     createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
 
     deleteProfile(uid: string): Observable<undefined>;
