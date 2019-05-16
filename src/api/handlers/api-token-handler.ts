@@ -1,15 +1,18 @@
-import {ApiConfig, HttpRequestType, JWTokenType, JWTUtil, Request} from '..';
+import {ApiConfig, ApiService, HttpRequestType, JWTokenType, JWTUtil, Request} from '..';
 import {Observable} from 'rxjs';
 import * as moment from 'moment';
-import {Connection} from '../def/connection';
-import {DeviceInfo} from '../../util/device/def/device-info';
+import {DeviceInfo} from '../../util/device';
 
 export class ApiTokenHandler {
 
     private static readonly VERSION = '1.0';
     private static readonly ID = 'ekstep.genie.device.register';
 
-    constructor(private config: ApiConfig, private connection: Connection, private deviceInfo: DeviceInfo) {
+    constructor(
+        private config: ApiConfig,
+        private apiService: ApiService,
+        private deviceInfo: DeviceInfo
+    ) {
     }
 
     public refreshAuthToken(): Observable<string> {
@@ -44,7 +47,7 @@ export class ApiTokenHandler {
     }
 
     private async getMobileDeviceConsumerSecret(): Promise<string> {
-        return this.connection.invoke(this.buildGetMobileDeviceConsumerSecretAPIRequest()).toPromise()
+        return this.apiService.fetch(this.buildGetMobileDeviceConsumerSecretAPIRequest()).toPromise()
             .then((res) => res.body.result.secret);
     }
 
