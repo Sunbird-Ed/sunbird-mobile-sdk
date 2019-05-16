@@ -187,7 +187,7 @@ export class DeleteContentHandler {
         return new Promise((resolve, reject) => {
             buildconfigreader.getMetaData(fileMapList,
                 (entry) => {
-                    resolve();
+                    resolve(entry);
                 }, err => {
                     console.error(err);
                     reject(err);
