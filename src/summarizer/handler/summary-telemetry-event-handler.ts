@@ -41,6 +41,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     }
 
     private setCourseContextEmpty(): Observable<undefined> {
+        this.courseContext = {};
         return this.sharedPreference.putString(ContentKeys.COURSE_CONTEXT, '');
     }
 

@@ -1,4 +1,4 @@
-import {HttpClient, HttpSerializer, NetworkError, Response} from '..';
+import {HttpClient, HttpSerializer, NetworkError, Response, ResponseCode, ServerError} from '..';
 import {Observable} from 'rxjs';
 import * as axios from 'axios';
 import {AxiosError, AxiosResponse, AxiosStatic} from 'axios';
@@ -56,10 +56,19 @@ export class HttpClientAxios implements HttpClient {
 
                     if (typeof e.response.data === 'object') {
                         const sunbirdResponse = new Response<any>();
-                        sunbirdResponse.errorMesg = 'SERVER_ERROR';
-                        sunbirdResponse.responseCode = e.response.status;
+
                         sunbirdResponse.body = e.response.data;
-                        return sunbirdResponse;
+                        sunbirdResponse.responseCode = e.response.status;
+                        sunbirdResponse.errorMesg = 'SERVER_ERROR';
+
+                        if (sunbirdResponse.responseCode === ResponseCode.HTTP_UNAUTHORISED) {
+                            return sunbirdResponse;
+                        } else {
+                            throw new ServerError(`
+                                ${e.request.url} -
+                                ${e || ''}
+                            `, sunbirdResponse);
+                        }
                     } else {
                         throw new NetworkError(`
                             ${e.config.url}
