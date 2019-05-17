@@ -1,14 +1,17 @@
 import { ApiConfig, HttpClient, Request, Response } from '..';
 import { Observable } from 'rxjs';
 import { Connection } from '../def/connection';
-import { DeviceInfo } from '../../util/device/def/device-info';
+import { Authenticator } from '../def/authenticator';
+import { DeviceInfo } from '../../util/device';
 import { SharedPreferences } from '../../util/shared-preferences';
 export declare class BaseConnection implements Connection {
     protected http: HttpClient;
     protected apiConfig: ApiConfig;
     protected deviceInfo: DeviceInfo;
     protected sharedPreferences: SharedPreferences;
-    constructor(http: HttpClient, apiConfig: ApiConfig, deviceInfo: DeviceInfo, sharedPreferences: SharedPreferences);
+    protected defaultApiAuthenticators: Authenticator[];
+    protected defaultSessionAuthenticators: Authenticator[];
+    constructor(http: HttpClient, apiConfig: ApiConfig, deviceInfo: DeviceInfo, sharedPreferences: SharedPreferences, defaultApiAuthenticators: Authenticator[], defaultSessionAuthenticators: Authenticator[]);
     invoke(request: Request): Observable<Response>;
     protected addGlobalHeader(): void;
     private buildInterceptorsFromAuthenticators;

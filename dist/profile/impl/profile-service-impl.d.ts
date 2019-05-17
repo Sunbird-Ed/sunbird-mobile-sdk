@@ -28,7 +28,7 @@ export declare class ProfileServiceImpl implements ProfileService {
     private telemetryService;
     constructor(profileServiceConfig: ProfileServiceConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences, frameworkService: FrameworkService, fileService: FileService, deviceInfo: DeviceInfo);
     registerTelemetryService(telemetryService: TelemetryService): void;
-    onInit(): Observable<undefined>;
+    preInit(): Observable<undefined>;
     createProfile(profile: Profile, profileSource?: ProfileSource): Observable<Profile>;
     deleteProfile(uid: string): Observable<undefined>;
     updateProfile(profile: Profile): Observable<Profile>;

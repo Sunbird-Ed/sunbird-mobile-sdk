@@ -52,6 +52,8 @@ import {AppInfoImpl} from './util/app/impl/app-info-impl';
 import {PlayerService, PlayerServiceImpl} from './player';
 import {TelemetryConfig} from './telemetry/config/telemetry-config';
 import {OfflineSearchTextbookMigration} from './db/migrations/offline-search-textbook-migration';
+import {ApiAuthenticator} from './util/authenticators/impl/api-authenticator';
+import {SessionAuthenticator} from './util/authenticators/impl/session-authenticator';
 
 export class SunbirdSdk {
 
@@ -225,12 +227,12 @@ export class SunbirdSdk {
 
         this._apiService = new ApiServiceImpl(sdkConfig.apiConfig, this._deviceInfo, this._sharedPreferences);
 
-        this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService, this._sharedPreferences);
+        this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService, this._sharedPreferences, this._eventsBusService);
 
         this._keyValueStore = new KeyValueStoreImpl(this._dbService);
 
 
-        if (sdkConfig.fileConfig.debugMode === true) {
+        if (sdkConfig.fileConfig.debugMode) {
             this._fileService = new DebugPromptFileService();
         } else {
             this._fileService = new FileServiceImpl();
@@ -345,16 +347,24 @@ export class SunbirdSdk {
             this._contentService
         );
         this._summarizerService = new SummarizerServiceImpl(this._dbService, this.contentService,
-            this._eventsBusService, this._courseService, this._sharedPreferences,this._contentService, this._profileService);
+            this._eventsBusService, this._courseService, this._sharedPreferences, this._contentService, this._profileService);
         this._downloadService.registerOnDownloadCompleteDelegate(this._contentService);
         this._playerService = new PlayerServiceImpl(this._profileService, this._groupService,
             this._sdkConfig, this._frameworkService, this._deviceInfo, this._appInfo);
 
-        await this._profileService.onInit().toPromise();
+        this._apiService.setDefaultApiAuthenticators([
+            new ApiAuthenticator(this._sharedPreferences, this._sdkConfig.apiConfig, this._deviceInfo, this._apiService)
+        ]);
 
-        this.postInit();
+        this._apiService.setDefaultSessionAuthenticators([
+            new SessionAuthenticator(this._sharedPreferences, this._sdkConfig.apiConfig, this._apiService, this._authService)
+        ]);
+
+        await this.preInit().toPromise();
+
+        this.postInit().subscribe();
     }
-    // TODO Improve the logic
+
     public updateTelemetryConfig(update: Partial<TelemetryConfig>) {
         for (const key in update) {
             if (update.hasOwnProperty(key)) {
@@ -362,7 +372,7 @@ export class SunbirdSdk {
             }
         }
     }
-    // TODO Improve the logic
+
     public updateContentServiceConfig(update: Partial<ContentServiceConfig>) {
         for (const key in update) {
             if (update.hasOwnProperty(key)) {
@@ -370,7 +380,7 @@ export class SunbirdSdk {
             }
         }
     }
-    // TODO Improve the logic
+
     public updatePageServiceConfig(update: Partial<PageServiceConfig>) {
         for (const key in update) {
             if (update.hasOwnProperty(key)) {
@@ -379,11 +389,17 @@ export class SunbirdSdk {
         }
     }
 
+    private preInit() {
+        return Observable.combineLatest(
+            this._profileService.preInit()
+        );
+    }
+
     private postInit() {
-        Observable.combineLatest(
+        return Observable.combineLatest(
             this._frameworkService.onInit(),
             this._eventsBusService.onInit(),
             this._downloadService.onInit()
-        ).subscribe();
+        );
     }
 }

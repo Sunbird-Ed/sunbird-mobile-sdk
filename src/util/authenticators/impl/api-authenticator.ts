@@ -1,18 +1,22 @@
-import {ApiTokenHandler} from '../handlers/api-token-handler';
-import {ApiConfig, Request, Response, ResponseCode} from '..';
+import {ApiTokenHandler} from '../../../api/handlers/api-token-handler';
+import {ApiConfig, ApiService, Request, Response, ResponseCode} from '../../../api';
 import {Observable} from 'rxjs';
-import {ApiKeys} from '../../preference-keys';
-import {Authenticator} from '../def/authenticator';
-import {Connection} from '../def/connection';
-import {DeviceInfo} from '../../util/device/def/device-info';
-import {SharedPreferences} from '../../util/shared-preferences';
+import {ApiKeys} from '../../../preference-keys';
+import {Authenticator} from '../../../api/def/authenticator';
+import {DeviceInfo} from '../../device';
+import {SharedPreferences} from '../../shared-preferences';
 
 export class ApiAuthenticator implements Authenticator {
 
     private apiTokenHandler: ApiTokenHandler;
 
-    constructor(private sharedPreferences: SharedPreferences, private apiConfig: ApiConfig, private deviceInfo: DeviceInfo, private connection: Connection) {
-        this.apiTokenHandler = new ApiTokenHandler(this.apiConfig, this.connection, this.deviceInfo);
+    constructor(
+        private sharedPreferences: SharedPreferences,
+        private apiConfig: ApiConfig,
+        private deviceInfo: DeviceInfo,
+        private apiService: ApiService
+    ) {
+        this.apiTokenHandler = new ApiTokenHandler(this.apiConfig, this.apiService, this.deviceInfo);
     }
 
     interceptRequest(request: Request): Observable<Request> {
@@ -35,7 +39,7 @@ export class ApiAuthenticator implements Authenticator {
                 .do(async (bearerToken) => {
                     await this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken).toPromise();
                 })
-                .mergeMap(() => this.connection.invoke(request));
+                .mergeMap(() => this.apiService.fetch(request));
         }
 
         return Observable.of(response);

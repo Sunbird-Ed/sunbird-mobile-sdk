@@ -73,5 +73,6 @@ export declare class SunbirdSdk {
     updateTelemetryConfig(update: Partial<TelemetryConfig>): void;
     updateContentServiceConfig(update: Partial<ContentServiceConfig>): void;
     updatePageServiceConfig(update: Partial<PageServiceConfig>): void;
+    private preInit;
     private postInit;
 }

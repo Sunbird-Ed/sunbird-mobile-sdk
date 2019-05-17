@@ -1,9 +1,8 @@
 /// <reference types="jest" />
 import { ApiService } from '../api';
-import { ProfileServiceConfig } from '../profile/config/profile-service-config';
-import { SessionAuthenticator } from '../auth';
+import { ProfileServiceConfig, ServerProfile } from '../profile';
 import { CachedItemStore } from '../key-value-store';
-import { ServerProfile } from '../profile/def/server-profile';
+import { SessionAuthenticator } from '../util/authenticators/impl/session-authenticator';
 export declare type Mockify<T> = {
     [P in keyof T]: jest.Mock<{}>;
 };

@@ -92,7 +92,7 @@ export class ProfileServiceImpl implements ProfileService {
         this.telemetryService = telemetryService;
     }
 
-    onInit(): Observable<undefined> {
+    preInit(): Observable<undefined> {
         return this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION)
             .map((s) => s && JSON.parse(s))
             .mergeMap((profileSession?: ProfileSession) => {
@@ -363,7 +363,7 @@ export class ProfileServiceImpl implements ProfileService {
                         })).mergeMap((attachedServerProfileDetailsProfile: Profile) => {
                             return this.frameworkService
                                 .setActiveChannelId(attachedServerProfileDetailsProfile.serverProfile!.rootOrg.hashTagId);
-                        });
+                        }).catch(() => Observable.of(undefined));
                     }),
                     Observable.defer(() => Observable.of(undefined))
                 ).mapTo(profile)

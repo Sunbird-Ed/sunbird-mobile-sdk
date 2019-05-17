@@ -2,18 +2,20 @@ import {ApiConfig, HttpClient, HttpRequestType, HttpSerializer, Request, Respons
 import {Observable} from 'rxjs';
 import {Connection} from '../def/connection';
 import {Authenticator} from '../def/authenticator';
-import {ApiAuthenticator} from './api-authenticator';
-import {SessionAuthenticator} from '../../auth';
 import * as qs from 'qs';
-import {DeviceInfo} from '../../util/device/def/device-info';
+import {DeviceInfo} from '../../util/device';
 import {SharedPreferences} from '../../util/shared-preferences';
 
 export class BaseConnection implements Connection {
 
-    constructor(protected http: HttpClient,
-                protected apiConfig: ApiConfig,
-                protected deviceInfo: DeviceInfo,
-                protected sharedPreferences: SharedPreferences) {
+    constructor(
+        protected http: HttpClient,
+        protected apiConfig: ApiConfig,
+        protected deviceInfo: DeviceInfo,
+        protected sharedPreferences: SharedPreferences,
+        protected defaultApiAuthenticators: Authenticator[],
+        protected defaultSessionAuthenticators: Authenticator[]
+    ) {
         this.addGlobalHeader();
     }
 
@@ -69,11 +71,15 @@ export class BaseConnection implements Connection {
 
     private buildInterceptorsFromAuthenticators(request: Request) {
         if (request.withApiToken) {
-            request.authenticators.push(new ApiAuthenticator(this.sharedPreferences, this.apiConfig, this.deviceInfo, this));
+            for (const authenticator of this.defaultApiAuthenticators) {
+                request.authenticators.push(authenticator);
+            }
         }
 
         if (request.withSessionToken) {
-            request.authenticators.push(new SessionAuthenticator(this.sharedPreferences, this.apiConfig, this));
+            for (const authenticator of this.defaultSessionAuthenticators) {
+                request.authenticators.push(authenticator);
+            }
         }
 
         request.authenticators.forEach((authenticator: Authenticator) => {

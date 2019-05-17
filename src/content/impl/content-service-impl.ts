@@ -197,7 +197,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     });
                 }
             }
-
+            new UpdateSizeOnDevice(this.dbService).execute();
             return contentDeleteResponse;
         });
     }
@@ -345,7 +345,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }).then((importResponse: Response) => {
                     return new EcarCleanup(this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
-                    return new UpdateSizeOnDevice(this.dbService).execute(importResponse.body);
+                    new UpdateSizeOnDevice(this.dbService).execute();
+                    return importResponse;
                 }).then((importResponse: Response) => {
                     return new GenerateImportShareTelemetry(this.telemetryService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
@@ -504,7 +505,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             medium: request.medium,
             grade: request.grade
         }).map((contents: Content[]) => contents.map((content) => {
-            if (content.contentData.appIcon && content.contentData.appIcon.startsWith('https://')) {
+            if (content.contentData.appIcon && !content.contentData.appIcon.startsWith('https://')) {
                 content.contentData.appIcon = content.basePath + content.contentData.appIcon;
             }
             return content.contentData;
