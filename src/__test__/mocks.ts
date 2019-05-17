@@ -1,5 +1,5 @@
 import {ApiService} from '../api';
-`import {ProfileServiceConfig, ServerProfile} from '../profile';
+import {ProfileServiceConfig, ServerProfile} from '../profile';
 import {CachedItemStore} from '../key-value-store';
 import {SessionAuthenticator} from '../util/authenticators/impl/session-authenticator';
 
