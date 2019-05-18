@@ -88,8 +88,9 @@ export class GetContentsHandler {
         return `SELECT c.*, ca.${ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP},
                 cm.${ContentMarkerEntry.COLUMN_NAME_DATA} FROM ${ContentAccessEntry.TABLE_NAME} ca LEFT JOIN
                 ${ContentMarkerEntry.TABLE_NAME} cm ON
-                cm.${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER} = ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_IDENTIFIER} LEFT JOIN
-                ${ContentEntry.TABLE_NAME}  c ON
+                (cm.${ContentMarkerEntry.COLUMN_NAME_UID} = ca.${ContentAccessEntry.COLUMN_NAME_UID}
+                AND cm.${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER} = ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_IDENTIFIER})
+                LEFT JOIN ${ContentEntry.TABLE_NAME}  c ON
                 c.${ContentEntry.COLUMN_NAME_IDENTIFIER} = ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_IDENTIFIER}
                 ${whereClause} ${orderBy} LIMIT ${limit}`;
     }
