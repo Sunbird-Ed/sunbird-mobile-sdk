@@ -72,7 +72,7 @@ export interface ContentData {
     contributors: string;
     streamingUrl: string;
     totalScore: any;
-    altMsg?: [ComingSoonMsg];
+    altMsg?: ComingSoonMsg [];
 }
 
 export interface ComingSoonMsg {
