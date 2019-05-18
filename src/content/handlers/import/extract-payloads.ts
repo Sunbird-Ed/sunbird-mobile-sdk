@@ -44,19 +44,21 @@ export class ExtractPayloads {
         // post event before starting with how many imports are to be done totally
         this.postImportProgressEvent(currentCount, importContext.items!.length);
         const contentIds: string[] = [];
+        const nonUnitContentIds: string[] = [];
         for (const e of importContext.items!) {
             const element = e as any;
             const identifier = element.identifier;
             const visibility = ContentUtil.readVisibility(element);
             if (ContentUtil.isNotUnit(element.mimeType, visibility)) {
-                contentIds.push(identifier);
+                nonUnitContentIds.push(identifier);
             }
+            contentIds.push(identifier);
         }
 
         // await this.fileService.createDir(ContentUtil.getContentRootDir(importContext.destinationFolder), false);
         // Create all the directories for content.
         const createdDirectories = await this.createDirectories(ContentUtil.getContentRootDir(importContext.destinationFolder),
-            contentIds);
+            nonUnitContentIds);
 
         const query = ArrayUtil.joinPreservingQuotes(contentIds);
         const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
