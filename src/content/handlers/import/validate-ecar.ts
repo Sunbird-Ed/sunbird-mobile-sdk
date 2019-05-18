@@ -53,9 +53,9 @@ export class ValidateEcar {
             const element = e as any;
             const identifier = element.identifier;
             const visibility = ContentUtil.readVisibility(element);
-            if (ContentUtil.isNotUnit(element.mimeType, visibility)) {
+            // if (ContentUtil.isNotUnit(element.mimeType, visibility)) {
                 contentIds.push(identifier);
-            }
+            // }
         }
         const query = ArrayUtil.joinPreservingQuotes(contentIds);
         const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
