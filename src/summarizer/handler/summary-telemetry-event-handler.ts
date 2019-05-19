@@ -177,19 +177,6 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         });
     }
 
-    // private updateContentState(eid: string, objId: string): Observable<boolean> {
-    //     this.sharedPreference.getString(ContentKeys.COURSE_CONTEXT).mergeMap((value: string | undefined) => {
-    //         this.courseContext = JSON.parse(value!);
-    //         if(this.courseContext){
-    //             const userId = this.courseContext['userId'];
-    //             const courseId = this.courseContext['courseId'];
-    //             const batchId = this.courseContext['batchId'];
-    //             const batchStatus = this.courseContext['batchStatus'];
-    //
-    //         }
-    //     });
-    // }
-
     private getCourseContext(): Observable<any> {
         return this.sharedPreference.getString(ContentKeys.COURSE_CONTEXT).map((value: string | undefined) => {
             return value ? JSON.parse(value) : {};

@@ -57,7 +57,7 @@ export class CourseServiceImpl implements CourseService {
     updateContentState(request: UpdateContentStateRequest): Observable<boolean> {
         const offlineContentStateHandler: OfflineContentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
         return new UpdateContentStateApiHandler(this.apiService, this.courseServiceConfig)
-            .handle(CourseUtil.getUpdateContentStateRequest(request)).map((response: {[key: string]: any}) => {
+            .handle(CourseUtil.getUpdateContentStateRequest(request)).map((response: { [key: string]: any }) => {
                 if (response.hasOwnProperty(request.contentId) ||
                     response[request.contentId] !== 'FAILED') {
                     return true;
@@ -125,7 +125,9 @@ export class CourseServiceImpl implements CourseService {
                             return Observable.of<ContentStateResponse | undefined>(undefined);
                         }
                     }).catch((error) => {
-                        return offlinecontentStateHandler.getLocalContentStateResponse(request);
+                        return offlinecontentStateHandler.getLocalContentStateResponse(request).mergeMap(() => {
+                            return updateCourseHandler.updateEnrollCourses(request);
+                        });
                     });
             } else if (request.returnRefreshedContentStates) {
                 return new GetContentStateHandler(this.apiService, this.courseServiceConfig)
@@ -140,7 +142,9 @@ export class CourseServiceImpl implements CourseService {
                             return Observable.of<ContentStateResponse | undefined>(undefined);
                         }
                     }).catch((error) => {
-                        return offlinecontentStateHandler.getLocalContentStateResponse(request);
+                        return offlinecontentStateHandler.getLocalContentStateResponse(request).mergeMap(() => {
+                            return updateCourseHandler.updateEnrollCourses(request);
+                        });
                     });
             } else {
                 return offlinecontentStateHandler.getLocalContentStateResponse(request);

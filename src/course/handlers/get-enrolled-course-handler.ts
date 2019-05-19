@@ -32,6 +32,16 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
                                 this.STORED_ENROLLED_COURSES_PREFIX + request.userId,
                                 JSON.stringify(courses)
                             ).mapTo(courses.result.courses);
+                        }).catch(() => {
+                            const response = JSON.parse(value);
+                            const result = response['result'];
+                            let courses: Course[];
+                            if (result && result.hasOwnProperty('courses')) {
+                                courses = result['courses'];
+                            } else {
+                                courses = response['courses'];
+                            }
+                            return Observable.of(courses);
                         });
                 } else {
                     // TODO
