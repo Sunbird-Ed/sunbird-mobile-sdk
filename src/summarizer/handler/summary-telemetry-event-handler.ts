@@ -191,19 +191,9 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     // }
 
     private getCourseContext(): Observable<any> {
-        if (this.courseContext && Object.keys(this.courseContext).length) {
-            return Observable.of(this.courseContext);
-        } else {
-            return this.sharedPreference.getString(ContentKeys.COURSE_CONTEXT).map((value: string | undefined) => {
-                if (value) {
-                    this.courseContext = JSON.parse(value);
-                    return Observable.of(this.courseContext);
-                } else {
-                    return Observable.of({});
-                }
-
-            });
-        }
+        return this.sharedPreference.getString(ContentKeys.COURSE_CONTEXT).map((value: string | undefined) => {
+            return value ? JSON.parse(value) : {};
+        });
     }
 
     private checkStatusOfContent(userId: string, courseId: string, batchId: string, contentId: string): Observable<number> {

@@ -59,10 +59,10 @@ export class CourseServiceImpl implements CourseService {
         return new UpdateContentStateApiHandler(this.apiService, this.courseServiceConfig)
             .handle(CourseUtil.getUpdateContentStateRequest(request)).map((response: {[key: string]: any}) => {
                 if (response.hasOwnProperty(request.contentId) ||
-                    response[request.contentId] === 'FAILED') {
-                    throw new ProcessingError('Request processing failed');
+                    response[request.contentId] !== 'FAILED') {
+                    return true;
                 }
-                return true;
+                throw new ProcessingError('Request processing failed');
             })
             .catch((error) => {
                 const key = CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX.concat(request.userId,
