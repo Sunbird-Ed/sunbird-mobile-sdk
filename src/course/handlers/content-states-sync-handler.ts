@@ -52,10 +52,13 @@ export class ContentStatesSyncHandler {
     private async invokeContentStateAPI(userContentStateMap: { [key: string]: UpdateContentStateRequest[] }): Promise<boolean> {
 
         for (const userId of Object.keys(userContentStateMap)) {
-            const result: { [key: string]: any } = await this.updateContentStateHandler.handle(CourseUtil.getUpdateContentStateListRequest(
-                userId, userContentStateMap[userId]));
-            if (result) {
-                await this.deleteContentState(userContentStateMap[userId], result);
+            try {
+                const result: { [key: string]: any } = await this.updateContentStateHandler.handle(
+                    CourseUtil.getUpdateContentStateListRequest(userId, userContentStateMap[userId])).toPromise();
+                if (result) {
+                    await this.deleteContentState(userContentStateMap[userId], result);
+                }
+            } catch (e) {
             }
         }
         return Promise.resolve(true);
@@ -66,7 +69,7 @@ export class ContentStatesSyncHandler {
 
         for (const contentSateRequest of contentSateRequestList) {
             if (result.hasOwnProperty(contentSateRequest.contentId) ||
-                ( result[contentSateRequest.contentId] && result[contentSateRequest.contentId] !== 'FAILED')) {
+                (result[contentSateRequest.contentId] && result[contentSateRequest.contentId] !== 'FAILED')) {
                 const key = CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX
                     .concat(contentSateRequest.userId)
                     .concat(contentSateRequest.courseId)
