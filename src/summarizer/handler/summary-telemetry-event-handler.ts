@@ -2,13 +2,21 @@ import {ApiRequestHandler} from '../../api';
 import {ProducerData, SunbirdTelemetry} from '../../telemetry';
 import {Observable} from 'rxjs';
 import {SummarizerService} from '..';
-import {ContentState, ContentStateResponse, CourseService, GetContentStateRequest, UpdateContentStateRequest} from '../../course';
+import {
+    ContentState,
+    ContentStateResponse,
+    CourseService,
+    CourseServiceImpl,
+    GetContentStateRequest,
+    UpdateContentStateRequest
+} from '../../course';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {ContentKeys} from '../../preference-keys';
 import Telemetry = SunbirdTelemetry.Telemetry;
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {Content, ContentDetailRequest, ContentEventType, ContentMarkerRequest, ContentService, MarkerType} from '../../content';
 import {ContentAccess, ContentAccessStatus, ProfileService} from '../../profile';
+import {GetEnrolledCourseHandler} from '../../course/handlers/get-enrolled-course-handler';
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -98,12 +106,22 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                         } else {
                             return Observable.of(undefined);
                         }
+                    }).do(() => {
+                        return this.updateLastReadContentId(userId, courseId, batchId, contentId);
                     });
             } else {
                 return Observable.of(undefined);
             }
 
         });
+    }
+
+    private updateLastReadContentId(userId: string, courseId: string, batchId: string, contentId: string): Observable<undefined> {
+        const key = CourseServiceImpl.LAST_READ_CONTENTID_PREFIX.concat('_')
+            .concat(userId).concat('_')
+            .concat(courseId).concat('_')
+            .concat(batchId);
+        return this.sharedPreference.putString(key, contentId);
     }
 
 

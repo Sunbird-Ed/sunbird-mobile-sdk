@@ -39,6 +39,7 @@ export class CourseServiceImpl implements CourseService {
     public static readonly GET_CONTENT_STATE_KEY_PREFIX = 'getContentState';
     public static readonly GET_ENROLLED_COURSE_KEY_PREFIX = 'enrolledCourses';
     public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
+    public static readonly LAST_READ_CONTENTID_PREFIX = 'lastReadContentId';
 
     constructor(private courseServiceConfig: CourseServiceConfig,
                 private apiService: ApiService,
@@ -89,7 +90,7 @@ export class CourseServiceImpl implements CourseService {
         return new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)
             .updateContentState().mergeMap(() => {
                 return new GetEnrolledCourseHandler(
-                    this.keyValueStore, this.apiService, this.courseServiceConfig).handle(request);
+                    this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences).handle(request);
             });
 
     }
