@@ -39,6 +39,7 @@ export class CourseServiceImpl implements CourseService {
     public static readonly GET_CONTENT_STATE_KEY_PREFIX = 'getContentState';
     public static readonly GET_ENROLLED_COURSE_KEY_PREFIX = 'enrolledCourses';
     public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
+    public static readonly LAST_READ_CONTENTID_PREFIX = 'lastReadContentId';
 
     constructor(private courseServiceConfig: CourseServiceConfig,
                 private apiService: ApiService,
@@ -57,12 +58,12 @@ export class CourseServiceImpl implements CourseService {
     updateContentState(request: UpdateContentStateRequest): Observable<boolean> {
         const offlineContentStateHandler: OfflineContentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
         return new UpdateContentStateApiHandler(this.apiService, this.courseServiceConfig)
-            .handle(CourseUtil.getUpdateContentStateRequest(request)).map((response: {[key: string]: any}) => {
+            .handle(CourseUtil.getUpdateContentStateRequest(request)).map((response: { [key: string]: any }) => {
                 if (response.hasOwnProperty(request.contentId) ||
-                    response[request.contentId] === 'FAILED') {
-                    throw new ProcessingError('Request processing failed');
+                    response[request.contentId] !== 'FAILED') {
+                    return true;
                 }
-                return true;
+                throw new ProcessingError('Request processing failed');
             })
             .catch((error) => {
                 const key = CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX.concat(request.userId,
@@ -89,7 +90,7 @@ export class CourseServiceImpl implements CourseService {
         return new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)
             .updateContentState().mergeMap(() => {
                 return new GetEnrolledCourseHandler(
-                    this.keyValueStore, this.apiService, this.courseServiceConfig).handle(request);
+                    this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences).handle(request);
             });
 
     }
@@ -125,7 +126,9 @@ export class CourseServiceImpl implements CourseService {
                             return Observable.of<ContentStateResponse | undefined>(undefined);
                         }
                     }).catch((error) => {
-                        return offlinecontentStateHandler.getLocalContentStateResponse(request);
+                        return offlinecontentStateHandler.getLocalContentStateResponse(request).mergeMap(() => {
+                            return updateCourseHandler.updateEnrollCourses(request);
+                        });
                     });
             } else if (request.returnRefreshedContentStates) {
                 return new GetContentStateHandler(this.apiService, this.courseServiceConfig)
@@ -140,7 +143,9 @@ export class CourseServiceImpl implements CourseService {
                             return Observable.of<ContentStateResponse | undefined>(undefined);
                         }
                     }).catch((error) => {
-                        return offlinecontentStateHandler.getLocalContentStateResponse(request);
+                        return offlinecontentStateHandler.getLocalContentStateResponse(request).mergeMap(() => {
+                            return updateCourseHandler.updateEnrollCourses(request);
+                        });
                     });
             } else {
                 return offlinecontentStateHandler.getLocalContentStateResponse(request);

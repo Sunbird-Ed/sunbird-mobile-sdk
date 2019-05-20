@@ -1,8 +1,9 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {Course, CourseServiceConfig, FetchEnrolledCourseRequest} from '..';
+import {Course, CourseServiceConfig, CourseServiceImpl, FetchEnrolledCourseRequest} from '..';
 import {Observable} from 'rxjs';
 import {KeyValueStore} from '../../key-value-store';
 import {GetEnrolledCourseResponse} from '../def/get-enrolled-course-response';
+import {SharedPreferences} from '../../util/shared-preferences';
 
 export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolledCourseRequest, Course[]> {
 
@@ -11,7 +12,8 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
 
     constructor(private keyValueStore: KeyValueStore,
                 private apiService: ApiService,
-                private courseServiceConfig: CourseServiceConfig) {
+                private courseServiceConfig: CourseServiceConfig,
+                private sharedPreference: SharedPreferences) {
     }
 
     handle(request: FetchEnrolledCourseRequest): Observable<Course[]> {
@@ -23,7 +25,9 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
                             return this.keyValueStore.setValue(
                                 this.STORED_ENROLLED_COURSES_PREFIX + request.userId,
                                 JSON.stringify(courses)
-                            ).mapTo(courses.result.courses);
+                            ).mapTo(courses.result.courses).do((courseList) => {
+                                return Observable.fromPromise(this.updateLastPlayedContent(courseList));
+                            });
                         });
                 } else if (request.returnFreshCourses) {
                     return this.fetchFromServer(request)
@@ -31,7 +35,19 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
                             return this.keyValueStore.setValue(
                                 this.STORED_ENROLLED_COURSES_PREFIX + request.userId,
                                 JSON.stringify(courses)
-                            ).mapTo(courses.result.courses);
+                            ).mapTo(courses.result.courses).do((courseList) => {
+                                return Observable.fromPromise(this.updateLastPlayedContent(courseList));
+                            });
+                        }).catch(() => {
+                            const response = JSON.parse(value);
+                            const result = response['result'];
+                            let courses: Course[];
+                            if (result && result.hasOwnProperty('courses')) {
+                                courses = result['courses'];
+                            } else {
+                                courses = response['courses'];
+                            }
+                            return Observable.of(courses);
                         });
                 } else {
                     // TODO
@@ -46,6 +62,20 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
                     return Observable.of(courses);
                 }
             });
+    }
+
+    private async updateLastPlayedContent(courses: Course[]): Promise<boolean> {
+        for (const course of courses) {
+            const key = CourseServiceImpl.LAST_READ_CONTENTID_PREFIX.concat('_')
+                .concat(course['userId']!).concat('_')
+                .concat(course['contentId']!).concat('_')
+                .concat(course['batchId']!);
+            const lastReadContentId = course['lastReadContentId'];
+            if (course['lastReadContentId']) {
+                await this.sharedPreference.putString(key, lastReadContentId!).toPromise();
+            }
+        }
+        return Promise.resolve(true);
     }
 
     private fetchFromServer(request: FetchEnrolledCourseRequest): Observable<GetEnrolledCourseResponse> {
