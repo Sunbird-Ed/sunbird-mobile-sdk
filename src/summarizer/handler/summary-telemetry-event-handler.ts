@@ -107,7 +107,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                             return Observable.of(undefined);
                         }
                     }).do(() => {
-                        return this.updateLastReadContentId(userId, courseId, batchId, contentId);
+                         this.updateLastReadContentId(userId, courseId, batchId, contentId).toPromise();
                     });
             } else {
                 return Observable.of(undefined);
