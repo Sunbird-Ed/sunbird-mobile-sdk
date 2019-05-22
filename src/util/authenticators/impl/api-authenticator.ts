@@ -33,8 +33,8 @@ export class ApiAuthenticator implements Authenticator {
     }
 
     interceptResponse(request: Request, response: Response): Observable<Response> {
-        if (response.responseCode === ResponseCode.HTTP_UNAUTHORISED &&
-            response.body.message === 'Unauthorized') {
+        if ((response.responseCode === ResponseCode.HTTP_UNAUTHORISED && response.body.message === 'Unauthorized')
+            || response.responseCode === ResponseCode.HTTP_FORBIDDEN) {
             return this.apiTokenHandler.refreshAuthToken()
                 .do(async (bearerToken) => {
                     await this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken).toPromise();

@@ -61,7 +61,8 @@ export class HttpClientAxios implements HttpClient {
                         sunbirdResponse.responseCode = e.response.status;
                         sunbirdResponse.errorMesg = 'SERVER_ERROR';
 
-                        if (sunbirdResponse.responseCode === ResponseCode.HTTP_UNAUTHORISED) {
+                        if (sunbirdResponse.responseCode === ResponseCode.HTTP_UNAUTHORISED
+                            || sunbirdResponse.responseCode === ResponseCode.HTTP_FORBIDDEN) {
                             return sunbirdResponse;
                         } else {
                             throw new ServerError(`
