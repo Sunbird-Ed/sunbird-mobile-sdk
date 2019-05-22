@@ -18,7 +18,9 @@ export declare class FrameworkServiceImpl implements FrameworkService {
     private systemSettingsService;
     private static readonly KEY_ACTIVE_CHANNEL_ID;
     private static readonly SEARCH_ORGANIZATION_ENDPOINT;
+    private _activeChannelId?;
     constructor(sdkConfig: SdkConfig, keyValueStore: KeyValueStore, fileService: FileService, apiService: ApiService, cachedChannelItemStore: CachedItemStore<Channel>, cachedFrameworkItemStore: CachedItemStore<Framework>, sharedPreferences: SharedPreferences, systemSettingsService: SystemSettingsService);
+    readonly activeChannelId: string | undefined;
     onInit(): Observable<undefined>;
     getDefaultChannelDetails(): Observable<Channel>;
     getChannelDetails(request: ChannelDetailsRequest): Observable<Channel>;
