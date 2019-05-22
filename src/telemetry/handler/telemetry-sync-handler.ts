@@ -1,5 +1,5 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {TelemetrySyncStat} from '..';
+import {InteractSubType, InteractType, TelemetrySyncStat} from '..';
 import {Observable} from 'rxjs';
 import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
 import {StringToGzippedString} from '../impl/string-to-gzipped-string';
@@ -12,6 +12,7 @@ import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {UniqueId} from '../../db/util/unique-id';
 import moment from 'moment';
 import {FrameworkService} from '../../framework';
+import {TelemetryLogger} from '../util/telemetry-logger';
 import COLUMN_NAME_MSG_ID = TelemetryProcessedEntry.COLUMN_NAME_MSG_ID;
 import COLUMN_NAME_NUMBER_OF_EVENTS = TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS;
 import COLUMN_NAME_PRIORITY = TelemetryEntry.COLUMN_NAME_PRIORITY;
@@ -137,6 +138,15 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
                     const allowedOffset =
                         Math.abs(currentOffset) > this.telemetryConfig.telemetryLogMinAllowedOffset ? currentOffset : 0;
                     if (allowedOffset) {
+                        await TelemetryLogger.log.interact({
+                            type: InteractType.OTHER,
+                            subType: InteractSubType.DEVICE_TIME_OFFSET_FOUND,
+                            env: 'sdk',
+                            valueMap: {
+                                deviceTime: now,
+                                offsetTime: allowedOffset
+                            }
+                        }).toPromise();
                         await this.keyValueStore!
                             .setValue(TelemetrySyncHandler.TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY, allowedOffset + '').toPromise();
                     }
