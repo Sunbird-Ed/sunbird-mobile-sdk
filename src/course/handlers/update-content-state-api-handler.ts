@@ -20,7 +20,7 @@ export class UpdateContentStateApiHandler implements ApiRequestHandler<UpdateCon
             .build();
 
         return this.apiService.fetch<{ result: { response: Batch } }>(apiRequest).map((response) => {
-            return response.body.result.response;
+            return response.body.result;
         });
     }
 

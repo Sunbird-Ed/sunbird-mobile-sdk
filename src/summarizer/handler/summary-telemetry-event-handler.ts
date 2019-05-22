@@ -2,13 +2,21 @@ import {ApiRequestHandler} from '../../api';
 import {ProducerData, SunbirdTelemetry} from '../../telemetry';
 import {Observable} from 'rxjs';
 import {SummarizerService} from '..';
-import {ContentState, ContentStateResponse, CourseService, GetContentStateRequest, UpdateContentStateRequest} from '../../course';
+import {
+    ContentState,
+    ContentStateResponse,
+    CourseService,
+    CourseServiceImpl,
+    GetContentStateRequest,
+    UpdateContentStateRequest
+} from '../../course';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {ContentKeys} from '../../preference-keys';
 import Telemetry = SunbirdTelemetry.Telemetry;
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {Content, ContentDetailRequest, ContentEventType, ContentMarkerRequest, ContentService, MarkerType} from '../../content';
 import {ContentAccess, ContentAccessStatus, ProfileService} from '../../profile';
+import {GetEnrolledCourseHandler} from '../../course/handlers/get-enrolled-course-handler';
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -98,12 +106,22 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                         } else {
                             return Observable.of(undefined);
                         }
+                    }).do(() => {
+                         this.updateLastReadContentId(userId, courseId, batchId, contentId).toPromise();
                     });
             } else {
                 return Observable.of(undefined);
             }
 
         });
+    }
+
+    private updateLastReadContentId(userId: string, courseId: string, batchId: string, contentId: string): Observable<undefined> {
+        const key = CourseServiceImpl.LAST_READ_CONTENTID_PREFIX.concat('_')
+            .concat(userId).concat('_')
+            .concat(courseId).concat('_')
+            .concat(batchId);
+        return this.sharedPreference.putString(key, contentId);
     }
 
 
@@ -177,33 +195,10 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         });
     }
 
-    // private updateContentState(eid: string, objId: string): Observable<boolean> {
-    //     this.sharedPreference.getString(ContentKeys.COURSE_CONTEXT).mergeMap((value: string | undefined) => {
-    //         this.courseContext = JSON.parse(value!);
-    //         if(this.courseContext){
-    //             const userId = this.courseContext['userId'];
-    //             const courseId = this.courseContext['courseId'];
-    //             const batchId = this.courseContext['batchId'];
-    //             const batchStatus = this.courseContext['batchStatus'];
-    //
-    //         }
-    //     });
-    // }
-
     private getCourseContext(): Observable<any> {
-        if (this.courseContext && Object.keys(this.courseContext).length) {
-            return Observable.of(this.courseContext);
-        } else {
-            return this.sharedPreference.getString(ContentKeys.COURSE_CONTEXT).map((value: string | undefined) => {
-                if (value) {
-                    this.courseContext = JSON.parse(value);
-                    return Observable.of(this.courseContext);
-                } else {
-                    return Observable.of({});
-                }
-
-            });
-        }
+        return this.sharedPreference.getString(ContentKeys.COURSE_CONTEXT).map((value: string | undefined) => {
+            return value ? JSON.parse(value) : {};
+        });
     }
 
     private checkStatusOfContent(userId: string, courseId: string, batchId: string, contentId: string): Observable<number> {
