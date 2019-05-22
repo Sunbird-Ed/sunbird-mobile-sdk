@@ -71,7 +71,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     }
 
     onInit(): Observable<undefined> {
-        return this.listenForDownloadProgressChanges();
+        return this.switchToNextDownloadRequest()
+            .mergeMap(() => {
+                return this.listenForDownloadProgressChanges();
+            });
     }
 
     download(downloadRequests: DownloadRequest[]): Observable<undefined> {
@@ -264,6 +267,9 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         }
                     } as DownloadProgress);
                     observer.complete();
+
+                    this.cancel({identifier: downloadRequest.identifier}).toPromise();
+
                     return;
                 }
 
