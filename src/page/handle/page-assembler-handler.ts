@@ -6,10 +6,12 @@ import { Observable } from 'rxjs';
 import * as SHA1 from 'crypto-js/sha1';
 import {CachedItemRequestSourceFrom, KeyValueStore} from '../../key-value-store';
 import { SharedPreferences } from '../../util/shared-preferences';
+import { PageName } from '../def/requests';
 
 export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private readonly PAGE_ASSEMBLE_LOCAL_KEY = 'page_assemble-';
     private readonly PAGE_ASSEMBLE_ENDPOINT = '/page/assemble';
+    private readonly DIALCODE_ASSEMBLE_ENDPOINT = '/dial/assemble';
 
     constructor(private apiService: ApiService,
         private pageApiServiceConfig: PageServiceConfig,
@@ -54,10 +56,13 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
 
 
     private fetchFromServer(request: PageAssembleCriteria): Observable<PageAssemble> {
+
+        const pageAssembleEndPoint = request.name === PageName.DIAL_CODE ? this.DIALCODE_ASSEMBLE_ENDPOINT : this.PAGE_ASSEMBLE_ENDPOINT;
+
         const apiRequest: Request = new Request.Builder()
             .withHost(this.pageApiServiceConfig.host)
             .withType(HttpRequestType.POST)
-            .withPath(this.pageApiServiceConfig.apiPath + this.PAGE_ASSEMBLE_ENDPOINT)
+            .withPath(this.pageApiServiceConfig.apiPath + pageAssembleEndPoint)
             .withApiToken(true)
             .withBody({request})
             .build();
