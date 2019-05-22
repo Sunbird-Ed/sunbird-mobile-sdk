@@ -81,7 +81,7 @@ export class HttpClientImpl implements HttpClient {
                 r.responseCode = response.status;
                 r.errorMesg = 'SERVER_ERROR';
 
-                if (r.responseCode === ResponseCode.HTTP_UNAUTHORISED) {
+                if (r.responseCode === ResponseCode.HTTP_UNAUTHORISED || r.responseCode === ResponseCode.HTTP_FORBIDDEN) {
                     observable.next(r);
                     observable.complete();
                 } else {
