@@ -12,7 +12,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
                 private appInfo: AppInfo) {
     }
 
-    decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset: number = 0): any {
+    decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset: number = 0, channelId?: string): any {
         event.ets += offset;
         if (!event.mid) {
             event.mid = UniqueId.generateUniqueId();
@@ -23,12 +23,12 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
             this.patchActor(event, '');
         }
 
-        this.patchContext(event, sid);
+        this.patchContext(event, sid, channelId);
         // TODO Add tag patching logic
         return event;
     }
 
-    patchActor(event: Telemetry, uid: string) {
+    private patchActor(event: Telemetry, uid: string) {
         if (!event.actor) {
             event.actor = new Actor();
         }
@@ -40,21 +40,24 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         }
     }
 
-    patchContext(event: Telemetry, sid) {
+    private patchContext(event: Telemetry, sid, channelId) {
         if (!event.context) {
             event.context = new Context();
         }
         const context: Context = event.context;
-        context.channel = this.apiConfig.api_authentication.channelId;
+        context.channel = channelId;
         this.patchPData(context);
         if (!context.env) {
             context.env = 'app';
         }
         context.sid = sid;
         context.did = this.deviceInfo.getDeviceID();
+        if (channelId !== this.apiConfig.api_authentication.channelId) {
+            context.rollup = {l1: channelId};
+        }
     }
 
-    patchPData(event: Context) {
+    private patchPData(event: Context) {
         if (!event.pdata) {
             event.pdata = new ProducerData();
         }
@@ -69,7 +72,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         } else if (this.apiConfig.api_authentication.producerUniqueId) {
             pData.pid = this.apiConfig.api_authentication.producerUniqueId;
         } else {
-            pData.pid = 'geniesdk.android';
+            pData.pid = 'sunbird.android';
         }
 
         if (!pData.ver) {

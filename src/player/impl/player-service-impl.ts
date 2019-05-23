@@ -58,9 +58,15 @@ export class PlayerServiceImpl implements PlayerService {
             }
             return this.groupService.getActiveGroupSession();
         }).mergeMap((groupSession: GroupSession | undefined) => {
-            const corRelationList: CorrelationData[] = [];
-            corRelationList.push({id: groupSession ? groupSession.gid : '', type: 'group'});
+            let corRelationList: CorrelationData[] = [];
+            if (groupSession && groupSession.gid) {
+                corRelationList.push({id: groupSession.gid , type: 'group'});
+            }
             const isStreaming = extraInfo && extraInfo.hasOwnProperty('streaming');
+            const appCorrelationData: CorrelationData[] = extraInfo['correlationData'];
+            if (appCorrelationData && appCorrelationData.length) {
+                corRelationList = corRelationList.concat(appCorrelationData);
+            }
             corRelationList.push({id: isStreaming ? 'streaming' : 'offline', type: 'PlayerLaunch'});
             context.cdata = corRelationList;
             playerInput.context = context;

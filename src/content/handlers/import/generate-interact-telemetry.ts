@@ -16,6 +16,7 @@ export class GenerateInteractTelemetry {
         telemetryInteractRequest.id = 'ImportContent';
         telemetryInteractRequest.env = 'sdk';
         telemetryInteractRequest.objType = 'Content';
+        telemetryInteractRequest.correlationData = importContext.correlationData;
         response.body = importContext;
         return this.telemetryService.interact(telemetryInteractRequest).map(() => {
             return response;

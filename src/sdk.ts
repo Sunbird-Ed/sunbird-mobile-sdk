@@ -256,8 +256,7 @@ export class SunbirdSdk {
             this._systemSettingsService
         );
 
-        this._profileService = new ProfileServiceImpl(
-            sdkConfig.profileServiceConfig,
+        this._profileService = new ProfileServiceImpl(this.sdkConfig,
             this._dbService,
             this._apiService,
             new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
