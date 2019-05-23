@@ -25,8 +25,7 @@ export class UpdateEnrolledCoursesHandler {
                         } else {
                             courses = response['courses'];
                         }
-                        let newCourses: Course[] = [];
-                        newCourses = newCourses.concat(courses);
+                        const newCourses: Course[] = [...courses];
                         courses.forEach((course: Course) => {
                             if (course.courseId === request.courseIds[0]) {
                                 const updateCourse = course;
@@ -41,12 +40,11 @@ export class UpdateEnrolledCoursesHandler {
                                         updateCourse.contentsPlayedOffline = ArrayUtil.deDupe(playedOffLine);
                                     }
                                 });
-                                // remove old course
-                                newCourses = newCourses.filter((el: Course) => {
-                                    return el.courseId !== course.courseId || el.batchId !== course.batchId;
+
+                                const toUpdateIndex = newCourses.findIndex((el: Course) => {
+                                    return el.contentId === course.contentId || el.batchId === course.batchId;
                                 });
-                                // add new course
-                                newCourses.push(updateCourse);
+                                newCourses.splice(toUpdateIndex, 1, updateCourse);
                             }
                         });
 

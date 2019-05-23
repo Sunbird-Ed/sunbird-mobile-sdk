@@ -43,8 +43,7 @@ export class OfflineContentStateHandler {
                         courses = response['courses'];
                     }
                     if (courses && courses.length) {
-                        let newCourses: Course[] = [];
-                        newCourses = newCourses.concat(courses);
+                        const newCourses: Course[] = [...courses];
                         courses.forEach((course: Course) => {
                             if (course.courseId === updateContentStateRequest.courseId &&
                                 course.batchId === updateContentStateRequest.batchId) {
@@ -65,12 +64,10 @@ export class OfflineContentStateHandler {
                                     updatedCourse.contentsPlayedOffline = playedOffline;
                                     updatedCourse.progress = course.progress;
 
-                                    // remove old course
-                                    newCourses = newCourses.filter((el: Course) => {
-                                        return el.contentId !== course.contentId || el.batchId !== course.batchId;
+                                    const toUpdateIndex = newCourses.findIndex((el: Course) => {
+                                        return el.contentId === course.contentId || el.batchId === course.batchId;
                                     });
-                                    // add new course
-                                    newCourses.push(updatedCourse);
+                                    newCourses.splice(toUpdateIndex, 1, updatedCourse);
                                 }
 
                             }
