@@ -40,6 +40,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             subType: InteractSubType.CONTENT_DOWNLOAD_INITIATE,
             env: 'sdk',
             pageId: 'ContentDetail',
+            id: 'ContentDetail',
             objId: downloadRequest.identifier,
             objType: ObjectType.CONTENT,
             correlationData: downloadRequest['correlationData'] || []
@@ -52,6 +53,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             subType: InteractSubType.CONTENT_DOWNLOAD_SUCCESS,
             env: 'sdk',
             pageId: 'ContentDetail',
+            id: 'ContentDetail',
             objId: downloadRequest.identifier,
             objType: ObjectType.CONTENT,
             correlationData: downloadRequest['correlationData'] || []
@@ -64,6 +66,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             subType: InteractSubType.CONTENT_DOWNLOAD_CANCEL,
             env: 'sdk',
             pageId: 'ContentDetail',
+            id: 'ContentDetail',
             objId: downloadRequest.identifier,
             objType: ObjectType.CONTENT,
             correlationData: downloadRequest['correlationData'] || []
