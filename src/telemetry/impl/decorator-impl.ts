@@ -38,6 +38,10 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         if (!actor.id) {
             actor.id = uid;
         }
+
+        if (!actor.type) {
+            actor.type = Actor.TYPE_USER;
+        }
     }
 
     private patchContext(event: Telemetry, sid, channelId) {
