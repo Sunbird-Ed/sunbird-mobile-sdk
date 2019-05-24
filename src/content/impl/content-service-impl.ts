@@ -572,9 +572,18 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             destinationFolder: request.destinationFolder!,
             correlationData: request.correlationData!
         };
-        return this.importEcar(importEcarRequest).mapTo(undefined).catch(() => {
-            return Observable.of(undefined);
-        });
+        return this.importEcar(importEcarRequest)
+            .mergeMap(() =>
+                // TODO
+                // @ts-ignore
+                this.downloadService.cancel({identifier: request.identifier!}, false)
+            )
+            .catch(() =>
+                // TODO
+                // @ts-ignore
+                this.downloadService.cancel({identifier: request.identifier!}, false)
+            )
+            .mapTo(undefined);
     }
 
     private searchContentAndGroupByPageSection(
