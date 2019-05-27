@@ -261,7 +261,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }).then((exportResponse: Response) => {
                     return new CreateContentExportManifest(this.dbService, exportHandler).execute(exportResponse.body);
                 }).then((exportResponse: Response) => {
-                    return new WriteManifest(this.fileService).execute(exportResponse.body);
+                    return new WriteManifest(this.fileService, this.deviceInfo).execute(exportResponse.body);
                 }).then((exportResponse: Response) => {
                     return new CompressContent(this.zipService, this.fileService).execute(exportResponse.body);
                 }).then((exportResponse: Response) => {
