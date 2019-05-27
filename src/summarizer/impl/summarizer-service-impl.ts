@@ -183,17 +183,14 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
     deletePreviousAssessmentDetails(uid: string, contentId: string): Observable<undefined> {
         return this.dbService.read({
             table: LearnerSummaryEntry.TABLE_NAME,
-            selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} = ?
-            AND ${LearnerSummaryEntry.COLUMN_NAME_UID} = ?
-            AND ${LearnerSummaryEntry.COLUMN_NAME_HIERARCHY_DATA} = ?`,
-            selectionArgs: [uid, contentId, '']
+            selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} = ? AND ${LearnerSummaryEntry.COLUMN_NAME_UID} = ?`,
+            selectionArgs: [contentId, uid]
         }).mergeMap((summariesinDb: LearnerSummaryEntry.SchemaMap[]) => {
             if (summariesinDb && summariesinDb.length) {
                 return this.dbService.delete({
                     table: LearnerSummaryEntry.TABLE_NAME,
-                    selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} =?
-                        AND ${LearnerSummaryEntry.COLUMN_NAME_UID} = ?`,
-                    selectionArgs: [uid, contentId]
+                    selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} = ? AND ${LearnerSummaryEntry.COLUMN_NAME_UID} = ?`,
+                    selectionArgs: [contentId, uid]
                 });
             } else {
                 return Observable.of(undefined);
@@ -201,17 +198,15 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
         }).mergeMap(() => {
             return this.dbService.read({
                 table: LearnerAssessmentsEntry.TABLE_NAME,
-                selection: `${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} =?
-                            AND ${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ?`,
-                selectionArgs: [uid, contentId]
+                selection: `${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = ? AND ${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ?`,
+                selectionArgs: [contentId, uid]
             });
         }).mergeMap((assesmentsInDb: LearnerAssessmentsEntry.SchemaMap[]) => {
             if (assesmentsInDb && assesmentsInDb.length) {
                 return this.dbService.delete({
-                    table: LearnerSummaryEntry.TABLE_NAME,
-                    selection: `${LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID} =?
-                        AND ${LearnerSummaryEntry.COLUMN_NAME_UID} = ?`,
-                    selectionArgs: [uid, contentId]
+                    table: LearnerAssessmentsEntry.TABLE_NAME,
+                    selection: `${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = ? AND ${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ?`,
+                    selectionArgs: [contentId, uid]
                 });
             } else {
                 return Observable.of(undefined);
