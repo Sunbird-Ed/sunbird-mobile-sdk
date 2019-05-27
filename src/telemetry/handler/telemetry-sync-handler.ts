@@ -142,6 +142,8 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
                             type: InteractType.OTHER,
                             subType: InteractSubType.DEVICE_TIME_OFFSET_FOUND,
                             env: 'sdk',
+                            pageId: 'sdk',
+                            id: 'sdk',
                             valueMap: {
                                 deviceTime: now,
                                 offsetTime: allowedOffset

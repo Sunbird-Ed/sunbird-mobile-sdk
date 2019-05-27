@@ -105,6 +105,7 @@ export class TelemetryShareRequest {
     type: string;
     items: Array<Item> = [];
     env: string;
+    correlationData?: Array<CorrelationData>;
 
 }
 

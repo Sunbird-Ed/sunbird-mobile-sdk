@@ -261,7 +261,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }).then((exportResponse: Response) => {
                     return new CreateContentExportManifest(this.dbService, exportHandler).execute(exportResponse.body);
                 }).then((exportResponse: Response) => {
-                    return new WriteManifest(this.fileService).execute(exportResponse.body);
+                    return new WriteManifest(this.fileService, this.deviceInfo).execute(exportResponse.body);
                 }).then((exportResponse: Response) => {
                     return new CompressContent(this.zipService, this.fileService).execute(exportResponse.body);
                 }).then((exportResponse: Response) => {
@@ -360,7 +360,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 destinationFolder: ecarImportRequest.destinationFolder,
                 skippedItemsIdentifier: [],
                 items: [],
-                contentImportResponseList: []
+                contentImportResponseList: [],
+                correlationData: ecarImportRequest.correlationData || []
             };
             return new GenerateInteractTelemetry(this.telemetryService).execute(importContentContext, 'ContentImport-Initiated')
                 .then(() => {
@@ -571,9 +572,18 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             destinationFolder: request.destinationFolder!,
             correlationData: request.correlationData!
         };
-        return this.importEcar(importEcarRequest).mapTo(undefined).catch(() => {
-            return Observable.of(undefined);
-        });
+        return this.importEcar(importEcarRequest)
+            .mergeMap(() =>
+                // TODO
+                // @ts-ignore
+                this.downloadService.cancel({identifier: request.identifier!}, false)
+            )
+            .catch(() =>
+                // TODO
+                // @ts-ignore
+                this.downloadService.cancel({identifier: request.identifier!}, false)
+            )
+            .mapTo(undefined);
     }
 
     private searchContentAndGroupByPageSection(

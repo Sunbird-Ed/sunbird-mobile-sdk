@@ -27,7 +27,8 @@ export class GenerateImportShareTelemetry {
             dir: ShareDirection.IN,
             type: ShareType.FILE.valueOf(),
             items: items,
-            env: 'sdk'
+            env: 'sdk',
+            correlationData: importContentContext.correlationData
         };
         return this.telemetryService.share(req).toPromise().then(() => {
             response.body = importContentContext;

@@ -163,7 +163,6 @@ export class SearchContentHandler {
         }
     }
 
-
     getSearchRequest(criteria: ContentSearchCriteria): SearchFilter {
         return {
             compatibilityLevel: this.getCompatibilityLevelFilter(),
@@ -199,7 +198,6 @@ export class SearchContentHandler {
         return {'min': 1, 'max': this.appConfig.maxCompatibilityLevel};
     }
 
-
     createFilterCriteria(previouscriteria: ContentSearchCriteria, facets: ContentSearchFilter[],
                          appliedFilterMap: SearchFilter): ContentSearchCriteria {
         const facetFilters: ContentSearchFilter[] = [];
@@ -208,6 +206,7 @@ export class SearchContentHandler {
             limit: previouscriteria.limit,
             offset: previouscriteria.offset,
             facets: previouscriteria.facets,
+            contentTypes: previouscriteria.contentTypes,
             sortCriteria: previouscriteria.sortCriteria && previouscriteria.sortCriteria.length
                 ? previouscriteria.sortCriteria : [],
             mode: previouscriteria.mode === 'soft' ? 'soft' : 'hard',
@@ -222,7 +221,12 @@ export class SearchContentHandler {
             const facetValues: FilterValue[] = facet.values;
             const values = this.getSortedFilterValuesWithAppliedFilters(facetValues, appliedFilter);
             if (facet.name) {
-                facetFilters.push(facet);
+                const filter: ContentSearchFilter = {
+                    name: facet.name,
+                    values: values
+                };
+
+                facetFilters.push(filter);
             }
             delete appliedFilterMap[facet.name];
         });
@@ -236,7 +240,7 @@ export class SearchContentHandler {
             let applied = false;
             if (appliedFilters) {
                 appliedFilters.forEach((appliedFilter) => {
-                    if (facetValue.name === appliedFilter) {
+                    if (appliedFilter && facetValue.name && facetValue.name === appliedFilter.toLowerCase()) {
                         applied = true;
                     }
                 });

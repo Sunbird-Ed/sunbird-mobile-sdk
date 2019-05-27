@@ -1,7 +1,6 @@
-import { DownloadService } from '../def/download-service';
+import { DownloadCancelRequest, DownloadRequest, DownloadService } from '..';
 import { Observable } from 'rxjs';
 import { SdkServiceOnInitDelegate } from '../../../sdk-service-on-init-delegate';
-import { DownloadCancelRequest, DownloadRequest } from '../def/requests';
 import { EventsBusService } from '../../../events-bus';
 import { SharedPreferences } from '../../shared-preferences';
 import { DownloadCompleteDelegate } from '../def/download-complete-delegate';

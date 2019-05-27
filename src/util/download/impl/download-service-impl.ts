@@ -1,9 +1,6 @@
-import {DownloadService} from '../def/download-service';
+import {DownloadCancelRequest, DownloadEventType, DownloadProgress, DownloadRequest, DownloadService, DownloadStatus} from '..';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {DownloadEventType, DownloadProgress} from '../def/download-event';
 import {SdkServiceOnInitDelegate} from '../../../sdk-service-on-init-delegate';
-import {DownloadCancelRequest, DownloadRequest} from '../def/requests';
-import {DownloadStatus} from '../def/download-status';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
 import {SharedPreferences} from '../../shared-preferences';
 import * as Collections from 'typescript-collections';
@@ -40,6 +37,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             subType: InteractSubType.CONTENT_DOWNLOAD_INITIATE,
             env: 'sdk',
             pageId: 'ContentDetail',
+            id: 'ContentDetail',
             objId: downloadRequest.identifier,
             objType: ObjectType.CONTENT,
             correlationData: downloadRequest['correlationData'] || []
@@ -52,6 +50,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             subType: InteractSubType.CONTENT_DOWNLOAD_SUCCESS,
             env: 'sdk',
             pageId: 'ContentDetail',
+            id: 'ContentDetail',
             objId: downloadRequest.identifier,
             objType: ObjectType.CONTENT,
             correlationData: downloadRequest['correlationData'] || []
@@ -64,6 +63,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             subType: InteractSubType.CONTENT_DOWNLOAD_CANCEL,
             env: 'sdk',
             pageId: 'ContentDetail',
+            id: 'ContentDetail',
             objId: downloadRequest.identifier,
             objType: ObjectType.CONTENT,
             correlationData: downloadRequest['correlationData'] || []
@@ -71,7 +71,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     }
 
     onInit(): Observable<undefined> {
-        return this.listenForDownloadProgressChanges();
+        return this.switchToNextDownloadRequest()
+            .mergeMap(() => {
+                return this.listenForDownloadProgressChanges();
+            });
     }
 
     download(downloadRequests: DownloadRequest[]): Observable<undefined> {
@@ -230,11 +233,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         () => !!this.downloadCompleteDelegate,
                         Observable.defer(async () => {
                             await DownloadServiceImpl.generateDownloadCompleteTelemetry(currentDownloadRequest!);
-                            await this.downloadCompleteDelegate!.onDownloadCompletion(currentDownloadRequest!).toPromise();
+                            this.downloadCompleteDelegate!.onDownloadCompletion(currentDownloadRequest!).toPromise();
                         }),
                         Observable.defer(() => Observable.of(undefined))
-                    ).mergeMap(() => this.cancel({identifier: currentDownloadRequest!.identifier}, false))
-                        .catch(() => this.cancel({identifier: currentDownloadRequest!.identifier}, false));
+                    ).mapTo(undefined);
                 }
 
                 return Observable.of(undefined);
@@ -264,6 +266,9 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         }
                     } as DownloadProgress);
                     observer.complete();
+
+                    this.cancel({identifier: downloadRequest.identifier}).toPromise();
+
                     return;
                 }
 

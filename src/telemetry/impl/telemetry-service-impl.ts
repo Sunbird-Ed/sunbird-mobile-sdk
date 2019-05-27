@@ -114,8 +114,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         return this.decorateAndPersist(log);
     }
 
-    share({dir, type, items}: TelemetryShareRequest): Observable<boolean> {
-        const share = new SunbirdTelemetry.Share(dir, type, []);
+    share({dir, type, items, correlationData}: TelemetryShareRequest): Observable<boolean> {
+        const share = new SunbirdTelemetry.Share(dir, type, [], correlationData);
         items.forEach((item) => {
             share.addItem(item.type, item.origin, item.identifier, item.pkgVersion, item.transferCount, item.size);
         });
@@ -251,7 +251,8 @@ export class TelemetryServiceImpl implements TelemetryService {
                     const insertQuery: InsertQuery = {
                         table: TelemetryEntry.TABLE_NAME,
                         modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!.uid,
-                            profileSession!.sid, groupSession && groupSession.gid, Number(offset)), 1)
+                            profileSession!.sid, groupSession && groupSession.gid, Number(offset),
+                            this.frameworkService.activeChannelId), 1)
                     };
                     return this.dbService.insert(insertQuery)
                         .do(() => this.eventsBusService.emit({

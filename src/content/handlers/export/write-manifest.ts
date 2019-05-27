@@ -2,19 +2,22 @@ import {FileService} from '../../../util/file/def/file-service';
 import {Response} from '../../../api';
 import {ContentErrorCode} from '../../util/content-constants';
 import {ExportContentContext} from '../..';
+import {DeviceInfo} from '../../../util/device';
 
 export class WriteManifest {
 
     private static readonly MANIFEST_FILE_NAME = 'manifest.json';
 
-    constructor(private fileService: FileService) {
+    constructor(private fileService: FileService,
+                private deviceInfo: DeviceInfo) {
 
     }
 
     execute(exportContentContext: ExportContentContext): Promise<Response> {
         const response: Response = new Response();
-        return this.fileService.getFreeDiskSpace().then((deviceUsableSpace) => {
-            if (deviceUsableSpace > 0 && deviceUsableSpace < (1024 * 1024)) {
+        return this.deviceInfo.getAvailableInternalMemorySize().toPromise().then((deviceUsableSpace) => {
+            const usableSpace = Number(deviceUsableSpace);
+            if (usableSpace > 0 && usableSpace < (1024 * 1024)) {
                 response.errorMesg = ContentErrorCode.EXPORT_FAILED_MEMORY_NOT_SUFFICIENT;
                 throw response;
             }
