@@ -433,13 +433,15 @@ export namespace SunbirdTelemetry {
                     updatedProperties: string[] | undefined,
                     objId: string = '',
                     objType: string = '',
-                    objVer: string = '') {
+                    objVer: string = '',
+                    correlationData: Array<CorrelationData> = []) {
             super(Audit.EID);
 
             this.edata = {
                 ...{state: currentState},
                 ...(updatedProperties ? {props: updatedProperties} : {}),
             };
+            this.context.cdata = correlationData;
             this.context.env = env;
             this.object = new TelemetryObject(objId, objType, objVer);
             this.object.rollup = {};
