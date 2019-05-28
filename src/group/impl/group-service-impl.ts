@@ -247,9 +247,13 @@ export class GroupServiceImpl implements GroupService {
                 selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ?`,
                 selectionArgs: [profileToGroupRequest.groupId]
             }))
-            .switchMap(() => {
-                return Observable.from(profileToGroupRequest.uidList)
-                    .mergeMap((uid: string) => {
+            .mergeMap(() => {
+                if (!profileToGroupRequest.uidList) {
+                    return Observable.of(undefined);
+                }
+
+                return Observable.zip(
+                    ...profileToGroupRequest.uidList.map((uid) => {
                         return this.dbService.insert({
                             table: GroupProfileEntry.TABLE_NAME,
                             modelJson: {
@@ -257,7 +261,8 @@ export class GroupServiceImpl implements GroupService {
                                 [GroupProfileEntry.COLUMN_NAME_UID]: uid
                             }
                         });
-                    });
+                    })
+                ).mapTo(undefined);
             })
             .do(() => {
                 this.dbService.endTransaction(true);

@@ -172,7 +172,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         entries.forEach((entry: ContentMarkerEntry.SchemaMap) => {
                             const content: Content = {
                                 identifier: entry[ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER],
-                                contentData: JSON.parse(entry[ContentMarkerEntry.COLUMN_NAME_DATA]),
+                                contentData: entry[ContentMarkerEntry.COLUMN_NAME_DATA] &&
+                                    JSON.parse(entry[ContentMarkerEntry.COLUMN_NAME_DATA]),
                                 isUpdateAvailable: false,
                                 mimeType: '',
                                 basePath: '',
@@ -261,7 +262,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }).then((exportResponse: Response) => {
                     return new CreateContentExportManifest(this.dbService, exportHandler).execute(exportResponse.body);
                 }).then((exportResponse: Response) => {
-                    return new WriteManifest(this.fileService).execute(exportResponse.body);
+                    return new WriteManifest(this.fileService, this.deviceInfo).execute(exportResponse.body);
                 }).then((exportResponse: Response) => {
                     return new CompressContent(this.zipService, this.fileService).execute(exportResponse.body);
                 }).then((exportResponse: Response) => {
