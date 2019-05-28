@@ -168,6 +168,6 @@ export declare namespace SunbirdTelemetry {
     }
     class Audit extends Telemetry {
         private static readonly EID;
-        constructor(env: string, actor: Actor, currentState: AuditState, updatedProperties: string[] | undefined, objId?: string, objType?: string, objVer?: string);
+        constructor(env: string, actor: Actor, currentState: AuditState, updatedProperties: string[] | undefined, objId?: string, objType?: string, objVer?: string, correlationData?: Array<CorrelationData>);
     }
 }
