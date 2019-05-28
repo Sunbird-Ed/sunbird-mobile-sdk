@@ -248,7 +248,7 @@ export class GroupServiceImpl implements GroupService {
                 selectionArgs: [profileToGroupRequest.groupId]
             }))
             .mergeMap(() => {
-                if (!profileToGroupRequest.uidList) {
+                if (!profileToGroupRequest.uidList.length) {
                     return Observable.of(undefined);
                 }
 
