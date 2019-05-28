@@ -247,27 +247,22 @@ export class GroupServiceImpl implements GroupService {
                 selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ?`,
                 selectionArgs: [profileToGroupRequest.groupId]
             }))
-            .switchMap(() => {
-                if (profileToGroupRequest.uidList.length) {
-                    return Observable.from(profileToGroupRequest.uidList)
-                        .mergeMap((uid: string) => {
-                            return this.dbService.insert({
-                                table: GroupProfileEntry.TABLE_NAME,
-                                modelJson: {
-                                    [GroupProfileEntry.COLUMN_NAME_GID]: profileToGroupRequest.groupId,
-                                    [GroupProfileEntry.COLUMN_NAME_UID]: uid
-                                }
-                            });
-                        });
-                } else {
-                    return this.dbService.insert({
-                        table: GroupProfileEntry.TABLE_NAME,
-                        modelJson: {
-                            [GroupProfileEntry.COLUMN_NAME_GID]: profileToGroupRequest.groupId,
-                            [GroupProfileEntry.COLUMN_NAME_UID]: ''
-                        }
-                    });
+            .mergeMap(() => {
+                if (!profileToGroupRequest.uidList) {
+                    return Observable.of(undefined);
                 }
+
+                return Observable.zip(
+                    ...profileToGroupRequest.uidList.map((uid) => {
+                        return this.dbService.insert({
+                            table: GroupProfileEntry.TABLE_NAME,
+                            modelJson: {
+                                [GroupProfileEntry.COLUMN_NAME_GID]: profileToGroupRequest.groupId,
+                                [GroupProfileEntry.COLUMN_NAME_UID]: uid
+                            }
+                        });
+                    })
+                ).mapTo(undefined);
             })
             .do(() => {
                 this.dbService.endTransaction(true);
