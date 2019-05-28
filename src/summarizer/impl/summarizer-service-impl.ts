@@ -95,8 +95,8 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
             return this.contenService.getContents(contentRequest).map((results: Content[]) => {
                 results.forEach(element => {
                     const cacheContent = new ContentCache();
-                    cacheContent.name = element.contentData.name;
-                    cacheContent.totalScore = element.contentData.totalScore;
+                    cacheContent.name = element.contentData && element.contentData.name;
+                    cacheContent.totalScore = element.contentData && element.contentData.totalScore;
                     cacheContent.lastUsedTime = element.lastUsedTime;
                     cacheContent.identifier = element.identifier;
                     this.contentMap.set(element.identifier, cacheContent);
