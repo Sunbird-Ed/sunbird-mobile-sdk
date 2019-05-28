@@ -248,16 +248,26 @@ export class GroupServiceImpl implements GroupService {
                 selectionArgs: [profileToGroupRequest.groupId]
             }))
             .switchMap(() => {
-                return Observable.from(profileToGroupRequest.uidList)
-                    .mergeMap((uid: string) => {
-                        return this.dbService.insert({
-                            table: GroupProfileEntry.TABLE_NAME,
-                            modelJson: {
-                                [GroupProfileEntry.COLUMN_NAME_GID]: profileToGroupRequest.groupId,
-                                [GroupProfileEntry.COLUMN_NAME_UID]: uid
-                            }
+                if (profileToGroupRequest.uidList.length) {
+                    return Observable.from(profileToGroupRequest.uidList)
+                        .mergeMap((uid: string) => {
+                            return this.dbService.insert({
+                                table: GroupProfileEntry.TABLE_NAME,
+                                modelJson: {
+                                    [GroupProfileEntry.COLUMN_NAME_GID]: profileToGroupRequest.groupId,
+                                    [GroupProfileEntry.COLUMN_NAME_UID]: uid
+                                }
+                            });
                         });
+                } else {
+                    return this.dbService.insert({
+                        table: GroupProfileEntry.TABLE_NAME,
+                        modelJson: {
+                            [GroupProfileEntry.COLUMN_NAME_GID]: profileToGroupRequest.groupId,
+                            [GroupProfileEntry.COLUMN_NAME_UID]: ''
+                        }
                     });
+                }
             })
             .do(() => {
                 this.dbService.endTransaction(true);
