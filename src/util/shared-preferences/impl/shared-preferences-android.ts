@@ -1,6 +1,8 @@
 import {SharedPreferences} from '..';
 import {Observable} from 'rxjs';
+import {injectable} from 'inversify';
 
+@injectable()
 export class SharedPreferencesAndroid implements SharedPreferences {
 
     private static readonly sharedPreferncesName = 'org.ekstep.genieservices.preference_file';

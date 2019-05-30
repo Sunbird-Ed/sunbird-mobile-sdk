@@ -18,16 +18,17 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {GroupKeys} from '../../preference-keys';
 import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} from '../../telemetry';
 import {ObjectUtil} from '../../util/object-util';
+import { injectable, inject } from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
 
-
+@injectable()
 export class GroupServiceImpl implements GroupService {
     private static readonly KEY_GROUP_SESSION = GroupKeys.KEY_GROUP_SESSION;
     private telemetryService: TelemetryService;
 
-    constructor(private dbService: DbService,
-                private profileService: ProfileService,
-                private keyValueStore: KeyValueStore,
-                private sharedPreferences: SharedPreferences) {
+    constructor(@inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+                @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
+                @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
     }
 
     public registerTelemetryService(telemetryService: TelemetryService) {

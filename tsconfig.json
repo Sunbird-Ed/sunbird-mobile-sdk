@@ -16,9 +16,11 @@
     "preserveSymlinks": true,
     "lib": [
       "dom",
+      "es6",
       "es2015"
     ],
     "types": [
+      "reflect-metadata",
       "jest",
       "websql"
     ],

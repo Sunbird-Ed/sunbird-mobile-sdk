@@ -28,6 +28,6 @@ export const sessionAuthenticatorMock = createSpyObj<SessionAuthenticator>([
 
 ]) as any as SessionAuthenticator;
 
-export const cachedItemStoreMock = createSpyObj<CachedItemStore<ServerProfile>>([
+export const cachedItemStoreMock = createSpyObj<CachedItemStore>([
   'getCached'
 ]);

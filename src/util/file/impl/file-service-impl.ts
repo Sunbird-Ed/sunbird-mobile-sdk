@@ -1,3 +1,4 @@
+import {injectable} from 'inversify';
 import {FileService} from '../def/file-service';
 import {Observable} from 'rxjs';
 import {
@@ -57,6 +58,7 @@ declare var file: {
 
 };
 
+@injectable()
 export class FileServiceImpl implements FileService {
 
     private fileSystem: FileSystem;

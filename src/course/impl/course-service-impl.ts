@@ -33,21 +33,28 @@ import {OfflineContentStateHandler} from '../handlers/offline-content-state-hand
 import {CourseUtil} from '../course-util';
 import {ContentStatesSyncHandler} from '../handlers/content-states-sync-handler';
 import {ProcessingError} from '../../auth/errors/processing-error';
+import { injectable, inject } from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
+import { SdkConfig } from '../../sdk-config';
 
+@injectable()
 export class CourseServiceImpl implements CourseService {
 
     public static readonly GET_CONTENT_STATE_KEY_PREFIX = 'getContentState';
     public static readonly GET_ENROLLED_COURSE_KEY_PREFIX = 'enrolledCourses';
     public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
     public static readonly LAST_READ_CONTENTID_PREFIX = 'lastReadContentId';
+    private courseServiceConfig: CourseServiceConfig;
 
-    constructor(private courseServiceConfig: CourseServiceConfig,
-                private apiService: ApiService,
-                private profileService: ProfileService,
-                private keyValueStore: KeyValueStore,
-                private dbService: DbService,
-                private sharedPreferences: SharedPreferences,
-                private contentService: ContentService) {
+    constructor(
+        @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+        @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
+        @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
+        @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
+        @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
+        ) {
+        this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
     }
 
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch> {

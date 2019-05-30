@@ -11,14 +11,17 @@ import {FrameworkService} from '../../framework';
 import {ContentUtil} from '../../content/util/content-util';
 import {AppInfo} from '../../util/app/def/app-info';
 import {CachedItemRequestSourceFrom} from '../../key-value-store';
+import { inject, injectable } from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
 
+@injectable()
 export class PlayerServiceImpl implements PlayerService {
-    constructor(private profileService: ProfileService,
-                private groupService: GroupService,
-                private config: SdkConfig,
-                private frameworkService: FrameworkService,
-                private deviceInfo: DeviceInfo,
-                private appInfo: AppInfo) {
+    constructor(@inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
+                @inject(InjectionTokens.GROUP_SERVICE) private groupService: GroupService,
+                @inject(InjectionTokens.SDK_CONFIG) private config: SdkConfig,
+                @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
+                @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
+                @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo) {
     }
 
     getPlayerConfig(content: Content, extraInfo: { [key: string]: any }): Observable<PlayerInput> {
