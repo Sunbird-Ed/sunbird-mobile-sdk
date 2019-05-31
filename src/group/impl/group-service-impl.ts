@@ -12,27 +12,24 @@ import {
 } from '..';
 import {GroupMapper} from '../util/group-mapper';
 import {UniqueId} from '../../db/util/unique-id';
-import {KeyValueStore} from '../../key-value-store';
 import {ProfileService, ProfileSession} from '../../profile';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {GroupKeys} from '../../preference-keys';
 import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} from '../../telemetry';
 import {ObjectUtil} from '../../util/object-util';
-import { injectable, inject } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
 
 @injectable()
 export class GroupServiceImpl implements GroupService {
     private static readonly KEY_GROUP_SESSION = GroupKeys.KEY_GROUP_SESSION;
+
+    @inject(InjectionTokens.TELEMETRY_SERVICE)
     private telemetryService: TelemetryService;
 
     constructor(@inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
                 @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
-    }
-
-    public registerTelemetryService(telemetryService: TelemetryService) {
-        this.telemetryService = telemetryService;
     }
 
     createGroup(group: Group): Observable<Group> {

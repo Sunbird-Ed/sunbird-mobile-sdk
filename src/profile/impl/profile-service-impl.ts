@@ -72,12 +72,14 @@ import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} 
 import {ObjectUtil} from '../../util/object-util';
 import {TransportProfiles} from '../handler/import/transport-profiles';
 import {SdkConfig} from '../../sdk-config';
-import { injectable, inject } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
+
+    @inject(InjectionTokens.TELEMETRY_SERVICE)
     private telemetryService: TelemetryService;
 
     constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -89,10 +91,6 @@ export class ProfileServiceImpl implements ProfileService {
                 @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
                 @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
                 @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo) {
-    }
-
-    public registerTelemetryService(telemetryService: TelemetryService) {
-        this.telemetryService = telemetryService;
     }
 
     preInit(): Observable<undefined> {

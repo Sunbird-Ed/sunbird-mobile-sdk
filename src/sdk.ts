@@ -2,7 +2,7 @@
 import {ApiService, ApiServiceImpl} from './api';
 import {DbService, Migration} from './db';
 import {AuthService} from './auth';
-import {TelemetryService, TelemetryDecorator} from './telemetry';
+import {TelemetryDecorator, TelemetryService} from './telemetry';
 import {SharedPreferences} from './util/shared-preferences';
 // config
 import {SdkConfig} from './sdk-config';
@@ -11,18 +11,18 @@ import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/impl/auth-service-impl';
-import {ContentFeedbackService, ContentSearchResult, ContentService, ContentServiceConfig} from './content';
+import {ContentFeedbackService, ContentService, ContentServiceConfig} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
-import {Channel, Framework, FrameworkService, FrameworkServiceImpl, FrameworkUtilService, FrameworkUtilServiceImpl} from './framework';
+import {FrameworkService, FrameworkServiceImpl, FrameworkUtilService, FrameworkUtilServiceImpl} from './framework';
 import {ContentServiceImpl} from './content/impl/content-service-impl';
-import {ProfileService, ProfileServiceImpl, ServerProfile} from './profile';
-import {KeyValueStore, CachedItemStore} from './key-value-store';
+import {ProfileService, ProfileServiceImpl} from './profile';
+import {CachedItemStore, KeyValueStore} from './key-value-store';
 import {KeyValueStoreImpl} from './key-value-store/impl/key-value-store-impl';
 import {FormServiceImpl} from './form/impl/form-service-impl';
 import {FileService} from './util/file/def/file-service';
 import {CachedItemStoreImpl} from './key-value-store/impl/cached-item-store-impl';
-import {PageAssemble, PageAssembleService, PageServiceConfig} from './page';
+import {PageAssembleService, PageServiceConfig} from './page';
 import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
 import {SharedPreferencesLocalStorage} from './util/shared-preferences/impl/shared-preferences-local-storage';
 import {SharedPreferencesAndroid} from './util/shared-preferences/impl/shared-preferences-android';
@@ -35,7 +35,7 @@ import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
 import {GroupService} from './group';
 import {GroupServiceImpl} from './group/impl/group-service-impl';
 import {DebugPromptFileService} from './util/file/impl/debug-prompt-file-service';
-import {SystemSettings, SystemSettingsService, SystemSettingsServiceImpl} from './system-settings';
+import {SystemSettingsService, SystemSettingsServiceImpl} from './system-settings';
 import {ZipService} from './util/zip/def/zip-service';
 import {DeviceInfo} from './util/device';
 import {ZipServiceImpl} from './util/zip/impl/zip-service-impl';
@@ -55,7 +55,6 @@ import {OfflineSearchTextbookMigration} from './db/migrations/offline-search-tex
 import {ApiAuthenticator} from './util/authenticators/impl/api-authenticator';
 import {SessionAuthenticator} from './util/authenticators/impl/session-authenticator';
 import {Container} from 'inversify';
-import {EventsBusConfig} from './events-bus/config/events-bus-config';
 import {InjectionTokens} from './injection-tokens';
 
 export class SunbirdSdk {
@@ -189,9 +188,9 @@ export class SunbirdSdk {
         }
 
         if (sdkConfig.fileConfig.debugMode) {
-            this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(DebugPromptFileService);            
+            this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(DebugPromptFileService);
         } else {
-            this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(FileServiceImpl);            
+            this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(FileServiceImpl);
         }
 
         this._container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(sdkConfig);
@@ -231,7 +230,7 @@ export class SunbirdSdk {
         this._container.bind<DownloadService>(InjectionTokens.DOWNLOAD_SERVICE).to(DownloadServiceImpl);
 
         this._container.bind<ContentService>(InjectionTokens.CONTENT_SERVICE).to(ContentServiceImpl);
-        
+
         this._container.bind<CourseService>(InjectionTokens.COURSE_SERVICE).to(CourseServiceImpl);
 
         this._container.bind<SummarizerService>(InjectionTokens.SUMMARIZER_SERVICE).to(SummarizerServiceImpl);
