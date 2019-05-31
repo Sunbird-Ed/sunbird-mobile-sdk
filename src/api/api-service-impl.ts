@@ -7,9 +7,10 @@ import {ApiService} from './def/api-service';
 import {DeviceInfo} from '../util/device';
 import {SharedPreferences} from '../util/shared-preferences';
 import {Authenticator} from './def/authenticator';
-import { inject } from 'inversify';
-import { InjectionTokens } from '../injection-tokens';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../injection-tokens';
 
+@injectable()
 export class ApiServiceImpl implements ApiService {
 
     private defaultApiAuthenticators: Authenticator[];
