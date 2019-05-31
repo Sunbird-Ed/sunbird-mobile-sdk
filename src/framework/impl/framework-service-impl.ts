@@ -1,4 +1,4 @@
-import {CachedItemStore, KeyValueStore} from '../../key-value-store';
+import {CachedItemStore} from '../../key-value-store';
 import {Channel, ChannelDetailsRequest, Framework, FrameworkDetailsRequest, FrameworkService, OrganizationSearchCriteria} from '..';
 import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
 import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
@@ -11,8 +11,8 @@ import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error
 import {SystemSettingsService} from '../../system-settings';
 import {SdkConfig} from '../../sdk-config';
 import {FrameworkKeys} from '../../preference-keys';
-import { inject, injectable } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
 
 @injectable()
 export class FrameworkServiceImpl implements FrameworkService {
@@ -23,8 +23,8 @@ export class FrameworkServiceImpl implements FrameworkService {
 
     constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
                 @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
-                @inject(InjectionTokens.API_SERVICE)private apiService: ApiService,
-                @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore,
+                @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
+                @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
                 @inject(InjectionTokens.SYSTEM_SETTINGS_SERVICE) private systemSettingsService: SystemSettingsService) {
     }

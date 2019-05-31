@@ -3,7 +3,6 @@ import {Observable} from 'rxjs';
 import {GetAllGroupRequest} from './get-all-group-request';
 import {ProfilesToGroupRequest} from './profiles-to-group-request';
 import {GroupSession} from './group-session';
-import {TelemetryService} from '../../telemetry';
 
 
 export interface GroupService {
@@ -25,7 +24,4 @@ export interface GroupService {
     addProfilesToGroup(profilesToGroupRequest: ProfilesToGroupRequest): Observable<number>;
 
     removeActiveGroupSession(): Observable<undefined>;
-
-    // @internal
-    registerTelemetryService(telemetryService: TelemetryService): void;
 }
