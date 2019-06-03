@@ -1,4 +1,5 @@
 export const InjectionTokens = {
+    CONTAINER: Symbol.for('CONTAINER'),
     DB_VERSION: Symbol.for('DB_VERSION'),
     DB_MIGRATION_LIST: Symbol.for('DB_MIGRATION_LIST'),
     SDK_CONFIG: Symbol.for('SDK_CONFIG'),
