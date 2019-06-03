@@ -1,4 +1,3 @@
-import {TelemetryService} from '../../telemetry';
 import {Profile, ProfileSource} from './profile';
 import {Observable} from 'rxjs';
 import {TenantInfo} from './tenant-info';
@@ -64,7 +63,4 @@ export interface ProfileService extends SdkServicePreInitDelegate {
     exportProfile(profileExportRequest: ProfileExportRequest): Observable<ProfileExportResponse>;
 
     importProfile(profileImportRequest: ProfileImportRequest): Observable<ProfileImportResponse>;
-
-    // @internal
-    registerTelemetryService(telemetryService: TelemetryService): void;
 }

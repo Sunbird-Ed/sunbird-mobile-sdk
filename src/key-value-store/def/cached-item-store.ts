@@ -1,6 +1,6 @@
 import {Observable} from 'rxjs';
 
-export interface CachedItemStore<T> {
+export interface CachedItemStore {
 
     /**
      *  @param id: identifier of the cached item
@@ -11,7 +11,7 @@ export interface CachedItemStore<T> {
      *  @param timeToLive?: optional timeToLive override in milliseconds
      *  @param emptyCondition?: optional emptyCondition predicate - when true, item won't be cached
      * */
-    getCached(
+    getCached<T>(
         id: string,
         noSqlkey: string,
         timeToLiveKey: string,

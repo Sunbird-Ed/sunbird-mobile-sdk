@@ -2,17 +2,20 @@ import {DeviceInfo, DeviceSpec} from '../def/device-info';
 import * as SHA1 from 'crypto-js/sha1';
 import {SdkConfig} from '../../../sdk-config';
 import {Observable} from 'rxjs';
+import {injectable, inject} from 'inversify';
+import { InjectionTokens } from '../../../injection-tokens';
 
 declare const device: {
     uuid: string;
 };
 
+@injectable()
 export class DeviceInfoImpl implements DeviceInfo {
 
     private readonly deviceId: string;
 
-    constructor(private sdkConfig: SdkConfig) {
-        if (sdkConfig.apiConfig.debugMode) {
+    constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig) {
+        if (this.sdkConfig.apiConfig.debugMode) {
             return this.deviceId = SHA1('4adce7fad56e02b7').toString();
         }
 

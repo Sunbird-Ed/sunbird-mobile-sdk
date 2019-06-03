@@ -13,11 +13,11 @@ export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSett
     constructor(private apiService: ApiService,
                 private systemSettingsConfig: SystemSettingsConfig,
                 private fileservice: FileService,
-                private cachedItemStore: CachedItemStore<SystemSettings>) {
+                private cachedItemStore: CachedItemStore) {
     }
 
     handle(request: GetSystemSettingsRequest): Observable<SystemSettings> {
-        return this.cachedItemStore.getCached(
+        return this.cachedItemStore.getCached<SystemSettings>(
             request.id,
             this.SYSTEM_SETTINGS_LOCAL_KEY,
             'ttl_' + this.SYSTEM_SETTINGS_LOCAL_KEY,

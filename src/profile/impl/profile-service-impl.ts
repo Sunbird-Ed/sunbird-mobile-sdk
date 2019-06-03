@@ -72,24 +72,27 @@ import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} 
 import {ObjectUtil} from '../../util/object-util';
 import {TransportProfiles} from '../handler/import/transport-profiles';
 import {SdkConfig} from '../../sdk-config';
+import {Container, inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
 
+@injectable()
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
-    private telemetryService: TelemetryService;
 
-    constructor(private sdkConfig: SdkConfig,
-                private dbService: DbService,
-                private apiService: ApiService,
-                private cachedItemStore: CachedItemStore<ServerProfile>,
-                private keyValueStore: KeyValueStore,
-                private sharedPreferences: SharedPreferences,
-                private frameworkService: FrameworkService,
-                private fileService: FileService,
-                private deviceInfo: DeviceInfo) {
+    constructor(@inject(InjectionTokens.CONTAINER) private container: Container,
+                @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+                @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+                @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
+                @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
+                @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
+                @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
+                @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
+                @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
+                @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo) {
     }
 
-    public registerTelemetryService(telemetryService: TelemetryService) {
-        this.telemetryService = telemetryService;
+    private get telemetryService(): TelemetryService {
+        return this.container.get<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE);
     }
 
     preInit(): Observable<undefined> {

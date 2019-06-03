@@ -43,21 +43,28 @@ import {TransportProcessedTelemetry} from '../handler/import/transport-processed
 import {UpdateImportedTelemetryMetadata} from '../handler/import/update-imported-telemetry-metadata';
 import {GenerateImportTelemetryShare} from '../handler/import/generate-import-telemetry-share';
 import {FrameworkService} from '../../framework';
+import { injectable, inject } from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
+import { SdkConfig } from '../../sdk-config';
 
+@injectable()
 export class TelemetryServiceImpl implements TelemetryService {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
+    private telemetryConfig: TelemetryConfig;
 
-    constructor(private dbService: DbService,
-                private decorator: TelemetryDecorator,
-                private profileService: ProfileService,
-                private groupService: GroupService,
-                private keyValueStore: KeyValueStore,
-                private apiService: ApiService,
-                private telemetryConfig: TelemetryConfig,
-                private deviceInfo: DeviceInfo,
-                private eventsBusService: EventsBusService,
-                private fileService: FileService,
-                private frameworkService: FrameworkService) {
+    constructor(
+        @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+        @inject(InjectionTokens.TELEMETRY_DECORATOR) private decorator: TelemetryDecorator,
+        @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
+        @inject(InjectionTokens.GROUP_SERVICE) private groupService: GroupService,
+        @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
+        @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
+        @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+        @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
+        @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
+        @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
+        @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService) {
+        this.telemetryConfig = this.sdkConfig.telemetryConfig;
     }
 
     saveTelemetry(request: string): Observable<boolean> {

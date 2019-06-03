@@ -15,7 +15,7 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
     constructor(private apiService: ApiService,
                 private frameworkServiceConfig: FrameworkServiceConfig,
                 private fileservice: FileService,
-                private cachedItemStore: CachedItemStore<Channel>) {
+                private cachedItemStore: CachedItemStore) {
     }
 
     handle(request: ChannelDetailsRequest): Observable<Channel> {

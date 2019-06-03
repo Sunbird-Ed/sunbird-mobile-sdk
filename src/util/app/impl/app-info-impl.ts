@@ -1,11 +1,14 @@
 import {SdkConfig} from '../../../sdk-config';
-import {AppInfo} from '../def/app-info';
+import { AppInfo } from '../def/app-info';
+import { injectable, inject } from 'inversify';
+import { InjectionTokens } from '../../../injection-tokens';
 
+@injectable()
 export class AppInfoImpl implements AppInfo {
 
     private versionName: string;
 
-    constructor(private sdkConfig: SdkConfig) {
+    constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig) {
         if (sdkConfig.apiConfig.debugMode) {
             this.versionName = 'sunbird-debug';
         }

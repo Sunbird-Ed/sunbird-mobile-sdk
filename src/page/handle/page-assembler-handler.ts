@@ -15,7 +15,7 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
 
     constructor(private apiService: ApiService,
         private pageApiServiceConfig: PageServiceConfig,
-        private cachedItemStore: CachedItemStore<PageAssemble>,
+        private cachedItemStore: CachedItemStore,
         private keyValueStore: KeyValueStore,
         private sharedPreferences: SharedPreferences
     ) {

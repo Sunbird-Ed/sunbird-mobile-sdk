@@ -4,17 +4,23 @@ import {EmitRequest} from '../def/emit-request';
 import {RegisterObserverRequest} from '../def/register-observer-request';
 import {EventObserver} from '../def/event-observer';
 import {EventsBusConfig} from '../config/events-bus-config';
+import {injectable, inject} from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
+import { SdkConfig } from '../../sdk-config';
 
 interface EventContainer {
     namespace: string;
     event: EventsBusEvent;
 }
 
+@injectable()
 export class EventsBusServiceImpl implements EventsBusService {
     private eventsBus = new Subject<EventContainer>();
     private eventDelegates: { namespace: EventNamespace, observer: EventObserver<EventsBusEvent> }[] = [];
+    private eventsBusConfig: EventsBusConfig;
 
-    constructor(private eventsBusConfig: EventsBusConfig) {
+    constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig) {
+        this.eventsBusConfig = this.sdkConfig.eventsBusConfig;
     }
 
     onInit(): Observable<undefined> {
