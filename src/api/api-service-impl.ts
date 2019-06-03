@@ -9,6 +9,7 @@ import {SharedPreferences} from '../util/shared-preferences';
 import {Authenticator} from './def/authenticator';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../injection-tokens';
+import {SdkConfig} from '../sdk-config';
 
 @injectable()
 export class ApiServiceImpl implements ApiService {
@@ -17,8 +18,10 @@ export class ApiServiceImpl implements ApiService {
     private defaultSessionAuthenticators: Authenticator[];
     private apiConfig: ApiConfig;
 
-    constructor(@inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
+    constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+                @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
+        this.apiConfig = this.sdkConfig.apiConfig;
     }
 
     public fetch<T = any>(request: Request): Observable<Response<T>> {
