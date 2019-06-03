@@ -29,4 +29,5 @@ export const InjectionTokens = {
     CACHED_ITEM_STORE: Symbol.for('CACHED_ITEM_STORE'),
     KEY_VALUE_STORE: Symbol.for('KEY_VALUE_STORE'),
     TELEMETRY_DECORATOR: Symbol.for('TELEMETRY_DECORATOR'),
+    STORAGE_SERVICE: Symbol.for('STORAGE_SERVICE')
 };

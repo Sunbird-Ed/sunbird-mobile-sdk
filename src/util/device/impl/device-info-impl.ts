@@ -1,8 +1,8 @@
-import {DeviceInfo, DeviceSpec} from '../def/device-info';
+import { DeviceInfo, DeviceSpec } from '../def/device-info';
 import * as SHA1 from 'crypto-js/sha1';
-import {SdkConfig} from '../../../sdk-config';
-import {Observable} from 'rxjs';
-import {injectable, inject} from 'inversify';
+import { SdkConfig } from '../../../sdk-config';
+import { Observable } from 'rxjs';
+import { injectable, inject } from 'inversify';
 import { InjectionTokens } from '../../../injection-tokens';
 
 declare const device: {
@@ -45,4 +45,13 @@ export class DeviceInfoImpl implements DeviceInfo {
         });
     }
 
+    getTotalInternalMemorySize(): Observable<string> {
+        return Observable.of('25');
+    }
+    getAvailableExternalMemorySize(): Observable<string> {
+        return Observable.of('40');
+    }
+    getTotalExternalMemorySize(): Observable<string> {
+        return Observable.of('50');
+    }
 }
