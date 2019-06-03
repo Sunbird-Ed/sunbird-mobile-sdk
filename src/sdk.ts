@@ -119,7 +119,7 @@ export class SunbirdSdk {
     }
 
     get courseService(): CourseService {
-        return this._container.get<CourseService>(InjectionTokens.CONTENT_SERVICE);
+        return this._container.get<CourseService>(InjectionTokens.COURSE_SERVICE);
     }
 
     get formService(): FormService {
