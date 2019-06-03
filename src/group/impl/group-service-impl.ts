@@ -17,19 +17,21 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {GroupKeys} from '../../preference-keys';
 import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} from '../../telemetry';
 import {ObjectUtil} from '../../util/object-util';
-import {inject, injectable} from 'inversify';
+import {Container, inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 
 @injectable()
 export class GroupServiceImpl implements GroupService {
     private static readonly KEY_GROUP_SESSION = GroupKeys.KEY_GROUP_SESSION;
 
-    @inject(InjectionTokens.TELEMETRY_SERVICE)
-    private telemetryService: TelemetryService;
-
-    constructor(@inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+    constructor(@inject(InjectionTokens.CONTAINER) private container: Container,
+                @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
                 @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
+    }
+
+    private get telemetryService(): TelemetryService {
+        return this.container.get<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE);
     }
 
     createGroup(group: Group): Observable<Group> {

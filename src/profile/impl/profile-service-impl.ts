@@ -72,17 +72,15 @@ import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} 
 import {ObjectUtil} from '../../util/object-util';
 import {TransportProfiles} from '../handler/import/transport-profiles';
 import {SdkConfig} from '../../sdk-config';
-import {inject, injectable} from 'inversify';
+import {Container, inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
 
-    @inject(InjectionTokens.TELEMETRY_SERVICE)
-    private telemetryService: TelemetryService;
-
-    constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+    constructor(@inject(InjectionTokens.CONTAINER) private container: Container,
+                @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
                 @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
                 @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
                 @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
@@ -91,6 +89,10 @@ export class ProfileServiceImpl implements ProfileService {
                 @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
                 @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
                 @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo) {
+    }
+
+    private get telemetryService(): TelemetryService {
+        return this.container.get<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE);
     }
 
     preInit(): Observable<undefined> {
