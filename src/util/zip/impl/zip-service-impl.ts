@@ -1,5 +1,7 @@
 import {ZipService} from '../def/zip-service';
+import {injectable} from 'inversify';
 
+@injectable()
 export class ZipServiceImpl implements ZipService {
     unzip(sourceZip: string, option, successCallback?, errorCallback?) {
         JJzip.unzip(sourceZip, option, () => {
