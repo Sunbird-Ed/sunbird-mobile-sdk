@@ -137,7 +137,11 @@ export class StorageServiceImpl implements StorageService, SdkServiceOnInitDeleg
                     return this.transferringContent$.next(contents[0]);
                 }
 
-                return this.endTransfer();
+                this.getStorageDestination()
+                    .mergeMap((storageDestination) =>
+                        storageDestination === StorageDestination.INTERNAL_STORAGE ?
+                            StorageDestination.EXTERNAL_STORAGE : StorageDestination.INTERNAL_STORAGE)
+                    .mergeMap(this.endTransfer);
             }).mapTo(undefined);
     }
 
