@@ -5,9 +5,20 @@ export interface StorageEvent extends EventsBusEvent {
 }
 
 export interface StorageTransferProgress extends StorageEvent {
+    type: StorageEventType.TRANSFER_PROGRESS;
     payload: {
         progress: {transferSize: number, totalSize: number};
     };
+}
+
+export interface StorageTransferCompleted extends StorageEvent {
+    type: StorageEventType.TRANSFER_COMPLETED;
+    payload: undefined;
+}
+
+export interface StorageTransferRevertCompleted extends StorageEvent {
+    type: StorageEventType.TRANSFER_REVERT_COMPLETED;
+    payload: undefined;
 }
 
 export enum StorageEventType {

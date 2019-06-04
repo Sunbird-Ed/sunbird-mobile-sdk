@@ -32,5 +32,6 @@ export namespace ContentKeys {
 }
 
 export namespace StorageKeys {
-    export const STORAGE_DESTINATION = 'STORAGE_DESTINATION';
+    export const KEY_STORAGE_DESTINATION = 'storage_destination';
+    export const KEY_TO_TRANSFER_LIST = 'to_transfer_list';
 }
