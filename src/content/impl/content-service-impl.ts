@@ -90,9 +90,9 @@ import {ContentStorageHandler} from '../handlers/content-storage-handler';
 import {SharedPreferencesSetCollection} from '../../util/shared-preferences/def/shared-preferences-set-collection';
 import {SharedPreferencesSetCollectionImpl} from '../../util/shared-preferences/impl/shared-preferences-set-collection-impl';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
-import { inject, injectable } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
-import { SdkConfig } from '../../sdk-config';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
+import {SdkConfig} from '../../sdk-config';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -100,10 +100,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     private static readonly KEY_CONTENT_DELETE_REQUEST_LIST = ContentKeys.KEY_CONTENT_DELETE_REQUEST_LIST;
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
     private readonly getContentDetailsHandler: GetContentDetailsHandler;
+    private readonly contentServiceConfig: ContentServiceConfig;
+    private readonly appConfig: AppConfig;
 
     private contentDeleteRequestSet: SharedPreferencesSetCollection<ContentDelete>;
-    private contentServiceConfig: ContentServiceConfig;
-    private appConfig: AppConfig;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -119,7 +119,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore) {
-        
+
         this.contentServiceConfig = this.sdkConfig.contentServiceConfig;
         this.appConfig = this.sdkConfig.appConfig;
         this.getContentDetailsHandler = new GetContentDetailsHandler(
@@ -566,7 +566,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             () => this.searchContent(request),
             undefined,
             undefined,
-            (contentSearchResult: ContentSearchResult) => contentSearchResult.contentDataList.length === 0
+            (contentSearchResult: ContentSearchResult) =>
+                !contentSearchResult ||
+                !contentSearchResult.contentDataList ||
+                contentSearchResult.contentDataList.length === 0
         );
 
         return this.searchContentAndGroupByPageSection(
