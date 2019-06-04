@@ -57,7 +57,7 @@ import {SessionAuthenticator} from './util/authenticators/impl/session-authentic
 import {Container} from 'inversify';
 import {InjectionTokens} from './injection-tokens';
 import {StorageService} from './storage';
-import {StorageServiceImpl} from './storage/impl/storage-info-impl';
+import {StorageServiceImpl} from './storage/impl/storage-service-impl';
 
 export class SunbirdSdk {
     private static _instance?: SunbirdSdk;

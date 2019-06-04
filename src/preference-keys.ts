@@ -30,3 +30,7 @@ export namespace ContentKeys {
     export const UPDATE_CONTENT_STATE = 'update_content_state';
     export const COURSE_CONTEXT = 'sunbirdcontent_context';
 }
+
+export namespace StorageKeys {
+    export const STORAGE_DESTINATION = 'STORAGE_DESTINATION';
+}

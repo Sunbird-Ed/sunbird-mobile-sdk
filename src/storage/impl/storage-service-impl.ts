@@ -1,22 +1,34 @@
-import { StorageService} from '../def/storage-service';
-import { Observable } from 'rxjs';
-import { StorageDestination } from '../def/storage-destination';
-import { Content } from '../../content';
-import { injectable, inject } from 'inversify';
-import { EventsBusService, EventNamespace, EventsBusEvent } from '../../events-bus';
-import { InjectionTokens } from '../../injection-tokens';
-import { StorageTransferProgress, StorageEventType } from '../def/storage-event';
-import { EmitRequest } from '../../events-bus/def/emit-request';
+import {StorageDestination, StorageEventType, StorageService, StorageTransferProgress} from '..';
+import {Observable} from 'rxjs';
+import {Content} from '../../content';
+import {inject, injectable} from 'inversify';
+import {EventNamespace, EventsBusService} from '../../events-bus';
+import {InjectionTokens} from '../../injection-tokens';
+import {EmitRequest} from '../../events-bus/def/emit-request';
+import {StorageKeys} from '../../preference-keys';
+import {SharedPreferences} from '../../util/shared-preferences';
 
 @injectable()
 export class StorageServiceImpl implements StorageService {
-    constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService) {}
+    private static readonly STORAGE_DESTINATION = StorageKeys.STORAGE_DESTINATION;
+
+    constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
+                @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
+    }
 
     getStorageDestination(): Observable<StorageDestination> {
-        return Observable.of(StorageDestination.INTERNAL_STORAGE);
+        return this.sharedPreferences.getString(StorageServiceImpl.STORAGE_DESTINATION)
+            .map((r) => {
+                if (!r) {
+                    return StorageDestination.INTERNAL_STORAGE;
+                }
+
+                return r as StorageDestination;
+            });
     }
 
     transferContents(storageDestination: StorageDestination, contents: Content[]): Observable<undefined> {
+        // TODO
         const events: EmitRequest<any>[] = [
             {
                 namespace: EventNamespace.STORAGE,
@@ -84,6 +96,7 @@ export class StorageServiceImpl implements StorageService {
     }
 
     cancelCurrentTransfer() {
+        // TODO
         const events: EmitRequest<any>[] = [
             {
                 namespace: EventNamespace.STORAGE,
@@ -103,5 +116,6 @@ export class StorageServiceImpl implements StorageService {
     }
 
     retryCurrentTransfer() {
+        // TODO
     }
 }
