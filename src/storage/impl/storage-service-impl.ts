@@ -11,6 +11,7 @@ import {SharedPreferences} from '../../util/shared-preferences';
 @injectable()
 export class StorageServiceImpl implements StorageService {
     private static readonly STORAGE_DESTINATION = StorageKeys.STORAGE_DESTINATION;
+    private currentlyTransferringContent: Content | undefined;
 
     constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
@@ -25,6 +26,10 @@ export class StorageServiceImpl implements StorageService {
 
                 return r as StorageDestination;
             });
+    }
+
+    getCurrentlyTransferringContent(): Content | undefined {
+        return this.currentlyTransferringContent;
     }
 
     transferContents(storageDestination: StorageDestination, contents: Content[]): Observable<undefined> {
