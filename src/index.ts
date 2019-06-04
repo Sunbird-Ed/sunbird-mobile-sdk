@@ -15,6 +15,7 @@ export * from './events-bus';
 export * from './system-settings';
 export * from './summarizer';
 export * from './key-value-store';
+export * from './storage';
 // utils
 export * from './util/shared-preferences';
 export * from './util/download';
