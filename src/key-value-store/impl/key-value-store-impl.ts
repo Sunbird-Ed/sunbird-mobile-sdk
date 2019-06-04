@@ -2,9 +2,12 @@ import {KeyValueStore} from '..';
 import {Observable} from 'rxjs';
 import {DbService} from '../../db';
 import {KeyValueStoreEntry} from '../db/schema';
+import { injectable, inject } from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
 
+@injectable()
 export class KeyValueStoreImpl implements KeyValueStore {
-    constructor(private dbService: DbService) {
+    constructor(@inject(InjectionTokens.DB_SERVICE) private dbService: DbService) {
     }
 
     getValue(key: string): Observable<string | undefined> {

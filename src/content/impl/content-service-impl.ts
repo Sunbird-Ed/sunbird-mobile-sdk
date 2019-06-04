@@ -90,7 +90,11 @@ import {ContentStorageHandler} from '../handlers/content-storage-handler';
 import {SharedPreferencesSetCollection} from '../../util/shared-preferences/def/shared-preferences-set-collection';
 import {SharedPreferencesSetCollectionImpl} from '../../util/shared-preferences/impl/shared-preferences-set-collection-impl';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
+import { inject, injectable } from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
+import { SdkConfig } from '../../sdk-config';
 
+@injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
     private static readonly KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL = ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL;
     private static readonly KEY_CONTENT_DELETE_REQUEST_LIST = ContentKeys.KEY_CONTENT_DELETE_REQUEST_LIST;
@@ -98,21 +102,26 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     private readonly getContentDetailsHandler: GetContentDetailsHandler;
 
     private contentDeleteRequestSet: SharedPreferencesSetCollection<ContentDelete>;
+    private contentServiceConfig: ContentServiceConfig;
+    private appConfig: AppConfig;
 
-    constructor(private contentServiceConfig: ContentServiceConfig,
-                private apiService: ApiService,
-                private dbService: DbService,
-                private profileService: ProfileService,
-                private appConfig: AppConfig,
-                private fileService: FileService,
-                private zipService: ZipService,
-                private deviceInfo: DeviceInfo,
-                private telemetryService: TelemetryService,
-                private contentFeedbackService: ContentFeedbackService,
-                private downloadService: DownloadService,
-                private sharedPreferences: SharedPreferences,
-                private eventsBusService: EventsBusService,
-                private cachedItemStore: CachedItemStore<ContentSearchResult>) {
+    constructor(
+        @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+        @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
+        @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+        @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
+        @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
+        @inject(InjectionTokens.ZIP_SERVICE) private zipService: ZipService,
+        @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
+        @inject(InjectionTokens.TELEMETRY_SERVICE) private telemetryService: TelemetryService,
+        @inject(InjectionTokens.CONTENT_FEEDBACK_SERVICE) private contentFeedbackService: ContentFeedbackService,
+        @inject(InjectionTokens.DOWNLOAD_SERVICE) private downloadService: DownloadService,
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
+        @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
+        @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore) {
+        
+        this.contentServiceConfig = this.sdkConfig.contentServiceConfig;
+        this.appConfig = this.sdkConfig.appConfig;
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
             this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);

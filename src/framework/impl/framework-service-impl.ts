@@ -1,4 +1,4 @@
-import {CachedItemStore, KeyValueStore} from '../../key-value-store';
+import {CachedItemStore} from '../../key-value-store';
 import {Channel, ChannelDetailsRequest, Framework, FrameworkDetailsRequest, FrameworkService, OrganizationSearchCriteria} from '..';
 import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
 import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
@@ -11,21 +11,22 @@ import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error
 import {SystemSettingsService} from '../../system-settings';
 import {SdkConfig} from '../../sdk-config';
 import {FrameworkKeys} from '../../preference-keys';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
 
+@injectable()
 export class FrameworkServiceImpl implements FrameworkService {
     private static readonly KEY_ACTIVE_CHANNEL_ID = FrameworkKeys.KEY_ACTIVE_CHANNEL_ID;
     private static readonly SEARCH_ORGANIZATION_ENDPOINT = '/search';
 
     private _activeChannelId?: string;
 
-    constructor(private sdkConfig: SdkConfig,
-                private keyValueStore: KeyValueStore,
-                private fileService: FileService,
-                private apiService: ApiService,
-                private cachedChannelItemStore: CachedItemStore<Channel>,
-                private cachedFrameworkItemStore: CachedItemStore<Framework>,
-                private sharedPreferences: SharedPreferences,
-                private systemSettingsService: SystemSettingsService) {
+    constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+                @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
+                @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
+                @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
+                @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
+                @inject(InjectionTokens.SYSTEM_SETTINGS_SERVICE) private systemSettingsService: SystemSettingsService) {
     }
 
     get activeChannelId(): string | undefined {
@@ -57,7 +58,7 @@ export class FrameworkServiceImpl implements FrameworkService {
             this.apiService,
             this.sdkConfig.frameworkServiceConfig,
             this.fileService,
-            this.cachedChannelItemStore,
+            this.cachedItemStore,
         ).handle(request);
     }
 
@@ -67,7 +68,7 @@ export class FrameworkServiceImpl implements FrameworkService {
             this.apiService,
             this.sdkConfig.frameworkServiceConfig,
             this.fileService,
-            this.cachedFrameworkItemStore,
+            this.cachedItemStore,
         ).handle(request);
     }
 

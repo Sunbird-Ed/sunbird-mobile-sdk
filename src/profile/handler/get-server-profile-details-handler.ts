@@ -14,7 +14,7 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
     constructor(
         private apiService: ApiService,
         private profileServiceConfig: ProfileServiceConfig,
-        private cachedItemStore: CachedItemStore<ServerProfile>,
+        private cachedItemStore: CachedItemStore,
         private keyValueStore: KeyValueStore) {
     }
 

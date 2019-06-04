@@ -1,6 +1,8 @@
 import {FileService} from '../def/file-service';
 import {DirectoryEntry, Entry, FileEntry, Flags, IWriteOptions, Metadata, RemoveResult} from '../index';
+import {injectable} from 'inversify';
 
+@injectable()
 export class DebugPromptFileService implements FileService {
     copyDir(path: string, dirName: string, newPath: string, newDirName: string): Promise<Entry> {
         throw new Error('To be Implemented');

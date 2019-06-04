@@ -2,12 +2,20 @@ import {CachedItemStore, KeyValueStore} from '..';
 import {Observable} from 'rxjs';
 import {ApiConfig} from '../../api';
 import {SharedPreferences} from '../../util/shared-preferences';
+import { SdkConfig } from '../../sdk-config';
+import { InjectionTokens } from '../../injection-tokens';
+import { inject, injectable } from 'inversify';
 
-export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
+@injectable()
+export class CachedItemStoreImpl implements CachedItemStore {
 
-    constructor(private keyValueStore: KeyValueStore,
-        private apiConfig: ApiConfig,
-        private sharedPreferences: SharedPreferences) {
+    private apiConfig: ApiConfig;
+
+    constructor(
+        @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+        @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
+        this.apiConfig = this.sdkConfig.apiConfig;
     }
 
     private static isItemEmpty(item: any) {
@@ -20,7 +28,7 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
         return false;
     }
 
-    public getCached(
+    public getCached<T>(
         id: string,
         noSqlkey: string,
         timeToLiveKey: string,
@@ -40,7 +48,7 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
                                     .do(async () => {
                                         try {
                                             await fromServer().switchMap((item: T) => {
-                                                return this.saveItem(id, timeToLiveKey, noSqlkey, item, emptyCondition);
+                                                return this.saveItem<T>(id, timeToLiveKey, noSqlkey, item, emptyCondition);
                                             }).toPromise();
                                         } catch (e) {
                                             console.error(e);
@@ -54,17 +62,17 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
                 } else {
                     if (initial) {
                         return initial().switchMap((item: T) => {
-                            return this.saveItem(id, timeToLiveKey, noSqlkey, item, emptyCondition);
+                            return this.saveItem<T>(id, timeToLiveKey, noSqlkey, item, emptyCondition);
                         }).catch((e) => {
                             return fromServer()
                                 .switchMap((item: T) => {
-                                    return this.saveItem(id, timeToLiveKey, noSqlkey, item, emptyCondition);
+                                    return this.saveItem<T>(id, timeToLiveKey, noSqlkey, item, emptyCondition);
                                 });
                         });
                     } else {
                         return fromServer()
                             .switchMap((item: T) => {
-                                return this.saveItem(id, timeToLiveKey, noSqlkey, item, emptyCondition);
+                                return this.saveItem<T>(id, timeToLiveKey, noSqlkey, item, emptyCondition);
                             });
                     }
                 }
@@ -84,18 +92,18 @@ export class CachedItemStoreImpl<T> implements CachedItemStore<T> {
 
     private isItemTTLExpired(timeToLiveKey: string, id: string, timeToLive: number): Observable<boolean> {
         return this.sharedPreferences.getString(timeToLiveKey + '-' + id)
-        .mergeMap((ttl) => {
+        .map((ttl) => {
             const savedTimestamp: number = Number(ttl);
             const nowTimeStamp: number = Date.now();
             if (nowTimeStamp - savedTimestamp < timeToLive) {
-                return Observable.of(false);
-            } else {
-                return Observable.of(true);
+                return false;
             }
+            
+            return true;
         });
     }
 
-    private saveItem(id: string, timeToLiveKey: string, noSqlkey: string, item: T, emptyCondition?: (item: T) => boolean) {
+    private saveItem<T>(id: string, timeToLiveKey: string, noSqlkey: string, item: T, emptyCondition?: (item: T) => boolean) {
         if (CachedItemStoreImpl.isItemEmpty(item) || (emptyCondition && emptyCondition(item))) {
             return Observable.of(item);
         }
