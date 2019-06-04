@@ -56,6 +56,8 @@ import {ApiAuthenticator} from './util/authenticators/impl/api-authenticator';
 import {SessionAuthenticator} from './util/authenticators/impl/session-authenticator';
 import {Container} from 'inversify';
 import {InjectionTokens} from './injection-tokens';
+import {StorageService} from './storage';
+import {StorageServiceImpl} from './storage/impl/storage-info-impl';
 
 export class SunbirdSdk {
     private static _instance?: SunbirdSdk;
@@ -162,6 +164,10 @@ export class SunbirdSdk {
         return this._container.get<DeviceInfo>(InjectionTokens.DEVICE_INFO);
     }
 
+    get storageService(): StorageService {
+        return this._container.get<StorageService>(InjectionTokens.STORAGE_SERVICE);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
@@ -242,6 +248,8 @@ export class SunbirdSdk {
         this._container.bind<CachedItemStore>(InjectionTokens.CACHED_ITEM_STORE).to(CachedItemStoreImpl).inSingletonScope();
 
         this._container.bind<TelemetryDecorator>(InjectionTokens.TELEMETRY_DECORATOR).to(TelemetryDecoratorImpl).inSingletonScope();
+
+        this._container.bind<StorageService>(InjectionTokens.STORAGE_SERVICE).to(StorageServiceImpl).inSingletonScope();
 
         this.apiService.setDefaultApiAuthenticators([
             new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)
