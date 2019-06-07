@@ -1,4 +1,11 @@
-import {StorageDestination, StorageEventType, StorageService, StorageTransferRevertCompleted, TransferContentsRequest} from '..';
+import {
+    StorageDestination,
+    StorageEventType,
+    StorageService,
+    StorageTransferCompleted,
+    StorageTransferRevertCompleted,
+    TransferContentsRequest
+} from '..';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {Content} from '../../content';
 import {inject, injectable} from 'inversify';
@@ -70,7 +77,8 @@ export class StorageServiceImpl implements StorageService, SdkServiceOnInitDeleg
                         if (content) {
                             return new TransferContentHandler().handle(
                                 transferContentsRequest.storageDestination,
-                                content
+                                content,
+                                this.eventsBusService
                             ).do(this.switchToNextContent().toPromise);
                         }
 
@@ -81,6 +89,13 @@ export class StorageServiceImpl implements StorageService, SdkServiceOnInitDeleg
                         return this.pauseTransferContent();
                     })
                     .finally(() => {
+                        this.eventsBusService.emit({
+                            namespace: EventNamespace.STORAGE,
+                            event: {
+                                type: StorageEventType.TRANSFER_COMPLETED,
+                            } as StorageTransferCompleted
+                        });
+
                         if (this.transferContentsSubscription) {
                             this.transferContentsSubscription.unsubscribe();
                             this.transferContentsSubscription = undefined;
@@ -112,8 +127,8 @@ export class StorageServiceImpl implements StorageService, SdkServiceOnInitDeleg
     }
 
     private deleteTempDirectories(): Observable<undefined> {
-        // TODO
-        throw new Error('To be implemented');
+        // TODO: Swayangjit
+        return Observable.of(undefined);
     }
 
     private getContentsToTransfer(transferContentsRequest: TransferContentsRequest): Observable<Content[]> {
