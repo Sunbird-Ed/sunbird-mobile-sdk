@@ -28,7 +28,8 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
             () => this.fetchFromFile(request)
         ).map((channel: Channel) => {
             if (channel.frameworks) {
-                channel.frameworks.sort((prevFrmaework: Framework, framework: Framework) => prevFrmaework.index! - framework.index!);
+                channel.frameworks
+                .sort((prevFramework: Framework, framework: Framework) => (prevFramework.index || 0) - (framework.index || 0));
             }
             return channel;
         });
