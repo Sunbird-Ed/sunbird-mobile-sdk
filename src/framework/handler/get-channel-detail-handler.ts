@@ -1,3 +1,4 @@
+import { Framework } from '../def/framework';
 import {CachedItemStore} from '../../key-value-store';
 import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
@@ -25,7 +26,14 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
             'ttl_' + this.CHANNEL_LOCAL_KEY,
             () => this.fetchFromServer(request),
             () => this.fetchFromFile(request)
-        );
+        ).map((channel: Channel) => {
+            if (channel.frameworks) {
+                channel.frameworks
+                .sort((prevFramework: Framework, framework: Framework) => (prevFramework.index || 0) - (framework.index || 0));
+            }
+            return channel;
+        });
+
     }
 
     private fetchFromServer(request: ChannelDetailsRequest): Observable<Channel> {
