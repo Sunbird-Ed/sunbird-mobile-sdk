@@ -1,4 +1,3 @@
-import { Framework } from '../def/framework';
 import {CachedItemStore} from '../../key-value-store';
 import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
@@ -28,8 +27,9 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
             () => this.fetchFromFile(request)
         ).map((channel: Channel) => {
             if (channel.frameworks) {
-                channel.frameworks
-                .sort((prevFramework: Framework, framework: Framework) => (prevFramework.index || 0) - (framework.index || 0));
+                const maxIndex: number = channel.frameworks.reduce((acc, val) => (val.index && (val.index > acc)) ? val.index : acc, 0);
+
+                channel.frameworks.sort((i, j) => (i.index || maxIndex + 1) - (j.index || maxIndex + 1));
             }
             return channel;
         });
