@@ -10,6 +10,7 @@ import { DeviceInfo } from '../../util/device';
 import { EventsBusService } from '../../events-bus';
 import { FileService } from '../../util/file/def/file-service';
 import { FrameworkService } from '../../framework';
+import { NetworkInfoService } from '../../util/network';
 export declare class TelemetryServiceImpl implements TelemetryService {
     private dbService;
     private decorator;
@@ -22,8 +23,9 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     private eventsBusService;
     private fileService;
     private frameworkService;
+    private networkInfoService;
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP;
-    constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, telemetryConfig: TelemetryConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService, frameworkService: FrameworkService);
+    constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, telemetryConfig: TelemetryConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService, frameworkService: FrameworkService, networkInfoService: NetworkInfoService);
     saveTelemetry(request: string): Observable<boolean>;
     audit({ env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData }: TelemetryAuditRequest): Observable<boolean>;
     end({ type, mode, duration, pageId, summaryList, env, objId, objType, objVer, rollup, correlationData }: TelemetryEndRequest): Observable<boolean>;
