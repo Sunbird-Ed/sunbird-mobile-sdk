@@ -54,6 +54,8 @@ import {TelemetryConfig} from './telemetry/config/telemetry-config';
 import {OfflineSearchTextbookMigration} from './db/migrations/offline-search-textbook-migration';
 import {ApiAuthenticator} from './util/authenticators/impl/api-authenticator';
 import {SessionAuthenticator} from './util/authenticators/impl/session-authenticator';
+import {NetworkInfoService} from './util/network';
+import {NetworkInfoServiceImpl} from './util/network/impl/network-info-service-impl';
 
 export class SunbirdSdk {
 
@@ -92,6 +94,7 @@ export class SunbirdSdk {
     private _downloadService: DownloadService;
     private _appInfo: AppInfo;
     private _playerService: PlayerService;
+    private _networkInfoService: NetworkInfoService;
 
     get sdkConfig(): SdkConfig {
         return {
@@ -184,6 +187,8 @@ export class SunbirdSdk {
     }
 
     public async init(sdkConfig: SdkConfig) {
+        this._networkInfoService = new NetworkInfoServiceImpl();
+
         this._sdkConfig = Object.freeze(sdkConfig);
 
         this._deviceInfo = new DeviceInfoImpl(this.sdkConfig);
@@ -287,7 +292,8 @@ export class SunbirdSdk {
             this._deviceInfo,
             this._eventsBusService,
             this._fileService,
-            this._frameworkService
+            this._frameworkService,
+            this._networkInfoService
         );
 
         this._profileService.registerTelemetryService(this._telemetryService);
