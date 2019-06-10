@@ -20,6 +20,7 @@ import {DbService} from '../../db';
 import {ContentEntry} from '../../content/db/schema';
 import {ContentMapper} from '../../content/util/content-mapper';
 import {TransferContentHandler} from '../handler/transfer-content-handler';
+import {DeviceInfo, StorageVolume} from '../../util/device';
 
 @injectable()
 export class StorageServiceImpl implements StorageService, SdkServiceOnInitDelegate {
@@ -30,7 +31,8 @@ export class StorageServiceImpl implements StorageService, SdkServiceOnInitDeleg
 
     constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
-                @inject(InjectionTokens.DB_SERVICE) private dbService: DbService) {
+                @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+                @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo) {
         this.contentsToTransfer = new SharedPreferencesSetCollectionImpl(
             this.sharedPreferences,
             StorageKeys.KEY_TO_TRANSFER_LIST,
@@ -40,6 +42,15 @@ export class StorageServiceImpl implements StorageService, SdkServiceOnInitDeleg
 
     onInit(): Observable<undefined> {
         return this.cancelTransfer();
+    }
+
+    getStorageDestinationVolumeInfo(): Observable<StorageVolume> {
+        return Observable.zip(
+            this.getStorageDestination(),
+            this.deviceInfo.getStorageVolumes()
+        ).map((results) => {
+            return (results[1].find((volume) => volume.storageDestination === results[0]))!;
+        });
     }
 
     getStorageDestination(): Observable<StorageDestination> {

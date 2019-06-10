@@ -1,4 +1,5 @@
 import {Observable} from 'rxjs';
+import {StorageDestination} from '../../../storage';
 
 export interface DeviceSpec {
     idisk: number;
@@ -14,12 +15,21 @@ export interface DeviceSpec {
     make: string;
 }
 
-export interface  DeviceInfo {
+export interface StorageVolume {
+    storageDestination: StorageDestination;
+    info: {
+        availableSize: number;
+        totalSize: number;
+        state: string;
+        path: string;
+        isRemovable: boolean;
+    };
+}
 
+export interface  DeviceInfo {
     getDeviceID(): string;
     getDeviceSpec(): Observable<DeviceSpec>;
     getAvailableInternalMemorySize(): Observable<string>;
-    getTotalInternalMemorySize(): Observable<string>;
-    getAvailableExternalMemorySize(): Observable<string>;
-    getTotalExternalMemorySize(): Observable<string>;
+
+    getStorageVolumes(): Observable<StorageVolume[]>;
 }

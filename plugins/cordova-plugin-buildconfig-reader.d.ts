@@ -22,4 +22,12 @@ declare var buildconfigreader: {
 
     getAvailableInternalMemorySize: (success:
                                          (callbackUrl: string) => void, error: (error: string) => void) => void;
+
+    getStorageVolumes: (success: (storageVolume: {
+        availableSize: number;
+        totalSize: number;
+        state: string;
+        path: string;
+        isRemovable: boolean;
+    }[]) => void, error: (error: any) => void) => void;
 };

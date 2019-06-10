@@ -1,9 +1,10 @@
-import { DeviceInfo, DeviceSpec } from '../def/device-info';
+import {DeviceInfo, DeviceSpec, StorageVolume} from '..';
 import * as SHA1 from 'crypto-js/sha1';
-import { SdkConfig } from '../../../sdk-config';
-import { Observable } from 'rxjs';
-import { injectable, inject } from 'inversify';
-import { InjectionTokens } from '../../../injection-tokens';
+import {SdkConfig} from '../../../sdk-config';
+import {Observable} from 'rxjs';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../../injection-tokens';
+import {StorageDestination} from '../../../storage';
 
 declare const device: {
     uuid: string;
@@ -34,6 +35,7 @@ export class DeviceInfoImpl implements DeviceInfo {
             });
         });
     }
+
     getAvailableInternalMemorySize(): Observable<string> {
         return Observable.create((observer) => {
             buildconfigreader.getAvailableInternalMemorySize((value) => {
@@ -45,13 +47,26 @@ export class DeviceInfoImpl implements DeviceInfo {
         });
     }
 
-    getTotalInternalMemorySize(): Observable<string> {
-        return Observable.of('25');
-    }
-    getAvailableExternalMemorySize(): Observable<string> {
-        return Observable.of('40');
-    }
-    getTotalExternalMemorySize(): Observable<string> {
-        return Observable.of('50');
+    getStorageVolumes(): Observable<StorageVolume[]> {
+        return Observable.create((observer) => {
+            buildconfigreader.getStorageVolumes((volumes) => {
+                observer.next(volumes.map((v) => {
+                    if (v.isRemovable) {
+                        return {
+                            storageDestination: StorageDestination.EXTERNAL_STORAGE,
+                            info: {...v}
+                        };
+                    }
+
+                    return {
+                        storageDestination: StorageDestination.INTERNAL_STORAGE,
+                        info: {...v}
+                    };
+                }));
+                observer.complete();
+            }, (e) => {
+                observer.error(e);
+            });
+        });
     }
 }

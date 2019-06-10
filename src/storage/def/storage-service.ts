@@ -1,9 +1,11 @@
 import {StorageDestination} from './storage-destination';
 import {Observable} from 'rxjs';
-import {Content} from '../..';
+import {Content, StorageVolume} from '../..';
 import {TransferContentsRequest} from './storage-requests';
 
 export interface StorageService {
+    getStorageDestinationVolumeInfo(): Observable<StorageVolume>;
+
     getStorageDestination(): Observable<StorageDestination>;
 
     getToTransferContents(): Observable<Content[]>;
