@@ -79,9 +79,9 @@ export class StorageServiceImpl implements StorageService, SdkServiceOnInitDeleg
         }
 
         return Observable.of(transferContentsRequest)
-            .mergeMap(this.getContentsToTransfer)
-            .mergeMap(this.addContentsToTransferQueue)
-            .mergeMap(this.switchToNextContent)
+            .mergeMap(this.getContentsToTransfer.bind(this))
+            .mergeMap(this.addContentsToTransferQueue.bind(this))
+            .mergeMap(this.switchToNextContent.bind(this))
             .do(() => {
                 this.transferContentsSubscription = this.transferringContent$
                     .mergeMap((content?: Content) => {
@@ -167,7 +167,7 @@ export class StorageServiceImpl implements StorageService, SdkServiceOnInitDeleg
                     .mergeMap((storageDestination) =>
                         storageDestination === StorageDestination.INTERNAL_STORAGE ?
                             StorageDestination.EXTERNAL_STORAGE : StorageDestination.INTERNAL_STORAGE)
-                    .mergeMap(this.endTransfer);
+                    .mergeMap(this.endTransfer.bind(this));
             }).mapTo(undefined);
     }
 
