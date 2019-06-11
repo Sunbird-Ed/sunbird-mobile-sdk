@@ -58,6 +58,8 @@ import {Container} from 'inversify';
 import {InjectionTokens} from './injection-tokens';
 import {StorageService} from './storage';
 import {StorageServiceImpl} from './storage/impl/storage-service-impl';
+import {NotificationService} from './notification/def/notification-service';
+import {NotificationServiceImpl} from './notification/impl/notification-service-impl';
 
 export class SunbirdSdk {
     private static _instance?: SunbirdSdk;
@@ -168,6 +170,10 @@ export class SunbirdSdk {
         return this._container.get<StorageService>(InjectionTokens.STORAGE_SERVICE);
     }
 
+    get notificationService(): NotificationService {
+        return this._container.get<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
@@ -250,6 +256,8 @@ export class SunbirdSdk {
         this._container.bind<TelemetryDecorator>(InjectionTokens.TELEMETRY_DECORATOR).to(TelemetryDecoratorImpl).inSingletonScope();
 
         this._container.bind<StorageService>(InjectionTokens.STORAGE_SERVICE).to(StorageServiceImpl).inSingletonScope();
+
+        this._container.bind<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE).to(NotificationServiceImpl).inSingletonScope();
 
         this.apiService.setDefaultApiAuthenticators([
             new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)

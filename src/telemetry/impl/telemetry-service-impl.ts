@@ -79,7 +79,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         });
     }
 
-    audit({env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData}: TelemetryAuditRequest): Observable<boolean> {
+    audit({env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData}: TelemetryAuditRequest):
+        Observable<boolean> {
         const audit = new SunbirdTelemetry.Audit(env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData);
         return this.decorateAndPersist(audit);
     }

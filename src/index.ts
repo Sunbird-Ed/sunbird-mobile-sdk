@@ -16,6 +16,7 @@ export * from './system-settings';
 export * from './summarizer';
 export * from './key-value-store';
 export * from './storage';
+export * from './notification';
 // utils
 export * from './util/shared-preferences';
 export * from './util/download';

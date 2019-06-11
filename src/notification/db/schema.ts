@@ -9,7 +9,15 @@ export namespace NotificationEntry {
     export const COLUMN_NAME_NOTIFICATION_RECEIVED_AT = 'received_at';
     export const COLUMN_NAME_NOTIFICATION_JSON = 'notification_json';
     export const COLUMN_NAME_IS_READ = 'is_read';
-
+    export interface SchemaMap {
+        [COLUMN_NAME_MESSAGE_ID]: number;
+        [COLUMN_NAME_EXPIRY_TIME]: number;
+        [COLUMN_NAME_EXPIRY_TIME]: number;
+        [COLUMN_NAME_NOTIFICATION_DISPLAY_TIME]: number;
+        [COLUMN_NAME_NOTIFICATION_RECEIVED_AT]?: number;
+        [COLUMN_NAME_NOTIFICATION_JSON]?: string;
+        [COLUMN_NAME_IS_READ]?: number;
+    }
 
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
