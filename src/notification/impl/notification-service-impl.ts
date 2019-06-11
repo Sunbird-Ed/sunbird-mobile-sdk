@@ -37,9 +37,9 @@ export class NotificationServiceImpl implements NotificationService {
         });
     }
 
-    deleteNotification(msgId: number): Observable<boolean> {
-        const query = `DELETE FROM ${NotificationEntry.TABLE_NAME}
-                       WHERE ${NotificationEntry.COLUMN_NAME_MESSAGE_ID} = ${msgId}`;
+    deleteNotification(messageId?: number): Observable<boolean> {
+        const query = `DELETE FROM ${NotificationEntry.TABLE_NAME}`
+            .concat(messageId ? `WHERE ${NotificationEntry.COLUMN_NAME_MESSAGE_ID} = ${messageId}` : '');
         return this.dbService.execute(query).mapTo(true);
     }
 
