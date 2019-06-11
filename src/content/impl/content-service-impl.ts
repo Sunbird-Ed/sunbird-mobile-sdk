@@ -144,6 +144,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     onInit(): Observable<undefined> {
+        this.downloadService.registerOnDownloadCompleteDelegate(this);
+
         return Observable.combineLatest(
             this.handleContentDeleteRequestSetChanges(),
             this.handleUpdateSizeOnDeviceFail(),
