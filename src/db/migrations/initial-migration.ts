@@ -50,9 +50,3 @@ export class InitialMigration extends Migration {
 
 
 }
-
-// new ProfileSyllabusMigration(),
-//             new GroupProfileMigration(),
-//             new MillisecondsToSecondsMigration(),
-//             new ContentMarkerMigration(),
-//             new OfflineSearchTextbookMigration()

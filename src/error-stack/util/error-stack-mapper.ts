@@ -4,19 +4,19 @@ import { ErrorStack } from '..';
 export class ErrorStackMapper {
     public static mapErrorSatckDBEntryToErrorStack(errorStackEntry: ErrorStackEntry.SchemaMap): ErrorStack {
         return {
-            app_version: errorStackEntry[ErrorStackEntry.COLUMN_NAME_APP_VERSION],
-            stack_trace: errorStackEntry[ErrorStackEntry.COLUMN_NAME_STACK_TRACE],
-            page_id: errorStackEntry[ErrorStackEntry.COLUMN_NAME_PAGE_ID],
-            method_name: errorStackEntry[ErrorStackEntry.COLUMN_NAME_METHOD_NAME]
+            appVersion: errorStackEntry[ErrorStackEntry.COLUMN_NAME_APP_VERSION],
+            stackTrace: errorStackEntry[ErrorStackEntry.COLUMN_NAME_STACK_TRACE],
+            pageId: errorStackEntry[ErrorStackEntry.COLUMN_NAME_PAGE_ID],
+            errorType: errorStackEntry[ErrorStackEntry.COLUMN_NAME_ERROR_TYPE]
         };
     }
 
     public static mapErrorStackToErrorStackDBEntry(errorStack: ErrorStack): ErrorStackEntry.SchemaMap {
         return {
-            [ErrorStackEntry.COLUMN_NAME_APP_VERSION]: errorStack.app_version,
-            [ErrorStackEntry.COLUMN_NAME_STACK_TRACE]: errorStack.stack_trace,
-            [ErrorStackEntry.COLUMN_NAME_PAGE_ID]: errorStack.page_id,
-            [ErrorStackEntry.COLUMN_NAME_METHOD_NAME]: errorStack.method_name
+            [ErrorStackEntry.COLUMN_NAME_APP_VERSION]: errorStack.appVersion!,
+            [ErrorStackEntry.COLUMN_NAME_STACK_TRACE]: errorStack.stackTrace,
+            [ErrorStackEntry.COLUMN_NAME_PAGE_ID]: errorStack.pageId,
+            [ErrorStackEntry.COLUMN_NAME_ERROR_TYPE]: errorStack.errorType
         };
     }
 }

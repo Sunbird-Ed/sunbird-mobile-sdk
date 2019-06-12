@@ -61,9 +61,8 @@ import {StorageService} from './storage';
 import {StorageServiceImpl} from './storage/impl/storage-service-impl';
 import {NotificationService} from './notification/def/notification-service';
 import {NotificationServiceImpl} from './notification/impl/notification-service-impl';
-import {ErrorStackService} from './error-stack/def/error-stack-service';
-import {ErrorStackImpl} from './error-stack/impl/error-stack-impl';
-
+import {ErrorLoggerService} from './error-stack/def/error-logger-service';
+import {ErrorLoggerServiceImpl} from './error-stack/impl/error-logger-service-impl';
 export class SunbirdSdk {
     private static _instance?: SunbirdSdk;
 
@@ -176,8 +175,8 @@ export class SunbirdSdk {
     get notificationService(): NotificationService {
         return this._container.get<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE);
     }
-    get errorStackService(): ErrorStackService {
-        return this._container.get<ErrorStackService>(InjectionTokens.ERROR_STACK_SERVICE);
+    get errorLoggerService(): ErrorLoggerService {
+        return this._container.get<ErrorLoggerService>(InjectionTokens.ERROR_LOGGER_SERVICE);
     }
 
     public async init(sdkConfig: SdkConfig) {
@@ -236,7 +235,7 @@ export class SunbirdSdk {
 
         this._container.bind<GroupService>(InjectionTokens.GROUP_SERVICE).to(GroupServiceImpl).inSingletonScope();
 
-        this._container.bind<ErrorStackService>(InjectionTokens.ERROR_STACK_SERVICE).to(ErrorStackImpl).inSingletonScope();
+        this._container.bind<ErrorLoggerService>(InjectionTokens.ERROR_LOGGER_SERVICE).to(ErrorLoggerServiceImpl).inSingletonScope();
 
         this._container.bind<ZipService>(InjectionTokens.ZIP_SERVICE).to(ZipServiceImpl).inSingletonScope();
 
