@@ -99,7 +99,7 @@ export class StorageServiceImpl implements StorageService {
                                 transferContentsRequest.storageDestination,
                                 content,
                                 this.eventsBusService
-                            ).finally(() => this.switchToNextContent().toPromise());
+                            ).concatMap(() => this.switchToNextContent());
                         }
 
                         return Observable.of(undefined);
