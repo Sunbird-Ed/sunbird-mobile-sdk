@@ -11,6 +11,7 @@ import {PartnerEntry} from '../../partner/db/schema';
 import {ContentAccessEntry, ContentEntry, ContentFeedbackEntry, ContentMarkerEntry} from '../../content/db/schema';
 import {NotificationEntry} from '../../notification/db/schema';
 import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
+import {ErrorStackEntry} from '../../error-stack/db/schema';
 
 export class InitialMigration extends Migration {
 
@@ -42,9 +43,16 @@ export class InitialMigration extends Migration {
             GroupEntry.getCreateEntry(),
             GroupProfileEntry.getCreateEntry(),
             KeyValueStoreEntry.getCreateEntry(),
-            ContentMarkerEntry.getCreateEntry()
+            ContentMarkerEntry.getCreateEntry(),
+            ErrorStackEntry.getCreateEntry()
         ];
     }
 
 
 }
+
+// new ProfileSyllabusMigration(),
+//             new GroupProfileMigration(),
+//             new MillisecondsToSecondsMigration(),
+//             new ContentMarkerMigration(),
+//             new OfflineSearchTextbookMigration()

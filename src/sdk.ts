@@ -31,6 +31,7 @@ import {DbWebSqlService} from './db/impl/db-web-sql-service';
 import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migration';
 import {GroupProfileMigration} from './db/migrations/group-profile-migration';
 import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
+import {ErrorStackMigration} from './db/migrations/error-stack-migration';
 import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
 import {GroupService} from './group';
 import {GroupServiceImpl} from './group/impl/group-service-impl';
@@ -60,6 +61,8 @@ import {StorageService} from './storage';
 import {StorageServiceImpl} from './storage/impl/storage-service-impl';
 import {NotificationService} from './notification/def/notification-service';
 import {NotificationServiceImpl} from './notification/impl/notification-service-impl';
+import {ErrorStackService} from './error-stack/def/error-stack-service';
+import {ErrorStackImpl} from './error-stack/impl/error-stack-impl';
 
 export class SunbirdSdk {
     private static _instance?: SunbirdSdk;
@@ -173,20 +176,24 @@ export class SunbirdSdk {
     get notificationService(): NotificationService {
         return this._container.get<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE);
     }
+    get errorStackService(): ErrorStackService {
+        return this._container.get<ErrorStackService>(InjectionTokens.ERROR_STACK_SERVICE);
+    }
 
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(21);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(22);
 
         this._container.bind<Migration[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
             new ProfileSyllabusMigration(),
             new GroupProfileMigration(),
             new MillisecondsToSecondsMigration(),
             new ContentMarkerMigration(),
-            new OfflineSearchTextbookMigration()
+            new OfflineSearchTextbookMigration(),
+            new ErrorStackMigration()
         ]);
 
         if (sdkConfig.sharedPreferencesConfig.debugMode) {
@@ -228,6 +235,8 @@ export class SunbirdSdk {
         this._container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).to(ProfileServiceImpl).inSingletonScope();
 
         this._container.bind<GroupService>(InjectionTokens.GROUP_SERVICE).to(GroupServiceImpl).inSingletonScope();
+
+        this._container.bind<ErrorStackService>(InjectionTokens.ERROR_STACK_SERVICE).to(ErrorStackImpl).inSingletonScope();
 
         this._container.bind<ZipService>(InjectionTokens.ZIP_SERVICE).to(ZipServiceImpl).inSingletonScope();
 

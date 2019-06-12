@@ -22,3 +22,4 @@ export * from './util/shared-preferences';
 export * from './util/download';
 export * from './util/device';
 export * from './player';
+export * from './error-stack';
