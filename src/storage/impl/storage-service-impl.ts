@@ -23,9 +23,9 @@ import {TransferContentHandler} from '../handler/transfer-content-handler';
 import {DeviceInfo, StorageVolume} from '../../util/device';
 
 @injectable()
-export class StorageServiceImpl implements StorageService, SdkServiceOnInitDelegate {
+export class StorageServiceImpl implements StorageService {
     private static readonly STORAGE_DESTINATION = StorageKeys.KEY_STORAGE_DESTINATION;
-    private transferringContent$: BehaviorSubject<Content | undefined> = new BehaviorSubject<Content | undefined>(undefined);
+    private transferringContent$?: BehaviorSubject<Content | undefined>;
     private contentsToTransfer: SharedPreferencesSetCollection<Content>;
     private transferContentsSubscription?: Subscription;
 
@@ -69,28 +69,34 @@ export class StorageServiceImpl implements StorageService, SdkServiceOnInitDeleg
     }
 
     getTransferringContent(): Observable<Content | undefined> {
+        if (!this.transferringContent$) {
+            return Observable.of(undefined);
+        }
+
         return this.transferringContent$.asObservable().take(1);
     }
 
     transferContents(transferContentsRequest: TransferContentsRequest): Observable<undefined> {
+        this.transferringContent$ = new BehaviorSubject<Content | undefined>(undefined);
+
         if (this.transferContentsSubscription) {
             this.transferContentsSubscription.unsubscribe();
             this.transferContentsSubscription = undefined;
         }
 
         return Observable.of(transferContentsRequest)
-            .mergeMap(this.getContentsToTransfer.bind(this))
-            .mergeMap(this.addContentsToTransferQueue.bind(this))
-            .mergeMap(this.switchToNextContent.bind(this))
+            .mergeMap((request) => this.getContentsToTransfer(request))
+            .mergeMap((contents) => this.addContentsToTransferQueue(contents))
+            .mergeMap(() => this.switchToNextContent())
             .do(() => {
-                this.transferContentsSubscription = this.transferringContent$
+                this.transferContentsSubscription = this.transferringContent$!
                     .mergeMap((content?: Content) => {
                         if (content) {
                             return new TransferContentHandler().handle(
                                 transferContentsRequest.storageDestination,
                                 content,
                                 this.eventsBusService
-                            ).do(this.switchToNextContent().toPromise);
+                            ).finally(() => this.switchToNextContent().toPromise());
                         }
 
                         return Observable.of(undefined);
@@ -130,12 +136,13 @@ export class StorageServiceImpl implements StorageService, SdkServiceOnInitDeleg
                     type: StorageEventType.TRANSFER_REVERT_COMPLETED,
                 } as StorageTransferRevertCompleted
             }))
-            .finally(this.endTransfer);
+            .mergeMap(() => this.endTransfer());
     }
 
     retryCurrentTransfer(): Observable<undefined> {
         return this.switchToNextContent();
     }
+
 
     private deleteTempDirectories(): Observable<undefined> {
         // TODO: Swayangjit
@@ -157,22 +164,38 @@ export class StorageServiceImpl implements StorageService, SdkServiceOnInitDeleg
     }
 
     private switchToNextContent(): Observable<undefined> {
-        return this.contentsToTransfer.asList()
-            .do((contents) => {
-                if (contents.length) {
-                    return this.transferringContent$.next(contents[0]);
+        return this.getTransferringContent()
+            .mergeMap((content?: Content) => {
+                if (content) {
+                    return this.contentsToTransfer.remove(content).mapTo(undefined);
                 }
 
-                this.getStorageDestination()
-                    .mergeMap((storageDestination) =>
-                        storageDestination === StorageDestination.INTERNAL_STORAGE ?
-                            StorageDestination.EXTERNAL_STORAGE : StorageDestination.INTERNAL_STORAGE)
-                    .mergeMap(this.endTransfer.bind(this));
-            }).mapTo(undefined);
+                return Observable.of(undefined);
+            })
+            .mergeMap(() => {
+                return this.contentsToTransfer.asList()
+                .do((contents) => {
+                    if (contents.length) {
+                        return this.transferringContent$!.next(contents[0]);
+                    }
+
+                    this.getStorageDestination()
+                        .mergeMap((storageDestination) => {
+                            const newStorageDestination = storageDestination === StorageDestination.INTERNAL_STORAGE ?
+                                StorageDestination.EXTERNAL_STORAGE : StorageDestination.INTERNAL_STORAGE;
+                            return this.sharedPreferences.putString(StorageServiceImpl.STORAGE_DESTINATION, newStorageDestination);
+                        })
+                        .mergeMap(() => this.endTransfer()).toPromise();
+                }).mapTo(undefined);
+            });
     }
 
     private pauseTransferContent(): Observable<undefined> {
-        return Observable.defer(() => this.transferringContent$.next(undefined));
+        if (!this.transferringContent$) {
+            return Observable.of(undefined);
+        }
+
+        return Observable.defer(() => this.transferringContent$!.next(undefined));
     }
 
     private clearTransferQueue(): Observable<undefined> {
@@ -180,6 +203,10 @@ export class StorageServiceImpl implements StorageService, SdkServiceOnInitDeleg
     }
 
     private endTransfer(): Observable<undefined> {
-        return Observable.defer(() => this.transferringContent$.complete());
+        if (!this.transferringContent$) {
+            return Observable.of(undefined);
+        }
+
+        return Observable.defer(() => this.transferringContent$!.complete());
     }
 }

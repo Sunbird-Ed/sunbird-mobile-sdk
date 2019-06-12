@@ -2,8 +2,9 @@ import {StorageDestination} from './storage-destination';
 import {Observable} from 'rxjs';
 import {Content, StorageVolume} from '../..';
 import {TransferContentsRequest} from './storage-requests';
+import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
 
-export interface StorageService {
+export interface StorageService extends SdkServiceOnInitDelegate {
     getStorageDestinationVolumeInfo(): Observable<StorageVolume>;
 
     getStorageDestination(): Observable<StorageDestination>;
