@@ -117,7 +117,10 @@ export class StorageServiceImpl implements StorageService {
                                 namespace: EventNamespace.STORAGE,
                                 event: {
                                     type: StorageEventType.TRANSFER_FAILED,
-                                    payload: e.message,
+                                    payload: {
+                                        directory: e.directory,
+                                        error: e.message
+                                    },
                                 } as StorageTransferFailed
                             });
                         } else {
@@ -125,7 +128,10 @@ export class StorageServiceImpl implements StorageService {
                                 namespace: EventNamespace.STORAGE,
                                 event: {
                                     type: StorageEventType.TRANSFER_FAILED,
-                                    payload: e,
+                                    payload: {
+                                        directory: 'UNKNOWN',
+                                        error: e
+                                    },
                                 } as StorageTransferFailed
                             });
                         }
