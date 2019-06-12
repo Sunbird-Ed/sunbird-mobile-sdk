@@ -63,6 +63,13 @@ export class TransferContentHandler {
             Observable.interval(1000).take(events.length)
         )
         .map((r) => r[0])
+            .map((r) => {
+                if (r.event.payload.progress.transferSize === 8000) {
+                    throw new Error('Some Error');
+                }
+
+                return r;
+            })
         .do((e) => {
             eventsBusService.emit(e);
         })

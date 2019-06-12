@@ -3,8 +3,12 @@ import {
     StorageEventType,
     StorageService,
     StorageTransferCompleted,
+    StorageTransferFailed,
+    StorageTransferFailedDuplicateContent,
     StorageTransferRevertCompleted,
-    TransferContentsRequest
+    TransferContentsRequest,
+    TransferFailedDuplicateContentError,
+    TransferFailedError
 } from '..';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {Content} from '../../content';
@@ -15,7 +19,6 @@ import {StorageKeys} from '../../preference-keys';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {SharedPreferencesSetCollection} from '../../util/shared-preferences/def/shared-preferences-set-collection';
 import {SharedPreferencesSetCollectionImpl} from '../../util/shared-preferences/impl/shared-preferences-set-collection-impl';
-import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {DbService} from '../../db';
 import {ContentEntry} from '../../content/db/schema';
 import {ContentMapper} from '../../content/util/content-mapper';
@@ -102,6 +105,31 @@ export class StorageServiceImpl implements StorageService {
                         return Observable.of(undefined);
                     })
                     .catch((e) => {
+                        if (e instanceof TransferFailedDuplicateContentError) {
+                            this.eventsBusService.emit({
+                                namespace: EventNamespace.STORAGE,
+                                event: {
+                                    type: StorageEventType.TRANSFER_FAILED_DUPLICATE_CONTENT,
+                                } as StorageTransferFailedDuplicateContent
+                            });
+                        } else if (e instanceof TransferFailedError) {
+                            this.eventsBusService.emit({
+                                namespace: EventNamespace.STORAGE,
+                                event: {
+                                    type: StorageEventType.TRANSFER_FAILED,
+                                    payload: e.message,
+                                } as StorageTransferFailed
+                            });
+                        } else {
+                            this.eventsBusService.emit({
+                                namespace: EventNamespace.STORAGE,
+                                event: {
+                                    type: StorageEventType.TRANSFER_FAILED,
+                                    payload: e,
+                                } as StorageTransferFailed
+                            });
+                        }
+
                         console.error(e);
                         return this.pauseTransferContent();
                     })
@@ -174,19 +202,19 @@ export class StorageServiceImpl implements StorageService {
             })
             .mergeMap(() => {
                 return this.contentsToTransfer.asList()
-                .do((contents) => {
-                    if (contents.length) {
-                        return this.transferringContent$!.next(contents[0]);
-                    }
+                    .do((contents) => {
+                        if (contents.length) {
+                            return this.transferringContent$!.next(contents[0]);
+                        }
 
-                    this.getStorageDestination()
-                        .mergeMap((storageDestination) => {
-                            const newStorageDestination = storageDestination === StorageDestination.INTERNAL_STORAGE ?
-                                StorageDestination.EXTERNAL_STORAGE : StorageDestination.INTERNAL_STORAGE;
-                            return this.sharedPreferences.putString(StorageServiceImpl.STORAGE_DESTINATION, newStorageDestination);
-                        })
-                        .mergeMap(() => this.endTransfer()).toPromise();
-                }).mapTo(undefined);
+                        this.getStorageDestination()
+                            .mergeMap((storageDestination) => {
+                                const newStorageDestination = storageDestination === StorageDestination.INTERNAL_STORAGE ?
+                                    StorageDestination.EXTERNAL_STORAGE : StorageDestination.INTERNAL_STORAGE;
+                                return this.sharedPreferences.putString(StorageServiceImpl.STORAGE_DESTINATION, newStorageDestination);
+                            })
+                            .mergeMap(() => this.endTransfer()).toPromise();
+                    }).mapTo(undefined);
             });
     }
 
