@@ -21,8 +21,20 @@ export interface StorageTransferRevertCompleted extends StorageEvent {
     payload: undefined;
 }
 
+export interface StorageTransferFailed extends StorageEvent {
+    type: StorageEventType.TRANSFER_FAILED;
+    payload: any;
+}
+
+export interface StorageTransferFailedDuplicateContent extends StorageEvent {
+    type: StorageEventType.TRANSFER_FAILED_DUPLICATE_CONTENT;
+    payload: undefined;
+}
+
 export enum StorageEventType {
     TRANSFER_PROGRESS = 'TRANSFER_PROGRESS',
     TRANSFER_COMPLETED = 'TRANSFER_COMPLETED',
     TRANSFER_REVERT_COMPLETED = 'TRANSFER_REVERT_COMPLETED',
+    TRANSFER_FAILED = 'TRANSFER_FAILED',
+    TRANSFER_FAILED_DUPLICATE_CONTENT = 'TRANSFER_FAILED_DUPLICATE_CONTENT'
 }
