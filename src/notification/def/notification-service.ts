@@ -8,5 +8,5 @@ export interface NotificationService {
 
     getAllNotifications(criteria: NotificationFilterCriteria): Observable<Notification[]>;
 
-    deleteNotification(msgId: number): Observable<boolean>;
+    deleteNotification(msgId?: number): Observable<boolean>;
 }
