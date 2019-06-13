@@ -11,7 +11,7 @@ export declare class GetChannelDetailsHandler implements ApiRequestHandler<Chann
     private readonly CHANNEL_FILE_KEY_PREFIX;
     private readonly CHANNEL_LOCAL_KEY;
     private readonly GET_FRAMEWORK_DETAILS_ENDPOINT;
-    constructor(apiService: ApiService, frameworkServiceConfig: FrameworkServiceConfig, fileservice: FileService, cachedItemStore: CachedItemStore<Channel>);
+    constructor(apiService: ApiService, frameworkServiceConfig: FrameworkServiceConfig, fileservice: FileService, cachedItemStore: CachedItemStore);
     handle(request: ChannelDetailsRequest): Observable<Channel>;
     private fetchFromServer;
     private fetchFromFile;

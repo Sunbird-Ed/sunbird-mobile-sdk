@@ -13,9 +13,7 @@ export declare class GetFormHandler implements ApiRequestHandler<FormRequest, {
     private readonly FORM_FILE_KEY_PREFIX;
     private readonly FORM_LOCAL_KEY;
     private readonly GET_FORM_DETAILS_ENDPOINT;
-    constructor(apiService: ApiService, formServiceConfig: FormServiceConfig, fileService: FileService, cachedItemStore: CachedItemStore<{
-        [key: string]: {};
-    }>);
+    constructor(apiService: ApiService, formServiceConfig: FormServiceConfig, fileService: FileService, cachedItemStore: CachedItemStore);
     private static getIdForRequest;
     handle(request: FormRequest): Observable<{
         [key: string]: {};
