@@ -43,6 +43,7 @@ import {TransportProcessedTelemetry} from '../handler/import/transport-processed
 import {UpdateImportedTelemetryMetadata} from '../handler/import/update-imported-telemetry-metadata';
 import {GenerateImportTelemetryShare} from '../handler/import/generate-import-telemetry-share';
 import {FrameworkService} from '../../framework';
+import {NetworkInfoService, NetworkStatus} from '../../util/network';
 
 export class TelemetryServiceImpl implements TelemetryService {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
@@ -57,7 +58,8 @@ export class TelemetryServiceImpl implements TelemetryService {
                 private deviceInfo: DeviceInfo,
                 private eventsBusService: EventsBusService,
                 private fileService: FileService,
-                private frameworkService: FrameworkService) {
+                private frameworkService: FrameworkService,
+                private networkInfoService: NetworkInfoService) {
     }
 
     saveTelemetry(request: string): Observable<boolean> {
@@ -222,14 +224,25 @@ export class TelemetryServiceImpl implements TelemetryService {
 
 
     sync(ignoreSyncThreshold: boolean = false): Observable<TelemetrySyncStat> {
-        return new TelemetrySyncHandler(
-            this.dbService,
-            this.telemetryConfig,
-            this.deviceInfo,
-            this.frameworkService,
-            this.keyValueStore,
-            this.apiService
-        ).handle(ignoreSyncThreshold)
+        return this.networkInfoService.networkStatus$
+            .take(1)
+            .mergeMap((networkStatus) => {
+                if (networkStatus === NetworkStatus.ONLINE) {
+                    return Observable.of(true);
+                }
+
+                return Observable.of(ignoreSyncThreshold);
+            })
+            .mergeMap((shouldIgnoreSyncThreshold) => {
+                return new TelemetrySyncHandler(
+                    this.dbService,
+                    this.telemetryConfig,
+                    this.deviceInfo,
+                    this.frameworkService,
+                    this.keyValueStore,
+                    this.apiService
+                ).handle(shouldIgnoreSyncThreshold);
+            })
             .mergeMap((telemetrySyncStat) =>
                 this.keyValueStore.setValue(TelemetryServiceImpl.KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP, telemetrySyncStat.syncTime + '')
                     .mapTo(telemetrySyncStat)

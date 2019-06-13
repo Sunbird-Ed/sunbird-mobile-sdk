@@ -25,7 +25,15 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
             'ttl_' + this.CHANNEL_LOCAL_KEY,
             () => this.fetchFromServer(request),
             () => this.fetchFromFile(request)
-        );
+        ).map((channel: Channel) => {
+            if (channel.frameworks) {
+                const maxIndex: number = channel.frameworks.reduce((acc, val) => (val.index && (val.index > acc)) ? val.index : acc, 0);
+
+                channel.frameworks.sort((i, j) => (i.index || maxIndex + 1) - (j.index || maxIndex + 1));
+            }
+            return channel;
+        });
+
     }
 
     private fetchFromServer(request: ChannelDetailsRequest): Observable<Channel> {

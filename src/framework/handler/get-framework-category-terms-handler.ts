@@ -43,7 +43,9 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
                     terms = this.getCategoryAssociationTerms(framework, request).toArray();
                 }
 
-                terms.sort((prevTerm: CategoryTerm, term: CategoryTerm) => prevTerm.index - term.index);
+                const maxIndex: number = terms.reduce((acc, val) => (val.index && (val.index > acc)) ? val.index : acc, 0);
+
+                terms.sort((i, j) => (i.index || maxIndex + 1) - (j.index || maxIndex + 1));
 
                 return terms;
             });
