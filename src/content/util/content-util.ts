@@ -1,14 +1,18 @@
 import {ContentData, HierarchyInfo} from '../def/content';
-import {ContentDisposition, ContentEncoding, ContentStatus, State, Visibility, MimeType} from './content-constants';
+import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from './content-constants';
 import {ChildContent} from '../def/response';
 import {Rollup} from '../../telemetry';
 import {AppConfig} from '../../api/config/app-config';
 import {ContentEntry} from '../db/schema';
 import {NumberUtil} from '../../util/number-util';
+import {ArrayUtil} from '../../util/array-util';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
+import COLUMN_NAME_LOCAL_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON;
+import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON;
+import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 
 export class ContentUtil {
     private static DEFAULT_PACKAGE_VERSION = -1;
@@ -490,6 +494,17 @@ export class ContentUtil {
             }
         }
         return '';
+    }
+
+    public static getFindAllContentsWithIdentifierQuery(identifiers: string[]): string {
+        const identifiersStr = ArrayUtil.joinPreservingQuotes(identifiers);
+        const orderby = ` order by ${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} desc, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} desc`;
+        const filter = ` where ${COLUMN_NAME_IDENTIFIER} in (${identifiersStr}) AND ${COLUMN_NAME_REF_COUNT} > 0`;
+        return `select * from ${ContentEntry.TABLE_NAME} ${filter} ${orderby}`;
+    }
+
+    public static getFindAllContentsQuery(): string {
+        return `select * from ${ContentEntry.TABLE_NAME} where ${COLUMN_NAME_REF_COUNT} > 0`;
     }
 
 }
