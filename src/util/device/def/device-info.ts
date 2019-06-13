@@ -19,7 +19,7 @@ export interface StorageVolume {
     storageDestination: StorageDestination;
     info: {
         availableSize: number;
-        totalSize: number;
+        totalSize: string;
         state: string;
         path: string;
         isRemovable: boolean;

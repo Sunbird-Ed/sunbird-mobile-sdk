@@ -309,7 +309,8 @@ export class SunbirdSdk {
             this.frameworkService.onInit(),
             this.eventsBusService.onInit(),
             this.downloadService.onInit(),
-            this.contentService.onInit()
+            this.contentService.onInit(),
+            this.storageService.onInit()
         );
     }
 }
