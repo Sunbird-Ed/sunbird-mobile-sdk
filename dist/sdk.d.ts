@@ -47,6 +47,7 @@ export declare class SunbirdSdk {
     private _downloadService;
     private _appInfo;
     private _playerService;
+    private _networkInfoService;
     readonly sdkConfig: SdkConfig;
     readonly pageAssembleService: PageAssembleService;
     readonly dbService: DbService;

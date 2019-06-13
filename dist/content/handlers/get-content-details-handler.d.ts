@@ -15,6 +15,7 @@ export declare class GetContentDetailsHandler implements ApiRequestHandler<Conte
     private readonly GET_CONTENT_DETAILS_ENDPOINT;
     constructor(contentFeedbackService: ContentFeedbackService, profileService: ProfileService, apiService: ApiService, contentServiceConfig: ContentServiceConfig, dbService: DbService, eventsBusService: EventsBusService);
     static getReadContentQuery(identifier: string): ReadQuery;
+    static isUnit(contentDbEntry: ContentEntry.SchemaMap): boolean;
     handle(request: ContentDetailRequest): Observable<Content>;
     /** @internal */
     fetchFromDB(contentId: string): Observable<ContentEntry.SchemaMap | undefined>;
