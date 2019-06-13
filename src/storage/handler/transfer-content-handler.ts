@@ -58,7 +58,7 @@ export class TransferContentHandler {
             }
         ];
 
-        return Observable.zip(
+        const events$ = Observable.zip(
             Observable.from(events),
             Observable.interval(1000).take(events.length)
         )
@@ -69,10 +69,11 @@ export class TransferContentHandler {
                 }
 
                 return r;
-            })
-        .do((e) => {
-            eventsBusService.emit(e);
-        })
-        .mapTo(undefined);
+            });
+
+        return events$
+            .do((e) => {
+                eventsBusService.emit(e);
+            }).reduce<EmitRequest<any>, undefined>(() => undefined, undefined);
     }
 }

@@ -10,7 +10,7 @@ import {
     TransferFailedDuplicateContentError,
     TransferFailedError
 } from '..';
-import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {Content} from '../../content';
 import {inject, injectable} from 'inversify';
 import {EventNamespace, EventsBusService} from '../../events-bus';
@@ -28,9 +28,8 @@ import {DeviceInfo, StorageVolume} from '../../util/device';
 @injectable()
 export class StorageServiceImpl implements StorageService {
     private static readonly STORAGE_DESTINATION = StorageKeys.KEY_STORAGE_DESTINATION;
-    private transferringContent$?: BehaviorSubject<Content | undefined>;
+    private transferringContent$ = new BehaviorSubject<Content | undefined>(undefined);
     private contentsToTransfer: SharedPreferencesSetCollection<Content>;
-    private transferContentsSubscription?: Subscription;
 
     constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
@@ -52,19 +51,19 @@ export class StorageServiceImpl implements StorageService {
             this.getStorageDestination(),
             this.deviceInfo.getStorageVolumes()
         ).map((results) => {
-            return (results[1].find((volume) => volume.storageDestination === results[0]))!;
+            const storageDestination = results[0];
+            const storageVolumes = results[1];
+            return storageVolumes
+                .find((volume) => volume.storageDestination === storageDestination)!;
         });
     }
 
     getStorageDestination(): Observable<StorageDestination> {
-        return this.sharedPreferences.getString(StorageServiceImpl.STORAGE_DESTINATION)
-            .map((r) => {
-                if (!r) {
-                    return StorageDestination.INTERNAL_STORAGE;
-                }
-
-                return r as StorageDestination;
-            });
+        return this.sharedPreferences
+            .getString(StorageServiceImpl.STORAGE_DESTINATION)
+            .map(storageDestination =>
+                storageDestination ? storageDestination as StorageDestination : StorageDestination.INTERNAL_STORAGE
+            );
     }
 
     getToTransferContents(): Observable<Content[]> {
@@ -72,115 +71,69 @@ export class StorageServiceImpl implements StorageService {
     }
 
     getTransferringContent(): Observable<Content | undefined> {
-        if (!this.transferringContent$) {
-            return Observable.of(undefined);
-        }
-
         return this.transferringContent$.asObservable().take(1);
     }
 
-    transferContents(transferContentsRequest: TransferContentsRequest): Observable<undefined> {
-        this.transferringContent$ = new BehaviorSubject<Content | undefined>(undefined);
-
-        if (this.transferContentsSubscription) {
-            this.transferContentsSubscription.unsubscribe();
-            this.transferContentsSubscription = undefined;
-        }
-
-        return Observable.of(transferContentsRequest)
-            .mergeMap((request) => this.getContentsToTransfer(request))
-            .mergeMap((contents) => this.addContentsToTransferQueue(contents))
-            .mergeMap(() => this.switchToNextContent())
-            .do(() => {
-                this.transferContentsSubscription = this.transferringContent$!
-                    .mergeMap((content?: Content) => {
-                        if (content) {
-                            return new TransferContentHandler().handle(
-                                transferContentsRequest.storageDestination,
-                                content,
-                                this.eventsBusService
-                            ).concatMap(() => this.switchToNextContent());
-                        }
-
-                        return Observable.of(undefined);
-                    })
-                    .catch((e) => {
-                        if (e instanceof TransferFailedDuplicateContentError) {
-                            this.eventsBusService.emit({
-                                namespace: EventNamespace.STORAGE,
-                                event: {
-                                    type: StorageEventType.TRANSFER_FAILED_DUPLICATE_CONTENT,
-                                } as StorageTransferFailedDuplicateContent
-                            });
-                        } else if (e instanceof TransferFailedError) {
-                            this.eventsBusService.emit({
-                                namespace: EventNamespace.STORAGE,
-                                event: {
-                                    type: StorageEventType.TRANSFER_FAILED,
-                                    payload: {
-                                        directory: e.directory,
-                                        error: e.message
-                                    },
-                                } as StorageTransferFailed
-                            });
-                        } else {
-                            this.eventsBusService.emit({
-                                namespace: EventNamespace.STORAGE,
-                                event: {
-                                    type: StorageEventType.TRANSFER_FAILED,
-                                    payload: {
-                                        directory: 'UNKNOWN',
-                                        error: e
-                                    },
-                                } as StorageTransferFailed
-                            });
-                        }
-
-                        console.error(e);
-                        return this.pauseTransferContent();
-                    })
-                    .finally(() => {
-                        this.eventsBusService.emit({
-                            namespace: EventNamespace.STORAGE,
-                            event: {
-                                type: StorageEventType.TRANSFER_COMPLETED,
-                            } as StorageTransferCompleted
-                        });
-
-                        if (this.transferContentsSubscription) {
-                            this.transferContentsSubscription.unsubscribe();
-                            this.transferContentsSubscription = undefined;
-                        }
-                    })
-                    .subscribe();
-            })
-            .mapTo(undefined);
-    }
-
     cancelTransfer(): Observable<undefined> {
-        return this.pauseTransferContent()
-            .mergeMap(() => Observable.zip(
-                this.deleteTempDirectories(),
-                this.clearTransferQueue()
-            ))
-            .mapTo(undefined)
-            .do(() => this.eventsBusService.emit({
-                namespace: EventNamespace.STORAGE,
-                event: {
-                    type: StorageEventType.TRANSFER_REVERT_COMPLETED,
-                } as StorageTransferRevertCompleted
-            }))
-            .mergeMap(() => this.endTransfer());
+        return this.pauseTransferContentIfAny()
+            .mergeMap(() => this.deleteTempDirectoriesIfAny())
+            .mergeMap(() => this.clearTransferQueue());
     }
 
     retryCurrentTransfer(): Observable<undefined> {
         return this.switchToNextContent();
     }
 
+    transferContents(transferContentsRequest: TransferContentsRequest): Observable<undefined> {
+        return this.getContentsToTransfer(transferContentsRequest)
+            .mergeMap((contents) => this.addContentsToTransferQueue(contents))
+            .mergeMap(() => this.switchToNextContent())
+            .mergeMap(() => this.transferringContent$)
+            .switchMap((content?) => content ?
+                this.transferSingleContent(transferContentsRequest.storageDestination)
+                    .catch((e) => {
+                        this.emitErrorEvent(e);
+                        return this.pauseTransferContentIfAny();
+                    }) :
+                Observable.empty<undefined>())
+            .takeUntil(this.contentsToTransferEmptied())
+            .mergeMap(() => this.switchToNextContent())
+            .reduce(() => undefined)
+            .mergeMap(() => this.endTransfer());
+    }
 
-    private deleteTempDirectories(): Observable<undefined> {
+    private contentsToTransferEmptied(): Observable<undefined> {
+        return this.contentsToTransfer.asListChanges().skip(1)
+            .switchMap((contents) =>
+                !contents.length ? Observable.of(undefined) : Observable.empty<undefined>()
+            );
+    }
+
+    private transferSingleContent(storageDestination: StorageDestination): Observable<undefined> {
+        return this.getTransferringContent()
+            .mergeMap((content?) => {
+                return content ? new TransferContentHandler().handle(
+                    storageDestination,
+                    content,
+                    this.eventsBusService
+                ) : Observable.of(undefined);
+            });
+    }
+
+    private deleteTempDirectoriesIfAny(): Observable<undefined> {
         // TODO: Swayangjit
         return Observable.of(undefined);
+    }
+
+    private revertTransferIfAny(): Observable<undefined> {
+        // TODO: Swayangjit
+        return Observable.of(undefined)
+            .do(() => this.eventsBusService.emit({
+                namespace: EventNamespace.STORAGE,
+                event: {
+                    type: StorageEventType.TRANSFER_REVERT_COMPLETED,
+                } as StorageTransferRevertCompleted
+            }));
     }
 
     private getContentsToTransfer(transferContentsRequest: TransferContentsRequest): Observable<Content[]> {
@@ -199,37 +152,19 @@ export class StorageServiceImpl implements StorageService {
 
     private switchToNextContent(): Observable<undefined> {
         return this.getTransferringContent()
-            .mergeMap((content?: Content) => {
-                if (content) {
-                    return this.contentsToTransfer.remove(content).mapTo(undefined);
+            .mergeMap((content?: Content) =>
+                content ? this.contentsToTransfer.remove(content).mapTo(undefined) : Observable.of(undefined)
+            )
+            .mergeMap(() => this.contentsToTransfer.asList())
+            .do((contents) => {
+                if (contents.length) {
+                    return this.transferringContent$!.next(contents[0]);
                 }
-
-                return Observable.of(undefined);
-            })
-            .mergeMap(() => {
-                return this.contentsToTransfer.asList()
-                    .do((contents) => {
-                        if (contents.length) {
-                            return this.transferringContent$!.next(contents[0]);
-                        }
-
-                        this.getStorageDestination()
-                            .mergeMap((storageDestination) => {
-                                const newStorageDestination = storageDestination === StorageDestination.INTERNAL_STORAGE ?
-                                    StorageDestination.EXTERNAL_STORAGE : StorageDestination.INTERNAL_STORAGE;
-                                return this.sharedPreferences.putString(StorageServiceImpl.STORAGE_DESTINATION, newStorageDestination);
-                            })
-                            .mergeMap(() => this.endTransfer()).toPromise();
-                    }).mapTo(undefined);
-            });
+            }).mapTo(undefined);
     }
 
-    private pauseTransferContent(): Observable<undefined> {
-        if (!this.transferringContent$) {
-            return Observable.of(undefined);
-        }
-
-        return Observable.defer(() => this.transferringContent$!.next(undefined));
+    private pauseTransferContentIfAny(): Observable<undefined> {
+        return Observable.defer(() => this.transferringContent$.next(undefined));
     }
 
     private clearTransferQueue(): Observable<undefined> {
@@ -237,10 +172,54 @@ export class StorageServiceImpl implements StorageService {
     }
 
     private endTransfer(): Observable<undefined> {
-        if (!this.transferringContent$) {
-            return Observable.of(undefined);
-        }
+        return this.getStorageDestination()
+            .mergeMap((storageDestination) => {
+                const newStorageDestination = storageDestination === StorageDestination.INTERNAL_STORAGE ?
+                    StorageDestination.EXTERNAL_STORAGE : StorageDestination.INTERNAL_STORAGE;
+                return this.sharedPreferences.putString(StorageServiceImpl.STORAGE_DESTINATION, newStorageDestination);
+            })
+            .do(() => {
+                this.eventsBusService.emit({
+                    namespace: EventNamespace.STORAGE,
+                    event: {
+                        type: StorageEventType.TRANSFER_COMPLETED,
+                    } as StorageTransferCompleted
+                });
+            });
+    }
 
-        return Observable.defer(() => this.transferringContent$!.complete());
+    private emitErrorEvent(e: any) {
+        console.error(e);
+
+        if (e instanceof TransferFailedDuplicateContentError) {
+            this.eventsBusService.emit({
+                namespace: EventNamespace.STORAGE,
+                event: {
+                    type: StorageEventType.TRANSFER_FAILED_DUPLICATE_CONTENT,
+                } as StorageTransferFailedDuplicateContent
+            });
+        } else if (e instanceof TransferFailedError) {
+            this.eventsBusService.emit({
+                namespace: EventNamespace.STORAGE,
+                event: {
+                    type: StorageEventType.TRANSFER_FAILED,
+                    payload: {
+                        directory: e.directory,
+                        error: e.message
+                    },
+                } as StorageTransferFailed
+            });
+        } else {
+            this.eventsBusService.emit({
+                namespace: EventNamespace.STORAGE,
+                event: {
+                    type: StorageEventType.TRANSFER_FAILED,
+                    payload: {
+                        directory: 'UNKNOWN',
+                        error: e
+                    },
+                } as StorageTransferFailed
+            });
+        }
     }
 }
