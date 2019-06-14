@@ -11,7 +11,7 @@ export declare class GetSystemSettingsHandler implements ApiRequestHandler<GetSy
     private readonly SYSTEM_SETTINGS_FILE_KEY_PREFIX;
     private readonly SYSTEM_SETTINGS_LOCAL_KEY;
     private readonly GET_SYSTEM_SETTINGS_ENDPOINT;
-    constructor(apiService: ApiService, systemSettingsConfig: SystemSettingsConfig, fileservice: FileService, cachedItemStore: CachedItemStore<SystemSettings>);
+    constructor(apiService: ApiService, systemSettingsConfig: SystemSettingsConfig, fileservice: FileService, cachedItemStore: CachedItemStore);
     handle(request: GetSystemSettingsRequest): Observable<SystemSettings>;
     private fetchFromServer;
     private fetchFromFile;

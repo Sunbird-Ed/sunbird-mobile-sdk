@@ -40,8 +40,8 @@ export class NotificationHandler {
 
         return {
             table: NotificationEntry.TABLE_NAME,
-            selection: selection,
-            selectionArgs: selecttionArgs,
+            // selection: selection,
+            // selectionArgs: selecttionArgs,
             orderBy: `${NotificationEntry.COLUMN_NAME_NOTIFICATION_RECEIVED_AT} desc`
         };
 
