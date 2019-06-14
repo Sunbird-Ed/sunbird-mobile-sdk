@@ -1,10 +1,12 @@
-import { DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery } from '..';
+import { DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery } from '..';
 import { Observable } from 'rxjs';
+import { SdkConfig } from '../../sdk-config';
 export declare class DbCordovaService implements DbService {
-    private context;
+    private sdkConfig;
     private dBVersion;
     private appMigrationList;
-    constructor(context: DbConfig, dBVersion: number, appMigrationList: Migration[]);
+    private context;
+    constructor(sdkConfig: SdkConfig, dBVersion: number, appMigrationList: Migration[]);
     update(updateQuery: UpdateQuery): Observable<number>;
     init(): Promise<undefined>;
     private hasInitialized;

@@ -1,13 +1,14 @@
 import { SunbirdTelemetry, TelemetryDecorator } from '..';
-import { ApiConfig } from '../../api';
 import { DeviceInfo } from '../../util/device/def/device-info';
 import { AppInfo } from '../../util/app/def/app-info';
 import Telemetry = SunbirdTelemetry.Telemetry;
+import { SdkConfig } from '../../sdk-config';
 export declare class TelemetryDecoratorImpl implements TelemetryDecorator {
-    private apiConfig;
+    private sdkConfig;
     private deviceInfo;
     private appInfo;
-    constructor(apiConfig: ApiConfig, deviceInfo: DeviceInfo, appInfo: AppInfo);
+    private apiConfig;
+    constructor(sdkConfig: SdkConfig, deviceInfo: DeviceInfo, appInfo: AppInfo);
     decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset?: number, channelId?: string): any;
     private patchActor;
     private patchContext;

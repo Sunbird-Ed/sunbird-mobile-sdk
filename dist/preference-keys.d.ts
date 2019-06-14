@@ -24,3 +24,7 @@ export declare namespace ContentKeys {
     const UPDATE_CONTENT_STATE = "update_content_state";
     const COURSE_CONTEXT = "sunbirdcontent_context";
 }
+export declare namespace StorageKeys {
+    const KEY_STORAGE_DESTINATION = "storage_destination";
+    const KEY_TO_TRANSFER_LIST = "to_transfer_list";
+}

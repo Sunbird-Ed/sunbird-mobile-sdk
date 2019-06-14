@@ -8,7 +8,9 @@ import {
     ContentFeedback,
     ContentFeedbackService,
     ContentMarker,
-    ContentServiceConfig
+    ContentServiceConfig,
+    MimeType,
+    Visibility
 } from '..';
 import {Observable} from 'rxjs';
 import {DbService, ReadQuery} from '../../db';
@@ -19,6 +21,8 @@ import {ContentAccess, ProfileService, ProfileSession} from '../../profile';
 import {ContentMarkerHandler} from './content-marker-handler';
 import {ContentUtil} from '../util/content-util';
 import {EventNamespace, EventsBusService} from '../../events-bus';
+import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
+import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
     private readonly GET_CONTENT_DETAILS_ENDPOINT = '/read';
@@ -43,11 +47,16 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
         };
     }
 
+    public static isUnit(contentDbEntry: ContentEntry.SchemaMap) {
+        return contentDbEntry[COLUMN_NAME_MIME_TYPE] === MimeType.COLLECTION
+            && contentDbEntry[COLUMN_NAME_VISIBILITY] === Visibility.PARENT;
+    }
+
     public handle(request: ContentDetailRequest): Observable<Content> {
         request.emitUpdateIfAny = request.emitUpdateIfAny === undefined ? true : request.emitUpdateIfAny;
 
         return this.fetchFromDB(request.contentId)
-            .mergeMap((contentDbEntry) => {
+            .mergeMap((contentDbEntry: ContentEntry.SchemaMap | undefined) => {
                 if (!contentDbEntry) {
                     return this.fetchAndDecorate(request);
                 }
@@ -61,53 +70,55 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                             attachContentMarker: request.attachContentMarker
                         });
                     }).do(async (localContent) => {
-                        if (request.emitUpdateIfAny) {
-                            let sendStreamUrlEvent = false;
-                            const serverDataInDb: ContentData = contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA] &&
-                                JSON.parse(contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA]);
+                        if (!request.emitUpdateIfAny || GetContentDetailsHandler.isUnit(contentDbEntry)) {
+                            return;
+                        }
 
-                            if (!serverDataInDb) {
-                                sendStreamUrlEvent = true;
-                            } else if (!serverDataInDb.streamingUrl) {
-                                sendStreamUrlEvent = true;
-                            }
+                        let sendStreamUrlEvent = false;
+                        const serverDataInDb: ContentData = contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA] &&
+                            JSON.parse(contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA]);
 
-                            const serverContentData: ContentData = await this.fetchFromServer(request).toPromise();
-                            contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA] = JSON.stringify(serverContentData);
-                            contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON] = serverContentData['lastUpdatedOn'];
-                            contentDbEntry[ContentEntry.COLUMN_NAME_AUDIENCE] = ContentUtil.readAudience(serverContentData);
+                        if (!serverDataInDb) {
+                            sendStreamUrlEvent = true;
+                        } else if (!serverDataInDb.streamingUrl) {
+                            sendStreamUrlEvent = true;
+                        }
 
-                            await this.dbService.update({
-                                table: ContentEntry.TABLE_NAME,
-                                selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
-                                selectionArgs: [contentDbEntry[ContentEntry.COLUMN_NAME_IDENTIFIER]],
-                                modelJson: contentDbEntry
-                            }).toPromise();
+                        const serverContentData: ContentData = await this.fetchFromServer(request).toPromise();
+                        contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_DATA] = JSON.stringify(serverContentData);
+                        contentDbEntry[ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON] = serverContentData['lastUpdatedOn'];
+                        contentDbEntry[ContentEntry.COLUMN_NAME_AUDIENCE] = ContentUtil.readAudience(serverContentData);
 
-                            if (ContentUtil.isUpdateAvailable(serverContentData, localContent.contentData)) {
-                                this.eventsBusService.emit({
-                                    namespace: EventNamespace.CONTENT,
-                                    event: {
-                                        type: ContentEventType.UPDATE,
-                                        payload: {
-                                            contentId: localContent.contentData.identifier
-                                        }
+                        await this.dbService.update({
+                            table: ContentEntry.TABLE_NAME,
+                            selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
+                            selectionArgs: [contentDbEntry[ContentEntry.COLUMN_NAME_IDENTIFIER]],
+                            modelJson: contentDbEntry
+                        }).toPromise();
+
+                        if (ContentUtil.isUpdateAvailable(serverContentData, localContent.contentData)) {
+                            this.eventsBusService.emit({
+                                namespace: EventNamespace.CONTENT,
+                                event: {
+                                    type: ContentEventType.UPDATE,
+                                    payload: {
+                                        contentId: localContent.contentData.identifier
                                     }
-                                });
-                            }
+                                }
+                            });
+                        }
 
-                            if (sendStreamUrlEvent && serverContentData.streamingUrl) {
-                                this.eventsBusService.emit({
-                                    namespace: EventNamespace.CONTENT,
-                                    event: {
-                                        type: ContentEventType.STREAMING_URL_AVAILABLE,
-                                        payload: {
-                                            contentId: serverContentData.identifier,
-                                            streamingUrl: serverContentData.streamingUrl
-                                        }
+                        if (sendStreamUrlEvent && serverContentData.streamingUrl) {
+                            this.eventsBusService.emit({
+                                namespace: EventNamespace.CONTENT,
+                                event: {
+                                    type: ContentEventType.STREAMING_URL_AVAILABLE,
+                                    payload: {
+                                        contentId: serverContentData.identifier,
+                                        streamingUrl: serverContentData.streamingUrl
                                     }
-                                });
-                            }
+                                }
+                            });
                         }
                     });
             });

@@ -1,4 +1,4 @@
-import { DeviceInfo, DeviceSpec } from '../def/device-info';
+import { DeviceInfo, DeviceSpec, StorageVolume } from '..';
 import { SdkConfig } from '../../../sdk-config';
 import { Observable } from 'rxjs';
 export declare class DeviceInfoImpl implements DeviceInfo {
@@ -8,4 +8,5 @@ export declare class DeviceInfoImpl implements DeviceInfo {
     getDeviceID(): string;
     getDeviceSpec(): Observable<DeviceSpec>;
     getAvailableInternalMemorySize(): Observable<string>;
+    getStorageVolumes(): Observable<StorageVolume[]>;
 }

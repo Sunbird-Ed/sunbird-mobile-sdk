@@ -14,8 +14,8 @@ export class TransferContentHandler {
                     type: StorageEventType.TRANSFER_PROGRESS,
                     payload: {
                         progress: {
-                            transferSize: 1,
-                            totalSize: 10
+                            transferSize: 1000,
+                            totalSize: 10000
                         }
                     }
                 } as StorageTransferProgress
@@ -26,8 +26,8 @@ export class TransferContentHandler {
                     type: StorageEventType.TRANSFER_PROGRESS,
                     payload: {
                         progress: {
-                            transferSize: 3,
-                            totalSize: 10
+                            transferSize: 3000,
+                            totalSize: 10000
                         }
                     }
                 } as StorageTransferProgress
@@ -38,8 +38,8 @@ export class TransferContentHandler {
                     type: StorageEventType.TRANSFER_PROGRESS,
                     payload: {
                         progress: {
-                            transferSize: 8,
-                            totalSize: 10
+                            transferSize: 8000,
+                            totalSize: 10000
                         }
                     }
                 } as StorageTransferProgress
@@ -50,20 +50,30 @@ export class TransferContentHandler {
                     type: StorageEventType.TRANSFER_PROGRESS,
                     payload: {
                         progress: {
-                            transferSize: 10,
-                            totalSize: 10
+                            transferSize: 10000,
+                            totalSize: 10000
                         }
                     }
                 } as StorageTransferProgress
             }
         ];
 
-        return Observable
-            .from(events)
-            .delay(1000)
+        const events$ = Observable.zip(
+            Observable.from(events),
+            Observable.interval(1000).take(events.length)
+        )
+        .map((r) => r[0])
+            .map((r) => {
+                if (r.event.payload.progress.transferSize === 8000) {
+                    throw new Error('Some Error');
+                }
+
+                return r;
+            });
+
+        return events$
             .do((e) => {
                 eventsBusService.emit(e);
-            })
-            .mapTo(undefined);
+            }).reduce<EmitRequest<any>, undefined>(() => undefined, undefined);
     }
 }

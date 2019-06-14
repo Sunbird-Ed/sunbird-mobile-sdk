@@ -12,7 +12,7 @@ export declare class GetServerProfileDetailsHandler implements ApiRequestHandler
     private keyValueStore;
     private readonly GET_SERVER_PROFILE_DETAILS_ENDPOINT;
     private readonly USER_PROFILE_DETAILS_KEY_PREFIX;
-    constructor(apiService: ApiService, profileServiceConfig: ProfileServiceConfig, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore);
+    constructor(apiService: ApiService, profileServiceConfig: ProfileServiceConfig, cachedItemStore: CachedItemStore, keyValueStore: KeyValueStore);
     handle(serverProfileDetailsRequest: any): Observable<ServerProfile>;
     private fetchFromServer;
     private fetchFromCache;

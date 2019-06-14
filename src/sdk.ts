@@ -63,6 +63,9 @@ import {NotificationService} from './notification/def/notification-service';
 import {NotificationServiceImpl} from './notification/impl/notification-service-impl';
 import {ErrorLoggerService} from './error-stack/def/error-logger-service';
 import {ErrorLoggerServiceImpl} from './error-stack/impl/error-logger-service-impl';
+import {NetworkInfoService} from './util/network';
+import {NetworkInfoServiceImpl} from './util/network/impl/network-info-service-impl';
+
 export class SunbirdSdk {
     private static _instance?: SunbirdSdk;
 
@@ -179,6 +182,10 @@ export class SunbirdSdk {
         return this._container.get<ErrorLoggerService>(InjectionTokens.ERROR_LOGGER_SERVICE);
     }
 
+    get networkInfoService(): NetworkInfoService {
+        return this._container.get<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
@@ -267,6 +274,8 @@ export class SunbirdSdk {
 
         this._container.bind<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE).to(NotificationServiceImpl).inSingletonScope();
 
+        this._container.bind<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE).to(NetworkInfoServiceImpl).inSingletonScope();
+
         this.apiService.setDefaultApiAuthenticators([
             new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)
         ]);
@@ -317,7 +326,8 @@ export class SunbirdSdk {
             this.frameworkService.onInit(),
             this.eventsBusService.onInit(),
             this.downloadService.onInit(),
-            this.contentService.onInit()
+            this.contentService.onInit(),
+            this.storageService.onInit()
         );
     }
 }

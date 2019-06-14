@@ -1,11 +1,13 @@
-import { DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery } from '..';
+import { DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery } from '..';
 import { Observable } from 'rxjs';
+import { SdkConfig } from '../../sdk-config';
 export declare class DbWebSqlService implements DbService {
-    private context;
+    private sdkConfig;
     private dBVersion;
     private appMigrationList;
+    private context;
     webSqlDB: any;
-    constructor(context: DbConfig, dBVersion: number, appMigrationList: Migration[]);
+    constructor(sdkConfig: SdkConfig, dBVersion: number, appMigrationList: Migration[]);
     init(): Promise<undefined>;
     read(readQuery: ReadQuery): Observable<any[]>;
     insert(inserQuery: InsertQuery): Observable<number>;

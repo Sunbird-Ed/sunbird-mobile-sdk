@@ -1,9 +1,8 @@
-import { ChildContentRequest, Content, ContentDelete, ContentDeleteRequest, ContentDeleteResponse, ContentDetailRequest, ContentDownloadRequest, ContentExportRequest, ContentExportResponse, ContentFeedbackService, ContentImportRequest, ContentImportResponse, ContentMarkerRequest, ContentRequest, ContentSearchCriteria, ContentSearchResult, ContentService, ContentServiceConfig, ContentsGroupedByPageSection, ContentSpaceUsageSummaryRequest, ContentSpaceUsageSummaryResponse, EcarImportRequest, HierarchyInfo, RelevantContentRequest, RelevantContentResponsePlayer } from '..';
+import { ChildContentRequest, Content, ContentDelete, ContentDeleteRequest, ContentDeleteResponse, ContentDetailRequest, ContentDownloadRequest, ContentExportRequest, ContentExportResponse, ContentFeedbackService, ContentImportRequest, ContentImportResponse, ContentMarkerRequest, ContentRequest, ContentSearchCriteria, ContentSearchResult, ContentService, ContentsGroupedByPageSection, ContentSpaceUsageSummaryRequest, ContentSpaceUsageSummaryResponse, EcarImportRequest, HierarchyInfo, RelevantContentRequest, RelevantContentResponsePlayer } from '..';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../api';
 import { ProfileService } from '../../profile';
 import { DbService } from '../../db';
-import { AppConfig } from '../../api/config/app-config';
 import { FileService } from '../../util/file/def/file-service';
 import { DeviceInfo } from '../../util/device/def/device-info';
 import { ZipService } from '../../util/zip/def/zip-service';
@@ -14,12 +13,12 @@ import { EventsBusService } from '../../events-bus';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { CachedItemStore } from '../../key-value-store';
 import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
+import { SdkConfig } from '../../sdk-config';
 export declare class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
-    private contentServiceConfig;
+    private sdkConfig;
     private apiService;
     private dbService;
     private profileService;
-    private appConfig;
     private fileService;
     private zipService;
     private deviceInfo;
@@ -33,8 +32,10 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     private static readonly KEY_CONTENT_DELETE_REQUEST_LIST;
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY;
     private readonly getContentDetailsHandler;
+    private readonly contentServiceConfig;
+    private readonly appConfig;
     private contentDeleteRequestSet;
-    constructor(contentServiceConfig: ContentServiceConfig, apiService: ApiService, dbService: DbService, profileService: ProfileService, appConfig: AppConfig, fileService: FileService, zipService: ZipService, deviceInfo: DeviceInfo, telemetryService: TelemetryService, contentFeedbackService: ContentFeedbackService, downloadService: DownloadService, sharedPreferences: SharedPreferences, eventsBusService: EventsBusService, cachedItemStore: CachedItemStore<ContentSearchResult>);
+    constructor(sdkConfig: SdkConfig, apiService: ApiService, dbService: DbService, profileService: ProfileService, fileService: FileService, zipService: ZipService, deviceInfo: DeviceInfo, telemetryService: TelemetryService, contentFeedbackService: ContentFeedbackService, downloadService: DownloadService, sharedPreferences: SharedPreferences, eventsBusService: EventsBusService, cachedItemStore: CachedItemStore);
     private static getIdForDb;
     onInit(): Observable<undefined>;
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
