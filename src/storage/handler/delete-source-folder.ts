@@ -5,6 +5,6 @@ export class DeleteSourceFolder {
     }
 
     execute(): Observable<void> {
-
+        return Observable.of(undefined);
     }
 }

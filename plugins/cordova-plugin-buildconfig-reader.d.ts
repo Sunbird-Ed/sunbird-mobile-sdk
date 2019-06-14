@@ -12,6 +12,9 @@ declare var buildconfigreader: {
     copyDirectory: (sourceDirectory: string, destinationDirectory: string,
                     onSuccess: () => void, onError: (error: any) => void) => void;
 
+    renameDirectory: (sourceDirectory: string, toDirectoryName: string,
+                      onSuccess: () => void, onError: (error: any) => void) => void;
+
     createDirectories: (parentDirectoryPath: string, listOfFolder: string[], success:
         (callbackUrl: any) => void, error: (error: string) => void) => void;
 
