@@ -1,4 +1,4 @@
-import { CachedItemStore, KeyValueStore } from '../../key-value-store';
+import { CachedItemStore } from '../../key-value-store';
 import { Channel, ChannelDetailsRequest, Framework, FrameworkDetailsRequest, FrameworkService, OrganizationSearchCriteria } from '..';
 import { FileService } from '../../util/file/def/file-service';
 import { Observable } from 'rxjs';
@@ -9,17 +9,15 @@ import { SystemSettingsService } from '../../system-settings';
 import { SdkConfig } from '../../sdk-config';
 export declare class FrameworkServiceImpl implements FrameworkService {
     private sdkConfig;
-    private keyValueStore;
     private fileService;
     private apiService;
-    private cachedChannelItemStore;
-    private cachedFrameworkItemStore;
+    private cachedItemStore;
     private sharedPreferences;
     private systemSettingsService;
     private static readonly KEY_ACTIVE_CHANNEL_ID;
     private static readonly SEARCH_ORGANIZATION_ENDPOINT;
     private _activeChannelId?;
-    constructor(sdkConfig: SdkConfig, keyValueStore: KeyValueStore, fileService: FileService, apiService: ApiService, cachedChannelItemStore: CachedItemStore<Channel>, cachedFrameworkItemStore: CachedItemStore<Framework>, sharedPreferences: SharedPreferences, systemSettingsService: SystemSettingsService);
+    constructor(sdkConfig: SdkConfig, fileService: FileService, apiService: ApiService, cachedItemStore: CachedItemStore, sharedPreferences: SharedPreferences, systemSettingsService: SystemSettingsService);
     readonly activeChannelId: string | undefined;
     onInit(): Observable<undefined>;
     getDefaultChannelDetails(): Observable<Channel>;

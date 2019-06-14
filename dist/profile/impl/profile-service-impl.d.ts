@@ -13,9 +13,10 @@ import { ProfileImportRequest } from '../def/profile-import-request';
 import { ProfileImportResponse } from '../def/profile-import-response';
 import { FileService } from '../../util/file/def/file-service';
 import { DeviceInfo } from '../../util/device';
-import { TelemetryService } from '../../telemetry';
 import { SdkConfig } from '../../sdk-config';
+import { Container } from 'inversify';
 export declare class ProfileServiceImpl implements ProfileService {
+    private container;
     private sdkConfig;
     private dbService;
     private apiService;
@@ -26,9 +27,8 @@ export declare class ProfileServiceImpl implements ProfileService {
     private fileService;
     private deviceInfo;
     private static readonly KEY_USER_SESSION;
-    private telemetryService;
-    constructor(sdkConfig: SdkConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences, frameworkService: FrameworkService, fileService: FileService, deviceInfo: DeviceInfo);
-    registerTelemetryService(telemetryService: TelemetryService): void;
+    constructor(container: Container, sdkConfig: SdkConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences, frameworkService: FrameworkService, fileService: FileService, deviceInfo: DeviceInfo);
+    private readonly telemetryService;
     preInit(): Observable<undefined>;
     createProfile(profile: Profile, profileSource?: ProfileSource): Observable<Profile>;
     deleteProfile(uid: string): Observable<undefined>;

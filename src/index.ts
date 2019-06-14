@@ -1,3 +1,5 @@
+import { from } from 'rxjs/observable/from';
+
 export * from './db';
 export * from './api';
 export * from './telemetry';
@@ -17,8 +19,10 @@ export * from './summarizer';
 export * from './key-value-store';
 export * from './storage';
 export * from './notification';
+export * from './error-stack';
 // utils
 export * from './util/shared-preferences';
 export * from './util/download';
 export * from './util/device';
 export * from './player';
+export * from './util/app';
