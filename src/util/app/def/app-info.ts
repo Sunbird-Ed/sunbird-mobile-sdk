@@ -1,4 +1,4 @@
 export interface AppInfo {
     init();
-    getVersionName();
+    getVersionName(): string ;
 }
