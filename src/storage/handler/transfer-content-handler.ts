@@ -36,6 +36,7 @@ export interface TransferContentContext {
     existingContentAction?: ExistingContentAction;
     duplicateContents?: MoveContentResponse[];
     deleteDestination?: boolean;
+    hasTransferCancelled?: boolean;
 }
 
 export interface Manifest {
@@ -49,6 +50,8 @@ export interface Manifest {
 }
 
 export class TransferContentHandler {
+    private context: TransferContentContext = {};
+
     constructor(
         private sdkConfig: SdkConfig,
         private fileService: FileService,
@@ -58,15 +61,15 @@ export class TransferContentHandler {
     ) {
     }
 
-    handle({contentIds, existingContentAction, deleteDestination, destinationFolder}: TransferContentsRequest): Observable<undefined> {
-        const context: TransferContentContext = {
+    transfer({contentIds, existingContentAction, deleteDestination, destinationFolder}: TransferContentsRequest): Observable<undefined> {
+        this.context = {
             contentIds,
             existingContentAction,
             deleteDestination,
             destinationFolder
         };
 
-        return new ValidateDestinationFolder(this.fileService).execute(context).mergeMap((transferContext: TransferContentContext) => {
+        return new ValidateDestinationFolder(this.fileService).execute(this.context).mergeMap((transferContext: TransferContentContext) => {
             return new DeleteDestinationFolder().execute(transferContext);
         }).mergeMap((transferContext: TransferContentContext) => {
             return new DeviceMemoryCheck().execute(transferContext);
@@ -100,5 +103,11 @@ export class TransferContentHandler {
         //     .mergeMap(() => new StoreDestinationContentInDb(this.sdkConfig.appConfig,
         //         this.fileService, this.dbService, this.deviceInfo).execute(context))
         //     .mapTo(undefined);
+    }
+
+    cancel(): Observable<undefined> {
+        return Observable.defer(() => {
+            this.context.hasTransferCancelled = true;
+        });
     }
 }

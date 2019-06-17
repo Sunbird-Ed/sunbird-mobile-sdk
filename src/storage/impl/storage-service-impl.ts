@@ -18,6 +18,7 @@ import {FileService} from '../../util/file/def/file-service';
 export class StorageServiceImpl implements StorageService {
     private static readonly STORAGE_DESTINATION = StorageKeys.KEY_STORAGE_DESTINATION;
     private contentsToTransfer: SharedPreferencesSetCollection<string>;
+    private transferContentHandler: TransferContentHandler;
 
     constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
@@ -30,10 +31,18 @@ export class StorageServiceImpl implements StorageService {
             StorageKeys.KEY_TO_TRANSFER_LIST,
             (item: string) => item
         );
+
+        this.transferContentHandler = new TransferContentHandler(
+            this.sdkConfig,
+            this.fileService,
+            this.dbService,
+            this.eventsBusService,
+            this.deviceInfo,
+        );
     }
 
     cancelTransfer(): Observable<undefined> {
-        return Observable.of(undefined);
+        return this.transferContentHandler.cancel();
     }
 
     getStorageDestination(): Observable<StorageDestination> {
@@ -73,14 +82,8 @@ export class StorageServiceImpl implements StorageService {
     }
 
     transferContents(transferContentsRequest: TransferContentsRequest): Observable<undefined> {
-        return new TransferContentHandler(
-            this.sdkConfig,
-            this.fileService,
-            this.dbService,
-            this.eventsBusService,
-            this.deviceInfo,
-        )
-            .handle(transferContentsRequest)
+        return this.transferContentHandler
+            .transfer(transferContentsRequest)
             .mergeMap(() => this.getStorageDestination())
             .map((storageDestination: StorageDestination) =>
                 storageDestination === StorageDestination.EXTERNAL_STORAGE ? StorageDestination.INTERNAL_STORAGE : StorageDestination.EXTERNAL_STORAGE
