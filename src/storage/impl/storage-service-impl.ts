@@ -16,6 +16,7 @@ import {FileService} from '../../util/file/def/file-service';
 
 @injectable()
 export class StorageServiceImpl implements StorageService {
+    private static readonly STORAGE_DESTINATION = StorageKeys.KEY_STORAGE_DESTINATION;
     private contentsToTransfer: SharedPreferencesSetCollection<string>;
 
     constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
@@ -36,7 +37,11 @@ export class StorageServiceImpl implements StorageService {
     }
 
     getStorageDestination(): Observable<StorageDestination> {
-        return Observable.of(StorageDestination.INTERNAL_STORAGE);
+        return this.sharedPreferences
+            .getString(StorageServiceImpl.STORAGE_DESTINATION)
+            .map(storageDestination =>
+                storageDestination ? storageDestination as StorageDestination : StorageDestination.INTERNAL_STORAGE
+            );
     }
 
     getStorageDestinationVolumeInfo(): Observable<StorageVolume> {
@@ -74,6 +79,14 @@ export class StorageServiceImpl implements StorageService {
             this.dbService,
             this.eventsBusService,
             this.deviceInfo,
-        ).handle(transferContentsRequest);
+        )
+            .handle(transferContentsRequest)
+            .mergeMap(() => this.getStorageDestination())
+            .mergeMap((storageDestination: StorageDestination) =>
+                storageDestination === StorageDestination.EXTERNAL_STORAGE ? StorageDestination.INTERNAL_STORAGE : StorageDestination.EXTERNAL_STORAGE
+            )
+            .mergeMap((newStorageDestination) =>
+                this.sharedPreferences.putString(StorageServiceImpl.STORAGE_DESTINATION, newStorageDestination)
+            );
     }
 }
