@@ -1,14 +1,15 @@
 import { CachedItemStore, KeyValueStore } from '..';
 import { Observable } from 'rxjs';
-import { ApiConfig } from '../../api';
 import { SharedPreferences } from '../../util/shared-preferences';
-export declare class CachedItemStoreImpl<T> implements CachedItemStore<T> {
+import { SdkConfig } from '../../sdk-config';
+export declare class CachedItemStoreImpl implements CachedItemStore {
+    private sdkConfig;
     private keyValueStore;
-    private apiConfig;
     private sharedPreferences;
-    constructor(keyValueStore: KeyValueStore, apiConfig: ApiConfig, sharedPreferences: SharedPreferences);
+    private apiConfig;
+    constructor(sdkConfig: SdkConfig, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences);
     private static isItemEmpty;
-    getCached(id: string, noSqlkey: string, timeToLiveKey: string, fromServer: () => Observable<T>, initial?: () => Observable<T>, timeToLive?: number, emptyCondition?: (item: T) => boolean): Observable<T>;
+    getCached<T>(id: string, noSqlkey: string, timeToLiveKey: string, fromServer: () => Observable<T>, initial?: () => Observable<T>, timeToLive?: number, emptyCondition?: (item: T) => boolean): Observable<T>;
     private isItemCachedInDb;
     private isItemTTLExpired;
     private saveItem;

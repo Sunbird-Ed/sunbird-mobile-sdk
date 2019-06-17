@@ -43,9 +43,10 @@ import {TransportProcessedTelemetry} from '../handler/import/transport-processed
 import {UpdateImportedTelemetryMetadata} from '../handler/import/update-imported-telemetry-metadata';
 import {GenerateImportTelemetryShare} from '../handler/import/generate-import-telemetry-share';
 import {FrameworkService} from '../../framework';
-import { injectable, inject } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
-import { SdkConfig } from '../../sdk-config';
+import {NetworkInfoService, NetworkStatus} from '../../util/network';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
+import {SdkConfig} from '../../sdk-config';
 
 @injectable()
 export class TelemetryServiceImpl implements TelemetryService {
@@ -63,7 +64,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
         @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
         @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
-        @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService) {
+        @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
+        @inject(InjectionTokens.NETWORKINFO_SERVICE) private networkInfoService: NetworkInfoService) {
         this.telemetryConfig = this.sdkConfig.telemetryConfig;
     }
 
@@ -79,8 +81,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         });
     }
 
-    audit({env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData}: TelemetryAuditRequest):
-        Observable<boolean> {
+    audit({env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData}:
+              TelemetryAuditRequest): Observable<boolean> {
         const audit = new SunbirdTelemetry.Audit(env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData);
         return this.decorateAndPersist(audit);
     }
@@ -240,14 +242,25 @@ export class TelemetryServiceImpl implements TelemetryService {
     }
 
     sync(ignoreSyncThreshold: boolean = false): Observable<TelemetrySyncStat> {
-        return new TelemetrySyncHandler(
-            this.dbService,
-            this.sdkConfig,
-            this.deviceInfo,
-            this.frameworkService,
-            this.keyValueStore,
-            this.apiService
-        ).handle(ignoreSyncThreshold)
+        return this.networkInfoService.networkStatus$
+            .take(1)
+            .mergeMap((networkStatus) => {
+                if (networkStatus === NetworkStatus.ONLINE) {
+                    return Observable.of(true);
+                }
+
+                return Observable.of(ignoreSyncThreshold);
+            })
+            .mergeMap((shouldIgnoreSyncThreshold) => {
+                return new TelemetrySyncHandler(
+                    this.dbService,
+                    this.sdkConfig,
+                    this.deviceInfo,
+                    this.frameworkService,
+                    this.keyValueStore,
+                    this.apiService
+                ).handle(shouldIgnoreSyncThreshold);
+            })
             .mergeMap((telemetrySyncStat) =>
                 this.keyValueStore.setValue(TelemetryServiceImpl.KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP, telemetrySyncStat.syncTime + '')
                     .mapTo(telemetrySyncStat)

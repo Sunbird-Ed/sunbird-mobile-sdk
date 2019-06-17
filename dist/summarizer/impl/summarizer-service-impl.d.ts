@@ -16,11 +16,10 @@ export declare class SummarizerServiceImpl implements SummarizerService, EventOb
     private eventsBusService;
     private courseService;
     private sharedPreference;
-    private contentService;
     private profileService;
     private contentMap;
     private summarizerTelemetryHandler;
-    constructor(dbService: DbService, contenService: ContentService, eventsBusService: EventsBusService, courseService: CourseService, sharedPreference: SharedPreferences, contentService: ContentService, profileService: ProfileService);
+    constructor(dbService: DbService, contenService: ContentService, eventsBusService: EventsBusService, courseService: CourseService, sharedPreference: SharedPreferences, profileService: ProfileService);
     getDetailsPerQuestion(request: SummaryRequest): Observable<{
         [p: string]: any;
     }[]>;

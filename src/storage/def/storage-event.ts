@@ -23,7 +23,10 @@ export interface StorageTransferRevertCompleted extends StorageEvent {
 
 export interface StorageTransferFailed extends StorageEvent {
     type: StorageEventType.TRANSFER_FAILED;
-    payload: any;
+    payload: {
+        error: any;
+        directory: string;
+    };
 }
 
 export interface StorageTransferFailedDuplicateContent extends StorageEvent {

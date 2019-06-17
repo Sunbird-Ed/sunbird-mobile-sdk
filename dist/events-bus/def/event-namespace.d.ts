@@ -2,5 +2,6 @@ export declare enum EventNamespace {
     TELEMETRY = "TELEMETRY",
     DOWNLOADS = "DOWNLOADS",
     CONTENT = "CONTENT",
-    ERROR = "ERROR"
+    ERROR = "ERROR",
+    STORAGE = "STORAGE"
 }
