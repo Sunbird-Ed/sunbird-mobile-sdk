@@ -9,7 +9,7 @@ export class UpdateSourceContentPathInDb {
     constructor(private dbService: DbService) {
     }
 
-    execute(context: TransferContentContext): Observable<void> {
+    execute(context: TransferContentContext): Observable<TransferContentContext> {
         return Observable.defer(async () => {
             this.dbService.beginTransaction();
 
@@ -29,6 +29,6 @@ export class UpdateSourceContentPathInDb {
             } catch (e) {
                 this.dbService.endTransaction(false);
             }
-        });
+        }).mapTo(context);
     }
 }

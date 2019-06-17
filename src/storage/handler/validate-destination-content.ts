@@ -16,14 +16,14 @@ export class ValidateDestinationContent {
     execute(context: TransferContentContext): Observable<TransferContentContext> {
         return Observable.defer(async () => {
             context.validContentIdsInDestination =
-                await this.getSubdirectoriesEntries(ContentUtil.getContentRootDir(context.destinationFolder!))
+                await this.getSubdirectoriesEntries(context.destinationFolder!)
                     .then((entries) => this.extractValidContentIdsInDestination(entries));
             return context;
         });
     }
 
     private async getSubdirectoriesEntries(directoryPath: string): Promise<Entry[]> {
-        return this.fileService.listDir(directoryPath)
+        return this.fileService.listDir(directoryPath.replace(/\/$/, ''))
             .then(entries => entries
                 .filter(e => e.isDirectory)
             );
@@ -33,9 +33,23 @@ export class ValidateDestinationContent {
         const validContentIdsInDestination: string[] = [];
 
         for (const entry of entries) {
-            const manifest = await this.extractManifest(entry);
-            if (this.validateManifest(manifest)) {
-                validContentIdsInDestination.push(entry.name);
+            if (entry.isDirectory) {
+                const manifest: Manifest = await this.extractManifest(entry);
+                if (!manifest) {
+                    continue;
+                }
+                const items = manifest.archive.items;
+                for (const item of items) {
+                    if (ContentUtil.readVisibility(item) === Visibility.PARENT ||
+                        !ContentUtil.isCompatible(this.appConfig, ContentUtil.readCompatibilityLevel(item))) {
+                        continue;
+                    }
+
+                    if (ContentUtil.isDraftContent(item.status) && ContentUtil.isExpired(item.expires)) {
+                        continue;
+                    }
+                    validContentIdsInDestination.push(entry.name);
+                }
             }
         }
 
@@ -60,7 +74,7 @@ export class ValidateDestinationContent {
     private validateItems(items: any[]): boolean {
         return items.every((item) =>
             ContentUtil.readVisibility(item) === Visibility.PARENT ||
-            ContentUtil.isCompatible(this.appConfig, ContentUtil.readCompatibilityLevel(item))
+            !ContentUtil.isCompatible(this.appConfig, ContentUtil.readCompatibilityLevel(item))
         ) && items.every((item) => ContentUtil.isDraftContent(item.status) && ContentUtil.isExpired(item.expires));
     }
 }

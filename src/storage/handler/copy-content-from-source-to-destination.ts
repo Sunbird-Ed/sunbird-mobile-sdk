@@ -19,8 +19,9 @@ export class CopyContentFromSourceToDestination {
                     // TODO: check if destinationFolder || contentRootFolder
                     await this.copyFolder(
                         content[COLUMN_NAME_PATH]!,
-                        ContentUtil.getContentRootDir(context.destinationFolder!) + content[COLUMN_NAME_IDENTIFIER]
+                        context.destinationFolder! + content[COLUMN_NAME_IDENTIFIER]
                     );
+                    await this.deleteFolder(content[COLUMN_NAME_PATH]!);
                 }
 
                 const moveContentResponse = context.duplicateContents!.find((m: MoveContentResponse) =>
@@ -28,11 +29,6 @@ export class CopyContentFromSourceToDestination {
                 );
 
                 if (!moveContentResponse) {
-                    await this.copyFolder(
-                        content[COLUMN_NAME_PATH]!,
-                        ContentUtil.getContentRootDir(context.destinationFolder!) + content[COLUMN_NAME_IDENTIFIER]
-                    );
-
                     continue;
                 }
 
@@ -102,16 +98,20 @@ export class CopyContentFromSourceToDestination {
         });
     }
 
-    private async copyToTempDestination(context: TransferContentContext, content: ContentEntry.SchemaMap, moveContentResponse: MoveContentResponse) {
-        await this.renameFolder(ContentUtil.getContentRootDir(context.destinationFolder!), moveContentResponse.identifier);
+    private async copyToTempDestination(context: TransferContentContext,
+                                        content: ContentEntry.SchemaMap,
+                                        moveContentResponse: MoveContentResponse) {
+        await this.renameFolder(context.destinationFolder!, moveContentResponse.identifier);
         await this.copyFolder(
             content[COLUMN_NAME_PATH]!,
-            ContentUtil.getContentRootDir(context.destinationFolder!) + content[COLUMN_NAME_IDENTIFIER]
+            context.destinationFolder! + content[COLUMN_NAME_IDENTIFIER]
         );
     }
 
-    private async removeSourceAndDestination(context: TransferContentContext, content: ContentEntry.SchemaMap, moveContentResponse: MoveContentResponse) {
-        await this.deleteFolder(ContentUtil.getContentRootDir(context.destinationFolder!) + moveContentResponse.identifier);
+    private async removeSourceAndDestination(context: TransferContentContext,
+                                             content: ContentEntry.SchemaMap,
+                                             moveContentResponse: MoveContentResponse) {
+        await this.deleteFolder(context.destinationFolder!.concat(moveContentResponse.identifier, '_temp'));
         await this.deleteFolder(content[COLUMN_NAME_PATH]!);
     }
 }

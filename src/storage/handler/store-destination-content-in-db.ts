@@ -30,20 +30,20 @@ export class StoreDestinationContentInDb {
                 switch (context.existingContentAction || ExistingContentAction.IGNORE) {
                     case ExistingContentAction.KEEP_HIGER_VERSION:
                         if (duplicateContent.status === MoveContentStatus.HIGHER_VERSION_IN_DESTINATION) {
-                            this.addDestinationContentInDb(duplicateContent.identifier, context.contentRootFolder!, false);
+                            this.addDestinationContentInDb(duplicateContent.identifier, context.destinationFolder!, false);
                         }
                         break;
                     case ExistingContentAction.KEEP_LOWER_VERSION:
                         if (duplicateContent.status === MoveContentStatus.LOWER_VERSION_IN_DESTINATION) {
-                            this.addDestinationContentInDb(duplicateContent.identifier, context.contentRootFolder!, true);
+                            this.addDestinationContentInDb(duplicateContent.identifier, context.destinationFolder!, true);
                         }
                         break;
                     case ExistingContentAction.KEEP_DESTINATION:
                     case ExistingContentAction.IGNORE:
                         if (duplicateContent.status === MoveContentStatus.LOWER_VERSION_IN_DESTINATION) {
-                            this.addDestinationContentInDb(duplicateContent.identifier, context.contentRootFolder!, true);
+                            this.addDestinationContentInDb(duplicateContent.identifier, context.destinationFolder!, true);
                         } else {
-                            this.addDestinationContentInDb(duplicateContent.identifier, context.contentRootFolder!, false);
+                            this.addDestinationContentInDb(duplicateContent.identifier, context.destinationFolder!, false);
                         }
                         break;
                 }
@@ -62,7 +62,7 @@ export class StoreDestinationContentInDb {
             if (addedContentIdentifiers) {
                 // Read content in destination folder.
                 for (const identifier of addedContentIdentifiers) {
-                    this.addDestinationContentInDb(identifier, context.contentRootFolder!, false);
+                    this.addDestinationContentInDb(identifier, context.destinationFolder!, false);
                 }
             }
         });

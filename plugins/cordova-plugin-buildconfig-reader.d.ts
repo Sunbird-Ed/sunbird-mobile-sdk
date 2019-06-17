@@ -15,6 +15,12 @@ declare var buildconfigreader: {
     renameDirectory: (sourceDirectory: string, toDirectoryName: string,
                       onSuccess: () => void, onError: (error: any) => void) => void;
 
+    getFreeUsableSpace: (directory: string, success:
+        (callbackUrl: string) => void, error: (error: string) => void) => void;
+
+    canWrite: (directory: string, success:
+        (callbackUrl: string) => void, error: (error: string) => void) => void;
+
     createDirectories: (parentDirectoryPath: string, listOfFolder: string[], success:
         (callbackUrl: any) => void, error: (error: string) => void) => void;
 
