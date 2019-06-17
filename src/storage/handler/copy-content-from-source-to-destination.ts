@@ -1,14 +1,15 @@
 import {MoveContentResponse, MoveContentStatus, TransferContentContext} from './transfer-content-handler';
 import {Observable} from 'rxjs';
 import {ContentEntry} from '../../content/db/schema';
-import {ExistingContentAction} from '..';
-import {ContentUtil} from '../../content/util/content-util';
-import {EventsBusService} from '../../events-bus';
+import {ExistingContentAction, StorageEventType, StorageTransferProgress} from '..';
+import {EventNamespace, EventsBusService} from '../../events-bus';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class CopyContentFromSourceToDestination {
-    constructor(eventsBusService: EventsBusService) {
+    private contentsTransferred = 0;
+
+    constructor(private eventsBusService: EventsBusService) {
     }
 
     execute(context: TransferContentContext): Observable<TransferContentContext> {
@@ -16,12 +17,12 @@ export class CopyContentFromSourceToDestination {
             for (const content of context.contentsInSource!) {
 
                 if (!context.duplicateContents || context.duplicateContents.length === 0) {
-                    // TODO: check if destinationFolder || contentRootFolder
                     await this.copyFolder(
                         content[COLUMN_NAME_PATH]!,
                         context.destinationFolder! + content[COLUMN_NAME_IDENTIFIER]
                     );
                     await this.deleteFolder(content[COLUMN_NAME_PATH]!);
+                    continue;
                 }
 
                 const moveContentResponse = context.duplicateContents!.find((m: MoveContentResponse) =>
@@ -62,9 +63,26 @@ export class CopyContentFromSourceToDestination {
                     case ExistingContentAction.IGNORE:
                     case ExistingContentAction.KEEP_DESTINATION:
                 }
+
+                this.emitContentTransferProgress(context);
             }
 
             return context;
+        });
+    }
+
+    private emitContentTransferProgress(context: TransferContentContext) {
+        this.eventsBusService.emit({
+            namespace: EventNamespace.STORAGE,
+            event: {
+                type: StorageEventType.TRANSFER_PROGRESS,
+                payload: {
+                    progress: {
+                        transferredCount: ++this.contentsTransferred,
+                        totalCount: context.contentsInSource!.length
+                    }
+                }
+            } as StorageTransferProgress
         });
     }
 

@@ -7,7 +7,10 @@ export interface StorageEvent extends EventsBusEvent {
 export interface StorageTransferProgress extends StorageEvent {
     type: StorageEventType.TRANSFER_PROGRESS;
     payload: {
-        progress: {transferSize: number, totalSize: number};
+        progress: {
+            transferredCount: number,
+            totalCount: number
+        };
     };
 }
 
