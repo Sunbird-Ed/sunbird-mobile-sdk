@@ -15,6 +15,7 @@ import {DbService} from '../../db';
 import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
 import {ValidateDestinationFolder} from './validate-destination-folder';
+import {DeleteSourceFolder} from './delete-source-folder';
 
 export enum MoveContentStatus {
     SAME_VERSION_IN_BOTH = 'SAME_VERSION_IN_BOTH',
@@ -80,6 +81,8 @@ export class TransferContentHandler {
         }).mergeMap((transferContext: TransferContentContext) => {
             return new CopyContentFromSourceToDestination(this.eventsBusService).execute(transferContext);
         }).mergeMap((transferContext: TransferContentContext) => {
+            return new DeleteSourceFolder(this.eventsBusService).execute(transferContext);
+        }).mergeMap((transferContext: TransferContentContext) => {
             return new UpdateSourceContentPathInDb(this.dbService).execute(transferContext);
         }).mergeMap((transferContext: TransferContentContext) => {
             return new StoreDestinationContentInDb(this.sdkConfig.appConfig,
@@ -91,18 +94,10 @@ export class TransferContentHandler {
                     type: StorageEventType.TRANSFER_COMPLETED
                 } as StorageTransferCompleted
             });
-        }).mapTo(undefined);
-
-        // return new ValidateDestinationFolder().execute(context)
-        //     .mergeMap(() => new DeleteDestinationFolder().execute())
-        //     .mergeMap(() => new DeviceMemoryCheck().execute())
-        //     .mergeMap(() => new ValidateDestinationContent(this.fileService, this.sdkConfig.appConfig).execute(context))
-        //     .mergeMap((transferContext: TransferContentContext) => new DuplicateContentCheck(this.dbService, this.fileService).execute(context))
-        //     .mergeMap((transferContext: TransferContentContext) => new CopyContentFromSourceToDestination(this.eventsBusService).execute(transferContext))
-        //     .mergeMap(() => new UpdateSourceContentPathInDb(this.dbService).execute(context))
-        //     .mergeMap(() => new StoreDestinationContentInDb(this.sdkConfig.appConfig,
-        //         this.fileService, this.dbService, this.deviceInfo).execute(context))
-        //     .mapTo(undefined);
+        }).mapTo(undefined).catch((e) => {
+            console.error('Error', e)
+            return Observable.of(undefined);
+        });
     }
 
     cancel(): Observable<undefined> {

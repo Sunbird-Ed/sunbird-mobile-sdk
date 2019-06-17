@@ -97,7 +97,6 @@ export class StoreDestinationContentInDb {
             const pragma = ContentUtil.readPragma(element);
             const compatibilityLevel = ContentUtil.readCompatibilityLevel(element);
             const pkgVersion = element.pkgVersion;
-            const artifactUrl = element.artifactUrl;
             let contentState = State.ONLY_SPINE.valueOf();
             const board = element.board;
             const medium = element.medium;

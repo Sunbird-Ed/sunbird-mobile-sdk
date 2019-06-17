@@ -16,7 +16,8 @@ export class UpdateSourceContentPathInDb {
 
             try {
                 for (const content of context.contentsInSource!) {
-                    content[COLUMN_NAME_PATH] = ContentUtil.getBasePath(context.destinationFolder + content[COLUMN_NAME_IDENTIFIER]);
+                    content[COLUMN_NAME_PATH] = ContentUtil.getBasePath(context.destinationFolder!.concat(
+                        content[COLUMN_NAME_IDENTIFIER], '/'));
 
                     await this.dbService.update({
                         table: ContentEntry.TABLE_NAME,

@@ -5,6 +5,8 @@ import {ExistingContentAction, StorageEventType, StorageTransferProgress} from '
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
+import {ArrayUtil} from '../../util/array-util';
+import {CancelationError} from '../errors/cancelation-error';
 
 export class CopyContentFromSourceToDestination {
     private contentsTransferred = 0;
@@ -16,25 +18,20 @@ export class CopyContentFromSourceToDestination {
         return Observable.defer(async () => {
             for (const content of context.contentsInSource!) {
 
-                if (!context.duplicateContents || context.duplicateContents.length === 0) {
-                    await this.copyFolder(
-                        content[COLUMN_NAME_PATH]!,
-                        context.destinationFolder! + content[COLUMN_NAME_IDENTIFIER]
-                    );
-                    await this.deleteFolder(content[COLUMN_NAME_PATH]!);
-                    continue;
+                if (false) {
+                    await this.deleteFolder(context.destinationFolder!.concat('temp', '/'));
+                    throw new CancelationError('CANCELLED');
                 }
-
                 const moveContentResponse = context.duplicateContents!.find((m: MoveContentResponse) =>
                     m.identifier === content[COLUMN_NAME_IDENTIFIER]
                 );
 
-                if (!moveContentResponse) {
+                if (!moveContentResponse || ArrayUtil.isEmpty(context.duplicateContents!)) {
+                    const destination = context.destinationFolder!.concat('temp', '/');
                     await this.copyFolder(
                         content[COLUMN_NAME_PATH]!,
-                        context.destinationFolder! + content[COLUMN_NAME_IDENTIFIER]
+                        destination + content[COLUMN_NAME_IDENTIFIER]
                     );
-                    await this.deleteFolder(content[COLUMN_NAME_PATH]!);
                     continue;
                 }
 
@@ -42,28 +39,28 @@ export class CopyContentFromSourceToDestination {
                     continue;
                 }
 
-                if (moveContentResponse.status === MoveContentStatus.SAME_VERSION_IN_BOTH) {
+                if (moveContentResponse!.status === MoveContentStatus.SAME_VERSION_IN_BOTH) {
                     continue;
                 }
 
                 switch (context.existingContentAction) {
                     case ExistingContentAction.KEEP_HIGER_VERSION:
-                        if (moveContentResponse.status === MoveContentStatus.HIGHER_VERSION_IN_DESTINATION) {
+                        if (moveContentResponse!.status === MoveContentStatus.HIGHER_VERSION_IN_DESTINATION) {
                             break;
                         }
-                        await this.copyToTempDestination(context, content, moveContentResponse);
-                        await this.removeSourceAndDestination(context, content, moveContentResponse);
+                        await this.copyToTempDestination(context, content, moveContentResponse!);
+                        await this.removeSourceAndDestination(context, content, moveContentResponse!);
                         break;
                     case ExistingContentAction.KEEP_LOWER_VERSION:
-                        if (moveContentResponse.status === MoveContentStatus.LOWER_VERSION_IN_DESTINATION) {
+                        if (moveContentResponse!.status === MoveContentStatus.LOWER_VERSION_IN_DESTINATION) {
                             break;
                         }
-                        await this.copyToTempDestination(context, content, moveContentResponse);
-                        await this.removeSourceAndDestination(context, content, moveContentResponse);
+                        await this.copyToTempDestination(context, content, moveContentResponse!);
+                        await this.removeSourceAndDestination(context, content, moveContentResponse!);
                         break;
                     case ExistingContentAction.KEEP_SOURCE:
-                        await this.copyToTempDestination(context, content, moveContentResponse);
-                        await this.removeSourceAndDestination(context, content, moveContentResponse);
+                        await this.copyToTempDestination(context, content, moveContentResponse!);
+                        await this.removeSourceAndDestination(context, content, moveContentResponse!);
                         break;
                     case ExistingContentAction.IGNORE:
                     case ExistingContentAction.KEEP_DESTINATION:
@@ -108,6 +105,7 @@ export class CopyContentFromSourceToDestination {
         if (!sourceDirectory || !destinationDirectory) {
             return;
         }
+
         return new Promise<undefined>((resolve, reject) => {
             buildconfigreader.copyDirectory(sourceDirectory, destinationDirectory, () => {
                 resolve();
