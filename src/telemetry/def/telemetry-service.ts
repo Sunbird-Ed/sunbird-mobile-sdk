@@ -46,4 +46,6 @@ export interface TelemetryService {
     getTelemetryStat(): Observable<TelemetryStat>;
 
     sync(ignoreSyncThreshold?: boolean): Observable<TelemetrySyncStat>;
+
+    resetDeviceRegisterTTL(): Observable<undefined>;
 }

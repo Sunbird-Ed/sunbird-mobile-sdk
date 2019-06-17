@@ -1,11 +1,11 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request, ApiConfig} from '../../api';
 import {InteractSubType, InteractType, TelemetrySyncStat} from '..';
 import {Observable} from 'rxjs';
 import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
 import {StringToGzippedString} from '../impl/string-to-gzipped-string';
 import {TelemetryEntriesToStringPreprocessor} from '../impl/telemetry-entries-to-string-preprocessor';
 import {KeyValueStore} from '../../key-value-store';
-import {TelemetryConfig} from '../config/telemetry-config';
+import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo, DeviceSpec} from '../../util/device';
 import {DbService, InsertQuery} from '../../db';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
@@ -18,6 +18,7 @@ import COLUMN_NAME_NUMBER_OF_EVENTS = TelemetryProcessedEntry.COLUMN_NAME_NUMBER
 import COLUMN_NAME_PRIORITY = TelemetryEntry.COLUMN_NAME_PRIORITY;
 import COLUMN_NAME_DATA = TelemetryProcessedEntry.COLUMN_NAME_DATA;
 import COLUMN_NAME_EVENT = TelemetryEntry.COLUMN_NAME_EVENT;
+import { TelemetryConfig } from '../config/telemetry-config';
 
 // import * as pako from 'pako';
 
@@ -41,9 +42,11 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
     private static readonly REGISTER_API_FAILURE_TTL = 60 * 60 * 1000;
 
     private readonly preprocessors: TelemetrySyncPreprocessor[];
+    private readonly telemetryConfig: TelemetryConfig;
+    private readonly apiConfig: ApiConfig;
 
     constructor(private dbService: DbService,
-                private telemetryConfig: TelemetryConfig,
+                private sdkConfig: SdkConfig,
                 private deviceInfo: DeviceInfo,
                 private frameworkService: FrameworkService,
                 private keyValueStore?: KeyValueStore,
@@ -52,6 +55,15 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
             new TelemetryEntriesToStringPreprocessor(),
             new StringToGzippedString()
         ];
+        this.telemetryConfig = this.sdkConfig.telemetryConfig;
+        this.apiConfig = this.sdkConfig.apiConfig;
+    }
+
+    resetDeviceRegisterTTL(): Observable<undefined> {
+        return Observable.zip(
+            this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY, ''),
+            this.keyValueStore!.setValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY, '')
+        ).mapTo(undefined);
     }
 
     handle(ignoreSyncThreshold: boolean): Observable<TelemetrySyncStat> {
@@ -125,7 +137,9 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
                 .withBody({
                     request: {
                         dspec: deviceSpec,
-                        channel: activeChannelId
+                        channel: activeChannelId,
+                        fcmToken: this.telemetryConfig.fcmToken,
+                        producer: this.apiConfig.api_authentication.producerId
                     }
                 })
                 .build();
