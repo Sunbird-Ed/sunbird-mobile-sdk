@@ -82,7 +82,7 @@ export class StorageServiceImpl implements StorageService {
         )
             .handle(transferContentsRequest)
             .mergeMap(() => this.getStorageDestination())
-            .mergeMap((storageDestination: StorageDestination) =>
+            .map((storageDestination: StorageDestination) =>
                 storageDestination === StorageDestination.EXTERNAL_STORAGE ? StorageDestination.INTERNAL_STORAGE : StorageDestination.EXTERNAL_STORAGE
             )
             .mergeMap((newStorageDestination) =>

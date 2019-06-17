@@ -22,6 +22,7 @@ export class CopyContentFromSourceToDestination {
                         context.destinationFolder! + content[COLUMN_NAME_IDENTIFIER]
                     );
                     await this.deleteFolder(content[COLUMN_NAME_PATH]!);
+                    this.emitContentTransferProgress(context);
                     continue;
                 }
 
@@ -30,14 +31,17 @@ export class CopyContentFromSourceToDestination {
                 );
 
                 if (!moveContentResponse) {
+                    this.emitContentTransferProgress(context);
                     continue;
                 }
 
                 if (!context.existingContentAction) {
+                    this.emitContentTransferProgress(context);
                     continue;
                 }
 
                 if (moveContentResponse.status === MoveContentStatus.SAME_VERSION_IN_BOTH) {
+                    this.emitContentTransferProgress(context);
                     continue;
                 }
 
