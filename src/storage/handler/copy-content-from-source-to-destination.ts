@@ -31,6 +31,11 @@ export class CopyContentFromSourceToDestination {
                 );
 
                 if (!moveContentResponse) {
+                    await this.copyFolder(
+                        content[COLUMN_NAME_PATH]!,
+                        context.destinationFolder! + content[COLUMN_NAME_IDENTIFIER]
+                    );
+                    await this.deleteFolder(content[COLUMN_NAME_PATH]!);
                     this.emitContentTransferProgress(context);
                     continue;
                 }
@@ -91,6 +96,9 @@ export class CopyContentFromSourceToDestination {
     }
 
     private async deleteFolder(deletedirectory: string): Promise<undefined> {
+        if (!deletedirectory) {
+            return;
+        }
         return new Promise<undefined>((resolve, reject) => {
             buildconfigreader.rm(deletedirectory, '', () => {
                 resolve();
@@ -101,6 +109,9 @@ export class CopyContentFromSourceToDestination {
     }
 
     private async copyFolder(sourceDirectory: string, destinationDirectory: string): Promise<undefined> {
+        if (!sourceDirectory || !destinationDirectory) {
+            return;
+        }
         return new Promise<undefined>((resolve, reject) => {
             buildconfigreader.copyDirectory(sourceDirectory, destinationDirectory, () => {
                 resolve();
@@ -111,6 +122,9 @@ export class CopyContentFromSourceToDestination {
     }
 
     private async renameFolder(sourceDirectory: string, toDirectoryName: string): Promise<undefined> {
+        if (!sourceDirectory) {
+            return;
+        }
         return new Promise<undefined>((resolve, reject) => {
             buildconfigreader.renameDirectory(sourceDirectory, toDirectoryName, () => {
                 resolve();

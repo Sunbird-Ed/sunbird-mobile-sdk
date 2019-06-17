@@ -20,17 +20,21 @@ export class DuplicateContentCheck {
 
     execute(context: TransferContentContext): Observable<TransferContentContext> {
         return Observable.defer(async () => {
-            const contentEntries = await this.getContentsInDb(context);
-            const duplicateContents = (await this.generateMoveContentResponses(context, contentEntries)).moveContentDupContentList;
+            const contentEntries = await this.getContentsInDb(context.contentIds!);
+            let duplicateContentsInDb: ContentEntry.SchemaMap[] = [];
+            if (context.validContentIdsInDestination && context.validContentIdsInDestination.length) {
+                duplicateContentsInDb = await this.getContentsInDb(context.validContentIdsInDestination);
+            }
+            const duplicateContents = (await this.generateMoveContentResponses(context, duplicateContentsInDb)).moveContentDupContentList;
 
             context.contentsInSource = contentEntries;
             context.duplicateContents = duplicateContents;
         }).mapTo(context);
     }
 
-    private async getContentsInDb(context: TransferContentContext): Promise<ContentEntry.SchemaMap[]> {
-        if (context.contentIds!.length) {
-            return this.dbService.execute(ContentUtil.getFindAllContentsWithIdentifierQuery(context.contentIds!)).toPromise();
+    private async getContentsInDb(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {
+        if (contentIds.length) {
+            return this.dbService.execute(ContentUtil.getFindAllContentsWithIdentifierQuery(contentIds)).toPromise();
         }
 
         return this.dbService.execute(ContentUtil.getFindAllContentsQuery()).toPromise();
@@ -61,9 +65,7 @@ export class DuplicateContentCheck {
         const moveContentDupContentList: MoveContentResponse[] = [];
 
         for (const content of contents) {
-            const destPkgVersion = await this.getPkgVersionFromFile(
-                ContentUtil.getContentRootDir(context.destinationFolder!), content[COLUMN_NAME_IDENTIFIER]
-            );
+            const destPkgVersion = await this.getPkgVersionFromFile(context.destinationFolder!, content[COLUMN_NAME_IDENTIFIER]);
             const srcPkgVersion = ContentUtil.readPkgVersion(JSON.parse(content[COLUMN_NAME_LOCAL_DATA]));
             if (destPkgVersion !== -1) {
                 if (destPkgVersion > srcPkgVersion) {
