@@ -1,7 +1,7 @@
-import {ExistingContentAction, TransferContentsRequest} from '..';
+import {ExistingContentAction, StorageEventType, StorageTransferCompleted, TransferContentsRequest} from '..';
 import {Content} from '../../content';
 import {Observable} from 'rxjs';
-import {EventsBusService} from '../../events-bus';
+import {EventNamespace, EventsBusService} from '../../events-bus';
 import {DeviceMemoryCheck} from './device-memory-check';
 import {ValidateDestinationContent} from './validate-destination-content';
 import {DeleteDestinationFolder} from './delete-destination-folder';
@@ -81,6 +81,13 @@ export class TransferContentHandler {
         }).mergeMap((transferContext: TransferContentContext) => {
             return new StoreDestinationContentInDb(this.sdkConfig.appConfig,
                 this.fileService, this.dbService, this.deviceInfo).execute(transferContext);
+        }).do(() => {
+            this.eventsBusService.emit({
+                namespace: EventNamespace.STORAGE,
+                event: {
+                    type: StorageEventType.TRANSFER_COMPLETED
+                } as StorageTransferCompleted
+            });
         }).mapTo(undefined);
 
         // return new ValidateDestinationFolder().execute(context)
