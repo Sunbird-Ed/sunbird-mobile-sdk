@@ -303,6 +303,10 @@ export class SunbirdSdk {
         for (const key in update) {
             if (update.hasOwnProperty(key)) {
                 this.sdkConfig.contentServiceConfig[key] = update[key];
+
+                if (key === 'fcmToken') {
+                    this.telemetryService.resetDeviceRegisterTTL();
+                }
             }
         }
     }

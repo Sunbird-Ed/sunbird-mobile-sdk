@@ -179,7 +179,7 @@ export class TelemetryServiceImpl implements TelemetryService {
         const exportTelemetryContext: ExportTelemetryContext = {destinationFolder: telemetryExportRequest.destinationFolder};
         const telemetrySyncHandler: TelemetrySyncHandler = new TelemetrySyncHandler(
             this.dbService,
-            this.telemetryConfig,
+            this.sdkConfig,
             this.deviceInfo,
             this.frameworkService
         );
@@ -230,6 +230,16 @@ export class TelemetryServiceImpl implements TelemetryService {
         });
     }
 
+    resetDeviceRegisterTTL(): Observable<undefined> {
+        return new TelemetrySyncHandler(
+            this.dbService,
+            this.sdkConfig,
+            this.deviceInfo,
+            this.frameworkService,
+            this.keyValueStore,
+            this.apiService
+        ).resetDeviceRegisterTTL();
+    }
 
     sync(ignoreSyncThreshold: boolean = false): Observable<TelemetrySyncStat> {
         return this.networkInfoService.networkStatus$
@@ -244,7 +254,7 @@ export class TelemetryServiceImpl implements TelemetryService {
             .mergeMap((shouldIgnoreSyncThreshold) => {
                 return new TelemetrySyncHandler(
                     this.dbService,
-                    this.telemetryConfig,
+                    this.sdkConfig,
                     this.deviceInfo,
                     this.frameworkService,
                     this.keyValueStore,
