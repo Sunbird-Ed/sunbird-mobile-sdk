@@ -31,7 +31,6 @@ export interface TransferContentContext {
     contentIds?: string[];
     validContentIdsInDestination?: string[];
     destinationFolder?: string;
-    contentRootFolder?: string;
     contentsInSource?: ContentEntry.SchemaMap[];
     contentsInDestination?: Content[];
     existingContentAction?: ExistingContentAction;
