@@ -4,6 +4,7 @@ import {DbService} from '../../db';
 import {ContentEntry} from '../../content/db/schema';
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
+import {ContentUtil} from '../../content/util/content-util';
 
 export class UpdateSourceContentPathInDb {
     constructor(private dbService: DbService) {
@@ -15,7 +16,7 @@ export class UpdateSourceContentPathInDb {
 
             try {
                 for (const content of context.contentsInSource!) {
-                    content[COLUMN_NAME_PATH] = context.destinationFolder + content[COLUMN_NAME_IDENTIFIER];
+                    content[COLUMN_NAME_PATH] = ContentUtil.getBasePath(context.destinationFolder + content[COLUMN_NAME_IDENTIFIER]);
 
                     await this.dbService.update({
                         table: ContentEntry.TABLE_NAME,
