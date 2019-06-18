@@ -11,4 +11,5 @@ export interface TransferContentsRequest {
     existingContentAction: ExistingContentAction;
     destinationFolder: string;
     deleteDestination: boolean;
+    shouldMergeInDestination?: boolean;
 }

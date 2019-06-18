@@ -72,7 +72,8 @@ export class TransferContentHandler {
     ) {
     }
 
-    transfer({contentIds, existingContentAction, deleteDestination, destinationFolder}: TransferContentsRequest): Observable<undefined> {
+    transfer({contentIds, existingContentAction, deleteDestination, destinationFolder, shouldMergeInDestination}: TransferContentsRequest): Observable<undefined> {
+        this.context.shouldMergeInDestination = shouldMergeInDestination;
         this.context.contentIds = contentIds;
         this.context.existingContentAction = existingContentAction;
         this.context.deleteDestination = deleteDestination;
