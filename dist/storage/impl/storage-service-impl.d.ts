@@ -17,13 +17,17 @@ export declare class StorageServiceImpl implements StorageService {
     private static readonly STORAGE_DESTINATION;
     private contentsToTransfer;
     private transferContentHandler;
+    private lastTransferContentsRequest?;
+    private currentStorageDestination;
+    private availableStorageVolumes;
     constructor(eventsBusService: EventsBusService, sharedPreferences: SharedPreferences, dbService: DbService, deviceInfo: DeviceInfo, fileService: FileService, sdkConfig: SdkConfig);
+    onInit(): Observable<undefined>;
+    getStorageDestinationDirectoryPath(): string;
     cancelTransfer(): Observable<undefined>;
     getStorageDestination(): Observable<StorageDestination>;
     getStorageDestinationVolumeInfo(): Observable<StorageVolume>;
     getToTransferContents(): Observable<Content[]>;
     getTransferringContent(): Observable<Content | undefined>;
-    onInit(): Observable<undefined>;
     retryCurrentTransfer(): Observable<undefined>;
     transferContents(transferContentsRequest: TransferContentsRequest): Observable<undefined>;
 }
