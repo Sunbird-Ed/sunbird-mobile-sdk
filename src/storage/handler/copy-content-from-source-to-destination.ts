@@ -28,10 +28,13 @@ export class CopyContentFromSourceToDestination {
 
                 if (!moveContentResponse || ArrayUtil.isEmpty(context.duplicateContents!)) {
                     const destination = context.destinationFolder!.concat('temp', '/');
-                    await this.copyFolder(
-                        content[COLUMN_NAME_PATH]!,
-                        destination + content[COLUMN_NAME_IDENTIFIER]
-                    );
+                    try {
+                        await this.copyFolder(
+                            content[COLUMN_NAME_PATH]!,
+                            destination + content[COLUMN_NAME_IDENTIFIER]
+                        );
+                    } catch (e) {
+                    }
                     continue;
                 }
 
