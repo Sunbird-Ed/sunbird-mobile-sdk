@@ -5,7 +5,7 @@ import {TransferContentsRequest} from './storage-requests';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 
 export interface StorageService extends SdkServiceOnInitDelegate {
-    getStorageDestinationDirectoryPath(forDestination: StorageDestination): Observable<string>;
+    getStorageDestinationDirectoryPath(): Observable<string>;
 
     getStorageDestinationVolumeInfo(): Observable<StorageVolume>;
 
