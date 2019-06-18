@@ -51,7 +51,7 @@ export interface Manifest {
 }
 
 export class TransferContentHandler {
-    private context: TransferContentContext = {};
+    private readonly  context: TransferContentContext = {};
 
     constructor(
         private sdkConfig: SdkConfig,
@@ -63,12 +63,10 @@ export class TransferContentHandler {
     }
 
     transfer({contentIds, existingContentAction, deleteDestination, destinationFolder}: TransferContentsRequest): Observable<undefined> {
-        this.context = {
-            contentIds,
-            existingContentAction,
-            deleteDestination,
-            destinationFolder
-        };
+        this.context.contentIds = contentIds;
+        this.context.existingContentAction = existingContentAction;
+        this.context.deleteDestination = deleteDestination;
+        this.context.destinationFolder = destinationFolder;
 
         return new ValidateDestinationFolder(this.fileService).execute(this.context).mergeMap((transferContext: TransferContentContext) => {
             return new DeleteDestinationFolder().execute(transferContext);
@@ -94,8 +92,9 @@ export class TransferContentHandler {
                     type: StorageEventType.TRANSFER_COMPLETED
                 } as StorageTransferCompleted
             });
-        }).mapTo(undefined).catch((e) => {
-            console.error('Error', e)
+        }).mapTo(undefined).
+        catch((e) => {
+            console.error('Error', e);
             return Observable.of(undefined);
         });
     }

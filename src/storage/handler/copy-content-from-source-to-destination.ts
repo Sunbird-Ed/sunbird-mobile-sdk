@@ -18,7 +18,7 @@ export class CopyContentFromSourceToDestination {
         return Observable.defer(async () => {
             for (const content of context.contentsInSource!) {
 
-                if (false) {
+                if (context.hasTransferCancelled) {
                     await this.deleteFolder(context.destinationFolder!.concat('temp', '/'));
                     throw new CancelationError('CANCELLED');
                 }
