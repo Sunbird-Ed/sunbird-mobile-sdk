@@ -41,6 +41,7 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     importTelemetry(importTelemetryRequest: TelemetryImportRequest): Observable<boolean>;
     exportTelemetry(telemetryExportRequest: TelemetryExportRequest): Observable<TelemetryExportResponse>;
     getTelemetryStat(): Observable<TelemetryStat>;
+    resetDeviceRegisterTTL(): Observable<undefined>;
     sync(ignoreSyncThreshold?: boolean): Observable<TelemetrySyncStat>;
     private decorateAndPersist;
 }

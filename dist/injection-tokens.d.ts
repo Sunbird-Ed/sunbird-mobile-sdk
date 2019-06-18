@@ -31,5 +31,6 @@ export declare const InjectionTokens: {
     TELEMETRY_DECORATOR: symbol;
     STORAGE_SERVICE: symbol;
     NOTIFICATION_SERVICE: symbol;
+    ERROR_LOGGER_SERVICE: symbol;
     NETWORKINFO_SERVICE: symbol;
 };

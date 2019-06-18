@@ -69,4 +69,6 @@ export declare class ContentUtil {
     static addOrUpdateRefCount(refCount: number): number;
     static isNotUnit(mimeType: any, visibility: any): boolean;
     static getContentAttribute(data: any): string;
+    static getFindAllContentsWithIdentifierQuery(identifiers: string[]): string;
+    static getFindAllContentsQuery(): string;
 }

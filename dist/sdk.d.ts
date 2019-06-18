@@ -22,6 +22,7 @@ import { PlayerService } from './player';
 import { TelemetryConfig } from './telemetry/config/telemetry-config';
 import { StorageService } from './storage';
 import { NotificationService } from './notification/def/notification-service';
+import { ErrorLoggerService } from './error-stack/def/error-logger-service';
 import { NetworkInfoService } from './util/network';
 export declare class SunbirdSdk {
     private static _instance?;
@@ -52,6 +53,7 @@ export declare class SunbirdSdk {
     readonly deviceInfo: DeviceInfo;
     readonly storageService: StorageService;
     readonly notificationService: NotificationService;
+    readonly errorLoggerService: ErrorLoggerService;
     readonly networkInfoService: NetworkInfoService;
     init(sdkConfig: SdkConfig): Promise<void>;
     updateTelemetryConfig(update: Partial<TelemetryConfig>): void;
