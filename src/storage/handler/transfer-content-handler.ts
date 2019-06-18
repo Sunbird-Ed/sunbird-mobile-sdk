@@ -61,7 +61,7 @@ export interface Manifest {
 }
 
 export class TransferContentHandler {
-    private readonly  context: TransferContentContext = {};
+    private readonly context: TransferContentContext = {};
 
     constructor(
         private sdkConfig: SdkConfig,
@@ -121,7 +121,8 @@ export class TransferContentHandler {
             }
 
             console.error('Error', e);
-            return Observable.of(undefined);
+
+            return Observable.throw(e);
         });
     }
 

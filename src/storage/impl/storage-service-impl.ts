@@ -42,6 +42,17 @@ export class StorageServiceImpl implements StorageService {
         );
     }
 
+    getStorageDestinationDirectoryPath(forDestination: StorageDestination): Observable<string> {
+        if (forDestination === StorageDestination.INTERNAL_STORAGE) {
+            return Observable.of(cordova.file.externalDataDirectory);
+        }
+
+        return this.deviceInfo.getStorageVolumes()
+            .map((storageVolumes) => storageVolumes
+                .find((volume) => volume.storageDestination === forDestination)!)
+            .map((volume) => volume.info.path);
+    }
+
     cancelTransfer(): Observable<undefined> {
         return this.transferContentHandler.cancel();
     }
