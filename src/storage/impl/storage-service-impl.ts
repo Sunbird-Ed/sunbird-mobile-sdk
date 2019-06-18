@@ -20,6 +20,7 @@ export class StorageServiceImpl implements StorageService {
     private contentsToTransfer: SharedPreferencesSetCollection<string>;
     private transferContentHandler: TransferContentHandler;
     private lastTransferContentsRequest?: TransferContentsRequest;
+    private availableStorageVolumes: StorageVolume[] = [];
 
     constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
@@ -42,15 +43,25 @@ export class StorageServiceImpl implements StorageService {
         );
     }
 
-    getStorageDestinationDirectoryPath(forDestination: StorageDestination): Observable<string> {
-        if (forDestination === StorageDestination.INTERNAL_STORAGE) {
-            return Observable.of(cordova.file.externalDataDirectory);
-        }
-
+    onInit(): Observable<undefined> {
         return this.deviceInfo.getStorageVolumes()
-            .map((storageVolumes) => storageVolumes
-                .find((volume) => volume.storageDestination === forDestination)!)
-            .map((volume) => volume.info.path);
+            .do((storageVolumes) => {
+                this.availableStorageVolumes = storageVolumes;
+            })
+            .mapTo(undefined);
+    }
+
+    getStorageDestinationDirectoryPath(): Observable<string> {
+        return this.sharedPreferences
+            .getString(StorageServiceImpl.STORAGE_DESTINATION)
+            .map((storageDestination) => {
+                if (storageDestination === StorageDestination.INTERNAL_STORAGE) {
+                    return cordova.file.externalDataDirectory;
+                }
+
+                return this.availableStorageVolumes
+                    .find((volume) => volume.storageDestination === storageDestination)!.info.path;
+            });
     }
 
     cancelTransfer(): Observable<undefined> {
@@ -66,15 +77,11 @@ export class StorageServiceImpl implements StorageService {
     }
 
     getStorageDestinationVolumeInfo(): Observable<StorageVolume> {
-        return Observable.zip(
-            this.getStorageDestination(),
-            this.deviceInfo.getStorageVolumes()
-        ).map((results) => {
-            const storageDestination = results[0];
-            const storageVolumes = results[1];
-            return storageVolumes
-                .find((volume) => volume.storageDestination === storageDestination)!;
-        });
+        return this.getStorageDestination()
+            .map((storageDestination) => {
+                return this.availableStorageVolumes
+                    .find((volume) => volume.storageDestination === storageDestination)!;
+            });
     }
 
     getToTransferContents(): Observable<Content[]> {
@@ -82,10 +89,6 @@ export class StorageServiceImpl implements StorageService {
     }
 
     getTransferringContent(): Observable<Content | undefined> {
-        return Observable.of(undefined);
-    }
-
-    onInit(): Observable<undefined> {
         return Observable.of(undefined);
     }
 
