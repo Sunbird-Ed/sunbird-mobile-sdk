@@ -1,9 +1,9 @@
 import {SunbirdError} from '../../sunbird-error';
 
-export class CancelationError extends SunbirdError {
+export class CancellationError extends SunbirdError {
     constructor(message: string) {
         super(message, 'CANCELLED');
 
-        Object.setPrototypeOf(this, CancelationError.prototype);
+        Object.setPrototypeOf(this, CancellationError.prototype);
     }
 }

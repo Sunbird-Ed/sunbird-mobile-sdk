@@ -1,4 +1,11 @@
-import {ExistingContentAction, StorageEventType, StorageTransferCompleted, TransferContentsRequest} from '..';
+import {
+    ExistingContentAction,
+    StorageEventType,
+    StorageTransferCompleted,
+    StorageTransferFailedDuplicateContent,
+    StorageTransferRevertCompleted,
+    TransferContentsRequest
+} from '..';
 import {Content} from '../../content';
 import {Observable} from 'rxjs';
 import {EventNamespace, EventsBusService} from '../../events-bus';
@@ -16,6 +23,8 @@ import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
 import {ValidateDestinationFolder} from './validate-destination-folder';
 import {DeleteSourceFolder} from './delete-source-folder';
+import {CancellationError} from '../errors/cancellation-error';
+import {DuplicateContentError} from '../errors/duplicate-content-error';
 
 export enum MoveContentStatus {
     SAME_VERSION_IN_BOTH = 'SAME_VERSION_IN_BOTH',
@@ -38,6 +47,7 @@ export interface TransferContentContext {
     duplicateContents?: MoveContentResponse[];
     deleteDestination?: boolean;
     hasTransferCancelled?: boolean;
+    shouldMergeInDestination?: boolean;
 }
 
 export interface Manifest {
@@ -92,8 +102,23 @@ export class TransferContentHandler {
                     type: StorageEventType.TRANSFER_COMPLETED
                 } as StorageTransferCompleted
             });
-        }).mapTo(undefined).
-        catch((e) => {
+        }).mapTo(undefined).catch((e) => {
+            if (e instanceof CancellationError) {
+                this.eventsBusService.emit({
+                    namespace: EventNamespace.STORAGE,
+                    event: {
+                        type: StorageEventType.TRANSFER_REVERT_COMPLETED
+                    } as StorageTransferRevertCompleted
+                });
+            } else if (e instanceof DuplicateContentError) {
+                this.eventsBusService.emit({
+                    namespace: EventNamespace.STORAGE,
+                    event: {
+                        type: StorageEventType.TRANSFER_FAILED_DUPLICATE_CONTENT
+                    } as StorageTransferFailedDuplicateContent
+                });
+            }
+
             console.error('Error', e);
             return Observable.of(undefined);
         });

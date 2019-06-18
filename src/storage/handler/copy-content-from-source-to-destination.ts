@@ -3,10 +3,10 @@ import {Observable} from 'rxjs';
 import {ContentEntry} from '../../content/db/schema';
 import {ExistingContentAction, StorageEventType, StorageTransferProgress} from '..';
 import {EventNamespace, EventsBusService} from '../../events-bus';
+import {ArrayUtil} from '../../util/array-util';
+import {CancellationError} from '../errors/cancellation-error';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
-import {ArrayUtil} from '../../util/array-util';
-import {CancelationError} from '../errors/cancelation-error';
 
 export class CopyContentFromSourceToDestination {
     private contentsTransferred = 0;
@@ -20,7 +20,7 @@ export class CopyContentFromSourceToDestination {
 
                 if (context.hasTransferCancelled) {
                     await this.deleteFolder(context.destinationFolder!.concat('temp', '/'));
-                    throw new CancelationError('CANCELLED');
+                    throw new CancellationError('CANCELLED');
                 }
                 const moveContentResponse = context.duplicateContents!.find((m: MoveContentResponse) =>
                     m.identifier === content[COLUMN_NAME_IDENTIFIER]
