@@ -20,7 +20,9 @@ export class StorageServiceImpl implements StorageService {
     private contentsToTransfer: SharedPreferencesSetCollection<string>;
     private transferContentHandler: TransferContentHandler;
     private lastTransferContentsRequest?: TransferContentsRequest;
-    private availableStorageVolumes: StorageVolume[] = [];
+
+    private currentStorageDestination: StorageDestination;
+    private availableStorageVolumes: StorageVolume[];
 
     constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
@@ -44,24 +46,22 @@ export class StorageServiceImpl implements StorageService {
     }
 
     onInit(): Observable<undefined> {
-        return this.deviceInfo.getStorageVolumes()
-            .do((storageVolumes) => {
-                this.availableStorageVolumes = storageVolumes;
-            })
-            .mapTo(undefined);
+        return Observable.zip(
+            this.deviceInfo.getStorageVolumes(),
+            this.getStorageDestination()
+        ).do((r) => {
+            this.availableStorageVolumes = r[0];
+            this.currentStorageDestination = r[1];
+        }).mapTo(undefined);
     }
 
-    getStorageDestinationDirectoryPath(): Observable<string> {
-        return this.sharedPreferences
-            .getString(StorageServiceImpl.STORAGE_DESTINATION)
-            .map((storageDestination) => {
-                if (storageDestination === StorageDestination.INTERNAL_STORAGE) {
-                    return cordova.file.externalDataDirectory;
-                }
+    getStorageDestinationDirectoryPath(): string {
+        if (this.currentStorageDestination === StorageDestination.INTERNAL_STORAGE) {
+            return cordova.file.externalDataDirectory;
+        }
 
-                return this.availableStorageVolumes
-                    .find((volume) => volume.storageDestination === storageDestination)!.info.path;
-            });
+        return this.availableStorageVolumes
+            .find((volume) => volume.storageDestination === this.currentStorageDestination)!.info.path;
     }
 
     cancelTransfer(): Observable<undefined> {
@@ -113,6 +113,9 @@ export class StorageServiceImpl implements StorageService {
                 storageDestination === StorageDestination.EXTERNAL_STORAGE ? StorageDestination.INTERNAL_STORAGE :
                     StorageDestination.EXTERNAL_STORAGE
             )
+            .do((newStorageDestination) => {
+                this.currentStorageDestination = newStorageDestination;
+            })
             .mergeMap((newStorageDestination) =>
                 this.sharedPreferences.putString(StorageServiceImpl.STORAGE_DESTINATION, newStorageDestination)
             );
