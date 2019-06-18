@@ -19,6 +19,7 @@ export class StorageServiceImpl implements StorageService {
     private static readonly STORAGE_DESTINATION = StorageKeys.KEY_STORAGE_DESTINATION;
     private contentsToTransfer: SharedPreferencesSetCollection<string>;
     private transferContentHandler: TransferContentHandler;
+    private lastTransferContentsRequest?: TransferContentsRequest;
 
     constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
@@ -78,10 +79,19 @@ export class StorageServiceImpl implements StorageService {
     }
 
     retryCurrentTransfer(): Observable<undefined> {
+        if (this.lastTransferContentsRequest) {
+            return this.transferContents({
+                ...this.lastTransferContentsRequest,
+                shouldMergeInDestination: true
+            });
+        }
+
         return Observable.of(undefined);
     }
 
     transferContents(transferContentsRequest: TransferContentsRequest): Observable<undefined> {
+        this.lastTransferContentsRequest = transferContentsRequest;
+
         return this.transferContentHandler
             .transfer(transferContentsRequest)
             .mergeMap(() => this.getStorageDestination())
