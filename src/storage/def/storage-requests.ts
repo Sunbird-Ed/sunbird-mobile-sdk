@@ -1,7 +1,15 @@
-import {StorageDestination} from './storage-destination';
-import {Content} from '../../content';
+export enum ExistingContentAction {
+    IGNORE = 'IGNORE',
+    KEEP_HIGER_VERSION = 'KEEP_HIGER_VERSION',
+    KEEP_LOWER_VERSION = 'KEEP_LOWER_VERSION',
+    KEEP_SOURCE = 'KEEP_SOURCE',
+    KEEP_DESTINATION = 'KEEP_DESTINATION'
+}
 
 export interface TransferContentsRequest {
-    storageDestination: StorageDestination;
-    contents: Content[];
+    contentIds: string[];
+    existingContentAction: ExistingContentAction;
+    destinationFolder: string;
+    deleteDestination: boolean;
+    shouldMergeInDestination?: boolean;
 }
