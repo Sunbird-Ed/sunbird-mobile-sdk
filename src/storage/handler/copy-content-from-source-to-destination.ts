@@ -78,10 +78,6 @@ export class CopyContentFromSourceToDestination {
                 this.emitContentTransferProgress(context);
             }
 
-            if (context.hasTransferCancelled) {
-                context.hasTransferCancelled = false;
-            }
-
             return context;
         });
     }
