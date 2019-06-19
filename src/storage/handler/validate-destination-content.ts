@@ -34,10 +34,16 @@ export class ValidateDestinationContent {
 
         for (const entry of entries) {
             if (entry.isDirectory) {
-                const manifest: Manifest = await this.extractManifest(entry);
+                let manifest: Manifest | undefined;
+                try {
+                    manifest = await this.extractManifest(entry);
+                } catch (e) {
+                }
+
                 if (!manifest) {
                     continue;
                 }
+
                 const items = manifest.archive.items;
                 for (const item of items) {
                     if (ContentUtil.readVisibility(item) === Visibility.PARENT ||

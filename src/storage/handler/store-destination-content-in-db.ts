@@ -76,11 +76,15 @@ export class StoreDestinationContentInDb {
 
     private addDestinationContentInDb(identifier: string, storageFolder: string, keepLowerVersion: boolean) {
         const destinationPath = storageFolder.concat(identifier);
-        this.fileService.readAsText(storageFolder.concat(identifier),
-            StoreDestinationContentInDb.MANIFEST_FILE_NAME).then((manifestStringified) => {
+        this.fileService.readAsText(
+            storageFolder.concat(identifier),
+            StoreDestinationContentInDb.MANIFEST_FILE_NAME
+        ).then((manifestStringified) => {
             const manifest: Manifest = JSON.parse(manifestStringified);
             const items: any[] = manifest.archive.items;
             return this.extractContentFromItem(items, destinationPath.concat('/'), manifest['ver'], keepLowerVersion);
+        }).catch((e) => {
+            console.error(e);
         });
     }
 
