@@ -22,12 +22,14 @@ export class CopyContentFromSourceToDestination {
                     await this.deleteFolder(context.destinationFolder!.concat('temp', '/'));
                     throw new CancellationError('CANCELLED');
                 }
+
                 const moveContentResponse = context.duplicateContents!.find((m: MoveContentResponse) =>
                     m.identifier === content[COLUMN_NAME_IDENTIFIER]
                 );
 
                 if (!moveContentResponse || ArrayUtil.isEmpty(context.duplicateContents!)) {
                     const destination = context.destinationFolder!.concat('temp', '/');
+
                     try {
                         await this.copyFolder(
                             content[COLUMN_NAME_PATH]!,
@@ -35,14 +37,18 @@ export class CopyContentFromSourceToDestination {
                         );
                     } catch (e) {
                     }
+
+                    this.emitContentTransferProgress(context);
                     continue;
                 }
 
                 if (!context.existingContentAction) {
+                    this.emitContentTransferProgress(context);
                     continue;
                 }
 
                 if (moveContentResponse!.status === MoveContentStatus.SAME_VERSION_IN_BOTH) {
+                    this.emitContentTransferProgress(context);
                     continue;
                 }
 
