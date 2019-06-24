@@ -20,6 +20,7 @@ export declare class SummarizerServiceImpl implements SummarizerService, EventOb
     private contentMap;
     private summarizerTelemetryHandler;
     constructor(dbService: DbService, contenService: ContentService, eventsBusService: EventsBusService, courseService: CourseService, sharedPreference: SharedPreferences, profileService: ProfileService);
+    onInit(): Observable<undefined>;
     getDetailsPerQuestion(request: SummaryRequest): Observable<{
         [p: string]: any;
     }[]>;

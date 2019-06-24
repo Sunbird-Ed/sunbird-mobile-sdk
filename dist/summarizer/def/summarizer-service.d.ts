@@ -3,7 +3,8 @@ import { LearnerAssessmentSummary, ReportDetailPerUser } from './response';
 import { SummaryRequest } from './request';
 import { SunbirdTelemetry } from '../../telemetry';
 import Telemetry = SunbirdTelemetry.Telemetry;
-export interface SummarizerService {
+import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
+export interface SummarizerService extends SdkServiceOnInitDelegate {
     getSummary(request: SummaryRequest): Observable<LearnerAssessmentSummary[]>;
     getLearnerAssessmentDetails(request: SummaryRequest): Observable<Map<string, ReportDetailPerUser>>;
     saveLearnerAssessmentDetails(event: Telemetry): Observable<boolean>;
