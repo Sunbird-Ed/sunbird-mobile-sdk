@@ -327,6 +327,7 @@ export class SunbirdSdk {
 
     private postInit() {
         return Observable.combineLatest(
+            this.summarizerService.onInit(),
             this.frameworkService.onInit(),
             this.eventsBusService.onInit(),
             this.downloadService.onInit(),
