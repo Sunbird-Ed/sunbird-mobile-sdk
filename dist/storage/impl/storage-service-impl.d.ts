@@ -22,7 +22,7 @@ export declare class StorageServiceImpl implements StorageService {
     private availableStorageVolumes;
     constructor(eventsBusService: EventsBusService, sharedPreferences: SharedPreferences, dbService: DbService, deviceInfo: DeviceInfo, fileService: FileService, sdkConfig: SdkConfig);
     onInit(): Observable<undefined>;
-    getStorageDestinationDirectoryPath(): string;
+    getStorageDestinationDirectoryPath(): string | undefined;
     cancelTransfer(): Observable<undefined>;
     getStorageDestination(): Observable<StorageDestination>;
     getStorageDestinationVolumeInfo(): Observable<StorageVolume>;
@@ -30,4 +30,6 @@ export declare class StorageServiceImpl implements StorageService {
     getTransferringContent(): Observable<Content | undefined>;
     retryCurrentTransfer(): Observable<undefined>;
     transferContents(transferContentsRequest: TransferContentsRequest): Observable<undefined>;
+    scanStorage(): Observable<boolean>;
+    private resetStorageDestination;
 }

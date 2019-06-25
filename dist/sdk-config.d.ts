@@ -13,6 +13,7 @@ import { TelemetryConfig } from './telemetry/config/telemetry-config';
 import { SharedPreferencesConfig } from './util/shared-preferences';
 import { PlayerConfig } from './player/def/response';
 import { EventsBusConfig } from './events-bus/config/events-bus-config';
+import { ErrorLoggerConfig } from './util/error-stack/config/error-logger-config';
 export interface SdkConfig {
     apiConfig: ApiConfig;
     dbConfig: DbConfig;
@@ -29,4 +30,5 @@ export interface SdkConfig {
     sharedPreferencesConfig: SharedPreferencesConfig;
     playerConfig?: PlayerConfig;
     eventsBusConfig: EventsBusConfig;
+    errorLoggerConfig: ErrorLoggerConfig;
 }

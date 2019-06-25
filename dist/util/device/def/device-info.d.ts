@@ -20,6 +20,7 @@ export interface StorageVolume {
         totalSize: string;
         state: string;
         path: string;
+        contentStoragePath: string;
         isRemovable: boolean;
     };
 }

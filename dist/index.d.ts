@@ -17,7 +17,7 @@ export * from './summarizer';
 export * from './key-value-store';
 export * from './storage';
 export * from './notification';
-export * from './error-stack';
+export * from './util/error-stack';
 export * from './util/shared-preferences';
 export * from './util/download';
 export * from './util/device';

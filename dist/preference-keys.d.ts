@@ -28,3 +28,6 @@ export declare namespace StorageKeys {
     const KEY_STORAGE_DESTINATION = "storage_destination";
     const KEY_TO_TRANSFER_LIST = "to_transfer_list";
 }
+export declare namespace ErrorLogKeys {
+    const KEY_ERROR_LOG_LAST_SYNCED_TIME_STAMP = "error_log_last_synced_time_stamp";
+}
