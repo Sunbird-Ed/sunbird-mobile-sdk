@@ -61,8 +61,8 @@ import {StorageService} from './storage';
 import {StorageServiceImpl} from './storage/impl/storage-service-impl';
 import {NotificationService} from './notification/def/notification-service';
 import {NotificationServiceImpl} from './notification/impl/notification-service-impl';
-import {ErrorLoggerService} from './error-stack/def/error-logger-service';
-import {ErrorLoggerServiceImpl} from './error-stack/impl/error-logger-service-impl';
+import {ErrorLoggerService} from './util/error-stack/def/error-logger-service';
+import {ErrorLoggerServiceImpl} from './util/error-stack/impl/error-logger-service-impl';
 import {NetworkInfoService} from './util/network';
 import {NetworkInfoServiceImpl} from './util/network/impl/network-info-service-impl';
 
@@ -328,6 +328,7 @@ export class SunbirdSdk {
     private postInit() {
         return Observable.combineLatest(
             this.summarizerService.onInit(),
+            this.errorLoggerService.onInit(),
             this.frameworkService.onInit(),
             this.eventsBusService.onInit(),
             this.downloadService.onInit(),

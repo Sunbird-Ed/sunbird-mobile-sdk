@@ -47,6 +47,7 @@ import {NetworkInfoService, NetworkStatus} from '../../util/network';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
+import {ErrorLoggerService} from '../../util/error-stack';
 
 @injectable()
 export class TelemetryServiceImpl implements TelemetryService {
@@ -65,7 +66,9 @@ export class TelemetryServiceImpl implements TelemetryService {
         @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
         @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
         @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
-        @inject(InjectionTokens.NETWORKINFO_SERVICE) private networkInfoService: NetworkInfoService) {
+        @inject(InjectionTokens.NETWORKINFO_SERVICE) private networkInfoService: NetworkInfoService,
+        @inject(InjectionTokens.ERROR_LOGGER_SERVICE) private errorLoggerService: ErrorLoggerService
+    ) {
         this.telemetryConfig = this.sdkConfig.telemetryConfig;
     }
 
@@ -96,8 +99,9 @@ export class TelemetryServiceImpl implements TelemetryService {
         return this.decorateAndPersist(end);
     }
 
-    error({errorCode, errorType, stacktrace, pageId}: TelemetryErrorRequest): Observable<boolean> {
-        const error = new SunbirdTelemetry.Error(errorCode, errorType, stacktrace, pageId);
+    error(request: TelemetryErrorRequest): Observable<boolean> {
+        const error = new SunbirdTelemetry.Error(request.errorCode, request.errorType, request.stacktrace, request.pageId);
+        // this.errorLoggerService.logError(request).toPromise(); //RELEASE for 2.2.0 - Uncomment for error logging
         return this.decorateAndPersist(error);
     }
 

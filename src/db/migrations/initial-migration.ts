@@ -11,7 +11,7 @@ import {PartnerEntry} from '../../partner/db/schema';
 import {ContentAccessEntry, ContentEntry, ContentFeedbackEntry, ContentMarkerEntry} from '../../content/db/schema';
 import {NotificationEntry} from '../../notification/db/schema';
 import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
-import {ErrorStackEntry} from '../../error-stack/db/schema';
+import {ErrorStackEntry} from '../../util/error-stack/db/schema';
 
 export class InitialMigration extends Migration {
 
