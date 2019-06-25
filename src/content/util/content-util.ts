@@ -13,6 +13,7 @@ import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 import COLUMN_NAME_LOCAL_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON;
 import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
+import * as moment from 'moment';
 
 export class ContentUtil {
     private static DEFAULT_PACKAGE_VERSION = -1;
@@ -505,6 +506,77 @@ export class ContentUtil {
 
     public static getFindAllContentsQuery(): string {
         return `select * from ${ContentEntry.TABLE_NAME} where ${COLUMN_NAME_REF_COUNT} > 0`;
+    }
+
+
+    public static constructContentDBModel(identifier, manifestVersion, localData,
+                                    mimeType, contentType, visibility, path,
+                                    refCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
+        return {
+            [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
+            [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+            [ContentEntry.COLUMN_NAME_PATH]: ContentUtil.getBasePath(path),
+            [ContentEntry.COLUMN_NAME_REF_COUNT]: refCount,
+            [ContentEntry.COLUMN_NAME_CONTENT_STATE]: contentState,
+            [ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]: sizeOnDevice,
+            [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: manifestVersion,
+            [ContentEntry.COLUMN_NAME_LOCAL_DATA]: localData,
+            [ContentEntry.COLUMN_NAME_MIME_TYPE]: mimeType,
+            [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: contentType,
+            [ContentEntry.COLUMN_NAME_VISIBILITY]: visibility,
+            [ContentEntry.COLUMN_NAME_AUDIENCE]: audience,
+            [ContentEntry.COLUMN_NAME_PRAGMA]: pragma,
+            [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ssZ'),
+            [ContentEntry.COLUMN_NAME_BOARD]: ContentUtil.getContentAttribute(board),
+            [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
+            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)
+        };
+
+    }
+
+    public static getReferenceCount(existingContent, visibility: string): number {
+        let refCount: number;
+        if (existingContent) {
+            refCount = existingContent[ContentEntry.COLUMN_NAME_REF_COUNT];
+
+            // if the content has a 'Default' visibility and update the same content then don't increase the reference count...
+            if (!(Visibility.DEFAULT.valueOf() === existingContent[ContentEntry.COLUMN_NAME_VISIBILITY]
+                && Visibility.DEFAULT.valueOf() === visibility)) {
+                refCount = refCount + 1;
+            }
+        } else {
+            refCount = 1;
+        }
+        return refCount;
+    }
+
+    /**
+     * add or update the reference count for the content
+     *
+     */
+    public  static getContentVisibility(existingContentInDb, objectType, previuosVisibility: string): string {
+        let visibility;
+        if ('Library' === objectType) {
+            visibility = Visibility.PARENT.valueOf();
+        } else if (existingContentInDb) {
+            if (!Visibility.PARENT.valueOf() === existingContentInDb[ContentEntry.COLUMN_NAME_VISIBILITY]) {
+                // If not started from child content then do not shrink visibility.
+                visibility = existingContentInDb[ContentEntry.COLUMN_NAME_VISIBILITY];
+            }
+        }
+        return visibility ? visibility : previuosVisibility;
+    }
+
+    /**
+     * Add or update the content_state. contentState should not update the spine_only when importing the spine content
+     * after importing content with artifacts.
+     *
+     */
+    public static getContentState(existingContentInDb, contentState: number): number {
+        if (existingContentInDb && existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] > contentState) {
+            contentState = existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE];
+        }
+        return contentState;
     }
 
 }

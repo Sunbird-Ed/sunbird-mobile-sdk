@@ -349,6 +349,7 @@ export class SearchContentHandler {
         telemetryInteractRequest.type = InteractType.OTHER;
         telemetryInteractRequest.subType = subtype;
         telemetryInteractRequest.pageId = 'ImportContent';
+        telemetryInteractRequest.id = 'ImportContent';
         telemetryInteractRequest.objId = identifier;
         telemetryInteractRequest.objType = 'Content';
         return this.telemetryService.interact(telemetryInteractRequest).toPromise();

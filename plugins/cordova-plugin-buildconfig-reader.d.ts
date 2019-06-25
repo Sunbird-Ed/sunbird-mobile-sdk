@@ -40,6 +40,7 @@ declare var buildconfigreader: {
         totalSize: number;
         state: string;
         path: string;
+        contentStoragePath: string;
         isRemovable: boolean;
     }[]) => void, error: (error: any) => void) => void;
 };

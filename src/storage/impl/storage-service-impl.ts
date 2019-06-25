@@ -13,6 +13,10 @@ import {DeviceInfo, StorageVolume} from '../../util/device';
 import {TransferContentHandler} from '../handler/transfer-content-handler';
 import {SdkConfig} from '../../sdk-config';
 import {FileService} from '../../util/file/def/file-service';
+import {ScanContentContext} from '../def/scan-requests';
+import {GetModifiedContentHandler} from '../handler/scan/get-modified-content-handler';
+import {PerformActoinOnContentHandler} from '../handler/scan/perform-actoin-on-content-handler';
+import {StorageHandler} from '../handler/storage-handler';
 
 @injectable()
 export class StorageServiceImpl implements StorageService {
@@ -52,16 +56,14 @@ export class StorageServiceImpl implements StorageService {
         ).do((r) => {
             this.availableStorageVolumes = r[0];
             this.currentStorageDestination = r[1];
+            this.scanStorage().toPromise();
         }).mapTo(undefined);
     }
 
-    getStorageDestinationDirectoryPath(): string {
-        if (this.currentStorageDestination === StorageDestination.INTERNAL_STORAGE) {
-            return cordova.file.externalDataDirectory;
-        }
-
-        return this.availableStorageVolumes
-            .find((volume) => volume.storageDestination === this.currentStorageDestination)!.info.path;
+    getStorageDestinationDirectoryPath(): string | undefined {
+        const storageVolume = this.availableStorageVolumes
+            .find((volume) => volume.storageDestination === this.currentStorageDestination);
+        return storageVolume && storageVolume.info.contentStoragePath;
     }
 
     cancelTransfer(): Observable<undefined> {
@@ -119,5 +121,24 @@ export class StorageServiceImpl implements StorageService {
             .mergeMap((newStorageDestination) =>
                 this.sharedPreferences.putString(StorageServiceImpl.STORAGE_DESTINATION, newStorageDestination)
             );
+    }
+
+    scanStorage(): Observable<boolean> {
+        const storageDestinationPath = this.getStorageDestinationDirectoryPath()!;
+        const scanContext: ScanContentContext = {currentStoragePath: storageDestinationPath};
+        if (!storageDestinationPath) {
+            this.resetStorageDestination();
+        }
+        return new GetModifiedContentHandler(this.fileService, this.dbService).execute(scanContext)
+            .mergeMap((scanContentContext: ScanContentContext) => {
+                const storageHandler = new StorageHandler(this.sdkConfig.appConfig, this.fileService, this.dbService, this.deviceInfo);
+                return new PerformActoinOnContentHandler(storageHandler).exexute(scanContentContext);
+            }).mapTo(true);
+
+    }
+
+    private async resetStorageDestination() {
+        this.currentStorageDestination = StorageDestination.INTERNAL_STORAGE;
+        return this.sharedPreferences.putString(StorageServiceImpl.STORAGE_DESTINATION, StorageDestination.INTERNAL_STORAGE).toPromise();
     }
 }

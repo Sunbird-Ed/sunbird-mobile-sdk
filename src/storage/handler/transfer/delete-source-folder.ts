@@ -1,11 +1,11 @@
-import {MoveContentResponse, MoveContentStatus, TransferContentContext} from './transfer-content-handler';
+import {MoveContentResponse, MoveContentStatus, TransferContentContext} from '../transfer-content-handler';
 import {Observable} from 'rxjs';
-import {ContentEntry} from '../../content/db/schema';
-import {ExistingContentAction, StorageEventType, StorageTransferProgress} from '..';
-import {EventNamespace, EventsBusService} from '../../events-bus';
+import {ContentEntry} from '../../../content/db/schema';
+import {ExistingContentAction, StorageEventType, StorageTransferProgress} from '../../index';
+import {EventNamespace, EventsBusService} from '../../../events-bus';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
-import {ArrayUtil} from '../../util/array-util';
+import {ArrayUtil} from '../../../util/array-util';
 
 export class DeleteSourceFolder {
     constructor(private eventsBusService: EventsBusService) {

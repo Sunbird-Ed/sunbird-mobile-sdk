@@ -1,7 +1,7 @@
-import {TransferContentContext} from './transfer-content-handler';
+import {TransferContentContext} from '../transfer-content-handler';
 import {Observable} from 'rxjs';
-import {ContentUtil} from '../../content/util/content-util';
-import {FileService} from '../../util/file/def/file-service';
+import {ContentUtil} from '../../../content/util/content-util';
+import {FileService} from '../../../util/file/def/file-service';
 
 export class ValidateDestinationFolder {
     constructor(private fileService: FileService) {

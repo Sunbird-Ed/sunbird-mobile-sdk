@@ -1,10 +1,10 @@
 import {Observable} from 'rxjs';
-import {DbService} from '../../db';
-import {Manifest, MoveContentResponse, MoveContentStatus, TransferContentContext} from './transfer-content-handler';
-import {ContentUtil} from '../../content/util/content-util';
-import {ContentEntry} from '../../content/db/schema';
-import {FileService} from '../../util/file/def/file-service';
-import {DuplicateContentError} from '../errors/duplicate-content-error';
+import {DbService} from '../../../db';
+import {Manifest, MoveContentResponse, MoveContentStatus, TransferContentContext} from '../transfer-content-handler';
+import {ContentUtil} from '../../../content/util/content-util';
+import {ContentEntry} from '../../../content/db/schema';
+import {FileService} from '../../../util/file/def/file-service';
+import {DuplicateContentError} from '../../errors/duplicate-content-error';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 

@@ -1,14 +1,14 @@
 import {Observable} from 'rxjs';
-import {FileService} from '../../util/file/def/file-service';
-import {Manifest, MoveContentStatus, TransferContentContext} from './transfer-content-handler';
-import {ContentEntry} from '../../content/db/schema';
-import {ContentUtil} from '../../content/util/content-util';
-import {ContentStatus, MimeType, State, Visibility} from '../../content';
-import {DbService} from '../../db';
+import {FileService} from '../../../util/file/def/file-service';
+import {Manifest, MoveContentStatus, TransferContentContext} from '../transfer-content-handler';
+import {ContentEntry} from '../../../content/db/schema';
+import {ContentUtil} from '../../../content/util/content-util';
+import {ContentStatus, MimeType, State, Visibility} from '../../../content';
+import {DbService} from '../../../db';
 import * as moment from 'moment';
-import {AppConfig} from '../../api/config/app-config';
-import {ExistingContentAction} from '..';
-import {DeviceInfo} from '../../util/device';
+import {AppConfig} from '../../../api/config/app-config';
+import {ExistingContentAction} from '../../index';
+import {DeviceInfo} from '../../../util/device';
 
 export class StoreDestinationContentInDb {
     public static MANIFEST_FILE_NAME = 'manifest.json';
@@ -52,7 +52,7 @@ export class StoreDestinationContentInDb {
             if (context.validContentIdsInDestination && context.validContentIdsInDestination.length &&
                 context.duplicateContents && context.duplicateContents.length) {
                 addedContentIdentifiers = this.getNewlyAddedContents(
-                    context.validContentIdsInDestination, context.validContentIdsInDestination
+                    context.validContentIdsInDestination, context.duplicateContents.map(element => element.identifier)
                 );
             } else if ((!context.validContentIdsInDestination || !context.duplicateContents!.length)
                 && (context.validContentIdsInDestination && context.validContentIdsInDestination.length)) {
@@ -62,7 +62,7 @@ export class StoreDestinationContentInDb {
             if (addedContentIdentifiers) {
                 // Read content in destination folder.
                 for (const identifier of addedContentIdentifiers) {
-                    this.addDestinationContentInDb(identifier, context.destinationFolder!, false);
+                    await this.addDestinationContentInDb(identifier, context.destinationFolder!, false);
                 }
             }
         });
@@ -74,9 +74,9 @@ export class StoreDestinationContentInDb {
         });
     }
 
-    private addDestinationContentInDb(identifier: string, storageFolder: string, keepLowerVersion: boolean) {
+    private addDestinationContentInDb(identifier: string, storageFolder: string, keepLowerVersion: boolean): Promise<void> {
         const destinationPath = storageFolder.concat(identifier);
-        this.fileService.readAsText(
+        return this.fileService.readAsText(
             storageFolder.concat(identifier),
             StoreDestinationContentInDb.MANIFEST_FILE_NAME
         ).then((manifestStringified) => {
@@ -131,13 +131,13 @@ export class StoreDestinationContentInDb {
                     }
                 }
             }
-            const referenceCount = this.getReferenceCount(existingContentModel, visibility);
-            visibility = this.getContentVisibility(existingContentModel, element['objectType'], visibility);
-            contentState = this.getContentState(existingContentModel, contentState);
+            const referenceCount = ContentUtil.getReferenceCount(existingContentModel, visibility);
+            visibility = ContentUtil.getContentVisibility(existingContentModel, element['objectType'], visibility);
+            contentState = ContentUtil.getContentState(existingContentModel, contentState);
             const basePath = !doesContentExist ? destinationPath : existingContentPath;
             const sizeOnDevice = await this.fileService.getDirectorySize(basePath!);
             ContentUtil.addOrUpdateViralityMetadata(element, this.deviceInfo.getDeviceID().toString());
-            const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, manifestVersion,
+            const newContentModel: ContentEntry.SchemaMap = ContentUtil.constructContentDBModel(identifier, manifestVersion,
                 JSON.stringify(element), mimeType, contentType, visibility, basePath,
                 referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade);
             if (!existingContentModel) {
@@ -172,73 +172,4 @@ export class StoreDestinationContentInDb {
 
     }
 
-    private constructContentDBModel(identifier, manifestVersion, localData,
-                                    mimeType, contentType, visibility, path,
-                                    refCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
-        return {
-            [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
-            [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
-            [ContentEntry.COLUMN_NAME_PATH]: ContentUtil.getBasePath(path),
-            [ContentEntry.COLUMN_NAME_REF_COUNT]: refCount,
-            [ContentEntry.COLUMN_NAME_CONTENT_STATE]: contentState,
-            [ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]: sizeOnDevice,
-            [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: manifestVersion,
-            [ContentEntry.COLUMN_NAME_LOCAL_DATA]: localData,
-            [ContentEntry.COLUMN_NAME_MIME_TYPE]: mimeType,
-            [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: contentType,
-            [ContentEntry.COLUMN_NAME_VISIBILITY]: visibility,
-            [ContentEntry.COLUMN_NAME_AUDIENCE]: audience,
-            [ContentEntry.COLUMN_NAME_PRAGMA]: pragma,
-            [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ssZ'),
-            [ContentEntry.COLUMN_NAME_BOARD]: ContentUtil.getContentAttribute(board),
-            [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
-            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)
-        };
-
-    }
-
-    private getReferenceCount(existingContent, visibility: string): number {
-        let refCount: number;
-        if (existingContent) {
-            refCount = existingContent[ContentEntry.COLUMN_NAME_REF_COUNT];
-
-            // if the content has a 'Default' visibility and update the same content then don't increase the reference count...
-            if (!(Visibility.DEFAULT.valueOf() === existingContent[ContentEntry.COLUMN_NAME_VISIBILITY]
-                && Visibility.DEFAULT.valueOf() === visibility)) {
-                refCount = refCount + 1;
-            }
-        } else {
-            refCount = 1;
-        }
-        return refCount;
-    }
-
-    /**
-     * add or update the reference count for the content
-     *
-     */
-    private getContentVisibility(existingContentInDb, objectType, previuosVisibility: string): string {
-        let visibility;
-        if ('Library' === objectType) {
-            visibility = Visibility.PARENT.valueOf();
-        } else if (existingContentInDb) {
-            if (!Visibility.PARENT.valueOf() === existingContentInDb[ContentEntry.COLUMN_NAME_VISIBILITY]) {
-                // If not started from child content then do not shrink visibility.
-                visibility = existingContentInDb[ContentEntry.COLUMN_NAME_VISIBILITY];
-            }
-        }
-        return visibility ? visibility : previuosVisibility;
-    }
-
-    /**
-     * Add or update the content_state. contentState should not update the spine_only when importing the spine content
-     * after importing content with artifacts.
-     *
-     */
-    private getContentState(existingContentInDb, contentState: number): number {
-        if (existingContentInDb && existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] > contentState) {
-            contentState = existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE];
-        }
-        return contentState;
-    }
 }

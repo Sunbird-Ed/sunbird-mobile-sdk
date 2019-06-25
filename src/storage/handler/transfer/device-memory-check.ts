@@ -1,7 +1,7 @@
 import {Observable} from 'rxjs';
-import {TransferContentContext} from './transfer-content-handler';
+import {TransferContentContext} from '../transfer-content-handler';
 
-export class DeleteDestinationFolder {
+export class DeviceMemoryCheck {
     constructor() {
     }
 

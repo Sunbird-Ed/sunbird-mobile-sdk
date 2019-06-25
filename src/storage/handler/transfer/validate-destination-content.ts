@@ -1,10 +1,10 @@
 import {Observable} from 'rxjs';
-import {FileService} from '../../util/file/def/file-service';
-import {AppConfig} from '../../api/config/app-config';
-import {Manifest, TransferContentContext} from './transfer-content-handler';
-import {ContentUtil} from '../../content/util/content-util';
-import {Entry} from '../../util/file';
-import {Visibility} from '../../content';
+import {FileService} from '../../../util/file/def/file-service';
+import {AppConfig} from '../../../api/config/app-config';
+import {Manifest, TransferContentContext} from '../transfer-content-handler';
+import {ContentUtil} from '../../../content/util/content-util';
+import {Entry} from '../../../util/file';
+import {Visibility} from '../../../content';
 
 export class ValidateDestinationContent {
     private static readonly MANIFEST_FILE_NAME = 'manifest.json';
