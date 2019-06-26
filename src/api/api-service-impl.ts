@@ -10,6 +10,8 @@ import {Authenticator} from './def/authenticator';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../injection-tokens';
 import {SdkConfig} from '../sdk-config';
+import {ApiKeys} from '../preference-keys';
+import {ApiTokenHandler} from './handlers/api-token-handler';
 
 @injectable()
 export class ApiServiceImpl implements ApiService {
@@ -22,6 +24,20 @@ export class ApiServiceImpl implements ApiService {
                 @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
         this.apiConfig = this.sdkConfig.apiConfig;
+    }
+
+    onInit(): Observable<undefined> {
+        return this.sharedPreferences.getString(ApiKeys.KEY_API_TOKEN)
+            .mergeMap((apiToken) => {
+                if (!apiToken) {
+                    return new ApiTokenHandler(this.apiConfig, this, this.deviceInfo).refreshAuthToken()
+                        .mergeMap((bearerToken) =>
+                            this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken)
+                        );
+                }
+
+                return Observable.of(undefined);
+            });
     }
 
     public fetch<T = any>(request: Request): Observable<Response<T>> {
