@@ -33,7 +33,8 @@ export class ApiServiceImpl implements ApiService {
                     return new ApiTokenHandler(this.apiConfig, this, this.deviceInfo).refreshAuthToken()
                         .mergeMap((bearerToken) =>
                             this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken)
-                        );
+                        )
+                        .catch(() => Observable.of(undefined));
                 }
 
                 return Observable.of(undefined);
