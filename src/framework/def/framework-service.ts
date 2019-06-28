@@ -3,9 +3,9 @@ import {Channel} from './channel';
 import {Observable} from 'rxjs';
 import {ChannelDetailsRequest, FrameworkDetailsRequest, OrganizationSearchCriteria} from './request-types';
 import {Organization} from './Organization';
-import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
+import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
 
-export interface FrameworkService extends SdkServiceOnInitDelegate {
+export interface FrameworkService extends SdkServicePreInitDelegate {
     /** @internal */
     activeChannelId?: string;
 
