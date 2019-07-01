@@ -84,4 +84,5 @@ export declare class ContentUtil {
      *
      */
     static getContentState(existingContentInDb: any, contentState: number): number;
+    static isFreeSpaceAvailable(deviceAvailableFreeSpace: number, fileSpace: number, bufferSize: number): boolean;
 }
