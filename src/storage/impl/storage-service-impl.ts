@@ -107,7 +107,7 @@ export class StorageServiceImpl implements StorageService {
 
     transferContents(transferContentsRequest: TransferContentsRequest): Observable<undefined> {
         this.lastTransferContentsRequest = transferContentsRequest;
-
+        transferContentsRequest.sourceFolder = this.getStorageDestinationDirectoryPath();
         return this.transferContentHandler
             .transfer(transferContentsRequest)
             .mergeMap(() => this.getStorageDestination())

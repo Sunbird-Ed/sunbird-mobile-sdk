@@ -2,7 +2,7 @@ import {
     ExistingContentAction,
     StorageEventType,
     StorageTransferCompleted,
-    StorageTransferFailedDuplicateContent,
+    StorageTransferFailedDuplicateContent, StorageTransferFailedLowMemory,
     StorageTransferRevertCompleted,
     TransferContentsRequest
 } from '..';
@@ -25,6 +25,7 @@ import {ValidateDestinationFolder} from './transfer/validate-destination-folder'
 import {DeleteSourceFolder} from './transfer/delete-source-folder';
 import {CancellationError} from '../errors/cancellation-error';
 import {DuplicateContentError} from '../errors/duplicate-content-error';
+import {LowMemoryError} from '../errors/low-memory-error';
 
 export enum MoveContentStatus {
     SAME_VERSION_IN_BOTH = 'SAME_VERSION_IN_BOTH',
@@ -41,6 +42,7 @@ export interface TransferContentContext {
     contentIds?: string[];
     validContentIdsInDestination?: string[];
     destinationFolder?: string;
+    sourceFolder?: string;
     contentsInSource?: ContentEntry.SchemaMap[];
     contentsInDestination?: Content[];
     existingContentAction?: ExistingContentAction;
@@ -72,18 +74,21 @@ export class TransferContentHandler {
     ) {
     }
 
-    transfer({contentIds, existingContentAction, deleteDestination, destinationFolder, shouldMergeInDestination}: TransferContentsRequest): Observable<undefined> {
+    transfer({contentIds, existingContentAction, deleteDestination, destinationFolder, shouldMergeInDestination, sourceFolder}:
+                 TransferContentsRequest):
+        Observable<undefined> {
         this.context.hasTransferCancelled = false;
         this.context.shouldMergeInDestination = shouldMergeInDestination;
         this.context.contentIds = contentIds;
         this.context.existingContentAction = existingContentAction;
         this.context.deleteDestination = deleteDestination;
         this.context.destinationFolder = destinationFolder;
+        this.context.sourceFolder = sourceFolder;
 
         return new ValidateDestinationFolder(this.fileService).execute(this.context).mergeMap((transferContext: TransferContentContext) => {
             return new DeleteDestinationFolder().execute(transferContext);
         }).mergeMap((transferContext: TransferContentContext) => {
-            return new DeviceMemoryCheck().execute(transferContext);
+            return new DeviceMemoryCheck(this.dbService).execute(transferContext);
         }).mergeMap((transferContext: TransferContentContext) => {
             return new ValidateDestinationContent(this.fileService, this.sdkConfig.appConfig).execute(transferContext);
         }).mergeMap((transferContext: TransferContentContext) => {
@@ -118,6 +123,13 @@ export class TransferContentHandler {
                     event: {
                         type: StorageEventType.TRANSFER_FAILED_DUPLICATE_CONTENT
                     } as StorageTransferFailedDuplicateContent
+                });
+            } else if (e instanceof LowMemoryError) {
+                this.eventsBusService.emit({
+                    namespace: EventNamespace.STORAGE,
+                    event: {
+                        type: StorageEventType.TRANSFER_FAILED_LOW_MEMORY
+                    } as StorageTransferFailedLowMemory
                 });
             }
 
