@@ -19,4 +19,5 @@ export interface Batch {
     createdBy: string;
     creatorFirstName?: string;
     creatorLastName?: string;
+    enrollmentEndDate?: string;
 }
