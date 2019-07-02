@@ -65,6 +65,9 @@ import {ErrorLoggerService} from './util/error-stack/def/error-logger-service';
 import {ErrorLoggerServiceImpl} from './util/error-stack/impl/error-logger-service-impl';
 import {NetworkInfoService} from './util/network';
 import {NetworkInfoServiceImpl} from './util/network/impl/network-info-service-impl';
+import {SearchHistoryMigration} from './db/migrations/search-history-migration';
+import {SearchHistoryService} from './util/search-history';
+import {SearchHistoryServiceImpl} from './util/search-history/impl/search-history-service-impl';
 
 export class SunbirdSdk {
     private static _instance?: SunbirdSdk;
@@ -186,12 +189,16 @@ export class SunbirdSdk {
         return this._container.get<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE);
     }
 
+    get searchHistoryService(): SearchHistoryService {
+        return this._container.get<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(22);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(23);
 
         this._container.bind<Migration[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
             new ProfileSyllabusMigration(),
@@ -199,7 +206,8 @@ export class SunbirdSdk {
             new MillisecondsToSecondsMigration(),
             new ContentMarkerMigration(),
             new OfflineSearchTextbookMigration(),
-            new ErrorStackMigration()
+            new ErrorStackMigration(),
+            new SearchHistoryMigration()
         ]);
 
         if (sdkConfig.sharedPreferencesConfig.debugMode) {
@@ -275,6 +283,8 @@ export class SunbirdSdk {
         this._container.bind<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE).to(NotificationServiceImpl).inSingletonScope();
 
         this._container.bind<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE).to(NetworkInfoServiceImpl).inSingletonScope();
+
+        this._container.bind<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE).to(SearchHistoryServiceImpl).inSingletonScope();
 
         this.apiService.setDefaultApiAuthenticators([
             new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)
