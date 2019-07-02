@@ -20,6 +20,7 @@ export interface TransferContentContext {
     contentIds?: string[];
     validContentIdsInDestination?: string[];
     destinationFolder?: string;
+    sourceFolder?: string;
     contentsInSource?: ContentEntry.SchemaMap[];
     contentsInDestination?: Content[];
     existingContentAction?: ExistingContentAction;
@@ -45,6 +46,6 @@ export declare class TransferContentHandler {
     private deviceInfo;
     private readonly context;
     constructor(sdkConfig: SdkConfig, fileService: FileService, dbService: DbService, eventsBusService: EventsBusService, deviceInfo: DeviceInfo);
-    transfer({ contentIds, existingContentAction, deleteDestination, destinationFolder, shouldMergeInDestination }: TransferContentsRequest): Observable<undefined>;
+    transfer({ contentIds, existingContentAction, deleteDestination, destinationFolder, shouldMergeInDestination, sourceFolder }: TransferContentsRequest): Observable<undefined>;
     cancel(): Observable<undefined>;
 }

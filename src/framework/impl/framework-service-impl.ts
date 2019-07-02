@@ -33,8 +33,9 @@ export class FrameworkServiceImpl implements FrameworkService {
         return this._activeChannelId;
     }
 
-    onInit(): Observable<undefined> {
+    preInit(): Observable<undefined> {
         return this.getActiveChannelId()
+            .do((activeChannelId) => this._activeChannelId = activeChannelId)
             .mapTo(undefined)
             .catch((e) => {
                 if (e instanceof NoActiveChannelFoundError) {

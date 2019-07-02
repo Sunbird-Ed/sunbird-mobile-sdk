@@ -320,9 +320,8 @@ export class SunbirdSdk {
     }
 
     private preInit() {
-        return Observable.combineLatest(
-            this.profileService.preInit()
-        );
+        return this.frameworkService.preInit()
+            .concatMap(() => this.profileService.preInit());
     }
 
     private postInit() {
@@ -330,7 +329,6 @@ export class SunbirdSdk {
             this.apiService.onInit(),
             this.summarizerService.onInit(),
             this.errorLoggerService.onInit(),
-            this.frameworkService.onInit(),
             this.eventsBusService.onInit(),
             this.downloadService.onInit(),
             this.contentService.onInit(),

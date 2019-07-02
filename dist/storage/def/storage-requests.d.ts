@@ -9,6 +9,7 @@ export interface TransferContentsRequest {
     contentIds: string[];
     existingContentAction: ExistingContentAction;
     destinationFolder: string;
+    sourceFolder?: string;
     deleteDestination: boolean;
     shouldMergeInDestination?: boolean;
 }

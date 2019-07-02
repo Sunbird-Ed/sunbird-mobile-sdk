@@ -29,9 +29,15 @@ export interface StorageTransferFailedDuplicateContent extends StorageEvent {
     payload: undefined;
 }
 
+export interface StorageTransferFailedLowMemory extends StorageEvent {
+    type: StorageEventType.TRANSFER_FAILED_LOW_MEMORY;
+    payload: undefined;
+}
+
 export enum StorageEventType {
     TRANSFER_PROGRESS = 'TRANSFER_PROGRESS',
     TRANSFER_COMPLETED = 'TRANSFER_COMPLETED',
     TRANSFER_REVERT_COMPLETED = 'TRANSFER_REVERT_COMPLETED',
-    TRANSFER_FAILED_DUPLICATE_CONTENT = 'TRANSFER_FAILED_DUPLICATE_CONTENT'
+    TRANSFER_FAILED_DUPLICATE_CONTENT = 'TRANSFER_FAILED_DUPLICATE_CONTENT',
+    TRANSFER_FAILED_LOW_MEMORY = 'TRANSFER_FAILED_LOW_MEMORY'
 }

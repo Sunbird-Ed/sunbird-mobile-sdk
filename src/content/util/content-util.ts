@@ -486,7 +486,7 @@ export class ContentUtil {
                 let attribute = '';
                 for (let i = 0; i < value.length; i++) {
                     if (i < value.length - 1) {
-                        attribute =  attribute.concat('~', value[i]);
+                        attribute = attribute.concat('~', value[i]);
                     } else {
                         attribute = attribute.concat('~', value[i], '~');
                     }
@@ -510,8 +510,8 @@ export class ContentUtil {
 
 
     public static constructContentDBModel(identifier, manifestVersion, localData,
-                                    mimeType, contentType, visibility, path,
-                                    refCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
+                                          mimeType, contentType, visibility, path,
+                                          refCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
@@ -554,7 +554,7 @@ export class ContentUtil {
      * add or update the reference count for the content
      *
      */
-    public  static getContentVisibility(existingContentInDb, objectType, previuosVisibility: string): string {
+    public static getContentVisibility(existingContentInDb, objectType, previuosVisibility: string): string {
         let visibility;
         if ('Library' === objectType) {
             visibility = Visibility.PARENT.valueOf();
@@ -578,5 +578,14 @@ export class ContentUtil {
         }
         return contentState;
     }
+
+    public static isFreeSpaceAvailable(deviceAvailableFreeSpace: number, fileSpace: number, bufferSize: number) {
+        let BUFFER_SIZE = 1024 * 10;
+        if (bufferSize > 0) {
+            BUFFER_SIZE = bufferSize;
+        }
+        return deviceAvailableFreeSpace > 0 && deviceAvailableFreeSpace > (fileSpace + BUFFER_SIZE);
+    }
+
 
 }
