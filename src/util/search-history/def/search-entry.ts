@@ -1,5 +1,5 @@
 export interface SearchEntry {
     uid: string;
-    searchTerm: string;
+    query: string;
     timestamp: number;
 }

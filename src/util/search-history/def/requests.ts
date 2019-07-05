@@ -1,5 +1,5 @@
 export interface AddEntryRequest {
-    searchTerm: string;
+    query: string;
     namespace: string;
 }
 
