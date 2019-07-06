@@ -13,6 +13,9 @@ import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 import KEY_LAST_MODIFIED = ContentKeys.KEY_LAST_MODIFIED;
+import {FileUtil} from '../../util/file/util/file-util';
+import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
+import {ContentData} from '..';
 
 export class DeleteContentHandler {
 
@@ -133,7 +136,13 @@ export class DeleteContentHandler {
         // if there are no entry in DB for any content then on this case contentModel.getPath() will be null
         if (path) {
             if (contentState === State.ONLY_SPINE.valueOf()) {
-                await this.rm(ContentUtil.getBasePath(path), contentInDb[COLUMN_NAME_IDENTIFIER]);
+                const localData = contentInDb[COLUMN_NAME_LOCAL_DATA];
+                const localContentData: ContentData = localData && JSON.parse(localData);
+                let appIcon = '';
+                if (localData) {
+                    appIcon = localContentData.appIcon;
+                }
+                await this.rm(ContentUtil.getBasePath(path), FileUtil.getFileName(appIcon));
             }
             contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY] = visibility;
             contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT] = ContentUtil.addOrUpdateRefCount(refCount);
