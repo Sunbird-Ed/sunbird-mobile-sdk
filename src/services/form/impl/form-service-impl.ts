@@ -6,7 +6,7 @@ import {FileService} from '../../../native/file/def/file-service';
 import {HttpService} from '../../../native/http';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 
 @injectable()
 export class FormServiceImpl implements FormService {

@@ -5,7 +5,7 @@ import {AppInfo} from '../../../native/app/def/app-info';
 import {UniqueId} from '../../../native/db/util/unique-id';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 import Telemetry = SunbirdTelemetry.Telemetry;
 
 @injectable()

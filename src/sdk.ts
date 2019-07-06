@@ -3,7 +3,7 @@ import {DbService, Migration} from './native/db';
 import {AuthService} from './services/auth';
 import {TelemetryDecorator, TelemetryService} from './services/telemetry';
 import {SharedPreferences} from './native/shared-preferences';
-import {SdkConfig} from './sdk-config';
+import {SdkConfig} from './bootstrap/sdk-config';
 import {DbCordovaService} from './native/db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './services/telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './services/telemetry/impl/telemetry-service-impl';
@@ -65,7 +65,10 @@ import {NetworkInfoServiceImpl} from './native/network-info/impl/network-info-se
 import {SearchHistoryMigration} from './native/db/migrations/search-history-migration';
 import {SearchHistoryService} from './services/search-history';
 import {SearchHistoryServiceImpl} from './services/search-history/impl/search-history-service-impl';
-import {Environments} from './environments';
+import {Environments} from './bootstrap/environments';
+import {SdkConfigBuilder} from './bootstrap/sdk-config-builder';
+import {AndroidConfigProvider} from './bootstrap/android-config-provider';
+import {ElectronConfigProvider} from './bootstrap/electron-config-provider';
 
 export class SunbirdSdk {
     private static _instance?: SunbirdSdk;
@@ -179,6 +182,7 @@ export class SunbirdSdk {
     get notificationService(): NotificationService {
         return this._container.get<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE);
     }
+
     get errorLoggerService(): ErrorLoggerService {
         return this._container.get<ErrorLoggerService>(InjectionTokens.ERROR_LOGGER_SERVICE);
     }
@@ -191,7 +195,12 @@ export class SunbirdSdk {
         return this._container.get<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE);
     }
 
-    public async init(sdkConfig: SdkConfig) {
+    public async init(environement: Environments) {
+        const sdkConfig = await SdkConfigBuilder.build(
+            environement,
+            environement === Environments.ANDROID ? new AndroidConfigProvider() : new ElectronConfigProvider()
+        );
+
         this._container = new Container();
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);

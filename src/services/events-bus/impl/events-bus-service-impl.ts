@@ -6,7 +6,7 @@ import {EventObserver} from '../def/event-observer';
 import {EventsBusConfig} from '../config/events-bus-config';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 
 interface EventContainer {
     namespace: string;

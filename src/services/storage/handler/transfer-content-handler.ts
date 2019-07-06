@@ -20,7 +20,7 @@ import {StoreDestinationContentInDb} from './transfer/store-destination-content-
 import {ContentEntry} from '../../content/db/schema';
 import {FileService} from '../../../native/file/def/file-service';
 import {DbService} from '../../../native/db';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 import {DeviceInfo} from '../../../native/device';
 import {ValidateDestinationFolder} from './transfer/validate-destination-folder';
 import {DeleteSourceFolder} from './transfer/delete-source-folder';

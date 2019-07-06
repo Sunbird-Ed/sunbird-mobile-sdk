@@ -3,7 +3,7 @@ import {Observable, Subject} from 'rxjs';
 import * as squel from 'squel';
 import {InitialMigration} from '../migrations/initial-migration';
 import {inject, injectable} from 'inversify';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 import {InjectionTokens} from '../../../injection-tokens';
 
 @injectable()

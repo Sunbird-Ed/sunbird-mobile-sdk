@@ -46,7 +46,7 @@ import {FrameworkService} from '../../framework';
 import {NetworkInfoService, NetworkStatus} from '../../../native/network-info';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 import {ErrorLoggerService} from '../../error-stack';
 
 @injectable()

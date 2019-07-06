@@ -33,7 +33,7 @@ import {ContentStatesSyncHandler} from '../handlers/content-states-sync-handler'
 import {ProcessingError} from '../../auth/errors/processing-error';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {

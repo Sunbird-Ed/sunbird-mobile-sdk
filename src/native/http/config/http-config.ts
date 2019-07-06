@@ -1,5 +1,4 @@
 export interface HttpConfig {
-    debugMode: boolean;
     host: string;
     user_authentication: {
         redirectUrl: string;

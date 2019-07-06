@@ -11,7 +11,7 @@ import {SharedPreferencesSetCollectionImpl} from '../../../native/shared-prefere
 import {DbService} from '../../../native/db';
 import {DeviceInfo, StorageVolume} from '../../../native/device';
 import {TransferContentHandler} from '../handler/transfer-content-handler';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 import {FileService} from '../../../native/file/def/file-service';
 import {ScanContentContext} from '../def/scan-requests';
 import {GetModifiedContentHandler} from '../handler/scan/get-modified-content-handler';

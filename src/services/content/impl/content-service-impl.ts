@@ -92,7 +92,7 @@ import {SharedPreferencesSetCollectionImpl} from '../../../native/shared-prefere
 import {SdkServiceOnInitDelegate} from '../../../sdk-service-on-init-delegate';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {

@@ -6,7 +6,7 @@ import {Observable} from 'rxjs';
 import {Context, PlayerInput} from '../def/response';
 import {DeviceInfo} from '../../../native/device/def/device-info';
 import {Actor, CorrelationData, ProducerData} from '../../telemetry';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 import {FrameworkService} from '../../framework';
 import {ContentUtil} from '../../content/util/content-util';
 import {AppInfo} from '../../../native/app/def/app-info';

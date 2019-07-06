@@ -1,19 +1,20 @@
 import {HttpClientImpl} from '../impl/http-client-impl';
 import {BaseConnection} from '../impl/base-connection';
-import {HttpClient, HttpConfig, Request, Response} from '../index';
+import {HttpClient, Request, Response} from '../index';
 import {Observable} from 'rxjs';
 import {HttpClientAxios} from '../impl/http-client-axios';
 import {Connection} from '../def/connection';
 import {DeviceInfo} from '../../device';
 import {SharedPreferences} from '../../shared-preferences';
 import {Authenticator} from '../def/authenticator';
+import {Environments, SdkConfig} from '../../..';
 
 export class FetchHandler {
     private baseConnection: Connection;
 
     constructor(
         private request: Request,
-        private apiConfig: HttpConfig,
+        private sdkConfig: SdkConfig,
         private deviceInfo: DeviceInfo,
         private sharedPreferences: SharedPreferences,
         private defaultApiAuthenticators: Authenticator[],
@@ -21,7 +22,7 @@ export class FetchHandler {
     ) {
         let httpClient: HttpClient;
 
-        if (apiConfig.debugMode) {
+        if (sdkConfig.environment === Environments.ELECTRON) {
             httpClient = new HttpClientAxios();
         } else {
             httpClient = new HttpClientImpl();
@@ -29,7 +30,7 @@ export class FetchHandler {
 
         this.baseConnection = new BaseConnection(
             httpClient,
-            this.apiConfig,
+            this.sdkConfig.httpConfig,
             this.deviceInfo,
             this.sharedPreferences,
             this.defaultApiAuthenticators,

@@ -1,5 +1,5 @@
-import {SdkConfig} from '../../../sdk-config';
-import {AppInfo} from '../def/app-info';
+import {Environments, SdkConfig} from '../../..';
+import {AppInfo} from '@native/app';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
 
@@ -9,7 +9,7 @@ export class AppInfoImpl implements AppInfo {
     private versionName: string;
 
     constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig) {
-        if (sdkConfig.httpConfig.debugMode) {
+        if (sdkConfig.environment === Environments.ELECTRON) {
             this.versionName = 'sunbird-debug';
         }
     }
@@ -19,7 +19,7 @@ export class AppInfoImpl implements AppInfo {
     }
 
     public async init(): Promise<void> {
-        if (this.sdkConfig.httpConfig.debugMode) {
+        if (this.sdkConfig.environment === Environments.ELECTRON) {
             return await undefined;
         }
         const packageName = this.sdkConfig.appConfig.buildConfigPackage ? this.sdkConfig.appConfig.buildConfigPackage : 'org.sunbird.app';

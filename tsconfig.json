@@ -22,7 +22,8 @@
     "types": [
       "reflect-metadata",
       "jest",
-      "websql"
+      "websql",
+      "node"
     ],
     "moduleResolution": "node",
     "paths": {

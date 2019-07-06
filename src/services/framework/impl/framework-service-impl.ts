@@ -9,7 +9,7 @@ import {HttpRequestType, HttpService, Request} from '../../../native/http';
 import {SharedPreferences} from '../../../native/shared-preferences';
 import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';
 import {SystemSettingsService} from '../../system-settings';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 import {FrameworkKeys} from '../../../preference-keys';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';

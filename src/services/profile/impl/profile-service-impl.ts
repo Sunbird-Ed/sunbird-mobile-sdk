@@ -71,7 +71,7 @@ import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-p
 import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} from '../../telemetry';
 import {ObjectUtil} from '../../../util/object-util';
 import {TransportProfiles} from '../handler/import/transport-profiles';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 import {Container, inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
 

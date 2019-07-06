@@ -5,7 +5,7 @@ import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
 import {StringToGzippedString} from '../impl/string-to-gzipped-string';
 import {TelemetryEntriesToStringPreprocessor} from '../impl/telemetry-entries-to-string-preprocessor';
 import {KeyValueStore} from '../../key-value-store';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 import {DeviceInfo, DeviceSpec} from '../../../native/device';
 import {DbService, InsertQuery} from '../../../native/db';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';

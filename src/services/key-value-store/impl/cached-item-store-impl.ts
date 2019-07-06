@@ -2,7 +2,7 @@ import {CachedItemStore, KeyValueStore} from '../index';
 import {Observable} from 'rxjs';
 import {HttpConfig} from '../../../native/http';
 import {SharedPreferences} from '../../../native/shared-preferences';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 import {InjectionTokens} from '../../../injection-tokens';
 import {inject, injectable} from 'inversify';
 

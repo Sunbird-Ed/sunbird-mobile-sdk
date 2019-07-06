@@ -8,7 +8,7 @@ import {GetSystemSettingsRequest, SystemSettingsService} from 'src/services/syst
 import {SystemSettingsOrgIds} from '../../system-settings/def/system-settings-org-ids';
 import {AppInfo} from '../../../native/app';
 import {HttpService} from '../../../native/http';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 import {ErrorLoggerConfig} from '../config/error-logger-config';
 import {TelemetryErrorRequest} from '../../telemetry';
 import {ErrorStack} from '../def/error-stack';

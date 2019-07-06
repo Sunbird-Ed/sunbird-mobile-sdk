@@ -6,7 +6,7 @@ import {SharedPreferences} from '../../../native/shared-preferences';
 import {EventsBusService} from '../../events-bus';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 
 @injectable()
 export class AuthServiceImpl implements AuthService {

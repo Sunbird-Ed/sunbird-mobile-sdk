@@ -6,7 +6,7 @@ import {HttpService} from '../../../native/http';
 import {GetSystemSettingsHandler} from '../handlers/get-system-settings-handler';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../../bootstrap/sdk-config';
 
 @injectable()
 export class SystemSettingsServiceImpl implements SystemSettingsService {

@@ -1,10 +1,10 @@
 import {DeviceInfo, DeviceSpec, StorageVolume} from '../index';
 import * as SHA1 from 'crypto-js/sha1';
-import {SdkConfig} from '../../../sdk-config';
+import {Environments, SdkConfig} from '../../..';
 import {Observable} from 'rxjs';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {StorageDestination} from '../../../services/storage';
+import {StorageDestination} from '@services/storage';
 
 declare const device: {
     uuid: string;
@@ -16,7 +16,7 @@ export class DeviceInfoImpl implements DeviceInfo {
     private readonly deviceId: string;
 
     constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig) {
-        if (this.sdkConfig.httpConfig.debugMode) {
+        if (sdkConfig.environment === Environments.ELECTRON) {
             return this.deviceId = SHA1('4adce7fad56e02b7').toString();
         }
 

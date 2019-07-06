@@ -1,14 +1,11 @@
-import {HttpConfig} from '../config/http-config';
-import {Request} from '../def/request';
-import {Response} from '../def/response';
+import {HttpConfig, HttpService, Request, Response} from '@native/http';
 import {FetchHandler} from '../handlers/fetch-handler';
 import {Observable} from 'rxjs';
-import {HttpService} from '../def/http-service';
 import {Authenticator} from '../def/authenticator';
 import {inject, injectable} from 'inversify';
 import {ApiTokenHandler} from '../handlers/api-token-handler';
 import {InjectionTokens} from '../../../injection-tokens';
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../..';
 import {DeviceInfo} from '../../device';
 import {ApiKeys} from '../../../preference-keys';
 import {SharedPreferences} from '../../shared-preferences';
@@ -44,7 +41,7 @@ export class HttpServiceImpl implements HttpService {
     public fetch<T = any>(request: Request): Observable<Response<T>> {
         return new FetchHandler(
             request,
-            this.apiConfig,
+            this.sdkConfig,
             this.deviceInfo,
             this.sharedPreferences,
             this.defaultApiAuthenticators,
