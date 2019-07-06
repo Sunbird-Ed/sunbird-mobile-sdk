@@ -1,4 +1,4 @@
-export * from './config/api-config';
+export * from './config/http-config';
 
 export * from './def/http-service';
 export * from './def/response';

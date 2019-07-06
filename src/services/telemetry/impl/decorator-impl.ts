@@ -1,5 +1,5 @@
 import {Actor, Context, ProducerData, SunbirdTelemetry, TelemetryDecorator} from '../index';
-import {ApiConfig} from '../../../native/http';
+import {HttpConfig} from '../../../native/http';
 import {DeviceInfo} from '../../../native/device/def/device-info';
 import {AppInfo} from '../../../native/app/def/app-info';
 import {UniqueId} from '../../../native/db/util/unique-id';
@@ -11,13 +11,13 @@ import Telemetry = SunbirdTelemetry.Telemetry;
 @injectable()
 export class TelemetryDecoratorImpl implements TelemetryDecorator {
 
-    private apiConfig: ApiConfig;
+    private apiConfig: HttpConfig;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
         @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
         @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo) {
-        this.apiConfig = this.sdkConfig.apiConfig;
+        this.apiConfig = this.sdkConfig.httpConfig;
     }
 
     decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset: number = 0, channelId?: string): any {

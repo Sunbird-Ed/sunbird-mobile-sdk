@@ -1,4 +1,4 @@
-import {ApiConfig, ApiRequestHandler, HttpRequestType, HttpService, Request} from '../../../native/http';
+import {ApiRequestHandler, HttpConfig, HttpRequestType, HttpService, Request} from '../../../native/http';
 import {InteractSubType, InteractType, TelemetrySyncStat} from '../index';
 import {Observable} from 'rxjs';
 import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
@@ -43,7 +43,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
 
     private readonly preprocessors: TelemetrySyncPreprocessor[];
     private readonly telemetryConfig: TelemetryConfig;
-    private readonly apiConfig: ApiConfig;
+    private readonly apiConfig: HttpConfig;
 
     constructor(private dbService: DbService,
                 private sdkConfig: SdkConfig,
@@ -56,7 +56,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
             new StringToGzippedString()
         ];
         this.telemetryConfig = this.sdkConfig.telemetryConfig;
-        this.apiConfig = this.sdkConfig.apiConfig;
+        this.apiConfig = this.sdkConfig.httpConfig;
     }
 
     resetDeviceRegisterTTL(): Observable<undefined> {

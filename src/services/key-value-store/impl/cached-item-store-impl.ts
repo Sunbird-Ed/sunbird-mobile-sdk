@@ -1,6 +1,6 @@
 import {CachedItemStore, KeyValueStore} from '../index';
 import {Observable} from 'rxjs';
-import {ApiConfig} from '../../../native/http';
+import {HttpConfig} from '../../../native/http';
 import {SharedPreferences} from '../../../native/shared-preferences';
 import {SdkConfig} from '../../../sdk-config';
 import {InjectionTokens} from '../../../injection-tokens';
@@ -9,13 +9,13 @@ import {inject, injectable} from 'inversify';
 @injectable()
 export class CachedItemStoreImpl implements CachedItemStore {
 
-    private apiConfig: ApiConfig;
+    private apiConfig: HttpConfig;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
         @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
-        this.apiConfig = this.sdkConfig.apiConfig;
+        this.apiConfig = this.sdkConfig.httpConfig;
     }
 
     private static isItemEmpty(item: any) {

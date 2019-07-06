@@ -1,11 +1,11 @@
 import {OAuthSession, SessionProvider, SignInError} from '../index';
-import {ApiConfig, HttpRequestType, HttpService, JWTUtil, Request, Response} from '../../../native/http';
+import {HttpConfig, HttpRequestType, HttpService, JWTUtil, Request, Response} from '../../../native/http';
 import {StepOneCallbackType} from './o-auth-delegate';
 
 export class StateLoginSessionProvider implements SessionProvider {
     constructor(
         private params: StepOneCallbackType,
-        private apiConfig: ApiConfig,
+        private apiConfig: HttpConfig,
         private apiService: HttpService,
         private inAppBrowserRef: InAppBrowserSession) {
     }

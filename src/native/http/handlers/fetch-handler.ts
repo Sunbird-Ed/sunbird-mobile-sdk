@@ -1,6 +1,6 @@
 import {HttpClientImpl} from '../impl/http-client-impl';
 import {BaseConnection} from '../impl/base-connection';
-import {ApiConfig, HttpClient, Request, Response} from '../index';
+import {HttpClient, HttpConfig, Request, Response} from '../index';
 import {Observable} from 'rxjs';
 import {HttpClientAxios} from '../impl/http-client-axios';
 import {Connection} from '../def/connection';
@@ -13,7 +13,7 @@ export class FetchHandler {
 
     constructor(
         private request: Request,
-        private apiConfig: ApiConfig,
+        private apiConfig: HttpConfig,
         private deviceInfo: DeviceInfo,
         private sharedPreferences: SharedPreferences,
         private defaultApiAuthenticators: Authenticator[],

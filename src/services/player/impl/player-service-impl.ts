@@ -27,8 +27,8 @@ export class PlayerServiceImpl implements PlayerService {
         const context: Context = {};
         context.did = this.deviceInfo.getDeviceID();
         const pData = new ProducerData();
-        pData.id = this.config.apiConfig.api_authentication.producerId;
-        pData.pid = this.config.apiConfig.api_authentication.producerUniqueId;
+        pData.id = this.config.httpConfig.api_authentication.producerId;
+        pData.pid = this.config.httpConfig.api_authentication.producerUniqueId;
         pData.ver = this.appInfo.getVersionName();
         context.pdata = pData;
 
@@ -79,7 +79,7 @@ export class PlayerServiceImpl implements PlayerService {
             playerInput.appContext = appContext;
             return this.frameworkService.getActiveChannelId();
         }).mergeMap((channelId: string) => {
-            context.channel = channelId ? channelId : this.config.apiConfig.api_authentication.channelId;
+            context.channel = channelId ? channelId : this.config.httpConfig.api_authentication.channelId;
             playerInput.context = context;
             return Observable.of(playerInput);
         });

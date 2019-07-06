@@ -1,5 +1,5 @@
 import {ApiTokenHandler} from '../../../../native/http/handlers/api-token-handler';
-import {ApiConfig, HttpService, Request, Response, ResponseCode} from '../../../../native/http';
+import {HttpConfig, HttpService, Request, Response, ResponseCode} from '../../../../native/http';
 import {Observable} from 'rxjs';
 import {ApiKeys} from '../../../../preference-keys';
 import {Authenticator} from '../../../../native/http/def/authenticator';
@@ -12,7 +12,7 @@ export class ApiAuthenticator implements Authenticator {
 
     constructor(
         private sharedPreferences: SharedPreferences,
-        private apiConfig: ApiConfig,
+        private apiConfig: HttpConfig,
         private deviceInfo: DeviceInfo,
         private apiService: HttpService
     ) {

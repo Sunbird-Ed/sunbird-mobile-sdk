@@ -1,4 +1,4 @@
-import {ApiConfig, HttpRequestType, HttpService, JWTokenType, JWTUtil, Request} from '..';
+import {HttpConfig, HttpRequestType, HttpService, JWTokenType, JWTUtil, Request} from '..';
 import {Observable} from 'rxjs';
 import * as moment from 'moment';
 import {DeviceInfo} from '../../device';
@@ -9,7 +9,7 @@ export class ApiTokenHandler {
     private static readonly ID = 'ekstep.genie.device.register';
 
     constructor(
-        private config: ApiConfig,
+        private config: HttpConfig,
         private apiService: HttpService,
         private deviceInfo: DeviceInfo
     ) {

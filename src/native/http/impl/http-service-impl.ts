@@ -1,4 +1,4 @@
-import {ApiConfig} from '../config/api-config';
+import {HttpConfig} from '../config/http-config';
 import {Request} from '../def/request';
 import {Response} from '../def/response';
 import {FetchHandler} from '../handlers/fetch-handler';
@@ -18,12 +18,12 @@ export class HttpServiceImpl implements HttpService {
 
     private defaultApiAuthenticators: Authenticator[];
     private defaultSessionAuthenticators: Authenticator[];
-    private apiConfig: ApiConfig;
+    private apiConfig: HttpConfig;
 
     constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
                 @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
-        this.apiConfig = this.sdkConfig.apiConfig;
+        this.apiConfig = this.sdkConfig.httpConfig;
     }
 
     onInit(): Observable<undefined> {

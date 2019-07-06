@@ -1,4 +1,4 @@
-import {ApiConfig, HttpService} from '../../../native/http';
+import {HttpConfig, HttpService} from '../../../native/http';
 import {OAuthSession} from '../index';
 import {AuthEndPoints} from '../def/auth-end-points';
 import {SunbirdOAuthSessionProviderFactory} from './sunbird-o-auth-session-provider-factory';
@@ -25,7 +25,7 @@ export interface OAuthRedirectUrlQueryParams {
 
 export class OAuthDelegate {
     constructor(
-        private apiConfig: ApiConfig,
+        private apiConfig: HttpConfig,
         private apiService: HttpService
     ) {
     }

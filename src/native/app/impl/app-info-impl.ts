@@ -9,7 +9,7 @@ export class AppInfoImpl implements AppInfo {
     private versionName: string;
 
     constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig) {
-        if (sdkConfig.apiConfig.debugMode) {
+        if (sdkConfig.httpConfig.debugMode) {
             this.versionName = 'sunbird-debug';
         }
     }
@@ -19,7 +19,7 @@ export class AppInfoImpl implements AppInfo {
     }
 
     public async init(): Promise<void> {
-        if (this.sdkConfig.apiConfig.debugMode) {
+        if (this.sdkConfig.httpConfig.debugMode) {
             return await undefined;
         }
         const packageName = this.sdkConfig.appConfig.buildConfigPackage ? this.sdkConfig.appConfig.buildConfigPackage : 'org.sunbird.app';

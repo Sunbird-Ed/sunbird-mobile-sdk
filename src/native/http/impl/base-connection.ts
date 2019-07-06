@@ -1,4 +1,4 @@
-import {ApiConfig, HttpClient, HttpRequestType, HttpSerializer, Request, Response, ResponseCode} from '../index';
+import {HttpClient, HttpConfig, HttpRequestType, HttpSerializer, Request, Response, ResponseCode} from '../index';
 import {Observable} from 'rxjs';
 import {Connection} from '../def/connection';
 import {Authenticator} from '../def/authenticator';
@@ -10,7 +10,7 @@ export class BaseConnection implements Connection {
 
     constructor(
         protected http: HttpClient,
-        protected apiConfig: ApiConfig,
+        protected apiConfig: HttpConfig,
         protected deviceInfo: DeviceInfo,
         protected sharedPreferences: SharedPreferences,
         protected defaultApiAuthenticators: Authenticator[],

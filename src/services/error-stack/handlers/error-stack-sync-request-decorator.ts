@@ -1,5 +1,5 @@
 import {ProducerData} from '../../telemetry';
-import {ApiConfig} from '../../../native/http';
+import {HttpConfig} from '../../../native/http';
 import {DeviceInfo, DeviceSpec} from '../../../native/device';
 import {Observable} from 'rxjs';
 import {AppInfo} from '../../../native/app';
@@ -16,7 +16,7 @@ interface Request {
 
 export class ErrorStackSyncRequestDecorator {
     constructor(
-        private apiConfig: ApiConfig,
+        private apiConfig: HttpConfig,
         private deviceInfo: DeviceInfo,
         private appInfo: AppInfo
     ) {

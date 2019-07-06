@@ -1,12 +1,12 @@
 import {OAuthSession, SessionProvider} from '../index';
-import {ApiConfig, JWTUtil} from '../../../native/http';
+import {HttpConfig, JWTUtil} from '../../../native/http';
 import {OAuthRedirectUrlQueryParams, StepOneCallbackType} from './o-auth-delegate';
 import * as qs from 'qs';
 import {SignInError} from '../errors/sign-in-error';
 
 export class GoogleSessionProvider implements SessionProvider {
     constructor(private paramsObj: StepOneCallbackType,
-                private apiConfig: ApiConfig,
+                private apiConfig: HttpConfig,
                 private inAppBrowserRef: InAppBrowserSession) {
     }
 

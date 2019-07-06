@@ -1,4 +1,4 @@
-import {ApiConfig, HttpService, Request, RequestInterceptor, Response, ResponseCode, ResponseInterceptor} from '../../../../native/http';
+import {HttpConfig, HttpService, Request, RequestInterceptor, Response, ResponseCode, ResponseInterceptor} from '../../../../native/http';
 import {Observable} from 'rxjs';
 import {AuthKeys} from '../../../../preference-keys';
 import {AuthService, OAuthSession} from '../../../auth';
@@ -9,7 +9,7 @@ export class SessionAuthenticator implements RequestInterceptor, ResponseInterce
 
     constructor(
         private sharedPreferences: SharedPreferences,
-        private apiConfig: ApiConfig,
+        private apiConfig: HttpConfig,
         private apiService: HttpService,
         private authService: AuthService
     ) {

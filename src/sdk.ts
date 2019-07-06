@@ -1,12 +1,9 @@
-// definitions
 import {HttpService, HttpServiceImpl} from './native/http';
 import {DbService, Migration} from './native/db';
 import {AuthService} from './services/auth';
 import {TelemetryDecorator, TelemetryService} from './services/telemetry';
 import {SharedPreferences} from './native/shared-preferences';
-// config
 import {SdkConfig} from './sdk-config';
-// implementations
 import {DbCordovaService} from './native/db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './services/telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './services/telemetry/impl/telemetry-service-impl';
@@ -68,6 +65,7 @@ import {NetworkInfoServiceImpl} from './native/network-info/impl/network-info-se
 import {SearchHistoryMigration} from './native/db/migrations/search-history-migration';
 import {SearchHistoryService} from './services/search-history';
 import {SearchHistoryServiceImpl} from './services/search-history/impl/search-history-service-impl';
+import {Environments} from './environments';
 
 export class SunbirdSdk {
     private static _instance?: SunbirdSdk;
@@ -210,19 +208,19 @@ export class SunbirdSdk {
             new SearchHistoryMigration()
         ]);
 
-        if (sdkConfig.sharedPreferencesConfig.debugMode) {
+        if (sdkConfig.environment === Environments.ELECTRON) {
             this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).to(SharedPreferencesLocalStorage).inSingletonScope();
         } else {
             this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).to(SharedPreferencesAndroid).inSingletonScope();
         }
 
-        if (sdkConfig.dbConfig.debugMode) {
+        if (sdkConfig.environment === Environments.ELECTRON) {
             this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbWebSqlService).inSingletonScope();
         } else {
             this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbCordovaService).inSingletonScope();
         }
 
-        if (sdkConfig.fileConfig.debugMode) {
+        if (sdkConfig.environment === Environments.ELECTRON) {
             this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(DebugPromptFileService).inSingletonScope();
         } else {
             this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(FileServiceImpl).inSingletonScope();
@@ -287,11 +285,11 @@ export class SunbirdSdk {
         this._container.bind<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE).to(SearchHistoryServiceImpl).inSingletonScope();
 
         this.apiService.setDefaultApiAuthenticators([
-            new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)
+            new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.httpConfig, this.deviceInfo, this.apiService)
         ]);
 
         this.apiService.setDefaultSessionAuthenticators([
-            new SessionAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.apiService, this.authService)
+            new SessionAuthenticator(this.sharedPreferences, this.sdkConfig.httpConfig, this.apiService, this.authService)
         ]);
 
         await this.dbService.init();

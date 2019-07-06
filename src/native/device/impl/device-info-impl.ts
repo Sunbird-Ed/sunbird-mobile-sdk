@@ -16,7 +16,7 @@ export class DeviceInfoImpl implements DeviceInfo {
     private readonly deviceId: string;
 
     constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig) {
-        if (this.sdkConfig.apiConfig.debugMode) {
+        if (this.sdkConfig.httpConfig.debugMode) {
             return this.deviceId = SHA1('4adce7fad56e02b7').toString();
         }
 

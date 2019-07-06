@@ -1,10 +1,10 @@
 import {OAuthSession, SessionProvider, SignInError} from '../index';
-import {ApiConfig, HttpRequestType, HttpSerializer, HttpService, JWTUtil, Request, Response} from '../../../native/http';
+import {HttpConfig, HttpRequestType, HttpSerializer, HttpService, JWTUtil, Request, Response} from '../../../native/http';
 import {StepOneCallbackType} from './o-auth-delegate';
 
 export class KeycloakSessionProvider implements SessionProvider {
     constructor(private paramsObj: StepOneCallbackType,
-                private apiConfig: ApiConfig,
+                private apiConfig: HttpConfig,
                 private apiService: HttpService,
                 private inAppBrowserRef: InAppBrowserSession) {
     }

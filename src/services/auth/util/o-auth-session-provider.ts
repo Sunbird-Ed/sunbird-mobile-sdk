@@ -1,12 +1,12 @@
 import {OAuthSession, SessionProvider} from '../index';
-import {ApiConfig, HttpService} from '../../../native/http';
+import {HttpConfig, HttpService} from '../../../native/http';
 import {OAuthDelegate} from './o-auth-delegate';
 
 export class OAuthSessionProvider implements SessionProvider {
 
     private oAuthService: OAuthDelegate;
 
-    constructor(private apiConfig: ApiConfig, private apiService: HttpService) {
+    constructor(private apiConfig: HttpConfig, private apiService: HttpService) {
         this.oAuthService = new OAuthDelegate(this.apiConfig, this.apiService);
     }
 

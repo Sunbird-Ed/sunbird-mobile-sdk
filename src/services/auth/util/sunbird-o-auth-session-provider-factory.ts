@@ -1,4 +1,4 @@
-import {ApiConfig, HttpService} from '../../../native/http';
+import {HttpConfig, HttpService} from '../../../native/http';
 import {KeycloakSessionProvider} from './keycloak-session-provider';
 import {StateLoginSessionProvider} from './state-login-session-provider';
 import * as qs from 'qs';
@@ -7,7 +7,7 @@ import {GoogleSessionProvider} from './google-session-provider';
 import {SessionProvider} from '../index';
 
 export class SunbirdOAuthSessionProviderFactory {
-    constructor(private apiConfig: ApiConfig, private apiService: HttpService, private inAppBrowserRef: InAppBrowserSession) {
+    constructor(private apiConfig: HttpConfig, private apiService: HttpService, private inAppBrowserRef: InAppBrowserSession) {
     }
 
     public fromUrl(url: string): SessionProvider | undefined {

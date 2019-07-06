@@ -1,4 +1,4 @@
-export interface ApiConfig {
+export interface HttpConfig {
     debugMode: boolean;
     host: string;
     user_authentication: {

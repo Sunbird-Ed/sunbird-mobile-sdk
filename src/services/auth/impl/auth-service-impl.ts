@@ -1,5 +1,5 @@
 import {AuthService, OAuthSession, SessionProvider} from '../index';
-import {ApiConfig, HttpService} from '../../../native/http';
+import {HttpConfig, HttpService} from '../../../native/http';
 import {AuthUtil} from '../util/auth-util';
 import {Observable} from 'rxjs';
 import {SharedPreferences} from '../../../native/shared-preferences';
@@ -12,7 +12,7 @@ import {SdkConfig} from '../../../sdk-config';
 export class AuthServiceImpl implements AuthService {
 
     private authUtil: AuthUtil;
-    private apiConfig: ApiConfig;
+    private apiConfig: HttpConfig;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -20,7 +20,7 @@ export class AuthServiceImpl implements AuthService {
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
     ) {
-        this.apiConfig = this.sdkConfig.apiConfig;
+        this.apiConfig = this.sdkConfig.httpConfig;
         this.authUtil = new AuthUtil(this.apiConfig, this.apiService, this.sharedPreferences, this.eventsBusService);
     }
 

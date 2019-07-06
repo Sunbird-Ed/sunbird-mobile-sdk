@@ -392,7 +392,7 @@ export class ProfileServiceImpl implements ProfileService {
                                 .setActiveChannelId(attachedServerProfileDetailsProfile.serverProfile!.rootOrg.hashTagId);
                         }).catch(() => Observable.of(undefined));
                     }),
-                    this.frameworkService.setActiveChannelId(this.sdkConfig.apiConfig.api_authentication.channelId).mapTo(undefined)
+                    this.frameworkService.setActiveChannelId(this.sdkConfig.httpConfig.api_authentication.channelId).mapTo(undefined)
                 ).mapTo(profile)
             )
             .mergeMap((profile: Profile) => {

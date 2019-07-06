@@ -39,7 +39,7 @@ export class FrameworkServiceImpl implements FrameworkService {
             .mapTo(undefined)
             .catch((e) => {
                 if (e instanceof NoActiveChannelFoundError) {
-                    return this.setActiveChannelId(this.sdkConfig.apiConfig.api_authentication.channelId);
+                    return this.setActiveChannelId(this.sdkConfig.httpConfig.api_authentication.channelId);
                 }
 
                 throw e;

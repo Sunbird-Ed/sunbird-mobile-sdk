@@ -40,7 +40,7 @@ export class ErrorLoggerServiceImpl implements ErrorLoggerService {
     ) {
         this.errorLoggerConfig = this.sdkConfig.errorLoggerConfig;
         this.errorStackSyncRequestDecorator = new ErrorStackSyncRequestDecorator(
-            this.sdkConfig.apiConfig,
+            this.sdkConfig.httpConfig,
             this.deviceInfo,
             this.appInfo
         );

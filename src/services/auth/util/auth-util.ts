@@ -1,5 +1,5 @@
 import {
-    ApiConfig,
+    HttpConfig,
     HttpRequestType,
     HttpSerializer,
     HttpService,
@@ -19,7 +19,7 @@ import {AuthTokenRefreshError} from '../errors/auth-token-refresh-error';
 
 export class AuthUtil {
     constructor(
-        private apiConfig: ApiConfig,
+        private apiConfig: HttpConfig,
         private apiService: HttpService,
         private sharedPreferences: SharedPreferences,
         private eventsBusService: EventsBusService
