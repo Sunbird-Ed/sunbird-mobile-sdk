@@ -1,73 +1,73 @@
 // definitions
-import {ApiService, ApiServiceImpl} from './api';
-import {DbService, Migration} from './db';
-import {AuthService} from './auth';
-import {TelemetryDecorator, TelemetryService} from './telemetry';
-import {SharedPreferences} from './util/shared-preferences';
+import {HttpService, HttpServiceImpl} from './native/http';
+import {DbService, Migration} from './native/db';
+import {AuthService} from './services/auth';
+import {TelemetryDecorator, TelemetryService} from './services/telemetry';
+import {SharedPreferences} from './native/shared-preferences';
 // config
 import {SdkConfig} from './sdk-config';
 // implementations
-import {DbCordovaService} from './db/impl/db-cordova-service';
-import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
-import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
-import {AuthServiceImpl} from './auth/impl/auth-service-impl';
-import {ContentFeedbackService, ContentService, ContentServiceConfig} from './content';
-import {CourseService, CourseServiceImpl} from './course';
-import {FormService} from './form';
-import {FrameworkService, FrameworkServiceImpl, FrameworkUtilService, FrameworkUtilServiceImpl} from './framework';
-import {ContentServiceImpl} from './content/impl/content-service-impl';
-import {ProfileService, ProfileServiceImpl} from './profile';
-import {CachedItemStore, KeyValueStore} from './key-value-store';
-import {KeyValueStoreImpl} from './key-value-store/impl/key-value-store-impl';
-import {FormServiceImpl} from './form/impl/form-service-impl';
-import {FileService} from './util/file/def/file-service';
-import {CachedItemStoreImpl} from './key-value-store/impl/cached-item-store-impl';
-import {PageAssembleService, PageServiceConfig} from './page';
-import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
-import {SharedPreferencesLocalStorage} from './util/shared-preferences/impl/shared-preferences-local-storage';
-import {SharedPreferencesAndroid} from './util/shared-preferences/impl/shared-preferences-android';
-import {FileServiceImpl} from './util/file/impl/file-service-impl';
-import {DbWebSqlService} from './db/impl/db-web-sql-service';
-import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migration';
-import {GroupProfileMigration} from './db/migrations/group-profile-migration';
-import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
-import {ErrorStackMigration} from './db/migrations/error-stack-migration';
-import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
-import {GroupService} from './group';
-import {GroupServiceImpl} from './group/impl/group-service-impl';
-import {DebugPromptFileService} from './util/file/impl/debug-prompt-file-service';
-import {SystemSettingsService, SystemSettingsServiceImpl} from './system-settings';
-import {ZipService} from './util/zip/def/zip-service';
-import {DeviceInfo} from './util/device';
-import {ZipServiceImpl} from './util/zip/impl/zip-service-impl';
-import {DeviceInfoImpl} from './util/device/impl/device-info-impl';
-import {ContentFeedbackServiceImpl} from './content/impl/content-feedback-service-impl';
-import {EventsBusService} from './events-bus';
-import {EventsBusServiceImpl} from './events-bus/impl/events-bus-service-impl';
-import {SummarizerService, SummarizerServiceImpl} from './summarizer';
+import {DbCordovaService} from './native/db/impl/db-cordova-service';
+import {TelemetryDecoratorImpl} from './services/telemetry/impl/decorator-impl';
+import {TelemetryServiceImpl} from './services/telemetry/impl/telemetry-service-impl';
+import {AuthServiceImpl} from './services/auth/impl/auth-service-impl';
+import {ContentFeedbackService, ContentService, ContentServiceConfig} from './services/content';
+import {CourseService, CourseServiceImpl} from './services/course';
+import {FormService} from './services/form';
+import {FrameworkService, FrameworkServiceImpl, FrameworkUtilService, FrameworkUtilServiceImpl} from './services/framework';
+import {ContentServiceImpl} from './services/content/impl/content-service-impl';
+import {ProfileService, ProfileServiceImpl} from './services/profile';
+import {CachedItemStore, KeyValueStore} from './services/key-value-store';
+import {KeyValueStoreImpl} from './services/key-value-store/impl/key-value-store-impl';
+import {FormServiceImpl} from './services/form/impl/form-service-impl';
+import {FileService} from './native/file/def/file-service';
+import {CachedItemStoreImpl} from './services/key-value-store/impl/cached-item-store-impl';
+import {PageAssembleService, PageServiceConfig} from './services/page';
+import {PageAssembleServiceImpl} from './services/page/impl/page-assemble-service-impl';
+import {SharedPreferencesLocalStorage} from './native/shared-preferences/impl/shared-preferences-local-storage';
+import {SharedPreferencesAndroid} from './native/shared-preferences/impl/shared-preferences-android';
+import {FileServiceImpl} from './native/file/impl/file-service-impl';
+import {DbWebSqlService} from './native/db/impl/db-web-sql-service';
+import {ProfileSyllabusMigration} from './native/db/migrations/profile-syllabus-migration';
+import {GroupProfileMigration} from './native/db/migrations/group-profile-migration';
+import {MillisecondsToSecondsMigration} from './native/db/migrations/milliseconds-to-seconds-migration';
+import {ErrorStackMigration} from './native/db/migrations/error-stack-migration';
+import {ContentMarkerMigration} from './native/db/migrations/content-marker-migration';
+import {GroupService} from './services/group';
+import {GroupServiceImpl} from './services/group/impl/group-service-impl';
+import {DebugPromptFileService} from './native/file/impl/debug-prompt-file-service';
+import {SystemSettingsService, SystemSettingsServiceImpl} from './services/system-settings';
+import {ZipService} from './native/util/zip/def/zip-service';
+import {DeviceInfo} from './native/device';
+import {ZipServiceImpl} from './native/util/zip/impl/zip-service-impl';
+import {DeviceInfoImpl} from './native/device/impl/device-info-impl';
+import {ContentFeedbackServiceImpl} from './services/content/impl/content-feedback-service-impl';
+import {EventsBusService} from './services/events-bus';
+import {EventsBusServiceImpl} from './services/events-bus/impl/events-bus-service-impl';
+import {SummarizerService, SummarizerServiceImpl} from './services/summarizer';
 import {Observable} from 'rxjs';
-import {DownloadService} from './util/download';
-import {DownloadServiceImpl} from './util/download/impl/download-service-impl';
-import {AppInfo} from './util/app/def/app-info';
-import {AppInfoImpl} from './util/app/impl/app-info-impl';
-import {PlayerService, PlayerServiceImpl} from './player';
-import {TelemetryConfig} from './telemetry/config/telemetry-config';
-import {OfflineSearchTextbookMigration} from './db/migrations/offline-search-textbook-migration';
-import {ApiAuthenticator} from './util/authenticators/impl/api-authenticator';
-import {SessionAuthenticator} from './util/authenticators/impl/session-authenticator';
+import {DownloadService} from './native/download';
+import {DownloadServiceImpl} from './native/download/impl/download-service-impl';
+import {AppInfo} from './native/app/def/app-info';
+import {AppInfoImpl} from './native/app/impl/app-info-impl';
+import {PlayerService, PlayerServiceImpl} from './services/player';
+import {TelemetryConfig} from './services/telemetry/config/telemetry-config';
+import {OfflineSearchTextbookMigration} from './native/db/migrations/offline-search-textbook-migration';
+import {ApiAuthenticator} from './services/util/authenticators/impl/api-authenticator';
+import {SessionAuthenticator} from './services/util/authenticators/impl/session-authenticator';
 import {Container} from 'inversify';
 import {InjectionTokens} from './injection-tokens';
-import {StorageService} from './storage';
-import {StorageServiceImpl} from './storage/impl/storage-service-impl';
-import {NotificationService} from './notification/def/notification-service';
-import {NotificationServiceImpl} from './notification/impl/notification-service-impl';
-import {ErrorLoggerService} from './util/error-stack/def/error-logger-service';
-import {ErrorLoggerServiceImpl} from './util/error-stack/impl/error-logger-service-impl';
-import {NetworkInfoService} from './util/network';
-import {NetworkInfoServiceImpl} from './util/network/impl/network-info-service-impl';
-import {SearchHistoryMigration} from './db/migrations/search-history-migration';
-import {SearchHistoryService} from './util/search-history';
-import {SearchHistoryServiceImpl} from './util/search-history/impl/search-history-service-impl';
+import {StorageService} from './services/storage';
+import {StorageServiceImpl} from './services/storage/impl/storage-service-impl';
+import {NotificationService} from './native/notification/def/notification-service';
+import {NotificationServiceImpl} from './native/notification/impl/notification-service-impl';
+import {ErrorLoggerService} from './services/error-stack/def/error-logger-service';
+import {ErrorLoggerServiceImpl} from './services/error-stack/impl/error-logger-service-impl';
+import {NetworkInfoService} from './native/network-info';
+import {NetworkInfoServiceImpl} from './native/network-info/impl/network-info-service-impl';
+import {SearchHistoryMigration} from './native/db/migrations/search-history-migration';
+import {SearchHistoryService} from './services/search-history';
+import {SearchHistoryServiceImpl} from './services/search-history/impl/search-history-service-impl';
 
 export class SunbirdSdk {
     private static _instance?: SunbirdSdk;
@@ -106,8 +106,8 @@ export class SunbirdSdk {
         return this._container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
     }
 
-    get apiService(): ApiService {
-        return this._container.get<ApiService>(InjectionTokens.API_SERVICE);
+    get apiService(): HttpService {
+        return this._container.get<HttpService>(InjectionTokens.API_SERVICE);
     }
 
     get keyValueStore(): KeyValueStore {
@@ -236,7 +236,7 @@ export class SunbirdSdk {
 
         this._container.bind<AppInfo>(InjectionTokens.APP_INFO).to(AppInfoImpl).inSingletonScope();
 
-        this._container.bind<ApiService>(InjectionTokens.API_SERVICE).to(ApiServiceImpl).inSingletonScope();
+        this._container.bind<HttpService>(InjectionTokens.API_SERVICE).to(HttpServiceImpl).inSingletonScope();
 
         this._container.bind<AuthService>(InjectionTokens.AUTH_SERVICE).to(AuthServiceImpl).inSingletonScope();
 

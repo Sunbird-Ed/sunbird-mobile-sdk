@@ -1,0 +1,31 @@
+import {FileService} from '../../../../native/file/def/file-service';
+import {ZipService} from '../../../../native/util/zip/def/zip-service';
+import {ExportContentContext} from '../../index';
+import {Response} from '../../../../native/http';
+import {ContentErrorCode} from '../../util/content-constants';
+import {Metadata} from '../../../../native/file';
+
+export class EcarBundle {
+    private static readonly FILE_SIZE = 'FILE_SIZE';
+
+    constructor(private fileService: FileService,
+                private zipService: ZipService) {
+    }
+
+    public async execute(exportContentContext: ExportContentContext): Promise<Response> {
+        const response: Response = new Response();
+        await new Promise((resolve, reject) => {
+            this.zipService.zip(exportContentContext.tmpLocationPath!, {target: exportContentContext.ecarFilePath!!}, [], [], () => {
+                resolve();
+            }, () => {
+                response.errorMesg = ContentErrorCode.EXPORT_FAILED_ECAR_BUNDLE;
+                throw response;
+            });
+        });
+        const metaData: Metadata = await this.fileService.getMetaData(exportContentContext.ecarFilePath!);
+        exportContentContext.metadata[EcarBundle.FILE_SIZE] = metaData.size;
+        response.body = exportContentContext;
+        return response;
+    }
+
+}

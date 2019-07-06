@@ -24,7 +24,21 @@
       "jest",
       "websql"
     ],
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "paths": {
+      "@services": [
+        "./src/services"
+      ],
+      "@services/*": [
+        "./src/services/*"
+      ],
+      "@native": [
+        "./src/native"
+      ],
+      "@native/*": [
+        "./src/native/*"
+      ]
+    }
   },
   "include": [
     "./src/**/*",
