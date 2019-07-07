@@ -25,21 +25,7 @@
       "websql",
       "node"
     ],
-    "moduleResolution": "node",
-    "paths": {
-      "@services": [
-        "./src/services"
-      ],
-      "@services/*": [
-        "./src/services/*"
-      ],
-      "@native": [
-        "./src/native"
-      ],
-      "@native/*": [
-        "./src/native/*"
-      ]
-    }
+    "moduleResolution": "node"
   },
   "include": [
     "./src/**/*",
