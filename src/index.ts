@@ -25,3 +25,4 @@ export * from './services/player';
 export * from './native/app';
 export * from './services/search-history';
 export * from './bootstrap/environments';
+export * from './native/build-config-reader';
