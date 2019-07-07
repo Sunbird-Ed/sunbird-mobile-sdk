@@ -3,7 +3,13 @@ import {DirectoryEntry, Entry, FileEntry, Flags, IWriteOptions, Metadata, Remove
 import {injectable} from 'inversify';
 
 @injectable()
-export class DebugPromptFileService implements FileService {
+export class ElectronFileService implements FileService {
+    private fs;
+
+    constructor() {
+        this.fs = window['require']('fs');
+    }
+
     copyDir(path: string, dirName: string, newPath: string, newDirName: string): Promise<Entry> {
         throw new Error('To be Implemented');
     }
@@ -42,13 +48,14 @@ export class DebugPromptFileService implements FileService {
 
     readAsText(path: string, file: string): Promise<string> {
         return new Promise<string>(((resolve, reject) => {
-            const result = prompt(`Enter contents for ${path}/${file}`);
+            this.fs.readFile(path + '/' + file, 'utf-8', (err, data) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
 
-            if (result) {
-                return resolve(result);
-            }
-
-            reject('No Content');
+                resolve(data);
+            });
         }));
     }
 
