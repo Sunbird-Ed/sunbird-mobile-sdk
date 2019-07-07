@@ -1,9 +1,9 @@
 import {CachedItemStore} from '../../key-value-store';
 import {FileService} from '../../../native/file/def/file-service';
-import {Path} from '../../../native/file/util/path';
-import {GetSystemSettingsRequest, SystemSettings, SystemSettingsConfig} from '../index';
+import {GetSystemSettingsRequest, SystemSettings} from '..';
 import {ApiRequestHandler, HttpRequestType, HttpService, Request} from '../../../native/http';
 import {Observable} from 'rxjs';
+import {SdkConfig} from '../../..';
 
 export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSettingsRequest, SystemSettings> {
     private readonly SYSTEM_SETTINGS_FILE_KEY_PREFIX = 'system-setting-';
@@ -11,7 +11,7 @@ export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSett
     private readonly GET_SYSTEM_SETTINGS_ENDPOINT = '/system/settings/get';
 
     constructor(private apiService: HttpService,
-                private systemSettingsConfig: SystemSettingsConfig,
+                private sdkConfig: SdkConfig,
                 private fileservice: FileService,
                 private cachedItemStore: CachedItemStore) {
     }
@@ -29,7 +29,7 @@ export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSett
     private fetchFromServer(request: GetSystemSettingsRequest): Observable<SystemSettings> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath(this.systemSettingsConfig.systemSettingsApiPath + this.GET_SYSTEM_SETTINGS_ENDPOINT + '/' + request.id)
+            .withPath(this.sdkConfig.systemSettingsConfig.systemSettingsApiPath + this.GET_SYSTEM_SETTINGS_ENDPOINT + '/' + request.id)
             .withApiToken(true)
             .build();
 
@@ -39,7 +39,7 @@ export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSett
     }
 
     private fetchFromFile(request: GetSystemSettingsRequest): Observable<SystemSettings> {
-        const dir = Path.ASSETS_PATH + this.systemSettingsConfig.systemSettingsDirPath;
+        const dir = this.sdkConfig.bootstrapConfig.assetsDir + this.sdkConfig.systemSettingsConfig.systemSettingsDirPath;
         const file = this.SYSTEM_SETTINGS_FILE_KEY_PREFIX + request.id + '.json';
         return Observable.fromPromise(this.fileservice.readAsText(dir, file))
             .map((filecontent: string) => {

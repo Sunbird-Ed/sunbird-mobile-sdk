@@ -23,7 +23,7 @@ import {PageAssembleService, PageServiceConfig} from './services/page';
 import {PageAssembleServiceImpl} from './services/page/impl/page-assemble-service-impl';
 import {SharedPreferencesLocalStorage} from './native/shared-preferences/impl/shared-preferences-local-storage';
 import {SharedPreferencesAndroid} from './native/shared-preferences/impl/shared-preferences-android';
-import {FileServiceImpl} from './native/file/impl/file-service-impl';
+import {AndroidFileService} from './native/file/impl/android-file-service';
 import {DbWebSqlService} from './native/db/impl/db-web-sql-service';
 import {ProfileSyllabusMigration} from './native/db/migrations/profile-syllabus-migration';
 import {GroupProfileMigration} from './native/db/migrations/group-profile-migration';
@@ -32,7 +32,7 @@ import {ErrorStackMigration} from './native/db/migrations/error-stack-migration'
 import {ContentMarkerMigration} from './native/db/migrations/content-marker-migration';
 import {GroupService} from './services/group';
 import {GroupServiceImpl} from './services/group/impl/group-service-impl';
-import {DebugPromptFileService} from './native/file/impl/debug-prompt-file-service';
+import {ElectronFileService} from './native/file/impl/electron-file-service';
 import {SystemSettingsService, SystemSettingsServiceImpl} from './services/system-settings';
 import {ZipService} from './native/util/zip/def/zip-service';
 import {DeviceInfo} from './native/device';
@@ -45,7 +45,7 @@ import {SummarizerService, SummarizerServiceImpl} from './services/summarizer';
 import {Observable} from 'rxjs';
 import {DownloadService} from './native/download';
 import {DownloadServiceImpl} from './native/download/impl/download-service-impl';
-import {AppInfo} from './native/app/def/app-info';
+import {AppInfo} from './native/app';
 import {AppInfoImpl} from './native/app/impl/app-info-impl';
 import {PlayerService, PlayerServiceImpl} from './services/player';
 import {TelemetryConfig} from './services/telemetry/config/telemetry-config';
@@ -56,9 +56,9 @@ import {Container} from 'inversify';
 import {InjectionTokens} from './injection-tokens';
 import {StorageService} from './services/storage';
 import {StorageServiceImpl} from './services/storage/impl/storage-service-impl';
-import {NotificationService} from './native/notification/def/notification-service';
+import {NotificationService} from './native/notification';
 import {NotificationServiceImpl} from './native/notification/impl/notification-service-impl';
-import {ErrorLoggerService} from './services/error-stack/def/error-logger-service';
+import {ErrorLoggerService} from './services/error-stack';
 import {ErrorLoggerServiceImpl} from './services/error-stack/impl/error-logger-service-impl';
 import {NetworkInfoService} from './native/network-info';
 import {NetworkInfoServiceImpl} from './native/network-info/impl/network-info-service-impl';
@@ -66,9 +66,13 @@ import {SearchHistoryMigration} from './native/db/migrations/search-history-migr
 import {SearchHistoryService} from './services/search-history';
 import {SearchHistoryServiceImpl} from './services/search-history/impl/search-history-service-impl';
 import {Environments} from './bootstrap/environments';
-import {SdkConfigBuilder} from './bootstrap/sdk-config-builder';
+import {SdkBootstrap} from './bootstrap/sdk-bootstrap';
 import {AndroidConfigProvider} from './bootstrap/android-config-provider';
 import {ElectronConfigProvider} from './bootstrap/electron-config-provider';
+import {BuildConfigReader} from './native/build-config-reader';
+import {ElectronBuildConfigReader} from './native/build-config-reader/impl/electron-build-config-reader';
+import {AndroidBuildConfigReader} from './native/build-config-reader/impl/android-build-config-reader';
+import {BootstrapConfig} from './bootstrap/bootstrap-config';
 
 export class SunbirdSdk {
     private static _instance?: SunbirdSdk;
@@ -188,17 +192,23 @@ export class SunbirdSdk {
     }
 
     get networkInfoService(): NetworkInfoService {
-        return this._container.get<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE);
+        return this._container.get<NetworkInfoService>(InjectionTokens.NETWORK_INFO_SERVICE);
     }
 
     get searchHistoryService(): SearchHistoryService {
         return this._container.get<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE);
     }
 
-    public async init(environement: Environments) {
-        const sdkConfig = await SdkConfigBuilder.build(
-            environement,
-            environement === Environments.ANDROID ? new AndroidConfigProvider() : new ElectronConfigProvider()
+    get buildConfigReader(): BuildConfigReader {
+        return this._container.get<BuildConfigReader>(InjectionTokens.BUILD_CONFIG_READER);
+    }
+
+    public async init(environment: Environments, bootstrapConfig: BootstrapConfig) {
+        const sdkConfig = await SdkBootstrap.build(
+            environment,
+            bootstrapConfig,
+            environment === Environments.ANDROID ?
+                new AndroidConfigProvider() : new ElectronConfigProvider()
         );
 
         this._container = new Container();
@@ -230,9 +240,15 @@ export class SunbirdSdk {
         }
 
         if (sdkConfig.environment === Environments.ELECTRON) {
-            this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(DebugPromptFileService).inSingletonScope();
+            this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(ElectronFileService).inSingletonScope();
         } else {
-            this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(FileServiceImpl).inSingletonScope();
+            this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(AndroidFileService).inSingletonScope();
+        }
+
+        if (sdkConfig.environment === Environments.ELECTRON) {
+            this._container.bind<BuildConfigReader>(InjectionTokens.BUILD_CONFIG_READER).to(ElectronBuildConfigReader).inSingletonScope();
+        } else {
+            this._container.bind<BuildConfigReader>(InjectionTokens.BUILD_CONFIG_READER).to(AndroidBuildConfigReader).inSingletonScope();
         }
 
         this._container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(sdkConfig);
@@ -289,7 +305,7 @@ export class SunbirdSdk {
 
         this._container.bind<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE).to(NotificationServiceImpl).inSingletonScope();
 
-        this._container.bind<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE).to(NetworkInfoServiceImpl).inSingletonScope();
+        this._container.bind<NetworkInfoService>(InjectionTokens.NETWORK_INFO_SERVICE).to(NetworkInfoServiceImpl).inSingletonScope();
 
         this._container.bind<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE).to(SearchHistoryServiceImpl).inSingletonScope();
 

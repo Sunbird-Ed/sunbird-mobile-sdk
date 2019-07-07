@@ -1,13 +1,14 @@
 import {BuildConfigReader} from '..';
 import {Observable, Observer} from 'rxjs';
-import {injectable} from 'inversify';
-import {PathKeys} from '../../../preference-keys';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../../injection-tokens';
+import {SdkConfig} from '../../..';
 
 @injectable()
 export class ElectronBuildConfigReader implements BuildConfigReader {
     private fs;
 
-    constructor() {
+    constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig) {
         this.fs = window['require']('fs');
     }
 
@@ -29,7 +30,7 @@ export class ElectronBuildConfigReader implements BuildConfigReader {
 
     getBuildConfigValue(packageName: string, property: string): Observable<string> {
         return Observable.create((observer: Observer<string>) => {
-            this.fs.readFile(localStorage.getItem(PathKeys.ROOT_DIR_KEY) + '/build-config-values.json', 'utf-8', (err, data) => {
+            this.fs.readFile(this.sdkConfig.bootstrapConfig.rootDir + '/build-config-values.json', 'utf-8', (err, data) => {
                 if (err) {
                     observer.error(err);
                     return;
@@ -43,7 +44,7 @@ export class ElectronBuildConfigReader implements BuildConfigReader {
 
     getBuildConfigValues(packageName: string): Observable<string> {
         return Observable.create((observer: Observer<string>) => {
-            this.fs.readFile(localStorage.getItem(PathKeys.ROOT_DIR_KEY) + '/build-config-values.json', 'utf-8', (err, data) => {
+            this.fs.readFile(this.sdkConfig.bootstrapConfig.rootDir + '/build-config-values.json', 'utf-8', (err, data) => {
                 if (err) {
                     observer.error(err);
                     return;
@@ -73,8 +74,8 @@ export class ElectronBuildConfigReader implements BuildConfigReader {
                 availableSize: 99999,
                 totalSize: 99999,
                 state: '',
-                path: localStorage.getItem('data_dir')!,
-                contentStoragePath: localStorage.getItem(PathKeys.ROOT_DIR_KEY) + '/contents',
+                path: this.sdkConfig.bootstrapConfig.rootDir + '/MOCK_INTERNAL',
+                contentStoragePath: this.sdkConfig.bootstrapConfig.rootDir + '/MOCK_INTERNAL/contents',
                 isRemovable: true
             }
         ]);

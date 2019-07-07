@@ -1,9 +1,9 @@
 import {ApiRequestHandler, HttpRequestType, HttpService, Request} from '../../../native/http';
-import {FormRequest, FormServiceConfig} from '../index';
+import {FormRequest} from '..';
 import {Observable} from 'rxjs';
 import {CachedItemStore} from '../../key-value-store';
 import {FileService} from '../../../native/file/def/file-service';
-import {Path} from '../../../native/file/util/path';
+import {SdkConfig} from '../../..';
 
 export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: string]: {} }> {
     private readonly FORM_FILE_KEY_PREFIX = 'form-';
@@ -12,7 +12,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
 
     constructor(
         private apiService: HttpService,
-        private formServiceConfig: FormServiceConfig,
+        private sdkConfig: SdkConfig,
         private fileService: FileService,
         private cachedItemStore: CachedItemStore
     ) {
@@ -35,7 +35,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     private fetchFormServer(request: FormRequest): Observable<{ [key: string]: {} }> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
-            .withPath(this.formServiceConfig.apiPath + this.GET_FORM_DETAILS_ENDPOINT)
+            .withPath(this.sdkConfig.formServiceConfig.apiPath + this.GET_FORM_DETAILS_ENDPOINT)
             .withApiToken(true)
             .withBody({request})
             .build();
@@ -45,7 +45,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     }
 
     private fetchFromFile(request: FormRequest): Observable<{ [key: string]: {} }> {
-        const dir = Path.ASSETS_PATH + this.formServiceConfig.formConfigDirPath;
+        const dir = this.sdkConfig.bootstrapConfig.assetsDir + this.sdkConfig.formServiceConfig.formConfigDirPath;
         const file = this.FORM_FILE_KEY_PREFIX + GetFormHandler.getIdForRequest(request) + '.json';
 
         return Observable.fromPromise(this.fileService.readAsText(dir, file))

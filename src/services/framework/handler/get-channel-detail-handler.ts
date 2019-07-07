@@ -1,9 +1,9 @@
 import {CachedItemStore} from '../../key-value-store';
 import {FileService} from '../../../native/file/def/file-service';
-import {Path} from '../../../native/file/util/path';
-import {Channel, ChannelDetailsRequest, FrameworkServiceConfig} from '../index';
+import {Channel, ChannelDetailsRequest} from '..';
 import {ApiRequestHandler, HttpRequestType, HttpService, Request} from '../../../native/http';
 import {Observable} from 'rxjs';
+import {SdkConfig} from '../../..';
 
 
 export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetailsRequest, Channel> {
@@ -13,7 +13,7 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
 
 
     constructor(private apiService: HttpService,
-                private frameworkServiceConfig: FrameworkServiceConfig,
+                private sdkConfig: SdkConfig,
                 private fileservice: FileService,
                 private cachedItemStore: CachedItemStore) {
     }
@@ -39,7 +39,7 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
     private fetchFromServer(request: ChannelDetailsRequest): Observable<Channel> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath(this.frameworkServiceConfig.channelApiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + '/' + request.channelId)
+            .withPath(this.sdkConfig.frameworkServiceConfig.channelApiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + '/' + request.channelId)
             .withApiToken(true)
             .build();
 
@@ -49,7 +49,7 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
     }
 
     private fetchFromFile(request: ChannelDetailsRequest): Observable<Channel> {
-        const dir = Path.ASSETS_PATH + this.frameworkServiceConfig.channelConfigDirPath;
+        const dir = this.sdkConfig.bootstrapConfig.assetsDir + this.sdkConfig.frameworkServiceConfig.channelConfigDirPath;
         const file = this.CHANNEL_FILE_KEY_PREFIX + request.channelId + '.json';
 
         return Observable.fromPromise(this.fileservice.readAsText(dir, file))

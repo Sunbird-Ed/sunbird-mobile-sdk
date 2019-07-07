@@ -57,7 +57,7 @@ export class FrameworkServiceImpl implements FrameworkService {
     getChannelDetails(request: ChannelDetailsRequest): Observable<Channel> {
         return new GetChannelDetailsHandler(
             this.apiService,
-            this.sdkConfig.frameworkServiceConfig,
+            this.sdkConfig,
             this.fileService,
             this.cachedItemStore,
         ).handle(request);
@@ -67,7 +67,7 @@ export class FrameworkServiceImpl implements FrameworkService {
         return new GetFrameworkDetailsHandler(
             this,
             this.apiService,
-            this.sdkConfig.frameworkServiceConfig,
+            this.sdkConfig,
             this.fileService,
             this.cachedItemStore,
         ).handle(request);

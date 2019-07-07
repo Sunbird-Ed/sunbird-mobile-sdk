@@ -1,10 +1,10 @@
 import {CachedItemStore} from '../../key-value-store';
-import {Path} from '../../../native/file/util/path';
 import {FileService} from '../../../native/file/def/file-service';
 import {ApiRequestHandler, HttpRequestType, HttpService, Request} from '../../../native/http';
 import {Observable} from 'rxjs';
-import {Channel, Framework, FrameworkDetailsRequest, FrameworkService, FrameworkServiceConfig} from '../index';
+import {Channel, Framework, FrameworkDetailsRequest, FrameworkService} from '..';
 import {FrameworkMapper} from '../util/framework-mapper';
+import {SdkConfig} from '../../..';
 
 
 export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {
@@ -15,7 +15,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
 
     constructor(private frameworkService: FrameworkService,
                 private apiService: HttpService,
-                private frameworkServiceConfig: FrameworkServiceConfig,
+                private sdkConfig: SdkConfig,
                 private fileservice: FileService,
                 private cachedItemStore: CachedItemStore) {
     }
@@ -46,7 +46,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
     private fetchFromServer(request: FrameworkDetailsRequest): Observable<Framework> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath(this.frameworkServiceConfig.frameworkApiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + '/' + request.frameworkId)
+            .withPath(this.sdkConfig.frameworkServiceConfig.frameworkApiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + '/' + request.frameworkId)
             .withParameters({categories: request.requiredCategories.join(',')})
             .withApiToken(true)
             .build();
@@ -61,7 +61,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
     }
 
     private fetchFromFile(request: FrameworkDetailsRequest): Observable<Framework> {
-        const dir = Path.ASSETS_PATH + this.frameworkServiceConfig.frameworkConfigDirPath;
+        const dir = this.sdkConfig.bootstrapConfig.assetsDir + this.sdkConfig.frameworkServiceConfig.frameworkConfigDirPath;
         const file = this.FRAMEWORK_FILE_KEY_PREFIX + request.frameworkId + '.json';
 
         return Observable.fromPromise(this.fileservice.readAsText(dir, file))
