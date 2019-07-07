@@ -1,10 +1,9 @@
-import {DeviceInfo, DeviceSpec, StorageVolume} from '../index';
+import {DeviceInfo, DeviceSpec, StorageVolume} from '..';
 import * as SHA1 from 'crypto-js/sha1';
-import {Environments, SdkConfig} from '../../..';
+import {Environments, SdkConfig, StorageDestination} from '../../..';
 import {Observable} from 'rxjs';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {StorageDestination} from '@services/storage';
 
 declare const device: {
     uuid: string;
@@ -48,25 +47,39 @@ export class DeviceInfoImpl implements DeviceInfo {
     }
 
     getStorageVolumes(): Observable<StorageVolume[]> {
-        return Observable.create((observer) => {
-            buildconfigreader.getStorageVolumes((volumes) => {
-                observer.next(volumes.map((v) => {
-                    if (v.isRemovable) {
+        if (this.sdkConfig.environment === Environments.ANDROID) {
+            return Observable.create((observer) => {
+                buildconfigreader.getStorageVolumes((volumes) => {
+                    observer.next(volumes.map((v) => {
+                        if (v.isRemovable) {
+                            return {
+                                storageDestination: StorageDestination.EXTERNAL_STORAGE,
+                                info: {...v}
+                            };
+                        }
+
                         return {
-                            storageDestination: StorageDestination.EXTERNAL_STORAGE,
+                            storageDestination: StorageDestination.INTERNAL_STORAGE,
                             info: {...v}
                         };
-                    }
-
-                    return {
-                        storageDestination: StorageDestination.INTERNAL_STORAGE,
-                        info: {...v}
-                    };
-                }));
-                observer.complete();
-            }, (e) => {
-                observer.error(e);
+                    }));
+                    observer.complete();
+                }, (e) => {
+                    observer.error(e);
+                });
             });
-        });
+        }
+
+        return Observable.of([{
+            storageDestination: StorageDestination.INTERNAL_STORAGE,
+            info: {
+                availableSize: 9999,
+                totalSize: '9999',
+                state: '',
+                path: './',
+                contentStoragePath: '',
+                isRemovable: false
+            }
+        }]);
     }
 }

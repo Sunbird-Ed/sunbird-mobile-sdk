@@ -1,6 +1,6 @@
 import {DbService} from '../../../native/db';
 import {Observable} from 'rxjs';
-import {ErrorLoggerService} from '../index';
+import {ErrorLoggerService} from '..';
 import {ErrorStackEntry} from '../db/schema';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
@@ -8,7 +8,7 @@ import {GetSystemSettingsRequest, SystemSettingsService} from 'src/services/syst
 import {SystemSettingsOrgIds} from '../../system-settings/def/system-settings-org-ids';
 import {AppInfo} from '../../../native/app';
 import {HttpService} from '../../../native/http';
-import {SdkConfig} from '../../../bootstrap/sdk-config';
+import {SdkConfig} from '../../..';
 import {ErrorLoggerConfig} from '../config/error-logger-config';
 import {TelemetryErrorRequest} from '../../telemetry';
 import {ErrorStack} from '../def/error-stack';
@@ -34,7 +34,7 @@ export class ErrorLoggerServiceImpl implements ErrorLoggerService {
         @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
         @inject(InjectionTokens.API_SERVICE) private apiService: HttpService,
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
-        @inject(InjectionTokens.NETWORKINFO_SERVICE) private errorLoggerService: NetworkInfoService,
+        @inject(InjectionTokens.NETWORK_INFO_SERVICE) private errorLoggerService: NetworkInfoService,
         @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
     ) {

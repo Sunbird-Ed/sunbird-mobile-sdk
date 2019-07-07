@@ -1,11 +1,10 @@
-import {HttpConfig, HttpService, Request, Response} from '@native/http';
 import {FetchHandler} from '../handlers/fetch-handler';
 import {Observable} from 'rxjs';
 import {Authenticator} from '../def/authenticator';
 import {inject, injectable} from 'inversify';
 import {ApiTokenHandler} from '../handlers/api-token-handler';
 import {InjectionTokens} from '../../../injection-tokens';
-import {SdkConfig} from '../../..';
+import {HttpConfig, HttpService, Request, Response, SdkConfig} from '../../..';
 import {DeviceInfo} from '../../device';
 import {ApiKeys} from '../../../preference-keys';
 import {SharedPreferences} from '../../shared-preferences';

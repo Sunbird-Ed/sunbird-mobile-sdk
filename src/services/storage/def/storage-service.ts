@@ -1,8 +1,9 @@
-import {StorageDestination, TransferContentsRequest} from '@services/storage';
 import {Observable} from 'rxjs';
 import {SdkServiceOnInitDelegate} from '../../../sdk-service-on-init-delegate';
-import {StorageVolume} from '@native/device';
-import {Content} from '@services/content';
+import {StorageVolume} from '../../../native/device';
+import {StorageDestination} from './storage-destination';
+import {Content} from '../../content';
+import {TransferContentsRequest} from './storage-requests';
 
 export interface StorageService extends SdkServiceOnInitDelegate {
     getStorageDestinationDirectoryPath(): string | undefined;

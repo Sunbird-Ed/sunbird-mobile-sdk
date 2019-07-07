@@ -1,5 +1,5 @@
 import {CachedItemStore} from '../../key-value-store';
-import {Channel, ChannelDetailsRequest, Framework, FrameworkDetailsRequest, FrameworkService, OrganizationSearchCriteria} from '../index';
+import {Channel, ChannelDetailsRequest, Framework, FrameworkDetailsRequest, FrameworkService, OrganizationSearchCriteria} from '..';
 import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
 import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
 import {FileService} from '../../../native/file/def/file-service';
@@ -9,7 +9,7 @@ import {HttpRequestType, HttpService, Request} from '../../../native/http';
 import {SharedPreferences} from '../../../native/shared-preferences';
 import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';
 import {SystemSettingsService} from '../../system-settings';
-import {SdkConfig} from '../../../bootstrap/sdk-config';
+import {SdkConfig} from '../../..';
 import {FrameworkKeys} from '../../../preference-keys';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';

@@ -1,5 +1,4 @@
-import {Environments, SdkConfig} from '../../..';
-import {AppInfo} from '@native/app';
+import {AppInfo, Environments, SdkConfig} from '../../..';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
 
