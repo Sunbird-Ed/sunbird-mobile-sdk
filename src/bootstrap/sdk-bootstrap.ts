@@ -1,13 +1,19 @@
 import {SdkConfig} from './sdk-config';
 import {EnvironmentConfigProvider} from './environment-config-provider';
 import {Environments} from './environments';
+import {BootstrapConfig} from './bootstrap-config';
 
-export class SdkConfigBuilder {
-    public static async build(environment: Environments, environmentConfigProvider: EnvironmentConfigProvider): Promise<SdkConfig> {
-        const environmentConfig = await environmentConfigProvider.provide().toPromise();
+export class SdkBootstrap {
+    public static async build(
+        environment: Environments,
+        bootstrapConfig: BootstrapConfig,
+        environmentConfigProvider: EnvironmentConfigProvider
+    ): Promise<SdkConfig> {
+        const environmentConfig = await environmentConfigProvider.provide(bootstrapConfig).toPromise();
 
         return {
             environment,
+            bootstrapConfig,
             httpConfig: {
                 host: environmentConfig['BASE_URL'],
                 user_authentication: {
