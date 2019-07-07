@@ -13,9 +13,11 @@ import {TelemetryConfig} from '../services/telemetry/config/telemetry-config';
 import {PlayerConfig} from '../services/player/def/response';
 import {EventsBusConfig} from '../services/events-bus/config/events-bus-config';
 import {ErrorLoggerConfig} from '../services/error-stack/config/error-logger-config';
+import {BootstrapConfig} from './bootstrap-config';
 
 export interface SdkConfig {
     environment: Environments;
+    bootstrapConfig: BootstrapConfig;
     httpConfig: HttpConfig;
     dbConfig: DbConfig;
     contentServiceConfig: ContentServiceConfig;
