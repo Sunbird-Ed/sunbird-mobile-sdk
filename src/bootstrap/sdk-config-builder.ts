@@ -3,21 +3,23 @@ import {EnvironmentConfigProvider} from './environment-config-provider';
 import {Environments} from './environments';
 
 export class SdkConfigBuilder {
-    public static build(environment: Environments, environmentConfigProvider: EnvironmentConfigProvider): SdkConfig {
+    public static async build(environment: Environments, environmentConfigProvider: EnvironmentConfigProvider): Promise<SdkConfig> {
+        const environmentConfig = await environmentConfigProvider.provide().toPromise();
+
         return {
             environment,
             httpConfig: {
-                host: environmentConfigProvider['BASE_URL'],
+                host: environmentConfig['BASE_URL'],
                 user_authentication: {
-                    redirectUrl: environmentConfigProvider['OAUTH_REDIRECT_URL'],
+                    redirectUrl: environmentConfig['OAUTH_REDIRECT_URL'],
                     authUrl: '/auth/realms/sunbird/protocol/openid-connect',
                 },
                 api_authentication: {
-                    mobileAppKey: environmentConfigProvider['MOBILE_APP_KEY'],
-                    mobileAppSecret: environmentConfigProvider['MOBILE_APP_SECRET'],
-                    mobileAppConsumer: environmentConfigProvider['MOBILE_APP_CONSUMER'],
-                    channelId: environmentConfigProvider['CHANNEL_ID'],
-                    producerId: environmentConfigProvider['PRODUCER_ID'],
+                    mobileAppKey: environmentConfig['MOBILE_APP_KEY'],
+                    mobileAppSecret: environmentConfig['MOBILE_APP_SECRET'],
+                    mobileAppConsumer: environmentConfig['MOBILE_APP_CONSUMER'],
+                    channelId: environmentConfig['CHANNEL_ID'],
+                    producerId: environmentConfig['PRODUCER_ID'],
                     producerUniqueId: 'sunbird.app'
                 },
                 cached_requests: {
@@ -69,7 +71,7 @@ export class SdkConfigBuilder {
             telemetryConfig: {
                 deviceRegisterApiPath: '',
                 telemetryApiPath: '/api/data/v1',
-                deviceRegisterHost: environmentConfigProvider['DEVICE_REGISTER_BASE_URL'],
+                deviceRegisterHost: environmentConfig['DEVICE_REGISTER_BASE_URL'],
                 telemetrySyncBandwidth: 200,
                 telemetrySyncThreshold: 200,
                 telemetryLogMinAllowedOffset: 86400000
