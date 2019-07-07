@@ -6,8 +6,22 @@ declare var buildconfigreader: {
     getBuildConfigValues: (packageName: string, success:
         (callbackUrl: string) => void, error: (error: string) => void) => void;
 
-    rm: (directoryPath: string, direcoryToBeSkipped: string, success:
+    rm: (directoryPath: string, directoryToBeSkipped: string, success:
         (callbackUrl: boolean) => void, error: (error: boolean) => void) => void;
+
+    openPlayStore: (appId: string, success: (callbackUrl) => void, error: (error) => void) => void;
+
+    getDeviceAPILevel: (success, error) => void;
+
+    checkAppAvailability: (packageName: string, success, error) => void;
+
+    getDownloadDirectoryPath: (success, error) => void;
+
+    exportApk: (onSuccess, onError) => void;
+
+    getUtmInfo: (onSuccess, onError) => void;
+
+    clearUtmInfo: (onSuccess, onError) => void;
 
     copyDirectory: (sourceDirectory: string, destinationDirectory: string,
                     onSuccess: () => void, onError: (error: any) => void) => void;
