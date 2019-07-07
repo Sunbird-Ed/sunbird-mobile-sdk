@@ -20,7 +20,7 @@ import {
     TelemetryStartRequest,
     TelemetryStat,
     TelemetrySyncStat
-} from '../index';
+} from '..';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {Observable} from 'rxjs';
 import {ProfileService, ProfileSession} from '../../profile';
@@ -46,7 +46,7 @@ import {FrameworkService} from '../../framework';
 import {NetworkInfoService, NetworkStatus} from '../../../native/network-info';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {SdkConfig} from '../../../bootstrap/sdk-config';
+import {SdkConfig} from '../../..';
 import {ErrorLoggerService} from '../../error-stack';
 
 @injectable()
@@ -66,7 +66,7 @@ export class TelemetryServiceImpl implements TelemetryService {
         @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
         @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
         @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
-        @inject(InjectionTokens.NETWORKINFO_SERVICE) private networkInfoService: NetworkInfoService,
+        @inject(InjectionTokens.NETWORK_INFO_SERVICE) private networkInfoService: NetworkInfoService,
         @inject(InjectionTokens.ERROR_LOGGER_SERVICE) private errorLoggerService: ErrorLoggerService
     ) {
         this.telemetryConfig = this.sdkConfig.telemetryConfig;
