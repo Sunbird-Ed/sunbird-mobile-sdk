@@ -58,7 +58,7 @@ declare var file: {
 };
 
 @injectable()
-export class FileServiceImpl implements FileService {
+export class AndroidFileService implements FileService {
 
     private fileSystem: FileSystem;
     private initialized = false;
