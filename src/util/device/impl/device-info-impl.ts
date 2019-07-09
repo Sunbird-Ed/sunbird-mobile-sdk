@@ -14,6 +14,7 @@ declare const device: {
 export class DeviceInfoImpl implements DeviceInfo {
 
     private readonly deviceId: string;
+    private deviceSpec: DeviceSpec;
 
     constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig) {
         if (this.sdkConfig.apiConfig.debugMode) {
@@ -28,8 +29,12 @@ export class DeviceInfoImpl implements DeviceInfo {
     }
 
     getDeviceSpec(): Observable<DeviceSpec> {
+        if (this.deviceSpec) {
+            return Observable.of(this.deviceSpec);
+        }
         return Observable.create((observer) => {
             buildconfigreader.getDeviceSpec((deviceSpec: DeviceSpec) => {
+                this.deviceSpec = deviceSpec;
                 observer.next(deviceSpec);
                 observer.complete();
             });

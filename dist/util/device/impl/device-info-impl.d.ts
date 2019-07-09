@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 export declare class DeviceInfoImpl implements DeviceInfo {
     private sdkConfig;
     private readonly deviceId;
+    private deviceSpec;
     constructor(sdkConfig: SdkConfig);
     getDeviceID(): string;
     getDeviceSpec(): Observable<DeviceSpec>;
