@@ -1,4 +1,4 @@
-import {ContentRequest, ContentSortCriteria, SortOrder, State, Visibility} from '..';
+import {ContentRequest, ContentSortCriteria, MimeType, SortOrder, State, Visibility} from '..';
 import {ContentAccessEntry, ContentEntry, ContentMarkerEntry} from '../db/schema';
 import {ArrayUtil} from '../../util/array-util';
 
@@ -9,16 +9,22 @@ export class GetContentsHandler {
         if (!request.contentTypes || !request.contentTypes.length) {
             request.contentTypes = ['Story', 'Worksheet', 'Game', 'Resource', 'Collection', 'TextBook'];
         }
-        if (request.resourcesOnly) {
-            request.contentTypes = ['Story', 'Worksheet', 'Game', 'Resource'];
-        }
         const uid = request.uid;
-        const contentTypesStr = ArrayUtil.joinPreservingQuotes(request.contentTypes);
-        let contentTypeFilter = `c.${ContentEntry.COLUMN_NAME_CONTENT_TYPE} IN(${contentTypesStr.toLowerCase()})`;
+
         const contentVisibilityFilter = request.resourcesOnly ? '' :
             `c.${ContentEntry.COLUMN_NAME_VISIBILITY} = '${Visibility.DEFAULT.valueOf()}' AND`;
         const artifactAvailabilityFilter = `c.${ContentEntry.COLUMN_NAME_CONTENT_STATE} = '${State.ARTIFACT_AVAILABLE.valueOf()}'`;
-        let filter = `${contentVisibilityFilter} ${artifactAvailabilityFilter} AND ${contentTypeFilter}`;
+        let filter = `${contentVisibilityFilter} ${artifactAvailabilityFilter}`;
+
+        if (request.resourcesOnly) {
+            const mimeTypeFilter = `c.${ContentEntry.COLUMN_NAME_MIME_TYPE} != '${MimeType.COLLECTION.valueOf()}'`;
+            filter = `${filter}  AND (${mimeTypeFilter})`;
+        } else {
+            const contentTypesStr = ArrayUtil.joinPreservingQuotes(request.contentTypes);
+            const contentTypeFilter = `c.${ContentEntry.COLUMN_NAME_CONTENT_TYPE} IN(${contentTypesStr.toLowerCase()})`;
+            filter = `${filter}  AND (${contentTypeFilter})`;
+        }
+
         const audienceFilter = this.getAudienceFilter(request.audience!);
         const pragmaFilter = this.getPragmaFilter(request.exclPragma!, request.pragma!);
 
@@ -38,13 +44,12 @@ export class GetContentsHandler {
         const orderBy = request.resourcesOnly ? '' : this.generateSortByQuery(request.sortCriteria!, uid!);
         if (request.recentlyViewed) {
             if (uid) {
-                contentTypeFilter = `ca.${ContentAccessEntry.COLUMN_NAME_CONTENT_TYPE} IN (${contentTypesStr.toLowerCase()})`;
                 if (request.localOnly) {
-                    filter = `ca.${ContentAccessEntry.COLUMN_NAME_UID} = '${uid}' AND ${contentTypeFilter}
-                     AND ${artifactAvailabilityFilter}`;
+                    filter = `ca.${ContentAccessEntry.COLUMN_NAME_UID} = '${uid}' AND ${artifactAvailabilityFilter}
+                    AND c.${ContentEntry.COLUMN_NAME_MIME_TYPE} != '${MimeType.COLLECTION.valueOf()}'`;
                 } else {
-                    filter = `ca.${ContentAccessEntry.COLUMN_NAME_UID} = '${uid}' AND ${contentTypeFilter}`;
-
+                    filter = `ca.${ContentAccessEntry.COLUMN_NAME_UID} = '${uid}'
+                    AND c.${ContentEntry.COLUMN_NAME_MIME_TYPE} != '${MimeType.COLLECTION.valueOf()}'`;
                 }
                 whereClause = `WHERE (${filter})`;
                 query = this.getRecentlyViewedQuery(whereClause, orderBy, request.limit!);
@@ -56,8 +61,8 @@ export class GetContentsHandler {
                 query = `SELECT c.* FROM ${ContentEntry.TABLE_NAME} c ${whereClause} ${orderBy}`;
             }
         }
-        return query;
 
+        return query;
     }
 
     private getAudienceFilter(audience: string[]): string {

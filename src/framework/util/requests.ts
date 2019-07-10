@@ -3,6 +3,7 @@ import {FrameworkCategoryCode} from '..';
 export interface GetSuggestedFrameworksRequest {
     language: string;
     requiredCategories: FrameworkCategoryCode[];
+    ignoreActiveChannel?: boolean;
 }
 
 export interface GetFrameworkCategoryTermsRequest {
