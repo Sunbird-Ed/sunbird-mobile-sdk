@@ -19,6 +19,7 @@ export interface ActionData {
     deepLink: string;
     thumbnail: string;
     banner: string;
+    deploymentKey: string;
 }
 
 
