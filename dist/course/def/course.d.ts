@@ -4,7 +4,6 @@ export interface Course {
     lastReadContentStatus?: number;
     enrolledDate?: string;
     addedBy?: string;
-    delta?: string;
     contentId?: string;
     active?: boolean;
     description?: string;
@@ -15,7 +14,6 @@ export interface Course {
     leafNodesCount?: number;
     progress?: number;
     id?: string;
-    tocUrl?: string;
     lastReadContentId?: string;
     courseId?: string;
     status?: number;
