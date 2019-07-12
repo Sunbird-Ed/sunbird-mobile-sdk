@@ -3,7 +3,7 @@ import {Content, HierarchyInfo} from './content';
 import {CorrelationData} from '../../telemetry';
 import {ContentImportResponse} from './response';
 import {ContentEntry} from '../db/schema';
-import {DownloadRequest} from '../../../native/download';
+import {DownloadRequest} from '../../download';
 
 export interface ContentDecorateRequest {
     content: Content;

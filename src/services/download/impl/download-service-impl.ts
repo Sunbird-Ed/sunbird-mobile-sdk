@@ -1,18 +1,19 @@
-import {DownloadCancelRequest, DownloadEventType, DownloadProgress, DownloadRequest, DownloadService, DownloadStatus} from '../index';
+import {DownloadCancelRequest, DownloadEventType, DownloadProgress, DownloadRequest, DownloadService, DownloadStatus} from '..';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {SdkServiceOnInitDelegate} from '../../../sdk-service-on-init-delegate';
-import {EventNamespace, EventsBusService} from '../../../services/events-bus';
-import {SharedPreferences} from '../../shared-preferences';
+import {EventNamespace, EventsBusService} from '../../events-bus';
+import {SharedPreferences} from '../../../native/shared-preferences';
 import * as Collections from 'typescript-collections';
-import * as downloadManagerInstance from 'cordova-plugin-android-downloadmanager';
 import {DownloadCompleteDelegate} from '../def/download-complete-delegate';
 import {DownloadKeys} from '../../../preference-keys';
-import {TelemetryLogger} from '../../../services/telemetry/util/telemetry-logger';
-import {InteractSubType, InteractType, ObjectType} from '../../../services/telemetry';
-import {SharedPreferencesSetCollection} from '../../shared-preferences/def/shared-preferences-set-collection';
-import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
+import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
+import {InteractSubType, InteractType, ObjectType} from '../../telemetry';
+import {SharedPreferencesSetCollection} from '../../../native/shared-preferences/def/shared-preferences-set-collection';
+import {SharedPreferencesSetCollectionImpl} from '../../../native/shared-preferences/impl/shared-preferences-set-collection-impl';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
+import {DownloadManager} from '../../../native/download-manager';
+import {SdkConfig} from '../../..';
 
 @injectable()
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
@@ -23,9 +24,12 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     private downloadCompleteDelegate?: DownloadCompleteDelegate;
     private sharedPreferencesSetCollection: SharedPreferencesSetCollection<DownloadRequest>;
 
-    constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
-        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
-        window['downloadManager'] = downloadManagerInstance;
+    constructor(
+        @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+        @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
+        @inject(InjectionTokens.DOWNLOAD_MANAGER) private downloadManager: DownloadManager
+    ) {
 
         this.sharedPreferencesSetCollection = new SharedPreferencesSetCollectionImpl(
             this.sharedPreferences,
@@ -98,16 +102,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             .take(1)
             .mergeMap((currentDownloadRequest?: DownloadRequest) => {
                 if (currentDownloadRequest && currentDownloadRequest.identifier === downloadCancelRequest.identifier) {
-                    return Observable.create((observer) => {
-                        downloadManager.remove([currentDownloadRequest.downloadId!], (err, removeCount) => {
-                            if (err) {
-                                observer.error(err);
-                            }
-
-                            observer.next(!!removeCount);
-                            observer.complete();
-                        });
-                    })
+                    return this.downloadManager.remove([currentDownloadRequest.downloadId!])
                         .mergeMap(() => this.removeFromDownloadList(downloadCancelRequest, generateTelemetry))
                         .do(() => this.switchToNextDownloadRequest().toPromise());
                 }
@@ -121,16 +116,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             .take(1)
             .mergeMap((currentDownloadRequest?: DownloadRequest) => {
                 if (currentDownloadRequest) {
-                    return Observable.create((observer) => {
-                        downloadManager.remove([currentDownloadRequest.downloadId!], (err, removeCount) => {
-                            if (err) {
-                                observer.error(err);
-                            }
-
-                            observer.next(!!removeCount);
-                            observer.complete();
-                        });
-                    })
+                    return this.downloadManager.remove([currentDownloadRequest.downloadId!])
                         .mergeMap(() => this.removeAllFromDownloadList())
                         .mergeMap(() => this.switchToNextDownloadRequest());
                 }
@@ -157,28 +143,20 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
 
                 const anyDownloadRequest = downloadListAsSet.toArray().shift() as DownloadRequest;
 
-                return Observable.create((observer) => {
-                    downloadManager.enqueue({
-                        uri: anyDownloadRequest.downloadUrl,
-                        title: anyDownloadRequest.filename,
-                        description: '',
-                        mimeType: anyDownloadRequest.mimeType,
-                        visibleInDownloadsUi: true,
-                        notificationVisibility: 1,
-                        destinationInExternalFilesDir: {
-                            dirType: DownloadServiceImpl.DOWNLOAD_DIR_NAME,
-                            subPath: anyDownloadRequest.filename
-                        },
-                        headers: []
-                    }, (err, id: string) => {
-                        if (err) {
-                            return observer.error(err);
-                        }
-
-                        observer.next(id);
-                    });
+                return this.downloadManager.enqueue({
+                    uri: anyDownloadRequest.downloadUrl,
+                    title: anyDownloadRequest.filename,
+                    description: '',
+                    mimeType: anyDownloadRequest.mimeType,
+                    visibleInDownloadsUi: true,
+                    notificationVisibility: 1,
+                    destinationInExternalFilesDir: {
+                        dirType: DownloadServiceImpl.DOWNLOAD_DIR_NAME,
+                        subPath: anyDownloadRequest.filename
+                    },
+                    headers: []
                 }).do((downloadId) => {
-                    anyDownloadRequest.downloadedFilePath = cordova.file.externalDataDirectory +
+                    anyDownloadRequest.downloadedFilePath = this.sdkConfig.bootstrapConfig.rootDir + '/' +
                         DownloadServiceImpl.DOWNLOAD_DIR_NAME + '/' + anyDownloadRequest.filename;
                     anyDownloadRequest.downloadId = downloadId;
                     this.currentDownloadRequest$.next(anyDownloadRequest);
@@ -256,28 +234,11 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     }
 
     private getDownloadProgress(downloadRequest: DownloadRequest): Observable<DownloadProgress> {
-        return Observable.create((observer) => {
-            downloadManager.query({ids: [downloadRequest.downloadId!]}, (err, entries) => {
-                if (err) {
-                    observer.next({
-                        type: DownloadEventType.PROGRESS,
-                        payload: {
-                            downloadId: downloadRequest.downloadId,
-                            identifier: downloadRequest.identifier,
-                            progress: -1,
-                            status: DownloadStatus.STATUS_FAILED
-                        }
-                    } as DownloadProgress);
-                    observer.complete();
-
-                    this.cancel({identifier: downloadRequest.identifier}).toPromise();
-
-                    return;
-                }
-
+        return this.downloadManager.query({ids: [downloadRequest.downloadId!]})
+            .map((entries) => {
                 const entry = entries[0];
 
-                observer.next({
+                return {
                     type: DownloadEventType.PROGRESS,
                     payload: {
                         downloadId: downloadRequest.downloadId,
@@ -285,10 +246,22 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         progress: Math.round(entry.totalSizeBytes >= 0 ? (entry.bytesDownloadedSoFar / entry.totalSizeBytes) * 100 : -1),
                         status: entry.status
                     }
-                } as DownloadProgress);
-                observer.complete();
+                } as DownloadProgress;
+            })
+            .catch((e) => {
+                this.cancel({identifier: downloadRequest.identifier}).toPromise();
+                return Observable.of(
+                    {
+                        type: DownloadEventType.PROGRESS,
+                        payload: {
+                            downloadId: downloadRequest.downloadId,
+                            identifier: downloadRequest.identifier,
+                            progress: -1,
+                            status: DownloadStatus.STATUS_FAILED
+                        }
+                    } as DownloadProgress
+                );
             });
-        });
     }
 
     private listenForDownloadProgressChanges(): Observable<undefined> {

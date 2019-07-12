@@ -43,8 +43,8 @@ import {EventsBusService} from './services/events-bus';
 import {EventsBusServiceImpl} from './services/events-bus/impl/events-bus-service-impl';
 import {SummarizerService, SummarizerServiceImpl} from './services/summarizer';
 import {Observable} from 'rxjs';
-import {DownloadService} from './native/download';
-import {DownloadServiceImpl} from './native/download/impl/download-service-impl';
+import {DownloadService} from './services/download';
+import {DownloadServiceImpl} from './services/download/impl/download-service-impl';
 import {AppInfo} from './native/app';
 import {AppInfoImpl} from './native/app/impl/app-info-impl';
 import {PlayerService, PlayerServiceImpl} from './services/player';
@@ -73,6 +73,9 @@ import {BuildConfigReader} from './native/build-config-reader';
 import {ElectronBuildConfigReader} from './native/build-config-reader/impl/electron-build-config-reader';
 import {AndroidBuildConfigReader} from './native/build-config-reader/impl/android-build-config-reader';
 import {BootstrapConfig} from './bootstrap/bootstrap-config';
+import {ElectronDownloadManager} from './native/download-manager/impl/electron-download-manager';
+import {DownloadManager} from './native/download-manager';
+import {AndroidDownloadManager} from './native/download-manager/impl/android-download-manager';
 
 export class SunbirdSdk {
     private static _instance?: SunbirdSdk;
@@ -249,6 +252,12 @@ export class SunbirdSdk {
             this._container.bind<BuildConfigReader>(InjectionTokens.BUILD_CONFIG_READER).to(ElectronBuildConfigReader).inSingletonScope();
         } else {
             this._container.bind<BuildConfigReader>(InjectionTokens.BUILD_CONFIG_READER).to(AndroidBuildConfigReader).inSingletonScope();
+        }
+
+        if (sdkConfig.environment === Environments.ELECTRON) {
+            this._container.bind<DownloadManager>(InjectionTokens.DOWNLOAD_MANAGER).to(ElectronDownloadManager).inSingletonScope();
+        } else {
+            this._container.bind<DownloadManager>(InjectionTokens.DOWNLOAD_MANAGER).to(AndroidDownloadManager).inSingletonScope();
         }
 
         this._container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(sdkConfig);

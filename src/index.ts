@@ -19,7 +19,7 @@ export * from './services/storage';
 export * from './native/notification';
 export * from './services/error-stack';
 export * from './native/shared-preferences';
-export * from './native/download';
+export * from './services/download';
 export * from './native/device';
 export * from './services/player';
 export * from './native/app';

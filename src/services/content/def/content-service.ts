@@ -24,7 +24,7 @@ import {
     ContentsGroupedByPageSection,
     RelevantContentResponsePlayer
 } from './response';
-import {DownloadCompleteDelegate} from '../../../native/download/def/download-complete-delegate';
+import {DownloadCompleteDelegate} from '../../download/def/download-complete-delegate';
 import {SdkServiceOnInitDelegate} from '../../../sdk-service-on-init-delegate';
 
 
