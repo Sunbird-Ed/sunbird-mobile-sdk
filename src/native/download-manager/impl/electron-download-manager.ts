@@ -31,13 +31,9 @@ export class ElectronDownloadManager implements DownloadManager {
     }
 
     enqueue(enqueueRequest: EnqueueRequest): Observable<string> {
-        this.downloadsMap[enqueueRequest.uri] = this.progress(enqueueRequest.uri, {
-            throttle: 100,                    // Throttle the progress event to 2000ms, defaults to 1000ms
-            // delay: 1000,                       // Only start to emit after 1000ms delay, defaults to 0ms
-            // lengthHeader: 'x-transfer-length'  // Length header to use, defaults to content-length
-        });
-
-        this.downloadsMap[enqueueRequest.uri].on('end', () => {
+        this.downloadsMap[enqueueRequest.uri] = this.progress(this.request.get(enqueueRequest.uri), {
+            throttle: 100
+        }).on('end', () => {
             this.downloadsMap[enqueueRequest.uri] = 'done';
         });
 
