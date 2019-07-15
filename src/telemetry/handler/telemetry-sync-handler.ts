@@ -149,12 +149,6 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
 
             return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
                 .do(async (res) => {
-                    res.body['result'].actions = [{
-                        type: 'experiment',
-                        data: {
-                            key: '6Xhfs4-WVV8dhYN9U5OkZw6PukglrykIsJ8-B'
-                        }
-                    }];
                     const actions = res.body['result'].actions;
                     actions.forEach(element => {
                         if (element.type === 'experiment' && element.key) {
