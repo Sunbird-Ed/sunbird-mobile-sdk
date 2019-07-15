@@ -19,6 +19,8 @@ import COLUMN_NAME_PRIORITY = TelemetryEntry.COLUMN_NAME_PRIORITY;
 import COLUMN_NAME_DATA = TelemetryProcessedEntry.COLUMN_NAME_DATA;
 import COLUMN_NAME_EVENT = TelemetryEntry.COLUMN_NAME_EVENT;
 import { TelemetryConfig } from '../config/telemetry-config';
+import { SharedPreferences } from '../../util/shared-preferences';
+import { CodePush } from '../../preference-keys';
 
 // import * as pako from 'pako';
 
@@ -49,6 +51,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
                 private sdkConfig: SdkConfig,
                 private deviceInfo: DeviceInfo,
                 private frameworkService: FrameworkService,
+                private sharedPreferences: SharedPreferences,
                 private keyValueStore?: KeyValueStore,
                 private apiService?: ApiService) {
         this.preprocessors = [
@@ -146,6 +149,19 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
 
             return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
                 .do(async (res) => {
+                    res.body['result'].actions = [{
+                        type: 'experiment',
+                        data: {
+                            key: '6Xhfs4-WVV8dhYN9U5OkZw6PukglrykIsJ8-B'
+                        }
+                    }];
+                    const actions = res.body['result'].actions;
+                    actions.forEach(element => {
+                        if (element.type === 'experiment' && element.key) {
+                            this.sharedPreferences.putString(CodePush.DEPLOYMENT_KEY,
+                                element.data.key).toPromise();
+                        }
+                    });
                     const serverTime = new Date(res.body.ts).getTime();
                     const now = Date.now();
                     const currentOffset = serverTime - now;

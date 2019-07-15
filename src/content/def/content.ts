@@ -77,6 +77,7 @@ export interface ContentData {
     author?: string;
     collaborators?: string;
     originData?: OriginData;
+    origin?: string;
 }
 
 export interface ComingSoonMsg {
