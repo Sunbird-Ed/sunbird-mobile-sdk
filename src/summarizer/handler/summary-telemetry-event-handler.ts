@@ -14,9 +14,10 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {ContentKeys} from '../../preference-keys';
 import Telemetry = SunbirdTelemetry.Telemetry;
 import {EventNamespace, EventsBusService} from '../../events-bus';
-import {Content, ContentDetailRequest, ContentEventType, ContentMarkerRequest, ContentService, MarkerType} from '../../content';
+import {Content, ContentDetailRequest, ContentEventType, ContentMarkerRequest, ContentService, MarkerType, MimeType} from '../../content';
 import {ContentAccess, ContentAccessStatus, ProfileService} from '../../profile';
 import {GetEnrolledCourseHandler} from '../../course/handlers/get-enrolled-course-handler';
+import {ArrayUtil} from '../../util/array-util';
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -90,24 +91,29 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                                 status: 2,
                                 progress: 100
                             };
-
-                            return this.courseService.updateContentState(updateContentStateRequest)
-                                .do(() => {
-                                    this.eventBusService.emit({
-                                        namespace: EventNamespace.CONTENT,
-                                        event: {
-                                            type: ContentEventType.COURSE_STATE_UPDATED,
-                                            payload: {
-                                                contentId: updateContentStateRequest.courseId
-                                            }
-                                        }
-                                    });
-                                }).mapTo(undefined);
-                        } else {
-                            return Observable.of(undefined);
+                            return this.validEndEvent(event).mergeMap((isValid: boolean) => {
+                                if (isValid) {
+                                    return this.courseService.updateContentState(updateContentStateRequest)
+                                        .do(() => {
+                                            this.eventBusService.emit({
+                                                namespace: EventNamespace.CONTENT,
+                                                event: {
+                                                    type: ContentEventType.COURSE_STATE_UPDATED,
+                                                    payload: {
+                                                        contentId: updateContentStateRequest.courseId
+                                                    }
+                                                }
+                                            });
+                                        }).mapTo(undefined);
+                                } else {
+                                    return Observable.of(undefined);
+                                }
+                            });
                         }
+
+                        return Observable.of(undefined);
                     }).do(() => {
-                         this.updateLastReadContentId(userId, courseId, batchId, contentId).toPromise();
+                        this.updateLastReadContentId(userId, courseId, batchId, contentId).toPromise();
                     });
             } else {
                 return Observable.of(undefined);
@@ -115,6 +121,39 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
 
         });
     }
+
+    private validEndEvent(event: Telemetry): Observable<boolean> {
+        const uid = event.actor.id;
+        const identifier = event.object.id;
+        const request: ContentDetailRequest = {
+            contentId: identifier
+        };
+        return this.contentService.getContentDetails(request).map((content: Content) => {
+            const playerSummary: Array<any> = event.edata['summary'];
+            const contentMimeType = content.mimeType;
+            // const validSummary = (summaryList: Array<any>) => (percentage: number) => _find(summaryList, (requiredProgress =>
+            //     summary => summary && summary.progress >= requiredProgress)(percentage));
+            if (this.findValidProgress(playerSummary, 20) &&
+                ArrayUtil.contains([MimeType.YOUTUBE, MimeType.VIDEO, MimeType.WEBM], contentMimeType)) {
+                return true;
+            } else if (this.findValidProgress(playerSummary, 0) &&
+                ArrayUtil.contains([MimeType.H5P, MimeType.HTML], contentMimeType)) {
+                return true;
+            } else if (this.findValidProgress(playerSummary, 100)) {
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private isProgressValid(summary: any, requiredProgress: number): boolean {
+        return summary && summary.progress >= requiredProgress;
+    }
+
+    private findValidProgress(summaryList: Array<any>, requiredProgress): any | undefined {
+        return summaryList.find((summary) => this.isProgressValid(summary, requiredProgress));
+    }
+
 
     private updateLastReadContentId(userId: string, courseId: string, batchId: string, contentId: string): Observable<undefined> {
         const key = CourseServiceImpl.LAST_READ_CONTENTID_PREFIX.concat('_')
