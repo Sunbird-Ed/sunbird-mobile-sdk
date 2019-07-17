@@ -43,4 +43,7 @@ declare var buildconfigreader: {
         contentStoragePath: string;
         isRemovable: boolean;
     }[]) => void, error: (error: any) => void) => void;
+
+    readFromAssets: (fileName: string, success:
+        (callbackUrl: string) => void, error: (error: any) => void) => void;
 };
