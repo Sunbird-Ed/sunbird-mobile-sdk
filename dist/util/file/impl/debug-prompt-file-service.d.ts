@@ -17,4 +17,5 @@ export declare class DebugPromptFileService implements FileService {
     listDir(directoryPath: string): Promise<Entry[]>;
     writeFile(path: string, fileName: string, text: string, options: IWriteOptions): Promise<string>;
     getDirectorySize(path: string): Promise<number>;
+    readFileFromAssets(fileName: string): Promise<string>;
 }
