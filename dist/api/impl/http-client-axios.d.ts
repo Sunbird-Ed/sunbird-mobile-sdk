@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 export declare class HttpClientAxios implements HttpClient {
     private headers;
     private axios;
+    private serializer?;
     constructor();
     setSerializer(httpSerializer: HttpSerializer): void;
     addHeader(key: string, value: string): void;
