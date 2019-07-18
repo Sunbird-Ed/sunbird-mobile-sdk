@@ -1,0 +1,85 @@
+import {Container} from 'inversify';
+import {InjectionTokens} from '../../../injection-tokens';
+import {SearchHistoryServiceImpl} from './search-history-service-impl';
+import {SearchEntry, SearchHistoryService} from '..';
+import {DbService} from '../../../db';
+import {ProfileService, ProfileSession} from '../../../profile';
+import {Observable} from 'rxjs';
+import {SearchHistoryEntry} from '../db/schema';
+
+describe('SearchHistoryServiceImpl', () => {
+    let searchHistoryService: SearchHistoryService;
+
+    const container = new Container();
+    const dbServiceMock: Partial<DbService> = {};
+    const profileServiceMock: Partial<ProfileService> = {};
+
+    beforeAll(() => {
+        container.bind<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE).to(SearchHistoryServiceImpl);
+        container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).toConstantValue(profileServiceMock as ProfileService);
+        container.bind<DbService>(InjectionTokens.DB_SERVICE).toConstantValue(dbServiceMock as DbService);
+
+        searchHistoryService = container.get<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE);
+    });
+
+    it('should return an instance of SearchHistoryServiceImpl from container', () => {
+        // assert
+        expect(searchHistoryService).toBeTruthy();
+    });
+
+    it('should add entry to db for current profile on addEntry()', (done) => {
+        // arrange
+        const mockSession: ProfileSession = new ProfileSession('SAMPLE_UID');
+        profileServiceMock.getActiveProfileSession = jest.fn(() => Observable.of(mockSession));
+        dbServiceMock.insert = jest.fn(() => Observable.of(undefined));
+        dbServiceMock.execute = jest.fn(() => Observable.of(undefined));
+
+        // act
+        searchHistoryService.addEntry({query: 'SAMPLE_QUERY', namespace: 'SAMPLE_NAMESPACE'})
+            .subscribe(() => {
+                // assert
+                expect(profileServiceMock.getActiveProfileSession).toBeCalled();
+                expect(dbServiceMock.insert).toBeCalledWith(expect.objectContaining({
+                    modelJson: expect.objectContaining({
+                        [SearchHistoryEntry.COLUMN_NAME_QUERY]: 'SAMPLE_QUERY',
+                        [SearchHistoryEntry.COLUMN_NAME_NAMESPACE]: 'SAMPLE_NAMESPACE',
+                        [SearchHistoryEntry.COLUMN_NAME_USER_ID]: 'SAMPLE_UID'
+                    })
+                }));
+                expect(dbServiceMock.execute).toBeCalled();
+                done();
+            });
+    });
+
+    it('should return entries for current Profile on getEntries()', (done) => {
+        // arrange
+        const mockSession: ProfileSession = new ProfileSession('SAMPLE_UID');
+        profileServiceMock.getActiveProfileSession = jest.fn(() => Observable.of(mockSession));
+        dbServiceMock.execute = jest.fn(() => Observable.of(<SearchHistoryEntry.SchemaMap[]>[
+            {
+                [SearchHistoryEntry._ID]: '1',
+                [SearchHistoryEntry.COLUMN_NAME_USER_ID]: 'SAMPLE_UID',
+                [SearchHistoryEntry.COLUMN_NAME_QUERY]: 'SAMPLE_QUERY',
+                [SearchHistoryEntry.COLUMN_NAME_TIME_STAMP]: 1,
+                [SearchHistoryEntry.COLUMN_NAME_NAMESPACE]: 'SAMPLE_NAMESPACE'
+            }
+        ]));
+
+        // act
+        searchHistoryService.getEntries({namespace: 'SAMPLE_NAMESPACE', limit: 10})
+            .subscribe((results) => {
+                // assert
+                expect(results).toEqual(expect.arrayContaining([
+                    expect.objectContaining(<SearchEntry>{
+                        uid: 'SAMPLE_UID',
+                        query: 'SAMPLE_QUERY',
+                        timestamp: 1
+                    })
+                ]));
+                expect(profileServiceMock.getActiveProfileSession).toBeCalled();
+                expect(dbServiceMock.execute).toBeCalled();
+
+                done();
+            });
+    });
+});
