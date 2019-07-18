@@ -75,4 +75,8 @@ export class DebugPromptFileService implements FileService {
     getDirectorySize(path: string): Promise<number> {
         return Promise.resolve(0);
     }
+
+    readFileFromAssets(fileName: string): Promise<string> {
+        throw new Error('To be Implemented');
+    }
 }
