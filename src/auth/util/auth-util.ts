@@ -24,13 +24,12 @@ export class AuthUtil {
         }
 
         const request = new Request.Builder()
-            .withPath(this.apiConfig.user_authentication.authUrl + AuthEndPoints.REFRESH)
+            .withPath('/auth/v1/refresh/token')
             .withType(HttpRequestType.POST)
             .withSerializer(HttpSerializer.URLENCODED)
+            .withApiToken(true)
             .withBody({
-                refresh_token: sessionData.refresh_token,
-                grant_type: 'refresh_token',
-                client_id: 'android'
+                refresh_token: sessionData.refresh_token
             })
             .build();
 
@@ -45,13 +44,13 @@ export class AuthUtil {
                     throw e;
                 })
                 .then((response: Response) => {
-                    if (response.body.access_token && response.body.refresh_token) {
-                        const jwtPayload: { sub: string } = JWTUtil.getJWTPayload(response.body.access_token);
+                    if (response.body.result.access_token && response.body.result.refresh_token) {
+                        const jwtPayload: { sub: string } = JWTUtil.getJWTPayload(response.body.result.access_token);
 
                         const userToken = jwtPayload.sub.split(':').length === 3 ? <string>jwtPayload.sub.split(':').pop() : jwtPayload.sub;
 
                         sessionData = {
-                            ...response.body,
+                            ...response.body.result,
                             userToken
                         };
 
