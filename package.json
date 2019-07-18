@@ -9,7 +9,7 @@
     "postversion": "git push && git push --tags",
     "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
     "test": "jest",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --coverage --collectCoverageFrom=src/**/*.{ts,tsx}",
     "test:ci": "jest --ci --collectCoverage=true --coverageReporters=lcov --forceExit --detectOpenHandles --maxWorkers=2",
     "build:prod": "rm -rf dist && NODE_ENV=production webpack --output-file index.js",
     "build:dev": "rm -rf tmp && mkdir tmp && cp ./package-dev.json ./tmp/package.json && tsc -w --outDir ./tmp"
