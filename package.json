@@ -82,6 +82,9 @@
       "ts",
       "tsx"
     ],
+    "setupFiles": [
+      "./src/__test__/setup.ts"
+    ],
     "transform": {
       "^.+\\.(ts)$": "ts-jest"
     },
