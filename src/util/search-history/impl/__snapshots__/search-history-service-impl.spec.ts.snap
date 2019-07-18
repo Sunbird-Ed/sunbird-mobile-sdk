@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SearchHistoryServiceImpl should return entries for current Profile on getEntries() 1`] = `
+Array [
+  Object {
+    "query": "SAMPLE_QUERY",
+    "timestamp": 1,
+    "uid": "SAMPLE_UID",
+  },
+  Object {
+    "query": "SAMPLE_QUERY_2",
+    "timestamp": 2,
+    "uid": "SAMPLE_UID_2",
+  },
+]
+`;

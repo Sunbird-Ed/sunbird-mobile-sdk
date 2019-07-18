@@ -1,7 +1,7 @@
 import {Container} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
 import {SearchHistoryServiceImpl} from './search-history-service-impl';
-import {SearchEntry, SearchHistoryService} from '..';
+import {SearchHistoryService} from '..';
 import {DbService} from '../../../db';
 import {ProfileService, ProfileSession} from '../../../profile';
 import {Observable} from 'rxjs';
@@ -62,6 +62,13 @@ describe('SearchHistoryServiceImpl', () => {
                 [SearchHistoryEntry.COLUMN_NAME_QUERY]: 'SAMPLE_QUERY',
                 [SearchHistoryEntry.COLUMN_NAME_TIME_STAMP]: 1,
                 [SearchHistoryEntry.COLUMN_NAME_NAMESPACE]: 'SAMPLE_NAMESPACE'
+            },
+            {
+                [SearchHistoryEntry._ID]: '2',
+                [SearchHistoryEntry.COLUMN_NAME_USER_ID]: 'SAMPLE_UID_2',
+                [SearchHistoryEntry.COLUMN_NAME_QUERY]: 'SAMPLE_QUERY_2',
+                [SearchHistoryEntry.COLUMN_NAME_TIME_STAMP]: 2,
+                [SearchHistoryEntry.COLUMN_NAME_NAMESPACE]: 'SAMPLE_NAMESPACE_2'
             }
         ]));
 
@@ -69,13 +76,7 @@ describe('SearchHistoryServiceImpl', () => {
         searchHistoryService.getEntries({namespace: 'SAMPLE_NAMESPACE', limit: 10})
             .subscribe((results) => {
                 // assert
-                expect(results).toEqual(expect.arrayContaining([
-                    expect.objectContaining(<SearchEntry>{
-                        uid: 'SAMPLE_UID',
-                        query: 'SAMPLE_QUERY',
-                        timestamp: 1
-                    })
-                ]));
+                expect(results).toMatchSnapshot();
                 expect(profileServiceMock.getActiveProfileSession).toBeCalled();
                 expect(dbServiceMock.execute).toBeCalled();
 
