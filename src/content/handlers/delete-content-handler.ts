@@ -142,7 +142,7 @@ export class DeleteContentHandler {
                 if (localData) {
                     appIcon = localContentData.appIcon;
                 }
-                await this.rm(ContentUtil.getBasePath(path), FileUtil.getFileName(appIcon));
+                await this.rm(ContentUtil.getBasePath(path), appIcon ? FileUtil.getFileName(appIcon) : '');
             }
             contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY] = visibility;
             contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT] = ContentUtil.addOrUpdateRefCount(refCount);

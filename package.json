@@ -1,7 +1,7 @@
 {
   "name": "sunbird-sdk",
-  "version": "2.2.0",
-  "description": "Heart of the sunbird mobile app. Holds the imporatnat business logic including api calls and db operations.",
+  "version": "2.2.4",
+  "description": "Heart of the sunbird mobile app.",
   "main": "dist/index.js",
   "scripts": {
     "preversion": "rm -rf dist",
@@ -9,7 +9,8 @@
     "postversion": "git push && git push --tags",
     "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
     "test": "jest",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --coverage --collectCoverageFrom=src/**/*.{ts,tsx}",
+    "test:ci": "jest --ci --collectCoverage=true --coverageReporters=lcov --forceExit --detectOpenHandles --maxWorkers=2",
     "build:prod": "rm -rf dist && NODE_ENV=production webpack --output-file index.js",
     "build:dev": "rm -rf tmp && mkdir tmp && cp ./package-dev.json ./tmp/package.json && tsc -w --outDir ./tmp"
   },
@@ -39,23 +40,16 @@
     "cordova-plugin-buildconfig-reader": "git+https://github.com/swayangjit/cordova-plugin-buildconfig-reader.git"
   },
   "devDependencies": {
-    "@babel/core": "^7.1.6",
-    "@babel/plugin-proposal-class-properties": "^7.1.0",
-    "@babel/plugin-proposal-decorators": "^7.0.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
-    "@babel/preset-env": "^7.1.0",
-    "@babel/preset-typescript": "^7.1.0",
     "@types/jest": "^23.3.9",
     "@types/websql": "0.0.27",
     "axios": "^0.19.0",
-    "babel-core": "^7.0.0-bridge.0",
-    "babel-jest": "^24.8.0",
     "cordova-plugin-advanced-http": "^2.0.2",
     "cordova-plugin-android-downloadmanager": "^0.5.0",
     "cordova-plugin-file": "^6.0.1",
     "jest": "^24.8.0",
     "rxjs": ">=5 < 6",
-    "squel": "^5.12.2",
+    "squel": "^5.13.0",
+    "ts-jest": "^24.0.2",
     "ts-loader": "^5.3.2",
     "ts-node": ">=3.2.0 <8",
     "tsickle": "^0.27.2",
@@ -88,15 +82,15 @@
       "ts",
       "tsx"
     ],
+    "setupFiles": [
+      "./src/__test__/setup.ts"
+    ],
     "transform": {
-      "^.+\\.(ts|js)$": "babel-jest"
+      "^.+\\.(ts)$": "ts-jest"
     },
     "coverageReporters": [
       "text"
     ],
-    "moduleNameMapper": {
-      "^@app/(.*)$": "<rootDir>/src/$1"
-    },
     "transformIgnorePatterns": []
   }
 }

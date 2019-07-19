@@ -5,6 +5,7 @@ export declare class FileServiceImpl implements FileService {
     private initialized;
     init(): void;
     readAsText(path: string, filePath: string): Promise<string>;
+    readFileFromAssets(fileName: string): Promise<string>;
     writeFile(path: string, fileName: string, text: string, options?: IWriteOptions): Promise<any>;
     /**
      * Creates a new file in the specific path.

@@ -2,17 +2,20 @@ import {HttpClient, HttpSerializer, NetworkError, Response, ResponseCode, Server
 import {Observable} from 'rxjs';
 import * as axios from 'axios';
 import {AxiosError, AxiosResponse, AxiosStatic} from 'axios';
+import * as qs from 'qs';
 
 export class HttpClientAxios implements HttpClient {
 
     private headers: { [key: string]: string } = {};
     private axios: AxiosStatic;
+    private serializer?: HttpSerializer;
 
     constructor() {
         this.axios = axios.default;
     }
 
     setSerializer(httpSerializer: HttpSerializer) {
+        this.serializer = httpSerializer;
     }
 
     addHeader(key: string, value: string) {
@@ -31,11 +34,25 @@ export class HttpClientAxios implements HttpClient {
     }
 
     patch(baseUrl: string, path: string, headers: any, body: any): Observable<Response> {
-        return this.handleResponse(this.axios.patch(baseUrl + path, body, {headers: {...this.headers, ...headers}}));
+        if (this.serializer === HttpSerializer.URLENCODED && typeof body === 'object') {
+            this.addHeader('content-type', 'application/x-www-form-urlencoded');
+            body = qs.stringify(body);
+        }
+
+        return this.handleResponse(
+            this.axios.patch(baseUrl + path, body, {headers: {...this.headers, ...headers}})
+        );
     }
 
     post(baseUrl: string, path: string, headers: any, body: any): Observable<Response> {
-        return this.handleResponse(this.axios.post(baseUrl + path, body, {headers: {...this.headers, ...headers}}));
+        if (this.serializer === HttpSerializer.URLENCODED && typeof body === 'object') {
+            this.addHeader('content-type', 'application/x-www-form-urlencoded');
+            body = qs.stringify(body);
+        }
+
+        return this.handleResponse(
+            this.axios.post(baseUrl + path, body, {headers: {...this.headers, ...headers}})
+        );
     }
 
     private handleResponse(promise: Promise<AxiosResponse<any>>): Observable<Response> {
