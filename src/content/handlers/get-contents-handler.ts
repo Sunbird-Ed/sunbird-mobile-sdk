@@ -46,10 +46,10 @@ export class GetContentsHandler {
             if (uid) {
                 if (request.localOnly) {
                     filter = `ca.${ContentAccessEntry.COLUMN_NAME_UID} = '${uid}' AND ${artifactAvailabilityFilter}
-                    AND c.${ContentEntry.COLUMN_NAME_MIME_TYPE} != '${MimeType.COLLECTION.valueOf()}'`;
+                    AND cm.${ContentEntry.COLUMN_NAME_MIME_TYPE} NOT IN ('${MimeType.COLLECTION.valueOf()}', '')`;
                 } else {
                     filter = `ca.${ContentAccessEntry.COLUMN_NAME_UID} = '${uid}'
-                    AND c.${ContentEntry.COLUMN_NAME_MIME_TYPE} != '${MimeType.COLLECTION.valueOf()}'`;
+                    AND cm.${ContentEntry.COLUMN_NAME_MIME_TYPE} NOT IN ('${MimeType.COLLECTION.valueOf()}', '')`;
                 }
                 whereClause = `WHERE (${filter})`;
                 query = this.getRecentlyViewedQuery(whereClause, orderBy, request.limit!);

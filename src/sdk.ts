@@ -68,8 +68,11 @@ import {NetworkInfoServiceImpl} from './util/network/impl/network-info-service-i
 import {SearchHistoryMigration} from './db/migrations/search-history-migration';
 import {SearchHistoryService} from './util/search-history';
 import {SearchHistoryServiceImpl} from './util/search-history/impl/search-history-service-impl';
+import {RecentlyViewedMigration} from './db/migrations/recently-viewed-migration';
 
 export class SunbirdSdk {
+    private _container: Container;
+
     private static _instance?: SunbirdSdk;
 
     public static get instance(): SunbirdSdk {
@@ -79,8 +82,6 @@ export class SunbirdSdk {
 
         return SunbirdSdk._instance;
     }
-
-    private _container: Container;
 
     get sdkConfig(): SdkConfig {
         return this._container.get<SdkConfig>(InjectionTokens.SDK_CONFIG);
@@ -181,6 +182,7 @@ export class SunbirdSdk {
     get notificationService(): NotificationService {
         return this._container.get<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE);
     }
+
     get errorLoggerService(): ErrorLoggerService {
         return this._container.get<ErrorLoggerService>(InjectionTokens.ERROR_LOGGER_SERVICE);
     }
@@ -198,7 +200,7 @@ export class SunbirdSdk {
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(23);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(24);
 
         this._container.bind<Migration[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
             new ProfileSyllabusMigration(),
@@ -207,11 +209,13 @@ export class SunbirdSdk {
             new ContentMarkerMigration(),
             new OfflineSearchTextbookMigration(),
             new ErrorStackMigration(),
-            new SearchHistoryMigration()
+            new SearchHistoryMigration(),
+            new RecentlyViewedMigration()
         ]);
 
         if (sdkConfig.sharedPreferencesConfig.debugMode) {
-            this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).to(SharedPreferencesLocalStorage).inSingletonScope();
+            this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
+                .to(SharedPreferencesLocalStorage).inSingletonScope();
         } else {
             this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).to(SharedPreferencesAndroid).inSingletonScope();
         }
@@ -242,7 +246,8 @@ export class SunbirdSdk {
 
         this._container.bind<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE).to(KeyValueStoreImpl).inSingletonScope();
 
-        this._container.bind<SystemSettingsService>(InjectionTokens.SYSTEM_SETTINGS_SERVICE).to(SystemSettingsServiceImpl).inSingletonScope();
+        this._container.bind<SystemSettingsService>(InjectionTokens.SYSTEM_SETTINGS_SERVICE)
+            .to(SystemSettingsServiceImpl).inSingletonScope();
 
         this._container.bind<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE).to(FrameworkServiceImpl).inSingletonScope();
 
@@ -256,7 +261,8 @@ export class SunbirdSdk {
 
         this._container.bind<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE).to(TelemetryServiceImpl).inSingletonScope();
 
-        this._container.bind<ContentFeedbackService>(InjectionTokens.CONTENT_FEEDBACK_SERVICE).to(ContentFeedbackServiceImpl).inSingletonScope();
+        this._container.bind<ContentFeedbackService>(InjectionTokens.CONTENT_FEEDBACK_SERVICE)
+            .to(ContentFeedbackServiceImpl).inSingletonScope();
 
         this._container.bind<FormService>(InjectionTokens.FORM_SERVICE).to(FormServiceImpl).inSingletonScope();
 

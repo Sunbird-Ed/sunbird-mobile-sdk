@@ -518,7 +518,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 epoch_timestamp: Date.now(),
                 data: contentMarkerRequest.data,
                 extra_info: JSON.stringify(contentMarkerRequest.extraInfo),
-                marker: contentMarkerRequest.marker.valueOf()
+                marker: contentMarkerRequest.marker.valueOf(),
+                mime_type: this.getMimeType(contentMarkerRequest.data)
             };
             if (ArrayUtil.isEmpty(contentMarker)) {
                 return this.dbService.insert({
@@ -601,6 +602,22 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             .mapTo(undefined);
     }
 
+    getContentSpaceUsageSummary(contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest):
+        Observable<ContentSpaceUsageSummaryResponse[]> {
+        const contentSpaceUsageSummaryList: ContentSpaceUsageSummaryResponse[] = [];
+        const storageHandler = new ContentStorageHandler(this.dbService);
+        return Observable.fromPromise(storageHandler.getContentUsageSummary(contentSpaceUsageSummaryRequest.paths));
+    }
+
+    private getMimeType(data: string): string {
+        let mimeType = '';
+        if (data) {
+            const localData = JSON.parse(data);
+            mimeType = localData['mimeType'];
+        }
+        return mimeType;
+    }
+
     private searchContentAndGroupByPageSection(
         offlineTextbookContents$: Observable<ContentData[]>,
         onlineTextbookContents$: Observable<ContentSearchResult>
@@ -649,13 +666,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 sections: pageSectionList
             };
         });
-    }
-
-    getContentSpaceUsageSummary(contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest):
-        Observable<ContentSpaceUsageSummaryResponse[]> {
-        const contentSpaceUsageSummaryList: ContentSpaceUsageSummaryResponse[] = [];
-        const storageHandler = new ContentStorageHandler(this.dbService);
-        return Observable.fromPromise(storageHandler.getContentUsageSummary(contentSpaceUsageSummaryRequest.paths));
     }
 
     private handleContentDeleteRequestSetChanges(): Observable<undefined> {
