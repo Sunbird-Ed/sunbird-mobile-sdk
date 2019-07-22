@@ -30,5 +30,6 @@ export interface SearchFilter {
     purpose?: string[];
     channel?: string[];
     audience?: string[];
+    mimeType?: string[];
 
 }

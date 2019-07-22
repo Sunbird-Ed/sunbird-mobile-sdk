@@ -178,7 +178,9 @@ export class SearchContentHandler {
             language: (criteria.language && criteria.language.length > 0) ? criteria.language : [],
             topic: (criteria.topic && criteria.topic.length > 0) ? criteria.topic : [],
             purpose: (criteria.purpose && criteria.purpose.length > 0) ? criteria.purpose : [],
-            channel: (criteria.channel && criteria.channel.length > 0) ? criteria.channel : []
+            channel: (criteria.channel && criteria.channel.length > 0) ? criteria.channel : [],
+            mimeType: (criteria.mimeType && criteria.mimeType.length > 0) ? criteria.mimeType : []
+
             // TODO Revisit on inclusion and exclusion filters
         };
     }
