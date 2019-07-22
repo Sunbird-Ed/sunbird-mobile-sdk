@@ -6,15 +6,23 @@ import {InjectionTokens} from '../../injection-tokens';
 import {DbService} from '../../db';
 import {NotificationEntry} from '../db/schema';
 import {NotificationHandler} from '../handler/notification-handler';
+import { SharedPreferences } from '../../util/shared-preferences';
 import COLUMN_NAME_NOTIFICATION_JSON = NotificationEntry.COLUMN_NAME_NOTIFICATION_JSON;
+import { CodePush } from '../../preference-keys';
 
 @injectable()
 export class NotificationServiceImpl implements NotificationService {
 
-    constructor(@inject(InjectionTokens.DB_SERVICE) private dbService: DbService) {
+    constructor(
+        @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences
+    ) {
     }
 
     addNotification(notification: Notification): Observable<boolean> {
+        if (notification.actionData && notification.actionData.actionType === 'codePush' && notification.actionData.deploymentKey ) {
+            this.sharedPreferences.putString(CodePush.DEPLOYMENT_KEY, notification.actionData.deploymentKey);
+        }
         return this.dbService.read({
             table: NotificationEntry.TABLE_NAME,
             selection: `${NotificationEntry.COLUMN_NAME_MESSAGE_ID}= ?`,
