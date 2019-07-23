@@ -26,9 +26,9 @@ import { ErrorLoggerService } from './util/error-stack/def/error-logger-service'
 import { NetworkInfoService } from './util/network';
 import { SearchHistoryService } from './util/search-history';
 export declare class SunbirdSdk {
+    private _container;
     private static _instance?;
     static readonly instance: SunbirdSdk;
-    private _container;
     readonly sdkConfig: SdkConfig;
     readonly appInfo: AppInfo;
     readonly pageAssembleService: PageAssembleService;

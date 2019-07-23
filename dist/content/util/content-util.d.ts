@@ -3,8 +3,8 @@ import { Rollup } from '../../telemetry';
 import { AppConfig } from '../../api/config/app-config';
 import { ContentEntry } from '../db/schema';
 export declare class ContentUtil {
-    private static DEFAULT_PACKAGE_VERSION;
     static defaultCompatibilityLevel: number;
+    private static DEFAULT_PACKAGE_VERSION;
     private static INITIAL_VALUE_FOR_TRANSFER_COUNT;
     private static readonly MAX_CONTENT_NAME;
     static isAvailableLocally(contentState: number): boolean;
@@ -43,9 +43,6 @@ export declare class ContentUtil {
      */
     static doesContentExist(existingContentInDB: ContentEntry.SchemaMap | undefined, newIdentifier: string, newPkgVersion: number, keepLowerVersion: boolean): boolean;
     static getContentRootDir(rootFilePath: string): string;
-    private static transferCount;
-    private static isContentMetadataAbsent;
-    private static isContentMetadataPresentWithoutViralityMetadata;
     static addOrUpdateViralityMetadata(localData: any, origin: string): void;
     static addViralityMetadataIfMissing(localData: any, origin: string): void;
     /**
@@ -85,4 +82,7 @@ export declare class ContentUtil {
      */
     static getContentState(existingContentInDb: any, contentState: number): number;
     static isFreeSpaceAvailable(deviceAvailableFreeSpace: number, fileSpace: number, bufferSize: number): boolean;
+    private static transferCount;
+    private static isContentMetadataAbsent;
+    private static isContentMetadataPresentWithoutViralityMetadata;
 }
