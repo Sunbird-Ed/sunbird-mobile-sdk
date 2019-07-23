@@ -203,6 +203,7 @@ export namespace ContentMarkerEntry {
             COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_EXTRA_INFO + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_MIME_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
             COLUMN_NAME_MARKER + DbConstants.SPACE + DbConstants.INT_TYPE +
             ' )';
     };
