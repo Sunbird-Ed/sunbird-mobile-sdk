@@ -360,7 +360,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
                 return contentImportResponses;
             }));
-
     }
 
     importEcar(ecarImportRequest: EcarImportRequest): Observable<ContentImportResponse[]> {
@@ -436,7 +435,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
-                const previousContentIdentifier = childContentHandler.getPreviuosContentIdentifier(hierarchyInfo,
+                const previousContentIdentifier = childContentHandler.getPreviousContentIdentifier(hierarchyInfo,
                     currentContentIdentifier, contentKeyList);
                 return childContentHandler.getContentFromDB(hierarchyInfo, previousContentIdentifier);
             });
