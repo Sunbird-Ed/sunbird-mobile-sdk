@@ -154,7 +154,6 @@ export interface FilterValue {
 export interface ContentSortCriteria {
     sortAttribute: string;
     sortOrder: SortOrder;
-
 }
 
 export interface ImportContentContext {
@@ -165,11 +164,13 @@ export interface ImportContentContext {
     manifestVersion?: string;
     skippedItemsIdentifier?: string[];
     items?: any[];
-    identifiers?: string[];
+    identifiers?: string[]; // Non unit content identifier
     contentImportResponseList: ContentImportResponse[];
     tmpLocation?: string;
     rootIdentifier?: string;
     correlationData?: CorrelationData[];
+    existedContentIdentifiers?: { [identifier: string]: boolean};   // Update the content, but do not update refCount.
+    // Because for the same content it was increasing the refCount when updating/re-importing/while importing artifact.
 }
 
 export interface ExportContentContext {

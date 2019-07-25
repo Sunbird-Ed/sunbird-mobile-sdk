@@ -52,39 +52,41 @@ export class ValidateEcar {
         for (const e of items) {
             const element = e as any;
             const identifier = element.identifier;
-            const visibility = ContentUtil.readVisibility(element);
-            // if (ContentUtil.isNotUnit(element.mimeType, visibility)) {
-                contentIds.push(identifier);
-            // }
+            contentIds.push(identifier);
         }
         const query = ArrayUtil.joinPreservingQuotes(contentIds);
         const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
-        console.log(existingContentModels.length);
 
         const result = existingContentModels.reduce((map, obj) => {
             map[obj.identifier] = obj;
             return map;
         }, {});
 
-        // TODO: Remove the item from items list which does not required any validation.
-        //  i.e. if(!this.isNotUnit(element.mimeType, visibility))
+        let isRootExists = false;
+        importContext.existedContentIdentifiers = {};
+
         for (const e of items) {
-            const element = e as any;
-            const identifier = element.identifier;
-            const visibility = ContentUtil.readVisibility(element);
-            const compatibilityLevel = ContentUtil.readCompatibilityLevel(element);
+            const item = e as any;
+            const identifier = item.identifier;
+            const visibility = ContentUtil.readVisibility(item);
+            const compatibilityLevel = ContentUtil.readCompatibilityLevel(item);
             if (visibility === Visibility.DEFAULT
                 && !ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
                 this.skipContent(importContext, identifier, visibility, ContentImportStatus.NOT_COMPATIBLE);
                 continue;
             }
 
-            const status = element.status;
+            const status = item.status;
             const isDraftContent: boolean = ContentUtil.isDraftContent(status);
             // Draft content expiry .To prevent import of draft content if the expires date is lesser than from the current date.
-            if (isDraftContent && ContentUtil.isExpired(element.expires)) {
+            if (isDraftContent && ContentUtil.isExpired(item.expires)) {
                 this.skipContent(importContext, identifier, visibility, ContentImportStatus.CONTENT_EXPIRED);
                 continue;
+            }
+
+            // If more than 1 root content is bundled in ecar then initialize the isRootExists to false.
+            if (visibility === Visibility.DEFAULT.valueOf()) {
+                isRootExists = false;
             }
 
             const existingContentModel = result[identifier];
@@ -97,14 +99,19 @@ export class ValidateEcar {
             // To check whether the file is already imported or not
             if (existingContentPath     // Check if path of old content is not empty.
                 && visibility === Visibility.DEFAULT.valueOf() // If visibility is Parent then invoke ExtractPayloads
-                && !ContentUtil.isDuplicateCheckRequired(isDraftContent, element.pkgVersion) // Check if its draft and pkgVersion is 0.
-                && ContentUtil.isImportFileExist(existingContentModel, element)// Check whether the file is already imported or not.
+                && !ContentUtil.isDuplicateCheckRequired(isDraftContent, item.pkgVersion) // Check if its draft and pkgVersion is 0.
+                && ContentUtil.isImportFileExist(existingContentModel, item) // Check whether the file is already imported or not.
             ) {
+                isRootExists = true;
                 this.skipContent(importContext, identifier, visibility, ContentImportStatus.ALREADY_EXIST);
                 continue;
             }
 
-            importContext.items!.push(element);
+            if (isRootExists && visibility === Visibility.PARENT.valueOf()) {
+                importContext.existedContentIdentifiers[identifier] = true;
+            }
+
+            importContext.items!.push(item);
         }
 
         response.body = importContext;

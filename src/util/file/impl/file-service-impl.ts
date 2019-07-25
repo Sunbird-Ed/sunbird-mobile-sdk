@@ -1,21 +1,20 @@
 import {injectable} from 'inversify';
 import {FileService} from '../def/file-service';
-import {Observable} from 'rxjs';
 import {
     DirectoryEntry,
+    DirectoryReader,
     Entry,
-    FileEntry,
-    Flags,
-    Metadata,
-    LocalFileSystem,
-    FileSystem,
-    FileError,
     EntryCallback,
     ErrorCallback,
-    RemoveResult,
+    FileEntry,
+    FileError,
+    FileSystem,
     FileWriter,
+    Flags,
     IWriteOptions,
-    DirectoryReader
+    LocalFileSystem,
+    Metadata,
+    RemoveResult
 } from '../index';
 import {FileUtil} from '../util/file-util';
 
@@ -580,11 +579,12 @@ export class FileServiceImpl implements FileService {
     }
 
     getDirectorySize(path: string): Promise<number> {
-        return this.resolveDirectoryUrl(path).then((directoryEntry: DirectoryEntry) => {
-            return this.size(directoryEntry);
-        }).catch(() => {
-            return 0;
-        });
+        return this.resolveDirectoryUrl(path)
+            .then((directoryEntry: DirectoryEntry) => {
+                return this.size(directoryEntry);
+            }).catch(() => {
+                return 0;
+            });
     }
 
     size(entry: Entry): Promise<number> {
