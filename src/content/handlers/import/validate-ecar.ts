@@ -48,8 +48,8 @@ export class ValidateEcar {
 
         const contentIds: string[] = [];
         for (const e of items) {
-            const element = e as any;
-            const identifier = element.identifier;
+            const item = e as any;
+            const identifier = item.identifier;
             contentIds.push(identifier);
         }
         const query = ArrayUtil.joinPreservingQuotes(contentIds);

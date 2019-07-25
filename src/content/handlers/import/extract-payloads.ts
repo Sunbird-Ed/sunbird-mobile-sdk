@@ -40,10 +40,10 @@ export class ExtractPayloads {
         const contentIds: string[] = [];
         const nonUnitContentIds: string[] = [];
         for (const e of importContext.items!) {
-            const element = e as any;
-            const identifier = element.identifier;
-            const visibility = ContentUtil.readVisibility(element);
-            if (ContentUtil.isNotUnit(element.mimeType, visibility)) {
+            const item = e as any;
+            const identifier = item.identifier;
+            const visibility = ContentUtil.readVisibility(item);
+            if (ContentUtil.isNotUnit(item.mimeType, visibility)) {
                 nonUnitContentIds.push(identifier);
             }
             contentIds.push(identifier);

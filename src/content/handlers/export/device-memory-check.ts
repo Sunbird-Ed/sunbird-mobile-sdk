@@ -1,6 +1,5 @@
 import {FileService} from '../../../util/file/def/file-service';
 import {ExportContentContext} from '../..';
-import {FileUtil} from '../../../util/file/util/file-util';
 import {Response} from '../../../api';
 
 export class DeviceMemoryCheck {
@@ -9,14 +8,15 @@ export class DeviceMemoryCheck {
 
     public async execute(exportContentContext: ExportContentContext): Promise<Response> {
         const response: Response = new Response();
-        return this.fileService.getFreeDiskSpace().then((freeSpace) => {
-            const fileSize: number = this.getFileSize(exportContentContext.items!);
-            // if (!FileUtil.isFreeSpaceAvailable(freeSpace, fileSize, 0)) {
-            //     throw response;
-            // }
-            response.body = exportContentContext;
-            return response;
-        });
+        return this.fileService.getFreeDiskSpace()
+            .then((freeSpace) => {
+                const fileSize: number = this.getFileSize(exportContentContext.items!);
+                // if (!FileUtil.isFreeSpaceAvailable(freeSpace, fileSize, 0)) {
+                //     throw response;
+                // }
+                response.body = exportContentContext;
+                return response;
+            });
     }
 
     private getFileSize(items: any[]): number {
