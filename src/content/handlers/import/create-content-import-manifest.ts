@@ -1,5 +1,5 @@
 import {DbService} from '../../../db';
-import {ImportContentContext} from '../..';
+import {FileName, ImportContentContext} from '../..';
 import {ContentEntry} from '../../db/schema';
 import Queue from 'typescript-collections/dist/lib/Queue';
 import {ContentUtil} from '../../util/content-util';
@@ -10,7 +10,6 @@ import {Response} from '../../../api';
 
 export class CreateContentImportManifest {
 
-    private readonly MANIFEST_FILE_NAME = 'manifest.json';
     private contentDataMap: { [key: string]: any } = {};
 
     constructor(private dbService: DbService,
@@ -19,7 +18,7 @@ export class CreateContentImportManifest {
     }
 
     async execute(importContentContext: ImportContentContext): Promise<Response> {
-        const data = await this.fileService.readAsText(importContentContext.tmpLocation!, this.MANIFEST_FILE_NAME);
+        const data = await this.fileService.readAsText(importContentContext.tmpLocation!, FileName.MANIFEST.valueOf());
         const manifestJson = JSON.parse(data);
         const archive = manifestJson.archive;
         const items = archive.items;
@@ -73,7 +72,7 @@ export class CreateContentImportManifest {
 
             const fileMap: { [key: string]: any } = {};
             fileMap['path'] = ContentUtil.getBasePath(ContentUtil.getContentRootDir(destinationFolder).concat('/', identifier, '/'));
-            fileMap['fileName'] = this.MANIFEST_FILE_NAME;
+            fileMap['fileName'] = FileName.MANIFEST.valueOf();
             fileMap['data'] = JSON.stringify(manifest);
 
             fileMapList.push(fileMap);

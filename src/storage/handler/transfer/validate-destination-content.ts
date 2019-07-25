@@ -4,10 +4,9 @@ import {AppConfig} from '../../../api/config/app-config';
 import {Manifest, TransferContentContext} from '../transfer-content-handler';
 import {ContentUtil} from '../../../content/util/content-util';
 import {Entry} from '../../../util/file';
-import {Visibility} from '../../../content';
+import {FileName, Visibility} from '../../../content';
 
 export class ValidateDestinationContent {
-    private static readonly MANIFEST_FILE_NAME = 'manifest.json';
 
     constructor(private fileService: FileService,
                 private appConfig: AppConfig) {
@@ -64,10 +63,9 @@ export class ValidateDestinationContent {
 
     private async extractManifest(directoryEntry: Entry): Promise<Manifest> {
         const manifestStringified = await this.fileService.readAsText(
-            directoryEntry.nativeURL, ValidateDestinationContent.MANIFEST_FILE_NAME);
+            directoryEntry.nativeURL, FileName.MANIFEST.valueOf());
         return JSON.parse(manifestStringified);
     }
-
 
     private validateManifest(manifest: Manifest): boolean {
         return manifest.version !== '1.0' &&

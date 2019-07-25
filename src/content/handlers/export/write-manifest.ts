@@ -1,12 +1,10 @@
 import {FileService} from '../../../util/file/def/file-service';
 import {Response} from '../../../api';
-import {ContentErrorCode} from '../../util/content-constants';
+import {ContentErrorCode, FileName} from '../../util/content-constants';
 import {ExportContentContext} from '../..';
 import {DeviceInfo} from '../../../util/device';
 
 export class WriteManifest {
-
-    private static readonly MANIFEST_FILE_NAME = 'manifest.json';
 
     constructor(private fileService: FileService,
                 private deviceInfo: DeviceInfo) {
@@ -22,7 +20,7 @@ export class WriteManifest {
                 throw response;
             }
             return this.fileService.writeFile(exportContentContext.tmpLocationPath!,
-                WriteManifest.MANIFEST_FILE_NAME,
+                FileName.MANIFEST.valueOf(),
                 JSON.stringify(exportContentContext.manifest),
                 {replace: true});
         }).then(() => {

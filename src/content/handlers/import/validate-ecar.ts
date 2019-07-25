@@ -1,4 +1,4 @@
-import {ImportContentContext} from '../..';
+import {FileName, ImportContentContext} from '../..';
 import {Response} from '../../../api';
 import {ContentErrorCode, ContentImportStatus, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
@@ -12,8 +12,6 @@ import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class ValidateEcar {
 
-    private readonly MANIFEST_FILE_NAME = 'manifest.json';
-
     constructor(private fileService: FileService,
                 private dbService: DbService,
                 private appConfig: AppConfig,
@@ -22,7 +20,7 @@ export class ValidateEcar {
 
     public async execute(importContext: ImportContentContext): Promise<Response> {
         const response: Response = new Response();
-        const data = await this.fileService.readAsText(importContext.tmpLocation!, this.MANIFEST_FILE_NAME);
+        const data = await this.fileService.readAsText(importContext.tmpLocation!, FileName.MANIFEST.valueOf());
 
         if (!data) {
             response.errorMesg = ContentErrorCode.IMPORT_FAILED_MANIFEST_FILE_NOT_FOUND.valueOf();

@@ -1,11 +1,11 @@
 import {ZipService} from '../../../util/zip/def/zip-service';
-import {ExportContentContext} from '../..';
+import {ExportContentContext, FileName} from '../..';
 import {Response} from '../../../api';
 import {ContentEntry} from '../../db/schema';
-import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import {ContentUtil} from '../../util/content-util';
-import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 import {FileService} from '../../../util/file/def/file-service';
+import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
+import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
@@ -31,7 +31,7 @@ export class CompressContent {
                 const skipDirectoriesName: string[] = [];
                 const skipFilesName: string[] = [];
                 skipDirectoriesName.push(contentInDb[COLUMN_NAME_IDENTIFIER]);
-                skipFilesName.push(contentInDb[COLUMN_NAME_IDENTIFIER].concat('/', 'manifest.json'));
+                skipFilesName.push(contentInDb[COLUMN_NAME_IDENTIFIER].concat('/', FileName.MANIFEST.valueOf()));
                 const dirs = artifactUrl.split('/');
                 // await this.fileService.createDir(exportContentContext.tmpLocationPath!.concat(dirs[0]), true);
                 // await this.fileService.createFile(exportContentContext.tmpLocationPath!, dirs[1], true);

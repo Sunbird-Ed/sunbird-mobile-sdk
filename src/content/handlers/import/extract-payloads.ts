@@ -1,4 +1,4 @@
-import {ContentEventType, ImportContentContext} from '../..';
+import {ContentEventType, FileName, ImportContentContext} from '../..';
 import {Response} from '../../../api';
 import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
@@ -16,8 +16,6 @@ import {ArrayUtil} from '../../../util/array-util';
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 
 export class ExtractPayloads {
-
-    private readonly MANIFEST_FILE_NAME = 'manifest.json';
 
     constructor(private fileService: FileService,
                 private zipService: ZipService,
@@ -230,9 +228,9 @@ export class ExtractPayloads {
 
         if (rootContentPath) {
             await this.fileService.copyFile(importContext.tmpLocation!,
-                this.MANIFEST_FILE_NAME,
+                FileName.MANIFEST.valueOf(),
                 rootContentPath,
-                this.MANIFEST_FILE_NAME);
+                FileName.MANIFEST.valueOf());
         }
 
         response.body = importContext;

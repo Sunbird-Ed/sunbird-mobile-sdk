@@ -3,15 +3,13 @@ import {FileService} from '../../../util/file/def/file-service';
 import {Manifest, MoveContentStatus, TransferContentContext} from '../transfer-content-handler';
 import {ContentEntry} from '../../../content/db/schema';
 import {ContentUtil} from '../../../content/util/content-util';
-import {ContentStatus, MimeType, State, Visibility} from '../../../content';
+import {ContentStatus, FileName, MimeType, State, Visibility} from '../../../content';
 import {DbService} from '../../../db';
-import * as moment from 'moment';
 import {AppConfig} from '../../../api/config/app-config';
 import {ExistingContentAction} from '../../index';
 import {DeviceInfo} from '../../../util/device';
 
 export class StoreDestinationContentInDb {
-    public static MANIFEST_FILE_NAME = 'manifest.json';
 
     constructor(
         private appConfig: AppConfig,
@@ -78,7 +76,7 @@ export class StoreDestinationContentInDb {
         const destinationPath = storageFolder.concat(identifier);
         return this.fileService.readAsText(
             storageFolder.concat(identifier),
-            StoreDestinationContentInDb.MANIFEST_FILE_NAME
+            FileName.MANIFEST.valueOf()
         ).then((manifestStringified) => {
             const manifest: Manifest = JSON.parse(manifestStringified);
             const items: any[] = manifest.archive.items;
