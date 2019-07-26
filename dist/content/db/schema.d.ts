@@ -97,6 +97,7 @@ export declare namespace ContentMarkerEntry {
     const COLUMN_NAME_DATA = "data";
     const COLUMN_NAME_EXTRA_INFO = "extra_info";
     const COLUMN_NAME_MARKER = "marker";
+    const COLUMN_NAME_MIME_TYPE = "mime_type";
     interface SchemaMap {
         [COLUMN_NAME_UID]: string;
         [COLUMN_NAME_CONTENT_IDENTIFIER]: string;
@@ -104,7 +105,9 @@ export declare namespace ContentMarkerEntry {
         [COLUMN_NAME_DATA]: string;
         [COLUMN_NAME_EXTRA_INFO]: string;
         [COLUMN_NAME_MARKER]: number;
+        [COLUMN_NAME_MIME_TYPE]: string;
     }
     const getCreateEntry: (() => string);
     const deleteTable: (() => string);
+    const getAlterEntryForMimeType: (() => string);
 }

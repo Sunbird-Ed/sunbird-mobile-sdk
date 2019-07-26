@@ -24,6 +24,9 @@ export declare class SummaryTelemetryEventHandler implements ApiRequestHandler<T
     private static checkIsCourse;
     private setCourseContextEmpty;
     updateContentState(event: Telemetry): Observable<undefined>;
+    private validEndEvent;
+    private isProgressValid;
+    private findValidProgress;
     private updateLastReadContentId;
     handle(event: SunbirdTelemetry.Telemetry): Observable<undefined>;
     private markContentAsPlayed;

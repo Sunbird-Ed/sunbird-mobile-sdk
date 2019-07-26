@@ -6,6 +6,7 @@ import {AppConfig} from '../../api/config/app-config';
 import {ContentEntry} from '../db/schema';
 import {NumberUtil} from '../../util/number-util';
 import {ArrayUtil} from '../../util/array-util';
+import * as moment from 'moment';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
@@ -13,11 +14,10 @@ import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 import COLUMN_NAME_LOCAL_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON;
 import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
-import * as moment from 'moment';
 
 export class ContentUtil {
-    private static DEFAULT_PACKAGE_VERSION = -1;
     public static defaultCompatibilityLevel = 1;
+    private static DEFAULT_PACKAGE_VERSION = -1;
     private static INITIAL_VALUE_FOR_TRANSFER_COUNT = 0;
     private static readonly MAX_CONTENT_NAME = 30;
 
@@ -246,21 +246,6 @@ export class ContentUtil {
 
     public static getContentRootDir(rootFilePath: string): string {
         return rootFilePath.concat('content');
-    }
-
-    private static transferCount(viralityMetadata): number {
-        const transferCount = viralityMetadata['transferCount'];
-        return parseInt(transferCount, 0);
-
-    }
-
-    private static isContentMetadataAbsent(localDataMap): boolean {
-        return !Boolean(localDataMap['contentMetaData']);
-    }
-
-
-    private static isContentMetadataPresentWithoutViralityMetadata(localData): boolean {
-        return !Boolean((localData['contentMetaData'])['virality']);
     }
 
     public static addOrUpdateViralityMetadata(localData, origin: string) {
@@ -508,10 +493,8 @@ export class ContentUtil {
         return `select * from ${ContentEntry.TABLE_NAME} where ${COLUMN_NAME_REF_COUNT} > 0`;
     }
 
-
-    public static constructContentDBModel(identifier, manifestVersion, localData,
-                                          mimeType, contentType, visibility, path,
-                                          refCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
+    public static constructContentDBModel(identifier, manifestVersion, localData, mimeType, contentType, visibility, path, refCount,
+                                          contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
@@ -531,7 +514,6 @@ export class ContentUtil {
             [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
             [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)
         };
-
     }
 
     public static getReferenceCount(existingContent, visibility: string): number {
@@ -587,5 +569,18 @@ export class ContentUtil {
         return deviceAvailableFreeSpace > 0 && deviceAvailableFreeSpace > (fileSpace + BUFFER_SIZE);
     }
 
+    private static transferCount(viralityMetadata): number {
+        const transferCount = viralityMetadata['transferCount'];
+        return parseInt(transferCount, 0);
+
+    }
+
+    private static isContentMetadataAbsent(localDataMap): boolean {
+        return !Boolean(localDataMap['contentMetaData']);
+    }
+
+    private static isContentMetadataPresentWithoutViralityMetadata(localData): boolean {
+        return !Boolean((localData['contentMetaData'])['virality']);
+    }
 
 }

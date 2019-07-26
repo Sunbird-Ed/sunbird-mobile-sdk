@@ -31,3 +31,6 @@ export declare namespace StorageKeys {
 export declare namespace ErrorLogKeys {
     const KEY_ERROR_LOG_LAST_SYNCED_TIME_STAMP = "error_log_last_synced_time_stamp";
 }
+export declare namespace CodePush {
+    const DEPLOYMENT_KEY = "deployment_key";
+}

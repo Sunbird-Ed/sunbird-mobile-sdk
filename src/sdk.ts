@@ -65,8 +65,14 @@ import {ErrorLoggerService} from './util/error-stack/def/error-logger-service';
 import {ErrorLoggerServiceImpl} from './util/error-stack/impl/error-logger-service-impl';
 import {NetworkInfoService} from './util/network';
 import {NetworkInfoServiceImpl} from './util/network/impl/network-info-service-impl';
+import {SearchHistoryMigration} from './db/migrations/search-history-migration';
+import {SearchHistoryService} from './util/search-history';
+import {SearchHistoryServiceImpl} from './util/search-history/impl/search-history-service-impl';
+import {RecentlyViewedMigration} from './db/migrations/recently-viewed-migration';
 
 export class SunbirdSdk {
+    private _container: Container;
+
     private static _instance?: SunbirdSdk;
 
     public static get instance(): SunbirdSdk {
@@ -76,8 +82,6 @@ export class SunbirdSdk {
 
         return SunbirdSdk._instance;
     }
-
-    private _container: Container;
 
     get sdkConfig(): SdkConfig {
         return this._container.get<SdkConfig>(InjectionTokens.SDK_CONFIG);
@@ -178,6 +182,7 @@ export class SunbirdSdk {
     get notificationService(): NotificationService {
         return this._container.get<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE);
     }
+
     get errorLoggerService(): ErrorLoggerService {
         return this._container.get<ErrorLoggerService>(InjectionTokens.ERROR_LOGGER_SERVICE);
     }
@@ -186,12 +191,16 @@ export class SunbirdSdk {
         return this._container.get<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE);
     }
 
+    get searchHistoryService(): SearchHistoryService {
+        return this._container.get<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(22);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(24);
 
         this._container.bind<Migration[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
             new ProfileSyllabusMigration(),
@@ -199,11 +208,14 @@ export class SunbirdSdk {
             new MillisecondsToSecondsMigration(),
             new ContentMarkerMigration(),
             new OfflineSearchTextbookMigration(),
-            new ErrorStackMigration()
+            new ErrorStackMigration(),
+            new SearchHistoryMigration(),
+            new RecentlyViewedMigration()
         ]);
 
         if (sdkConfig.sharedPreferencesConfig.debugMode) {
-            this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).to(SharedPreferencesLocalStorage).inSingletonScope();
+            this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
+                .to(SharedPreferencesLocalStorage).inSingletonScope();
         } else {
             this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).to(SharedPreferencesAndroid).inSingletonScope();
         }
@@ -234,7 +246,8 @@ export class SunbirdSdk {
 
         this._container.bind<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE).to(KeyValueStoreImpl).inSingletonScope();
 
-        this._container.bind<SystemSettingsService>(InjectionTokens.SYSTEM_SETTINGS_SERVICE).to(SystemSettingsServiceImpl).inSingletonScope();
+        this._container.bind<SystemSettingsService>(InjectionTokens.SYSTEM_SETTINGS_SERVICE)
+            .to(SystemSettingsServiceImpl).inSingletonScope();
 
         this._container.bind<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE).to(FrameworkServiceImpl).inSingletonScope();
 
@@ -248,7 +261,8 @@ export class SunbirdSdk {
 
         this._container.bind<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE).to(TelemetryServiceImpl).inSingletonScope();
 
-        this._container.bind<ContentFeedbackService>(InjectionTokens.CONTENT_FEEDBACK_SERVICE).to(ContentFeedbackServiceImpl).inSingletonScope();
+        this._container.bind<ContentFeedbackService>(InjectionTokens.CONTENT_FEEDBACK_SERVICE)
+            .to(ContentFeedbackServiceImpl).inSingletonScope();
 
         this._container.bind<FormService>(InjectionTokens.FORM_SERVICE).to(FormServiceImpl).inSingletonScope();
 
@@ -275,6 +289,8 @@ export class SunbirdSdk {
         this._container.bind<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE).to(NotificationServiceImpl).inSingletonScope();
 
         this._container.bind<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE).to(NetworkInfoServiceImpl).inSingletonScope();
+
+        this._container.bind<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE).to(SearchHistoryServiceImpl).inSingletonScope();
 
         this.apiService.setDefaultApiAuthenticators([
             new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)
@@ -326,6 +342,7 @@ export class SunbirdSdk {
 
     private postInit() {
         return Observable.combineLatest(
+            this.apiService.onInit(),
             this.summarizerService.onInit(),
             this.errorLoggerService.onInit(),
             this.eventsBusService.onInit(),

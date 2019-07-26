@@ -14,6 +14,7 @@ export declare class ApiServiceImpl implements ApiService {
     private defaultSessionAuthenticators;
     private apiConfig;
     constructor(sdkConfig: SdkConfig, deviceInfo: DeviceInfo, sharedPreferences: SharedPreferences);
+    onInit(): Observable<undefined>;
     fetch<T = any>(request: Request): Observable<Response<T>>;
     setDefaultApiAuthenticators(authenticators: Authenticator[]): void;
     setDefaultSessionAuthenticators(authenticators: Authenticator[]): void;

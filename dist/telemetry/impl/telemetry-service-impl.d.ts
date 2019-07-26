@@ -12,6 +12,7 @@ import { FrameworkService } from '../../framework';
 import { NetworkInfoService } from '../../util/network';
 import { SdkConfig } from '../../sdk-config';
 import { ErrorLoggerService } from '../../util/error-stack';
+import { SharedPreferences } from '../../util/shared-preferences';
 export declare class TelemetryServiceImpl implements TelemetryService {
     private dbService;
     private decorator;
@@ -26,9 +27,10 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     private frameworkService;
     private networkInfoService;
     private errorLoggerService;
+    private sharedPreferences;
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP;
     private telemetryConfig;
-    constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, sdkConfig: SdkConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService, frameworkService: FrameworkService, networkInfoService: NetworkInfoService, errorLoggerService: ErrorLoggerService);
+    constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, sdkConfig: SdkConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService, frameworkService: FrameworkService, networkInfoService: NetworkInfoService, errorLoggerService: ErrorLoggerService, sharedPreferences: SharedPreferences);
     saveTelemetry(request: string): Observable<boolean>;
     audit({ env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData }: TelemetryAuditRequest): Observable<boolean>;
     end({ type, mode, duration, pageId, summaryList, env, objId, objType, objVer, rollup, correlationData }: TelemetryEndRequest): Observable<boolean>;

@@ -77,6 +77,20 @@ export class FileServiceImpl implements FileService {
         return this.readFile<string>(path, filePath, 'Text');
     }
 
+    readFileFromAssets(fileName: string): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            try {
+                buildconfigreader.readFromAssets(fileName, (entry: string) => {
+                    resolve(entry);
+                }, err => {
+                    reject(err);
+                });
+            } catch (xc) {
+                reject(xc);
+            }
+        });
+    }
+
     writeFile(
         path: string,
         fileName: string,

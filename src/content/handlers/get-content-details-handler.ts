@@ -63,6 +63,9 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
 
                 return Observable.of(ContentMapper.mapContentDBEntryToContent(contentDbEntry))
                     .mergeMap((content: Content) => {
+                        if (typeof(content.contentData.originData) === 'string') {
+                            content.contentData.originData = JSON.parse(content.contentData.originData);
+                        }
                         return this.decorateContent({
                             content,
                             attachFeedback: request.attachFeedback,

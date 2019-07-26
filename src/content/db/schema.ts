@@ -121,22 +121,20 @@ export namespace ContentAccessEntry {
         [COLUMN_NAME_LEARNER_STATE]: string;
     }
 
-
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
             _ID + ' INTEGER PRIMARY KEY,' +
             COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CONTENT_IDENTIFIER +  DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_EPOCH_TIMESTAMP +  DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_STATUS +  DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CONTENT_TYPE +  DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_LEARNER_STATE +  DbConstants.SPACE + DbConstants.BLOB_TYPE +
+            COLUMN_NAME_CONTENT_IDENTIFIER + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_STATUS + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CONTENT_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_LEARNER_STATE + DbConstants.SPACE + DbConstants.BLOB_TYPE +
             ' )';
     };
 
     export const deleteTable: (() => string) = () => {
         return 'DROP TABLE IF EXISTS ' + TABLE_NAME;
-
     };
 }
 
@@ -158,7 +156,6 @@ export namespace ContentFeedbackEntry {
         [COLUMN_NAME_CREATED_AT]: number;
     }
 
-
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
             _ID + ' INTEGER PRIMARY KEY,' +
@@ -172,7 +169,6 @@ export namespace ContentFeedbackEntry {
 
     export const deleteTable: (() => string) = () => {
         return 'DROP TABLE IF EXISTS ' + TABLE_NAME;
-
     };
 }
 
@@ -187,6 +183,7 @@ export namespace ContentMarkerEntry {
     export const COLUMN_NAME_DATA = 'data';
     export const COLUMN_NAME_EXTRA_INFO = 'extra_info';
     export const COLUMN_NAME_MARKER = 'marker';
+    export const COLUMN_NAME_MIME_TYPE = 'mime_type';
 
     export interface SchemaMap {
         [COLUMN_NAME_UID]: string;
@@ -195,6 +192,7 @@ export namespace ContentMarkerEntry {
         [COLUMN_NAME_DATA]: string;
         [COLUMN_NAME_EXTRA_INFO]: string;
         [COLUMN_NAME_MARKER]: number;
+        [COLUMN_NAME_MIME_TYPE]: string;
     }
 
     export const getCreateEntry: (() => string) = () => {
@@ -205,12 +203,16 @@ export namespace ContentMarkerEntry {
             COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_EXTRA_INFO + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_MIME_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
             COLUMN_NAME_MARKER + DbConstants.SPACE + DbConstants.INT_TYPE +
             ' )';
     };
 
     export const deleteTable: (() => string) = () => {
         return 'DROP TABLE IF EXISTS ' + TABLE_NAME;
+    };
 
+    export const getAlterEntryForMimeType: (() => string) = () => {
+        return `ALTER TABLE ${TABLE_NAME} ADD COLUMN ${COLUMN_NAME_MIME_TYPE} TEXT DEFAULT ''`;
     };
 }

@@ -73,6 +73,11 @@ export interface ContentData {
     streamingUrl: string;
     totalScore: any;
     altMsg?: ComingSoonMsg[];
+    organisation?: string;
+    author?: string;
+    collaborators?: string;
+    originData?: OriginData;
+    origin?: string;
 }
 export interface ComingSoonMsg {
     key: string;
@@ -86,6 +91,12 @@ export interface ContentFeedback {
     createdAt?: number;
     stageId?: string;
     contentVersion: string;
+}
+export interface OriginData {
+    name?: string;
+    author?: string;
+    license?: string;
+    organisation?: string;
 }
 export interface ContentFeedbackFilterCriteria {
     uid: string;

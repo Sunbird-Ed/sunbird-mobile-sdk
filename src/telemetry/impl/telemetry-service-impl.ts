@@ -48,6 +48,7 @@ import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {ErrorLoggerService} from '../../util/error-stack';
+import {SharedPreferences} from '../../util/shared-preferences';
 
 @injectable()
 export class TelemetryServiceImpl implements TelemetryService {
@@ -67,7 +68,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
         @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
         @inject(InjectionTokens.NETWORKINFO_SERVICE) private networkInfoService: NetworkInfoService,
-        @inject(InjectionTokens.ERROR_LOGGER_SERVICE) private errorLoggerService: ErrorLoggerService
+        @inject(InjectionTokens.ERROR_LOGGER_SERVICE) private errorLoggerService: ErrorLoggerService,
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences
     ) {
         this.telemetryConfig = this.sdkConfig.telemetryConfig;
     }
@@ -101,7 +103,7 @@ export class TelemetryServiceImpl implements TelemetryService {
 
     error(request: TelemetryErrorRequest): Observable<boolean> {
         const error = new SunbirdTelemetry.Error(request.errorCode, request.errorType, request.stacktrace, request.pageId);
-        // this.errorLoggerService.logError(request).toPromise(); //RELEASE for 2.2.0 - Uncomment for error logging
+        this.errorLoggerService.logError(request).toPromise().catch((e) => console.error(e));
         return this.decorateAndPersist(error);
     }
 
@@ -185,7 +187,8 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.dbService,
             this.sdkConfig,
             this.deviceInfo,
-            this.frameworkService
+            this.frameworkService,
+            this.sharedPreferences
         );
         return Observable.fromPromise(
             telemetrySyncHandler.processEventsBatch().expand((processedEventsCount: number) =>
@@ -240,6 +243,7 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.sdkConfig,
             this.deviceInfo,
             this.frameworkService,
+            this.sharedPreferences,
             this.keyValueStore,
             this.apiService
         ).resetDeviceRegisterTTL();
@@ -261,6 +265,7 @@ export class TelemetryServiceImpl implements TelemetryService {
                     this.sdkConfig,
                     this.deviceInfo,
                     this.frameworkService,
+                    this.sharedPreferences,
                     this.keyValueStore,
                     this.apiService
                 ).handle(shouldIgnoreSyncThreshold);

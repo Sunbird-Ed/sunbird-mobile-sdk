@@ -1,8 +1,7 @@
-import {OAuthSession, SessionProvider} from '..';
+import {OAuthSession, SessionProvider, SignInError} from '..';
 import {ApiConfig, JWTUtil} from '../../api';
 import {OAuthRedirectUrlQueryParams, StepOneCallbackType} from './o-auth-delegate';
 import * as qs from 'qs';
-import {SignInError} from '../errors/sign-in-error';
 
 export class GoogleSessionProvider implements SessionProvider {
     constructor(private paramsObj: StepOneCallbackType,
@@ -11,7 +10,7 @@ export class GoogleSessionProvider implements SessionProvider {
     }
 
     private static async parseResolvedParams(params): Promise<OAuthSession> {
-        const paramsObject: StepOneCallbackType = qs.parse(params.split('?')[1] || {});
+        const paramsObject: StepOneCallbackType = qs.parse(params);
 
         if (paramsObject.access_token && paramsObject.refresh_token) {
             const jwtPayload: { sub: string } = JWTUtil.getJWTPayload(paramsObject.access_token);

@@ -24,10 +24,11 @@ import { StorageService } from './storage';
 import { NotificationService } from './notification/def/notification-service';
 import { ErrorLoggerService } from './util/error-stack/def/error-logger-service';
 import { NetworkInfoService } from './util/network';
+import { SearchHistoryService } from './util/search-history';
 export declare class SunbirdSdk {
+    private _container;
     private static _instance?;
     static readonly instance: SunbirdSdk;
-    private _container;
     readonly sdkConfig: SdkConfig;
     readonly appInfo: AppInfo;
     readonly pageAssembleService: PageAssembleService;
@@ -55,6 +56,7 @@ export declare class SunbirdSdk {
     readonly notificationService: NotificationService;
     readonly errorLoggerService: ErrorLoggerService;
     readonly networkInfoService: NetworkInfoService;
+    readonly searchHistoryService: SearchHistoryService;
     init(sdkConfig: SdkConfig): Promise<void>;
     updateTelemetryConfig(update: Partial<TelemetryConfig>): void;
     updateContentServiceConfig(update: Partial<ContentServiceConfig>): void;
