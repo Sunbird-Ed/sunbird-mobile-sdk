@@ -6,6 +6,9 @@ import {Organization} from './Organization';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 
 export interface FrameworkService extends SdkServiceOnInitDelegate {
+    /** @internal */
+    activeChannelId?: string;
+
     getDefaultChannelDetails(): Observable<Channel>;
 
     getChannelDetails(request: ChannelDetailsRequest): Observable<Channel>;

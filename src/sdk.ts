@@ -46,7 +46,7 @@ import {EventsBusServiceImpl} from './events-bus/impl/events-bus-service-impl';
 import {SummarizerService, SummarizerServiceImpl} from './summarizer';
 import {Observable} from 'rxjs';
 import {DownloadService} from './util/download';
-import {DownloadServiceImpl} from './util/download/download-service-impl';
+import {DownloadServiceImpl} from './util/download/impl/download-service-impl';
 import {AppInfo} from './util/app/def/app-info';
 import {AppInfoImpl} from './util/app/impl/app-info-impl';
 import {PlayerService, PlayerServiceImpl} from './player';
@@ -54,6 +54,8 @@ import {TelemetryConfig} from './telemetry/config/telemetry-config';
 import {OfflineSearchTextbookMigration} from './db/migrations/offline-search-textbook-migration';
 import {ApiAuthenticator} from './util/authenticators/impl/api-authenticator';
 import {SessionAuthenticator} from './util/authenticators/impl/session-authenticator';
+import {NetworkInfoService} from './util/network';
+import {NetworkInfoServiceImpl} from './util/network/impl/network-info-service-impl';
 
 export class SunbirdSdk {
 
@@ -92,6 +94,7 @@ export class SunbirdSdk {
     private _downloadService: DownloadService;
     private _appInfo: AppInfo;
     private _playerService: PlayerService;
+    private _networkInfoService: NetworkInfoService;
 
     get sdkConfig(): SdkConfig {
         return {
@@ -184,6 +187,8 @@ export class SunbirdSdk {
     }
 
     public async init(sdkConfig: SdkConfig) {
+        this._networkInfoService = new NetworkInfoServiceImpl();
+
         this._sdkConfig = Object.freeze(sdkConfig);
 
         this._deviceInfo = new DeviceInfoImpl(this.sdkConfig);
@@ -256,8 +261,7 @@ export class SunbirdSdk {
             this._systemSettingsService
         );
 
-        this._profileService = new ProfileServiceImpl(
-            sdkConfig.profileServiceConfig,
+        this._profileService = new ProfileServiceImpl(this.sdkConfig,
             this._dbService,
             this._apiService,
             new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
@@ -288,7 +292,8 @@ export class SunbirdSdk {
             this._deviceInfo,
             this._eventsBusService,
             this._fileService,
-            this._frameworkService
+            this._frameworkService,
+            this._networkInfoService
         );
 
         this._profileService.registerTelemetryService(this._telemetryService);
@@ -399,7 +404,8 @@ export class SunbirdSdk {
         return Observable.combineLatest(
             this._frameworkService.onInit(),
             this._eventsBusService.onInit(),
-            this._downloadService.onInit()
+            this._downloadService.onInit(),
+            this._contentService.onInit()
         );
     }
 }

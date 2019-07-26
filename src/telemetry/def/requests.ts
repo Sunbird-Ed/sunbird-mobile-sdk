@@ -9,6 +9,7 @@ export interface TelemetryAuditRequest {
     objId?: string;
     objType?: string;
     objVer?: string;
+    correlationData?: Array<CorrelationData>;
 }
 
 export class TelemetryInteractRequest {
@@ -105,6 +106,7 @@ export class TelemetryShareRequest {
     type: string;
     items: Array<Item> = [];
     env: string;
+    correlationData?: Array<CorrelationData>;
 
 }
 

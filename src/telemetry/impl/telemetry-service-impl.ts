@@ -36,7 +36,6 @@ import {CreateTelemetryExportFile} from '../handler/export/create-telemetry-expo
 import {CopyDatabase} from '../handler/export/copy-database';
 import {CreateMetaData} from '../handler/export/create-meta-data';
 import {CleanupExportedFile} from '../handler/export/cleanup-exported-file';
-import {CleanCurrentDatabase} from '../handler/export/clean-current-database';
 import {GenerateShareTelemetry} from '../handler/export/generate-share-telemetry';
 import {ValidateTelemetryMetadata} from '../handler/import/validate-telemetry-metadata';
 import {TelemetryEventType} from '../def/telemetry-event';
@@ -44,6 +43,7 @@ import {TransportProcessedTelemetry} from '../handler/import/transport-processed
 import {UpdateImportedTelemetryMetadata} from '../handler/import/update-imported-telemetry-metadata';
 import {GenerateImportTelemetryShare} from '../handler/import/generate-import-telemetry-share';
 import {FrameworkService} from '../../framework';
+import {NetworkInfoService, NetworkStatus} from '../../util/network';
 
 export class TelemetryServiceImpl implements TelemetryService {
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
@@ -58,7 +58,8 @@ export class TelemetryServiceImpl implements TelemetryService {
                 private deviceInfo: DeviceInfo,
                 private eventsBusService: EventsBusService,
                 private fileService: FileService,
-                private frameworkService: FrameworkService) {
+                private frameworkService: FrameworkService,
+                private networkInfoService: NetworkInfoService) {
     }
 
     saveTelemetry(request: string): Observable<boolean> {
@@ -73,8 +74,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         });
     }
 
-    audit({env, actor, currentState, updatedProperties, objId, objType, objVer}: TelemetryAuditRequest): Observable<boolean> {
-        const audit = new SunbirdTelemetry.Audit(env, actor, currentState, updatedProperties, objId, objType, objVer);
+    audit({env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData}: TelemetryAuditRequest): Observable<boolean> {
+        const audit = new SunbirdTelemetry.Audit(env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData);
         return this.decorateAndPersist(audit);
     }
 
@@ -115,8 +116,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         return this.decorateAndPersist(log);
     }
 
-    share({dir, type, items}: TelemetryShareRequest): Observable<boolean> {
-        const share = new SunbirdTelemetry.Share(dir, type, []);
+    share({dir, type, items, correlationData}: TelemetryShareRequest): Observable<boolean> {
+        const share = new SunbirdTelemetry.Share(dir, type, [], correlationData);
         items.forEach((item) => {
             share.addItem(item.type, item.origin, item.identifier, item.pkgVersion, item.transferCount, item.size);
         });
@@ -187,8 +188,6 @@ export class TelemetryServiceImpl implements TelemetryService {
             }).then((exportResponse: Response) => {
                 return new CleanupExportedFile(this.dbService, this.fileService).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
-                return new CleanCurrentDatabase(this.dbService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
                 return new GenerateShareTelemetry(this.dbService, this).execute(exportResponse.body);
             }).then((exportResponse: Response<ExportTelemetryContext>) => {
                 const res: TelemetryExportResponse = {exportedFilePath: exportResponse.body.destinationDBFilePath!};
@@ -225,14 +224,25 @@ export class TelemetryServiceImpl implements TelemetryService {
 
 
     sync(ignoreSyncThreshold: boolean = false): Observable<TelemetrySyncStat> {
-        return new TelemetrySyncHandler(
-            this.dbService,
-            this.telemetryConfig,
-            this.deviceInfo,
-            this.frameworkService,
-            this.keyValueStore,
-            this.apiService
-        ).handle(ignoreSyncThreshold)
+        return this.networkInfoService.networkStatus$
+            .take(1)
+            .mergeMap((networkStatus) => {
+                if (networkStatus === NetworkStatus.ONLINE) {
+                    return Observable.of(true);
+                }
+
+                return Observable.of(ignoreSyncThreshold);
+            })
+            .mergeMap((shouldIgnoreSyncThreshold) => {
+                return new TelemetrySyncHandler(
+                    this.dbService,
+                    this.telemetryConfig,
+                    this.deviceInfo,
+                    this.frameworkService,
+                    this.keyValueStore,
+                    this.apiService
+                ).handle(shouldIgnoreSyncThreshold);
+            })
             .mergeMap((telemetrySyncStat) =>
                 this.keyValueStore.setValue(TelemetryServiceImpl.KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP, telemetrySyncStat.syncTime + '')
                     .mapTo(telemetrySyncStat)
@@ -254,7 +264,8 @@ export class TelemetryServiceImpl implements TelemetryService {
                     const insertQuery: InsertQuery = {
                         table: TelemetryEntry.TABLE_NAME,
                         modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!.uid,
-                            profileSession!.sid, groupSession && groupSession.gid, Number(offset)), 1)
+                            profileSession!.sid, groupSession && groupSession.gid, Number(offset),
+                            this.frameworkService.activeChannelId), 1)
                     };
                     return this.dbService.insert(insertQuery)
                         .do(() => this.eventsBusService.emit({

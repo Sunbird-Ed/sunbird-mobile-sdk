@@ -12,7 +12,6 @@ import {
     ProfileExportRequest,
     ProfileExportResponse,
     ProfileService,
-    ProfileServiceConfig,
     ProfileSession,
     ProfileSource,
     ProfileType,
@@ -72,12 +71,13 @@ import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-p
 import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} from '../../telemetry';
 import {ObjectUtil} from '../../util/object-util';
 import {TransportProfiles} from '../handler/import/transport-profiles';
+import {SdkConfig} from '../../sdk-config';
 
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
     private telemetryService: TelemetryService;
 
-    constructor(private profileServiceConfig: ProfileServiceConfig,
+    constructor(private sdkConfig: SdkConfig,
                 private dbService: DbService,
                 private apiService: ApiService,
                 private cachedItemStore: CachedItemStore<ServerProfile>,
@@ -169,7 +169,11 @@ export class ProfileServiceImpl implements ProfileService {
                         currentState: AuditState.AUDIT_CREATED,
                         updatedProperties: ObjectUtil.getTruthyProps(profile),
                         objId: profile.uid,
-                        objType: ObjectType.USER
+                        objType: ObjectType.USER,
+                        correlationData: [{
+                            id: profile.profileType,
+                            type: 'UserRole'
+                        }]
                     };
 
                     return this.telemetryService.audit(auditRequest);
@@ -178,12 +182,18 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     deleteProfile(uid: string): Observable<undefined> {
-        return this.dbService.delete({
+        return this.dbService.read({
             table: ProfileEntry.TABLE_NAME,
             selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
-            selectionArgs: [uid]
-        }).do(async () => {
-            await this.getActiveProfileSession()
+            selectionArgs: [uid],
+        }).map((rows) => {
+            if (!rows || !rows[0]) {
+                throw new NoProfileFoundError(`No Profile found with ID ${uid}`);
+            }
+
+            return ProfileDbEntryMapper.mapProfileDBEntryToProfile(rows[0]);
+        }).do(async (profile: Profile) => {
+            return await this.getActiveProfileSession()
                 .mergeMap((session: ProfileSession) => {
                     const actor = new Actor();
                     actor.id = session.uid;
@@ -194,11 +204,21 @@ export class ProfileServiceImpl implements ProfileService {
                         actor,
                         currentState: AuditState.AUDIT_DELETED,
                         objId: uid,
-                        objType: ObjectType.USER
+                        objType: ObjectType.USER,
+                        correlationData: [{
+                            id: profile.profileType,
+                            type: 'UserRole'
+                        }]
                     };
 
                     return this.telemetryService.audit(auditRequest);
                 }).toPromise();
+        }).mergeMap(() => {
+            return this.dbService.delete({
+                table: ProfileEntry.TABLE_NAME,
+                selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
+                selectionArgs: [uid]
+            });
         });
     }
 
@@ -226,7 +246,11 @@ export class ProfileServiceImpl implements ProfileService {
                         currentState: AuditState.AUDIT_UPDATED,
                         updatedProperties: ObjectUtil.getPropDiff(profile, prevProfile),
                         objId: profile.uid,
-                        objType: ObjectType.USER
+                        objType: ObjectType.USER,
+                        correlationData: [{
+                            id: profile.profileType,
+                            type: 'UserRole'
+                        }]
                     };
 
                     return this.telemetryService.audit(auditRequest);
@@ -246,16 +270,16 @@ export class ProfileServiceImpl implements ProfileService {
 
     updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<Profile> {
         return new UpdateServerProfileInfoHandler(this.apiService,
-            this.profileServiceConfig).handle(updateUserInfoRequest);
+            this.sdkConfig.profileServiceConfig).handle(updateUserInfoRequest);
     }
 
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]> {
-        return new SearchServerProfileHandler(this.apiService, this.profileServiceConfig).handle(searchCriteria);
+        return new SearchServerProfileHandler(this.apiService, this.sdkConfig.profileServiceConfig).handle(searchCriteria);
     }
 
     getTenantInfo(): Observable<TenantInfo> {
         return new TenantInfoHandler(this.apiService,
-            this.profileServiceConfig).handle();
+            this.sdkConfig.profileServiceConfig).handle();
     }
 
     getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]> {
@@ -296,7 +320,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {
-        return new GetServerProfileDetailsHandler(this.apiService, this.profileServiceConfig, this.cachedItemStore, this.keyValueStore)
+        return new GetServerProfileDetailsHandler(this.apiService, this.sdkConfig.profileServiceConfig, this.cachedItemStore, this.keyValueStore)
             .handle(serverProfileDetailsRequest);
     }
 
@@ -365,7 +389,7 @@ export class ProfileServiceImpl implements ProfileService {
                                 .setActiveChannelId(attachedServerProfileDetailsProfile.serverProfile!.rootOrg.hashTagId);
                         }).catch(() => Observable.of(undefined));
                     }),
-                    Observable.defer(() => Observable.of(undefined))
+                    this.frameworkService.setActiveChannelId(this.sdkConfig.apiConfig.api_authentication.channelId).mapTo(undefined)
                 ).mapTo(profile)
             )
             .mergeMap((profile: Profile) => {
@@ -391,23 +415,23 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     acceptTermsAndConditions(acceptTermsConditions: AcceptTermsConditionRequest): Observable<boolean> {
-        return new AcceptTermConditionHandler(this.apiService, this.profileServiceConfig).handle(acceptTermsConditions);
+        return new AcceptTermConditionHandler(this.apiService, this.sdkConfig.profileServiceConfig).handle(acceptTermsConditions);
     }
 
     isProfileAlreadyInUse(isProfileAlreadyInUseRequest: IsProfileAlreadyInUseRequest): Observable<ProfileExistsResponse> {
-        return new IsProfileAlreadyInUseHandler(this.apiService, this.profileServiceConfig).handle(isProfileAlreadyInUseRequest);
+        return new IsProfileAlreadyInUseHandler(this.apiService, this.sdkConfig.profileServiceConfig).handle(isProfileAlreadyInUseRequest);
     }
 
     generateOTP(generateOtpRequest: GenerateOtpRequest): Observable<boolean> {
-        return new GenerateOtpHandler(this.apiService, this.profileServiceConfig).handle(generateOtpRequest);
+        return new GenerateOtpHandler(this.apiService, this.sdkConfig.profileServiceConfig).handle(generateOtpRequest);
     }
 
     verifyOTP(verifyOTPRequest: VerifyOtpRequest): Observable<boolean> {
-        return new VerifyOtpHandler(this.apiService, this.profileServiceConfig).handle(verifyOTPRequest);
+        return new VerifyOtpHandler(this.apiService, this.sdkConfig.profileServiceConfig).handle(verifyOTPRequest);
     }
 
     searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult[]> {
-        return new SearchLocationHandler(this.apiService, this.profileServiceConfig).handle(locationSearchCriteria);
+        return new SearchLocationHandler(this.apiService, this.sdkConfig.profileServiceConfig).handle(locationSearchCriteria);
     }
 
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]> {

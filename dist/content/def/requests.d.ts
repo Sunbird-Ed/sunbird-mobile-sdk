@@ -1,4 +1,4 @@
-import { SearchType } from '..';
+import { ContentData, SearchType } from '..';
 import { Content, HierarchyInfo } from './content';
 import { CorrelationData } from '../../telemetry';
 import { ContentImportResponse } from './response';
@@ -64,6 +64,7 @@ export interface EcarImportRequest {
 export interface ContentImportRequest {
     contentImportArray: ContentImport[];
     contentStatusArray: string[];
+    fields?: (keyof ContentData)[];
 }
 export interface ContentImport {
     isChildContent: boolean;
@@ -152,6 +153,7 @@ export interface ImportContentContext {
     contentImportResponseList: ContentImportResponse[];
     tmpLocation?: string;
     rootIdentifier?: string;
+    correlationData?: CorrelationData[];
 }
 export interface ExportContentContext {
     ecarFilePath?: string;
@@ -165,6 +167,7 @@ export interface ExportContentContext {
     manifest?: any;
 }
 export interface ContentDownloadRequest extends DownloadRequest {
+    contentMeta: Partial<Content>;
     isChildContent?: boolean;
     correlationData?: CorrelationData[];
 }
@@ -173,4 +176,11 @@ export interface RelevantContentRequest extends DownloadRequest {
     contentIdentifier?: string;
     next?: boolean;
     prev?: boolean;
+}
+export interface ContentSpaceUsageSummaryRequest {
+    paths: string[];
+}
+export interface ContentSpaceUsageSummaryResponse {
+    path: string;
+    sizeOnDevice: number;
 }

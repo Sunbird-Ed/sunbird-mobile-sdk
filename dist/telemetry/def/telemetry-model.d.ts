@@ -26,6 +26,7 @@ export declare class Context {
     pdata: ProducerData;
     sid: string;
     did: string;
+    rollup: Rollup;
 }
 export declare class DeviceSpecification {
     os: string;
@@ -157,7 +158,7 @@ export declare namespace SunbirdTelemetry {
         private static readonly EID;
         constructor(dir: string | undefined, type: string | undefined, items: Array<{
             [index: string]: any;
-        }> | undefined);
+        }> | undefined, correlationData?: Array<CorrelationData>);
         addItem(type: ShareItemType, origin: string, identifier: string, pkgVersion: number, transferCount: number, size: string): void;
         capitalize(input: any): string;
     }
@@ -167,6 +168,6 @@ export declare namespace SunbirdTelemetry {
     }
     class Audit extends Telemetry {
         private static readonly EID;
-        constructor(env: string, actor: Actor, currentState: AuditState, updatedProperties: string[] | undefined, objId?: string, objType?: string, objVer?: string);
+        constructor(env: string, actor: Actor, currentState: AuditState, updatedProperties: string[] | undefined, objId?: string, objType?: string, objVer?: string, correlationData?: Array<CorrelationData>);
     }
 }

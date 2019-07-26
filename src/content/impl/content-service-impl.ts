@@ -2,6 +2,7 @@ import {
     ChildContentRequest,
     Content,
     ContentData,
+    ContentDelete,
     ContentDeleteRequest,
     ContentDeleteResponse,
     ContentDeleteStatus,
@@ -22,6 +23,8 @@ import {
     ContentService,
     ContentServiceConfig,
     ContentsGroupedByPageSection,
+    ContentSpaceUsageSummaryRequest,
+    ContentSpaceUsageSummaryResponse,
     EcarImportRequest,
     ExportContentContext,
     FileExtension,
@@ -81,12 +84,20 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {GenerateInteractTelemetry} from '../handlers/import/generate-interact-telemetry';
 import {CachedItemStore} from '../../key-value-store';
 import * as SHA1 from 'crypto-js/sha1';
-import {FrameworkKeys} from '../../preference-keys';
+import {ContentKeys, FrameworkKeys} from '../../preference-keys';
 import {CreateHierarchy} from '../handlers/import/create-hierarchy';
+import {ContentStorageHandler} from '../handlers/content-storage-handler';
+import {SharedPreferencesSetCollection} from '../../util/shared-preferences/def/shared-preferences-set-collection';
+import {SharedPreferencesSetCollectionImpl} from '../../util/shared-preferences/impl/shared-preferences-set-collection-impl';
+import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 
-export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
+export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
+    private static readonly KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL = ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL;
+    private static readonly KEY_CONTENT_DELETE_REQUEST_LIST = ContentKeys.KEY_CONTENT_DELETE_REQUEST_LIST;
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
     private readonly getContentDetailsHandler: GetContentDetailsHandler;
+
+    private contentDeleteRequestSet: SharedPreferencesSetCollection<ContentDelete>;
 
     constructor(private contentServiceConfig: ContentServiceConfig,
                 private apiService: ApiService,
@@ -105,6 +116,12 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
             this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
+
+        this.contentDeleteRequestSet = new SharedPreferencesSetCollectionImpl(
+            this.sharedPreferences,
+            ContentServiceImpl.KEY_CONTENT_DELETE_REQUEST_LIST,
+            (item) => item.contentId
+        );
     }
 
     private static getIdForDb(request: ContentSearchCriteria): string {
@@ -115,6 +132,13 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             grade: request.grade || '',
         };
         return SHA1(JSON.stringify(key)).toString();
+    }
+
+    onInit(): Observable<undefined> {
+        return Observable.combineLatest(
+            this.handleContentDeleteRequestSetChanges(),
+            this.handleUpdateSizeOnDeviceFail(),
+        ).mapTo(undefined);
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
@@ -148,7 +172,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         entries.forEach((entry: ContentMarkerEntry.SchemaMap) => {
                             const content: Content = {
                                 identifier: entry[ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER],
-                                contentData: JSON.parse(entry[ContentMarkerEntry.COLUMN_NAME_DATA]),
+                                contentData: entry[ContentMarkerEntry.COLUMN_NAME_DATA] &&
+                                    JSON.parse(entry[ContentMarkerEntry.COLUMN_NAME_DATA]),
                                 isUpdateAvailable: false,
                                 mimeType: '',
                                 basePath: '',
@@ -197,9 +222,21 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     });
                 }
             }
-            new UpdateSizeOnDevice(this.dbService).execute();
+            new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
             return contentDeleteResponse;
         });
+    }
+
+    enqueueContentDelete(contentDeleteRequest: ContentDeleteRequest): Observable<void> {
+        return this.contentDeleteRequestSet.addAll(contentDeleteRequest.contentDeleteList);
+    }
+
+    clearContentDeleteQueue(): Observable<void> {
+        return this.contentDeleteRequestSet.clear();
+    }
+
+    getContentDeleteQueue(): Observable<ContentDelete[]> {
+        return this.contentDeleteRequestSet.asListChanges();
     }
 
     exportContent(contentExportRequest: ContentExportRequest): Observable<ContentExportResponse> {
@@ -225,7 +262,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }).then((exportResponse: Response) => {
                     return new CreateContentExportManifest(this.dbService, exportHandler).execute(exportResponse.body);
                 }).then((exportResponse: Response) => {
-                    return new WriteManifest(this.fileService).execute(exportResponse.body);
+                    return new WriteManifest(this.fileService, this.deviceInfo).execute(exportResponse.body);
                 }).then((exportResponse: Response) => {
                     return new CompressContent(this.zipService, this.fileService).execute(exportResponse.body);
                 }).then((exportResponse: Response) => {
@@ -273,8 +310,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]> {
         const searchContentHandler = new SearchContentHandler(this.appConfig, this.contentServiceConfig, this.telemetryService);
         const contentIds: string[] = ArrayUtil.deDupe(contentImportRequest.contentImportArray.map((i) => i.contentId));
-        const filter: SearchRequest = searchContentHandler.getContentSearchFilter(
-            contentIds, contentImportRequest.contentStatusArray);
+        const filter: SearchRequest =
+            searchContentHandler.getContentSearchFilter(contentIds, contentImportRequest.contentStatusArray, contentImportRequest.fields);
         return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig).handle(filter)
             .map((searchResponse: SearchResponse) => {
                 return searchResponse.result.content;
@@ -299,7 +336,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                     destinationFolder: contentImport.destinationFolder,
                                     isChildContent: contentImport.isChildContent,
                                     filename: contentId.concat('.', FileExtension.CONTENT),
-                                    correlationData: contentImport.correlationData
+                                    correlationData: contentImport.correlationData,
+                                    contentMeta: contentData
                                 };
                                 downloadRequestList.push(downloadRequest);
                             }
@@ -323,7 +361,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 destinationFolder: ecarImportRequest.destinationFolder,
                 skippedItemsIdentifier: [],
                 items: [],
-                contentImportResponseList: []
+                contentImportResponseList: [],
+                correlationData: ecarImportRequest.correlationData || []
             };
             return new GenerateInteractTelemetry(this.telemetryService).execute(importContentContext, 'ContentImport-Initiated')
                 .then(() => {
@@ -345,7 +384,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }).then((importResponse: Response) => {
                     return new EcarCleanup(this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
-                    new UpdateSizeOnDevice(this.dbService).execute();
+                    new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
                     return importResponse;
                 }).then((importResponse: Response) => {
                     return new GenerateImportShareTelemetry(this.telemetryService).execute(importResponse.body);
@@ -534,9 +573,18 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             destinationFolder: request.destinationFolder!,
             correlationData: request.correlationData!
         };
-        return this.importEcar(importEcarRequest).mapTo(undefined).catch(() => {
-            return Observable.of(undefined);
-        });
+        return this.importEcar(importEcarRequest)
+            .mergeMap(() =>
+                // TODO
+                // @ts-ignore
+                this.downloadService.cancel({identifier: request.identifier!}, false)
+            )
+            .catch(() =>
+                // TODO
+                // @ts-ignore
+                this.downloadService.cancel({identifier: request.identifier!}, false)
+            )
+            .mapTo(undefined);
     }
 
     private searchContentAndGroupByPageSection(
@@ -587,5 +635,40 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 sections: pageSectionList
             };
         });
+    }
+
+    getContentSpaceUsageSummary(contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest):
+        Observable<ContentSpaceUsageSummaryResponse[]> {
+        const contentSpaceUsageSummaryList: ContentSpaceUsageSummaryResponse[] = [];
+        const storageHandler = new ContentStorageHandler(this.dbService);
+        return Observable.fromPromise(storageHandler.getContentUsageSummary(contentSpaceUsageSummaryRequest.paths));
+    }
+
+    private handleContentDeleteRequestSetChanges(): Observable<undefined> {
+        return this.contentDeleteRequestSet.asListChanges()
+            .mergeMap((requests: ContentDelete[]) => {
+                const currentRequest = requests[0];
+
+                if (!currentRequest) {
+                    return Observable.of(undefined);
+                }
+
+                return this.deleteContent({contentDeleteList: [currentRequest]})
+                    .mergeMap(() => this.contentDeleteRequestSet.remove(currentRequest))
+                    .mapTo(undefined);
+            });
+    }
+
+    private handleUpdateSizeOnDeviceFail(): Observable<undefined> {
+        return this.sharedPreferences.getBoolean(ContentServiceImpl.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL)
+            .mergeMap((hasUpdated) => {
+                if (!hasUpdated) {
+                    return Observable.fromPromise(
+                        new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute()
+                    ).mapTo(undefined);
+                }
+
+                return Observable.of(undefined);
+            });
     }
 }

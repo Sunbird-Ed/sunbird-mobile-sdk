@@ -1,4 +1,4 @@
-import { AcceptTermsConditionRequest, ContentAccess, GenerateOtpRequest, GetAllProfileRequest, IsProfileAlreadyInUseRequest, LocationSearchCriteria, Profile, ProfileExportRequest, ProfileExportResponse, ProfileService, ProfileServiceConfig, ProfileSession, ProfileSource, ServerProfile, ServerProfileDetailsRequest, ServerProfileSearchCriteria, UpdateServerProfileInfoRequest, VerifyOtpRequest } from '..';
+import { AcceptTermsConditionRequest, ContentAccess, GenerateOtpRequest, GetAllProfileRequest, IsProfileAlreadyInUseRequest, LocationSearchCriteria, Profile, ProfileExportRequest, ProfileExportResponse, ProfileService, ProfileSession, ProfileSource, ServerProfile, ServerProfileDetailsRequest, ServerProfileSearchCriteria, UpdateServerProfileInfoRequest, VerifyOtpRequest } from '..';
 import { DbService } from '../../db';
 import { Observable } from 'rxjs';
 import { TenantInfo } from '../def/tenant-info';
@@ -14,8 +14,9 @@ import { ProfileImportResponse } from '../def/profile-import-response';
 import { FileService } from '../../util/file/def/file-service';
 import { DeviceInfo } from '../../util/device';
 import { TelemetryService } from '../../telemetry';
+import { SdkConfig } from '../../sdk-config';
 export declare class ProfileServiceImpl implements ProfileService {
-    private profileServiceConfig;
+    private sdkConfig;
     private dbService;
     private apiService;
     private cachedItemStore;
@@ -26,7 +27,7 @@ export declare class ProfileServiceImpl implements ProfileService {
     private deviceInfo;
     private static readonly KEY_USER_SESSION;
     private telemetryService;
-    constructor(profileServiceConfig: ProfileServiceConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences, frameworkService: FrameworkService, fileService: FileService, deviceInfo: DeviceInfo);
+    constructor(sdkConfig: SdkConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore<ServerProfile>, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences, frameworkService: FrameworkService, fileService: FileService, deviceInfo: DeviceInfo);
     registerTelemetryService(telemetryService: TelemetryService): void;
     preInit(): Observable<undefined>;
     createProfile(profile: Profile, profileSource?: ProfileSource): Observable<Profile>;

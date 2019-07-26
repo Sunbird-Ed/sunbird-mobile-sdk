@@ -8,5 +8,9 @@ export interface DownloadService extends SdkServiceOnInitDelegate {
 
     cancel(cancelRequest: DownloadCancelRequest): Observable<undefined>;
 
+    cancelAll(): Observable<void>;
+
     registerOnDownloadCompleteDelegate(downloadCompleteDelegate: DownloadCompleteDelegate): void;
+
+    getActiveDownloadRequests(): Observable<DownloadRequest[]>;
 }

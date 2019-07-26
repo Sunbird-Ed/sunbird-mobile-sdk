@@ -63,6 +63,7 @@ export enum InteractSubType {
     ONLINE = 'online',
     FULL = 'full',
     CONTENT_VARIANT = 'content-variant-download',
+    DEVICE_TIME_OFFSET_FOUND = 'device-time-offset-found',
     CONTENT_DOWNLOAD_INITIATE = 'ContentDownload-Initiate',
     CONTENT_DOWNLOAD_SUCCESS = 'ContentDownload-Success',
     CONTENT_DOWNLOAD_CANCEL = 'ContentDownload-Cancel',

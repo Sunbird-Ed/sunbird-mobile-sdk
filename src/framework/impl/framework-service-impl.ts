@@ -1,12 +1,5 @@
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
-import {
-    Channel,
-    ChannelDetailsRequest,
-    Framework,
-    FrameworkDetailsRequest,
-    FrameworkService,
-    OrganizationSearchCriteria
-} from '..';
+import {Channel, ChannelDetailsRequest, Framework, FrameworkDetailsRequest, FrameworkService, OrganizationSearchCriteria} from '..';
 import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
 import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
 import {FileService} from '../../util/file/def/file-service';
@@ -23,6 +16,8 @@ export class FrameworkServiceImpl implements FrameworkService {
     private static readonly KEY_ACTIVE_CHANNEL_ID = FrameworkKeys.KEY_ACTIVE_CHANNEL_ID;
     private static readonly SEARCH_ORGANIZATION_ENDPOINT = '/search';
 
+    private _activeChannelId?: string;
+
     constructor(private sdkConfig: SdkConfig,
                 private keyValueStore: KeyValueStore,
                 private fileService: FileService,
@@ -31,6 +26,10 @@ export class FrameworkServiceImpl implements FrameworkService {
                 private cachedFrameworkItemStore: CachedItemStore<Framework>,
                 private sharedPreferences: SharedPreferences,
                 private systemSettingsService: SystemSettingsService) {
+    }
+
+    get activeChannelId(): string | undefined {
+        return this._activeChannelId;
     }
 
     onInit(): Observable<undefined> {
@@ -97,6 +96,7 @@ export class FrameworkServiceImpl implements FrameworkService {
     }
 
     setActiveChannelId(channelId: string): Observable<undefined> {
+        this._activeChannelId = channelId;
         return this.sharedPreferences.putString(FrameworkServiceImpl.KEY_ACTIVE_CHANNEL_ID, channelId);
     }
 }

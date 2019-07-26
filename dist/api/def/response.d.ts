@@ -1,5 +1,6 @@
 export declare enum ResponseCode {
     HTTP_UNAUTHORISED = 401,
+    HTTP_FORBIDDEN = 403,
     HTTP_SUCCESS = 200,
     HTTP_BAD_REQUEST = 400
 }

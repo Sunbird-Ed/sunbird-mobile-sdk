@@ -1,4 +1,4 @@
-import { ChildContentRequest, Content, ContentDeleteRequest, ContentDeleteResponse, ContentDetailRequest, ContentDownloadRequest, ContentExportRequest, ContentExportResponse, ContentFeedbackService, ContentImportRequest, ContentImportResponse, ContentMarkerRequest, ContentRequest, ContentSearchCriteria, ContentSearchResult, ContentService, ContentServiceConfig, ContentsGroupedByPageSection, EcarImportRequest, HierarchyInfo, RelevantContentRequest, RelevantContentResponsePlayer } from '..';
+import { ChildContentRequest, Content, ContentDelete, ContentDeleteRequest, ContentDeleteResponse, ContentDetailRequest, ContentDownloadRequest, ContentExportRequest, ContentExportResponse, ContentFeedbackService, ContentImportRequest, ContentImportResponse, ContentMarkerRequest, ContentRequest, ContentSearchCriteria, ContentSearchResult, ContentService, ContentServiceConfig, ContentsGroupedByPageSection, ContentSpaceUsageSummaryRequest, ContentSpaceUsageSummaryResponse, EcarImportRequest, HierarchyInfo, RelevantContentRequest, RelevantContentResponsePlayer } from '..';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../api';
 import { ProfileService } from '../../profile';
@@ -13,7 +13,8 @@ import { DownloadCompleteDelegate } from '../../util/download/def/download-compl
 import { EventsBusService } from '../../events-bus';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { CachedItemStore } from '../../key-value-store';
-export declare class ContentServiceImpl implements ContentService, DownloadCompleteDelegate {
+import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
+export declare class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
     private contentServiceConfig;
     private apiService;
     private dbService;
@@ -28,14 +29,21 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     private sharedPreferences;
     private eventsBusService;
     private cachedItemStore;
+    private static readonly KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL;
+    private static readonly KEY_CONTENT_DELETE_REQUEST_LIST;
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY;
     private readonly getContentDetailsHandler;
+    private contentDeleteRequestSet;
     constructor(contentServiceConfig: ContentServiceConfig, apiService: ApiService, dbService: DbService, profileService: ProfileService, appConfig: AppConfig, fileService: FileService, zipService: ZipService, deviceInfo: DeviceInfo, telemetryService: TelemetryService, contentFeedbackService: ContentFeedbackService, downloadService: DownloadService, sharedPreferences: SharedPreferences, eventsBusService: EventsBusService, cachedItemStore: CachedItemStore<ContentSearchResult>);
     private static getIdForDb;
+    onInit(): Observable<undefined>;
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
     getContents(request: ContentRequest): Observable<Content[]>;
     cancelImport(contentId: string): Observable<any>;
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
+    enqueueContentDelete(contentDeleteRequest: ContentDeleteRequest): Observable<void>;
+    clearContentDeleteQueue(): Observable<void>;
+    getContentDeleteQueue(): Observable<ContentDelete[]>;
     exportContent(contentExportRequest: ContentExportRequest): Observable<ContentExportResponse>;
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
     getDownloadState(): Promise<any>;
@@ -53,4 +61,7 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection>;
     onDownloadCompletion(request: ContentDownloadRequest): Observable<undefined>;
     private searchContentAndGroupByPageSection;
+    getContentSpaceUsageSummary(contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest): Observable<ContentSpaceUsageSummaryResponse[]>;
+    private handleContentDeleteRequestSetChanges;
+    private handleUpdateSizeOnDeviceFail;
 }

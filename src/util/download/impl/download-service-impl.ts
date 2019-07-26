@@ -1,33 +1,80 @@
-import {DownloadService} from './def/download-service';
+import {DownloadCancelRequest, DownloadEventType, DownloadProgress, DownloadRequest, DownloadService, DownloadStatus} from '..';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {DownloadEventType, DownloadProgress} from './download-event';
-import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
-import {DownloadCancelRequest, DownloadRequest} from './def/requests';
-import {DownloadStatus} from './def/download-status';
-import {EventNamespace, EventsBusService} from '../../events-bus';
-import {SharedPreferences} from '../shared-preferences';
+import {SdkServiceOnInitDelegate} from '../../../sdk-service-on-init-delegate';
+import {EventNamespace, EventsBusService} from '../../../events-bus';
+import {SharedPreferences} from '../../shared-preferences';
 import * as Collections from 'typescript-collections';
 import * as downloadManagerInstance from 'cordova-plugin-android-downloadmanager';
-import {DownloadCompleteDelegate} from './def/download-complete-delegate';
-import {DownloadKeys} from '../../preference-keys';
-import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
-import {InteractSubType, InteractType, ObjectType} from '../../telemetry';
+import {DownloadCompleteDelegate} from '../def/download-complete-delegate';
+import {DownloadKeys} from '../../../preference-keys';
+import {TelemetryLogger} from '../../../telemetry/util/telemetry-logger';
+import {InteractSubType, InteractType, ObjectType} from '../../../telemetry';
+import {SharedPreferencesSetCollection} from '../../shared-preferences/def/shared-preferences-set-collection';
+import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
 
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
     private static readonly KEY_TO_DOWNLOAD_LIST = DownloadKeys.KEY_TO_DOWNLOAD_LIST;
     private static readonly DOWNLOAD_DIR_NAME = 'Download';
 
     private currentDownloadRequest$ = new BehaviorSubject<DownloadRequest | undefined>(undefined);
-
     private downloadCompleteDelegate?: DownloadCompleteDelegate;
+    private sharedPreferencesSetCollection: SharedPreferencesSetCollection<DownloadRequest>;
 
     constructor(private eventsBusService: EventsBusService,
                 private sharedPreferences: SharedPreferences) {
         window['downloadManager'] = downloadManagerInstance;
+
+        this.sharedPreferencesSetCollection = new SharedPreferencesSetCollectionImpl(
+            this.sharedPreferences,
+            DownloadServiceImpl.KEY_TO_DOWNLOAD_LIST,
+            (item) => item.identifier
+        );
+    }
+
+    private static async generateDownloadStartTelemetry(downloadRequest: DownloadRequest): Promise<void> {
+        return TelemetryLogger.log.interact({
+            type: InteractType.OTHER,
+            subType: InteractSubType.CONTENT_DOWNLOAD_INITIATE,
+            env: 'sdk',
+            pageId: 'ContentDetail',
+            id: 'ContentDetail',
+            objId: downloadRequest.identifier,
+            objType: ObjectType.CONTENT,
+            correlationData: downloadRequest['correlationData'] || []
+        }).mapTo(undefined).toPromise();
+    }
+
+    private static async generateDownloadCompleteTelemetry(downloadRequest: DownloadRequest): Promise<void> {
+        return TelemetryLogger.log.interact({
+            type: InteractType.OTHER,
+            subType: InteractSubType.CONTENT_DOWNLOAD_SUCCESS,
+            env: 'sdk',
+            pageId: 'ContentDetail',
+            id: 'ContentDetail',
+            objId: downloadRequest.identifier,
+            objType: ObjectType.CONTENT,
+            correlationData: downloadRequest['correlationData'] || []
+        }).mapTo(undefined).toPromise();
+    }
+
+    private static async generateDownloadCancelTelemetry(downloadRequest: DownloadRequest): Promise<void> {
+        return TelemetryLogger.log.interact({
+            type: InteractType.OTHER,
+            subType: InteractSubType.CONTENT_DOWNLOAD_CANCEL,
+            env: 'sdk',
+            pageId: 'ContentDetail',
+            id: 'ContentDetail',
+            objId: downloadRequest.identifier,
+            objType: ObjectType.CONTENT,
+            correlationData: downloadRequest['correlationData'] || []
+        }).mapTo(undefined).toPromise();
     }
 
     onInit(): Observable<undefined> {
-        return this.listenForDownloadProgressChanges();
+        return this.switchToNextDownloadRequest()
+            .mergeMap(() => {
+                return this.listenForDownloadProgressChanges();
+            });
     }
 
     download(downloadRequests: DownloadRequest[]): Observable<undefined> {
@@ -39,11 +86,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                 }
 
                 return this.addToDownloadList(downloadRequests)
-                    .mergeMap(() => this.switchToNextDownloadRequest());
+                    .do(() => this.switchToNextDownloadRequest().toPromise());
             });
     }
 
-    // TODO: refactor generateTelemetry param to be removed
     cancel(downloadCancelRequest: DownloadCancelRequest, generateTelemetry: boolean = true): Observable<undefined> {
         return this.currentDownloadRequest$
             .take(1)
@@ -60,10 +106,33 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         });
                     })
                         .mergeMap(() => this.removeFromDownloadList(downloadCancelRequest, generateTelemetry))
-                        .mergeMap(() => this.switchToNextDownloadRequest());
+                        .do(() => this.switchToNextDownloadRequest().toPromise());
                 }
 
                 return this.removeFromDownloadList(downloadCancelRequest, generateTelemetry);
+            });
+    }
+
+    cancelAll(): Observable<void> {
+        return this.currentDownloadRequest$
+            .take(1)
+            .mergeMap((currentDownloadRequest?: DownloadRequest) => {
+                if (currentDownloadRequest) {
+                    return Observable.create((observer) => {
+                        downloadManager.remove([currentDownloadRequest.downloadId!], (err, removeCount) => {
+                            if (err) {
+                                observer.error(err);
+                            }
+
+                            observer.next(!!removeCount);
+                            observer.complete();
+                        });
+                    })
+                        .mergeMap(() => this.removeAllFromDownloadList())
+                        .mergeMap(() => this.switchToNextDownloadRequest());
+                }
+
+                return this.removeAllFromDownloadList();
             });
     }
 
@@ -71,8 +140,12 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         this.downloadCompleteDelegate = downloadCompleteDelegate;
     }
 
+    getActiveDownloadRequests(): Observable<DownloadRequest[]> {
+        return this.sharedPreferencesSetCollection.asListChanges();
+    }
+
     private switchToNextDownloadRequest(): Observable<undefined> {
-        return this.getDownloadListAsSet()
+        return this.sharedPreferencesSetCollection.asSet()
             .mergeMap((downloadListAsSet: Collections.Set<DownloadRequest>) => {
                 if (!downloadListAsSet.size()) {
                     return Observable.of(undefined)
@@ -106,7 +179,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         DownloadServiceImpl.DOWNLOAD_DIR_NAME + '/' + anyDownloadRequest.filename;
                     anyDownloadRequest.downloadId = downloadId;
                     this.currentDownloadRequest$.next(anyDownloadRequest);
-                }).do(async () => await this.generateDownloadStartTelemetry(anyDownloadRequest!))
+                }).do(async () => await DownloadServiceImpl.generateDownloadStartTelemetry(anyDownloadRequest!))
                     .mapTo(undefined)
                     .catch(() => {
                         return this.cancel({
@@ -117,56 +190,37 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     }
 
     private addToDownloadList(requests: DownloadRequest[]): Observable<undefined> {
-        return this.getDownloadListAsSet()
-            .map((downloadRequests: Collections.Set<DownloadRequest>) => {
-                requests.reduce((acc, request) => {
-                    acc.add(request);
-                    return acc;
-                }, downloadRequests);
-
-                return downloadRequests;
-            })
-            .mergeMap((downloadRequests: Collections.Set<DownloadRequest>) => {
-                return this.sharedPreferences.putString(
-                    DownloadServiceImpl.KEY_TO_DOWNLOAD_LIST,
-                    JSON.stringify(downloadRequests.toArray())
-                );
-            });
+        return this.sharedPreferencesSetCollection.addAll(requests).mapTo(undefined);
     }
 
     private removeFromDownloadList(request: DownloadCancelRequest, generateTelemetry: boolean): Observable<undefined> {
-        return this.getDownloadListAsSet()
-            .mergeMap((downloadRequests: Collections.Set<DownloadRequest>) => {
-                const toRemoveDownloadRequest = downloadRequests.toArray()
+        return this.sharedPreferencesSetCollection.asList()
+            .mergeMap((downloadRequests: DownloadRequest[]) => {
+                const toRemoveDownloadRequest = downloadRequests
                     .find((downloadRequest) => downloadRequest.identifier === request.identifier);
 
 
-                if (toRemoveDownloadRequest) {
-                    downloadRequests.remove(toRemoveDownloadRequest);
+                if (!toRemoveDownloadRequest) {
+                    return Observable.of(undefined);
                 }
 
-                return this.sharedPreferences.putString(
-                    DownloadServiceImpl.KEY_TO_DOWNLOAD_LIST,
-                    JSON.stringify(downloadRequests.toArray())
-                ).do(async () => generateTelemetry
-                    && toRemoveDownloadRequest && await this.generateDownloadCancelTelemetry(toRemoveDownloadRequest));
+                return this.sharedPreferencesSetCollection.remove(toRemoveDownloadRequest).mapTo(undefined)
+                    .do(async () => generateTelemetry
+                        && await DownloadServiceImpl.generateDownloadCancelTelemetry(toRemoveDownloadRequest));
             });
     }
 
-    private getDownloadListAsSet(): Observable<Collections.Set<DownloadRequest>> {
-        return this.sharedPreferences.getString(DownloadServiceImpl.KEY_TO_DOWNLOAD_LIST)
-            .map((downloadListStringified?) => {
-                if (!downloadListStringified) {
-                    return [];
-                }
+    private removeAllFromDownloadList(): Observable<undefined> {
+        return this.sharedPreferencesSetCollection.asList()
+            .take(1)
+            .mergeMap((downloadRequests: DownloadRequest[]) => {
 
-                return (JSON.parse(downloadListStringified) as DownloadRequest[]);
-            })
-            .map((downloadRequests: DownloadRequest[]) => {
-                return downloadRequests.reduce((acc, downloadRequest) => {
-                    acc.add(downloadRequest);
-                    return acc;
-                }, new Collections.Set<DownloadRequest>((i) => Collections.util.makeString(i)));
+                return this.sharedPreferencesSetCollection.clear()
+                    .mergeMap(() => {
+                        return Observable.from(downloadRequests)
+                            .do(async (downloadRequest) => await DownloadServiceImpl.generateDownloadCancelTelemetry(downloadRequest))
+                            .concatMapTo(Observable.of(undefined));
+                    });
             });
     }
 
@@ -178,12 +232,11 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     return Observable.if(
                         () => !!this.downloadCompleteDelegate,
                         Observable.defer(async () => {
-                            await this.generateDownloadCompleteTelemetry(currentDownloadRequest!);
-                            await this.downloadCompleteDelegate!.onDownloadCompletion(currentDownloadRequest!).toPromise();
+                            await DownloadServiceImpl.generateDownloadCompleteTelemetry(currentDownloadRequest!);
+                            this.downloadCompleteDelegate!.onDownloadCompletion(currentDownloadRequest!).toPromise();
                         }),
                         Observable.defer(() => Observable.of(undefined))
-                    ).mergeMap(() => this.cancel({identifier: currentDownloadRequest!.identifier}, false))
-                        .catch(() => this.cancel({identifier: currentDownloadRequest!.identifier}, false));
+                    ).mapTo(undefined);
                 }
 
                 return Observable.of(undefined);
@@ -213,6 +266,9 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         }
                     } as DownloadProgress);
                     observer.complete();
+
+                    this.cancel({identifier: downloadRequest.identifier}).toPromise();
+
                     return;
                 }
 
@@ -254,41 +310,5 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     })
                     .mapTo(undefined);
             });
-    }
-
-    private async generateDownloadStartTelemetry(downloadRequest: DownloadRequest): Promise<void> {
-        return TelemetryLogger.log.interact({
-            type: InteractType.OTHER,
-            subType: InteractSubType.CONTENT_DOWNLOAD_INITIATE,
-            env: 'sdk',
-            pageId: 'ContentDetail',
-            objId: downloadRequest.identifier,
-            objType: ObjectType.CONTENT,
-            correlationData: downloadRequest['correlationData'] || []
-        }).mapTo(undefined).toPromise();
-    }
-
-    private async generateDownloadCompleteTelemetry(downloadRequest: DownloadRequest): Promise<void> {
-        return TelemetryLogger.log.interact({
-            type: InteractType.OTHER,
-            subType: InteractSubType.CONTENT_DOWNLOAD_SUCCESS,
-            env: 'sdk',
-            pageId: 'ContentDetail',
-            objId: downloadRequest.identifier,
-            objType: ObjectType.CONTENT,
-            correlationData: downloadRequest['correlationData'] || []
-        }).mapTo(undefined).toPromise();
-    }
-
-    private async generateDownloadCancelTelemetry(downloadRequest: DownloadRequest): Promise<void> {
-        return TelemetryLogger.log.interact({
-            type: InteractType.OTHER,
-            subType: InteractSubType.CONTENT_DOWNLOAD_CANCEL,
-            env: 'sdk',
-            pageId: 'ContentDetail',
-            objId: downloadRequest.identifier,
-            objType: ObjectType.CONTENT,
-            correlationData: downloadRequest['correlationData'] || []
-        }).mapTo(undefined).toPromise();
     }
 }

@@ -33,6 +33,7 @@ export class Context {
     pdata: ProducerData;
     sid: string;
     did: string;
+    rollup: Rollup;
 }
 
 export class DeviceSpecification {
@@ -361,7 +362,8 @@ export namespace SunbirdTelemetry {
 
         constructor(dir: string | undefined,
                     type: string | undefined,
-                    items: Array<{ [index: string]: any }> | undefined) {
+                    items: Array<{ [index: string]: any }> | undefined,
+                    correlationData: Array<CorrelationData> = []) {
             super(Share.EID);
 
             this.edata = {
@@ -369,6 +371,7 @@ export namespace SunbirdTelemetry {
                 ...(type ? {type: type} : {}),
                 ...(items ? {items: items} : {})
             };
+            this.context.cdata = correlationData;
         }
 
         addItem(type: ShareItemType, origin: string, identifier: string, pkgVersion: number,
@@ -430,13 +433,15 @@ export namespace SunbirdTelemetry {
                     updatedProperties: string[] | undefined,
                     objId: string = '',
                     objType: string = '',
-                    objVer: string = '') {
+                    objVer: string = '',
+                    correlationData: Array<CorrelationData> = []) {
             super(Audit.EID);
 
             this.edata = {
                 ...{state: currentState},
                 ...(updatedProperties ? {props: updatedProperties} : {}),
             };
+            this.context.cdata = correlationData;
             this.context.env = env;
             this.object = new TelemetryObject(objId, objType, objVer);
             this.object.rollup = {};

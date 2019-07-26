@@ -1,8 +1,9 @@
 import {ContentSortCriteria} from './requests';
+import {ContentData} from './content';
 
 export interface SearchRequest {
     filters: SearchFilter;
-    fields?: string[];
+    fields?: (keyof ContentData)[];
     query?: string;
     offset?: number;
     limit?: number;
