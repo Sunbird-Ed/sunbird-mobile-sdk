@@ -113,7 +113,8 @@ export class SearchContentHandler {
             exists: (criteria.exists && criteria.exists.length > 0) ? criteria.exists : [],
             facets: (criteria.facets && criteria.facets.length > 0) ? criteria.facets : [],
             sort_by: this.getSortByRequest(criteria.sortCriteria!),
-            filters: this.getSearchFilter(criteria)
+            filters: this.getSearchFilter(criteria),
+            fields: criteria.fields
         };
     }
 
@@ -179,7 +180,8 @@ export class SearchContentHandler {
             topic: (criteria.topic && criteria.topic.length > 0) ? criteria.topic : [],
             purpose: (criteria.purpose && criteria.purpose.length > 0) ? criteria.purpose : [],
             channel: (criteria.channel && criteria.channel.length > 0) ? criteria.channel : [],
-            mimeType: (criteria.mimeType && criteria.mimeType.length > 0) ? criteria.mimeType : []
+            mimeType: (criteria.mimeType && criteria.mimeType.length > 0) ? criteria.mimeType : [],
+            subject: (criteria.subject && criteria.subject.length > 0) ? criteria.subject : []
 
             // TODO Revisit on inclusion and exclusion filters
         };
