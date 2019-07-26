@@ -1,8 +1,7 @@
 import { ContentSortCriteria } from './requests';
-import { ContentData } from './content';
 export interface SearchRequest {
     filters: SearchFilter;
-    fields?: (keyof ContentData)[];
+    fields?: string[];
     query?: string;
     offset?: number;
     limit?: number;
@@ -31,4 +30,5 @@ export interface SearchFilter {
     channel?: string[];
     audience?: string[];
     mimeType?: string[];
+    subject?: string[];
 }
