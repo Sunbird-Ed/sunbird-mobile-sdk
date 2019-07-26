@@ -9,7 +9,6 @@ export declare class ValidateEcar {
     private dbService;
     private appConfig;
     private getContentDetailsHandler;
-    private readonly MANIFEST_FILE_NAME;
     constructor(fileService: FileService, dbService: DbService, appConfig: AppConfig, getContentDetailsHandler: GetContentDetailsHandler);
     execute(importContext: ImportContentContext): Promise<Response>;
     /**

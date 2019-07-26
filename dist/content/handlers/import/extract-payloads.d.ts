@@ -15,7 +15,6 @@ export declare class ExtractPayloads {
     private deviceInfo;
     private getContentDetailsHandler;
     private eventsBusService;
-    private readonly MANIFEST_FILE_NAME;
     constructor(fileService: FileService, zipService: ZipService, appConfig: AppConfig, dbService: DbService, deviceInfo: DeviceInfo, getContentDetailsHandler: GetContentDetailsHandler, eventsBusService: EventsBusService);
     execute(importContext: ImportContentContext): Promise<Response>;
     copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string): Promise<void>;
@@ -23,12 +22,7 @@ export declare class ExtractPayloads {
      * add or update the reference count for the content
      *
      */
-    getReferenceCount(existingContent: any, visibility: string, isChildContent: boolean): number;
-    /**
-     * add or update the reference count for the content
-     *
-     */
-    getContentVisibility(existingContentInDb: any, objectType: any, isChildContent: boolean, previuosVisibility: string): string;
+    getContentVisibility(existingContentInDb: any, objectType: any, isChildContent: boolean, previousVisibility: string): string;
     /**
      * Add or update the content_state. contentState should not update the spine_only when importing the spine content
      * after importing content with artifacts.
@@ -36,6 +30,11 @@ export declare class ExtractPayloads {
      */
     getContentState(existingContentInDb: any, contentState: number): number;
     getBasePath(payLoadDestinationPath: any, doesContentExist: boolean, existingContentPath: string): string;
+    /**
+     * add or update the reference count for the content
+     *
+     */
+    private getReferenceCount;
     private postImportProgressEvent;
     private constructContentDBModel;
     private createDirectories;

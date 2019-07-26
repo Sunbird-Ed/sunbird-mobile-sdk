@@ -154,6 +154,9 @@ export interface ImportContentContext {
     tmpLocation?: string;
     rootIdentifier?: string;
     correlationData?: CorrelationData[];
+    existedContentIdentifiers?: {
+        [identifier: string]: boolean;
+    };
 }
 export interface ExportContentContext {
     ecarFilePath?: string;

@@ -19,5 +19,5 @@ export declare class ImportNExportHandler {
     generateManifestForArchive(items: any[]): {
         [key: string]: any;
     };
-    findAllContentsWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]>;
+    private findAllContentsWithIdentifiers;
 }

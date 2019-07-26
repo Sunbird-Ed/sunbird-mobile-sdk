@@ -9,7 +9,6 @@ export declare class StoreDestinationContentInDb {
     private fileService;
     private dbService;
     private deviceInfo;
-    static MANIFEST_FILE_NAME: string;
     constructor(appConfig: AppConfig, fileService: FileService, dbService: DbService, deviceInfo: DeviceInfo);
     execute(context: TransferContentContext): Observable<void>;
     private getNewlyAddedContents;
