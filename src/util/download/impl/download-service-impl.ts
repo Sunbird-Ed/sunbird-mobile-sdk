@@ -11,7 +11,10 @@ import {TelemetryLogger} from '../../../telemetry/util/telemetry-logger';
 import {InteractSubType, InteractType, ObjectType} from '../../../telemetry';
 import {SharedPreferencesSetCollection} from '../../shared-preferences/def/shared-preferences-set-collection';
 import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
+import { injectable, inject } from 'inversify';
+import { InjectionTokens } from '../../../injection-tokens';
 
+@injectable()
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
     private static readonly KEY_TO_DOWNLOAD_LIST = DownloadKeys.KEY_TO_DOWNLOAD_LIST;
     private static readonly DOWNLOAD_DIR_NAME = 'Download';
@@ -20,8 +23,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     private downloadCompleteDelegate?: DownloadCompleteDelegate;
     private sharedPreferencesSetCollection: SharedPreferencesSetCollection<DownloadRequest>;
 
-    constructor(private eventsBusService: EventsBusService,
-                private sharedPreferences: SharedPreferences) {
+    constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
         window['downloadManager'] = downloadManagerInstance;
 
         this.sharedPreferencesSetCollection = new SharedPreferencesSetCollectionImpl(

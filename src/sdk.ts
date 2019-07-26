@@ -1,8 +1,8 @@
 // definitions
 import {ApiService, ApiServiceImpl} from './api';
-import {DbService} from './db';
+import {DbService, Migration} from './db';
 import {AuthService} from './auth';
-import {TelemetryService} from './telemetry';
+import {TelemetryDecorator, TelemetryService} from './telemetry';
 import {SharedPreferences} from './util/shared-preferences';
 // config
 import {SdkConfig} from './sdk-config';
@@ -11,18 +11,18 @@ import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
 import {AuthServiceImpl} from './auth/impl/auth-service-impl';
-import {ContentFeedbackService, ContentSearchResult, ContentService, ContentServiceConfig} from './content';
+import {ContentFeedbackService, ContentService, ContentServiceConfig} from './content';
 import {CourseService, CourseServiceImpl} from './course';
 import {FormService} from './form';
-import {Channel, Framework, FrameworkService, FrameworkServiceImpl, FrameworkUtilService, FrameworkUtilServiceImpl} from './framework';
+import {FrameworkService, FrameworkServiceImpl, FrameworkUtilService, FrameworkUtilServiceImpl} from './framework';
 import {ContentServiceImpl} from './content/impl/content-service-impl';
-import {ProfileService, ProfileServiceImpl, ServerProfile} from './profile';
-import {KeyValueStore} from './key-value-store';
+import {ProfileService, ProfileServiceImpl} from './profile';
+import {CachedItemStore, KeyValueStore} from './key-value-store';
 import {KeyValueStoreImpl} from './key-value-store/impl/key-value-store-impl';
 import {FormServiceImpl} from './form/impl/form-service-impl';
 import {FileService} from './util/file/def/file-service';
 import {CachedItemStoreImpl} from './key-value-store/impl/cached-item-store-impl';
-import {PageAssemble, PageAssembleService, PageServiceConfig} from './page';
+import {PageAssembleService, PageServiceConfig} from './page';
 import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
 import {SharedPreferencesLocalStorage} from './util/shared-preferences/impl/shared-preferences-local-storage';
 import {SharedPreferencesAndroid} from './util/shared-preferences/impl/shared-preferences-android';
@@ -31,11 +31,12 @@ import {DbWebSqlService} from './db/impl/db-web-sql-service';
 import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migration';
 import {GroupProfileMigration} from './db/migrations/group-profile-migration';
 import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
+import {ErrorStackMigration} from './db/migrations/error-stack-migration';
 import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
 import {GroupService} from './group';
 import {GroupServiceImpl} from './group/impl/group-service-impl';
 import {DebugPromptFileService} from './util/file/impl/debug-prompt-file-service';
-import {SystemSettings, SystemSettingsService, SystemSettingsServiceImpl} from './system-settings';
+import {SystemSettingsService, SystemSettingsServiceImpl} from './system-settings';
 import {ZipService} from './util/zip/def/zip-service';
 import {DeviceInfo} from './util/device';
 import {ZipServiceImpl} from './util/zip/impl/zip-service-impl';
@@ -54,11 +55,18 @@ import {TelemetryConfig} from './telemetry/config/telemetry-config';
 import {OfflineSearchTextbookMigration} from './db/migrations/offline-search-textbook-migration';
 import {ApiAuthenticator} from './util/authenticators/impl/api-authenticator';
 import {SessionAuthenticator} from './util/authenticators/impl/session-authenticator';
+import {Container} from 'inversify';
+import {InjectionTokens} from './injection-tokens';
+import {StorageService} from './storage';
+import {StorageServiceImpl} from './storage/impl/storage-service-impl';
+import {NotificationService} from './notification/def/notification-service';
+import {NotificationServiceImpl} from './notification/impl/notification-service-impl';
+import {ErrorLoggerService} from './util/error-stack/def/error-logger-service';
+import {ErrorLoggerServiceImpl} from './util/error-stack/impl/error-logger-service-impl';
 import {NetworkInfoService} from './util/network';
 import {NetworkInfoServiceImpl} from './util/network/impl/network-info-service-impl';
 
 export class SunbirdSdk {
-
     private static _instance?: SunbirdSdk;
 
     public static get instance(): SunbirdSdk {
@@ -69,302 +77,215 @@ export class SunbirdSdk {
         return SunbirdSdk._instance;
     }
 
-    private _dbService: DbService;
-    private _telemetryService: TelemetryService;
-    private _authService: AuthService;
-    private _apiService: ApiService;
-    private _keyValueStore: KeyValueStore;
-    private _profileService: ProfileService;
-    private _groupService: GroupService;
-    private _contentService: ContentService;
-    private _courseService: CourseService;
-    private _formService: FormService;
-    private _frameworkService: FrameworkService;
-    private _frameworkUtilService: FrameworkUtilService;
-    private _pageAssembleService: PageAssembleService;
-    private _sharedPreferences: SharedPreferences;
-    private _fileService: FileService;
-    private _systemSettingsService: SystemSettingsService;
-    private _zipService: ZipService;
-    private _deviceInfo: DeviceInfo;
-    private _sdkConfig: SdkConfig;
-    private _contentFeedbackService: ContentFeedbackService;
-    private _eventsBusService: EventsBusService;
-    private _summarizerService: SummarizerService;
-    private _downloadService: DownloadService;
-    private _appInfo: AppInfo;
-    private _playerService: PlayerService;
-    private _networkInfoService: NetworkInfoService;
+    private _container: Container;
 
     get sdkConfig(): SdkConfig {
-        return {
-            ...this._sdkConfig
-        };
+        return this._container.get<SdkConfig>(InjectionTokens.SDK_CONFIG);
+    }
+
+    get appInfo(): AppInfo {
+        return this._container.get<AppInfo>(InjectionTokens.APP_INFO);
     }
 
     get pageAssembleService(): PageAssembleService {
-        return this._pageAssembleService;
+        return this._container.get<PageAssembleService>(InjectionTokens.PAGE_ASSEMBLE_SERVICE);
     }
 
     get dbService(): DbService {
-        return this._dbService;
+        return this._container.get<DbService>(InjectionTokens.DB_SERVICE);
     }
 
     get telemetryService(): TelemetryService {
-        return this._telemetryService;
+        return this._container.get<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE);
     }
 
     get authService(): AuthService {
-        return this._authService;
+        return this._container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
     }
 
     get apiService(): ApiService {
-        return this._apiService;
+        return this._container.get<ApiService>(InjectionTokens.API_SERVICE);
     }
 
     get keyValueStore(): KeyValueStore {
-        return this._keyValueStore;
+        return this._container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
     }
 
     get profileService(): ProfileService {
-        return this._profileService;
+        return this._container.get<ProfileService>(InjectionTokens.PROFILE_SERVICE);
     }
 
     get groupService(): GroupService {
-        return this._groupService;
+        return this._container.get<GroupService>(InjectionTokens.GROUP_SERVICE);
     }
 
     get contentService(): ContentService {
-        return this._contentService;
+        return this._container.get<ContentService>(InjectionTokens.CONTENT_SERVICE);
     }
 
     get contentFeedbackService(): ContentFeedbackService {
-        return this._contentFeedbackService;
+        return this._container.get<ContentFeedbackService>(InjectionTokens.CONTENT_FEEDBACK_SERVICE);
     }
 
     get courseService(): CourseService {
-        return this._courseService;
+        return this._container.get<CourseService>(InjectionTokens.COURSE_SERVICE);
     }
 
     get formService(): FormService {
-        return this._formService;
+        return this._container.get<FormService>(InjectionTokens.FORM_SERVICE);
     }
 
     get frameworkService(): FrameworkService {
-        return this._frameworkService;
+        return this._container.get<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE);
     }
 
     get frameworkUtilService(): FrameworkUtilService {
-        return this._frameworkUtilService;
+        return this._container.get<FrameworkUtilService>(InjectionTokens.FRAMEWORK_UTIL_SERVICE);
     }
 
     get sharedPreferences(): SharedPreferences {
-        return this._sharedPreferences;
+        return this._container.get<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES);
     }
 
     get systemSettingsService(): SystemSettingsService {
-        return this._systemSettingsService;
+        return this._container.get<SystemSettingsService>(InjectionTokens.SYSTEM_SETTINGS_SERVICE);
     }
 
     get eventsBusService(): EventsBusService {
-        return this._eventsBusService;
+        return this._container.get<EventsBusService>(InjectionTokens.EVENTS_BUS_SERVICE);
     }
 
     get summarizerService(): SummarizerService {
-        return this._summarizerService;
+        return this._container.get<SummarizerService>(InjectionTokens.SUMMARIZER_SERVICE);
     }
 
     get downloadService(): DownloadService {
-        return this._downloadService;
+        return this._container.get<DownloadService>(InjectionTokens.DOWNLOAD_SERVICE);
     }
 
     get playerService(): PlayerService {
-        return this._playerService;
+        return this._container.get<PlayerService>(InjectionTokens.PLAYER_SERVICE);
     }
 
     get deviceInfo(): DeviceInfo {
-        return this._deviceInfo;
+        return this._container.get<DeviceInfo>(InjectionTokens.DEVICE_INFO);
+    }
+
+    get storageService(): StorageService {
+        return this._container.get<StorageService>(InjectionTokens.STORAGE_SERVICE);
+    }
+
+    get notificationService(): NotificationService {
+        return this._container.get<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE);
+    }
+    get errorLoggerService(): ErrorLoggerService {
+        return this._container.get<ErrorLoggerService>(InjectionTokens.ERROR_LOGGER_SERVICE);
+    }
+
+    get networkInfoService(): NetworkInfoService {
+        return this._container.get<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE);
     }
 
     public async init(sdkConfig: SdkConfig) {
-        this._networkInfoService = new NetworkInfoServiceImpl();
+        this._container = new Container();
 
-        this._sdkConfig = Object.freeze(sdkConfig);
+        this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._deviceInfo = new DeviceInfoImpl(this.sdkConfig);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(22);
+
+        this._container.bind<Migration[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
+            new ProfileSyllabusMigration(),
+            new GroupProfileMigration(),
+            new MillisecondsToSecondsMigration(),
+            new ContentMarkerMigration(),
+            new OfflineSearchTextbookMigration(),
+            new ErrorStackMigration()
+        ]);
 
         if (sdkConfig.sharedPreferencesConfig.debugMode) {
-            this._sharedPreferences = new SharedPreferencesLocalStorage();
+            this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).to(SharedPreferencesLocalStorage).inSingletonScope();
         } else {
-            this._sharedPreferences = new SharedPreferencesAndroid();
+            this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).to(SharedPreferencesAndroid).inSingletonScope();
         }
 
-        this._eventsBusService = new EventsBusServiceImpl(this.sdkConfig.eventsBusConfig);
-
-        if (sdkConfig.dbConfig.debugMode === true) {
-            this._dbService = new DbWebSqlService(
-                sdkConfig.dbConfig,
-                20,
-                [
-                    new ProfileSyllabusMigration(),
-                    new GroupProfileMigration(),
-                    new MillisecondsToSecondsMigration(),
-                    new ContentMarkerMigration()
-                ]
-            );
+        if (sdkConfig.dbConfig.debugMode) {
+            this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbWebSqlService).inSingletonScope();
         } else {
-            this._dbService = new DbCordovaService(
-                sdkConfig.dbConfig,
-                21,
-                [
-                    new ProfileSyllabusMigration(),
-                    new GroupProfileMigration(),
-                    new MillisecondsToSecondsMigration(),
-                    new ContentMarkerMigration(),
-                    new OfflineSearchTextbookMigration()
-                ]
-            );
+            this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbCordovaService).inSingletonScope();
         }
-        this._appInfo = new AppInfoImpl(this._sdkConfig);
-
-        await this._dbService.init();
-        await this._appInfo.init();
-
-        this._apiService = new ApiServiceImpl(sdkConfig.apiConfig, this._deviceInfo, this._sharedPreferences);
-
-        this._authService = new AuthServiceImpl(sdkConfig.apiConfig, this._apiService, this._sharedPreferences, this._eventsBusService);
-
-        this._keyValueStore = new KeyValueStoreImpl(this._dbService);
-
 
         if (sdkConfig.fileConfig.debugMode) {
-            this._fileService = new DebugPromptFileService();
+            this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(DebugPromptFileService).inSingletonScope();
         } else {
-            this._fileService = new FileServiceImpl();
+            this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(FileServiceImpl).inSingletonScope();
         }
 
-        this._systemSettingsService = new SystemSettingsServiceImpl(
-            sdkConfig.systemSettingsConfig,
-            this._apiService,
-            this._fileService,
-            new CachedItemStoreImpl<SystemSettings>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
-        );
+        this._container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(sdkConfig);
 
-        this._frameworkService = new FrameworkServiceImpl(
-            sdkConfig,
-            this._keyValueStore,
-            this._fileService,
-            this._apiService,
-            new CachedItemStoreImpl<Channel>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
-            new CachedItemStoreImpl<Framework>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
-            this._sharedPreferences,
-            this._systemSettingsService
-        );
+        this._container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).to(DeviceInfoImpl).inSingletonScope();
 
-        this._profileService = new ProfileServiceImpl(this.sdkConfig,
-            this._dbService,
-            this._apiService,
-            new CachedItemStoreImpl<ServerProfile>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
-            this._keyValueStore,
-            this._sharedPreferences,
-            this._frameworkService,
-            this._fileService,
-            this._deviceInfo
-        );
+        this._container.bind<EventsBusService>(InjectionTokens.EVENTS_BUS_SERVICE).to(EventsBusServiceImpl).inSingletonScope();
 
-        this._groupService = new GroupServiceImpl(
-            this._dbService,
-            this._profileService,
-            this._keyValueStore,
-            this._sharedPreferences
-        );
+        this._container.bind<AppInfo>(InjectionTokens.APP_INFO).to(AppInfoImpl).inSingletonScope();
 
-        this._zipService = new ZipServiceImpl();
+        this._container.bind<ApiService>(InjectionTokens.API_SERVICE).to(ApiServiceImpl).inSingletonScope();
 
-        this._telemetryService = new TelemetryServiceImpl(
-            this._dbService,
-            new TelemetryDecoratorImpl(sdkConfig.apiConfig, this._deviceInfo, this._appInfo),
-            this._profileService,
-            this._groupService,
-            this._keyValueStore,
-            this._apiService,
-            this._sdkConfig.telemetryConfig,
-            this._deviceInfo,
-            this._eventsBusService,
-            this._fileService,
-            this._frameworkService,
-            this._networkInfoService
-        );
+        this._container.bind<AuthService>(InjectionTokens.AUTH_SERVICE).to(AuthServiceImpl).inSingletonScope();
 
-        this._profileService.registerTelemetryService(this._telemetryService);
-        this._groupService.registerTelemetryService(this._telemetryService);
+        this._container.bind<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE).to(KeyValueStoreImpl).inSingletonScope();
 
-        this._contentFeedbackService = new ContentFeedbackServiceImpl(this._dbService, this._profileService, this._telemetryService);
+        this._container.bind<SystemSettingsService>(InjectionTokens.SYSTEM_SETTINGS_SERVICE).to(SystemSettingsServiceImpl).inSingletonScope();
 
-        this._formService = new FormServiceImpl(
-            sdkConfig.formServiceConfig,
-            this._apiService,
-            this._fileService,
-            new CachedItemStoreImpl<{ [key: string]: {} }>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences)
-        );
+        this._container.bind<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE).to(FrameworkServiceImpl).inSingletonScope();
 
-        this._pageAssembleService = new PageAssembleServiceImpl(
-            this._apiService,
-            sdkConfig.pageServiceConfig,
-            new CachedItemStoreImpl<PageAssemble>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences),
-            this._keyValueStore,
-            this._sharedPreferences
-        );
+        this._container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).to(ProfileServiceImpl).inSingletonScope();
 
-        this._frameworkUtilService = new FrameworkUtilServiceImpl(
-            this._sharedPreferences,
-            this._frameworkService,
-            this._profileService
-        );
+        this._container.bind<GroupService>(InjectionTokens.GROUP_SERVICE).to(GroupServiceImpl).inSingletonScope();
 
+        this._container.bind<ErrorLoggerService>(InjectionTokens.ERROR_LOGGER_SERVICE).to(ErrorLoggerServiceImpl).inSingletonScope();
 
-        this._downloadService = new DownloadServiceImpl(this._eventsBusService, this._sharedPreferences);
+        this._container.bind<ZipService>(InjectionTokens.ZIP_SERVICE).to(ZipServiceImpl).inSingletonScope();
 
-        this._contentService = new ContentServiceImpl(
-            sdkConfig.contentServiceConfig,
-            this._apiService,
-            this._dbService,
-            this._profileService,
-            sdkConfig.appConfig,
-            this._fileService,
-            this._zipService,
-            this._deviceInfo,
-            this.telemetryService,
-            this._contentFeedbackService,
-            this._downloadService,
-            this._sharedPreferences,
-            this._eventsBusService,
-            new CachedItemStoreImpl<ContentSearchResult>(this._keyValueStore, sdkConfig.apiConfig, this._sharedPreferences)
-        );
+        this._container.bind<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE).to(TelemetryServiceImpl).inSingletonScope();
 
-        this._courseService = new CourseServiceImpl(
-            sdkConfig.courseServiceConfig,
-            this._apiService,
-            this._profileService,
-            this._keyValueStore,
-            this._dbService,
-            this._sharedPreferences,
-            this._contentService
-        );
-        this._summarizerService = new SummarizerServiceImpl(this._dbService, this.contentService,
-            this._eventsBusService, this._courseService, this._sharedPreferences, this._contentService, this._profileService);
-        this._downloadService.registerOnDownloadCompleteDelegate(this._contentService);
-        this._playerService = new PlayerServiceImpl(this._profileService, this._groupService,
-            this._sdkConfig, this._frameworkService, this._deviceInfo, this._appInfo);
+        this._container.bind<ContentFeedbackService>(InjectionTokens.CONTENT_FEEDBACK_SERVICE).to(ContentFeedbackServiceImpl).inSingletonScope();
 
-        this._apiService.setDefaultApiAuthenticators([
-            new ApiAuthenticator(this._sharedPreferences, this._sdkConfig.apiConfig, this._deviceInfo, this._apiService)
+        this._container.bind<FormService>(InjectionTokens.FORM_SERVICE).to(FormServiceImpl).inSingletonScope();
+
+        this._container.bind<PageAssembleService>(InjectionTokens.PAGE_ASSEMBLE_SERVICE).to(PageAssembleServiceImpl).inSingletonScope();
+
+        this._container.bind<FrameworkUtilService>(InjectionTokens.FRAMEWORK_UTIL_SERVICE).to(FrameworkUtilServiceImpl).inSingletonScope();
+
+        this._container.bind<DownloadService>(InjectionTokens.DOWNLOAD_SERVICE).to(DownloadServiceImpl).inSingletonScope();
+
+        this._container.bind<ContentService>(InjectionTokens.CONTENT_SERVICE).to(ContentServiceImpl).inSingletonScope();
+
+        this._container.bind<CourseService>(InjectionTokens.COURSE_SERVICE).to(CourseServiceImpl).inSingletonScope();
+
+        this._container.bind<SummarizerService>(InjectionTokens.SUMMARIZER_SERVICE).to(SummarizerServiceImpl).inSingletonScope();
+
+        this._container.bind<PlayerService>(InjectionTokens.PLAYER_SERVICE).to(PlayerServiceImpl).inSingletonScope();
+
+        this._container.bind<CachedItemStore>(InjectionTokens.CACHED_ITEM_STORE).to(CachedItemStoreImpl).inSingletonScope();
+
+        this._container.bind<TelemetryDecorator>(InjectionTokens.TELEMETRY_DECORATOR).to(TelemetryDecoratorImpl).inSingletonScope();
+
+        this._container.bind<StorageService>(InjectionTokens.STORAGE_SERVICE).to(StorageServiceImpl).inSingletonScope();
+
+        this._container.bind<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE).to(NotificationServiceImpl).inSingletonScope();
+
+        this._container.bind<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE).to(NetworkInfoServiceImpl).inSingletonScope();
+
+        this.apiService.setDefaultApiAuthenticators([
+            new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)
         ]);
 
-        this._apiService.setDefaultSessionAuthenticators([
-            new SessionAuthenticator(this._sharedPreferences, this._sdkConfig.apiConfig, this._apiService, this._authService)
+        this.apiService.setDefaultSessionAuthenticators([
+            new SessionAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.apiService, this.authService)
         ]);
 
+        await this.dbService.init();
+        await this.appInfo.init();
         await this.preInit().toPromise();
 
         this.postInit().subscribe();
@@ -373,7 +294,7 @@ export class SunbirdSdk {
     public updateTelemetryConfig(update: Partial<TelemetryConfig>) {
         for (const key in update) {
             if (update.hasOwnProperty(key)) {
-                this._sdkConfig.telemetryConfig[key] = update[key];
+                this.sdkConfig.telemetryConfig[key] = update[key];
             }
         }
     }
@@ -381,7 +302,11 @@ export class SunbirdSdk {
     public updateContentServiceConfig(update: Partial<ContentServiceConfig>) {
         for (const key in update) {
             if (update.hasOwnProperty(key)) {
-                this._sdkConfig.contentServiceConfig[key] = update[key];
+                this.sdkConfig.contentServiceConfig[key] = update[key];
+
+                if (key === 'fcmToken') {
+                    this.telemetryService.resetDeviceRegisterTTL();
+                }
             }
         }
     }
@@ -389,23 +314,24 @@ export class SunbirdSdk {
     public updatePageServiceConfig(update: Partial<PageServiceConfig>) {
         for (const key in update) {
             if (update.hasOwnProperty(key)) {
-                this._sdkConfig.pageServiceConfig[key] = update[key];
+                this.sdkConfig.pageServiceConfig[key] = update[key];
             }
         }
     }
 
     private preInit() {
-        return Observable.combineLatest(
-            this._profileService.preInit()
-        );
+        return this.frameworkService.preInit()
+            .concatMap(() => this.profileService.preInit());
     }
 
     private postInit() {
         return Observable.combineLatest(
-            this._frameworkService.onInit(),
-            this._eventsBusService.onInit(),
-            this._downloadService.onInit(),
-            this._contentService.onInit()
+            this.summarizerService.onInit(),
+            this.errorLoggerService.onInit(),
+            this.eventsBusService.onInit(),
+            this.downloadService.onInit(),
+            this.contentService.onInit(),
+            this.storageService.onInit()
         );
     }
 }

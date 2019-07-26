@@ -7,4 +7,5 @@ export interface TelemetryConfig extends OpenRapConfigurable {
     telemetrySyncBandwidth: number;
     telemetrySyncThreshold: number;
     telemetryLogMinAllowedOffset: number; // in ms
+    fcmToken?: string;
 }

@@ -119,7 +119,7 @@ export class BaseConnection implements Connection {
     private async handleByteArrayPost(request: Request): Promise<Response> {
         return new Promise<Response>((resolve, reject) => {
             const xhr = new XMLHttpRequest;
-            xhr.open(HttpRequestType.POST, (request.host || this.apiConfig.host) + request.path, false);
+            xhr.open(HttpRequestType.POST, (request.host || this.apiConfig.host) + request.path, true);
 
             Object.keys(request.headers).filter((header) => header !== 'Content-Type' && header !== 'Content-Encoding')
                 .forEach((header) => {

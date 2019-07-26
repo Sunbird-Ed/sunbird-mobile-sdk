@@ -2,12 +2,19 @@ import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, Upd
 import {Observable, Subject} from 'rxjs';
 import {InitialMigration} from '../migrations/initial-migration';
 import {QueryBuilder} from '../util/query-builder';
+import {injectable, inject} from 'inversify';
+import {SdkConfig} from '../../sdk-config';
+import {InjectionTokens} from '../../injection-tokens';
 
+@injectable()
 export class DbCordovaService implements DbService {
-    constructor(private context: DbConfig,
-                private dBVersion: number,
-                private appMigrationList: Migration[]
+    private context: DbConfig;
+
+    constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+                @inject(InjectionTokens.DB_VERSION) private dBVersion: number,
+                @inject(InjectionTokens.DB_MIGRATION_LIST) private appMigrationList: Migration[]
     ) {
+        this.context = this.sdkConfig.dbConfig;
     }
 
 

@@ -69,4 +69,20 @@ export declare class ContentUtil {
     static addOrUpdateRefCount(refCount: number): number;
     static isNotUnit(mimeType: any, visibility: any): boolean;
     static getContentAttribute(data: any): string;
+    static getFindAllContentsWithIdentifierQuery(identifiers: string[]): string;
+    static getFindAllContentsQuery(): string;
+    static constructContentDBModel(identifier: any, manifestVersion: any, localData: any, mimeType: any, contentType: any, visibility: any, path: any, refCount: any, contentState: any, audience: any, pragma: any, sizeOnDevice: any, board: any, medium: any, grade: any): ContentEntry.SchemaMap;
+    static getReferenceCount(existingContent: any, visibility: string): number;
+    /**
+     * add or update the reference count for the content
+     *
+     */
+    static getContentVisibility(existingContentInDb: any, objectType: any, previuosVisibility: string): string;
+    /**
+     * Add or update the content_state. contentState should not update the spine_only when importing the spine content
+     * after importing content with artifacts.
+     *
+     */
+    static getContentState(existingContentInDb: any, contentState: number): number;
+    static isFreeSpaceAvailable(deviceAvailableFreeSpace: number, fileSpace: number, bufferSize: number): boolean;
 }

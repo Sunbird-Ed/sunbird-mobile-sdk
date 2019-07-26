@@ -30,3 +30,12 @@ export namespace ContentKeys {
     export const UPDATE_CONTENT_STATE = 'update_content_state';
     export const COURSE_CONTEXT = 'sunbirdcontent_context';
 }
+
+export namespace StorageKeys {
+    export const KEY_STORAGE_DESTINATION = 'storage_destination';
+    export const KEY_TO_TRANSFER_LIST = 'to_transfer_list';
+}
+
+export namespace ErrorLogKeys {
+    export const KEY_ERROR_LOG_LAST_SYNCED_TIME_STAMP = 'error_log_last_synced_time_stamp';
+}

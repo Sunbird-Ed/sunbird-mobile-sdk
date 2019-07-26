@@ -14,7 +14,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
         private apiService: ApiService,
         private formServiceConfig: FormServiceConfig,
         private fileService: FileService,
-        private cachedItemStore: CachedItemStore<{ [key: string]: {} }>
+        private cachedItemStore: CachedItemStore
     ) {
     }
 

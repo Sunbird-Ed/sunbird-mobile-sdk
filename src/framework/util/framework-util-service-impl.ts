@@ -6,11 +6,14 @@ import {GetSuggestedFrameworksRequest} from './requests';
 import {FrameworkMapper} from './framework-mapper';
 import {Profile, ProfileService} from '../../profile';
 import {GetFrameworkCategoryTermsHandler} from '../handler/get-framework-category-terms-handler';
+import { injectable, inject } from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
 
+@injectable()
 export class FrameworkUtilServiceImpl implements FrameworkUtilService {
-    constructor(private sharedPreferences: SharedPreferences,
-                private frameworkService: FrameworkService,
-                private profileService: ProfileService) {
+    constructor(@inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
+                @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
+                @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService) {
     }
 
     public getActiveChannel(): Observable<Channel> {
@@ -24,7 +27,7 @@ export class FrameworkUtilServiceImpl implements FrameworkUtilService {
         return this.profileService.getActiveSessionProfile({requiredFields: []})
             .mergeMap((profile: Profile) =>
                 Observable.if(
-                    () => !!profile.serverProfile,
+                    () => !!profile.serverProfile && !getSuggestedFrameworksRequest.ignoreActiveChannel,
                     Observable.defer(() => this.getActiveChannel()),
                     Observable.defer(() => this.frameworkService.getDefaultChannelDetails())
                 )

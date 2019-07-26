@@ -7,12 +7,15 @@ import {QueryBuilder} from '../../db/util/query-builder';
 import {ProfileService, ProfileSession} from '../../profile';
 import {ContentUtil} from '../util/content-util';
 import {ShareItemType, TelemetryService} from '../../telemetry';
+import { injectable, inject } from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
 
+@injectable()
 export class ContentFeedbackServiceImpl implements ContentFeedbackService {
 
-    constructor(private dbService: DbService,
-                private profileService: ProfileService,
-                private telemetryService: TelemetryService) {
+    constructor(@inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+                @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
+                @inject(InjectionTokens.TELEMETRY_SERVICE) private telemetryService: TelemetryService) {
 
     }
 

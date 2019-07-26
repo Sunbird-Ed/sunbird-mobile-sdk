@@ -17,7 +17,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
                 private apiService: ApiService,
                 private frameworkServiceConfig: FrameworkServiceConfig,
                 private fileservice: FileService,
-                private cachedItemStore: CachedItemStore<Framework>) {
+                private cachedItemStore: CachedItemStore) {
     }
 
     handle(request: FrameworkDetailsRequest): Observable<Framework> {

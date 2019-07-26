@@ -26,21 +26,30 @@ import {CourseService} from '../../course';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {ArrayUtil} from '../../util/array-util';
 import {ProfileService} from '../../profile';
+import { injectable, inject } from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
+import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 
+@injectable()
 export class SummarizerServiceImpl implements SummarizerService, EventObserver<TelemetryEvent> {
     private contentMap: Map<string, ContentCache>;
     private summarizerTelemetryHandler: SummaryTelemetryEventHandler;
 
-    constructor(private dbService: DbService,
-                private contenService: ContentService,
-                private eventsBusService: EventsBusService,
-                private courseService: CourseService,
-                private sharedPreference: SharedPreferences,
-                private contentService: ContentService,
-                private profileService: ProfileService) {
-        this.eventsBusService.registerObserver({namespace: EventNamespace.TELEMETRY, observer: this});
+    constructor(
+        @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+        @inject(InjectionTokens.CONTENT_SERVICE) private contenService: ContentService,
+        @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
+        @inject(InjectionTokens.COURSE_SERVICE) private courseService: CourseService,
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreference: SharedPreferences,
+        @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService
+    ) {
         this.summarizerTelemetryHandler = new SummaryTelemetryEventHandler(this.courseService, this.sharedPreference, this,
             this.eventsBusService, this.contenService, this.profileService);
+    }
+
+    onInit(): Observable<undefined> {
+        this.eventsBusService.registerObserver({namespace: EventNamespace.TELEMETRY, observer: this});
+        return Observable.of(undefined);
     }
 
     getDetailsPerQuestion(request: SummaryRequest): Observable<{ [p: string]: any }[]> {

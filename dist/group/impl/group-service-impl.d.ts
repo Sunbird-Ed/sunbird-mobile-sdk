@@ -1,19 +1,17 @@
 import { DbService } from '../../db';
 import { Observable } from 'rxjs';
 import { GetAllGroupRequest, Group, GroupService, GroupSession, ProfilesToGroupRequest } from '..';
-import { KeyValueStore } from '../../key-value-store';
 import { ProfileService } from '../../profile';
 import { SharedPreferences } from '../../util/shared-preferences';
-import { TelemetryService } from '../../telemetry';
+import { Container } from 'inversify';
 export declare class GroupServiceImpl implements GroupService {
+    private container;
     private dbService;
     private profileService;
-    private keyValueStore;
     private sharedPreferences;
     private static readonly KEY_GROUP_SESSION;
-    private telemetryService;
-    constructor(dbService: DbService, profileService: ProfileService, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences);
-    registerTelemetryService(telemetryService: TelemetryService): void;
+    constructor(container: Container, dbService: DbService, profileService: ProfileService, sharedPreferences: SharedPreferences);
+    private readonly telemetryService;
     createGroup(group: Group): Observable<Group>;
     deleteGroup(gid: string): Observable<undefined>;
     updateGroup(group: Group): Observable<Group>;

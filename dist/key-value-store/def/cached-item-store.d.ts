@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-export interface CachedItemStore<T> {
+export interface CachedItemStore {
     /**
      *  @param id: identifier of the cached item
      *  @param noSqlkey: prefix for noSQL store
@@ -9,5 +9,5 @@ export interface CachedItemStore<T> {
      *  @param timeToLive?: optional timeToLive override in milliseconds
      *  @param emptyCondition?: optional emptyCondition predicate - when true, item won't be cached
      * */
-    getCached(id: string, noSqlkey: string, timeToLiveKey: string, fromServer: () => Observable<T>, initial?: () => Observable<T>, timeToLive?: number, emptyCondition?: (item: T) => boolean): Observable<T>;
+    getCached<T>(id: string, noSqlkey: string, timeToLiveKey: string, fromServer: () => Observable<T>, initial?: () => Observable<T>, timeToLive?: number, emptyCondition?: (item: T) => boolean): Observable<T>;
 }

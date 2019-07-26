@@ -1,14 +1,19 @@
 import {ContentData, HierarchyInfo} from '../def/content';
-import {ContentDisposition, ContentEncoding, ContentStatus, State, Visibility, MimeType} from './content-constants';
+import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from './content-constants';
 import {ChildContent} from '../def/response';
 import {Rollup} from '../../telemetry';
 import {AppConfig} from '../../api/config/app-config';
 import {ContentEntry} from '../db/schema';
 import {NumberUtil} from '../../util/number-util';
+import {ArrayUtil} from '../../util/array-util';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
+import COLUMN_NAME_LOCAL_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON;
+import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON;
+import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
+import * as moment from 'moment';
 
 export class ContentUtil {
     private static DEFAULT_PACKAGE_VERSION = -1;
@@ -481,7 +486,7 @@ export class ContentUtil {
                 let attribute = '';
                 for (let i = 0; i < value.length; i++) {
                     if (i < value.length - 1) {
-                        attribute =  attribute.concat('~', value[i]);
+                        attribute = attribute.concat('~', value[i]);
                     } else {
                         attribute = attribute.concat('~', value[i], '~');
                     }
@@ -491,5 +496,96 @@ export class ContentUtil {
         }
         return '';
     }
+
+    public static getFindAllContentsWithIdentifierQuery(identifiers: string[]): string {
+        const identifiersStr = ArrayUtil.joinPreservingQuotes(identifiers);
+        const orderby = ` order by ${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} desc, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} desc`;
+        const filter = ` where ${COLUMN_NAME_IDENTIFIER} in (${identifiersStr}) AND ${COLUMN_NAME_REF_COUNT} > 0`;
+        return `select * from ${ContentEntry.TABLE_NAME} ${filter} ${orderby}`;
+    }
+
+    public static getFindAllContentsQuery(): string {
+        return `select * from ${ContentEntry.TABLE_NAME} where ${COLUMN_NAME_REF_COUNT} > 0`;
+    }
+
+
+    public static constructContentDBModel(identifier, manifestVersion, localData,
+                                          mimeType, contentType, visibility, path,
+                                          refCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
+        return {
+            [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
+            [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+            [ContentEntry.COLUMN_NAME_PATH]: ContentUtil.getBasePath(path),
+            [ContentEntry.COLUMN_NAME_REF_COUNT]: refCount,
+            [ContentEntry.COLUMN_NAME_CONTENT_STATE]: contentState,
+            [ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]: sizeOnDevice,
+            [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: manifestVersion,
+            [ContentEntry.COLUMN_NAME_LOCAL_DATA]: localData,
+            [ContentEntry.COLUMN_NAME_MIME_TYPE]: mimeType,
+            [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: contentType,
+            [ContentEntry.COLUMN_NAME_VISIBILITY]: visibility,
+            [ContentEntry.COLUMN_NAME_AUDIENCE]: audience,
+            [ContentEntry.COLUMN_NAME_PRAGMA]: pragma,
+            [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ssZ'),
+            [ContentEntry.COLUMN_NAME_BOARD]: ContentUtil.getContentAttribute(board),
+            [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
+            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)
+        };
+
+    }
+
+    public static getReferenceCount(existingContent, visibility: string): number {
+        let refCount: number;
+        if (existingContent) {
+            refCount = existingContent[ContentEntry.COLUMN_NAME_REF_COUNT];
+
+            // if the content has a 'Default' visibility and update the same content then don't increase the reference count...
+            if (!(Visibility.DEFAULT.valueOf() === existingContent[ContentEntry.COLUMN_NAME_VISIBILITY]
+                && Visibility.DEFAULT.valueOf() === visibility)) {
+                refCount = refCount + 1;
+            }
+        } else {
+            refCount = 1;
+        }
+        return refCount;
+    }
+
+    /**
+     * add or update the reference count for the content
+     *
+     */
+    public static getContentVisibility(existingContentInDb, objectType, previuosVisibility: string): string {
+        let visibility;
+        if ('Library' === objectType) {
+            visibility = Visibility.PARENT.valueOf();
+        } else if (existingContentInDb) {
+            if (!Visibility.PARENT.valueOf() === existingContentInDb[ContentEntry.COLUMN_NAME_VISIBILITY]) {
+                // If not started from child content then do not shrink visibility.
+                visibility = existingContentInDb[ContentEntry.COLUMN_NAME_VISIBILITY];
+            }
+        }
+        return visibility ? visibility : previuosVisibility;
+    }
+
+    /**
+     * Add or update the content_state. contentState should not update the spine_only when importing the spine content
+     * after importing content with artifacts.
+     *
+     */
+    public static getContentState(existingContentInDb, contentState: number): number {
+        if (existingContentInDb && existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] > contentState) {
+            contentState = existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE];
+        }
+        return contentState;
+    }
+
+    public static isFreeSpaceAvailable(deviceAvailableFreeSpace: number, fileSpace: number, bufferSize: number) {
+        let BUFFER_SIZE = 1024 * 10;
+        if (bufferSize > 0) {
+            BUFFER_SIZE = bufferSize;
+        }
+        return deviceAvailableFreeSpace > 0 && deviceAvailableFreeSpace > (fileSpace + BUFFER_SIZE);
+    }
+
 
 }

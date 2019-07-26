@@ -1,6 +1,8 @@
 import {NetworkInfoService, NetworkStatus} from '..';
 import {BehaviorSubject, Observable} from 'rxjs';
+import {injectable} from 'inversify';
 
+@injectable()
 export class NetworkInfoServiceImpl implements NetworkInfoService {
     networkStatus$: Observable<NetworkStatus>;
     private networkStatusSource: BehaviorSubject<NetworkStatus>;

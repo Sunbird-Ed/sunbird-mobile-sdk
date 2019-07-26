@@ -9,6 +9,18 @@ declare var buildconfigreader: {
     rm: (directoryPath: string, direcoryToBeSkipped: string, success:
         (callbackUrl: boolean) => void, error: (error: boolean) => void) => void;
 
+    copyDirectory: (sourceDirectory: string, destinationDirectory: string,
+                    onSuccess: () => void, onError: (error: any) => void) => void;
+
+    renameDirectory: (sourceDirectory: string, toDirectoryName: string,
+                      onSuccess: () => void, onError: (error: any) => void) => void;
+
+    getFreeUsableSpace: (directory: string, success:
+        (callbackUrl: string) => void, error: (error: string) => void) => void;
+
+    canWrite: (directory: string, success:
+        (callbackUrl: string) => void, error: (error: string) => void) => void;
+
     createDirectories: (parentDirectoryPath: string, listOfFolder: string[], success:
         (callbackUrl: any) => void, error: (error: string) => void) => void;
 
@@ -22,4 +34,13 @@ declare var buildconfigreader: {
 
     getAvailableInternalMemorySize: (success:
                                          (callbackUrl: string) => void, error: (error: string) => void) => void;
+
+    getStorageVolumes: (success: (storageVolume: {
+        availableSize: number;
+        totalSize: number;
+        state: string;
+        path: string;
+        contentStoragePath: string;
+        isRemovable: boolean;
+    }[]) => void, error: (error: any) => void) => void;
 };

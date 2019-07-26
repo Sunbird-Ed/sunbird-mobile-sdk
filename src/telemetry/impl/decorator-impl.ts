@@ -4,12 +4,20 @@ import {DeviceInfo} from '../../util/device/def/device-info';
 import {AppInfo} from '../../util/app/def/app-info';
 import Telemetry = SunbirdTelemetry.Telemetry;
 import {UniqueId} from '../../db/util/unique-id';
+import { inject, injectable } from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
+import { SdkConfig } from '../../sdk-config';
 
+@injectable()
 export class TelemetryDecoratorImpl implements TelemetryDecorator {
 
-    constructor(private apiConfig: ApiConfig,
-                private deviceInfo: DeviceInfo,
-                private appInfo: AppInfo) {
+    private apiConfig: ApiConfig;
+
+    constructor(
+        @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+        @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
+        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo) {
+        this.apiConfig = this.sdkConfig.apiConfig;
     }
 
     decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset: number = 0, channelId?: string): any {

@@ -2,16 +2,21 @@ import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, Upd
 import {Observable, Subject} from 'rxjs';
 import * as squel from 'squel';
 import {InitialMigration} from '../migrations/initial-migration';
+import {injectable, inject} from 'inversify';
+import {SdkConfig} from '../../sdk-config';
+import {InjectionTokens} from '../../injection-tokens';
 
-
+@injectable()
 export class DbWebSqlService implements DbService {
 
+    private context: DbConfig;
     webSqlDB: any;
 
-    constructor(private context: DbConfig,
-                private dBVersion: number,
-                private appMigrationList: Migration[],
+    constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+                @inject(InjectionTokens.DB_VERSION) private dBVersion: number,
+                @inject(InjectionTokens.DB_MIGRATION_LIST) private appMigrationList: Migration[],
     ) {
+        this.context = this.sdkConfig.dbConfig;
     }
 
     public async init(): Promise<undefined> {

@@ -5,7 +5,7 @@ export class ArrayUtil {
     }
 
     public static isEmpty<T>(array: T[]): boolean {
-        return array && array.length === 0;
+        return !array || array.length === 0;
     }
 
     public static contains(array: string[], item: string): boolean {
