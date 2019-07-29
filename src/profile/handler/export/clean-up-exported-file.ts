@@ -42,7 +42,7 @@ export class CleanupExportedFile {
         }).then(() => {
             response.body = exportContext;
             return response;
-        }).catch(() => {
+        }).catch((e) => {
             response.errorMesg = ErrorCode.EXPORT_FAILED;
             throw response;
         });
@@ -111,7 +111,7 @@ export class CleanupExportedFile {
             }
         });
 
-        await this.cleanTable(ProfileEntry.TABLE_NAME, ProfileEntry.COLUMN_NAME_UID, usersToRetain);
+        await this.cleanTable(ProfileEntry.TABLE_NAME, ProfileEntry.COLUMN_NAME_UID, profilesToRetain);
         await this.cleanTable(UserEntry.TABLE_NAME, UserEntry.COLUMN_NAME_UID, profilesToRetain);
     }
 
