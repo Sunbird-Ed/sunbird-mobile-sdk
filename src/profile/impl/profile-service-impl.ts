@@ -506,7 +506,8 @@ export class ProfileServiceImpl implements ProfileService {
                 return new CreateMetaData(this.dbService, this.fileService, this.deviceInfo).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
                 const response: ProfileExportResponse = {exportedFilePath: ''};
-                return new CleanupExportedFile(this.dbService, this.fileService).execute(exportResponse.body);
+                return new CleanupExportedFile(this.dbService, this.fileService).execute(exportResponse.body)
+                    .catch(() => exportResponse);
             }).then((exportResponse: Response) => {
                 return new GenerateProfileExportTelemetry(this.dbService).execute(exportResponse.body);
             }).then((exportResponse: Response<ExportProfileContext>) => {
