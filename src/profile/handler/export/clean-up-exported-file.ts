@@ -43,7 +43,6 @@ export class CleanupExportedFile {
             response.body = exportContext;
             return response;
         }).catch((e) => {
-            console.error(e);
             response.errorMesg = ErrorCode.EXPORT_FAILED;
             throw response;
         });
