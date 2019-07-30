@@ -108,6 +108,17 @@ export class ExtractPayloads {
             if (visibility === Visibility.DEFAULT.valueOf()) {
                 rootNodeIdentifier = identifier;
             }
+
+            if (ContentUtil.isNotUnit(mimeType, visibility)) {
+                if (createdDirectories[identifier] && createdDirectories[identifier].path) {
+                    payloadDestination = createdDirectories[identifier].path;
+                } else {
+                    const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(
+                        ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier), false);
+                    payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
+                }
+            }
+
             // If the content is exist then copy the old content data and add it into new content.
             if (doesContentExist && !(element.status === ContentStatus.DRAFT.valueOf())) {
                 if (existingContentModel![COLUMN_NAME_VISIBILITY] === Visibility.DEFAULT.valueOf()) {
@@ -115,15 +126,6 @@ export class ExtractPayloads {
                 }
             } else {
                 doesContentExist = false;
-                if (ContentUtil.isNotUnit(mimeType, visibility)) {
-                    if (createdDirectories[identifier] && createdDirectories[identifier].path) {
-                        payloadDestination = createdDirectories[identifier].path;
-                    } else {
-                        const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(
-                            ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier), false);
-                        payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
-                    }
-                }
 
                 if (ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
                     let isUnzippingSuccessfull = false;
