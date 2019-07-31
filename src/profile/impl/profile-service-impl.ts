@@ -74,6 +74,7 @@ import {TransportProfiles} from '../handler/import/transport-profiles';
 import {SdkConfig} from '../../sdk-config';
 import {Container, inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
+import {TenantInfoRequest} from '../def/tenant-info-request';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -280,9 +281,9 @@ export class ProfileServiceImpl implements ProfileService {
         return new SearchServerProfileHandler(this.apiService, this.sdkConfig.profileServiceConfig).handle(searchCriteria);
     }
 
-    getTenantInfo(): Observable<TenantInfo> {
+    getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo> {
         return new TenantInfoHandler(this.apiService,
-            this.sdkConfig.profileServiceConfig).handle();
+            this.sdkConfig.profileServiceConfig).handle(tenantInfoRequest);
     }
 
     getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]> {
