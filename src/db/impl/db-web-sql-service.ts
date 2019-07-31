@@ -1,6 +1,5 @@
 import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery} from '..';
 import {Observable, Subject} from 'rxjs';
-import * as squel from 'squel';
 import {InitialMigration} from '../migrations/initial-migration';
 import {injectable, inject} from 'inversify';
 import {SdkConfig} from '../../sdk-config';
@@ -38,75 +37,73 @@ export class DbWebSqlService implements DbService {
     }
 
     read(readQuery: ReadQuery): Observable<any[]> {
-        const observable = new Subject<any[]>();
+        return Observable.fromPromise(new Promise(async (resolve, reject) => {
+            const squel = await import('squel');
 
-        const attachFields = (mixin, fields: string[] = []) => {
-            fields.forEach((field) => {
-                mixin.field(field);
-            });
-
-            return mixin;
-        };
-
-        const query = squel.select({
-            autoQuoteFieldNames: false
-        }).from(readQuery.table);
-
-        attachFields(query, readQuery.columns);
-
-        if (readQuery.groupBy) {
-            query.group(readQuery.groupBy);
-        }
-
-        if (readQuery.having) {
-            query.having(readQuery.having);
-        }
-        if (readQuery.distinct) {
-            query.distinct();
-        }
-        if (readQuery.orderBy) {
-            query.order(readQuery.orderBy);
-        }
-        if (readQuery.limit) {
-            query.limit(parseInt(readQuery.limit, 10));
-        }
-        if (readQuery.selection && readQuery.selectionArgs) {
-            query.where(readQuery.selection, ...readQuery.selectionArgs);
-        }
-
-        console.log(query.toString());
-
-        this.webSqlDB.transaction((tx) => {
-            tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
-                    observable.next(Array.from(sqlResultSet.rows));
-                    observable.complete();
-                }, (sqlTransaction, sqlError) => {
-                    observable.error(sqlError);
+            const attachFields = (mixin, fields: string[] = []) => {
+                fields.forEach((field) => {
+                    mixin.field(field);
                 });
-        });
 
-        return observable;
+                return mixin;
+            };
+
+            const query = squel.select({
+                autoQuoteFieldNames: false
+            }).from(readQuery.table);
+
+            attachFields(query, readQuery.columns);
+
+            if (readQuery.groupBy) {
+                query.group(readQuery.groupBy);
+            }
+
+            if (readQuery.having) {
+                query.having(readQuery.having);
+            }
+            if (readQuery.distinct) {
+                query.distinct();
+            }
+            if (readQuery.orderBy) {
+                query.order(readQuery.orderBy);
+            }
+            if (readQuery.limit) {
+                query.limit(parseInt(readQuery.limit, 10));
+            }
+            if (readQuery.selection && readQuery.selectionArgs) {
+                query.where(readQuery.selection, ...readQuery.selectionArgs);
+            }
+
+            console.log(query.toString());
+
+            this.webSqlDB.transaction((tx) => {
+                tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
+                    resolve(Array.from(sqlResultSet.rows));
+                }, (sqlTransaction, sqlError) => {
+                    reject(sqlError);
+                });
+            });
+        }));
     }
 
     insert(inserQuery: InsertQuery): Observable<number> {
-        const observable = new Subject<number>();
+        return Observable.fromPromise(new Promise(async (resolve, reject) => {
+            const squel = await import('squel');
 
-        const query = squel.insert()
-            .into(inserQuery.table)
-            .setFields(inserQuery.modelJson);
+            const query = squel.insert()
+              .into(inserQuery.table)
+              .setFields(inserQuery.modelJson);
 
-        console.log(query.toString());
+            console.log(query.toString());
 
-        this.webSqlDB.transaction((tx) => {
-            tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
-                    observable.next(sqlResultSet.rowsAffected);
-                    observable.complete();
+            this.webSqlDB.transaction((tx) => {
+                tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
+                    resolve(sqlResultSet.rowsAffected);
                 }, (sqlTransaction, sqlError) => {
-                    observable.error(sqlError);
+                    reject(sqlError);
                 });
-        });
-
-        return observable;
+            });
+        }));
     }
 
     execute(query: string): Observable<any> {
@@ -128,56 +125,54 @@ export class DbWebSqlService implements DbService {
     }
 
     update(updateQuery: UpdateQuery): Observable<number> {
-        const observable = new Subject<number>();
+        return Observable.fromPromise(new Promise(async (resolve, reject) => {
+            const squel = await import('squel');
 
-        const query = squel.update()
-            .table(updateQuery.table);
+            const query = squel.update()
+              .table(updateQuery.table);
 
-        if (updateQuery.selection && updateQuery.selectionArgs) {
-            query.where(updateQuery.selection, ...updateQuery.selectionArgs);
-        }
+            if (updateQuery.selection && updateQuery.selectionArgs) {
+                query.where(updateQuery.selection, ...updateQuery.selectionArgs);
+            }
 
-        const setFields = (mixin, fields: { [key: string]: any }) => {
-            Object.keys(fields).forEach((field) => {
-                query.set(field, fields[field]);
-            });
-        };
-
-        setFields(query, updateQuery.modelJson);
-
-        console.log(query.toString());
-
-        this.webSqlDB.transaction((tx) => {
-            tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
-                    observable.next(sqlResultSet.rowsAffected);
-                    observable.complete();
-                }, (sqlTransaction, sqlError) => {
-                    observable.error(sqlError);
+            const setFields = (mixin, fields: { [key: string]: any }) => {
+                Object.keys(fields).forEach((field) => {
+                    query.set(field, fields[field]);
                 });
-        });
+            };
 
-        return observable;
+            setFields(query, updateQuery.modelJson);
+
+            console.log(query.toString());
+
+            this.webSqlDB.transaction((tx) => {
+                tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
+                    resolve(sqlResultSet.rowsAffected);
+                }, (sqlTransaction, sqlError) => {
+                    reject(sqlError);
+                });
+            });
+        }));
     }
 
     delete(deleteQuery: DeleteQuery): Observable<undefined> {
-        const observable = new Subject<undefined>();
+        return Observable.fromPromise(new Promise(async (resolve, reject) => {
+            const squel = await import('squel');
 
-        const query = squel.delete()
-            .from(deleteQuery.table)
-            .where(deleteQuery.selection, ...deleteQuery.selectionArgs);
+            const query = squel.delete()
+              .from(deleteQuery.table)
+              .where(deleteQuery.selection, ...deleteQuery.selectionArgs);
 
-        console.log(query.toString());
+            console.log(query.toString());
 
-        this.webSqlDB.transaction((tx) => {
-            tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
-                    observable.next(undefined);
-                    observable.complete();
+            this.webSqlDB.transaction((tx) => {
+                tx.executeSql(query.toParam().text, query.toParam().values, (sqlTransaction, sqlResultSet: SQLResultSet) => {
+                    resolve(undefined);
                 }, (sqlTransaction, sqlError) => {
-                    observable.error(sqlError);
+                    reject(sqlError);
                 });
-        });
-
-        return observable;
+            });
+        }));
     }
 
     beginTransaction(): void {

@@ -1,17 +1,15 @@
 import {HttpClient, HttpSerializer, NetworkError, Response, ResponseCode, ServerError} from '..';
 import {Observable} from 'rxjs';
-import * as axios from 'axios';
-import {AxiosError, AxiosResponse, AxiosStatic} from 'axios';
 import * as qs from 'qs';
 
 export class HttpClientAxios implements HttpClient {
 
     private headers: { [key: string]: string } = {};
-    private axios: AxiosStatic;
+    private axios;
     private serializer?: HttpSerializer;
 
     constructor() {
-        this.axios = axios.default;
+        import('axios').then((a) => this.axios = a.default);
     }
 
     setSerializer(httpSerializer: HttpSerializer) {
@@ -55,7 +53,7 @@ export class HttpClientAxios implements HttpClient {
         );
     }
 
-    private handleResponse(promise: Promise<AxiosResponse<any>>): Observable<Response> {
+    private handleResponse(promise: Promise<any>): Observable<Response> {
         return Observable.fromPromise(
             promise.then(async (axiosResponse) => {
                 const sunbirdResponse = new Response<any>();
@@ -63,7 +61,7 @@ export class HttpClientAxios implements HttpClient {
                 sunbirdResponse.body = axiosResponse.data;
                 return sunbirdResponse;
             })
-                .catch(async (e: AxiosError) => {
+                .catch(async (e) => {
                     if (!e.response) {
                         throw new NetworkError(`
                             ${e.config.url} -
