@@ -232,7 +232,7 @@ export class ProfileServiceImpl implements ProfileService {
             selectionArgs: [profile.uid],
         }).map((rows) => {
             if (!rows || !rows[0]) {
-                return Observable.throw(new NoProfileFoundError(`No Profile found with ID ${profile.uid}`));
+                throw new NoProfileFoundError(`No Profile found with ID ${profile.uid}`);
             }
 
             return ProfileDbEntryMapper.mapProfileDBEntryToProfile(rows[0]);
