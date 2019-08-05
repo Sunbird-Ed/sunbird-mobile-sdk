@@ -1,4 +1,4 @@
-export interface    Course {
+export interface Course {
     dateTime?: string;
     identifier?: string;
     lastReadContentStatus?: number;
@@ -19,4 +19,5 @@ export interface    Course {
     status?: number;
     contentsPlayedOffline?: string[];
     batch?: {[key: string]: any};
+    completionPercentage?: number;
 }
