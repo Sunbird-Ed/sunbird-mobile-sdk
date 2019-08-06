@@ -7,5 +7,6 @@ export declare class OfflineContentStateHandler {
     getLocalContentStateResponse(request: GetContentStateRequest): Observable<ContentStateResponse>;
     manipulateEnrolledCoursesResponseLocally(updateContentStateRequest: UpdateContentStateRequest): Observable<boolean>;
     manipulateGetContentStateResponseLocally(updateContentStateRequest: UpdateContentStateRequest): Observable<boolean>;
+    getCourseCompletionPercentage(leafNodeCount: number | undefined, progress: number): number;
     private getContentState;
 }
