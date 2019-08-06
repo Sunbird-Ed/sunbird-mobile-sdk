@@ -1,4 +1,4 @@
-import {FileName, ImportContentContext} from '../..';
+import {ContentData, FileName, ImportContentContext} from '../..';
 import {Response} from '../../../api';
 import {ContentErrorCode, ContentImportStatus, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
@@ -8,7 +8,6 @@ import {DbService} from '../../../db';
 import {GetContentDetailsHandler} from '../get-content-details-handler';
 import {ContentEntry} from '../../db/schema';
 import {ArrayUtil} from '../../../util/array-util';
-import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class ValidateEcar {
 
@@ -36,7 +35,6 @@ export class ValidateEcar {
             throw response;
         }
         const archive = manifestJson.archive;
-        const items = archive.items;
         if (!archive.items) {
             response.errorMesg = ContentErrorCode.IMPORT_FAILED_NO_CONTENT_METADATA.valueOf();
             await this.fileService.removeRecursively(importContext.tmpLocation!);
@@ -46,7 +44,9 @@ export class ValidateEcar {
         importContext.manifestVersion = manifestJson.ver;
         importContext.items = [];
 
+        const items = archive.items;
         const contentIds: string[] = [];
+        // TODO: Following loop can be replaced with childNodes of root content.
         for (const e of items) {
             const item = e as any;
             const identifier = item.identifier;
@@ -87,11 +87,27 @@ export class ValidateEcar {
                 isRootExists = false;
             }
 
-            const existingContentModel = result[identifier];
+            const existingContentModel: ContentEntry.SchemaMap = result[identifier];
             let existingContentPath;
 
             if (existingContentModel) {
-                existingContentPath = existingContentModel[COLUMN_NAME_PATH];
+                const refCount: number | undefined = existingContentModel[ContentEntry.COLUMN_NAME_REF_COUNT];
+                existingContentPath = existingContentModel[ContentEntry.COLUMN_NAME_PATH];
+
+                // If more than 1 root content is bundled in ecar then initialize the isRootExists to false.
+                if (existingContentPath
+                    && visibility === Visibility.DEFAULT.valueOf()  // Check only for root nodes
+                    && refCount && refCount > 0) {  // refCount = 0 means that content was imported and then deleted from the device,
+                    // which will consider as not imported if its equals to zero.
+                    isRootExists = true;
+
+                    const existingContentData: ContentData = JSON.parse(existingContentModel[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+                    if (existingContentData
+                        && item.pkgVersion > existingContentData.pkgVersion
+                        && existingContentData.childNodes && existingContentData.childNodes.length > 0) {
+                        importContext.contentIdsToDelete = new Set(existingContentData.childNodes);
+                    }
+                }
             }
 
             // To check whether the file is already imported or not
@@ -100,12 +116,13 @@ export class ValidateEcar {
                 && !ContentUtil.isDuplicateCheckRequired(isDraftContent, item.pkgVersion) // Check if its draft and pkgVersion is 0.
                 && ContentUtil.isImportFileExist(existingContentModel, item) // Check whether the file is already imported or not.
             ) {
-                isRootExists = true;
                 this.skipContent(importContext, identifier, visibility, ContentImportStatus.ALREADY_EXIST);
                 continue;
             }
 
-            if (isRootExists && visibility === Visibility.PARENT.valueOf()) {
+            if (isRootExists
+                // If new content is added in the updated version then do not add in existedContentIdentifiers
+                && importContext.contentIdsToDelete.delete(identifier)) {
                 importContext.existedContentIdentifiers[identifier] = true;
             }
 

@@ -8,7 +8,6 @@ export class GenerateInteractTelemetry {
     }
 
     execute(importContext: ImportContentContext, subType): Promise<Response> {
-        const response: Response = new Response();
         const telemetryInteractRequest = new TelemetryInteractRequest();
         telemetryInteractRequest.type = InteractType.OTHER;
         telemetryInteractRequest.subType = subType;
@@ -17,6 +16,8 @@ export class GenerateInteractTelemetry {
         telemetryInteractRequest.env = 'sdk';
         telemetryInteractRequest.objType = 'Content';
         telemetryInteractRequest.correlationData = importContext.correlationData;
+
+        const response: Response = new Response();
         response.body = importContext;
         return this.telemetryService.interact(telemetryInteractRequest).map(() => {
             return response;

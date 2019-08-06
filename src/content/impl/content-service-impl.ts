@@ -251,7 +251,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     exportContent(contentExportRequest: ContentExportRequest): Observable<ContentExportResponse> {
-        const response: Response = new Response();
         const exportHandler = new ImportNExportHandler(this.deviceInfo, this.dbService);
         return Observable.fromPromise(exportHandler.getContentExportDBModeltoExport(
             contentExportRequest.contentIds).then((contentsInDb: ContentEntry.SchemaMap[]) => {
@@ -372,7 +371,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 skippedItemsIdentifier: [],
                 items: [],
                 contentImportResponseList: [],
-                correlationData: ecarImportRequest.correlationData || []
+                correlationData: ecarImportRequest.correlationData || [],
+                contentIdsToDelete: new Set()
             };
             return new GenerateInteractTelemetry(this.telemetryService).execute(importContentContext, 'ContentImport-Initiated')
                 .then(() => {
@@ -393,6 +393,15 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     return new CreateHierarchy(this.dbService, this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
                     return new EcarCleanup(this.fileService).execute(importResponse.body);
+                }).then((importResponse: Response) => {
+                    const response: Response = new Response();
+                    return this.cleanupContent(importContentContext).toPromise()
+                        .then(() => {
+                            response.body = importContentContext;
+                            return Promise.resolve(response);
+                        }).catch(() => {
+                            return Promise.reject(response);
+                        });
                 }).then((importResponse: Response) => {
                     new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
                     return importResponse;
@@ -417,6 +426,19 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             console.log('error', error);
             return [{identifier: '', status: ContentImportStatus.NOT_FOUND}];
         }));
+    }
+
+    private cleanupContent(importContentContext: ImportContentContext): Observable<undefined> {
+        const contentDeleteList: ContentDelete[] = [];
+        for (const contentId of Array.from(importContentContext.contentIdsToDelete.values())) {
+            const contentDeleteRequest: ContentDelete = {
+                contentId: contentId,
+                isChildContent: false
+            };
+            contentDeleteList.push(contentDeleteRequest);
+        }
+        return this.deleteContent({contentDeleteList: contentDeleteList})
+            .mapTo(undefined);
     }
 
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {
