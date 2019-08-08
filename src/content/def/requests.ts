@@ -135,6 +135,9 @@ export interface ContentSearchCriteria {
     searchType?: SearchType;
     framework?: string;
     languageCode?: string;
+    mimeType?: string[];
+    subject?: string[];
+    fields?: string[];
 }
 
 export interface ContentSearchFilter {
@@ -169,8 +172,9 @@ export interface ImportContentContext {
     tmpLocation?: string;
     rootIdentifier?: string;
     correlationData?: CorrelationData[];
-    existedContentIdentifiers?: { [identifier: string]: boolean};   // Update the content, but do not update refCount.
+    existedContentIdentifiers?: { [identifier: string]: boolean };   // Update the content, but do not update refCount.
     // Because for the same content it was increasing the refCount when updating/re-importing/while importing artifact.
+    contentIdsToDelete: Set<string>;    // Orphan contents which is not part of updated version of Book/Course, needs to delete.
 }
 
 export interface ExportContentContext {

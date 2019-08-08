@@ -10,7 +10,6 @@ import {ContentKeys} from '../../../preference-keys';
 import {SharedPreferences} from '../../../util/shared-preferences';
 
 export class UpdateSizeOnDevice {
-    private static readonly KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL = ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL;
 
     constructor(private dbService: DbService, private sharedPreferences: SharedPreferences) {
     }
@@ -34,7 +33,7 @@ export class UpdateSizeOnDevice {
     private updateSize(): Observable<any> {
         return this.findAllContents()
             .do(async () =>
-                this.sharedPreferences.putBoolean(UpdateSizeOnDevice.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, false).toPromise()
+                this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, false).toPromise()
             )
             .mergeMap(async (contentsInDb: ContentEntry.SchemaMap[]) => {
                 for (const element of contentsInDb) {
@@ -65,7 +64,7 @@ export class UpdateSizeOnDevice {
             })
             .mergeMap((contentsInDb) => this.updateInDb(contentsInDb))
             .do(async () =>
-                this.sharedPreferences.putBoolean(UpdateSizeOnDevice.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, true).toPromise()
+                this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, true).toPromise()
             );
     }
 

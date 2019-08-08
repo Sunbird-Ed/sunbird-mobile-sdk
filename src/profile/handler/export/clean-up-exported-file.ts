@@ -42,7 +42,7 @@ export class CleanupExportedFile {
         }).then(() => {
             response.body = exportContext;
             return response;
-        }).catch(() => {
+        }).catch((e) => {
             response.errorMesg = ErrorCode.EXPORT_FAILED;
             throw response;
         });
@@ -87,7 +87,7 @@ export class CleanupExportedFile {
     private async deleteUnwantedProfilesAndUsers(userIds: string[]) {
         const profilesToRetain: string[] = [];
         const usersToRetain: string[] = [];
-        userIds.forEach(async (userId) => {
+        for (const userId of userIds) {
             const profilesInDb: ProfileEntry.SchemaMap[] = await this.dbService.read({
                 table: ProfileEntry.TABLE_NAME,
                 useExternalDb: true,
@@ -109,9 +109,9 @@ export class CleanupExportedFile {
             if (usersInDb && usersInDb.length) {
                 usersToRetain.push(usersInDb[0][UserEntry.COLUMN_NAME_UID]);
             }
-        });
+        }
 
-        await this.cleanTable(ProfileEntry.TABLE_NAME, ProfileEntry.COLUMN_NAME_UID, usersToRetain);
+        await this.cleanTable(ProfileEntry.TABLE_NAME, ProfileEntry.COLUMN_NAME_UID, profilesToRetain);
         await this.cleanTable(UserEntry.TABLE_NAME, UserEntry.COLUMN_NAME_UID, profilesToRetain);
     }
 
@@ -125,7 +125,7 @@ export class CleanupExportedFile {
             return;
         }
         const groupsToRetain: string[] = [];
-        groupIds.forEach(async (groupId) => {
+        for (const groupId of groupIds) {
             const groupsInDb: GroupEntry.SchemaMap[] = await this.dbService.read({
                 table: GroupEntry.TABLE_NAME,
                 useExternalDb: true,
@@ -136,8 +136,7 @@ export class CleanupExportedFile {
             if (groupsInDb && groupsInDb.length) {
                 groupsToRetain.push(groupsInDb[0][GroupProfileEntry.COLUMN_NAME_GID]);
             }
-        });
-
+        }
         await this.cleanTable(GroupEntry.TABLE_NAME, GroupEntry.COLUMN_NAME_GID, groupsToRetain);
     }
 
@@ -146,7 +145,7 @@ export class CleanupExportedFile {
             return;
         }
         const groupsToRetain: string[] = [];
-        groupIds.forEach(async (groupId) => {
+        for (const groupId of groupIds) {
             const groupsInDb: GroupProfileEntry.SchemaMap[] = await this.dbService.read({
                 table: GroupProfileEntry.TABLE_NAME,
                 useExternalDb: true,
@@ -157,8 +156,7 @@ export class CleanupExportedFile {
             if (groupsInDb && groupsInDb.length) {
                 groupsToRetain.push(groupsInDb[0][ProfileEntry.COLUMN_NAME_UID]);
             }
-        });
-
+        }
         await this.cleanTable(GroupEntry.TABLE_NAME, GroupEntry.COLUMN_NAME_GID, groupIds);
     }
 

@@ -74,6 +74,7 @@ import {TransportProfiles} from '../handler/import/transport-profiles';
 import {SdkConfig} from '../../sdk-config';
 import {Container, inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
+import {TenantInfoRequest} from '../def/tenant-info-request';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -280,9 +281,9 @@ export class ProfileServiceImpl implements ProfileService {
         return new SearchServerProfileHandler(this.apiService, this.sdkConfig.profileServiceConfig).handle(searchCriteria);
     }
 
-    getTenantInfo(): Observable<TenantInfo> {
+    getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo> {
         return new TenantInfoHandler(this.apiService,
-            this.sdkConfig.profileServiceConfig).handle();
+            this.sdkConfig.profileServiceConfig).handle(tenantInfoRequest);
     }
 
     getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]> {
@@ -506,7 +507,8 @@ export class ProfileServiceImpl implements ProfileService {
                 return new CreateMetaData(this.dbService, this.fileService, this.deviceInfo).execute(exportResponse.body);
             }).then((exportResponse: Response) => {
                 const response: ProfileExportResponse = {exportedFilePath: ''};
-                return new CleanupExportedFile(this.dbService, this.fileService).execute(exportResponse.body);
+                return new CleanupExportedFile(this.dbService, this.fileService).execute(exportResponse.body)
+                    .catch(() => exportResponse);
             }).then((exportResponse: Response) => {
                 return new GenerateProfileExportTelemetry(this.dbService).execute(exportResponse.body);
             }).then((exportResponse: Response<ExportProfileContext>) => {

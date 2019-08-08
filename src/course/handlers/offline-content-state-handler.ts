@@ -50,9 +50,9 @@ export class OfflineContentStateHandler {
                                 if (!course.contentsPlayedOffline || !course.contentsPlayedOffline!.length) {
                                     course.contentsPlayedOffline = [];
                                 }
-                                if (course.contentsPlayedOffline!.length === 0 ||
+                                if (updateContentStateRequest.status !== 1 && (course.contentsPlayedOffline!.length === 0 ||
                                     (course.contentsPlayedOffline!.length > 0 &&
-                                        !ArrayUtil.contains(course.contentsPlayedOffline, updateContentStateRequest.contentId))) {
+                                        !ArrayUtil.contains(course.contentsPlayedOffline, updateContentStateRequest.contentId)))) {
                                     course.progress = course.progress ? course.progress : 0;
                                     course.progress = course.progress + 1;
                                     const updatedCourse: Course = course;

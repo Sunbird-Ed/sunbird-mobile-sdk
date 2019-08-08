@@ -9,7 +9,6 @@ export class GenerateImportShareTelemetry {
     }
 
     execute(importContentContext: ImportContentContext): Promise<Response> {
-        const response: Response = new Response();
         const metaData = importContentContext.metadata;
         const items: Item[] = [];
         for (const element of importContentContext.items!) {
@@ -23,6 +22,7 @@ export class GenerateImportShareTelemetry {
             };
             items.push(item);
         }
+
         const req: TelemetryShareRequest = {
             dir: ShareDirection.IN,
             type: ShareType.FILE.valueOf(),
@@ -30,11 +30,14 @@ export class GenerateImportShareTelemetry {
             env: 'sdk',
             correlationData: importContentContext.correlationData
         };
-        return this.telemetryService.share(req).toPromise().then(() => {
-            response.body = importContentContext;
-            return Promise.resolve(response);
-        }).catch(() => {
-            return Promise.reject(response);
-        });
+
+        const response: Response = new Response();
+        return this.telemetryService.share(req).toPromise()
+            .then(() => {
+                response.body = importContentContext;
+                return Promise.resolve(response);
+            }).catch(() => {
+                return Promise.reject(response);
+            });
     }
 }

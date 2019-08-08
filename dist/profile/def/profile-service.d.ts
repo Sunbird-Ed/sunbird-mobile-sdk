@@ -21,12 +21,13 @@ import { ProfileExportResponse } from './profile-export-response';
 import { ProfileImportRequest } from './profile-import-request';
 import { ProfileImportResponse } from './profile-import-response';
 import { SdkServicePreInitDelegate } from '../../sdk-service-pre-init-delegate';
+import { TenantInfoRequest } from './tenant-info-request';
 export interface ProfileService extends SdkServicePreInitDelegate {
     createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
     deleteProfile(uid: string): Observable<undefined>;
     updateProfile(profile: Profile): Observable<Profile>;
     updateServerProfile(updateServerProfileRequest: UpdateServerProfileInfoRequest): Observable<Profile>;
-    getTenantInfo(): Observable<TenantInfo>;
+    getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo>;
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
     getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]>;
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile>;
