@@ -15,7 +15,7 @@ export class GetBatchDetailsHandler implements ApiRequestHandler<CourseBatchDeta
             .withType(HttpRequestType.GET)
             .withPath(this.courseServiceConfig.apiPath + this.GET_BATCH_DETAILS_ENDPOINT + request.batchId)
             .withApiToken(true)
-            .withSessionToken(true)
+            .withSessionToken(false)
             .build();
 
         return this.apiService.fetch<{ result: { response: Batch } }>(apiRequest).map((response) => {
