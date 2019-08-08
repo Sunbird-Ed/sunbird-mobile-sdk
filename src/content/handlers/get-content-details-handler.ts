@@ -105,7 +105,8 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                                 event: {
                                     type: ContentEventType.UPDATE,
                                     payload: {
-                                        contentId: localContent.contentData.identifier
+                                        contentId: localContent.contentData.identifier,
+                                        size: serverContentData.size
                                     }
                                 }
                             });

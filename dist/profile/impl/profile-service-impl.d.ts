@@ -15,6 +15,7 @@ import { FileService } from '../../util/file/def/file-service';
 import { DeviceInfo } from '../../util/device';
 import { SdkConfig } from '../../sdk-config';
 import { Container } from 'inversify';
+import { TenantInfoRequest } from '../def/tenant-info-request';
 export declare class ProfileServiceImpl implements ProfileService {
     private container;
     private sdkConfig;
@@ -35,7 +36,7 @@ export declare class ProfileServiceImpl implements ProfileService {
     updateProfile(profile: Profile): Observable<Profile>;
     updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<Profile>;
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
-    getTenantInfo(): Observable<TenantInfo>;
+    getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo>;
     getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]>;
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile>;
     getActiveSessionProfile({ requiredFields }: Pick<ServerProfileDetailsRequest, 'requiredFields'>): Observable<Profile>;

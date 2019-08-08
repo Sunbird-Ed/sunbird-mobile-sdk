@@ -1,6 +1,6 @@
 {
   "name": "sunbird-sdk",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Heart of the sunbird mobile app.",
   "main": "dist/index.js",
   "scripts": {
@@ -83,8 +83,7 @@
       "tsx"
     ],
     "setupFiles": [
-      "./src/__test__/setup.ts",
-      "./src/__test__/cordova-mocks.js"
+      "./src/__test__/setup.ts"
     ],
     "transform": {
       "^.+\\.(ts)$": "ts-jest"

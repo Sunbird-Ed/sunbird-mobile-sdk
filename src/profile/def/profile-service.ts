@@ -21,6 +21,7 @@ import {ProfileExportResponse} from './profile-export-response';
 import {ProfileImportRequest} from './profile-import-request';
 import {ProfileImportResponse} from './profile-import-response';
 import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
+import {TenantInfoRequest} from './tenant-info-request';
 
 
 export interface ProfileService extends SdkServicePreInitDelegate {
@@ -32,7 +33,7 @@ export interface ProfileService extends SdkServicePreInitDelegate {
 
     updateServerProfile(updateServerProfileRequest: UpdateServerProfileInfoRequest): Observable<Profile>;
 
-    getTenantInfo(): Observable<TenantInfo>;
+    getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo>;
 
     getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
 

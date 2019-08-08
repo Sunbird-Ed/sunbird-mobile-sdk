@@ -95,7 +95,6 @@ export class ExtractPayloads {
                 existingContentPath = ContentUtil.getBasePath(existingContentModel[ContentEntry.COLUMN_NAME_PATH]!);
             }
 
-            let doesContentExist: boolean = ContentUtil.doesContentExist(existingContentModel, identifier, pkgVersion, false);
             let rootNodeIdentifier;
             if (visibility === Visibility.DEFAULT.valueOf()) {
                 rootNodeIdentifier = identifier;
@@ -111,6 +110,7 @@ export class ExtractPayloads {
                 }
             }
 
+            let doesContentExist: boolean = ContentUtil.doesContentExist(existingContentModel, identifier, pkgVersion, false);
             // If the content is exist then copy the old content data and add it into new content.
             if (doesContentExist && !(item.status === ContentStatus.DRAFT.valueOf())) {
                 if (existingContentModel![COLUMN_NAME_VISIBILITY] === Visibility.DEFAULT.valueOf()) {

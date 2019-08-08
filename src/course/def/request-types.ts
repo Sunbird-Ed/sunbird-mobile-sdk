@@ -6,7 +6,6 @@ export interface FetchEnrolledCourseRequest {
 export interface EnrollCourseRequest {
     userId: string;
     courseId: string;
-    contentId: string;
     batchId: string;
     batchStatus?: number;
 }
