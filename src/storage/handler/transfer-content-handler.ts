@@ -140,8 +140,8 @@ export class TransferContentHandler {
     }
 
     cancel(): Observable<undefined> {
-        return Observable.defer(() => {
+        return Observable.defer(async () => {
             this.context.hasTransferCancelled = true;
-        });
+        }).mapTo(undefined);
     }
 }
