@@ -83,7 +83,8 @@
       "tsx"
     ],
     "setupFiles": [
-      "./src/__test__/setup.ts"
+      "./src/__test__/setup.ts",
+      "./src/__test__/cordova-mocks.js"
     ],
     "transform": {
       "^.+\\.(ts)$": "ts-jest"
