@@ -228,7 +228,7 @@ describe('BaseConnection', () => {
     });
   });
 
-  it('should use xhr if request.body is of type Uint8Array and request.type is POST', (done) => {
+  it('should resolve with xhr if request.body is of type Uint8Array and request.type is POST', (done) => {
     // arrange
     const mockXHR = {
       open: jest.fn(),
@@ -260,6 +260,33 @@ describe('BaseConnection', () => {
       // assert
       expect(mockHttpClient.post).not.toHaveBeenCalled();
       expect(window['XMLHttpRequest']).toHaveBeenCalled();
+      done();
+    });
+  });
+
+  it('should reject with xhr if request.body is of type Uint8Array and request.type is POST', (done) => {
+    // arrange
+    const mockXHR = {
+      open: jest.fn(),
+      send: jest.fn(() => { mockXHR['onreadystatechange']() }),
+      readyState: 4,
+      status: ResponseCode.HTTP_BAD_REQUEST,
+      setRequestHeader: jest.fn(),
+      responseText: '{}',
+    };
+    window['XMLHttpRequest'] = jest.fn().mockImplementation(() => {
+      return mockXHR
+    });
+
+    const req = new Request.Builder()
+      .withPath('/')
+      .withType(HttpRequestType.POST)
+      .withBody(new Uint8Array([]))
+      .build();
+
+    // act
+    baseConnection.invoke(req).subscribe(() => {}, (e) => {
+      // assert
       done();
     });
   });
