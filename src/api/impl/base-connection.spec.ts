@@ -208,18 +208,22 @@ describe('BaseConnection', () => {
       res.body = {};
       return Observable.of(res);
     });
+    mockHttpClient.setSerializer = jest.fn((serializer) => serializer);
 
     const req = new Request.Builder()
       .withPath('/')
       .withType(HttpRequestType.PATCH)
-      .withSessionToken(HttpSerializer.URLENCODED)
+      .withSerializer(HttpSerializer.URLENCODED)
+      .withBody({})
       .build();
 
     // act
     baseConnection.invoke(req).subscribe(() => {
       // assert
       expect(mockHttpClient.patch).toHaveBeenCalled();
-      expect(typeof req.serializer).toEqual('string');
+      expect(req.serializer).toEqual(HttpSerializer.URLENCODED);
+      expect(mockHttpClient.setSerializer).toHaveBeenCalledWith(req.serializer);
+      expect(typeof req.body).toEqual('string');
       done();
     });
   });
