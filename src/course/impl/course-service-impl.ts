@@ -36,6 +36,9 @@ import {ProcessingError} from '../../auth/errors/processing-error';
 import { injectable, inject } from 'inversify';
 import { InjectionTokens } from '../../injection-tokens';
 import { SdkConfig } from '../../sdk-config';
+import { DownloadCertificateRequest } from '../def/download-certificate-request';
+import { DownloadCertificateResponse } from '../def/download-certificate-response';
+import { AuthService } from '../../auth';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -53,6 +56,7 @@ export class CourseServiceImpl implements CourseService {
         @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
+        @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService
         ) {
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
     }
@@ -87,7 +91,7 @@ export class CourseServiceImpl implements CourseService {
 
     getCourseBatches(request: CourseBatchesRequest): Observable<Batch[]> {
         return new GetCourseBatchesHandler(
-            this.apiService, this.courseServiceConfig, this.profileService)
+            this.apiService, this.courseServiceConfig, this.profileService, this.authService)
             .handle(request);
     }
 
@@ -171,4 +175,51 @@ export class CourseServiceImpl implements CourseService {
         return Observable.of(0);
     }
 
+    public downloadCurrentProfileCourseCertificate(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
+        return this.profileService.getActiveProfileSession()
+            .mergeMap((session) => {
+                const option = {
+                    userId: session.uid,
+                    refreshEnrolledCourses: false,
+                    returnRefreshedEnrolledCourses: true
+                };
+                return this.getEnrolledCourses(option);
+            })
+            .map((courses: Course[]) => {
+                // tslint:disable-next-line:no-debugger
+                debugger;
+                return courses
+                    .filter((course) => course.status && course.status === 2)
+                    .find((course) => course.courseId === request.courseId)!;
+            })
+            .mergeMap(async (course: Course) => {
+                const response: DownloadCertificateResponse = {
+                    paths: []
+                };
+
+                for (const certificate of course['certificates']) {
+                    const fileTransfer = new FileTransfer();
+                    const res: any = await new Promise<any>((resolve, reject) => {
+                        fileTransfer.download(
+                            certificate.url,
+                            cordova.file.externalDataDirectory + 'Download/' + certificate.name + '.pdf',
+                            (entry) => {
+                                console.log('download complete: ' + entry.toURL());
+                                resolve(entry);
+                            },
+                            (error) => {
+                                console.error('download error source ' + error.source);
+                                console.error('download error target ' + error.target);
+                                console.error('download error code ' + error.code);
+                                reject(error);
+                            }
+                        );
+                    });
+
+                    response.paths.push(res);
+                }
+
+                return response;
+            });
+    }
 }

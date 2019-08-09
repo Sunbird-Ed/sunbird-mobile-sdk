@@ -11,6 +11,8 @@ import {Batch} from './batch';
 import {Course} from './course';
 import {UnenrollCourseRequest} from './unenrollCourseRequest';
 import {ApiService, Response} from '../../api';
+import { DownloadCertificateRequest } from './download-certificate-request';
+import { DownloadCertificateResponse } from './download-certificate-response';
 export interface CourseService {
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
 
@@ -25,4 +27,8 @@ export interface CourseService {
     unenrollCourse(unenrollCourseRequest: UnenrollCourseRequest): Observable<boolean>;
 
     getContentState(contentStateRequest: GetContentStateRequest): Observable<ContentStateResponse | undefined>;
+
+    downloadCurrentProfileCourseCertificate(
+        downloadCertificateRequest: DownloadCertificateRequest
+    ): Observable<DownloadCertificateResponse>;
 }
