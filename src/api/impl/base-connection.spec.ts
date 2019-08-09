@@ -5,6 +5,7 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {ApiAuthenticator} from '../../util/authenticators/impl/api-authenticator';
 import {SessionAuthenticator} from '../../util/authenticators/impl/session-authenticator';
 import {Observable} from 'rxjs';
+import {anything, instance, mock, when} from 'ts-mockito';
 
 describe('BaseConnection', () => {
   let baseConnection: BaseConnection;
@@ -37,6 +38,10 @@ describe('BaseConnection', () => {
       defaultApiAuthenticators,
       defaultSessionAuthenticators
     );
+  });
+
+  beforeEach(() => {
+    jest.resetAllMocks();
   });
 
   it('should invoke httpClient.get on invoke() with GET request', (done) => {
@@ -96,14 +101,161 @@ describe('BaseConnection', () => {
 
     const req = new Request.Builder()
       .withPath('/')
-      .withType(HttpRequestType.GET)
+      .withType(HttpRequestType.PATCH)
       .build();
 
     // act
     baseConnection.invoke(req).subscribe(() => {
       // assert
       // TODO: remaining assertions
-      expect(mockHttpClient.get).toHaveBeenCalled();
+      expect(mockHttpClient.patch).toHaveBeenCalled();
+      done();
+    });
+  });
+
+  it('should append default defaultApiAuthenticators if request.withApiToken is set', (done) => {
+    // arrange
+    const MockApiAuthenticator = mock<ApiAuthenticator>();
+    when(MockApiAuthenticator.interceptRequest(anything())).thenCall((req) => Observable.of(req));
+    when(MockApiAuthenticator.interceptResponse(anything(), anything())).thenCall((req, res) => Observable.of(res));
+    const mockApiAuthenticator = instance(MockApiAuthenticator);
+    const defaultApiAuthenticators = [mockApiAuthenticator];
+
+    baseConnection = new BaseConnection(
+      mockHttpClient as HttpClient,
+      mockApiConfig as ApiConfig,
+      mockDeviceInfo as DeviceInfo,
+      mockSharedPreferences as SharedPreferences,
+      defaultApiAuthenticators,
+      defaultSessionAuthenticators
+    );
+
+    mockHttpClient.patch = jest.fn((baseUrl: string, path: string, headers: any, parameters: any) => {
+      const res = new Response();
+      res.responseCode = ResponseCode.HTTP_SUCCESS;
+      res.responseCode = ResponseCode.HTTP_SUCCESS;
+      res.body = {};
+      return Observable.of(res);
+    });
+
+    const req = new Request.Builder()
+      .withPath('/')
+      .withType(HttpRequestType.PATCH)
+      .withApiToken(true)
+      .build();
+
+    // act
+    baseConnection.invoke(req).subscribe(() => {
+      // assert
+      expect(mockHttpClient.patch).toHaveBeenCalled();
+
+      expect(req.authenticators).toContain(mockApiAuthenticator);
+      expect(req.requestInterceptors).toContain(mockApiAuthenticator);
+      expect(req.responseInterceptors).toContain(mockApiAuthenticator);
+
+      done();
+    });
+  });
+
+  it('should append default defaultApiAuthenticators if request.withApiToken is set', (done) => {
+    // arrange
+    const MockSessionAuthenticator = mock<SessionAuthenticator>();
+    when(MockSessionAuthenticator.interceptRequest(anything())).thenCall((req) => Observable.of(req));
+    when(MockSessionAuthenticator.interceptResponse(anything(), anything())).thenCall((req, res) => Observable.of(res));
+    const mockSessionAuthenticator = instance(MockSessionAuthenticator);
+    const defaultSessionAuthenticators = [mockSessionAuthenticator];
+
+    baseConnection = new BaseConnection(
+      mockHttpClient as HttpClient,
+      mockApiConfig as ApiConfig,
+      mockDeviceInfo as DeviceInfo,
+      mockSharedPreferences as SharedPreferences,
+      defaultApiAuthenticators,
+      defaultSessionAuthenticators
+    );
+
+    mockHttpClient.patch = jest.fn((baseUrl: string, path: string, headers: any, parameters: any) => {
+      const res = new Response();
+      res.responseCode = ResponseCode.HTTP_SUCCESS;
+      res.responseCode = ResponseCode.HTTP_SUCCESS;
+      res.body = {};
+      return Observable.of(res);
+    });
+
+    const req = new Request.Builder()
+      .withPath('/')
+      .withType(HttpRequestType.PATCH)
+      .withSessionToken(true)
+      .build();
+
+    // act
+    baseConnection.invoke(req).subscribe(() => {
+      // assert
+      expect(mockHttpClient.patch).toHaveBeenCalled();
+      expect(req.authenticators).toContain(mockSessionAuthenticator);
+      expect(req.requestInterceptors).toContain(mockSessionAuthenticator);
+      expect(req.responseInterceptors).toContain(mockSessionAuthenticator);
+      done();
+    });
+  });
+
+  it('should set appropriate serializer when request.withSerializer', (done) => {
+    // arrange
+    mockHttpClient.patch = jest.fn((baseUrl: string, path: string, headers: any, parameters: any) => {
+      const res = new Response();
+      res.responseCode = ResponseCode.HTTP_SUCCESS;
+      res.responseCode = ResponseCode.HTTP_SUCCESS;
+      res.body = {};
+      return Observable.of(res);
+    });
+
+    const req = new Request.Builder()
+      .withPath('/')
+      .withType(HttpRequestType.PATCH)
+      .withSessionToken(HttpSerializer.URLENCODED)
+      .build();
+
+    // act
+    baseConnection.invoke(req).subscribe(() => {
+      // assert
+      expect(mockHttpClient.patch).toHaveBeenCalled();
+      expect(typeof req.serializer).toEqual('string');
+      done();
+    });
+  });
+
+  it('should use xhr if request.body is of type Uint8Array and request.type is POST', (done) => {
+    // arrange
+    const mockXHR = {
+      open: jest.fn(),
+      send: jest.fn(() => { mockXHR['onreadystatechange']() }),
+      readyState: 4,
+      status: 200,
+      setRequestHeader: jest.fn(),
+      responseText: '{}',
+    };
+    window['XMLHttpRequest'] = jest.fn().mockImplementation(() => {
+      return mockXHR
+    });
+
+    mockHttpClient.post = jest.fn((baseUrl: string, path: string, headers: any, parameters: any) => {
+      const res = new Response();
+      res.responseCode = ResponseCode.HTTP_SUCCESS;
+      res.body = {};
+      return Observable.of(res);
+    });
+
+    const req = new Request.Builder()
+      .withPath('/')
+      .withType(HttpRequestType.POST)
+      .withBody(new Uint8Array([]))
+      .build();
+
+    // act
+    baseConnection.invoke(req).subscribe(() => {
+      // assert
+      expect(mockHttpClient.post).not.toHaveBeenCalled();
+      expect(window['XMLHttpRequest']).toHaveBeenCalled();
       done();
     });
   });
