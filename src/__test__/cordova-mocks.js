@@ -1,6 +1,13 @@
 global.cordova = {
     plugin: {
-        http: {}
+        http: {
+            setDataSerializer: () => {},
+            setHeader: () => {},
+            get: () => {},
+            post: () => {},
+            put: () => {},
+            patch: () => {},
+        }
     },
     plugins: {
         notification: {
