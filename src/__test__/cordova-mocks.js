@@ -26,6 +26,9 @@ global.cordova = {
     },
     file: {
         applicationDirectory: '/path'
+    },
+    InAppBrowser: {
+        open: () => {},
     }
 };
 
