@@ -171,10 +171,6 @@ export class CourseServiceImpl implements CourseService {
             }).mapTo(true);
     }
 
-    checkContentStatus(request: GetContentStateRequest): Observable<number> {
-        return Observable.of(0);
-    }
-
     public downloadCurrentProfileCourseCertificate(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
         return this.profileService.getActiveProfileSession()
             .mergeMap((session) => {
