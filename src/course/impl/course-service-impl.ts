@@ -193,7 +193,7 @@ export class CourseServiceImpl implements CourseService {
           .filter((course) => course.status && course.status === 2)
           .find((course) => course.courseId === request.courseId)!;
       })
-      .mergeMap(async (course: Course) => {
+      .mergeMap((course: Course) => {
         if (!course.certificates) {
           throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
         }
