@@ -1,3 +1,4 @@
 export interface DownloadCertificateRequest {
-    courseId: string;
+  courseId: string;
+  certificateToken: string;
 }

@@ -12,8 +12,4 @@ export class JWTUtil {
     public static getJWTPayload(token: string): any {
         return jwt.decode(token, {json: true});
     }
-
-    public static parseUserTokenFromAccessToken(accessToken: string): string {
-        return JWTUtil.getJWTPayload(accessToken).sub;
-    }
 }
