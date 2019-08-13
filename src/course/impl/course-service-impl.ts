@@ -218,7 +218,7 @@ export class CourseServiceImpl implements CourseService {
           headers: []
         };
 
-        return Observable.create((observer) => {
+        return Observable.create((observer: Observer<string>) => {
           downloadManager.enqueue(downloadRequest, (err, id: string) => {
             if (err) {
               return observer.error(err);
@@ -226,7 +226,7 @@ export class CourseServiceImpl implements CourseService {
 
             observer.next(id);
           });
-        });
+        }) as Observable<string>;
       }).mergeMap((downloadId: string) => {
         return Observable.interval(1000)
           .mergeMap<number, EnqueuedEntry>(() => {
@@ -236,11 +236,12 @@ export class CourseServiceImpl implements CourseService {
                   return observer.error(err);
                 }
 
-                return entries[0]! as EnqueuedEntry;
+                return observer.next(entries[0]! as EnqueuedEntry);
               });
             });
           })
-          .takeWhile((entry: EnqueuedEntry) => entry.status === DownloadStatus.STATUS_SUCCESSFUL)
-      }).map((entry) => ({path: entry.localUri}));
+          .takeWhile((entry: EnqueuedEntry) => entry.status !== DownloadStatus.STATUS_SUCCESSFUL);
+      })
+      .map((entry) => ({path: entry.localUri}));
   }
 }
