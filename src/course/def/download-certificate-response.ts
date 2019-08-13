@@ -1,3 +1,3 @@
 export interface DownloadCertificateResponse {
-    paths: string[];
+    path: string;
 }
