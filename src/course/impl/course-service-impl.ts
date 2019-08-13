@@ -229,7 +229,7 @@ export class CourseServiceImpl implements CourseService {
         });
       }).mergeMap((downloadId: string) => {
         return Observable.interval(1000)
-          .concatMap<number, EnqueuedEntry>(() => {
+          .mergeMap<number, EnqueuedEntry>(() => {
             return Observable.create((observer: Observer<EnqueuedEntry>) => {
               downloadManager.query({ids: [downloadId]}, (err, entries) => {
                 if (err) {
