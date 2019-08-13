@@ -1,3 +1,4 @@
+import "rxjs-compat";
 export * from './db';
 export * from './api';
 export * from './telemetry';
