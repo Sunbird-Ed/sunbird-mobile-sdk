@@ -324,7 +324,8 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {
-        return new GetServerProfileDetailsHandler(this.apiService, this.sdkConfig.profileServiceConfig, this.cachedItemStore, this.keyValueStore)
+        return new GetServerProfileDetailsHandler(this.apiService, this.sdkConfig.profileServiceConfig,
+            this.cachedItemStore, this.keyValueStore)
             .handle(serverProfileDetailsRequest);
     }
 
