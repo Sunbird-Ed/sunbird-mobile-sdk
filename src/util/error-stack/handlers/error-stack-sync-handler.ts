@@ -46,7 +46,7 @@ export class ErrorStackSyncHandler {
                     return this.processBatch(errorSyncBandwidth);
                 }
 
-                return Observable.empty<number>();
+                return Observable.empty();
             })
             .mapTo(undefined)
             .catch(() => Observable.of(undefined));

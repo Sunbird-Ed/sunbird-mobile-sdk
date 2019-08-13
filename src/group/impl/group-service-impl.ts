@@ -235,7 +235,7 @@ export class GroupServiceImpl implements GroupService {
                 ...group,
                 profilesCount: profiles.length
             }))
-        ).reduce((allResponses, currentResponse) => [...allResponses, currentResponse], []);
+        ).reduce((allResponses: Group[], currentResponse: Group) => [...allResponses, currentResponse], []);
     }
 
 
@@ -249,7 +249,7 @@ export class GroupServiceImpl implements GroupService {
             }))
             .mergeMap(() => {
                 if (!profileToGroupRequest.uidList.length) {
-                    return Observable.of(undefined);
+                    return Observable.of(0);
                 }
 
                 return Observable.zip(
@@ -262,14 +262,14 @@ export class GroupServiceImpl implements GroupService {
                             }
                         });
                     })
-                ).mapTo(undefined);
+                ).mapTo(profileToGroupRequest.uidList.length);
             })
             .do(() => {
                 this.dbService.endTransaction(true);
             })
             .catch((e) => {
                 this.dbService.endTransaction(false);
-                return Observable.throw(e);
+                return Observable.throwError(e);
             });
     }
 
