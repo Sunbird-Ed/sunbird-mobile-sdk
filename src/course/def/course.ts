@@ -25,6 +25,7 @@ export interface Course {
   courseId?: string;
   status?: number;
   contentsPlayedOffline?: string[];
-  batch?: { [key: string]: any };
+  batch?: {[key: string]: any};
+  completionPercentage?: number;
   certificates?: CourseCertificate[]
 }

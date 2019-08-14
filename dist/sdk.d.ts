@@ -17,12 +17,12 @@ import { DeviceInfo } from './util/device';
 import { EventsBusService } from './events-bus';
 import { SummarizerService } from './summarizer';
 import { DownloadService } from './util/download';
-import { AppInfo } from './util/app/def/app-info';
+import { AppInfo } from './util/app';
 import { PlayerService } from './player';
 import { TelemetryConfig } from './telemetry/config/telemetry-config';
 import { StorageService } from './storage';
-import { NotificationService } from './notification/def/notification-service';
-import { ErrorLoggerService } from './util/error-stack/def/error-logger-service';
+import { NotificationService } from './notification';
+import { ErrorLoggerService } from './util/error-stack';
 import { NetworkInfoService } from './util/network';
 import { SearchHistoryService } from './util/search-history';
 export declare class SunbirdSdk {

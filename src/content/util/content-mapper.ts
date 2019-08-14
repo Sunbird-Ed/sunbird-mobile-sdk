@@ -118,7 +118,7 @@ export class ContentMapper {
         }
 
         const sizeOnDevice = Number(contentEntry[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]);
-        const size = sizeOnDevice ? sizeOnDevice : Number(serverData.size);
+        const size = sizeOnDevice ? sizeOnDevice : Number(serverData ? serverData.size : 0 );
 
         return {
             identifier: identifier,

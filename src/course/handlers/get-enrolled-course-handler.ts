@@ -83,8 +83,8 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
             .withType(HttpRequestType.GET)
             .withPath(this.courseServiceConfig.apiPath + this.GET_ENROLLED_COURSES_ENDPOINT + request.userId
                 + '?orgdetails=orgName,email'
-                + '&fields=contentType,topic,name,channel,certificates'
-                + '&batchDetails=name,endDate,startDate,status,enrollmentType,createdBy')
+                + '&fields=contentType,topic,name,channel'
+                + '&batchDetails=name,endDate,startDate,status,enrollmentType,createdBy,certificates')
             .withApiToken(true)
             .withSessionToken(true)
             .build();

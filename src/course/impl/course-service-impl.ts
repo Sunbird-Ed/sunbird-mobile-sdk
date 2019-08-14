@@ -193,7 +193,7 @@ export class CourseServiceImpl implements CourseService {
           .filter((course) => course.status && course.status === 2)
           .find((course) => course.courseId === request.courseId)!;
       })
-      .mergeMap(async (course: Course) => {
+      .mergeMap((course: Course) => {
         if (!course.certificates) {
           throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
         }
@@ -218,7 +218,7 @@ export class CourseServiceImpl implements CourseService {
           headers: []
         };
 
-        return Observable.create((observer) => {
+        return Observable.create((observer: Observer<string>) => {
           downloadManager.enqueue(downloadRequest, (err, id: string) => {
             if (err) {
               return observer.error(err);
@@ -226,21 +226,23 @@ export class CourseServiceImpl implements CourseService {
 
             observer.next(id);
           });
-        });
+        }) as Observable<string>;
       }).mergeMap((downloadId: string) => {
         return Observable.interval(1000)
-          .concatMap<number, EnqueuedEntry>(() => {
+          .mergeMap<number, EnqueuedEntry>(() => {
             return Observable.create((observer: Observer<EnqueuedEntry>) => {
               downloadManager.query({ids: [downloadId]}, (err, entries) => {
                 if (err) {
                   return observer.error(err);
                 }
 
-                return entries[0]! as EnqueuedEntry;
+                return observer.next(entries[0]! as EnqueuedEntry);
               });
             });
           })
-          .takeWhile((entry: EnqueuedEntry) => entry.status === DownloadStatus.STATUS_SUCCESSFUL)
-      }).map((entry) => ({path: entry.localUri}));
+          .filter((entry: EnqueuedEntry) => entry.status === DownloadStatus.STATUS_SUCCESSFUL)
+          .take(1)
+      })
+      .map((entry) => ({path: entry.localUri}));
   }
 }
