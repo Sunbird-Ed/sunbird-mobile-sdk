@@ -1,3 +1,9 @@
+export interface CourseCertificate {
+    name: string;
+    lastIssuedOn: string;
+    url: string;
+    token: string;
+}
 export interface Course {
     dateTime?: string;
     identifier?: string;
@@ -21,4 +27,5 @@ export interface Course {
     batch?: {
         [key: string]: any;
     };
+    certificates?: CourseCertificate[];
 }

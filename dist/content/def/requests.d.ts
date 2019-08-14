@@ -160,6 +160,7 @@ export interface ImportContentContext {
     existedContentIdentifiers?: {
         [identifier: string]: boolean;
     };
+    contentIdsToDelete: Set<string>;
 }
 export interface ExportContentContext {
     ecarFilePath?: string;

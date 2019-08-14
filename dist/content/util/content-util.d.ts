@@ -37,8 +37,10 @@ export declare class ContentUtil {
     /**
      * To Check whether the content is exist or not.
      *
-     * @param oldContent    Old ContentModel
+     * @param existingContentInDB    Old ContentModel
      * @param newIdentifier New content identifier
+     * @param newPkgVersion
+     * @param keepLowerVersion
      * @return True - if file exists, False- does not exists
      */
     static doesContentExist(existingContentInDB: ContentEntry.SchemaMap | undefined, newIdentifier: string, newPkgVersion: number, keepLowerVersion: boolean): boolean;

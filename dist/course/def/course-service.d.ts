@@ -3,6 +3,8 @@ import { Observable } from 'rxjs';
 import { Batch } from './batch';
 import { Course } from './course';
 import { UnenrollCourseRequest } from './unenrollCourseRequest';
+import { DownloadCertificateRequest } from './download-certificate-request';
+import { DownloadCertificateResponse } from './download-certificate-response';
 export interface CourseService {
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
     updateContentState(request: UpdateContentStateRequest): Observable<boolean>;
@@ -11,4 +13,5 @@ export interface CourseService {
     enrollCourse(request: EnrollCourseRequest): Observable<boolean>;
     unenrollCourse(unenrollCourseRequest: UnenrollCourseRequest): Observable<boolean>;
     getContentState(contentStateRequest: GetContentStateRequest): Observable<ContentStateResponse | undefined>;
+    downloadCurrentProfileCourseCertificate(downloadCertificateRequest: DownloadCertificateRequest): Observable<DownloadCertificateResponse>;
 }
