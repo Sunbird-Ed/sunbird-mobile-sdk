@@ -240,7 +240,8 @@ export class CourseServiceImpl implements CourseService {
               });
             });
           })
-          .takeWhile((entry: EnqueuedEntry) => entry.status !== DownloadStatus.STATUS_SUCCESSFUL);
+          .filter((entry: EnqueuedEntry) => entry.status === DownloadStatus.STATUS_SUCCESSFUL)
+          .take(1)
       })
       .map((entry) => ({path: entry.localUri}));
   }
