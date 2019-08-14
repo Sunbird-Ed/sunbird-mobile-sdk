@@ -27,5 +27,6 @@ export interface Course {
     batch?: {
         [key: string]: any;
     };
+    completionPercentage?: number;
     certificates?: CourseCertificate[];
 }
