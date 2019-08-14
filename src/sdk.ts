@@ -27,7 +27,6 @@ import {PageAssembleServiceImpl} from './page/impl/page-assemble-service-impl';
 import {SharedPreferencesLocalStorage} from './util/shared-preferences/impl/shared-preferences-local-storage';
 import {SharedPreferencesAndroid} from './util/shared-preferences/impl/shared-preferences-android';
 import {FileServiceImpl} from './util/file/impl/file-service-impl';
-import {DbWebSqlService} from './db/impl/db-web-sql-service';
 import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migration';
 import {GroupProfileMigration} from './db/migrations/group-profile-migration';
 import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
@@ -48,7 +47,7 @@ import {SummarizerService, SummarizerServiceImpl} from './summarizer';
 import {Observable} from 'rxjs';
 import {DownloadService} from './util/download';
 import {DownloadServiceImpl} from './util/download/impl/download-service-impl';
-import {AppInfo} from './util/app/def/app-info';
+import {AppInfo} from './util/app';
 import {AppInfoImpl} from './util/app/impl/app-info-impl';
 import {PlayerService, PlayerServiceImpl} from './player';
 import {TelemetryConfig} from './telemetry/config/telemetry-config';
@@ -59,9 +58,9 @@ import {Container} from 'inversify';
 import {InjectionTokens} from './injection-tokens';
 import {StorageService} from './storage';
 import {StorageServiceImpl} from './storage/impl/storage-service-impl';
-import {NotificationService} from './notification/def/notification-service';
+import {NotificationService} from './notification';
 import {NotificationServiceImpl} from './notification/impl/notification-service-impl';
-import {ErrorLoggerService} from './util/error-stack/def/error-logger-service';
+import {ErrorLoggerService} from './util/error-stack';
 import {ErrorLoggerServiceImpl} from './util/error-stack/impl/error-logger-service-impl';
 import {NetworkInfoService} from './util/network';
 import {NetworkInfoServiceImpl} from './util/network/impl/network-info-service-impl';
@@ -221,7 +220,7 @@ export class SunbirdSdk {
         }
 
         if (sdkConfig.dbConfig.debugMode) {
-            this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbWebSqlService).inSingletonScope();
+            this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbCordovaService).inSingletonScope();
         } else {
             this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbCordovaService).inSingletonScope();
         }

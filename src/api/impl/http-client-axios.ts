@@ -1,16 +1,15 @@
 import {HttpClient, HttpSerializer, NetworkError, Response, ResponseCode, ServerError} from '..';
 import {Observable} from 'rxjs';
+import * as axiosDefault from 'axios';
 import * as qs from 'qs';
 
 export class HttpClientAxios implements HttpClient {
 
     private headers: { [key: string]: string } = {};
-    private axios;
+    private axios = axiosDefault.default;
     private serializer?: HttpSerializer;
 
-    constructor() {
-        import('axios').then((a) => this.axios = a.default);
-    }
+    constructor() {}
 
     setSerializer(httpSerializer: HttpSerializer) {
         this.serializer = httpSerializer;
