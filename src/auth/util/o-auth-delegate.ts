@@ -1,8 +1,8 @@
 import {ApiConfig, ApiService} from '../../api';
-import {OAuthSession} from '..';
+import {OAuthSession, SignInError} from '..';
 import {AuthEndPoints} from '../def/auth-end-points';
 import {SunbirdOAuthSessionProviderFactory} from './sunbird-o-auth-session-provider-factory';
-import {SignInError} from '../errors/sign-in-error';
+import {SunbirdError} from '../../sunbird-error';
 import * as qs from 'qs';
 
 export interface StepOneCallbackType {
@@ -23,6 +23,14 @@ export interface OAuthRedirectUrlQueryParams {
     version: string;
 }
 
+export class ForgotPasswordFlowDetectedError extends SunbirdError {
+    constructor(message: string) {
+        super(message, 'FORGOT_PASSWORD_FLOW_DETECTED');
+
+        Object.setPrototypeOf(this, ForgotPasswordFlowDetectedError.prototype);
+    }
+}
+
 export class OAuthDelegate {
     constructor(
         private apiConfig: ApiConfig,
@@ -36,7 +44,7 @@ export class OAuthDelegate {
             response_type: 'code',
             scope: 'offline_access',
             client_id: 'android',
-            version: '3'
+            version: '4'
         };
 
         const launchUrl =
@@ -58,12 +66,25 @@ export class OAuthDelegate {
                         reject(new SignInError('Server Error'));
                     }
 
+                    if ((event.url).indexOf('/resources') !== -1 || (event.url).indexOf('client_id=portal') !== -1) {
+                        reject(new ForgotPasswordFlowDetectedError('Detected "Forgot Password" flow completion'));
+                    }
+
                     if (sessionProvider) {
                         resolve(sessionProvider.provide());
                     }
                 }
             });
         }).catch((e) => {
+            if (e instanceof ForgotPasswordFlowDetectedError) {
+                inAppBrowserRef.close();
+
+                const delay = 500;
+
+                return new Promise((resolve) => setTimeout(resolve, delay))
+                  .then(() => this.doOAuthStepOne())
+            }
+
             inAppBrowserRef.close();
 
             throw e;
