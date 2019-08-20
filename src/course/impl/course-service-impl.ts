@@ -216,6 +216,7 @@ export class CourseServiceImpl implements CourseService {
           .withType(HttpRequestType.POST)
           .withPath(CourseServiceImpl.CERTIFICATE_SIGN_ENDPOINT)
           .withApiToken(true)
+          .withSessionToken(true)
           .withBody({
             request:
               {
