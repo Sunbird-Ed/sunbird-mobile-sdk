@@ -73,6 +73,8 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
             const lastReadContentId = course['lastReadContentId'];
             if (course['lastReadContentId']) {
                 await this.sharedPreference.putString(key, lastReadContentId!).toPromise();
+            } else {
+                await this.sharedPreference.putString(key, '').toPromise();
             }
         }
         return Promise.resolve(true);
