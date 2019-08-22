@@ -34,11 +34,12 @@ export class ForgotPasswordFlowDetectedError extends SunbirdError {
 export class OAuthDelegate {
     constructor(
         private apiConfig: ApiConfig,
-        private apiService: ApiService
+        private apiService: ApiService,
+        private mode: 'default' | 'merge'
     ) {
     }
 
-    public async doOAuthStepOne(): Promise<OAuthSession> {
+    public buildLaunchUrl(): string {
         const oAuthRedirectUrlQueryParams: OAuthRedirectUrlQueryParams = {
             redirect_uri: this.apiConfig.host + '/oauth2callback',
             response_type: 'code',
@@ -47,13 +48,14 @@ export class OAuthDelegate {
             version: '4'
         };
 
-        const launchUrl =
-            this.apiConfig.host +
-            this.apiConfig.user_authentication.authUrl +
-            AuthEndPoints.LOGIN + '?' +
-            qs.stringify(oAuthRedirectUrlQueryParams, {encode: false});
+        return (this.mode === 'default' ? this.apiConfig.host : this.apiConfig.user_authentication.mergeUserHost) +
+          this.apiConfig.user_authentication.authUrl +
+          AuthEndPoints.LOGIN + '?' +
+          qs.stringify(oAuthRedirectUrlQueryParams, {encode: false})
+    }
 
-        const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', 'zoom=no');
+    public async doOAuthStepOne(): Promise<OAuthSession> {
+        const inAppBrowserRef = cordova.InAppBrowser.open(this.buildLaunchUrl(), '_blank', 'zoom=no');
 
         return new Promise<OAuthSession>((resolve, reject) => {
             inAppBrowserRef.addEventListener('loadstart', (event) => {

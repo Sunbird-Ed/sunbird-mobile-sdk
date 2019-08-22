@@ -22,6 +22,7 @@ import {ProfileImportRequest} from './profile-import-request';
 import {ProfileImportResponse} from './profile-import-response';
 import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
 import {TenantInfoRequest} from './tenant-info-request';
+import {MergeServerProfilesRequest} from './merge-server-profiles-request';
 
 
 export interface ProfileService extends SdkServicePreInitDelegate {
@@ -64,4 +65,6 @@ export interface ProfileService extends SdkServicePreInitDelegate {
     exportProfile(profileExportRequest: ProfileExportRequest): Observable<ProfileExportResponse>;
 
     importProfile(profileImportRequest: ProfileImportRequest): Observable<ProfileImportResponse>;
+
+    mergeServerProfiles(mergeServerProfilesRequest: MergeServerProfilesRequest): Observable<undefined>;
 }

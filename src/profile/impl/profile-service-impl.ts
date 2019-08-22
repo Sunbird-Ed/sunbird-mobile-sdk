@@ -6,6 +6,7 @@ import {
     GetAllProfileRequest,
     IsProfileAlreadyInUseRequest,
     LocationSearchCriteria,
+    MergeServerProfilesRequest,
     NoActiveSessionError,
     NoProfileFoundError,
     Profile,
@@ -18,6 +19,7 @@ import {
     ServerProfile,
     ServerProfileDetailsRequest,
     ServerProfileSearchCriteria,
+    TenantInfoRequest,
     UpdateServerProfileInfoRequest,
     VerifyOtpRequest
 } from '..';
@@ -26,7 +28,7 @@ import {Observable} from 'rxjs';
 import {GroupProfileEntry, ProfileEntry} from '../db/schema';
 import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
-import {ApiService, Response} from '../../api';
+import {ApiConfig, ApiService, HttpRequestType, Request, Response} from '../../api';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
@@ -74,11 +76,14 @@ import {TransportProfiles} from '../handler/import/transport-profiles';
 import {SdkConfig} from '../../sdk-config';
 import {Container, inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
-import {TenantInfoRequest} from '../def/tenant-info-request';
+import {AuthService} from '../../auth';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
+    private static readonly MERGE_SERVER_PROFILES_PATH = '/api/user/v1/account/merge';
+
+    private readonly apiConfig: ApiConfig;
 
     constructor(@inject(InjectionTokens.CONTAINER) private container: Container,
                 @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -89,7 +94,9 @@ export class ProfileServiceImpl implements ProfileService {
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
                 @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
                 @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
-                @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo) {
+                @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
+                @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService) {
+        this.apiConfig = this.sdkConfig.apiConfig;
     }
 
     private get telemetryService(): TelemetryService {
@@ -542,6 +549,29 @@ export class ProfileServiceImpl implements ProfileService {
             }).then((importResponse: Response<ImportProfileContext>) => {
                 return {failed: importResponse.body.failed!, imported: importResponse.body.imported!};
             }));
+    }
+
+    mergeServerProfiles(mergeServerProfilesRequest: MergeServerProfilesRequest): Observable<undefined> {
+        const apiRequest = new Request.Builder()
+          .withType(HttpRequestType.PATCH)
+          .withPath(ProfileServiceImpl.MERGE_SERVER_PROFILES_PATH)
+          .withApiToken(true)
+          .withHeaders({
+              'x-source-user-token': mergeServerProfilesRequest.from.accessToken,
+              'x-authenticated-user-token': mergeServerProfilesRequest.to.accessToken
+          })
+          .withBody({
+              request: {
+                  fromAccountId: mergeServerProfilesRequest.from.userId,
+                  toAccountId: mergeServerProfilesRequest.to.userId
+              }
+          })
+          .build();
+
+        return this.apiService.fetch(apiRequest).map((res) => {
+            console.log(res);
+            return undefined;
+        });
     }
 
     private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
