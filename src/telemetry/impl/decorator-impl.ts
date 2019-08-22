@@ -54,18 +54,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
 
     private patchContext(event: Telemetry, sid, channelId) {
         if (!event.context) {
-            event.context = new Context();
-        }
-        const context: Context = event.context;
-        context.channel = channelId;
-        this.patchPData(context);
-        if (!context.env) {
-            context.env = 'app';
-        }
-        context.sid = sid;
-        context.did = this.deviceInfo.getDeviceID();
-        if (channelId !== this.apiConfig.api_authentication.channelId) {
-            context.rollup = {l1: channelId};
+            event.context = this.buildContext(sid, channelId);
         }
     }
 
@@ -99,5 +88,20 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
             timestamp: Date.now(),
             priority: 1
         };
+    }
+
+    buildContext(sid: string, channelId: string): Context {
+        const context: Context = new Context();
+        context.channel = channelId;
+        this.patchPData(context);
+        if (!context.env) {
+            context.env = 'app';
+        }
+        context.sid = sid;
+        context.did = this.deviceInfo.getDeviceID();
+        if (channelId !== this.apiConfig.api_authentication.channelId) {
+            context.rollup = {l1: channelId};
+        }
+        return context;
     }
 }
