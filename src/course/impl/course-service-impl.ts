@@ -225,11 +225,11 @@ export class CourseServiceImpl implements CourseService {
           })
           .build();
 
-        return this.apiService.fetch<{ result: { signedPdfUrl: string } }>(signCertificateRequest)
+        return this.apiService.fetch<{ result: { signedUrl: string } }>(signCertificateRequest)
           .map((response) => {
             return {
               certificate, course,
-              signedPdfUrl: response.body.result.signedPdfUrl
+              signedPdfUrl: response.body.result.signedUrl
             };
           });
       })
