@@ -138,7 +138,8 @@ export class ValidateEcar {
      */
     private skipContent(importContext: ImportContentContext, identifier: string, visibility: string,
                         contentImportStatus: ContentImportStatus) {
-        if (visibility === Visibility.DEFAULT) {
+        if (visibility === Visibility.DEFAULT
+            && contentImportStatus !== ContentImportStatus.ALREADY_EXIST) {
             importContext.contentImportResponseList!.push({identifier: identifier, status: contentImportStatus});
         }
         importContext.skippedItemsIdentifier!.push(identifier);
