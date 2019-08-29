@@ -195,7 +195,9 @@ export class ExtractPayloads {
             if (!existingContentModel) {
                 insertNewContentModels.push(newContentModel);
             } else {
-                if (isUnzippingSuccessful    // If unzip is success it means artifact is available.
+                const existingContentState = this.getContentState(existingContentModel, contentState);
+                if (existingContentState === State.ONLY_SPINE.valueOf()
+                    || isUnzippingSuccessful    // If unzip is success it means artifact is available.
                     || MimeType.COLLECTION.valueOf() === mimeType) {
                     updateNewContentModels.push(newContentModel);
                 }
