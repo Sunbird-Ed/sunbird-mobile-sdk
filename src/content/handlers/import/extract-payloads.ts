@@ -110,6 +110,7 @@ export class ExtractPayloads {
                 }
             }
 
+            let isUnzippingSuccessful = false;
             let doesContentExist: boolean = ContentUtil.doesContentExist(existingContentModel, identifier, pkgVersion, false);
             // If the content is exist then copy the old content data and add it into new content.
             if (doesContentExist && !(item.status === ContentStatus.DRAFT.valueOf())) {
@@ -120,7 +121,7 @@ export class ExtractPayloads {
                 doesContentExist = false;
 
                 if (ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
-                    let isUnzippingSuccessful = false;
+                    // let isUnzippingSuccessful = false;
                     if (artifactUrl) {
                         if (!contentDisposition || !contentEncoding ||
                             (contentDisposition === ContentDisposition.INLINE.valueOf()
@@ -177,7 +178,7 @@ export class ExtractPayloads {
             const referenceCount = this.getReferenceCount(existingContentModel, visibility,
                 importContext.isChildContent, importContext.existedContentIdentifiers);
             visibility = this.getContentVisibility(existingContentModel, item['objectType'], importContext.isChildContent, visibility);
-            contentState = this.getContentState(existingContentModel, contentState);
+            // contentState = this.getContentState(existingContentModel, contentState);
             ContentUtil.addOrUpdateViralityMetadata(item, this.deviceInfo.getDeviceID().toString());
 
             let sizeOnDevice = 0;
@@ -194,7 +195,10 @@ export class ExtractPayloads {
             if (!existingContentModel) {
                 insertNewContentModels.push(newContentModel);
             } else {
-                updateNewContentModels.push(newContentModel);
+                if (isUnzippingSuccessful    // If unzip is success it means artifact is available.
+                    || MimeType.COLLECTION.valueOf() === mimeType) {
+                    updateNewContentModels.push(newContentModel);
+                }
             }
 
             // increase the current count
