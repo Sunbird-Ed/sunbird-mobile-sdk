@@ -233,7 +233,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     });
                 }
             }
-            new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
+            new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute();
             return contentDeleteResponse;
         });
     }
@@ -374,26 +374,37 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 correlationData: ecarImportRequest.correlationData || [],
                 contentIdsToDelete: new Set()
             };
+            console.log('import started');
+            console.time('importEcar');
             return new GenerateInteractTelemetry(this.telemetryService).execute(importContentContext, 'ContentImport-Initiated')
                 .then(() => {
+                    console['timeLog']('importEcar');
                     return this.fileService.getTempLocation(ecarImportRequest.destinationFolder);
                 }).then((tempLocation: DirectoryEntry) => {
+                    console['timeLog']('importEcar');
                     importContentContext.tmpLocation = tempLocation.nativeURL;
                     return new ExtractEcar(this.fileService, this.zipService).execute(importContentContext);
                 }).then((importResponse: Response) => {
+                    console['timeLog']('importEcar');
                     return new ValidateEcar(this.fileService, this.dbService, this.appConfig,
                         this.getContentDetailsHandler).execute(importResponse.body);
                 }).then((importResponse: Response) => {
+                    console['timeLog']('importEcar');
                     return new ExtractPayloads(this.fileService, this.zipService, this.appConfig,
-                        this.dbService, this.deviceInfo, this.getContentDetailsHandler, this.eventsBusService).execute(importResponse.body);
+                        this.dbService, this.deviceInfo, this.getContentDetailsHandler, this.eventsBusService, this.sharedPreferences)
+                        .execute(importResponse.body);
                 }).then((importResponse: Response) => {
+                    console['timeLog']('importEcar');
                     const response: Response = new Response();
                     return new CreateContentImportManifest(this.dbService, this.deviceInfo, this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
+                    console['timeLog']('importEcar');
                     return new CreateHierarchy(this.dbService, this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
+                    console['timeLog']('importEcar');
                     return new EcarCleanup(this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
+                    console['timeLog']('importEcar');
                     const response: Response = new Response();
                     return this.cleanupContent(importContentContext).toPromise()
                         .then(() => {
@@ -403,13 +414,18 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             return Promise.reject(response);
                         });
                 }).then((importResponse: Response) => {
-                    new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
+                    console.log('cleanupContent');
+                    console['timeLog']('importEcar');
+                    // new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
                     return importResponse;
                 }).then((importResponse: Response) => {
+                    console['timeLog']('importEcar');
                     return new GenerateImportShareTelemetry(this.telemetryService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
+                    console['timeLog']('importEcar');
                     return new GenerateInteractTelemetry(this.telemetryService).execute(importResponse.body, 'ContentImport-Success');
                 }).then((importResponse: Response<ImportContentContext>) => {
+                    console['timeLog']('importEcar');
                     this.eventsBusService.emit({
                         namespace: EventNamespace.CONTENT,
                         event: {
@@ -420,6 +436,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             }
                         }
                     });
+                    console.timeEnd('importEcar');
+                    console.log('end import ecar');
                     return importResponse.body.contentImportResponseList;
                 });
         }).catch((error) => {
@@ -708,7 +726,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             .mergeMap((hasUpdated) => {
                 if (!hasUpdated) {
                     return Observable.fromPromise(
-                        new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute()
+                        new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute()
                     ).mapTo(undefined);
                 }
 
