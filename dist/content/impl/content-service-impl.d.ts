@@ -50,7 +50,6 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     getDownloadState(): Promise<any>;
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]>;
     importEcar(ecarImportRequest: EcarImportRequest): Observable<ContentImportResponse[]>;
-    private cleanupContent;
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
     getRelevantContent(request: RelevantContentRequest): Observable<RelevantContentResponsePlayer>;
@@ -63,6 +62,7 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection>;
     onDownloadCompletion(request: ContentDownloadRequest): Observable<undefined>;
     getContentSpaceUsageSummary(contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest): Observable<ContentSpaceUsageSummaryResponse[]>;
+    private cleanupContent;
     private getMimeType;
     private searchContentAndGroupByPageSection;
     private handleContentDeleteRequestSetChanges;

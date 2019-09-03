@@ -3,11 +3,9 @@ import {ExportContentContext, FileName} from '../..';
 import {Response} from '../../../api';
 import {ContentEntry} from '../../db/schema';
 import {ContentUtil} from '../../util/content-util';
-import {FileService} from '../../../util/file/def/file-service';
 
 export class CompressContent {
-    constructor(private zipService: ZipService,
-                private fileService: FileService) {
+    constructor(private zipService: ZipService) {
     }
 
     public async execute(exportContentContext: ExportContentContext): Promise<Response> {
@@ -30,9 +28,6 @@ export class CompressContent {
                 const skipFilesName: string[] = [];
                 skipDirectoriesName.push(contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]);
                 skipFilesName.push(contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER].concat('/', FileName.MANIFEST.valueOf()));
-                const dirs = artifactUrl.split('/');
-                // await this.fileService.createDir(exportContentContext.tmpLocationPath!.concat(dirs[0]), true);
-                // await this.fileService.createFile(exportContentContext.tmpLocationPath!, dirs[1], true);
                 await new Promise((resolve, reject) => {
                     this.zipService.zip(path!, {target: payload!}, skipDirectoriesName, skipFilesName, () => {
                         resolve();
