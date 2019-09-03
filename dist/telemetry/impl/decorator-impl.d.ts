@@ -1,4 +1,4 @@
-import { SunbirdTelemetry, TelemetryDecorator } from '..';
+import { Context, SunbirdTelemetry, TelemetryDecorator } from '..';
 import { DeviceInfo } from '../../util/device/def/device-info';
 import { AppInfo } from '../../util/app/def/app-info';
 import Telemetry = SunbirdTelemetry.Telemetry;
@@ -19,4 +19,5 @@ export declare class TelemetryDecoratorImpl implements TelemetryDecorator {
         timestamp: number;
         priority: number;
     };
+    buildContext(sid: string, channelId: string): Context;
 }

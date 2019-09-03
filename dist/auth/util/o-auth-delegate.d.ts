@@ -1,5 +1,6 @@
 import { ApiConfig, ApiService } from '../../api';
 import { OAuthSession } from '..';
+import { SunbirdError } from '../../sunbird-error';
 export interface StepOneCallbackType {
     code?: string;
     access_token?: string;
@@ -16,9 +17,14 @@ export interface OAuthRedirectUrlQueryParams {
     client_id: string;
     version: string;
 }
+export declare class ForgotPasswordFlowDetectedError extends SunbirdError {
+    constructor(message: string);
+}
 export declare class OAuthDelegate {
     private apiConfig;
     private apiService;
-    constructor(apiConfig: ApiConfig, apiService: ApiService);
+    private mode;
+    constructor(apiConfig: ApiConfig, apiService: ApiService, mode: 'default' | 'merge');
+    buildLaunchUrl(): string;
     doOAuthStepOne(): Promise<OAuthSession>;
 }
