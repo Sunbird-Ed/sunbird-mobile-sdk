@@ -1,4 +1,11 @@
-import {DownloadCancelRequest, DownloadEventType, DownloadProgress, DownloadRequest, DownloadService, DownloadStatus} from '..';
+import {
+    DownloadCancelRequest,
+    DownloadEventType,
+    DownloadProgress,
+    DownloadRequest,
+    DownloadService,
+    DownloadStatus
+} from '..';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {SdkServiceOnInitDelegate} from '../../../sdk-service-on-init-delegate';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
@@ -11,8 +18,8 @@ import {TelemetryLogger} from '../../../telemetry/util/telemetry-logger';
 import {InteractSubType, InteractType, ObjectType} from '../../../telemetry';
 import {SharedPreferencesSetCollection} from '../../shared-preferences/def/shared-preferences-set-collection';
 import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
-import { injectable, inject } from 'inversify';
-import { InjectionTokens } from '../../../injection-tokens';
+import {injectable, inject} from 'inversify';
+import {InjectionTokens} from '../../../injection-tokens';
 
 @injectable()
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
@@ -24,7 +31,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     private sharedPreferencesSetCollection: SharedPreferencesSetCollection<DownloadRequest>;
 
     constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
-        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
+                @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
         window['downloadManager'] = downloadManagerInstance;
 
         this.sharedPreferencesSetCollection = new SharedPreferencesSetCollectionImpl(
@@ -73,11 +80,27 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         }).mapTo(undefined).toPromise();
     }
 
+    private static async generateNetworkSpeedTelemetry(downloadSpeed: number): Promise<void> {
+        return TelemetryLogger.log.interact({
+            type: InteractType.OTHER,
+            subType: InteractSubType.NETWORK_SPEED,
+            env: 'sdk',
+            pageId: 'sdk',
+            valueMap: {
+                'networkSpeed': downloadSpeed,
+                'networkType': navigator['connection']['type']
+            },
+        }).mapTo(undefined).toPromise();
+    }
+
     onInit(): Observable<undefined> {
-        return this.switchToNextDownloadRequest()
-            .mergeMap(() => {
-                return this.listenForDownloadProgressChanges();
-            });
+        return Observable.combineLatest(
+            this.switchToNextDownloadRequest()
+                .mergeMap(() => {
+                    return this.listenForDownloadProgressChanges();
+                }),
+            this.generateDownloadSpeedTelemetry()
+        ).mapTo(undefined);
     }
 
     download(downloadRequests: DownloadRequest[]): Observable<undefined> {
@@ -298,20 +321,74 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     return Observable.of(undefined);
                 }
 
+                this.eventsBusService.emit({
+                    namespace: EventNamespace.DOWNLOADS,
+                    event: {
+                        type: DownloadEventType.START,
+                        payload: undefined
+                    }
+                });
+
                 return Observable.interval(1000)
                     .mergeMap(() => {
                         return this.getDownloadProgress(currentDownloadRequest);
-                    })
-                    .distinctUntilChanged((prev, next) => {
-                        return JSON.stringify(prev) === JSON.stringify(next);
                     })
                     .mergeMap((downloadProgress) => {
                         return Observable.zip(
                             this.handleDownloadCompletion(downloadProgress!),
                             this.emitProgressInEventBus(downloadProgress!)
-                        );
+                        ).mapTo(downloadProgress)
+                    })
+                    .do((downloadProgress) => {
+                        if (
+                            downloadProgress.payload.status === DownloadStatus.STATUS_FAILED ||
+                            downloadProgress.payload.status === DownloadStatus.STATUS_SUCCESSFUL
+                        ) {
+                            this.eventsBusService.emit({
+                                namespace: EventNamespace.DOWNLOADS,
+                                event: {
+                                    type: DownloadEventType.END,
+                                    payload: undefined
+                                }
+                            });
+                        }
                     })
                     .mapTo(undefined);
             });
+    }
+
+    private generateDownloadSpeedTelemetry(): Observable<undefined> {
+        const events$ = this.eventsBusService
+            .events(EventNamespace.DOWNLOADS)
+            .share();
+
+        const start$ = events$
+            .filter((e) => e.type == DownloadEventType.START);
+
+        const toggle$ = events$
+            .filter((e) => e.type == DownloadEventType.END);
+
+        return events$
+            .filter((e) =>
+                e.type === DownloadEventType.START ||
+                e.type === DownloadEventType.PROGRESS ||
+                e.type === DownloadEventType.END
+            )
+            .windowToggle(
+                start$,
+                () => toggle$
+            )
+            .mergeMap((r) =>
+                r.throttleTime(5000, undefined, {trailing: true, leading: false})
+                    .concat(Observable.of(null))
+                    .mergeMap((v) => {
+                        return new Promise<number>((resolve, reject) => {
+                            networkspeed.getNetworkSpeed((speed) => resolve(parseFloat(speed || '0')), reject);
+                        })
+                    })
+                    .do(async (downloadSpeed) => {
+                        await DownloadServiceImpl.generateNetworkSpeedTelemetry(downloadSpeed)
+                    })
+            ).mapTo(undefined)
     }
 }

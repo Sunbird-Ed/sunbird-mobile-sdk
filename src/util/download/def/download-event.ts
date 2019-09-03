@@ -15,5 +15,7 @@ export interface DownloadProgress extends DownloadEvent {
 }
 
 export enum DownloadEventType {
-    PROGRESS = 'PROGRESS'
+    START = 'START',
+    PROGRESS = 'PROGRESS',
+    END = 'END'
 }
