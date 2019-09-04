@@ -1,9 +1,8 @@
 import { ApiRequestHandler, ApiService } from '../../api';
 import { PageAssembleCriteria, PageServiceConfig } from '..';
 import { PageAssemble } from '../def/page-assemble';
-import { CachedItemStore } from '../../key-value-store';
+import { CachedItemStore, KeyValueStore } from '../../key-value-store';
 import { Observable } from 'rxjs';
-import { KeyValueStore } from '../../key-value-store';
 import { SharedPreferences } from '../../util/shared-preferences';
 export declare class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private apiService;
