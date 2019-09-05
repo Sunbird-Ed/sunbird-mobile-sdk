@@ -21,6 +21,7 @@ import COLUMN_NAME_EVENT = TelemetryEntry.COLUMN_NAME_EVENT;
 import { TelemetryConfig } from '../config/telemetry-config';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { CodePush } from '../../preference-keys';
+import {AppInfo} from "../../util/app";
 
 // import * as pako from 'pako';
 
@@ -47,13 +48,16 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
     private readonly telemetryConfig: TelemetryConfig;
     private readonly apiConfig: ApiConfig;
 
-    constructor(private dbService: DbService,
-                private sdkConfig: SdkConfig,
-                private deviceInfo: DeviceInfo,
-                private frameworkService: FrameworkService,
-                private sharedPreferences: SharedPreferences,
-                private keyValueStore?: KeyValueStore,
-                private apiService?: ApiService) {
+    constructor(
+        private dbService: DbService,
+        private sdkConfig: SdkConfig,
+        private deviceInfo: DeviceInfo,
+        private frameworkService: FrameworkService,
+        private sharedPreferences: SharedPreferences,
+        private appInfoService: AppInfo,
+        private keyValueStore?: KeyValueStore,
+        private apiService?: ApiService
+    ) {
         this.preprocessors = [
             new TelemetryEntriesToStringPreprocessor(),
             new StringToGzippedString()
@@ -115,12 +119,14 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
             this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY),
             this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY),
             this.deviceInfo.getDeviceSpec(),
-            this.frameworkService.getActiveChannelId()
-        ).mergeMap((results) => {
+            this.frameworkService.getActiveChannelId(),
+            this.appInfoService.getFirstAccessTimestamp(),
+        ).mergeMap((results: any) => {
             const lastSyncDeviceRegisterAttemptTimestamp = results[0];
             const lastSyncDeviceRegisterIsSuccessful = results[1];
             const deviceSpec: DeviceSpec = results[2];
             const activeChannelId: string = results[3];
+            const firstAccessTimestamp = results[4];
 
             if (lastSyncDeviceRegisterAttemptTimestamp && lastSyncDeviceRegisterIsSuccessful) {
                 const offset = lastSyncDeviceRegisterIsSuccessful === 'false' ?
@@ -142,7 +148,8 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
                         dspec: deviceSpec,
                         channel: activeChannelId,
                         fcmToken: this.telemetryConfig.fcmToken,
-                        producer: this.apiConfig.api_authentication.producerId
+                        producer: this.apiConfig.api_authentication.producerId,
+                        first_access: parseInt(firstAccessTimestamp)
                     }
                 })
                 .build();

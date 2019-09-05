@@ -49,6 +49,7 @@ import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {ErrorLoggerService} from '../../util/error-stack';
 import {SharedPreferences} from '../../util/shared-preferences';
+import {AppInfo} from "../../util/app";
 
 @injectable()
 export class TelemetryServiceImpl implements TelemetryService {
@@ -69,7 +70,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
         @inject(InjectionTokens.NETWORKINFO_SERVICE) private networkInfoService: NetworkInfoService,
         @inject(InjectionTokens.ERROR_LOGGER_SERVICE) private errorLoggerService: ErrorLoggerService,
-        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
+        @inject(InjectionTokens.APP_INFO) private appInfoService: AppInfo,
     ) {
         this.telemetryConfig = this.sdkConfig.telemetryConfig;
     }
@@ -188,7 +190,8 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.sdkConfig,
             this.deviceInfo,
             this.frameworkService,
-            this.sharedPreferences
+            this.sharedPreferences,
+            this.appInfoService
         );
         return Observable.fromPromise(
             telemetrySyncHandler.processEventsBatch().expand((processedEventsCount: number) =>
@@ -244,6 +247,7 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.deviceInfo,
             this.frameworkService,
             this.sharedPreferences,
+            this.appInfoService,
             this.keyValueStore,
             this.apiService
         ).resetDeviceRegisterTTL();
@@ -266,6 +270,7 @@ export class TelemetryServiceImpl implements TelemetryService {
                     this.deviceInfo,
                     this.frameworkService,
                     this.sharedPreferences,
+                    this.appInfoService,
                     this.keyValueStore,
                     this.apiService
                 ).handle(shouldIgnoreSyncThreshold);
