@@ -65,7 +65,6 @@ export class UpdateSizeOnDevice {
                     updateContentModels.push(item);
                 }
             }));
-            console.log('updateContentModels', updateContentModels);
             this.updateInDb(updateContentModels);
         }).do(async () =>
             this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, true).toPromise()
