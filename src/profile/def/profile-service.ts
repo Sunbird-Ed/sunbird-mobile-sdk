@@ -67,4 +67,6 @@ export interface ProfileService extends SdkServicePreInitDelegate {
     importProfile(profileImportRequest: ProfileImportRequest): Observable<ProfileImportResponse>;
 
     mergeServerProfiles(mergeServerProfilesRequest: MergeServerProfilesRequest): Observable<undefined>;
+
+    isDefaultChannelProfile(): Observable<boolean>;
 }

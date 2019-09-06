@@ -571,6 +571,27 @@ export class ProfileServiceImpl implements ProfileService {
         return this.apiService.fetch(apiRequest).map((res) => {
             console.log(res);
             return undefined;
+        }).finally(() => {
+            const launchUrl = this.sdkConfig.apiConfig.user_authentication.mergeUserHost +
+                this.sdkConfig.apiConfig.user_authentication.authUrl + '/logout' + '?redirect_uri=' +
+                this.sdkConfig.apiConfig.host + '/oauth2callback';
+
+            const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', 'zoom=no,hidden=yes');
+
+            inAppBrowserRef.addEventListener('loadstart', async (event) => {
+                if ((<string>event.url).indexOf('/oauth2callback') > -1) {
+                    inAppBrowserRef.close();
+                }
+            });
+        })
+    }
+
+    isDefaultChannelProfile(): Observable<boolean> {
+        return Observable.zip(
+            this.frameworkService.getDefaultChannelDetails(),
+            this.frameworkService.getActiveChannelId()
+        ).map((results) => {
+            return results[0].identifier === results[1]
         });
     }
 
