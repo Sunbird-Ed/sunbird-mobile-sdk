@@ -55,7 +55,7 @@ export class OAuthDelegate {
     }
 
     public async doOAuthStepOne(): Promise<OAuthSession> {
-        const inAppBrowserRef = cordova.InAppBrowser.open(this.buildLaunchUrl(), '_blank', 'zoom=no');
+        const inAppBrowserRef = cordova.InAppBrowser.open(this.buildLaunchUrl(), '_blank', 'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes');
 
         return new Promise<OAuthSession>((resolve, reject) => {
             inAppBrowserRef.addEventListener('loadstart', (event) => {
