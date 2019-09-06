@@ -1,4 +1,4 @@
-import { AcceptTermsConditionRequest, ContentAccess, GenerateOtpRequest, GetAllProfileRequest, IsProfileAlreadyInUseRequest, LocationSearchCriteria, Profile, ProfileExportRequest, ProfileExportResponse, ProfileService, ProfileSession, ProfileSource, ServerProfile, ServerProfileDetailsRequest, ServerProfileSearchCriteria, UpdateServerProfileInfoRequest, VerifyOtpRequest } from '..';
+import { AcceptTermsConditionRequest, ContentAccess, GenerateOtpRequest, GetAllProfileRequest, IsProfileAlreadyInUseRequest, LocationSearchCriteria, MergeServerProfilesRequest, Profile, ProfileExportRequest, ProfileExportResponse, ProfileService, ProfileSession, ProfileSource, ServerProfile, ServerProfileDetailsRequest, ServerProfileSearchCriteria, TenantInfoRequest, UpdateServerProfileInfoRequest, VerifyOtpRequest } from '..';
 import { DbService } from '../../db';
 import { Observable } from 'rxjs';
 import { TenantInfo } from '../def/tenant-info';
@@ -15,7 +15,7 @@ import { FileService } from '../../util/file/def/file-service';
 import { DeviceInfo } from '../../util/device';
 import { SdkConfig } from '../../sdk-config';
 import { Container } from 'inversify';
-import { TenantInfoRequest } from '../def/tenant-info-request';
+import { AuthService } from '../../auth';
 export declare class ProfileServiceImpl implements ProfileService {
     private container;
     private sdkConfig;
@@ -27,8 +27,11 @@ export declare class ProfileServiceImpl implements ProfileService {
     private frameworkService;
     private fileService;
     private deviceInfo;
+    private authService;
     private static readonly KEY_USER_SESSION;
-    constructor(container: Container, sdkConfig: SdkConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences, frameworkService: FrameworkService, fileService: FileService, deviceInfo: DeviceInfo);
+    private static readonly MERGE_SERVER_PROFILES_PATH;
+    private readonly apiConfig;
+    constructor(container: Container, sdkConfig: SdkConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences, frameworkService: FrameworkService, fileService: FileService, deviceInfo: DeviceInfo, authService: AuthService);
     private readonly telemetryService;
     preInit(): Observable<undefined>;
     createProfile(profile: Profile, profileSource?: ProfileSource): Observable<Profile>;
@@ -51,6 +54,7 @@ export declare class ProfileServiceImpl implements ProfileService {
     addContentAccess(contentAccess: ContentAccess): Observable<boolean>;
     exportProfile(profileExportRequest: ProfileExportRequest): Observable<ProfileExportResponse>;
     importProfile(profileImportRequest: ProfileImportRequest): Observable<ProfileImportResponse>;
+    mergeServerProfiles(mergeServerProfilesRequest: MergeServerProfilesRequest): Observable<undefined>;
     private mapDbProfileEntriesToProfiles;
     private generateSessionStartTelemetry;
     private generateSessionEndTelemetry;

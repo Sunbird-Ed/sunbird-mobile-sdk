@@ -1,5 +1,5 @@
 import { DbService } from '../../db';
-import { TelemetryAuditRequest, TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryExportResponse, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryInterruptRequest, TelemetryLogRequest, TelemetryService, TelemetryShareRequest, TelemetryStartRequest, TelemetryStat, TelemetrySyncStat } from '..';
+import { TelemetryAuditRequest, TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryExportResponse, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryInterruptRequest, TelemetryLogRequest, TelemetryService, TelemetryShareRequest, TelemetryStartRequest, TelemetryStat, TelemetrySyncStat, Context } from '..';
 import { Observable } from 'rxjs';
 import { ProfileService } from '../../profile';
 import { GroupService } from '../../group';
@@ -48,4 +48,5 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     resetDeviceRegisterTTL(): Observable<undefined>;
     sync(ignoreSyncThreshold?: boolean): Observable<TelemetrySyncStat>;
     private decorateAndPersist;
+    buildContext(): Observable<Context>;
 }

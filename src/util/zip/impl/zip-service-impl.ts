@@ -15,8 +15,7 @@ export class ZipServiceImpl implements ZipService {
         });
     }
 
-    zip(sourceFolderPath: string, option, directoriesToBeSkipped: string[], filesToBeSkipped: string[],
-        successCallback?, errorCallback?) {
+    zip(sourceFolderPath: string, option, directoriesToBeSkipped: string[], filesToBeSkipped: string[], successCallback?, errorCallback?) {
         JJzip.zip(sourceFolderPath, option, directoriesToBeSkipped, filesToBeSkipped, () => {
             if (successCallback) {
                 successCallback();

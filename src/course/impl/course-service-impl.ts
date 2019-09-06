@@ -214,7 +214,7 @@ export class CourseServiceImpl implements CourseService {
       .mergeMap(({certificate, course}) => {
         const signCertificateRequest = new Request.Builder()
           .withType(HttpRequestType.POST)
-          .withPath(CourseServiceImpl.CERTIFICATE_SIGN_ENDPOINT)
+          .withPath(this.profileServiceConfig.profileApiPath + CourseServiceImpl.CERTIFICATE_SIGN_ENDPOINT)
           .withApiToken(true)
           .withSessionToken(true)
           .withBody({
@@ -225,13 +225,13 @@ export class CourseServiceImpl implements CourseService {
           })
           .build();
 
-        return this.apiService.fetch<{ response: { signedPdfUrl: string } }>(signCertificateRequest)
+        return this.apiService.fetch<{ result: { signedUrl: string } }>(signCertificateRequest)
           .map((response) => {
             return {
               certificate, course,
-              signedPdfUrl: response.body.response.signedPdfUrl
-            }
-          })
+              signedPdfUrl: response.body.result.signedUrl
+            };
+          });
       })
       .mergeMap(({certificate, course, signedPdfUrl}) => {
         const downloadRequest: EnqueueRequest = {
@@ -271,7 +271,7 @@ export class CourseServiceImpl implements CourseService {
             });
           })
           .filter((entry: EnqueuedEntry) => entry.status === DownloadStatus.STATUS_SUCCESSFUL)
-          .take(1)
+          .take(1);
       })
       .map((entry) => ({path: entry.localUri}));
   }

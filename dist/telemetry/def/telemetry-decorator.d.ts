@@ -1,4 +1,4 @@
-import { SunbirdTelemetry } from './telemetry-model';
+import { Context, SunbirdTelemetry } from './telemetry-model';
 import Telemetry = SunbirdTelemetry.Telemetry;
 export declare abstract class TelemetryDecorator {
     abstract decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset?: number, channelId?: string): any;
@@ -8,4 +8,5 @@ export declare abstract class TelemetryDecorator {
         timestamp: any;
         priority: any;
     };
+    abstract buildContext(sid: string, channelId: string): Context;
 }
