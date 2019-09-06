@@ -1,12 +1,11 @@
-import { ApiRequestHandler, ApiService, HttpRequestType, Request } from '../../api';
-import { PageAssembleCriteria, PageServiceConfig } from '..';
-import { PageAssemble } from '../def/page-assemble';
-import { CachedItemStore } from '../../key-value-store';
-import { Observable } from 'rxjs';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {PageAssembleCriteria, PageServiceConfig} from '..';
+import {PageAssemble} from '../def/page-assemble';
+import {CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
+import {Observable} from 'rxjs';
 import * as SHA1 from 'crypto-js/sha1';
-import {CachedItemRequestSourceFrom, KeyValueStore} from '../../key-value-store';
-import { SharedPreferences } from '../../util/shared-preferences';
-import { PageName } from '../def/requests';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {PageName} from '../def/requests';
 
 export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private readonly PAGE_ASSEMBLE_LOCAL_KEY = 'page_assemble-';
@@ -14,18 +13,18 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
     private readonly DIALCODE_ASSEMBLE_ENDPOINT = '/dial/assemble';
 
     constructor(private apiService: ApiService,
-        private pageApiServiceConfig: PageServiceConfig,
-        private cachedItemStore: CachedItemStore,
-        private keyValueStore: KeyValueStore,
-        private sharedPreferences: SharedPreferences
+                private pageApiServiceConfig: PageServiceConfig,
+                private cachedItemStore: CachedItemStore,
+                private keyValueStore: KeyValueStore,
+                private sharedPreferences: SharedPreferences
     ) {
     }
 
     private static getIdForDb(request: PageAssembleCriteria): string {
         const key = request.name +
-            (request.source || 'app') +
-            (request.mode || '') +
-            request.filters ? SHA1(JSON.stringify(request.filters)).toString() : '';
+        (request.source || 'app') +
+        (request.mode || '') +
+        request.filters ? SHA1(JSON.stringify(request.filters)).toString() : '';
         return key;
     }
 
@@ -37,12 +36,14 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
             .mergeMap((from: CachedItemRequestSourceFrom) => {
                 if (from === CachedItemRequestSourceFrom.SERVER) {
                     return this.fetchFromServer(request)
-                        .do(async (pageAssemble) => {
+                        .do(async (pageAssembleRes) => {
+                            const pageAssemble = JSON.stringify(pageAssembleRes);
                             await this.sharedPreferences.putString(
                                 ('ttl_' + this.PAGE_ASSEMBLE_LOCAL_KEY + '-' + PageAssemblerHandler.getIdForDb(request)), Date.now() + ''
                             ).toPromise();
+
                             await this.keyValueStore.setValue(
-                                this.PAGE_ASSEMBLE_LOCAL_KEY + '-' + PageAssemblerHandler.getIdForDb(request), JSON.stringify(pageAssemble)
+                                this.PAGE_ASSEMBLE_LOCAL_KEY + '-' + PageAssemblerHandler.getIdForDb(request), pageAssemble
                             ).toPromise();
                         })
                         .catch(() => {
@@ -66,9 +67,10 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
             .withApiToken(true)
             .withBody({request})
             .build();
-        return this.apiService.fetch<{ result: { response: PageAssemble } }>(apiRequest).map((success) => {
-            return success.body.result.response;
-        });
+        return this.apiService.fetch<{ result: { response: PageAssemble } }>(apiRequest)
+            .map((success) => {
+                return success.body.result.response;
+            });
     }
 
     private fetchFromCache(request: PageAssembleCriteria): Observable<PageAssemble> {
