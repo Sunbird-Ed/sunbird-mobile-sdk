@@ -55,6 +55,7 @@ export declare class ProfileServiceImpl implements ProfileService {
     exportProfile(profileExportRequest: ProfileExportRequest): Observable<ProfileExportResponse>;
     importProfile(profileImportRequest: ProfileImportRequest): Observable<ProfileImportResponse>;
     mergeServerProfiles(mergeServerProfilesRequest: MergeServerProfilesRequest): Observable<undefined>;
+    isDefaultChannelProfile(): Observable<boolean>;
     private mapDbProfileEntriesToProfiles;
     private generateSessionStartTelemetry;
     private generateSessionEndTelemetry;
