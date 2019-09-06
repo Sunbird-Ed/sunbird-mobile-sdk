@@ -27,7 +27,7 @@ export class UpdateEnrolledCoursesHandler {
                         }
                         const newCourses: Course[] = [...courses];
                         courses.forEach((course: Course) => {
-                            if (course.courseId === request.courseIds[0]) {
+                            if (course.courseId === request.courseIds[0] && course.batchId === request.batchId) {
                                 const updateCourse = course;
                                 const contentList: ContentState[] = contentState.contentList;
                                 contentList.forEach((content) => {
@@ -42,7 +42,7 @@ export class UpdateEnrolledCoursesHandler {
                                 });
 
                                 const toUpdateIndex = newCourses.findIndex((el: Course) => {
-                                    return el.contentId === course.contentId || el.batchId === course.batchId;
+                                    return el.contentId === course.contentId && el.batchId === course.batchId;
                                 });
                                 newCourses.splice(toUpdateIndex, 1, updateCourse);
                             }
