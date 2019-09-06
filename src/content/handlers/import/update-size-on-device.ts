@@ -1,4 +1,5 @@
-import {MimeType, Visibility} from '../..';
+import { FileService } from './../../../util/file/def/file-service';
+import {MimeType, Visibility, ImportContentContext} from '../..';
 import {Response} from '../../../api';
 import {DbService} from '../../../db';
 import {ContentEntry} from '../../db/schema';
@@ -11,17 +12,29 @@ import {SharedPreferences} from '../../../util/shared-preferences';
 
 export class UpdateSizeOnDevice {
 
-    constructor(private dbService: DbService, private sharedPreferences: SharedPreferences) {
+    constructor(private dbService: DbService, private sharedPreferences: SharedPreferences, private fileService: FileService) {
     }
 
     execute(): Promise<Response> {
-        return this.updateSize().toPromise();
+        return this.updateAllRootContentSize().toPromise();
     }
 
-    private findAllContents(): Observable<ContentEntry.SchemaMap[]> {
-        const query = `SELECT * FROM ${ContentEntry.TABLE_NAME} WHERE ${ContentEntry.COLUMN_NAME_REF_COUNT} > 0`;
-        return this.dbService.execute(query);
-    }
+    // private findAllContents1(rootId?: string): Observable<ContentEntry.SchemaMap[]> {
+    //     let query;
+    //     if (rootId != null) {
+    //         query = `SELECT * FROM ${ContentEntry.TABLE_NAME} WHERE
+    //         ${ContentEntry.COLUMN_NAME_REF_COUNT} > 0 AND ${ContentEntry.COLUMN_NAME_IDENTIFIER} = '${rootId}'`;
+    //         console.log('query', query);
+    //     } else {
+    //         query = `SELECT * FROM ${ContentEntry.TABLE_NAME} WHERE ${ContentEntry.COLUMN_NAME_REF_COUNT} > 0`;
+    //     }
+    //     return this.dbService.execute(query);
+    // }
+
+    // private findAllContents(): Observable<ContentEntry.SchemaMap[]> {
+    //     const query = `SELECT * FROM ${ContentEntry.TABLE_NAME} WHERE ${ContentEntry.COLUMN_NAME_REF_COUNT} > 0`;
+    //     return this.dbService.execute(query);
+    // }
 
     private findAllChildContents(childIdentifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
         const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
@@ -30,42 +43,32 @@ export class UpdateSizeOnDevice {
         return this.dbService.execute(query).toPromise();
     }
 
-    private updateSize(): Observable<any> {
-        return this.findAllContents()
-            .do(async () =>
-                this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, false).toPromise()
-            )
-            .mergeMap(async (contentsInDb: ContentEntry.SchemaMap[]) => {
-                for (const element of contentsInDb) {
-                    const contentInDb = element as ContentEntry.SchemaMap;
-                    if (ContentUtil.hasChildren(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
-                        let sizeOnDevice = 0;
-                        const queue: Queue<ContentEntry.SchemaMap> = new Queue();
-                        queue.add(contentInDb);
-                        let node: ContentEntry.SchemaMap;
-                        while (!queue.isEmpty()) {
-                            node = queue.dequeue()!;
-                            if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
-                                const childContentsIdentifiers: string[] =
-                                    ContentUtil.getChildContentsIdentifiers(node[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
-                                const childContentsInDb: ContentEntry.SchemaMap[] = await this.findAllChildContents(childContentsIdentifiers);
-                                childContentsInDb.forEach((childContentInDb) => {
-                                    queue.add(childContentInDb);
-                                });
+    updateAllRootContentSize(): Observable<any> {
+        const query = `SELECT * FROM ${ContentEntry.TABLE_NAME} WHERE ${ContentEntry.COLUMN_NAME_REF_COUNT} > 0
+        AND ${ContentEntry.COLUMN_NAME_VISIBILITY} = '${Visibility.DEFAULT.valueOf()}'`;
+        return this.dbService.execute(query)
+        .do(async () =>
+            this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, false).toPromise()
+        )
+        .mergeMap(async (rootContentsInDb: ContentEntry.SchemaMap[]) => {
+            const updateContentModels: ContentEntry.SchemaMap[] = [];
 
-                            }
-                            sizeOnDevice = sizeOnDevice + await this.getSizeOnDevice(node);
-                        }
-                        contentInDb[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = sizeOnDevice;
-                    }
+            await Promise.all(rootContentsInDb.map(async (item) => {
+                let sizeOnDevice = await this.getSizeOnDevice(item);
+                const identifiers = JSON.parse(item[ContentEntry.COLUMN_NAME_LOCAL_DATA]).childNodes;
+                if (identifiers) {
+                    const childContentsInDb: ContentEntry.SchemaMap[] = await this.findAllChildContents(identifiers);
+                    childContentsInDb.forEach(content => {
+                        sizeOnDevice += content[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] || 0;
+                    });
+                    item[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = sizeOnDevice;
+                    updateContentModels.push(item);
                 }
-
-                return contentsInDb;
-            })
-            .mergeMap((contentsInDb) => this.updateInDb(contentsInDb))
-            .do(async () =>
-                this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, true).toPromise()
-            );
+            }));
+            this.updateInDb(updateContentModels);
+        }).do(async () =>
+            this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, true).toPromise()
+        );
     }
 
     private async getSizeOnDevice(node): Promise<number> {
@@ -93,7 +96,7 @@ export class UpdateSizeOnDevice {
             const contentInDb = element as ContentEntry.SchemaMap;
             const identifier = contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER];
 
-            await this.dbService.update({
+            this.dbService.update({
                 table: ContentEntry.TABLE_NAME,
                 selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
                 selectionArgs: [identifier],
@@ -114,4 +117,43 @@ export class UpdateSizeOnDevice {
                 });
         });
     }
+
+    // private updateSize(): Observable<any> {
+    //     return this.findAllContents()
+    //         .do(async () =>
+    //             this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, false).toPromise()
+    //         )
+    //         .mergeMap(async (contentsInDb: ContentEntry.SchemaMap[]) => {
+    //             for (const element of contentsInDb) {
+    //                 const contentInDb = element as ContentEntry.SchemaMap;
+    //                 if (ContentUtil.hasChildren(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
+    //                     let sizeOnDevice = 0;
+    //                     const queue: Queue<ContentEntry.SchemaMap> = new Queue();
+    //                     queue.add(contentInDb);
+    //                     let node: ContentEntry.SchemaMap;
+    //                     while (!queue.isEmpty()) {
+    //                         node = queue.dequeue()!;
+    //                         if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
+    //                             const childContentsIdentifiers: string[] =
+    //                                 ContentUtil.getChildContentsIdentifiers(node[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+    //                             const childContentsInDb: ContentEntry.SchemaMap[] =
+    //                             await this.findAllChildContents(childContentsIdentifiers);
+    //                             childContentsInDb.forEach((childContentInDb) => {
+    //                                 queue.add(childContentInDb);
+    //                             });
+
+    //                         }
+    //                         sizeOnDevice = sizeOnDevice + await this.getSizeOnDevice(node);
+    //                     }
+    //                     contentInDb[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = sizeOnDevice;
+    //                 }
+    //             }
+    //             return contentsInDb;
+    //         })
+    //         .mergeMap((contentsInDb) => this.updateInDb(contentsInDb))
+    //         .do(async () =>
+    //             this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, true).toPromise()
+    //         );
+    // }
+
 }
