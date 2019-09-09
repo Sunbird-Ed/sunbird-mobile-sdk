@@ -8,6 +8,9 @@ export interface UpdateServerProfileInfoRequest {
     firstName?: string;
     lastName?: string;
     framework?: { [key: string]: any };
+    profileSummary?: string;
+    recoveryEmail?: string;
+    recoveryPhone?: string;
     /*
     language?: Array<string>;
     profileSummary?: string;
