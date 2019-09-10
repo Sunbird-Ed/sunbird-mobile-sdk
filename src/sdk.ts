@@ -70,9 +70,15 @@ import {SearchHistoryServiceImpl} from './util/search-history/impl/search-histor
 import {RecentlyViewedMigration} from './db/migrations/recently-viewed-migration';
 
 export class SunbirdSdk {
+    private _isInitialised: boolean = false;
+
     private _container: Container;
 
     private static _instance?: SunbirdSdk;
+
+    get isInitialised(): boolean {
+        return this._isInitialised;
+    }
 
     public static get instance(): SunbirdSdk {
         if (!SunbirdSdk._instance) {
@@ -302,6 +308,8 @@ export class SunbirdSdk {
         await this.dbService.init();
         await this.appInfo.init();
         await this.preInit().toPromise();
+
+        this._isInitialised = true;
 
         this.postInit().subscribe();
     }
