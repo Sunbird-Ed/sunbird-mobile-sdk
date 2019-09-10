@@ -36,3 +36,9 @@ global.supportfile = {
     shareSunbirdConfigurations: () => {
     }
 }
+
+global.buildconfigreader = {
+    getMetaData: () => {
+        
+    }
+}
