@@ -23,7 +23,9 @@ export declare class CourseServiceImpl implements CourseService {
     static readonly GET_ENROLLED_COURSE_KEY_PREFIX: string;
     static readonly UPDATE_CONTENT_STATE_KEY_PREFIX: string;
     static readonly LAST_READ_CONTENTID_PREFIX: string;
-    private courseServiceConfig;
+    private readonly courseServiceConfig;
+    private readonly profileServiceConfig;
+    private static readonly CERTIFICATE_SIGN_ENDPOINT;
     constructor(sdkConfig: SdkConfig, apiService: ApiService, profileService: ProfileService, keyValueStore: KeyValueStore, dbService: DbService, sharedPreferences: SharedPreferences, authService: AuthService, appInfo: AppInfo);
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
     updateContentState(request: UpdateContentStateRequest): Observable<boolean>;

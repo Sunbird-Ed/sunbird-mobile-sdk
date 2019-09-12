@@ -1,4 +1,5 @@
 import { ImportContentContext } from '../..';
+import { SharedPreferences } from './../../../util/shared-preferences';
 import { Response } from '../../../api';
 import { FileService } from '../../../util/file/def/file-service';
 import { DbService } from '../../../db';
@@ -15,9 +16,12 @@ export declare class ExtractPayloads {
     private deviceInfo;
     private getContentDetailsHandler;
     private eventsBusService;
-    constructor(fileService: FileService, zipService: ZipService, appConfig: AppConfig, dbService: DbService, deviceInfo: DeviceInfo, getContentDetailsHandler: GetContentDetailsHandler, eventsBusService: EventsBusService);
+    private sharedPreferences;
+    constructor(fileService: FileService, zipService: ZipService, appConfig: AppConfig, dbService: DbService, deviceInfo: DeviceInfo, getContentDetailsHandler: GetContentDetailsHandler, eventsBusService: EventsBusService, sharedPreferences: SharedPreferences);
     execute(importContext: ImportContentContext): Promise<Response>;
-    copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string): Promise<void>;
+    updateContentFileSizeInDB(importContext: ImportContentContext, commonContentModelsMap: any, payloadDestinationPathMap: any, result: any): Promise<void>;
+    updateContentDB(insertNewContentModels: any, updateNewContentModels: any, updateSize?: boolean): Promise<void>;
+    copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string, useSubDirectories?: boolean): Promise<void>;
     /**
      * add or update the reference count for the content
      *
