@@ -8,6 +8,7 @@ import {NotificationEntry} from '../../notification/db/schema';
 import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 import {ErrorStackEntry} from '../../util/error-stack/db/schema';
 import {SearchHistoryEntry} from '../../util/search-history/db/schema';
+import {CourseAssessmentEntry} from "../../summarizer/db/schema";
 
 export class InitialMigration extends Migration {
 
@@ -41,7 +42,8 @@ export class InitialMigration extends Migration {
             KeyValueStoreEntry.getCreateEntry(),
             ContentMarkerEntry.getCreateEntry(),
             ErrorStackEntry.getCreateEntry(),
-            SearchHistoryEntry.getCreateEntry()
+            SearchHistoryEntry.getCreateEntry(),
+            CourseAssessmentEntry.getCreateEntry()
         ];
     }
 

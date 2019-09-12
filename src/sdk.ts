@@ -68,6 +68,7 @@ import {SearchHistoryMigration} from './db/migrations/search-history-migration';
 import {SearchHistoryService} from './util/search-history';
 import {SearchHistoryServiceImpl} from './util/search-history/impl/search-history-service-impl';
 import {RecentlyViewedMigration} from './db/migrations/recently-viewed-migration';
+import {CourseAssessmentMigration} from "./db/migrations/course-assessment-migration";
 
 export class SunbirdSdk {
     private _isInitialised: boolean = false;
@@ -205,7 +206,7 @@ export class SunbirdSdk {
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(24);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(25);
 
         this._container.bind<Migration[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
             new ProfileSyllabusMigration(),
@@ -215,7 +216,8 @@ export class SunbirdSdk {
             new OfflineSearchTextbookMigration(),
             new ErrorStackMigration(),
             new SearchHistoryMigration(),
-            new RecentlyViewedMigration()
+            new RecentlyViewedMigration(),
+            new CourseAssessmentMigration()
         ]);
 
         if (sdkConfig.sharedPreferencesConfig.debugMode) {
