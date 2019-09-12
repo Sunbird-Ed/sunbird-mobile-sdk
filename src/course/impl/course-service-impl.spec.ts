@@ -11,6 +11,7 @@ import {DbService} from '../../db';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AuthService} from '../../auth';
 import {Observable} from 'rxjs';
+import { AppInfo } from '../../util/app';
 
 describe('CourseServiceImpl', () => {
     let courseService: CourseService;
@@ -32,6 +33,7 @@ describe('CourseServiceImpl', () => {
         getSession: jest.fn(() => {
         })
     };
+    const mockAppInfo: Partial<AppInfo> = {};
 
     beforeAll(() => {
         container.bind<CourseService>(InjectionTokens.COURSE_SERVICE).to(CourseServiceImpl);
@@ -42,6 +44,7 @@ describe('CourseServiceImpl', () => {
         container.bind<DbService>(InjectionTokens.DB_SERVICE).toConstantValue(mockDbService as DbService);
         container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).toConstantValue(sharePreferencesMock as SharedPreferences);
         container.bind<AuthService>(InjectionTokens.AUTH_SERVICE).toConstantValue(mockAuthService as AuthService);
+        container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
 
         courseService = container.get<CourseService>(InjectionTokens.COURSE_SERVICE);
     });
