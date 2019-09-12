@@ -26,8 +26,10 @@ import { ErrorLoggerService } from './util/error-stack';
 import { NetworkInfoService } from './util/network';
 import { SearchHistoryService } from './util/search-history';
 export declare class SunbirdSdk {
+    private _isInitialised;
     private _container;
     private static _instance?;
+    readonly isInitialised: boolean;
     static readonly instance: SunbirdSdk;
     readonly sdkConfig: SdkConfig;
     readonly appInfo: AppInfo;

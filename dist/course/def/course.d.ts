@@ -3,6 +3,7 @@ export interface CourseCertificate {
     lastIssuedOn: string;
     url: string;
     token: string;
+    id: string;
 }
 export interface Course {
     dateTime?: string;
