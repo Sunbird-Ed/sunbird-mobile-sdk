@@ -13,7 +13,7 @@ import {
   UpdateContentStateRequest
 } from '..';
 import {Observable, Observer} from 'rxjs';
-import {ProfileService} from '../../profile';
+import {ProfileService, ProfileServiceConfig} from '../../profile';
 import {GetBatchDetailsHandler} from '../handlers/get-batch-details-handler';
 import {UpdateContentStateApiHandler} from '../handlers/update-content-state-api-handler';
 import {GetCourseBatchesHandler} from '../handlers/get-course-batches-handler';
@@ -55,6 +55,9 @@ export class CourseServiceImpl implements CourseService {
   private static readonly UPDATE_CONTENT_STATE_ENDPOINT = '/content/state/update';
 
   private readonly courseServiceConfig: CourseServiceConfig;
+  private readonly profileServiceConfig: ProfileServiceConfig;
+
+  private static readonly CERTIFICATE_SIGN_ENDPOINT = '/certs/download';
 
   constructor(
     @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -67,6 +70,7 @@ export class CourseServiceImpl implements CourseService {
     @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo
   ) {
     this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
+    this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
   }
 
   getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch> {
@@ -201,7 +205,7 @@ export class CourseServiceImpl implements CourseService {
           .filter((course) => course.status && course.status === 2)
           .find((course) => course.courseId === request.courseId)!;
       })
-      .mergeMap((course: Course) => {
+      .map((course: Course) => {
         if (!course.certificates) {
           throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
         }
@@ -212,8 +216,33 @@ export class CourseServiceImpl implements CourseService {
           throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
         }
 
+        return {certificate, course};
+      })
+      .mergeMap(({certificate, course}) => {
+        const signCertificateRequest = new Request.Builder()
+          .withType(HttpRequestType.POST)
+          .withPath(this.profileServiceConfig.profileApiPath + CourseServiceImpl.CERTIFICATE_SIGN_ENDPOINT)
+          .withApiToken(true)
+          .withSessionToken(true)
+          .withBody({
+            request:
+              {
+                pdfUrl: certificate.url
+              }
+          })
+          .build();
+
+        return this.apiService.fetch<{ result: { signedUrl: string } }>(signCertificateRequest)
+          .map((response) => {
+            return {
+              certificate, course,
+              signedPdfUrl: response.body.result.signedUrl
+            };
+          });
+      })
+      .mergeMap(({certificate, course, signedPdfUrl}) => {
         const downloadRequest: EnqueueRequest = {
-          uri: certificate.url,
+          uri: signedPdfUrl,
           title: certificate.token,
           description: '',
           mimeType: 'application/pdf',
@@ -249,7 +278,7 @@ export class CourseServiceImpl implements CourseService {
             });
           })
           .filter((entry: EnqueuedEntry) => entry.status === DownloadStatus.STATUS_SUCCESSFUL)
-          .take(1)
+          .take(1);
       })
       .map((entry) => ({path: entry.localUri}));
   }

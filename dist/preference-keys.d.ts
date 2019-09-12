@@ -1,3 +1,6 @@
+export declare namespace AppInfoKeys {
+    const KEY_FIRST_ACCESS_TIMESTAMP = "first_access_timestamp";
+}
 export declare namespace ApiKeys {
     const KEY_API_TOKEN = "api_bearer_token";
 }

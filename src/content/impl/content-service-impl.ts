@@ -233,7 +233,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     });
                 }
             }
-            new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
+            new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute();
             return contentDeleteResponse;
         });
     }
@@ -385,7 +385,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         this.getContentDetailsHandler).execute(importResponse.body);
                 }).then((importResponse: Response) => {
                     return new ExtractPayloads(this.fileService, this.zipService, this.appConfig,
-                        this.dbService, this.deviceInfo, this.getContentDetailsHandler, this.eventsBusService).execute(importResponse.body);
+                        this.dbService, this.deviceInfo, this.getContentDetailsHandler, this.eventsBusService, this.sharedPreferences)
+                        .execute(importResponse.body);
                 }).then((importResponse: Response) => {
                     const response: Response = new Response();
                     return new CreateContentImportManifest(this.dbService, this.deviceInfo, this.fileService).execute(importResponse.body);
@@ -403,7 +404,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             return Promise.reject(response);
                         });
                 }).then((importResponse: Response) => {
-                    new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
+                    // new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
                     return importResponse;
                 }).then((importResponse: Response) => {
                     return new GenerateImportShareTelemetry(this.telemetryService).execute(importResponse.body);
@@ -708,7 +709,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             .mergeMap((hasUpdated) => {
                 if (!hasUpdated) {
                     return Observable.fromPromise(
-                        new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute()
+                        new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute()
                     ).mapTo(undefined);
                 }
 

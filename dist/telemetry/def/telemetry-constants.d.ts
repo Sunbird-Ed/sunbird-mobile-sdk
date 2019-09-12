@@ -46,6 +46,7 @@ export declare enum InteractType {
     OTHER = "OTHER"
 }
 export declare enum InteractSubType {
+    NETWORK_SPEED = "network-speed",
     SUBTYPE_SPINE = "spine",
     ONLINE = "online",
     FULL = "full",

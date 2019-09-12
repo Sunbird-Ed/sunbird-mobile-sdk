@@ -4,6 +4,6 @@ export declare class OAuthSessionProvider implements SessionProvider {
     private apiConfig;
     private apiService;
     private oAuthService;
-    constructor(apiConfig: ApiConfig, apiService: ApiService);
+    constructor(apiConfig: ApiConfig, apiService: ApiService, mode?: 'default' | 'merge');
     provide(): Promise<OAuthSession>;
 }

@@ -19,7 +19,8 @@ import {
     TelemetryShareRequest,
     TelemetryStartRequest,
     TelemetryStat,
-    TelemetrySyncStat
+    TelemetrySyncStat,
+    Context
 } from '..';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {Observable} from 'rxjs';
@@ -312,5 +313,13 @@ export class TelemetryServiceImpl implements TelemetryService {
         });
     }
 
-
+    buildContext(): Observable<Context> {
+        return this.profileService.getActiveProfileSession()
+          .map((session) => {
+              return this.decorator.buildContext(
+                session!.sid,
+                this.frameworkService.activeChannelId!
+              )
+          });
+    }
 }

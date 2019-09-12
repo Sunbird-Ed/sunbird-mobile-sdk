@@ -16,6 +16,7 @@ export declare class DownloadServiceImpl implements DownloadService, SdkServiceO
     private static generateDownloadStartTelemetry;
     private static generateDownloadCompleteTelemetry;
     private static generateDownloadCancelTelemetry;
+    private static generateNetworkSpeedTelemetry;
     onInit(): Observable<undefined>;
     download(downloadRequests: DownloadRequest[]): Observable<undefined>;
     cancel(downloadCancelRequest: DownloadCancelRequest, generateTelemetry?: boolean): Observable<undefined>;
@@ -30,4 +31,5 @@ export declare class DownloadServiceImpl implements DownloadService, SdkServiceO
     private emitProgressInEventBus;
     private getDownloadProgress;
     private listenForDownloadProgressChanges;
+    private generateDownloadSpeedTelemetry;
 }

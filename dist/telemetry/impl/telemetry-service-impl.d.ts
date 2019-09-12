@@ -1,5 +1,5 @@
 import { DbService } from '../../db';
-import { TelemetryAuditRequest, TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryExportResponse, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryInterruptRequest, TelemetryLogRequest, TelemetryService, TelemetryShareRequest, TelemetryStartRequest, TelemetryStat, TelemetrySyncStat } from '..';
+import { TelemetryAuditRequest, TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryExportResponse, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryInterruptRequest, TelemetryLogRequest, TelemetryService, TelemetryShareRequest, TelemetryStartRequest, TelemetryStat, TelemetrySyncStat, Context } from '..';
 import { Observable } from 'rxjs';
 import { ProfileService } from '../../profile';
 import { GroupService } from '../../group';
@@ -13,6 +13,7 @@ import { NetworkInfoService } from '../../util/network';
 import { SdkConfig } from '../../sdk-config';
 import { ErrorLoggerService } from '../../util/error-stack';
 import { SharedPreferences } from '../../util/shared-preferences';
+import { AppInfo } from "../../util/app";
 export declare class TelemetryServiceImpl implements TelemetryService {
     private dbService;
     private decorator;
@@ -28,9 +29,10 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     private networkInfoService;
     private errorLoggerService;
     private sharedPreferences;
+    private appInfoService;
     private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP;
     private telemetryConfig;
-    constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, sdkConfig: SdkConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService, frameworkService: FrameworkService, networkInfoService: NetworkInfoService, errorLoggerService: ErrorLoggerService, sharedPreferences: SharedPreferences);
+    constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, sdkConfig: SdkConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService, frameworkService: FrameworkService, networkInfoService: NetworkInfoService, errorLoggerService: ErrorLoggerService, sharedPreferences: SharedPreferences, appInfoService: AppInfo);
     saveTelemetry(request: string): Observable<boolean>;
     audit({ env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData }: TelemetryAuditRequest): Observable<boolean>;
     end({ type, mode, duration, pageId, summaryList, env, objId, objType, objVer, rollup, correlationData }: TelemetryEndRequest): Observable<boolean>;
@@ -48,4 +50,5 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     resetDeviceRegisterTTL(): Observable<undefined>;
     sync(ignoreSyncThreshold?: boolean): Observable<TelemetrySyncStat>;
     private decorateAndPersist;
+    buildContext(): Observable<Context>;
 }

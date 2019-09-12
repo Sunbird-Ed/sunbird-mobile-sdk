@@ -7,12 +7,14 @@ import { DeviceInfo } from '../../util/device';
 import { DbService } from '../../db';
 import { FrameworkService } from '../../framework';
 import { SharedPreferences } from '../../util/shared-preferences';
+import { AppInfo } from "../../util/app";
 export declare class TelemetrySyncHandler implements ApiRequestHandler<boolean, TelemetrySyncStat> {
     private dbService;
     private sdkConfig;
     private deviceInfo;
     private frameworkService;
     private sharedPreferences;
+    private appInfoService;
     private keyValueStore?;
     private apiService?;
     static readonly TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY: string;
@@ -25,7 +27,7 @@ export declare class TelemetrySyncHandler implements ApiRequestHandler<boolean, 
     private readonly preprocessors;
     private readonly telemetryConfig;
     private readonly apiConfig;
-    constructor(dbService: DbService, sdkConfig: SdkConfig, deviceInfo: DeviceInfo, frameworkService: FrameworkService, sharedPreferences: SharedPreferences, keyValueStore?: KeyValueStore | undefined, apiService?: ApiService | undefined);
+    constructor(dbService: DbService, sdkConfig: SdkConfig, deviceInfo: DeviceInfo, frameworkService: FrameworkService, sharedPreferences: SharedPreferences, appInfoService: AppInfo, keyValueStore?: KeyValueStore | undefined, apiService?: ApiService | undefined);
     resetDeviceRegisterTTL(): Observable<undefined>;
     handle(ignoreSyncThreshold: boolean): Observable<TelemetrySyncStat>;
     private registerDevice;
