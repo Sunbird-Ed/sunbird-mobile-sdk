@@ -15,20 +15,17 @@ import {Observable} from 'rxjs';
 import {DbService} from '../../db';
 import {LearnerAssessmentsEntry, LearnerSummaryEntry} from '../../profile/db/schema';
 import {SunbirdTelemetry} from '../../telemetry';
-import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 import {NumberUtil} from '../../util/number-util';
 import {EventNamespace, EventsBusService} from '../../events-bus';
-import {EventObserver} from '../../events-bus/def/event-observer';
 import {Content, ContentRequest, ContentService} from '../../content';
 import {TelemetryEvent, TelemetryEventType} from '../../telemetry/def/telemetry-event';
-import Telemetry = SunbirdTelemetry.Telemetry;
 import {CourseService} from '../../course';
 import {SharedPreferences} from '../../util/shared-preferences';
-import {ArrayUtil} from '../../util/array-util';
 import {ProfileService} from '../../profile';
-import { injectable, inject } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
-import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
+import {EventObserver} from "../../events-bus/def/event-observer";
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 @injectable()
 export class SummarizerServiceImpl implements SummarizerService, EventObserver<TelemetryEvent> {
@@ -44,7 +41,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
         @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService
     ) {
         this.summarizerTelemetryHandler = new SummaryTelemetryEventHandler(this.courseService, this.sharedPreference, this,
-            this.eventsBusService, this.contenService, this.profileService);
+            this.eventsBusService, this.contenService, this.profileService, this.dbService);
     }
 
     onInit(): Observable<undefined> {

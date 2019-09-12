@@ -16,8 +16,9 @@ import Telemetry = SunbirdTelemetry.Telemetry;
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {Content, ContentDetailRequest, ContentEventType, ContentMarkerRequest, ContentService, MarkerType, MimeType} from '../../content';
 import {ContentAccess, ContentAccessStatus, ProfileService} from '../../profile';
-import {GetEnrolledCourseHandler} from '../../course/handlers/get-enrolled-course-handler';
 import {ArrayUtil} from '../../util/array-util';
+import {CourseAssessmentEntry} from "../db/schema";
+import {DbService} from "../../db";
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -26,12 +27,15 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     private currentContentID?: string = undefined;
     private courseContext = {};
 
-    constructor(private courseService: CourseService,
-                private sharedPreference: SharedPreferences,
-                private summarizerService: SummarizerService,
-                private eventBusService: EventsBusService,
-                private contentService: ContentService,
-                private profileService: ProfileService) {
+    constructor(
+        private courseService: CourseService,
+        private sharedPreference: SharedPreferences,
+        private summarizerService: SummarizerService,
+        private eventBusService: EventsBusService,
+        private contentService: ContentService,
+        private profileService: ProfileService,
+        private dbService: DbService
+    ) {
     }
 
     private static checkPData(pdata: ProducerData): boolean {
@@ -185,12 +189,21 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         } else if (event.eid === 'ASSESS' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
             return this.processOEAssess(event)
                 .do(async () => {
+                    const context = await this.getCourseContext().toPromise();
+                    if (context.userId && context.courseId && context.batchId) {
+                        await this.persistAssessEvent(event, context);
+                    }
+                })
+                .do(async () => {
                     await this.summarizerService.saveLearnerAssessmentDetails(event)
                         .mapTo(undefined)
                         .toPromise();
                 });
         } else if (event.eid === 'END' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
             return this.processOEEnd(event)
+                .do(async () => {
+                    await this.courseService.syncAssessmentEvents().toPromise();
+                })
                 .do(async () => {
                     await this.summarizerService.saveLearnerContentSummaryDetails(event)
                         .mapTo(undefined)
@@ -294,6 +307,20 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
 
     private processOEEnd(event: Telemetry): Observable<undefined> {
         return Observable.of(undefined);
+    }
+
+    public persistAssessEvent(event: SunbirdTelemetry.Telemetry, courseContext): Promise<undefined> {
+        return this.dbService.insert({
+            table: CourseAssessmentEntry.TABLE_NAME,
+            modelJson: {
+                [CourseAssessmentEntry.COLUMN_NAME_ASSESSMENT_EVENT]: JSON.stringify(event),
+                [CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID]: event.object.id,
+                [CourseAssessmentEntry.COLUMN_NAME_CREATED_AT]: event.ets,
+                [CourseAssessmentEntry.COLUMN_NAME_USER_ID]: courseContext.userId,
+                [CourseAssessmentEntry.COLUMN_NAME_COURSE_ID]: courseContext.courseId,
+                [CourseAssessmentEntry.COLUMN_NAME_BATCH_ID]: courseContext.batchId,
+            } as CourseAssessmentEntry.SchemaMap
+        }).mapTo(undefined).toPromise();
     }
 }
 

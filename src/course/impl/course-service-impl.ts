@@ -1,5 +1,5 @@
 import {
-  Batch,
+  Batch, ContentState,
   ContentStateResponse,
   Course,
   CourseBatchDetailsRequest,
@@ -20,7 +20,7 @@ import {GetCourseBatchesHandler} from '../handlers/get-course-batches-handler';
 import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
 import {EnrollCourseHandler} from '../handlers/enroll-course-handler';
 import {KeyValueStore} from '../../key-value-store';
-import {ApiService} from '../../api';
+import {ApiService, HttpRequestType, Request} from '../../api';
 import {UnenrollCourseHandler} from '../handlers/unenroll-course-handler';
 import {DbService} from '../../db';
 import {ContentKeys} from '../../preference-keys';
@@ -41,6 +41,9 @@ import {AppInfo} from '../../util/app';
 import {FileUtil} from '../../util/file/util/file-util';
 import {DownloadStatus} from '../../util/download';
 import {DownloadCertificateResponse} from '../def/download-certificate-response';
+import {CourseAssessmentEntry} from "../../summarizer/db/schema";
+import {SunbirdTelemetry} from "../../telemetry";
+import * as MD5 from 'crypto-js/md5';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -49,7 +52,9 @@ export class CourseServiceImpl implements CourseService {
   public static readonly GET_ENROLLED_COURSE_KEY_PREFIX = 'enrolledCourses';
   public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
   public static readonly LAST_READ_CONTENTID_PREFIX = 'lastReadContentId';
-  private courseServiceConfig: CourseServiceConfig;
+  private static readonly UPDATE_CONTENT_STATE_ENDPOINT = '/content/state/update';
+
+  private readonly courseServiceConfig: CourseServiceConfig;
 
   constructor(
     @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -101,12 +106,15 @@ export class CourseServiceImpl implements CourseService {
   getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]> {
     const updateContentStateHandler: UpdateContentStateApiHandler =
       new UpdateContentStateApiHandler(this.apiService, this.courseServiceConfig);
-    return new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)
-      .updateContentState().mergeMap(() => {
-        return new GetEnrolledCourseHandler(
-          this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences).handle(request);
-      });
-
+    return Observable.zip(
+      this.syncAssessmentEvents(),
+      new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)
+        .updateContentState()
+    ).mergeMap(() => {
+      return new GetEnrolledCourseHandler(
+          this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
+      ).handle(request);
+    });
   }
 
   enrollCourse(request: EnrollCourseRequest): Observable<boolean> {
@@ -244,5 +252,113 @@ export class CourseServiceImpl implements CourseService {
           .take(1)
       })
       .map((entry) => ({path: entry.localUri}));
+  }
+
+  public syncAssessmentEvents(): Observable<undefined> {
+    type RawEntry = {
+      [CourseAssessmentEntry.COLUMN_NAME_USER_ID]: string,
+      [CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID]: string,
+      [CourseAssessmentEntry.COLUMN_NAME_COURSE_ID]: string,
+      [CourseAssessmentEntry.COLUMN_NAME_BATCH_ID]: string,
+      first_ts: number,
+      events: string
+    };
+
+    type Entry = {
+      userId: string,
+      contentId: string,
+      courseId: string,
+      batchId: string,
+      firstTs: number,
+      events: SunbirdTelemetry.Telemetry[]
+    };
+
+    type AssessmentTelemetrySyncRequest = {
+      contents: ContentState[],
+      assessments: {
+        assessmentTs: number; //Assessment time in epoch
+        userId: string,  // User Identifier - required
+        contentId: string, // Content Identifier - required
+        courseId: string, // Course Identifier - required
+        batchId: string; // Batch Identifier - required
+        attemptId: string, // Attempt Identifier - required
+        events: SunbirdTelemetry.Telemetry[] // Only 'ASSESS' Events - required
+      }[];
+    };
+
+    return this.dbService.execute(`
+            SELECT
+                ${CourseAssessmentEntry.COLUMN_NAME_USER_ID},
+                ${CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID},
+                ${CourseAssessmentEntry.COLUMN_NAME_COURSE_ID},
+                ${CourseAssessmentEntry.COLUMN_NAME_BATCH_ID},
+                MIN(${CourseAssessmentEntry.COLUMN_NAME_CREATED_AT}) as first_ts,
+                GROUP_CONCAT(${CourseAssessmentEntry.COLUMN_NAME_ASSESSMENT_EVENT},',') as events 
+            FROM ${CourseAssessmentEntry.TABLE_NAME}
+            GROUP BY
+                ${CourseAssessmentEntry.COLUMN_NAME_USER_ID},
+                ${CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID},
+                ${CourseAssessmentEntry.COLUMN_NAME_COURSE_ID},
+                ${CourseAssessmentEntry.COLUMN_NAME_BATCH_ID}
+            ORDER BY ${CourseAssessmentEntry.COLUMN_NAME_CREATED_AT}
+        `).map((entries: RawEntry[]) => {
+      return entries.map((entry) => {
+        return {
+          userId: entry[CourseAssessmentEntry.COLUMN_NAME_USER_ID],
+          contentId: entry[CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID],
+          courseId: entry[CourseAssessmentEntry.COLUMN_NAME_COURSE_ID],
+          batchId: entry[CourseAssessmentEntry.COLUMN_NAME_BATCH_ID],
+          firstTs: entry.first_ts,
+          events: JSON.parse('[' + entry.events + ']')
+        } as Entry
+      });
+    }).mergeMap((entries: Entry[]) => {
+      if (!entries.length) {
+        return Observable.of(undefined);
+      }
+
+      const assessmentTelemetrySyncRequest: AssessmentTelemetrySyncRequest = {
+        contents: entries.map((contentEntry) => {
+          return {
+            contentId: contentEntry.contentId,
+            courseId: contentEntry.courseId,
+            batchId: contentEntry.batchId,
+          };
+        }),
+        assessments: entries.map((contentEntry) => {
+          return {
+            assessmentTs: contentEntry.firstTs,
+            userId: contentEntry.userId,
+            contentId: contentEntry.contentId,
+            courseId: contentEntry.courseId,
+            batchId: contentEntry.batchId,
+            attemptId: MD5(
+                contentEntry.courseId + contentEntry.userId + contentEntry.contentId + contentEntry.batchId
+            ).toString(),
+            events: contentEntry.events
+          }
+        })
+      };
+
+      const apiRequest: Request = new Request.Builder()
+          .withPath(this.sdkConfig.courseServiceConfig.apiPath + CourseServiceImpl.UPDATE_CONTENT_STATE_ENDPOINT)
+          .withType(HttpRequestType.PATCH)
+          .withBody({
+            request: assessmentTelemetrySyncRequest
+          })
+          .withApiToken(true)
+          .withSessionToken(true)
+          .build();
+
+      return this.apiService.fetch(apiRequest)
+          .do(async () =>
+              await this.dbService.execute(`DELETE FROM ${CourseAssessmentEntry.TABLE_NAME}`)
+          )
+          .catch((e) => {
+            console.error(e);
+            return Observable.of(undefined);
+          })
+          .mapTo(undefined)
+    }).mapTo(undefined);
   }
 }

@@ -31,4 +31,6 @@ export interface CourseService {
     downloadCurrentProfileCourseCertificate(
         downloadCertificateRequest: DownloadCertificateRequest
     ): Observable<DownloadCertificateResponse>;
+
+    syncAssessmentEvents(): Observable<undefined>;
 }
