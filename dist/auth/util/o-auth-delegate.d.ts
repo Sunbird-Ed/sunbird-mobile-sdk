@@ -17,6 +17,7 @@ export interface OAuthRedirectUrlQueryParams {
     client_id: string;
     version: string;
     merge_account_process?: string;
+    mergeaccountprocess?: string;
 }
 export declare class ForgotPasswordFlowDetectedError extends SunbirdError {
     constructor(message: string);
