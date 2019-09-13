@@ -22,6 +22,7 @@ export interface OAuthRedirectUrlQueryParams {
     client_id: string;
     version: string;
     merge_account_process?: string;
+    mergeaccountprocess?: string;
 }
 
 export class ForgotPasswordFlowDetectedError extends SunbirdError {
@@ -50,7 +51,8 @@ export class OAuthDelegate {
         };
 
         if (this.mode === 'merge') {
-            oAuthRedirectUrlQueryParams.merge_account_process = '1'
+            oAuthRedirectUrlQueryParams.merge_account_process = '1';
+            oAuthRedirectUrlQueryParams.mergeaccountprocess = '1';
         }
 
         return (this.mode === 'default' ? this.apiConfig.host : this.apiConfig.user_authentication.mergeUserHost) +
