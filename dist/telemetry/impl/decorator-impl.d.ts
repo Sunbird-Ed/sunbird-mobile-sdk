@@ -19,5 +19,5 @@ export declare class TelemetryDecoratorImpl implements TelemetryDecorator {
         timestamp: number;
         priority: number;
     };
-    buildContext(sid: string, channelId: string): Context;
+    buildContext(sid: string, channelId: string, context: Context): Context;
 }
