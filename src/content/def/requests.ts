@@ -136,6 +136,8 @@ export interface ContentSearchCriteria {
     framework?: string;
     languageCode?: string;
     mimeType?: string[];
+    subject?: string[];
+    fields?: string[];
 }
 
 export interface ContentSearchFilter {

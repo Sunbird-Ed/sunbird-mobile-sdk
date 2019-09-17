@@ -1,10 +1,6 @@
 import {ContentAccessEntry, ContentEntry, ContentMarkerEntry} from '../db/schema';
-import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
 import {ContentUtil} from '../util/content-util';
-import {Content, ContentData, ContentDetailRequest, ContentRequest} from '..';
-import * as moment from 'moment';
-import {ContentFeedbackService} from '../def/content-feedback-service';
-import {ProfileService} from '../../profile';
+import {Content, ContentData} from '..';
 
 export class ContentMapper {
     public static mapContentDataToContentDBEntry(contentData, manifestVersion: string): ContentEntry.SchemaMap {
@@ -121,6 +117,8 @@ export class ContentMapper {
             contentCreationTime = new Date(localLastUpdatedTime).getTime();
         }
 
+        const sizeOnDevice = Number(contentEntry[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]);
+        const size = sizeOnDevice ? sizeOnDevice : Number(serverData ? serverData.size : 0 );
 
         return {
             identifier: identifier,
@@ -131,7 +129,7 @@ export class ContentMapper {
             contentType: contentType,
             isAvailableLocally: ContentUtil.isAvailableLocally(contentEntry[ContentEntry.COLUMN_NAME_CONTENT_STATE]!),
             referenceCount: Number(contentEntry[ContentEntry.COLUMN_NAME_REF_COUNT]) || 0,
-            sizeOnDevice: Number(contentEntry[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]) || 0,
+            sizeOnDevice: size,
             lastUsedTime: lastUsedTime || 0,
             lastUpdatedTime: contentCreationTime,
         };

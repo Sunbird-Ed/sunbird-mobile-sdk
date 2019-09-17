@@ -50,11 +50,13 @@ export class OfflineContentStateHandler {
                                 if (!course.contentsPlayedOffline || !course.contentsPlayedOffline!.length) {
                                     course.contentsPlayedOffline = [];
                                 }
-                                if (course.contentsPlayedOffline!.length === 0 ||
+                                if (updateContentStateRequest.status !== 1 && (course.contentsPlayedOffline!.length === 0 ||
                                     (course.contentsPlayedOffline!.length > 0 &&
-                                        !ArrayUtil.contains(course.contentsPlayedOffline, updateContentStateRequest.contentId))) {
+                                        !ArrayUtil.contains(course.contentsPlayedOffline, updateContentStateRequest.contentId)))) {
                                     course.progress = course.progress ? course.progress : 0;
                                     course.progress = course.progress + 1;
+                                    course.completionPercentage =
+                                        this.getCourseCompletionPercentage(course.leafNodesCount, course.progress);
                                     const updatedCourse: Course = course;
                                     let playedOffline: string[] = updatedCourse.contentsPlayedOffline!;
                                     if (!playedOffline) {
@@ -63,7 +65,7 @@ export class OfflineContentStateHandler {
                                     playedOffline.push(updateContentStateRequest.contentId);
                                     updatedCourse.contentsPlayedOffline = playedOffline;
                                     updatedCourse.progress = course.progress;
-
+                                    updatedCourse.completionPercentage = course.completionPercentage;
                                     const toUpdateIndex = newCourses.findIndex((el: Course) => {
                                         return el.contentId === course.contentId || el.batchId === course.batchId;
                                     });
@@ -149,6 +151,21 @@ export class OfflineContentStateHandler {
                 }
 
             });
+    }
+
+    public getCourseCompletionPercentage(leafNodeCount: number | undefined, progress: number) {
+        if (leafNodeCount === 0 || leafNodeCount === undefined) {
+            return 0;
+        }
+        const completionData = ((progress / leafNodeCount) * 100);
+
+        if (isNaN(completionData)) {
+            return 0;
+        } else if (completionData > 100) {
+            return 100;
+        } else {
+            return Math.floor(completionData);
+        }
     }
 
     private getContentState(updateContentStateRequest: UpdateContentStateRequest): ContentState {
