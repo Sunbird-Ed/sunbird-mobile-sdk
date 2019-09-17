@@ -5,5 +5,5 @@ export declare class CopyAsset {
     private fileService;
     constructor(fileService: FileService);
     execute(exportContentContext: ExportContentContext): Promise<Response>;
-    private copyAsset;
+    private copyFile;
 }
