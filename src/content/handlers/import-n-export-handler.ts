@@ -8,8 +8,6 @@ import {DbService} from '../../db';
 import {ArrayUtil} from '../../util/array-util';
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
-import COLUMN_NAME_LOCAL_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON;
-import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 
 export class ImportNExportHandler {
@@ -89,11 +87,10 @@ export class ImportNExportHandler {
         return items;
     }
 
-    public async getContentExportDBModeltoExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {
+    public async getContentExportDBModelToExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {
         const contentModelToExport: ContentEntry.SchemaMap[] = [];
         const queue: Queue<ContentEntry.SchemaMap> = new Queue();
 
-        const contentWithAllChildren: ContentEntry.SchemaMap[] = [];
         const contentsInDb: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(contentIds);
         contentsInDb.forEach((contentInDb) => {
             queue.add(contentInDb);
@@ -101,7 +98,7 @@ export class ImportNExportHandler {
         let node: ContentEntry.SchemaMap;
         while (!queue.isEmpty()) {
             node = queue.dequeue()!;
-            if (ContentUtil.hasChildren(node[COLUMN_NAME_LOCAL_DATA])) {
+            if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
                 const childContentsIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(node[COLUMN_NAME_LOCAL_DATA]);
                 const contentModelListInDB: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(
                     childContentsIdentifiers);
@@ -131,11 +128,10 @@ export class ImportNExportHandler {
         return manifest;
     }
 
-    findAllContentsWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
+    private findAllContentsWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
         const identifiersStr = ArrayUtil.joinPreservingQuotes(identifiers);
-        const orderby = ` order by ${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} desc, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} desc`;
         const filter = ` where ${COLUMN_NAME_IDENTIFIER} in (${identifiersStr}) AND ${COLUMN_NAME_REF_COUNT} > 0`;
-        const query = `select * from ${ContentEntry.TABLE_NAME} ${filter} ${orderby}`;
+        const query = `select * from ${ContentEntry.TABLE_NAME} ${filter}`;
         return this.dbService!.execute(query).toPromise();
     }
 }

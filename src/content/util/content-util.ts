@@ -7,13 +7,6 @@ import {ContentEntry} from '../db/schema';
 import {NumberUtil} from '../../util/number-util';
 import {ArrayUtil} from '../../util/array-util';
 import * as moment from 'moment';
-import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
-import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
-import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
-import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
-import COLUMN_NAME_LOCAL_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON;
-import COLUMN_NAME_SERVER_LAST_UPDATED_ON = ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON;
-import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 
 export class ContentUtil {
     public static defaultCompatibilityLevel = 1;
@@ -121,8 +114,8 @@ export class ContentUtil {
     }
 
     public static readCompatibilityLevel(contentData: any): number {
-        const compaitibilityLevel = contentData.compatibilityLevel;
-        return compaitibilityLevel ? compaitibilityLevel : this.defaultCompatibilityLevel;
+        const compatibilityLevel = contentData.compatibilityLevel;
+        return compatibilityLevel ? compatibilityLevel : this.defaultCompatibilityLevel;
     }
 
     public static isDraftContent(status): boolean {
@@ -161,7 +154,6 @@ export class ContentUtil {
             isExist = this.readPkgVersion(JSON.parse(oldContentModel[ContentEntry.COLUMN_NAME_LOCAL_DATA])) >=
                 this.readPkgVersion(contentData);
         }
-
 
         return isExist;
     }
@@ -204,8 +196,10 @@ export class ContentUtil {
     /**
      * To Check whether the content is exist or not.
      *
-     * @param oldContent    Old ContentModel
+     * @param existingContentInDB    Old ContentModel
      * @param newIdentifier New content identifier
+     * @param newPkgVersion
+     * @param keepLowerVersion
      * @return True - if file exists, False- does not exists
      */
     public static doesContentExist(existingContentInDB: ContentEntry.SchemaMap | undefined, newIdentifier: string,
@@ -233,13 +227,13 @@ export class ContentUtil {
                 // If old content's pkgVersion is less than the new content then return false.
                 //                        && ((readPkgVersion(existingContentInDB.getLocalData()) < newPkgVersion)
                 //  If content_state is other than artifact available then also return  false.
-                || (!keepLowerVersion && existingContentInDB[COLUMN_NAME_CONTENT_STATE] !== State.ARTIFACT_AVAILABLE.valueOf())) {
+                || (!keepLowerVersion
+                    && existingContentInDB[ContentEntry.COLUMN_NAME_CONTENT_STATE] !== State.ARTIFACT_AVAILABLE.valueOf())) {
                 doestExist = false;
             } else {
                 doestExist = true;
             }
         }
-
 
         return doestExist;
     }
@@ -352,7 +346,7 @@ export class ContentUtil {
 
         const appendName = '';
         contentsInDb.forEach((contentInDb) => {
-            if (Visibility.DEFAULT.valueOf() === contentInDb[COLUMN_NAME_VISIBILITY]) {
+            if (Visibility.DEFAULT.valueOf() === contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY]) {
                 rootContents++;
             }
         });
@@ -362,7 +356,7 @@ export class ContentUtil {
         }
 
         if (firstContent!) {
-            const localData = JSON.parse(firstContent![COLUMN_NAME_LOCAL_DATA]);
+            const localData = JSON.parse(firstContent![ContentEntry.COLUMN_NAME_LOCAL_DATA]);
             let name = localData.name;
             if (name && name.length > ContentUtil.MAX_CONTENT_NAME) {
                 name = name.substring(0, ContentUtil.MAX_CONTENT_NAME - 3) + '...';
@@ -484,13 +478,13 @@ export class ContentUtil {
 
     public static getFindAllContentsWithIdentifierQuery(identifiers: string[]): string {
         const identifiersStr = ArrayUtil.joinPreservingQuotes(identifiers);
-        const orderby = ` order by ${COLUMN_NAME_LOCAL_LAST_UPDATED_ON} desc, ${COLUMN_NAME_SERVER_LAST_UPDATED_ON} desc`;
-        const filter = ` where ${COLUMN_NAME_IDENTIFIER} in (${identifiersStr}) AND ${COLUMN_NAME_REF_COUNT} > 0`;
-        return `select * from ${ContentEntry.TABLE_NAME} ${filter} ${orderby}`;
+        const orderBy = ` order by ${ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON} desc, ${ContentEntry.COLUMN_NAME_SERVER_LAST_UPDATED_ON} desc`;
+        const filter = ` where ${ContentEntry.COLUMN_NAME_IDENTIFIER} in (${identifiersStr}) AND ${ContentEntry.COLUMN_NAME_REF_COUNT} > 0`;
+        return `select * from ${ContentEntry.TABLE_NAME} ${filter} ${orderBy}`;
     }
 
     public static getFindAllContentsQuery(): string {
-        return `select * from ${ContentEntry.TABLE_NAME} where ${COLUMN_NAME_REF_COUNT} > 0`;
+        return `select * from ${ContentEntry.TABLE_NAME} where ${ContentEntry.COLUMN_NAME_REF_COUNT} > 0`;
     }
 
     public static constructContentDBModel(identifier, manifestVersion, localData, mimeType, contentType, visibility, path, refCount,

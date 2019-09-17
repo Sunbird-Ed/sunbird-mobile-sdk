@@ -1,6 +1,6 @@
 import {ContentEntry} from '../../content/db/schema';
 import {ContentUtil} from '../../content/util/content-util';
-import {ContentStatus, MimeType, State, Visibility} from '../../content';
+import {ContentStatus, FileName, MimeType, State, Visibility} from '../../content';
 import {AppConfig} from '../../api/config/app-config';
 import {FileService} from '../../util/file/def/file-service';
 import {DbService} from '../../db';
@@ -8,7 +8,6 @@ import {DeviceInfo} from '../../util/device';
 import {Manifest} from './transfer-content-handler';
 
 export class StorageHandler {
-    private static MANIFEST_FILE_NAME = 'manifest.json';
 
     constructor(private appConfig: AppConfig,
                 private fileService: FileService,
@@ -17,11 +16,11 @@ export class StorageHandler {
 
     }
 
-    public  async  addDestinationContentInDb(identifier: string, storageFolder: string, keepLowerVersion: boolean) {
+    public async addDestinationContentInDb(identifier: string, storageFolder: string, keepLowerVersion: boolean) {
         const destinationPath = storageFolder.concat(identifier);
         this.fileService.readAsText(
             storageFolder.concat(identifier),
-            StorageHandler.MANIFEST_FILE_NAME
+            FileName.MANIFEST.valueOf()
         ).then((manifestStringified) => {
             const manifest: Manifest = JSON.parse(manifestStringified);
             const items: any[] = manifest.archive.items;
@@ -29,6 +28,38 @@ export class StorageHandler {
         }).catch((e) => {
             console.error(e);
         });
+    }
+
+    public async deleteContentsFromDb(deletedIdentifiers: string[]) {
+        const contentsInDb: ContentEntry.SchemaMap[] = await this.dbService.execute(
+            ContentUtil.getFindAllContentsWithIdentifierQuery(deletedIdentifiers)).toPromise();
+        for (const element of contentsInDb) {
+            const contentInDb = element as ContentEntry.SchemaMap;
+            if ((contentInDb[ContentEntry.COLUMN_NAME_MIME_TYPE] === MimeType.COLLECTION) &&
+                contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT]! > 1) {
+                contentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] = State.ARTIFACT_AVAILABLE;
+            } else {
+                contentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] = State.ONLY_SPINE;
+            }
+
+            if ((contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY] === Visibility.DEFAULT) &&
+                contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT]! > 0) {
+                const refCount: number = contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT]!;
+                contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT] = ContentUtil.addOrUpdateRefCount(refCount - 1);
+            }
+            contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY] = Visibility.PARENT;
+        }
+        this.dbService.beginTransaction();
+        for (const element of contentsInDb) {
+            const contentInDb = element as ContentEntry.SchemaMap;
+            await this.dbService.update({
+                table: ContentEntry.TABLE_NAME,
+                selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
+                selectionArgs: [contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]],
+                modelJson: contentInDb
+            }).toPromise();
+        }
+        this.dbService.endTransaction(true);
     }
 
     private async extractContentFromItem(items: any[], destinationPath: string, manifestVersion: string, keepLowerVersion: boolean) {
@@ -112,39 +143,6 @@ export class StorageHandler {
             }
             this.dbService.endTransaction(true);
         }
-
-    }
-
-    public async deleteContentsFromDb(deletedIdentifiers: string[]) {
-        const contentsInDb: ContentEntry.SchemaMap[] = await this.dbService.execute(
-            ContentUtil.getFindAllContentsWithIdentifierQuery(deletedIdentifiers)).toPromise();
-        for (const element of contentsInDb) {
-            const contentInDb = element as ContentEntry.SchemaMap;
-            if ((contentInDb[ContentEntry.COLUMN_NAME_MIME_TYPE] === MimeType.COLLECTION) &&
-                contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT]! > 1) {
-                contentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] = State.ARTIFACT_AVAILABLE;
-            } else {
-                contentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] = State.ONLY_SPINE;
-            }
-
-            if ((contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY] === Visibility.DEFAULT) &&
-                contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT]! > 0) {
-                const refCount: number = contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT]!;
-                contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT] = ContentUtil.addOrUpdateRefCount(refCount - 1);
-            }
-            contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY] = Visibility.PARENT;
-        }
-        this.dbService.beginTransaction();
-        for (const element of contentsInDb) {
-            const contentInDb = element as ContentEntry.SchemaMap;
-            await this.dbService.update({
-                table: ContentEntry.TABLE_NAME,
-                selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
-                selectionArgs: [contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]],
-                modelJson: contentInDb
-            }).toPromise();
-        }
-        this.dbService.endTransaction(true);
     }
 
 }

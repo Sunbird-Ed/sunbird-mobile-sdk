@@ -5,7 +5,6 @@ import { DbService } from '../../../db';
 export declare class CreateHierarchy {
     private dbService;
     private fileService;
-    private readonly MANIFEST_FILE_NAME;
     private readonly HIERARCHY_FILE_NAME;
     private contentMap;
     constructor(dbService: DbService, fileService: FileService);

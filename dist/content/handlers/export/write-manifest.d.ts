@@ -5,7 +5,6 @@ import { DeviceInfo } from '../../../util/device';
 export declare class WriteManifest {
     private fileService;
     private deviceInfo;
-    private static readonly MANIFEST_FILE_NAME;
     constructor(fileService: FileService, deviceInfo: DeviceInfo);
     execute(exportContentContext: ExportContentContext): Promise<Response>;
 }

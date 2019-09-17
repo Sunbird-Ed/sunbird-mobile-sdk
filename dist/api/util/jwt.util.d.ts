@@ -4,5 +4,4 @@ export declare enum JWTokenType {
 export declare class JWTUtil {
     static createJWToken(subject: any, secretKey: string, tokenType?: JWTokenType): string;
     static getJWTPayload(token: string): any;
-    static parseUserTokenFromAccessToken(accessToken: string): string;
 }

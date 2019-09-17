@@ -1,5 +1,5 @@
 import {FileService} from '../../../util/file/def/file-service';
-import {ChildContent, Content, ContentData, HierarchyInfo, ImportContentContext, Visibility} from '../..';
+import {ChildContent, Content, ContentData, FileName, HierarchyInfo, ImportContentContext, Visibility} from '../..';
 import {Response} from '../../../api';
 import {ContentMapper} from '../../util/content-mapper';
 import {ContentUtil} from '../../util/content-util';
@@ -10,7 +10,6 @@ import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class CreateHierarchy {
 
-    private readonly MANIFEST_FILE_NAME = 'manifest.json';
     private readonly HIERARCHY_FILE_NAME = 'hierarchy.json';
     private contentMap: { [key: string]: any } = {};
 
@@ -19,7 +18,7 @@ export class CreateHierarchy {
     }
 
     public async execute(importContentContext: ImportContentContext): Promise<Response> {
-        const data = await this.fileService.readAsText(importContentContext.tmpLocation!, this.MANIFEST_FILE_NAME);
+        const data = await this.fileService.readAsText(importContentContext.tmpLocation!, FileName.MANIFEST.valueOf());
         const manifestJson = JSON.parse(data);
         const archive = manifestJson.archive;
         const items = archive.items;

@@ -11,13 +11,13 @@ export class CreateTempLoc {
 
     execute(exportContext: ExportContentContext): Promise<Response> {
         const response: Response = new Response();
-        return this.fileService.createDir(exportContext.tmpLocationPath!.concat(UniqueId.generateUniqueId()),
-            false).then((directoryEntry: DirectoryEntry) => {
-            exportContext.tmpLocationPath = directoryEntry.nativeURL;
-            response.body = exportContext;
-            return Promise.resolve(response);
-        }).catch(() => {
-            return Promise.reject(response);
-        });
+        return this.fileService.createDir(exportContext.tmpLocationPath!.concat(UniqueId.generateUniqueId()), false)
+            .then((directoryEntry: DirectoryEntry) => {
+                exportContext.tmpLocationPath = directoryEntry.nativeURL;
+                response.body = exportContext;
+                return Promise.resolve(response);
+            }).catch(() => {
+                return Promise.reject(response);
+            });
     }
 }

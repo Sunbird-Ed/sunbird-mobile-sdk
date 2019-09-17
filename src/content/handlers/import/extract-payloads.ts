@@ -1,4 +1,4 @@
-import {ContentEventType, ImportContentContext} from '../..';
+import {ContentEventType, FileName, ImportContentContext} from '../..';
 import {Response} from '../../../api';
 import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
@@ -13,15 +13,9 @@ import {DeviceInfo} from '../../../util/device/def/device-info';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
 import moment from 'moment';
 import {ArrayUtil} from '../../../util/array-util';
-import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
-import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
-import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
-import COLUMN_NAME_CONTENT_STATE = ContentEntry.COLUMN_NAME_CONTENT_STATE;
 
 export class ExtractPayloads {
-
-    private readonly MANIFEST_FILE_NAME = 'manifest.json';
 
     constructor(private fileService: FileService,
                 private zipService: ZipService,
@@ -46,10 +40,10 @@ export class ExtractPayloads {
         const contentIds: string[] = [];
         const nonUnitContentIds: string[] = [];
         for (const e of importContext.items!) {
-            const element = e as any;
-            const identifier = element.identifier;
-            const visibility = ContentUtil.readVisibility(element);
-            if (ContentUtil.isNotUnit(element.mimeType, visibility)) {
+            const item = e as any;
+            const identifier = item.identifier;
+            const visibility = ContentUtil.readVisibility(item);
+            if (ContentUtil.isNotUnit(item.mimeType, visibility)) {
                 nonUnitContentIds.push(identifier);
             }
             contentIds.push(identifier);
@@ -69,30 +63,28 @@ export class ExtractPayloads {
         }, {});
 
         for (const e of importContext.items!) {
-            let element = e as any;
-            const identifier = element.identifier;
+            let item = e as any;
+            const identifier = item.identifier;
             // skip the content if already imported on the same version
             if (importContext.skippedItemsIdentifier
                 && importContext.skippedItemsIdentifier.indexOf(identifier) > -1) {
                 continue;
             }
-            const mimeType = element.mimeType;
-            const contentEncoding = element.contentEncoding;
-            const contentDisposition = element.contentDisposition;
-            const contentType = ContentUtil.readContentType(element);
-            let visibility = ContentUtil.readVisibility(element);
-            const audience = ContentUtil.readAudience(element);
-            const pragma = ContentUtil.readPragma(element);
-            const compatibilityLevel = ContentUtil.readCompatibilityLevel(element);
-            const pkgVersion = element.pkgVersion;
-            const artifactUrl = element.artifactUrl;
-            const appIcon = element.appIcon;
-            const board = element.board;
-            const medium = element.medium;
-            const grade = element.gradeLevel;
-            // const posterImage = element.posterImage;
-            // const grayScaleAppIcon = element.grayScaleAppIcon;
-            // const dialCodes = element.dialcodes;
+            const mimeType = item.mimeType;
+            const contentEncoding = item.contentEncoding;
+            const contentDisposition = item.contentDisposition;
+            const contentType = ContentUtil.readContentType(item);
+            let visibility = ContentUtil.readVisibility(item);
+            const audience = ContentUtil.readAudience(item);
+            const pragma = ContentUtil.readPragma(item);
+            const compatibilityLevel = ContentUtil.readCompatibilityLevel(item);
+            const pkgVersion = item.pkgVersion;
+            const artifactUrl = item.artifactUrl;
+            const appIcon = item.appIcon;
+            const board = item.board;
+            const medium = item.medium;
+            const grade = item.gradeLevel;
+            // const dialCodes = item.dialcodes;
             let contentState = State.ONLY_SPINE.valueOf();
             let payloadDestination: string | undefined;
 
@@ -100,10 +92,9 @@ export class ExtractPayloads {
             const existingContentModel = result[identifier];
             let existingContentPath;
             if (existingContentModel) {
-                existingContentPath = ContentUtil.getBasePath(existingContentModel[COLUMN_NAME_PATH]!);
+                existingContentPath = ContentUtil.getBasePath(existingContentModel[ContentEntry.COLUMN_NAME_PATH]!);
             }
 
-            let doesContentExist: boolean = ContentUtil.doesContentExist(existingContentModel, identifier, pkgVersion, false);
             let rootNodeIdentifier;
             if (visibility === Visibility.DEFAULT.valueOf()) {
                 rootNodeIdentifier = identifier;
@@ -119,16 +110,18 @@ export class ExtractPayloads {
                 }
             }
 
+            let isUnzippingSuccessful = false;
+            let doesContentExist: boolean = ContentUtil.doesContentExist(existingContentModel, identifier, pkgVersion, false);
             // If the content is exist then copy the old content data and add it into new content.
-            if (doesContentExist && !(element.status === ContentStatus.DRAFT.valueOf())) {
+            if (doesContentExist && !(item.status === ContentStatus.DRAFT.valueOf())) {
                 if (existingContentModel![COLUMN_NAME_VISIBILITY] === Visibility.DEFAULT.valueOf()) {
-                    element = JSON.parse(existingContentModel![COLUMN_NAME_LOCAL_DATA]);
+                    item = JSON.parse(existingContentModel![ContentEntry.COLUMN_NAME_LOCAL_DATA]);
                 }
             } else {
                 doesContentExist = false;
 
                 if (ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
-                    let isUnzippingSuccessfull = false;
+                    // let isUnzippingSuccessful = false;
                     if (artifactUrl) {
                         if (!contentDisposition || !contentEncoding ||
                             (contentDisposition === ContentDisposition.INLINE.valueOf()
@@ -136,7 +129,7 @@ export class ExtractPayloads {
                             const payload = importContext.tmpLocation!.concat(artifactUrl);
                             await new Promise((resolve, reject) => {
                                 this.zipService.unzip(payload, {target: payloadDestination!}, () => {
-                                    isUnzippingSuccessfull = true;
+                                    isUnzippingSuccessful = true;
                                     resolve();
                                 }, () => {
                                     resolve();
@@ -145,18 +138,17 @@ export class ExtractPayloads {
                         } else if (ContentUtil.isInlineIdentity(contentDisposition, contentEncoding)) {
                             try {
                                 await this.copyAssets(importContext.tmpLocation!, artifactUrl, payloadDestination!);
-                                isUnzippingSuccessfull = true;
+                                isUnzippingSuccessful = true;
                             } catch (e) {
-                                isUnzippingSuccessfull = false;
+                                isUnzippingSuccessful = false;
                             }
                         } else if (ContentDisposition.ONLINE.valueOf() === contentDisposition) { // Content with no artifact)
-                            isUnzippingSuccessfull = true;
+                            isUnzippingSuccessful = true;
                         }
                     }
 
-
                     // Add or update the content_state
-                    if (isUnzippingSuccessfull    // If unzip is success it means artifact is available.
+                    if (isUnzippingSuccessful    // If unzip is success it means artifact is available.
                         || MimeType.COLLECTION.valueOf() === mimeType) {
                         contentState = State.ARTIFACT_AVAILABLE.valueOf();
                     } else {
@@ -173,26 +165,7 @@ export class ExtractPayloads {
                 }
             }
 
-            const referenceCount = this.getReferenceCount(existingContentModel, visibility, importContext.isChildContent);
-            visibility = this.getContentVisibility(existingContentModel, element['objectType'], importContext.isChildContent, visibility);
-            contentState = this.getContentState(existingContentModel, contentState);
             const basePath = this.getBasePath(payloadDestination, doesContentExist, existingContentPath);
-            ContentUtil.addOrUpdateViralityMetadata(element, this.deviceInfo.getDeviceID().toString());
-
-            let sizeOnDevice = 0;
-            if (ContentUtil.isNotUnit(mimeType, visibility)) {
-                sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
-            }
-
-            const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
-                JSON.stringify(element), mimeType, contentType, visibility, basePath,
-                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade);
-            if (!existingContentModel) {
-                insertNewContentModels.push(newContentModel);
-            } else {
-                updateNewContentModels.push(newContentModel);
-            }
-
             if (visibility === Visibility.DEFAULT.valueOf()) {
                 rootContentPath = basePath;
                 importContext.rootIdentifier = identifier;
@@ -202,6 +175,34 @@ export class ExtractPayloads {
                     importContext.identifiers.push(identifier);
                 }
             }
+            const referenceCount = this.getReferenceCount(existingContentModel, visibility,
+                importContext.isChildContent, importContext.existedContentIdentifiers);
+            visibility = this.getContentVisibility(existingContentModel, item['objectType'], importContext.isChildContent, visibility);
+            // contentState = this.getContentState(existingContentModel, contentState);
+            ContentUtil.addOrUpdateViralityMetadata(item, this.deviceInfo.getDeviceID().toString());
+
+            let sizeOnDevice = 0;
+            if (ContentUtil.isNotUnit(mimeType, visibility)) {
+                try {
+                    sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
+                } catch (e) {
+                }
+            }
+
+            const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
+                JSON.stringify(item), mimeType, contentType, visibility, basePath,
+                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade);
+            if (!existingContentModel) {
+                insertNewContentModels.push(newContentModel);
+            } else {
+                const existingContentState = this.getContentState(existingContentModel, contentState);
+                if (existingContentState === State.ONLY_SPINE.valueOf()
+                    || isUnzippingSuccessful    // If unzip is success it means artifact is available.
+                    || MimeType.COLLECTION.valueOf() === mimeType) {
+                    updateNewContentModels.push(newContentModel);
+                }
+            }
+
             // increase the current count
             currentCount++;
             this.postImportProgressEvent(currentCount, importContext.items!.length);
@@ -233,9 +234,9 @@ export class ExtractPayloads {
 
         if (rootContentPath) {
             await this.fileService.copyFile(importContext.tmpLocation!,
-                this.MANIFEST_FILE_NAME,
+                FileName.MANIFEST.valueOf(),
                 rootContentPath,
-                this.MANIFEST_FILE_NAME);
+                FileName.MANIFEST.valueOf());
         }
 
         response.body = importContext;
@@ -258,7 +259,6 @@ export class ExtractPayloads {
         } catch (e) {
             console.error('Cannot Copy Asset');
             throw e;
-
         }
     }
 
@@ -266,40 +266,18 @@ export class ExtractPayloads {
      * add or update the reference count for the content
      *
      */
-    getReferenceCount(existingContent, visibility: string, isChildContent: boolean): number {
-        let refCount: number;
-        if (existingContent) {
-            refCount = existingContent[COLUMN_NAME_REF_COUNT];
-
-            if (!isChildContent) {    // If import started from child content then do not update the refCount.
-                // if the content has a 'Default' visibility and update the same content then don't increase the reference count...
-                if (!(Visibility.DEFAULT.valueOf() === existingContent[COLUMN_NAME_VISIBILITY]
-                    && Visibility.DEFAULT.valueOf() === visibility)) {
-                    refCount = refCount + 1;
-                }
-            }
-        } else {
-            refCount = 1;
-        }
-        return refCount;
-    }
-
-    /**
-     * add or update the reference count for the content
-     *
-     */
-    getContentVisibility(existingContentInDb, objectType, isChildContent: boolean, previuosVisibility: string): string {
+    getContentVisibility(existingContentInDb, objectType, isChildContent: boolean, previousVisibility: string): string {
         let visibility;
         if ('Library' === objectType) {
             visibility = Visibility.PARENT.valueOf();
         } else if (existingContentInDb) {
             if (isChildContent     // If import started from child content then do not update the visibility.
-                || !Visibility.PARENT.valueOf() ===
-                existingContentInDb[COLUMN_NAME_VISIBILITY]) {  // If not started from child content then do not shrink visibility.
+                // If not started from child content then do not shrink visibility.
+                || !(Visibility.PARENT.valueOf() === existingContentInDb[COLUMN_NAME_VISIBILITY])) {
                 visibility = existingContentInDb[COLUMN_NAME_VISIBILITY];
             }
         }
-        return visibility ? visibility : previuosVisibility;
+        return visibility ? visibility : previousVisibility;
     }
 
     /**
@@ -308,8 +286,8 @@ export class ExtractPayloads {
      *
      */
     getContentState(existingContentInDb, contentState: number): number {
-        if (existingContentInDb && existingContentInDb[COLUMN_NAME_CONTENT_STATE] > contentState) {
-            contentState = existingContentInDb[COLUMN_NAME_CONTENT_STATE];
+        if (existingContentInDb && existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] > contentState) {
+            contentState = existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE];
         }
         return contentState;
     }
@@ -322,6 +300,32 @@ export class ExtractPayloads {
             path = existingContentPath;
         }
         return path;
+    }
+
+    /**
+     * add or update the reference count for the content
+     *
+     */
+    private getReferenceCount(existingContent, visibility: string, isChildContent: boolean,
+                              updateIdentifiers?: { [identifier: string]: boolean }): number {
+        let refCount: number;
+        if (existingContent) {
+            refCount = existingContent[ContentEntry.COLUMN_NAME_REF_COUNT];
+
+            const found = updateIdentifiers ? updateIdentifiers[existingContent[ContentEntry.COLUMN_NAME_IDENTIFIER]] : undefined;
+            if (found) {
+                // Do not increase the refCount.
+            } else if (!isChildContent) {    // If import started from child content then do not update the refCount.
+                // if the content has a 'Default' visibility and update the same content then don't increase the reference count...
+                if (!(Visibility.DEFAULT.valueOf() === existingContent[COLUMN_NAME_VISIBILITY]
+                    && Visibility.DEFAULT.valueOf() === visibility)) {
+                    refCount = refCount + 1;
+                }
+            }
+        } else {
+            refCount = 1;
+        }
+        return refCount;
     }
 
     private postImportProgressEvent(currentCount, totalCount) {
@@ -359,7 +363,6 @@ export class ExtractPayloads {
             [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
             [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)
         };
-
     }
 
     // TODO: move this method to file-service

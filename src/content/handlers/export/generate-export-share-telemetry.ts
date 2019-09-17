@@ -1,4 +1,4 @@
-import {ContentExportResponse, ExportContentContext, ImportContentContext} from '../..';
+import {ContentExportResponse, ExportContentContext} from '../..';
 import {Response} from '../../../api';
 import {Item, ShareDirection, ShareItemType, ShareType, TelemetryService, TelemetryShareRequest} from '../../../telemetry';
 import {ContentUtil} from '../../util/content-util';
@@ -26,14 +26,14 @@ export class GenerateExportShareTelemetry {
             items: items,
             env: 'sdk'
         };
-        return this.telemetryService.share(req).toPromise().then(() => {
-            const exportResponse: ContentExportResponse = {exportedFilePath: exportContentContext.ecarFilePath!};
-            response.body = exportResponse;
-            return Promise.resolve(response);
-        }).catch(() => {
-            return Promise.reject(response);
-        });
+        return this.telemetryService.share(req).toPromise()
+            .then(() => {
+                const exportResponse: ContentExportResponse = {exportedFilePath: exportContentContext.ecarFilePath!};
+                response.body = exportResponse;
+                return Promise.resolve(response);
+            }).catch(() => {
+                return Promise.reject(response);
+            });
     }
-
 
 }

@@ -15,9 +15,9 @@ export declare class ImportNExportHandler {
     }[]): {
         [key: string]: any;
     }[];
-    getContentExportDBModeltoExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]>;
+    getContentExportDBModelToExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]>;
     generateManifestForArchive(items: any[]): {
         [key: string]: any;
     };
-    findAllContentsWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]>;
+    private findAllContentsWithIdentifiers;
 }

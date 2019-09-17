@@ -1,6 +1,7 @@
 import {ResponseInterceptor} from './response-interceptor';
 import {RequestInterceptor} from './request-interceptor';
 import {Authenticator} from './authenticator';
+import {RequestBuildError} from '../errors/request-build-error';
 
 export enum HttpSerializer {
     JSON = 'json',
@@ -84,10 +85,14 @@ export class Request {
         }
 
         build(): Request {
-
-            if (!this.request._path || !this.request._type) {
-                throw new Error();
+            if (!this.request._path) {
+                throw new RequestBuildError('withPath() is required');
             }
+
+            if (!this.request._type) {
+                throw new RequestBuildError('withType() is required');
+            }
+
             return this.request;
         }
 

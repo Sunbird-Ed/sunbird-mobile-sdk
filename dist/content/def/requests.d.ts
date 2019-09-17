@@ -157,6 +157,10 @@ export interface ImportContentContext {
     tmpLocation?: string;
     rootIdentifier?: string;
     correlationData?: CorrelationData[];
+    existedContentIdentifiers?: {
+        [identifier: string]: boolean;
+    };
+    contentIdsToDelete: Set<string>;
 }
 export interface ExportContentContext {
     ecarFilePath?: string;

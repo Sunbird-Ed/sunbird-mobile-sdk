@@ -7,9 +7,8 @@ export declare class StorageHandler {
     private fileService;
     private dbService;
     private deviceInfo;
-    private static MANIFEST_FILE_NAME;
     constructor(appConfig: AppConfig, fileService: FileService, dbService: DbService, deviceInfo: DeviceInfo);
     addDestinationContentInDb(identifier: string, storageFolder: string, keepLowerVersion: boolean): Promise<void>;
-    private extractContentFromItem;
     deleteContentsFromDb(deletedIdentifiers: string[]): Promise<void>;
+    private extractContentFromItem;
 }

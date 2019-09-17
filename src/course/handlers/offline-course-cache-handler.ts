@@ -73,7 +73,7 @@ export class OfflineCourseCacheHandler {
                 course.userId = enrollCourseRequest.userId;
                 course.batchId = enrollCourseRequest.batchId;
                 course.courseId = enrollCourseRequest.courseId;
-                course.contentId = enrollCourseRequest.contentId;
+                course.contentId = enrollCourseRequest.courseId;
                 course.leafNodesCount = leafNodeCount;
                 const batch: { [key: string]: any } = {};
                 batch['identifier'] = enrollCourseRequest.batchId;

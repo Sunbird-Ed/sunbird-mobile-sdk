@@ -5,9 +5,9 @@ import {ContentEntry} from '../../db/schema';
 import {ContentUtil} from '../../util/content-util';
 import {Response} from '../../../api';
 import {ContentErrorCode} from '../../util/content-constants';
-import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 
 export class CopyAsset {
+
     constructor(private fileService: FileService) {
     }
 
@@ -21,8 +21,8 @@ export class CopyAsset {
                 const appIcon = contentData['appIcon'];
                 if (appIcon) {
                     try {
-                    await this.copyAsset(ContentUtil.getBasePath(contentInDb[COLUMN_NAME_PATH]!),
-                        exportContentContext.tmpLocationPath!, appIcon);
+                        await this.copyAsset(ContentUtil.getBasePath(contentInDb[ContentEntry.COLUMN_NAME_PATH]!),
+                            exportContentContext.tmpLocationPath!, appIcon);
                     } catch (e) {
                         console.error(e);
                     }
@@ -34,12 +34,11 @@ export class CopyAsset {
                     const artifactUrl: string = contentData['artifactUrl'];
                     if (artifactUrl) {
                         try {
-                            await this.copyAsset(ContentUtil.getBasePath(contentInDb[COLUMN_NAME_PATH]!),
+                            await this.copyAsset(ContentUtil.getBasePath(contentInDb[ContentEntry.COLUMN_NAME_PATH]!),
                                 exportContentContext.tmpLocationPath!, artifactUrl);
                         } catch (e) {
                             console.error(e);
                         }
-
                     }
                 }
                 i++;
@@ -50,14 +49,14 @@ export class CopyAsset {
             response.errorMesg = ContentErrorCode.EXPORT_FAILED_COPY_ASSET;
             throw response;
         }
-
     }
 
     private async copyAsset(sourcePath: string, destinationPath: string, fileName: string): Promise<Entry> {
-        return this.fileService.exists(sourcePath.concat(fileName)).then((entry: Entry) => {
-            return this.fileService.createDir(destinationPath, true);
-        }).then(() => {
-            return this.fileService.copyFile(sourcePath, fileName, destinationPath, fileName);
-        });
+        return this.fileService.exists(sourcePath.concat(fileName))
+            .then((entry: Entry) => {
+                return this.fileService.createDir(destinationPath, true);
+            }).then(() => {
+                return this.fileService.copyFile(sourcePath, fileName, destinationPath, fileName);
+            });
     }
 }

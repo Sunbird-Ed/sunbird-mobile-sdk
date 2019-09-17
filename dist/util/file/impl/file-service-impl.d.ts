@@ -1,5 +1,5 @@
 import { FileService } from '../def/file-service';
-import { DirectoryEntry, Entry, FileEntry, Flags, Metadata, RemoveResult, IWriteOptions } from '../index';
+import { DirectoryEntry, Entry, FileEntry, Flags, IWriteOptions, Metadata, RemoveResult } from '../index';
 export declare class FileServiceImpl implements FileService {
     private fileSystem;
     private initialized;

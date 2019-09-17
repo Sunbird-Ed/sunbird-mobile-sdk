@@ -15,12 +15,16 @@ export class EcarBundle {
     public async execute(exportContentContext: ExportContentContext): Promise<Response> {
         const response: Response = new Response();
         await new Promise((resolve, reject) => {
-            this.zipService.zip(exportContentContext.tmpLocationPath!, {target: exportContentContext.ecarFilePath!!}, [], [], () => {
-                resolve();
-            }, () => {
-                response.errorMesg = ContentErrorCode.EXPORT_FAILED_ECAR_BUNDLE;
-                throw response;
-            });
+            this.zipService.zip(exportContentContext.tmpLocationPath!,
+                {target: exportContentContext.ecarFilePath!!},
+                [],
+                [],
+                () => {
+                    resolve();
+                }, () => {
+                    response.errorMesg = ContentErrorCode.EXPORT_FAILED_ECAR_BUNDLE;
+                    throw response;
+                });
         });
         const metaData: Metadata = await this.fileService.getMetaData(exportContentContext.ecarFilePath!);
         exportContentContext.metadata[EcarBundle.FILE_SIZE] = metaData.size;

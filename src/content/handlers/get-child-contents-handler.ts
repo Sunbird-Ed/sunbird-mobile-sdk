@@ -6,7 +6,6 @@ import {ContentEntry} from '../db/schema';
 import {ChildContents, MimeType, State} from '../util/content-constants';
 import {GetContentDetailsHandler} from './get-content-details-handler';
 import {Stack} from '../util/stack';
-import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
 import {ContentMapper} from '../util/content-mapper';
 import {ArrayUtil} from '../../util/array-util';
 
@@ -51,51 +50,6 @@ export class ChildContentsHandler {
         return content;
     }
 
-    private async getSortedChildrenList(localData: string, level: number): Promise<ContentEntry.SchemaMap[]> {
-        const data = JSON.parse(localData);
-        let childContents: ChildContent[] = data.children;
-        if (!childContents || !childContents.length) {
-            return [];
-        }
-
-        childContents = childContents.sort((childContent1, childContent2) => {
-            return (childContent1.index - childContent2.index);
-        });
-
-        const childIdentifiers: string[] = [];
-        let whennAndThen = '';
-        let i = 0;
-        childContents.forEach(childContent => {
-            childIdentifiers.push(childContent.identifier);
-            whennAndThen = whennAndThen.concat(` WHEN '${childContent.identifier}' THEN ${i}`);
-            i = i + 1;
-        });
-
-        let orderBy = '';
-        if (i > 0) {
-            orderBy = orderBy.concat(` ORDER BY CASE  ${ContentEntry.COLUMN_NAME_IDENTIFIER}  ${whennAndThen}  END`);
-        }
-
-        let filter = '';
-        switch (level) {
-            case ChildContents.DOWNLOADED.valueOf():
-                filter = ' AND ' + ContentEntry.COLUMN_NAME_CONTENT_STATE + '=\'' + State.ARTIFACT_AVAILABLE + '\'';
-                break;
-            case ChildContents.SPINE.valueOf():
-                filter = ' AND ' + ContentEntry.COLUMN_NAME_CONTENT_STATE + '=\'' + State.ONLY_SPINE + '\'';
-                break;
-            case ChildContents.ALL.valueOf():
-            default:
-                filter = '';
-                break;
-        }
-
-        const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
-                        WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER}
-                        IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)}) ${filter} ${orderBy}`;
-        return this.dbService.execute(query).toPromise();
-    }
-
     async getContentsKeyList(contentInDb: ContentEntry.SchemaMap): Promise<string[]> {
         const contentKeyList: string[] = [];
         const contentStack = new Stack<ContentEntry.SchemaMap>();
@@ -129,7 +83,7 @@ export class ChildContentsHandler {
                         key = key.substring(0, key.lastIndexOf('/'));
                     }
                 }
-                if (MimeType.COLLECTION.valueOf() === node[COLUMN_NAME_MIME_TYPE]) {
+                if (MimeType.COLLECTION.valueOf() === node[ContentEntry.COLUMN_NAME_MIME_TYPE]) {
                     key = key + '/' + node[ContentEntry.COLUMN_NAME_IDENTIFIER];
                 } else {
                     tempKey = key + '/' + node[ContentEntry.COLUMN_NAME_IDENTIFIER];
@@ -142,11 +96,10 @@ export class ChildContentsHandler {
         return contentKeyList;
     }
 
-
     async getContentFromDB(hierarchyInfoList: HierarchyInfo[], identifier: string): Promise<Content> {
         const nextContentHierarchyList: HierarchyInfo[] = [];
         let nextContent;
-        // const nextContentIdentifier = this.getPreviuosContentIdentifier(hierarchyInfoList, currentIdentifier, contentKeyList);
+        // const nextContentIdentifier = this.getPreviousContentIdentifier(hierarchyInfoList, currentIdentifier, contentKeyList);
         if (identifier) {
             const nextContentIdentifierList: string[] = identifier.split('/');
             const idCount: number = nextContentIdentifierList.length;
@@ -197,7 +150,7 @@ export class ChildContentsHandler {
         return nextContentIdentifier;
     }
 
-    public getPreviuosContentIdentifier(hierarchyInfoList: HierarchyInfo[],
+    public getPreviousContentIdentifier(hierarchyInfoList: HierarchyInfo[],
                                         currentIdentifier: string,
                                         contentKeyList: string[]): string {
 
@@ -216,6 +169,51 @@ export class ChildContentsHandler {
             previousContentIdentifier = contentKeyList[indexOfCurrentContentIdentifier + 1];
         }
         return previousContentIdentifier;
+    }
+
+    private async getSortedChildrenList(localData: string, level: number): Promise<ContentEntry.SchemaMap[]> {
+        const data = JSON.parse(localData);
+        let childContents: ChildContent[] = data.children;
+        if (!childContents || !childContents.length) {
+            return [];
+        }
+
+        childContents = childContents.sort((childContent1, childContent2) => {
+            return (childContent1.index - childContent2.index);
+        });
+
+        const childIdentifiers: string[] = [];
+        let whenAndThen = '';
+        let i = 0;
+        childContents.forEach(childContent => {
+            childIdentifiers.push(childContent.identifier);
+            whenAndThen = whenAndThen.concat(` WHEN '${childContent.identifier}' THEN ${i}`);
+            i = i + 1;
+        });
+
+        let orderBy = '';
+        if (i > 0) {
+            orderBy = orderBy.concat(` ORDER BY CASE  ${ContentEntry.COLUMN_NAME_IDENTIFIER}  ${whenAndThen}  END`);
+        }
+
+        let filter = '';
+        switch (level) {
+            case ChildContents.DOWNLOADED.valueOf():
+                filter = ' AND ' + ContentEntry.COLUMN_NAME_CONTENT_STATE + '=\'' + State.ARTIFACT_AVAILABLE + '\'';
+                break;
+            case ChildContents.SPINE.valueOf():
+                filter = ' AND ' + ContentEntry.COLUMN_NAME_CONTENT_STATE + '=\'' + State.ONLY_SPINE + '\'';
+                break;
+            case ChildContents.ALL.valueOf():
+            default:
+                filter = '';
+                break;
+        }
+
+        const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
+                        WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER}
+                        IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)}) ${filter} ${orderBy}`;
+        return this.dbService.execute(query).toPromise();
     }
 
 }

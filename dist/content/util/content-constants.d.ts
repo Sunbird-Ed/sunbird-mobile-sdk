@@ -84,3 +84,6 @@ export declare enum ErrorCode {
     EXPORT_FAILED = "EXPORT_FAILED",
     IMPORT_FAILED = "IMPORT_FAILED"
 }
+export declare enum FileName {
+    MANIFEST = "manifest.json"
+}

@@ -62,6 +62,7 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection>;
     onDownloadCompletion(request: ContentDownloadRequest): Observable<undefined>;
     getContentSpaceUsageSummary(contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest): Observable<ContentSpaceUsageSummaryResponse[]>;
+    private cleanupContent;
     private getMimeType;
     private searchContentAndGroupByPageSection;
     private handleContentDeleteRequestSetChanges;

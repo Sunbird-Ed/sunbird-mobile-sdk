@@ -5,6 +5,7 @@ import {ContentUtil} from '../../../content/util/content-util';
 import {ContentEntry} from '../../../content/db/schema';
 import {FileService} from '../../../util/file/def/file-service';
 import {DuplicateContentError} from '../../errors/duplicate-content-error';
+import {FileName} from '../../../content';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 
@@ -14,7 +15,6 @@ interface MoveContentResponses {
 }
 
 export class DuplicateContentCheck {
-    public static readonly MANIFEST_FILE_NAME = 'manifest.json';
 
     constructor(private dbService: DbService, private fileService: FileService) {
     }
@@ -48,7 +48,7 @@ export class DuplicateContentCheck {
     private getPkgVersionFromFile(destinationContentRootDir: string, contentIdentifier: string): Promise<number> {
         return this.fileService.readAsText(
             destinationContentRootDir.concat(contentIdentifier),
-            DuplicateContentCheck.MANIFEST_FILE_NAME
+            FileName.MANIFEST.valueOf()
         ).then((manifestStringified) => {
             const manifest: Manifest = JSON.parse(manifestStringified);
             const items: any[] = manifest.archive.items;

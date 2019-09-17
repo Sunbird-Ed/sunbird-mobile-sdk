@@ -7,7 +7,6 @@ export declare class CreateContentImportManifest {
     private dbService;
     private deviceInfo;
     private fileService;
-    private readonly MANIFEST_FILE_NAME;
     private contentDataMap;
     constructor(dbService: DbService, deviceInfo: DeviceInfo, fileService: FileService);
     execute(importContentContext: ImportContentContext): Promise<Response>;

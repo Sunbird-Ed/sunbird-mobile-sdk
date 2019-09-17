@@ -233,7 +233,7 @@ export class ProfileServiceImpl implements ProfileService {
             selectionArgs: [profile.uid],
         }).map((rows) => {
             if (!rows || !rows[0]) {
-                return Observable.throw(new NoProfileFoundError(`No Profile found with ID ${profile.uid}`));
+                throw new NoProfileFoundError(`No Profile found with ID ${profile.uid}`);
             }
 
             return ProfileDbEntryMapper.mapProfileDBEntryToProfile(rows[0]);
@@ -324,7 +324,8 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {
-        return new GetServerProfileDetailsHandler(this.apiService, this.sdkConfig.profileServiceConfig, this.cachedItemStore, this.keyValueStore)
+        return new GetServerProfileDetailsHandler(this.apiService, this.sdkConfig.profileServiceConfig,
+            this.cachedItemStore, this.keyValueStore)
             .handle(serverProfileDetailsRequest);
     }
 
