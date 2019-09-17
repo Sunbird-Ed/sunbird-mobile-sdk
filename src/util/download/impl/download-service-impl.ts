@@ -20,6 +20,7 @@ import {SharedPreferencesSetCollection} from '../../shared-preferences/def/share
 import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
 import {injectable, inject} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
+import * as percentile from 'percentile';
 
 @injectable()
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
@@ -80,14 +81,18 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         }).mapTo(undefined).toPromise();
     }
 
-    private static async generateNetworkSpeedTelemetry(downloadSpeed: number): Promise<void> {
+    private static async generateNetworkSpeedTelemetry(downloadSpeedList: number[]): Promise<void> {
         return TelemetryLogger.log.interact({
             type: InteractType.OTHER,
             subType: InteractSubType.NETWORK_SPEED,
             env: 'sdk',
             pageId: 'sdk',
             valueMap: {
-                'networkSpeed': downloadSpeed,
+                'networkSpeedPercentileMap': {
+                    '25': percentile(25, downloadSpeedList),
+                    '50': percentile(50, downloadSpeedList),
+                    '100': percentile(100, downloadSpeedList)
+                },
                 'networkType': navigator['connection']['type']
             },
         }).mapTo(undefined).toPromise();
@@ -378,7 +383,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                 start$,
                 () => toggle$
             )
-            .mergeMap((r) =>
+            .switchMap((r) =>
                 r.throttleTime(5000, undefined, {trailing: true, leading: false})
                     .concat(Observable.of(null))
                     .mergeMap((v) => {
@@ -386,9 +391,11 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                             networkspeed.getNetworkSpeed((speed) => resolve(parseFloat(speed || '0')), reject);
                         })
                     })
-                    .do(async (downloadSpeed) => {
-                        await DownloadServiceImpl.generateNetworkSpeedTelemetry(downloadSpeed)
-                    })
-            ).mapTo(undefined)
+                    .bufferTime(1000 * 60 * 5)
+            )
+            .do(async (downloadSpeedList) => {
+                await DownloadServiceImpl.generateNetworkSpeedTelemetry(downloadSpeedList);
+            })
+            .mapTo(undefined)
     }
 }
