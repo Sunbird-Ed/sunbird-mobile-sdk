@@ -91,3 +91,10 @@ export interface ContentState {
 export interface ContentStateResponse {
     contentList: ContentState[];
 }
+
+export interface GenerateAttemptIdRequest {
+    courseId: string;
+    batchId: string;
+    contentId: string;
+    userId: string;
+}

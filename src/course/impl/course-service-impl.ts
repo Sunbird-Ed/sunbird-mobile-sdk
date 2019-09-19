@@ -7,7 +7,7 @@ import {
   CourseService,
   CourseServiceConfig,
   EnrollCourseRequest,
-  FetchEnrolledCourseRequest,
+  FetchEnrolledCourseRequest, GenerateAttemptIdRequest,
   GetContentStateRequest,
   UnenrollCourseRequest,
   UpdateContentStateRequest
@@ -285,6 +285,7 @@ export class CourseServiceImpl implements CourseService {
 
   public syncAssessmentEvents(): Observable<undefined> {
     type RawEntry = {
+      [CourseAssessmentEntry.COLUMN_NAME_CONTENT_STATUS]: number,
       [CourseAssessmentEntry.COLUMN_NAME_USER_ID]: string,
       [CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID]: string,
       [CourseAssessmentEntry.COLUMN_NAME_COURSE_ID]: string,
@@ -294,6 +295,7 @@ export class CourseServiceImpl implements CourseService {
     };
 
     type Entry = {
+      contentStatus: number,
       userId: string,
       contentId: string,
       courseId: string,
@@ -317,6 +319,7 @@ export class CourseServiceImpl implements CourseService {
 
     return this.dbService.execute(`
             SELECT
+                ${CourseAssessmentEntry.COLUMN_NAME_CONTENT_STATUS},
                 ${CourseAssessmentEntry.COLUMN_NAME_USER_ID},
                 ${CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID},
                 ${CourseAssessmentEntry.COLUMN_NAME_COURSE_ID},
@@ -325,6 +328,7 @@ export class CourseServiceImpl implements CourseService {
                 GROUP_CONCAT(${CourseAssessmentEntry.COLUMN_NAME_ASSESSMENT_EVENT},',') as events 
             FROM ${CourseAssessmentEntry.TABLE_NAME}
             GROUP BY
+                ${CourseAssessmentEntry.COLUMN_NAME_CONTENT_STATUS},
                 ${CourseAssessmentEntry.COLUMN_NAME_USER_ID},
                 ${CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID},
                 ${CourseAssessmentEntry.COLUMN_NAME_COURSE_ID},
@@ -333,6 +337,7 @@ export class CourseServiceImpl implements CourseService {
         `).map((entries: RawEntry[]) => {
       return entries.map((entry) => {
         return {
+          contentStatus: entry[CourseAssessmentEntry.COLUMN_NAME_CONTENT_STATUS],
           userId: entry[CourseAssessmentEntry.COLUMN_NAME_USER_ID],
           contentId: entry[CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID],
           courseId: entry[CourseAssessmentEntry.COLUMN_NAME_COURSE_ID],
@@ -352,19 +357,23 @@ export class CourseServiceImpl implements CourseService {
             contentId: contentEntry.contentId,
             courseId: contentEntry.courseId,
             batchId: contentEntry.batchId,
-          };
+            status: contentEntry.contentStatus
+          } as ContentState;
         }),
-        assessments: entries.map((contentEntry) => {
+        assessments: entries.map(({ firstTs, userId, contentId, courseId, batchId, events }) => {
           return {
-            assessmentTs: contentEntry.firstTs,
-            userId: contentEntry.userId,
-            contentId: contentEntry.contentId,
-            courseId: contentEntry.courseId,
-            batchId: contentEntry.batchId,
-            attemptId: MD5(
-                contentEntry.courseId + contentEntry.userId + contentEntry.contentId + contentEntry.batchId
-            ).toString(),
-            events: contentEntry.events
+            assessmentTs: firstTs,
+            userId,
+            contentId,
+            courseId,
+            batchId,
+            attemptId: this.generateAssessmentAttemptId({
+              courseId,
+              batchId,
+              contentId,
+              userId
+            }),
+            events
           }
         })
       };
@@ -389,5 +398,11 @@ export class CourseServiceImpl implements CourseService {
           })
           .mapTo(undefined)
     }).mapTo(undefined);
+  }
+
+  generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string {
+    return MD5(
+        [request.courseId, request.batchId, request.contentId, request.userId].join('-')
+    ).toString()
   }
 }
