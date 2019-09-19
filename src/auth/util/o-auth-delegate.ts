@@ -4,6 +4,7 @@ import {AuthEndPoints} from '../def/auth-end-points';
 import {SunbirdOAuthSessionProviderFactory} from './sunbird-o-auth-session-provider-factory';
 import {SunbirdError} from '../../sunbird-error';
 import * as qs from 'qs';
+import {InAppBrowserExitError} from "../errors/in-app-browser-exit-error";
 
 export interface StepOneCallbackType {
     code?: string;
@@ -21,6 +22,7 @@ export interface OAuthRedirectUrlQueryParams {
     scope: string;
     client_id: string;
     version: string;
+    goBackUrl: string;
     merge_account_process?: string;
     mergeaccountprocess?: string;
 }
@@ -41,19 +43,25 @@ export class OAuthDelegate {
     ) {
     }
 
+    get exitUrl(): string {
+        return this.mode === 'merge' ?
+            this.apiConfig.user_authentication.mergeUserHost + '/?exit=1' :
+            this.apiConfig.host + '/?exit=1';
+    }
+
     public buildLaunchUrl(): string {
         const oAuthRedirectUrlQueryParams: OAuthRedirectUrlQueryParams = {
             redirect_uri: this.apiConfig.host + '/oauth2callback',
             response_type: 'code',
             scope: 'offline_access',
             client_id: 'android',
-            version: '4'
+            version: '4',
+            goBackUrl: this.exitUrl,
+            ...( this.mode === 'merge' ? {
+                merge_account_process: '1',
+                mergeaccountprocess: '1',
+            } : {} )
         };
-
-        if (this.mode === 'merge') {
-            oAuthRedirectUrlQueryParams.merge_account_process = '1';
-            oAuthRedirectUrlQueryParams.mergeaccountprocess = '1';
-        }
 
         return (this.mode === 'default' ? this.apiConfig.host : this.apiConfig.user_authentication.mergeUserHost) +
           this.apiConfig.user_authentication.authUrl +
@@ -77,6 +85,10 @@ export class OAuthDelegate {
 
                     if ((event.url).indexOf('/resources') !== -1 || (event.url).indexOf('client_id=portal') !== -1) {
                         reject(new ForgotPasswordFlowDetectedError('Detected "Forgot Password" flow completion'));
+                    }
+
+                    if (event.url === this.exitUrl) {
+                        reject(new InAppBrowserExitError('EXIT'));
                     }
 
                     if (sessionProvider) {
