@@ -21,8 +21,7 @@ export class CopyAsset {
                 const appIcon = contentData['appIcon'];
                 if (appIcon) {
                     try {
-                        await this.copyAsset(ContentUtil.getBasePath(contentInDb[ContentEntry.COLUMN_NAME_PATH]!),
-                            exportContentContext.tmpLocationPath!, appIcon);
+                        await this.copyFile(contentInDb[ContentEntry.COLUMN_NAME_PATH]!, exportContentContext.tmpLocationPath!, appIcon);
                     } catch (e) {
                         console.error(e);
                     }
@@ -34,7 +33,7 @@ export class CopyAsset {
                     const artifactUrl: string = contentData['artifactUrl'];
                     if (artifactUrl) {
                         try {
-                            await this.copyAsset(ContentUtil.getBasePath(contentInDb[ContentEntry.COLUMN_NAME_PATH]!),
+                            await this.copyFile(contentInDb[ContentEntry.COLUMN_NAME_PATH]!,
                                 exportContentContext.tmpLocationPath!, artifactUrl);
                         } catch (e) {
                             console.error(e);
@@ -51,12 +50,15 @@ export class CopyAsset {
         }
     }
 
-    private async copyAsset(sourcePath: string, destinationPath: string, fileName: string): Promise<Entry> {
-        return this.fileService.exists(sourcePath.concat(fileName))
-            .then((entry: Entry) => {
-                return this.fileService.createDir(destinationPath, true);
-            }).then(() => {
-                return this.fileService.copyFile(sourcePath, fileName, destinationPath, fileName);
-            });
+    private async copyFile(sourcePath: string, destinationPath: string, fileName: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            buildconfigreader.copyFile(sourcePath, destinationPath, fileName,
+                () => {
+                    resolve();
+                }, err => {
+                    console.error(err);
+                    resolve(err);
+                });
+        });
     }
 }
