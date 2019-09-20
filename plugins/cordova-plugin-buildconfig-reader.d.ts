@@ -46,4 +46,7 @@ declare var buildconfigreader: {
 
     readFromAssets: (fileName: string, success:
         (callbackUrl: string) => void, error: (error: any) => void) => void;
+
+    copyFile: (sourceDirectory: string, destinationDirectory: string, fileName: string,
+               onSuccess: () => void, onError: (error: any) => void) => void;
 };

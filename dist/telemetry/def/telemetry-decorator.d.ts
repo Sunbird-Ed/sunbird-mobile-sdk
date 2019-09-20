@@ -8,5 +8,5 @@ export declare abstract class TelemetryDecorator {
         timestamp: any;
         priority: any;
     };
-    abstract buildContext(sid: string, channelId: string): Context;
+    abstract buildContext(sid: string, channelId: string, context: Context): Context;
 }

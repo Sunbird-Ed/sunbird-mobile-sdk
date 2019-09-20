@@ -1,4 +1,4 @@
-import { ContentStateResponse, CourseBatchDetailsRequest, CourseBatchesRequest, EnrollCourseRequest, FetchEnrolledCourseRequest, GetContentStateRequest, UpdateContentStateRequest } from './request-types';
+import { ContentStateResponse, CourseBatchDetailsRequest, CourseBatchesRequest, EnrollCourseRequest, FetchEnrolledCourseRequest, GenerateAttemptIdRequest, GetContentStateRequest, UpdateContentStateRequest } from './request-types';
 import { Observable } from 'rxjs';
 import { Batch } from './batch';
 import { Course } from './course';
@@ -14,4 +14,6 @@ export interface CourseService {
     unenrollCourse(unenrollCourseRequest: UnenrollCourseRequest): Observable<boolean>;
     getContentState(contentStateRequest: GetContentStateRequest): Observable<ContentStateResponse | undefined>;
     downloadCurrentProfileCourseCertificate(downloadCertificateRequest: DownloadCertificateRequest): Observable<DownloadCertificateResponse>;
+    syncAssessmentEvents(): Observable<undefined>;
+    generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 }

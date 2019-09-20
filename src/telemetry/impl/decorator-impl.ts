@@ -54,8 +54,9 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
 
     private patchContext(event: Telemetry, sid, channelId) {
         if (!event.context) {
-            event.context = this.buildContext(sid, channelId);
+            event.context = new Context();
         }
+        event.context = this.buildContext(sid, channelId, event.context);
     }
 
     private patchPData(event: Context) {
@@ -90,8 +91,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         };
     }
 
-    buildContext(sid: string, channelId: string): Context {
-        const context: Context = new Context();
+    buildContext(sid: string, channelId: string, context: Context): Context {
         context.channel = channelId;
         this.patchPData(context);
         if (!context.env) {

@@ -318,8 +318,7 @@ export class TelemetryServiceImpl implements TelemetryService {
           .map((session) => {
               return this.decorator.buildContext(
                 session!.sid,
-                this.frameworkService.activeChannelId!
-              )
+                this.frameworkService.activeChannelId!, new Context());
           });
     }
 }
