@@ -1,4 +1,4 @@
-import { Batch, ContentStateResponse, Course, CourseBatchDetailsRequest, CourseBatchesRequest, CourseService, EnrollCourseRequest, FetchEnrolledCourseRequest, GetContentStateRequest, UnenrollCourseRequest, UpdateContentStateRequest } from '..';
+import { Batch, ContentStateResponse, Course, CourseBatchDetailsRequest, CourseBatchesRequest, CourseService, EnrollCourseRequest, FetchEnrolledCourseRequest, GenerateAttemptIdRequest, GetContentStateRequest, UnenrollCourseRequest, UpdateContentStateRequest } from '..';
 import { Observable } from 'rxjs';
 import { ProfileService } from '../../profile';
 import { KeyValueStore } from '../../key-value-store';
@@ -23,6 +23,7 @@ export declare class CourseServiceImpl implements CourseService {
     static readonly GET_ENROLLED_COURSE_KEY_PREFIX: string;
     static readonly UPDATE_CONTENT_STATE_KEY_PREFIX: string;
     static readonly LAST_READ_CONTENTID_PREFIX: string;
+    private static readonly UPDATE_CONTENT_STATE_ENDPOINT;
     private readonly courseServiceConfig;
     private readonly profileServiceConfig;
     private static readonly CERTIFICATE_SIGN_ENDPOINT;
@@ -36,4 +37,6 @@ export declare class CourseServiceImpl implements CourseService {
     unenrollCourse(unenrollCourseRequest: UnenrollCourseRequest): Observable<boolean>;
     checkContentStatus(request: GetContentStateRequest): Observable<number>;
     downloadCurrentProfileCourseCertificate(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse>;
+    syncAssessmentEvents(): Observable<undefined>;
+    generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 }
