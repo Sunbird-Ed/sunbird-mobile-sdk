@@ -211,7 +211,7 @@ export class ExtractPayloads {
             }
             // increase the current count
             currentCount++;
-            if (currentCount % 20 === 0) {
+            if (currentCount % 20 === 0 || currentCount === (importContext.items!.length)) {
                 this.postImportProgressEvent(currentCount, importContext.items!.length);
             }
         }
