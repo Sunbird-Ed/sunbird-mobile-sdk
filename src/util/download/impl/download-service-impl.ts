@@ -81,7 +81,9 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         }).mapTo(undefined).toPromise();
     }
 
-    private static async generateNetworkSpeedTelemetry(downloadSpeedList: number[]): Promise<void> {
+    private static async generateNetworkSpeedTelemetry(
+        downloads: { downloadSpeed: number, bytesDownloaded: number, totalSizeInBytes: number }[]
+    ): Promise<void> {
         return TelemetryLogger.log.interact({
             type: InteractType.OTHER,
             subType: InteractSubType.NETWORK_SPEED,
@@ -89,10 +91,13 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'sdk',
             valueMap: {
                 'networkSpeedPercentileMap': {
-                    '25': percentile(25, downloadSpeedList),
-                    '50': percentile(50, downloadSpeedList),
-                    '100': percentile(100, downloadSpeedList)
+                    '25': percentile(25, downloads.map(d => d.downloadSpeed)),
+                    '50': percentile(50, downloads.map(d => d.downloadSpeed)),
+                    '75': percentile(75, downloads.map(d => d.downloadSpeed))
                 },
+                'totalSizeInBytes': downloads.reduce((acc, d) => {
+                    return acc > d.totalSizeInBytes ? acc : d.totalSizeInBytes;
+                }, 0),
                 'networkType': navigator['connection']['type']
             },
         }).mapTo(undefined).toPromise();
@@ -293,6 +298,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                             downloadId: downloadRequest.downloadId,
                             identifier: downloadRequest.identifier,
                             progress: -1,
+                            bytesDownloaded: 0,
+                            totalSizeInBytes: 0,
                             status: DownloadStatus.STATUS_FAILED
                         }
                     } as DownloadProgress);
@@ -311,6 +318,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         downloadId: downloadRequest.downloadId,
                         identifier: downloadRequest.identifier,
                         progress: Math.round(entry.totalSizeBytes >= 0 ? (entry.bytesDownloadedSoFar / entry.totalSizeBytes) * 100 : -1),
+                        bytesDownloaded: entry.bytesDownloadedSoFar,
+                        totalSizeInBytes: entry.totalSizeBytes,
                         status: entry.status
                     }
                 } as DownloadProgress);
@@ -389,12 +398,18 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     .mergeMap((v) => {
                         return new Promise<number>((resolve, reject) => {
                             networkspeed.getNetworkSpeed((speed) => resolve(parseFloat(speed || '0')), reject);
+                        }).then((downloadSpeed) => {
+                            return {
+                                downloadSpeed,
+                                bytesDownloaded: v ? (v as DownloadProgress).payload.bytesDownloaded : 0,
+                                totalSizeInBytes: v ? (v as DownloadProgress).payload.totalSizeInBytes : 0
+                            }
                         })
                     })
                     .bufferTime(1000 * 60 * 5)
             )
-            .do(async (downloadSpeedList) => {
-                await DownloadServiceImpl.generateNetworkSpeedTelemetry(downloadSpeedList);
+            .do(async (downloads) => {
+                await DownloadServiceImpl.generateNetworkSpeedTelemetry(downloads);
             })
             .mapTo(undefined)
     }

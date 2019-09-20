@@ -11,6 +11,8 @@ export interface DownloadProgress extends DownloadEvent {
         identifier: string;
         progress: number;
         status: DownloadStatus;
+        bytesDownloaded: number;
+        totalSizeInBytes: number;
     };
 }
 
