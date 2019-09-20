@@ -205,7 +205,6 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         } else if (event.eid === 'END' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
             return this.processOEEnd(event)
                 .do(async () => {
-                    await this.setAssessEventsContentStateDone(event);
                     await this.courseService.syncAssessmentEvents().toPromise();
                 })
                 .do(async () => {
@@ -313,23 +312,11 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         return Observable.of(undefined);
     }
 
-    public setAssessEventsContentStateDone(event: SunbirdTelemetry.Telemetry): Promise<undefined> {
-        return this.dbService.update({
-            table: CourseAssessmentEntry.TABLE_NAME,
-            selection: `${CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID} = ?`,
-            selectionArgs: [event.object.id],
-            modelJson: {
-                [CourseAssessmentEntry.COLUMN_NAME_CONTENT_STATUS]: 2
-            } as CourseAssessmentEntry.SchemaMap
-        }).mapTo(undefined).toPromise();
-    }
-
     public persistAssessEvent(event: SunbirdTelemetry.Telemetry, courseContext): Promise<undefined> {
         return this.dbService.insert({
             table: CourseAssessmentEntry.TABLE_NAME,
             modelJson: {
                 [CourseAssessmentEntry.COLUMN_NAME_ASSESSMENT_EVENT]: JSON.stringify(event),
-                [CourseAssessmentEntry.COLUMN_NAME_CONTENT_STATUS]: 1,
                 [CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID]: event.object.id,
                 [CourseAssessmentEntry.COLUMN_NAME_CREATED_AT]: event.ets,
                 [CourseAssessmentEntry.COLUMN_NAME_USER_ID]: courseContext.userId,

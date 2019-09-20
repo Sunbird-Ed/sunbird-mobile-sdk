@@ -285,7 +285,6 @@ export class CourseServiceImpl implements CourseService {
 
   public syncAssessmentEvents(): Observable<undefined> {
     type RawEntry = {
-      [CourseAssessmentEntry.COLUMN_NAME_CONTENT_STATUS]: number,
       [CourseAssessmentEntry.COLUMN_NAME_USER_ID]: string,
       [CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID]: string,
       [CourseAssessmentEntry.COLUMN_NAME_COURSE_ID]: string,
@@ -295,7 +294,6 @@ export class CourseServiceImpl implements CourseService {
     };
 
     type Entry = {
-      contentStatus: number,
       userId: string,
       contentId: string,
       courseId: string,
@@ -305,7 +303,6 @@ export class CourseServiceImpl implements CourseService {
     };
 
     type AssessmentTelemetrySyncRequest = {
-      contents: ContentState[],
       assessments: {
         assessmentTs: number; //Assessment time in epoch
         userId: string,  // User Identifier - required
@@ -319,7 +316,6 @@ export class CourseServiceImpl implements CourseService {
 
     return this.dbService.execute(`
             SELECT
-                ${CourseAssessmentEntry.COLUMN_NAME_CONTENT_STATUS},
                 ${CourseAssessmentEntry.COLUMN_NAME_USER_ID},
                 ${CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID},
                 ${CourseAssessmentEntry.COLUMN_NAME_COURSE_ID},
@@ -328,7 +324,6 @@ export class CourseServiceImpl implements CourseService {
                 GROUP_CONCAT(${CourseAssessmentEntry.COLUMN_NAME_ASSESSMENT_EVENT},',') as events 
             FROM ${CourseAssessmentEntry.TABLE_NAME}
             GROUP BY
-                ${CourseAssessmentEntry.COLUMN_NAME_CONTENT_STATUS},
                 ${CourseAssessmentEntry.COLUMN_NAME_USER_ID},
                 ${CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID},
                 ${CourseAssessmentEntry.COLUMN_NAME_COURSE_ID},
@@ -337,7 +332,6 @@ export class CourseServiceImpl implements CourseService {
         `).map((entries: RawEntry[]) => {
       return entries.map((entry) => {
         return {
-          contentStatus: entry[CourseAssessmentEntry.COLUMN_NAME_CONTENT_STATUS],
           userId: entry[CourseAssessmentEntry.COLUMN_NAME_USER_ID],
           contentId: entry[CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID],
           courseId: entry[CourseAssessmentEntry.COLUMN_NAME_COURSE_ID],
@@ -352,14 +346,6 @@ export class CourseServiceImpl implements CourseService {
       }
 
       const assessmentTelemetrySyncRequest: AssessmentTelemetrySyncRequest = {
-        contents: entries.map((contentEntry) => {
-          return {
-            contentId: contentEntry.contentId,
-            courseId: contentEntry.courseId,
-            batchId: contentEntry.batchId,
-            status: contentEntry.contentStatus
-          } as ContentState;
-        }),
         assessments: entries.map(({ firstTs, userId, contentId, courseId, batchId, events }) => {
           return {
             assessmentTs: firstTs,

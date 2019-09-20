@@ -6,8 +6,6 @@ export namespace CourseAssessmentEntry {
     export const COLUMN_NAME_ASSESSMENT_EVENT = 'assessment_event';
     export const COLUMN_NAME_CREATED_AT = 'created_at';
 
-    export const COLUMN_NAME_CONTENT_STATUS = 'content_status';
-
     export const COLUMN_NAME_USER_ID = 'user_id';
     export const COLUMN_NAME_CONTENT_ID = 'content_id';
     export const COLUMN_NAME_COURSE_ID = 'course_id';
@@ -17,8 +15,6 @@ export namespace CourseAssessmentEntry {
         [_ID]: number;
         [COLUMN_NAME_ASSESSMENT_EVENT]: string;
         [COLUMN_NAME_CREATED_AT]: number;
-
-        [COLUMN_NAME_CONTENT_STATUS]: number;
 
         [COLUMN_NAME_USER_ID]: string;
         [COLUMN_NAME_CONTENT_ID]: string;
@@ -31,7 +27,6 @@ export namespace CourseAssessmentEntry {
                 CourseAssessmentEntry._ID + DbConstants.SPACE + 'INTEGER PRIMARY KEY,' +
                 CourseAssessmentEntry.COLUMN_NAME_ASSESSMENT_EVENT + DbConstants.SPACE + DbConstants.TEXT_TYPE + ',' +
                 CourseAssessmentEntry.COLUMN_NAME_CREATED_AT + DbConstants.SPACE + DbConstants.INT_TYPE + ',' +
-                CourseAssessmentEntry.COLUMN_NAME_CONTENT_STATUS + DbConstants.SPACE + DbConstants.INT_TYPE + ',' +
                 CourseAssessmentEntry.COLUMN_NAME_USER_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ',' +
                 CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ',' +
                 CourseAssessmentEntry.COLUMN_NAME_COURSE_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ',' +
