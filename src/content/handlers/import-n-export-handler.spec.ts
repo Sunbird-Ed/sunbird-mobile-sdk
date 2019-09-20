@@ -1,11 +1,8 @@
-import { ImportNExportHandler } from './import-n-export-handler';
-import { DeviceInfo } from '../../util/device';
-import { DbService } from '../../db';
-import { ContentEntry } from '../db/schema';
-import { Observable } from 'rxjs';
-import moment from 'moment';
-import * as _ from 'lodash';
-
+import {ImportNExportHandler} from './import-n-export-handler';
+import {DeviceInfo} from '../../util/device';
+import {DbService} from '../../db';
+import {ContentEntry} from '../db/schema';
+import {Observable} from 'rxjs';
 
 
 // jest.mock('moment');
@@ -64,9 +61,9 @@ describe('ImportNExportHandler', () => {
         const request = [];
         mockDbService.execute = jest.fn(() => Observable.of([]));
         // act
-        await importNExportHandler.getContentExportDBModeltoExport(request).then(() => {
-           // assert
-           // expect(mockDbService.execute).toHaveBeenCalled();
+        await importNExportHandler.getContentExportDBModelToExport(request).then(() => {
+            // assert
+            // expect(mockDbService.execute).toHaveBeenCalled();
             done();
         });
     });
@@ -79,6 +76,6 @@ describe('ImportNExportHandler', () => {
         // act
         importNExportHandler.generateManifestForArchive(request);
         // assert
-       // expect(Date.now).toHaveBeenCalled();
+        // expect(Date.now).toHaveBeenCalled();
     });
 });
