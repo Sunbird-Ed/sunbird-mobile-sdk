@@ -4,7 +4,7 @@ import {AuthEndPoints} from '../def/auth-end-points';
 import {SunbirdOAuthSessionProviderFactory} from './sunbird-o-auth-session-provider-factory';
 import {SunbirdError} from '../../sunbird-error';
 import * as qs from 'qs';
-import {InAppBrowserExitError} from "../errors/in-app-browser-exit-error";
+import {InAppBrowserExitError} from '../errors/in-app-browser-exit-error';
 
 export interface StepOneCallbackType {
     code?: string;
@@ -22,7 +22,7 @@ export interface OAuthRedirectUrlQueryParams {
     scope: string;
     client_id: string;
     version: string;
-    goBackUrl: string;
+    goBackUrl?: string;
     merge_account_process?: string;
     mergeaccountprocess?: string;
 }
@@ -56,21 +56,22 @@ export class OAuthDelegate {
             scope: 'offline_access',
             client_id: 'android',
             version: '4',
-            goBackUrl: this.exitUrl,
             ...( this.mode === 'merge' ? {
                 merge_account_process: '1',
                 mergeaccountprocess: '1',
+                goBackUrl: this.exitUrl
             } : {} )
         };
 
         return (this.mode === 'default' ? this.apiConfig.host : this.apiConfig.user_authentication.mergeUserHost) +
           this.apiConfig.user_authentication.authUrl +
           AuthEndPoints.LOGIN + '?' +
-          qs.stringify(oAuthRedirectUrlQueryParams, {encode: false})
+          qs.stringify(oAuthRedirectUrlQueryParams, {encode: false});
     }
 
     public async doOAuthStepOne(): Promise<OAuthSession> {
-        const inAppBrowserRef = cordova.InAppBrowser.open(this.buildLaunchUrl(), '_blank', 'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes');
+        const inAppBrowserRef = cordova.InAppBrowser.open(this.buildLaunchUrl(), '_blank',
+            'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes');
 
         return new Promise<OAuthSession>((resolve, reject) => {
             inAppBrowserRef.addEventListener('loadstart', (event) => {
@@ -103,7 +104,7 @@ export class OAuthDelegate {
                 const delay = 500;
 
                 return new Promise((resolve) => setTimeout(resolve, delay))
-                  .then(() => this.doOAuthStepOne())
+                  .then(() => this.doOAuthStepOne());
             }
 
             inAppBrowserRef.close();
