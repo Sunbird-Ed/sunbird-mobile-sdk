@@ -8,6 +8,7 @@ import Telemetry = SunbirdTelemetry.Telemetry;
 import { EventsBusService } from '../../events-bus';
 import { ContentService } from '../../content';
 import { ProfileService } from '../../profile';
+import { DbService } from "../../db";
 export declare class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private courseService;
     private sharedPreference;
@@ -15,11 +16,12 @@ export declare class SummaryTelemetryEventHandler implements ApiRequestHandler<T
     private eventBusService;
     private contentService;
     private profileService;
+    private dbService;
     private static readonly CONTENT_PLAYER_PID;
     private currentUID?;
     private currentContentID?;
     private courseContext;
-    constructor(courseService: CourseService, sharedPreference: SharedPreferences, summarizerService: SummarizerService, eventBusService: EventsBusService, contentService: ContentService, profileService: ProfileService);
+    constructor(courseService: CourseService, sharedPreference: SharedPreferences, summarizerService: SummarizerService, eventBusService: EventsBusService, contentService: ContentService, profileService: ProfileService, dbService: DbService);
     private static checkPData;
     private static checkIsCourse;
     private setCourseContextEmpty;
@@ -36,4 +38,6 @@ export declare class SummaryTelemetryEventHandler implements ApiRequestHandler<T
     private processOEStart;
     private processOEAssess;
     private processOEEnd;
+    setAssessEventsContentStateDone(event: SunbirdTelemetry.Telemetry): Promise<undefined>;
+    persistAssessEvent(event: SunbirdTelemetry.Telemetry, courseContext: any): Promise<undefined>;
 }

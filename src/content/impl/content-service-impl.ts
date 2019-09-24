@@ -390,8 +390,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 }).then((importResponse: Response) => {
                     const response: Response = new Response();
                     return new CreateContentImportManifest(this.dbService, this.deviceInfo, this.fileService).execute(importResponse.body);
-                }).then((importResponse: Response) => {
-                    return new CreateHierarchy(this.dbService, this.fileService).execute(importResponse.body);
+                // }).then((importResponse: Response) => {
+                //     return new CreateHierarchy(this.dbService, this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
                     return new EcarCleanup(this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {

@@ -190,7 +190,10 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
             return this.processOEAssess(event)
                 .do(async () => {
                     const context = await this.getCourseContext().toPromise();
-                    if (context.userId && context.courseId && context.batchId) {
+                    if (
+                        event.context.cdata.find((c) => c.type === 'AttemptId')
+                        && context.userId && context.courseId && context.batchId
+                    ) {
                         await this.persistAssessEvent(event, context);
                     }
                 })

@@ -32,18 +32,22 @@ export class GoogleSessionProvider implements SessionProvider {
     public async provide(): Promise<OAuthSession> {
         this.inAppBrowserRef.close();
 
-        const sanitizedGoogleUrl = this.paramsObj.googleRedirectUrl!.substring(0, this.paramsObj.googleRedirectUrl!.indexOf('?'));
+        let sanitizedGoogleUrl = this.paramsObj.googleRedirectUrl!.substring(0, this.paramsObj.googleRedirectUrl!.indexOf('?'));
 
-        const googleRedirectUrlQueryParams: OAuthRedirectUrlQueryParams = {
+        delete this.paramsObj['googleRedirectUrl'];
+        delete this.paramsObj['redirect_uri'];
+        delete this.paramsObj['error_callback'];
+
+        const googleRedirectUrlQueryParams: Partial<OAuthRedirectUrlQueryParams> = {
             redirect_uri: this.apiConfig.user_authentication.redirectUrl,
-            error_callback: this.apiConfig.user_authentication.redirectUrl,
-            response_type: 'code',
-            scope: 'offline_access',
-            client_id: 'android',
-            version: '3'
+            error_callback: this.apiConfig.user_authentication.redirectUrl
         };
 
-        return this.openInCustomTabs(sanitizedGoogleUrl + '?' + qs.stringify(googleRedirectUrlQueryParams, {encode: true}));
+        sanitizedGoogleUrl = sanitizedGoogleUrl + '?' +
+            qs.stringify(this.paramsObj, { encode: false }) + '&' +
+            qs.stringify(googleRedirectUrlQueryParams, { encode: false });
+
+        return this.openInCustomTabs(sanitizedGoogleUrl);
     }
 
     private async openInCustomTabs(googleUrl: string): Promise<OAuthSession> {

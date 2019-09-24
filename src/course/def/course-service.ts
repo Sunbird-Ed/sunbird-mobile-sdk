@@ -3,14 +3,13 @@ import {
     CourseBatchDetailsRequest,
     CourseBatchesRequest,
     EnrollCourseRequest,
-    FetchEnrolledCourseRequest, GetContentStateRequest,
+    FetchEnrolledCourseRequest, GenerateAttemptIdRequest, GetContentStateRequest,
     UpdateContentStateRequest
 } from './request-types';
 import {Observable} from 'rxjs';
 import {Batch} from './batch';
 import {Course} from './course';
 import {UnenrollCourseRequest} from './unenrollCourseRequest';
-import {ApiService, Response} from '../../api';
 import { DownloadCertificateRequest } from './download-certificate-request';
 import { DownloadCertificateResponse } from './download-certificate-response';
 export interface CourseService {
@@ -33,4 +32,6 @@ export interface CourseService {
     ): Observable<DownloadCertificateResponse>;
 
     syncAssessmentEvents(): Observable<undefined>;
+
+    generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 }

@@ -7,7 +7,7 @@ import {
   CourseService,
   CourseServiceConfig,
   EnrollCourseRequest,
-  FetchEnrolledCourseRequest,
+  FetchEnrolledCourseRequest, GenerateAttemptIdRequest,
   GetContentStateRequest,
   UnenrollCourseRequest,
   UpdateContentStateRequest
@@ -303,7 +303,6 @@ export class CourseServiceImpl implements CourseService {
     };
 
     type AssessmentTelemetrySyncRequest = {
-      contents: ContentState[],
       assessments: {
         assessmentTs: number; //Assessment time in epoch
         userId: string,  // User Identifier - required
@@ -347,24 +346,20 @@ export class CourseServiceImpl implements CourseService {
       }
 
       const assessmentTelemetrySyncRequest: AssessmentTelemetrySyncRequest = {
-        contents: entries.map((contentEntry) => {
+        assessments: entries.map(({ firstTs, userId, contentId, courseId, batchId, events }) => {
           return {
-            contentId: contentEntry.contentId,
-            courseId: contentEntry.courseId,
-            batchId: contentEntry.batchId,
-          };
-        }),
-        assessments: entries.map((contentEntry) => {
-          return {
-            assessmentTs: contentEntry.firstTs,
-            userId: contentEntry.userId,
-            contentId: contentEntry.contentId,
-            courseId: contentEntry.courseId,
-            batchId: contentEntry.batchId,
-            attemptId: MD5(
-                contentEntry.courseId + contentEntry.userId + contentEntry.contentId + contentEntry.batchId
-            ).toString(),
-            events: contentEntry.events
+            assessmentTs: firstTs,
+            userId,
+            contentId,
+            courseId,
+            batchId,
+            attemptId: this.generateAssessmentAttemptId({
+              courseId,
+              batchId,
+              contentId,
+              userId
+            }),
+            events
           }
         })
       };
@@ -389,5 +384,11 @@ export class CourseServiceImpl implements CourseService {
           })
           .mapTo(undefined)
     }).mapTo(undefined);
+  }
+
+  generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string {
+    return MD5(
+        [request.courseId, request.batchId, request.contentId, request.userId].join('-')
+    ).toString()
   }
 }

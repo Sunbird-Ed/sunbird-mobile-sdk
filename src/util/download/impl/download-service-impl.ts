@@ -20,6 +20,7 @@ import {SharedPreferencesSetCollection} from '../../shared-preferences/def/share
 import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
 import {injectable, inject} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
+import * as percentile from 'percentile';
 
 @injectable()
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
@@ -80,14 +81,23 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         }).mapTo(undefined).toPromise();
     }
 
-    private static async generateNetworkSpeedTelemetry(downloadSpeed: number): Promise<void> {
+    private static async generateNetworkSpeedTelemetry(
+        downloads: { downloadSpeed: number, bytesDownloaded: number, totalSizeInBytes: number }[]
+    ): Promise<void> {
         return TelemetryLogger.log.interact({
             type: InteractType.OTHER,
             subType: InteractSubType.NETWORK_SPEED,
             env: 'sdk',
             pageId: 'sdk',
             valueMap: {
-                'networkSpeed': downloadSpeed,
+                'networkSpeedPercentileMap': {
+                    '25': percentile(25, downloads.map(d => d.downloadSpeed)),
+                    '50': percentile(50, downloads.map(d => d.downloadSpeed)),
+                    '75': percentile(75, downloads.map(d => d.downloadSpeed))
+                },
+                'totalSizeInBytes': downloads.reduce((acc, d) => {
+                    return acc > d.totalSizeInBytes ? acc : d.totalSizeInBytes;
+                }, 0),
                 'networkType': navigator['connection']['type']
             },
         }).mapTo(undefined).toPromise();
@@ -288,6 +298,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                             downloadId: downloadRequest.downloadId,
                             identifier: downloadRequest.identifier,
                             progress: -1,
+                            bytesDownloaded: 0,
+                            totalSizeInBytes: 0,
                             status: DownloadStatus.STATUS_FAILED
                         }
                     } as DownloadProgress);
@@ -306,6 +318,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         downloadId: downloadRequest.downloadId,
                         identifier: downloadRequest.identifier,
                         progress: Math.round(entry.totalSizeBytes >= 0 ? (entry.bytesDownloadedSoFar / entry.totalSizeBytes) * 100 : -1),
+                        bytesDownloaded: entry.bytesDownloadedSoFar,
+                        totalSizeInBytes: entry.totalSizeBytes,
                         status: entry.status
                     }
                 } as DownloadProgress);
@@ -378,17 +392,25 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                 start$,
                 () => toggle$
             )
-            .mergeMap((r) =>
+            .switchMap((r) =>
                 r.throttleTime(5000, undefined, {trailing: true, leading: false})
                     .concat(Observable.of(null))
                     .mergeMap((v) => {
                         return new Promise<number>((resolve, reject) => {
                             networkspeed.getNetworkSpeed((speed) => resolve(parseFloat(speed || '0')), reject);
+                        }).then((downloadSpeed) => {
+                            return {
+                                downloadSpeed,
+                                bytesDownloaded: v ? (v as DownloadProgress).payload.bytesDownloaded : 0,
+                                totalSizeInBytes: v ? (v as DownloadProgress).payload.totalSizeInBytes : 0
+                            }
                         })
                     })
-                    .do(async (downloadSpeed) => {
-                        await DownloadServiceImpl.generateNetworkSpeedTelemetry(downloadSpeed)
-                    })
-            ).mapTo(undefined)
+                    .bufferTime(1000 * 60 * 5)
+            )
+            .do(async (downloads) => {
+                await DownloadServiceImpl.generateNetworkSpeedTelemetry(downloads);
+            })
+            .mapTo(undefined)
     }
 }

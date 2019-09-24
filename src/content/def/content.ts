@@ -78,6 +78,7 @@ export interface ContentData {
     collaborators?: string;
     originData?: OriginData;
     origin?: string;
+    totalQuestions?: number;
 }
 
 export interface ComingSoonMsg {
