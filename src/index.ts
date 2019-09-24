@@ -27,3 +27,4 @@ export * from './util/device';
 export * from './player';
 export * from './util/app';
 export * from './util/search-history';
+export * from './util/network';
