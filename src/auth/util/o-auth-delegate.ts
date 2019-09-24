@@ -22,7 +22,7 @@ export interface OAuthRedirectUrlQueryParams {
     scope: string;
     client_id: string;
     version: string;
-    goBackUrl: string;
+    goBackUrl?: string;
     merge_account_process?: string;
     mergeaccountprocess?: string;
 }
@@ -56,10 +56,10 @@ export class OAuthDelegate {
             scope: 'offline_access',
             client_id: 'android',
             version: '4',
-            goBackUrl: this.exitUrl,
             ...( this.mode === 'merge' ? {
                 merge_account_process: '1',
                 mergeaccountprocess: '1',
+                goBackUrl: this.exitUrl
             } : {} )
         };
 
