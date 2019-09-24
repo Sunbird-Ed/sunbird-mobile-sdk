@@ -16,7 +16,7 @@ export interface OAuthRedirectUrlQueryParams {
     scope: string;
     client_id: string;
     version: string;
-    goBackUrl: string;
+    goBackUrl?: string;
     merge_account_process?: string;
     mergeaccountprocess?: string;
 }

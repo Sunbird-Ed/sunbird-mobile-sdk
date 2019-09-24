@@ -3,7 +3,6 @@ export declare namespace CourseAssessmentEntry {
     const _ID = "_id";
     const COLUMN_NAME_ASSESSMENT_EVENT = "assessment_event";
     const COLUMN_NAME_CREATED_AT = "created_at";
-    const COLUMN_NAME_CONTENT_STATUS = "content_status";
     const COLUMN_NAME_USER_ID = "user_id";
     const COLUMN_NAME_CONTENT_ID = "content_id";
     const COLUMN_NAME_COURSE_ID = "course_id";
@@ -12,7 +11,6 @@ export declare namespace CourseAssessmentEntry {
         [_ID]: number;
         [COLUMN_NAME_ASSESSMENT_EVENT]: string;
         [COLUMN_NAME_CREATED_AT]: number;
-        [COLUMN_NAME_CONTENT_STATUS]: number;
         [COLUMN_NAME_USER_ID]: string;
         [COLUMN_NAME_CONTENT_ID]: string;
         [COLUMN_NAME_COURSE_ID]: string;
