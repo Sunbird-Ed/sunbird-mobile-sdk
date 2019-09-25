@@ -1,11 +1,4 @@
-import {
-    DownloadCancelRequest,
-    DownloadEventType,
-    DownloadProgress,
-    DownloadRequest,
-    DownloadService,
-    DownloadStatus
-} from '..';
+import {DownloadCancelRequest, DownloadEventType, DownloadProgress, DownloadRequest, DownloadService, DownloadStatus} from '..';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {SdkServiceOnInitDelegate} from '../../../sdk-service-on-init-delegate';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
@@ -18,7 +11,7 @@ import {TelemetryLogger} from '../../../telemetry/util/telemetry-logger';
 import {InteractSubType, InteractType, ObjectType} from '../../../telemetry';
 import {SharedPreferencesSetCollection} from '../../shared-preferences/def/shared-preferences-set-collection';
 import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
-import {injectable, inject} from 'inversify';
+import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
 import * as percentile from 'percentile';
 
@@ -347,11 +340,14 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     .mergeMap(() => {
                         return this.getDownloadProgress(currentDownloadRequest);
                     })
+                    .distinctUntilChanged((prev, next) => {
+                        return JSON.stringify(prev) === JSON.stringify(next);
+                    })
                     .mergeMap((downloadProgress) => {
                         return Observable.zip(
                             this.handleDownloadCompletion(downloadProgress!),
                             this.emitProgressInEventBus(downloadProgress!)
-                        ).mapTo(downloadProgress)
+                        ).mapTo(downloadProgress);
                     })
                     .do((downloadProgress) => {
                         if (
@@ -376,11 +372,9 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             .events(EventNamespace.DOWNLOADS)
             .share();
 
-        const start$ = events$
-            .filter((e) => e.type == DownloadEventType.START);
+        const start$ = events$.filter((e) => e.type === DownloadEventType.START);
 
-        const toggle$ = events$
-            .filter((e) => e.type == DownloadEventType.END);
+        const toggle$ = events$.filter((e) => e.type === DownloadEventType.END);
 
         return events$
             .filter((e) =>
@@ -401,16 +395,18 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         }).then((downloadSpeed) => {
                             return {
                                 downloadSpeed,
-                                bytesDownloaded: v ? (v as DownloadProgress).payload.bytesDownloaded : 0,
-                                totalSizeInBytes: v ? (v as DownloadProgress).payload.totalSizeInBytes : 0
-                            }
-                        })
+                                bytesDownloaded: (v && (v as DownloadProgress).payload)
+                                    ? (v as DownloadProgress).payload.bytesDownloaded : 0,
+                                totalSizeInBytes: (v && (v as DownloadProgress).payload)
+                                    ? (v as DownloadProgress).payload.totalSizeInBytes : 0
+                            };
+                        });
                     })
                     .bufferTime(1000 * 60 * 5)
             )
             .do(async (downloads) => {
                 await DownloadServiceImpl.generateNetworkSpeedTelemetry(downloads);
             })
-            .mapTo(undefined)
+            .mapTo(undefined);
     }
 }
