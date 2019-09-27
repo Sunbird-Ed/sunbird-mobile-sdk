@@ -270,16 +270,9 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         });
     }
 
-    private getStatus(contentStateList: ContentState[], contentId): number {
-        if (!contentStateList || !contentStateList.length) {
-            return 0;
-        }
-        contentStateList.forEach((contentState: ContentState) => {
-            if (contentState.contentId === contentId) {
-                return contentState.status;
-            }
-        });
-        return 0;
+    private getStatus(contentStateList: ContentState[] = [], contentId): number {
+        const content = contentStateList.find(c => c.contentId === contentId);
+        return (content && content.status) || 0;
     }
 
 
