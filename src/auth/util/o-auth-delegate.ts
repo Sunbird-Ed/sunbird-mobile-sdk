@@ -1,10 +1,12 @@
-import {ApiConfig, ApiService} from '../../api';
+import {ApiConfig, ApiService, HttpRequestType, Request} from '../../api';
 import {OAuthSession, SignInError} from '..';
-import {AuthEndPoints} from '../def/auth-end-points';
 import {SunbirdOAuthSessionProviderFactory} from './sunbird-o-auth-session-provider-factory';
 import {SunbirdError} from '../../sunbird-error';
 import * as qs from 'qs';
 import {InAppBrowserExitError} from "../errors/in-app-browser-exit-error";
+import {EventNamespace, EventsBusService} from "../../events-bus";
+import {AuthEventType} from "..";
+import {AuthEndPoints} from "../def/auth-end-points";
 
 export interface StepOneCallbackType {
     code?: string;
@@ -13,6 +15,8 @@ export interface StepOneCallbackType {
     id?: string;
     googleRedirectUrl?: string;
     error_message?: string;
+    automerge?: string;
+    payload?: string;
 }
 
 export interface OAuthRedirectUrlQueryParams {
@@ -22,7 +26,7 @@ export interface OAuthRedirectUrlQueryParams {
     scope: string;
     client_id: string;
     version: string;
-    goBackUrl: string;
+    goBackUrl?: string;
     merge_account_process?: string;
     mergeaccountprocess?: string;
 }
@@ -36,9 +40,12 @@ export class ForgotPasswordFlowDetectedError extends SunbirdError {
 }
 
 export class OAuthDelegate {
+    private autoMergeContext?: { payload: { iv: string, encryptedData: string } };
+
     constructor(
         private apiConfig: ApiConfig,
         private apiService: ApiService,
+        private eventsBusService: EventsBusService,
         private mode: 'default' | 'merge'
     ) {
     }
@@ -56,10 +63,10 @@ export class OAuthDelegate {
             scope: 'offline_access',
             client_id: 'android',
             version: '4',
-            goBackUrl: this.exitUrl,
             ...( this.mode === 'merge' ? {
                 merge_account_process: '1',
                 mergeaccountprocess: '1',
+                goBackUrl: this.exitUrl
             } : {} )
         };
 
@@ -70,11 +77,19 @@ export class OAuthDelegate {
     }
 
     public async doOAuthStepOne(): Promise<OAuthSession> {
-        const inAppBrowserRef = cordova.InAppBrowser.open(this.buildLaunchUrl(), '_blank', 'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes');
+        if (this.autoMergeContext) {
+            this.autoMergeContext = undefined;
+        }
+
+        const launchUrl = this.buildLaunchUrl();
+        const options = 'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes,beforeload=yes';
+        const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', options);
 
         return new Promise<OAuthSession>((resolve, reject) => {
             inAppBrowserRef.addEventListener('loadstart', (event) => {
                 if (event.url) {
+                    this.captureAutoMergeContext(inAppBrowserRef, event.url);
+
                     const sessionProvider = new SunbirdOAuthSessionProviderFactory(
                         this.apiConfig, this.apiService, inAppBrowserRef
                     ).fromUrl(event.url);
@@ -83,8 +98,10 @@ export class OAuthDelegate {
                         reject(new SignInError('Server Error'));
                     }
 
-                    if ((event.url).indexOf('/resources') !== -1 || (event.url).indexOf('client_id=portal') !== -1) {
-                        reject(new ForgotPasswordFlowDetectedError('Detected "Forgot Password" flow completion'));
+                    if (!this.autoMergeContext) {
+                        if ((event.url).indexOf('/resources') !== -1 || (event.url).indexOf('client_id=portal') !== -1) {
+                            reject(new ForgotPasswordFlowDetectedError('Detected "Forgot Password" flow completion'));
+                        }
                     }
 
                     if (event.url === this.exitUrl) {
@@ -92,6 +109,40 @@ export class OAuthDelegate {
                     }
 
                     if (sessionProvider) {
+                        if (this.autoMergeContext) {
+                            return resolve(
+                                sessionProvider.provide().then(async (session) => {
+                                    try {
+                                        await this.performAutoMerge({
+                                            payload: this.autoMergeContext!.payload,
+                                            nonStateUserToken: session.access_token
+                                        });
+
+                                        this.eventsBusService.emit({
+                                            namespace: EventNamespace.AUTH,
+                                            event: {
+                                                type: AuthEventType.AUTO_MIGRATE_SUCCESS,
+                                                payload: undefined
+                                            }
+                                        });
+                                    } catch (e) {
+                                        console.error(e);
+
+                                        this.eventsBusService.emit({
+                                            namespace: EventNamespace.AUTH,
+                                            event: {
+                                                type: AuthEventType.AUTO_MIGRATE_SUCCESS,
+                                                payload: undefined
+                                            }
+                                        });
+                                    }
+
+                                    this.autoMergeContext = undefined;
+                                    return session;
+                                })
+                            )
+                        }
+
                         resolve(sessionProvider.provide());
                     }
                 }
@@ -110,6 +161,42 @@ export class OAuthDelegate {
 
             throw e;
         });
+    }
+
+    private captureAutoMergeContext(inAppBrowserRef: InAppBrowserSession, url: string) {
+        const host = url.substring(0, url.indexOf('?'));
+        const params = qs.parse(url.substring(url.indexOf('?') + 1));
+
+        if (params.automerge === '1' && params.payload) {
+            this.autoMergeContext = { payload: JSON.parse(params.payload) };
+
+            if (params.client_id === 'portal') {
+                params.client_id = 'android';
+                params.redirect_uri = this.apiConfig.host + '/oauth2callback';
+
+                inAppBrowserRef.executeScript({
+                    code: `(() => {
+                        window.location.href = ` + "`" + `${host + '?' + qs.stringify(params)}` + "`" + `;
+                    })()`
+                });
+            }
+        }
+    }
+
+    private performAutoMerge({ payload, nonStateUserToken }): Promise<undefined> {
+        const apiRequest = new Request.Builder()
+            .withType(HttpRequestType.GET)
+            .withPath(this.apiConfig.user_authentication.autoMergeApiPath)
+            .withParameters({
+                client_id: 'android'
+            })
+            .withHeaders({
+                'x-authenticated-user-token': nonStateUserToken,
+                'x-authenticated-user-data': JSON.stringify(payload)
+            })
+            .build();
+
+        return this.apiService.fetch(apiRequest).mapTo(undefined).toPromise();
     }
 }
 

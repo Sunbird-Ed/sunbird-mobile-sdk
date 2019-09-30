@@ -32,7 +32,18 @@ export class GoogleSessionProvider implements SessionProvider {
     public async provide(): Promise<OAuthSession> {
         this.inAppBrowserRef.close();
 
-        let sanitizedGoogleUrl = this.paramsObj.googleRedirectUrl!.substring(0, this.paramsObj.googleRedirectUrl!.indexOf('?'));
+        let sanitizedGoogleUrl = this.paramsObj.googleRedirectUrl!;
+
+        if (sanitizedGoogleUrl.indexOf('?') > -1) {
+            // if sanitizedGoogleUrl matches format {{url}} ? {{remainderParams}}
+            sanitizedGoogleUrl = this.paramsObj.googleRedirectUrl!.substring(0, this.paramsObj.googleRedirectUrl!.indexOf('?'));
+            const remainderParams = this.paramsObj.googleRedirectUrl!.substring(this.paramsObj.googleRedirectUrl!.indexOf('?') + 1);
+
+            this.paramsObj = {
+                ...this.paramsObj,
+                ...qs.parse(remainderParams)
+            }
+        }
 
         delete this.paramsObj['googleRedirectUrl'];
         delete this.paramsObj['redirect_uri'];
