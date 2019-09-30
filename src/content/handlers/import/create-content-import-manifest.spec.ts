@@ -25,7 +25,7 @@ describe('CreateContentImportManifest', () => {
         expect(createContentImportManifest).toBeTruthy();
     });
 
-    it('', async(done) => {
+    it('should read a text', async(done) => {
         // arrange
         const contentImportResponse: ContentImportResponse[] = [{
             identifier: 'SAMPLE_IDENTIFIER',
@@ -42,7 +42,7 @@ describe('CreateContentImportManifest', () => {
             'items': 'SAMPLE_ITEMS'
         }}]));
         JSON.parse = jest.fn().mockImplementationOnce(() => {
-            return data.ar;
+            return data;
         });
         // act
         createContentImportManifest.execute(request).then(() => {
