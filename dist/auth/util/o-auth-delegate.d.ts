@@ -1,6 +1,7 @@
 import { ApiConfig, ApiService } from '../../api';
 import { OAuthSession } from '..';
 import { SunbirdError } from '../../sunbird-error';
+import { EventsBusService } from "../../events-bus";
 export interface StepOneCallbackType {
     code?: string;
     access_token?: string;
@@ -8,6 +9,8 @@ export interface StepOneCallbackType {
     id?: string;
     googleRedirectUrl?: string;
     error_message?: string;
+    automerge?: string;
+    payload?: string;
 }
 export interface OAuthRedirectUrlQueryParams {
     redirect_uri: string;
@@ -26,9 +29,13 @@ export declare class ForgotPasswordFlowDetectedError extends SunbirdError {
 export declare class OAuthDelegate {
     private apiConfig;
     private apiService;
+    private eventsBusService;
     private mode;
-    constructor(apiConfig: ApiConfig, apiService: ApiService, mode: 'default' | 'merge');
+    private autoMergeContext?;
+    constructor(apiConfig: ApiConfig, apiService: ApiService, eventsBusService: EventsBusService, mode: 'default' | 'merge');
     readonly exitUrl: string;
     buildLaunchUrl(): string;
     doOAuthStepOne(): Promise<OAuthSession>;
+    private captureAutoMergeContext;
+    private performAutoMerge;
 }
