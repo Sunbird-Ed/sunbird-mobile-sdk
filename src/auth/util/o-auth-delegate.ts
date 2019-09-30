@@ -82,7 +82,7 @@ export class OAuthDelegate {
         }
 
         const launchUrl = this.buildLaunchUrl();
-        const options = 'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes,beforeload=yes';
+        const options = 'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes';
         const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', options);
 
         return new Promise<OAuthSession>((resolve, reject) => {
