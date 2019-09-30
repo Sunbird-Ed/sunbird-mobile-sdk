@@ -38,6 +38,5 @@ export declare class SummaryTelemetryEventHandler implements ApiRequestHandler<T
     private processOEStart;
     private processOEAssess;
     private processOEEnd;
-    setAssessEventsContentStateDone(event: SunbirdTelemetry.Telemetry): Promise<undefined>;
     persistAssessEvent(event: SunbirdTelemetry.Telemetry, courseContext: any): Promise<undefined>;
 }

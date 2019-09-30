@@ -73,7 +73,7 @@ export class OAuthDelegate {
         return (this.mode === 'default' ? this.apiConfig.host : this.apiConfig.user_authentication.mergeUserHost) +
           this.apiConfig.user_authentication.authUrl +
           AuthEndPoints.LOGIN + '?' +
-          qs.stringify(oAuthRedirectUrlQueryParams, {encode: false})
+          qs.stringify(oAuthRedirectUrlQueryParams, {encode: false});
     }
 
     public async doOAuthStepOne(): Promise<OAuthSession> {
@@ -154,7 +154,7 @@ export class OAuthDelegate {
                 const delay = 500;
 
                 return new Promise((resolve) => setTimeout(resolve, delay))
-                  .then(() => this.doOAuthStepOne())
+                  .then(() => this.doOAuthStepOne());
             }
 
             inAppBrowserRef.close();
