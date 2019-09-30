@@ -68,7 +68,8 @@ import {SearchHistoryMigration} from './db/migrations/search-history-migration';
 import {SearchHistoryService} from './util/search-history';
 import {SearchHistoryServiceImpl} from './util/search-history/impl/search-history-service-impl';
 import {RecentlyViewedMigration} from './db/migrations/recently-viewed-migration';
-import {CourseAssessmentMigration} from "./db/migrations/course-assessment-migration";
+import {CourseAssessmentMigration} from './db/migrations/course-assessment-migration';
+import { CodePushExperimentService, CodePUshExperimentServiceImpl } from './codepush-experiment';
 
 export class SunbirdSdk {
     private _isInitialised: boolean = false;
@@ -201,6 +202,10 @@ export class SunbirdSdk {
         return this._container.get<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE);
     }
 
+    get codePushExperimentService(): CodePushExperimentService {
+        return this._container.get<CodePushExperimentService>(InjectionTokens.CODEPUSH_EXPERIMENT_SERVICE);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
@@ -298,6 +303,9 @@ export class SunbirdSdk {
         this._container.bind<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE).to(NetworkInfoServiceImpl).inSingletonScope();
 
         this._container.bind<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE).to(SearchHistoryServiceImpl).inSingletonScope();
+
+        this._container.bind<CodePushExperimentService>(InjectionTokens.CODEPUSH_EXPERIMENT_SERVICE).to(CodePUshExperimentServiceImpl)
+        .inSingletonScope();
 
         this.apiService.setDefaultApiAuthenticators([
             new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)

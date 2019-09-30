@@ -7,6 +7,7 @@ import {UniqueId} from '../../db/util/unique-id';
 import { inject, injectable } from 'inversify';
 import { InjectionTokens } from '../../injection-tokens';
 import { SdkConfig } from '../../sdk-config';
+import { CodePushExperimentService } from '../../codepush-experiment';
 
 @injectable()
 export class TelemetryDecoratorImpl implements TelemetryDecorator {
@@ -16,7 +17,8 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
         @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
-        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo) {
+        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
+        @inject(InjectionTokens.CODEPUSH_EXPERIMENT_SERVICE) private codePushExperimentService: CodePushExperimentService) {
         this.apiConfig = this.sdkConfig.apiConfig;
     }
 
@@ -96,6 +98,10 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         this.patchPData(context);
         if (!context.env) {
             context.env = 'app';
+        }
+        const expKey = this.codePushExperimentService.getExperimentKey();
+        if (typeof(expKey) === 'string') {
+            context.pdata.pid = context.pdata.pid + '-' + expKey;
         }
         context.sid = sid;
         context.did = this.deviceInfo.getDeviceID();
