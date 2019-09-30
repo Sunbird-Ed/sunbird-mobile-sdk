@@ -12,6 +12,7 @@ import {FileService} from '../../util/file/def/file-service';
 import {InjectionTokens} from '../../injection-tokens';
 import {Observable} from 'rxjs';
 import {ProfileEntry} from '../db/schema';
+import { AuthService } from '../../auth';
 
 describe.only('ProfileServiceImpl', () => {
     let profileService: ProfileService;
@@ -26,6 +27,7 @@ describe.only('ProfileServiceImpl', () => {
     const mockFrameworkService: Partial<FrameworkService> = {};
     const mockFileService: Partial<FileService> = {};
     const mockDeviceInfo: Partial<DeviceInfo> = {};
+    const mockAuthService: Partial<AuthService> = {};
     const mockTelemetryService: Partial<TelemetryService> = {
         audit(request: TelemetryAuditRequest): Observable<boolean> {
             return Observable.of(true);
@@ -44,6 +46,7 @@ describe.only('ProfileServiceImpl', () => {
         container.bind<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE).toConstantValue(mockFrameworkService as FrameworkService);
         container.bind<FileService>(InjectionTokens.FILE_SERVICE).toConstantValue(mockFileService as FileService);
         container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).toConstantValue(mockDeviceInfo as DeviceInfo);
+        container.bind<AuthService>(InjectionTokens.AUTH_SERVICE).toConstantValue(mockAuthService as AuthService);
         container.bind<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE).toConstantValue(mockTelemetryService as TelemetryService);
 
         profileService = container.get(InjectionTokens.PROFILE_SERVICE);

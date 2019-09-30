@@ -3,7 +3,7 @@ import Queue from 'typescript-collections/dist/lib/Queue';
 import {ContentUtil} from '../util/content-util';
 import {Visibility} from '../util/content-constants';
 import {DeviceInfo} from '../../util/device/def/device-info';
-import moment from 'moment';
+import * as moment from 'moment';
 import {DbService} from '../../db';
 import {ArrayUtil} from '../../util/array-util';
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;

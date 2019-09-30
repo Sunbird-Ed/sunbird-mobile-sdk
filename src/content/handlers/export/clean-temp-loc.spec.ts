@@ -72,9 +72,6 @@ describe('CleanTempLoc', () => {
             metadata: { ['SAMPLE_KEY']: 'META_DATA' },
         };
         const dir = (mockFileService.listDir as jest.Mock).mockResolvedValue([{'1': 'one'}]);
-       // dir[0].remove = jest.fn(() => {});
-        
-       // directory.remove = jest.fn(() => {});
 
         spyOn(dir[0], 'remove').and.callFake(
             (a, b) => {
