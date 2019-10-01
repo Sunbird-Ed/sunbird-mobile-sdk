@@ -47,3 +47,10 @@ export namespace ErrorLogKeys {
 export namespace CodePush {
     export const DEPLOYMENT_KEY = 'deployment_key';
 }
+
+export namespace CodePushExperiment {
+    export const DEFAULT_DEPLOYMENT_KEY = 'default_deployment_key';
+    export const EXPERIMENT_KEY = 'emperiment_key';
+    export const EXPERIMENT_APP_VERSION = 'emperiment_app_version';
+}
+

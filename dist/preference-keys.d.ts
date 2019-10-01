@@ -37,3 +37,8 @@ export declare namespace ErrorLogKeys {
 export declare namespace CodePush {
     const DEPLOYMENT_KEY = "deployment_key";
 }
+export declare namespace CodePushExperiment {
+    const DEFAULT_DEPLOYMENT_KEY = "default_deployment_key";
+    const EXPERIMENT_KEY = "emperiment_key";
+    const EXPERIMENT_APP_VERSION = "emperiment_app_version";
+}

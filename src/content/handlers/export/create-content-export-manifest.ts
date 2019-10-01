@@ -1,7 +1,7 @@
 import {DbService} from '../../../db';
 import {ExportContentContext} from '../..';
 import {Response} from '../../../api';
-import moment from 'moment';
+import * as moment from 'moment';
 import {ImportNExportHandler} from '../import-n-export-handler';
 
 export class CreateContentExportManifest {
