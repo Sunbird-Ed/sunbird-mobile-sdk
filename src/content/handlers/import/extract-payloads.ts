@@ -333,7 +333,6 @@ export class ExtractPayloads {
      *
      */
     getContentState(existingContentInDb, contentState: number): number {
-        console.log(existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE]);
         if (existingContentInDb && existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] > contentState) {
             contentState = existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE];
         }
