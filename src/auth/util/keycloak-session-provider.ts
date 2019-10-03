@@ -35,8 +35,6 @@ export class KeycloakSessionProvider implements SessionProvider {
 
                     const userToken = payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub;
 
-                    this.inAppBrowserRef.removeEventListener('exit', () => {
-                    });
                     this.inAppBrowserRef.close();
 
                     return {

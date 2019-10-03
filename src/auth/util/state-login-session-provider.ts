@@ -26,8 +26,6 @@ export class StateLoginSessionProvider implements SessionProvider {
 
                     const userToken = jwtPayload.sub.split(':').length === 3 ? <string>jwtPayload.sub.split(':').pop() : jwtPayload.sub;
 
-                    this.inAppBrowserRef.removeEventListener('exit', () => {
-                    });
                     this.inAppBrowserRef.close();
 
                     return {

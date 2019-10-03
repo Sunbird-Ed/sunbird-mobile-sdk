@@ -86,7 +86,7 @@ export class OAuthDelegate {
         const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', options);
 
         return new Promise<OAuthSession>((resolve, reject) => {
-            inAppBrowserRef.addEventListener('loadstart', (event) => {
+            const loadStartCallback = (event) => {
                 if (event.url) {
                     this.captureAutoMergeContext(inAppBrowserRef, event.url);
 
@@ -109,6 +109,8 @@ export class OAuthDelegate {
                     }
 
                     if (sessionProvider) {
+                        inAppBrowserRef.removeEventListener('loadstart', loadStartCallback);
+
                         if (this.autoMergeContext) {
                             return resolve(
                                 sessionProvider.provide().then(async (session) => {
@@ -146,7 +148,9 @@ export class OAuthDelegate {
                         resolve(sessionProvider.provide());
                     }
                 }
-            });
+            };
+
+            inAppBrowserRef.addEventListener('loadstart', loadStartCallback);
         }).catch((e) => {
             if (e instanceof ForgotPasswordFlowDetectedError) {
                 inAppBrowserRef.close();
