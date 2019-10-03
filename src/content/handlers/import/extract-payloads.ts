@@ -13,7 +13,7 @@ import {AppConfig} from '../../../api/config/app-config';
 import {FileUtil} from '../../../util/file/util/file-util';
 import {DeviceInfo} from '../../../util/device/def/device-info';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
-import moment from 'moment';
+import * as moment from 'moment';
 import {ArrayUtil} from '../../../util/array-util';
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 
@@ -333,6 +333,7 @@ export class ExtractPayloads {
      *
      */
     getContentState(existingContentInDb, contentState: number): number {
+        console.log(existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE]);
         if (existingContentInDb && existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] > contentState) {
             contentState = existingContentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE];
         }

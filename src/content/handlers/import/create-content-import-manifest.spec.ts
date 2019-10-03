@@ -1,23 +1,22 @@
-import {CreateContentImportManifest} from './create-content-import-manifest';
+import { CreateContentImportManifest } from './create-content-import-manifest';
 import { DbService } from '../../../db';
 import { DeviceInfo } from '../../../util/device';
 import { FileService } from '../../../util/file/def/file-service';
 import { ImportContentContext, ContentImportResponse, ContentImportStatus } from '../..';
-import { Observable } from 'rxjs';
 
 describe('CreateContentImportManifest', () => {
     let createContentImportManifest: CreateContentImportManifest;
     const mockDbService: Partial<DbService> = {};
     const mockDeviceInfo: Partial<DeviceInfo> = {};
     const mockFileService: Partial<FileService> = {
-        readAsText: jest.fn(() => {})
+        readAsText: jest.fn(() => { })
     };
 
     beforeAll(() => {
         createContentImportManifest = new CreateContentImportManifest(
-         mockDbService as DbService,
-         mockDeviceInfo as DeviceInfo,
-         mockFileService as FileService
+            mockDbService as DbService,
+            mockDeviceInfo as DeviceInfo,
+            mockFileService as FileService
         );
     });
 
@@ -25,7 +24,7 @@ describe('CreateContentImportManifest', () => {
         expect(createContentImportManifest).toBeTruthy();
     });
 
-    it('should read a text', async(done) => {
+    it('should read a text', async (done) => {
         // arrange
         const contentImportResponse: ContentImportResponse[] = [{
             identifier: 'SAMPLE_IDENTIFIER',
@@ -38,15 +37,14 @@ describe('CreateContentImportManifest', () => {
             contentImportResponseList: contentImportResponse,
             contentIdsToDelete: new Set(['1', '2'])
         };
-        const data = (mockFileService.readAsText as jest.Mock).mockReturnValue(Observable.of([{'archive': {
-            'items': 'SAMPLE_ITEMS'
-        }}]));
-        JSON.parse = jest.fn().mockImplementationOnce(() => {
-            return data;
+        const readAsText = (mockFileService.readAsText as jest.Mock)
+            .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
+        readAsText().then((value) => {
+            return value;
         });
         // act
-        createContentImportManifest.execute(request).then(() => {
-          done();
+        await createContentImportManifest.execute(request).catch(() => {
+            done();
         });
         // assert
     });
