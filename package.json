@@ -76,6 +76,9 @@
     "testPathIgnorePatterns": [
       "/node_modules/"
     ],
+    "coveragePathIgnorePatterns": [
+      "<rootDir>/src/util/file/impl"
+    ],
     "testMatch": [
       "**/?(*.)(spec).ts"
     ],
