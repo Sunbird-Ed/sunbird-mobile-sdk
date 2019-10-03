@@ -40,5 +40,11 @@ global.supportfile = {
 global.buildconfigreader = {
     getMetaData: () => {
         
+    },
+    copyFile: () => {
+
+    },
+    createDirectories: () => {
+        
     }
 }
