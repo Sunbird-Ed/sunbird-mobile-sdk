@@ -581,11 +581,20 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 !contentSearchResult ||
                 !contentSearchResult.contentDataList ||
                 contentSearchResult.contentDataList.length === 0
-        );
+        ).catch((e) => {
+            console.error(e);
+
+            return Observable.of({
+                id: 'OFFLINE_RESPONSE_ID',
+                responseMessageId: 'OFFLINE_RESPONSE_ID',
+                filterCriteria: request,
+                contentDataList: []
+            });
+        });
 
         return this.searchContentAndGroupByPageSection(
-            offlineTextbookContents$,
-            onlineTextbookContents$
+            offlineTextbookContents$.take(1),
+            onlineTextbookContents$.take(1)
         );
     }
 
@@ -646,7 +655,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return Observable.zip(
             offlineTextbookContents$,
             onlineTextbookContents$
-        ).map((results: [ContentData[], ContentSearchResult]) => {
+        ).map<any, ContentSearchResult>((results: [ContentData[], ContentSearchResult]) => {
             const localTextBooksContentDataList = results[0];
 
             const searchContentDataList = results[1].contentDataList.filter((contentData) => {
@@ -660,31 +669,39 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     ...searchContentDataList,
                 ]
             } as ContentSearchResult;
-        }).map((result: ContentSearchResult) => {
-            const filterValues = result.filterCriteria.facetFilters![0].values;
-            const allContent = result.contentDataList;
+        }).map<ContentSearchResult, ContentsGroupedByPageSection>((result: ContentSearchResult) => {
+            const contentsGroupedBySubject = result.contentDataList.reduce<{[key: string]: ContentData[]}>((acc, contentData) => {
+                if (Array.isArray(contentData.subject)) {
+                    contentData.subject.forEach((sub) => {
+                        sub = sub.toLowerCase().trim();
 
-            const pageSectionList: PageSection[] = filterValues.map((filterValue) => {
-                const contents = allContent.filter((content) => {
-                    if (Array.isArray(content.subject)) {
-                        return content.subject.find((sub) => {
-                            return sub.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
-                        });
+                        if (acc[sub]) {
+                            (acc[sub] as Array<ContentData>).push(contentData);
+                        } else {
+                            acc[sub] = [contentData];
+                        }
+                    });
+                } else {
+                    const sub = contentData.subject.toLowerCase().trim();
+                    if (acc[sub]) {
+                        (acc[sub] as Array<ContentData>).push(contentData);
                     } else {
-                        return content.subject.toLowerCase().trim() === filterValue.name.toLowerCase().trim();
+                        acc[sub] = [contentData];
                     }
-                });
+                }
 
-                return {
-                    contents,
-                    name: filterValue.name.charAt(0).toUpperCase() + filterValue.name.slice(1),
-                    display: {name: {en: filterValue.name}} // TODO : need to handle localization
-                };
-            });
+                return acc;
+            }, {});
 
             return {
                 name: 'Resource',
-                sections: pageSectionList
+                sections: Object.keys(contentsGroupedBySubject).map((sub) => {
+                    return {
+                        contents: contentsGroupedBySubject[sub],
+                        name: sub.charAt(0).toUpperCase() + sub.slice(1),
+                        display: {name: {en: sub}} // TODO : need to handle localization
+                    }
+                })
             };
         });
     }
