@@ -36,17 +36,21 @@ describe('GetFrameworkDetailsHandler', () => {
         expect(getFrameworkDetailsHandler).toBeTruthy();
     });
 
-    it('should run handle function from the getFrameworkDetailsHandler', () => {
+    it('should run handle function from the getFrameworkDetailsHandler including fetchFromServer', () => {
         // arrange
         const request: FrameworkDetailsRequest = {
             frameworkId: 'SOME_FRAMEWORK_ID',
             requiredCategories: []
         };
+        const framework:  Framework = {
+            name: 'SOME_NAME',
+            identifier: 'SOME_IDENTIFIER'
+        };
 
         const GET_FRAMEWORK_DETAILS_ENDPOINT = '/read';
 
-        mockApiService.fetch = jest.fn(() => []);
-        mockCacheItemStore.getCached = jest.fn(() => []);
+        mockApiService.fetch =  jest.fn(() => Observable.of({ body: {result: framework}}));
+        mockCacheItemStore.getCached = jest.fn((a, b, c, d, e) => d());
         mockFileService.readFileFromAssets = jest.fn(() => []);
         spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
             body: {
@@ -60,18 +64,33 @@ describe('GetFrameworkDetailsHandler', () => {
              // assert
             expect(request.frameworkId).toBe('SOME_FRAMEWORK_ID');
             expect(mockCacheItemStore.getCached).toHaveBeenCalled();
-            const apiRequest: Request = new Request.Builder()
-            .withType(HttpRequestType.GET)
-            .withPath(mockFrameworkServiceConfig.frameworkApiPath + GET_FRAMEWORK_DETAILS_ENDPOINT + '/' + request.frameworkId)
-            .withParameters({categories: request.requiredCategories.join(',')})
-            .withApiToken(true)
-            .build();
-            expect(apiRequest).toBeTruthy();
-            expect(mockApiService.fetch).toHaveBeenCalledWith(apiRequest);
-        }, () => {}, () => {
+            expect(mockApiService.fetch).toHaveBeenCalledWith();
+        });
+    });
+
+    it('should run handle function from the getFrameworkDetailsHandler using fetchFromFile', () => {
+        // arrange
+        const request: FrameworkDetailsRequest = {
+            frameworkId: 'SOME_FRAMEWORK_ID',
+            requiredCategories: []
+        };
+        const framework:  Framework = {
+            name: 'SOME_NAME',
+            identifier: 'SOME_IDENTIFIER'
+        };
+
+        const GET_FRAMEWORK_DETAILS_ENDPOINT = '/read';
+
+        mockApiService.fetch =  jest.fn(() => Observable.of(''));
+        mockCacheItemStore.getCached = jest.fn((a, b, c, d, e) => e());
+        mockFileService.readFileFromAssets =  jest.fn(() => []);
+        // act
+        getFrameworkDetailsHandler.handle(request).subscribe(() => {
+             // assert
+            expect(request.frameworkId).toBe('SOME_FRAMEWORK_ID');
+            expect(mockCacheItemStore.getCached).toHaveBeenCalled();
             expect(mockFileService.readFileFromAssets).toHaveBeenCalled();
-            expect(mockframeworkService.getDefaultChannelDetails).toHaveBeenCalled();
-            expect(mockframeworkService.getFrameworkDetails).toHaveBeenCalledWith('SOME_FRAMEWORK_ID', request.requiredCategories);
+
         });
     });
 
