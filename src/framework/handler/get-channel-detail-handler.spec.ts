@@ -1,7 +1,7 @@
 import {CachedItemStore} from '../../key-value-store';
 import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
-import {Channel, ChannelDetailsRequest, FrameworkServiceConfig} from '..';
+import {Channel, ChannelDetailsRequest, FrameworkServiceConfig, Framework} from '..';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Observable} from 'rxjs';
 import { ProfileService, DbService, TelemetryService } from '../..';
@@ -38,37 +38,68 @@ describe('GetChannelDetailHandler', () => {
         const request: ChannelDetailsRequest = {
             channelId: 'SAMPLE_CHANNEL_ID'
         };
-
-        mockApiService.fetch = jest.fn(() => []);
-        mockCacheItemStore.getCached = jest.fn(() => []);
-        mockFileService.readFileFromAssets = jest.fn(() => []);
-        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
-            body: {
-                result: {
-                    response: 'SAMPLE_RESPONSE'
-                }
-            }
-        }));
+        const sampleframeworks:  Framework = {
+            name: 'SOME_NAME',
+            identifier: 'SOME_IDENTIFIER'
+        };
+        const channel: Channel = {
+            identifier: 'SOME_IDENTIFIER',
+            code: 'SOME_CODE',
+            consumerId: 'SOME_CONSUMER_ID',
+            channel: 'SOME_CHANNEL',
+            description: 'SOME_DESCRIPTION',
+            createdOn: 'SOME_CREATED_ON',
+            versionKey: 'SOME_VERSION_KEY',
+            appId: 'SOME_APP_ID',
+            name: 'SOME_NAME',
+            lastUpdatedOn: 'LAST_UPDATED',
+            defaultFramework: 'SOME_DEFAULT_FRAMEWORK',
+            status: 'SOME_STATUS',
+            frameworks : [sampleframeworks]
+        };
+        mockCacheItemStore.getCached = jest.fn((a, b, c, d, e) => d());
+        mockApiService.fetch = jest.fn(() => Observable.of({ body: {result: channel}}));
         // act
-        getChannelDetailHandler.handle(request);
-        expect(mockCacheItemStore.getCached).toHaveBeenCalled();
-        // expect(mockApiService.fetch).toHaveBeenCalled();
-        // expect(mockFileService.readFileFromAssets).toHaveBeenCalled();
-        // expect(mockCacheItemStore.getCached).toHaveBeenCalledWith(request.channelId, 'channel-', 'ttl_channel-', () => {
-        //     mockApiService.fetch((new Request.Builder())
-        //     .withPath(mockFrameworkServiceConfig.channelApiPath + '/read' + '/' + request.channelId)
-        //     .withType(HttpRequestType.GET)
-        //     .build())
-        //     .subscribe(() => {
-        //         done();
-        //     });
-        //     expect(mockApiService.fetch).toHaveBeenCalled();
-        // }, () => {
-        //     const dir = Path.ASSETS_PATH + mockFrameworkServiceConfig.channelConfigDirPath;
-        //     const file = this.CHANNEL_FILE_KEY_PREFIX + request.channelId + '.json';
-        //     expect(mockFileService.readFileFromAssets).toHaveBeenCalledWith(dir.concat('/', file));
-        // });
-        done();
+       // expect(channel.frameworks[0].name).toBe('SOME_NAME');
+        getChannelDetailHandler.handle(request).subscribe(() => {
+            expect(mockCacheItemStore.getCached).toHaveBeenCalled();
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should run handle function from the GetChannelDetailHandler', () => {
+        // arrange
+        const request: ChannelDetailsRequest = {
+            channelId: 'SAMPLE_CHANNEL_ID'
+        };
+        const sampleframeworks:  Framework = {
+            name: 'SOME_NAME',
+            identifier: 'SOME_IDENTIFIER'
+        };
+        const channel: Channel = {
+            identifier: 'SOME_IDENTIFIER',
+            code: 'SOME_CODE',
+            consumerId: 'SOME_CONSUMER_ID',
+            channel: 'SOME_CHANNEL',
+            description: 'SOME_DESCRIPTION',
+            createdOn: 'SOME_CREATED_ON',
+            versionKey: 'SOME_VERSION_KEY',
+            appId: 'SOME_APP_ID',
+            name: 'SOME_NAME',
+            lastUpdatedOn: 'LAST_UPDATED',
+            defaultFramework: 'SOME_DEFAULT_FRAMEWORK',
+            status: 'SOME_STATUS',
+            frameworks : [sampleframeworks]
+        };
+        mockCacheItemStore.getCached = jest.fn((a, b, c, d, e) => e());
+        mockFileService.readFileFromAssets = jest.fn(() => []);
+        // act
+        getChannelDetailHandler.handle(request).subscribe(() => {
+            expect(mockCacheItemStore.getCached).toHaveBeenCalled();
+            expect(mockFileService.readFileFromAssets).toHaveBeenCalled();
+
+        });
     });
 });
 
