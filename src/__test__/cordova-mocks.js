@@ -60,5 +60,9 @@ global.buildconfigreader = {
     },
     createDirectories: () => {
         
-    }
+    },
+    rm: () => {},
+    copyDirectory: () => {},
+    getFreeUsableSpace: () => {},
+    canWrite: () => {}
 };
