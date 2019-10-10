@@ -34,10 +34,15 @@ global.cordova = {
     }
 };
 
+global.JJzip = {
+    unzip: () => {},
+    zip: () => {}
+};
+
 global.supportfile = {
     shareSunbirdConfigurations: () => {
     }
-}
+};
 
 global.buildconfigreader = {
     getMetaData: () => {
@@ -49,4 +54,4 @@ global.buildconfigreader = {
     createDirectories: () => {
         
     }
-}
+};
