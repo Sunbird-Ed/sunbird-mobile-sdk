@@ -28,7 +28,9 @@ global.cordova = {
         applicationDirectory: '/path'
     },
     InAppBrowser: {
-        open: () => {},
+        open: () => ({
+            addEventListener: () => {},
+        }),
     }
 };
 
