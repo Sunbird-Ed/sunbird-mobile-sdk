@@ -77,7 +77,9 @@
       "/node_modules/"
     ],
     "coveragePathIgnorePatterns": [
-      "<rootDir>/src/util/file/impl"
+      "<rootDir>/src/util/file/impl",
+      "<rootDir>/src/codepush-experiment",
+      "<rootDir>/src/util/shared-preferences/impl/shared-preferences-local-storage"
     ],
     "testMatch": [
       "**/?(*.)(spec).ts"
