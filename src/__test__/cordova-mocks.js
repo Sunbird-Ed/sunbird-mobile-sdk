@@ -34,6 +34,13 @@ global.cordova = {
     }
 };
 
+global.plugins = {
+    SharedPreferences: {
+        getInstance: () => {
+        }
+    }
+};
+
 global.JJzip = {
     unzip: () => {},
     zip: () => {}

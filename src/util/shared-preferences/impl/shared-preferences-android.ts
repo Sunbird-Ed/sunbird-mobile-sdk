@@ -37,7 +37,7 @@ export class SharedPreferencesAndroid implements SharedPreferences {
                 observer.next(true);
                 observer.complete();
             }, (e) => {
-                observer.error(false);
+                observer.error(e);
             });
         });
     }
