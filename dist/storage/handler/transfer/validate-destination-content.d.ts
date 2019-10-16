@@ -10,6 +10,4 @@ export declare class ValidateDestinationContent {
     private getSubdirectoriesEntries;
     private extractValidContentIdsInDestination;
     private extractManifest;
-    private validateManifest;
-    private validateItems;
 }
