@@ -1,6 +1,14 @@
 import {CourseServiceImpl} from './course-service-impl';
 import {Container} from 'inversify';
-import {CourseBatchDetailsRequest, CourseBatchesRequest, CourseService, UnenrollCourseRequest} from '..';
+import {
+    CourseBatchDetailsRequest,
+    CourseBatchesRequest,
+    CourseService,
+    EnrollCourseRequest,
+    FetchEnrolledCourseRequest, GetContentStateRequest,
+    UnenrollCourseRequest,
+    UpdateContentStateRequest
+} from '..';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {mockSdkConfigWithCourseConfig} from './course-service-impl.spec.data';
@@ -11,7 +19,12 @@ import {DbService} from '../../db';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AuthService} from '../../auth';
 import {Observable} from 'rxjs';
-import { AppInfo } from '../../util/app';
+import {AppInfo} from '../../util/app';
+import {OfflineContentStateHandler} from '../handlers/offline-content-state-handler';
+import {ContentStatesSyncHandler} from '../handlers/content-states-sync-handler';
+
+jest.mock('../handlers/offline-content-state-handler');
+jest.mock('../handlers/content-states-sync-handler');
 
 describe('CourseServiceImpl', () => {
     let courseService: CourseService;
@@ -26,9 +39,19 @@ describe('CourseServiceImpl', () => {
         getServerProfiles: jest.fn(() => {
         })
     };
-    const mockKeyValueStore: Partial<KeyValueStore> = {};
+    const mockKeyValueStore: Partial<KeyValueStore> = {
+        getValue: jest.fn(() => {
+        }),
+        setValue: jest.fn(() => {
+        })
+    };
     const mockDbService: Partial<DbService> = {};
-    const sharePreferencesMock: Partial<SharedPreferences> = {};
+    const sharePreferencesMock: Partial<SharedPreferences> = {
+        putString: jest.fn(() => {
+        }),
+        getString: jest.fn(() => {
+        })
+    };
     const mockAuthService: Partial<AuthService> = {
         getSession: jest.fn(() => {
         })
@@ -51,6 +74,8 @@ describe('CourseServiceImpl', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        (OfflineContentStateHandler as jest.Mock<OfflineContentStateHandler>).mockClear();
+        (ContentStatesSyncHandler as jest.Mock<ContentStatesSyncHandler>).mockClear();
     });
 
     it('should return instance from container', () => {
@@ -77,9 +102,53 @@ describe('CourseServiceImpl', () => {
         // assert
     });
 
-    it('should updateContentState and store it in noSql', () => {
+    it('should updateContentState and store it in noSql', (done) => {
         // arrange
+        (OfflineContentStateHandler as jest.Mock<OfflineContentStateHandler>).mockImplementation(() => {
+            return {
+                manipulateEnrolledCoursesResponseLocally: jest.fn(() => Observable.of(true)),
+                manipulateGetContentStateResponseLocally: jest.fn(() => Observable.of(true))
+            };
+        });
+        const updateContentStateRequest: UpdateContentStateRequest = {
+            userId: 'SAMPLE_USER_ID',
+            courseId: 'SAMPLE_COURSE_ID',
+            contentId: 'SAMPLE_CONTENT_ID',
+            batchId: 'SAMPLE_BATCH_ID'
+        };
+        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+            body: {
+                result: 'SAMPLE_RESULT'
+            }
+        }));
         // act
+        courseService.updateContentState(updateContentStateRequest).subscribe(() => {
+            // assert
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should handler error scenarios when response return failed', (done) => {
+        // arrange
+        const updateContentStateRequest: UpdateContentStateRequest = {
+            userId: 'SAMPLE_USER_ID',
+            courseId: 'SAMPLE_COURSE_ID',
+            contentId: 'SAMPLE_CONTENT_ID',
+            batchId: 'SAMPLE_BATCH_ID'
+        };
+        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({response: {body: {result: 'FAILED'}}}));
+        spyOn(mockKeyValueStore, 'getValue').and.returnValue(Observable.of('MOCK_KEY_VALUE'));
+        spyOn(mockKeyValueStore, 'setValue').and.returnValue(Observable.of('MOCK_VALUE'));
+        // act
+        courseService.updateContentState(updateContentStateRequest).subscribe(() => {
+            done();
+        }, () => {
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            expect(mockKeyValueStore.getValue).toHaveBeenCalled();
+            expect(mockKeyValueStore.setValue).toHaveBeenCalled();
+            done();
+        });
         // assert
     });
 
@@ -132,5 +201,100 @@ describe('CourseServiceImpl', () => {
             done();
         });
         // assert
+    });
+
+    describe('should call enrol courses and call refreshCourses', () => {
+        it('should call getEnrolledCourse with returnFresh Course true', (done) => {
+            // arrange
+            const request: FetchEnrolledCourseRequest = {
+                userId: 'SAMPLE_USER_ID',
+                returnFreshCourses: true
+            };
+            spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+                body: {
+                    result: {
+                        response: 'SAMPLE_RESPONSE'
+                    }
+                }
+            }));
+            spyOn(mockKeyValueStore, 'getValue').and.returnValue(Observable.of('MOCK_VALUE'));
+            (ContentStatesSyncHandler as jest.Mock<ContentStatesSyncHandler>).mockImplementation(() => {
+                return {
+                    updateContentState: jest.fn(() => Observable.of(true))
+                };
+            });
+            mockDbService.execute = jest.fn(() => Observable.of([]));
+            JSON.parse = jest.fn().mockImplementationOnce(() => {
+                return request.userId;
+            });
+            // act
+            courseService.getEnrolledCourses(request).subscribe(() => {
+                // assert
+                expect(mockApiService.fetch).toHaveBeenCalled();
+                expect(mockDbService.execute).toHaveBeenCalled();
+                expect(mockKeyValueStore.getValue).toHaveBeenCalled();
+                done();
+            });
+        });
+    });
+
+    it('should enroll a course store it to noSql and update getEnrolledCourses', () => {
+        // arrange
+        const request: EnrollCourseRequest = {
+            userId: 'SAMPLE_USER_ID',
+            courseId: 'SAMPLE_COURSE_ID',
+            batchId: 'SAMPLE_BATCH_ID'
+        };
+        spyOn(sharePreferencesMock, 'putString').and.returnValue(Observable.of({key: 'MOCK_COURSE_CONTEXT', value: 'MOCK_VALUE'}));
+        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+            body: {
+                result: {
+                    response: 'SUCCESS'
+                }
+            }
+        }));
+        spyOn(courseService, 'getEnrolledCourses').and.returnValue(['MOCK_COURSES']);
+        // act
+        courseService.enrollCourse(request).subscribe(() => {
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            expect(sharePreferencesMock.putString).toHaveBeenCalled();
+            expect(courseService.getEnrolledCourses).toHaveBeenCalled();
+        });
+        // assert
+    });
+
+    it('should call getContentState() when keyValue is not available', (done) => {
+        // arrange
+        const request: GetContentStateRequest = {
+            userId: 'SAMPLE_USER_ID',
+            batchId: 'SAMPLE_BATCH_ID',
+            courseIds: ['SAMPLE_COURSE_ID'],
+            contentIds: ['SAMPLE_CONTENT_ID'],
+            returnRefreshedContentStates: false
+        };
+        (OfflineContentStateHandler as jest.Mock<OfflineContentStateHandler>).mockImplementation(() => {
+            return {
+                getLocalContentStateResponse: jest.fn(() => Observable.of('MOCK_RESPONSE'))
+            };
+        });
+        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+            body: {
+                result: {
+                    response: 'SUCCESS'
+                }
+            }
+        }));
+
+        spyOn(mockKeyValueStore, 'getValue').and.returnValue(Observable.of(undefined));
+        spyOn(mockKeyValueStore, 'setValue').and.returnValue(Observable.of('MOCK_RESPONSE'));
+        // act
+        courseService.getContentState(request).subscribe(() => {
+            // assert
+            expect(mockApiService.fetch).toHaveBeenCalled();
+
+            expect(mockKeyValueStore.getValue).toHaveBeenCalled();
+            expect(mockKeyValueStore.setValue).toHaveBeenCalled();
+            done();
+        });
     });
 });

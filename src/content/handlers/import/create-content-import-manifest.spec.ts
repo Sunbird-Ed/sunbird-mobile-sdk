@@ -35,7 +35,8 @@ describe('CreateContentImportManifest', () => {
             ecarFilePath: 'SAMPLE_ECAR_FILE_PATH',
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             contentImportResponseList: contentImportResponse,
-            contentIdsToDelete: new Set(['1', '2'])
+            contentIdsToDelete: new Set(['1', '2']),
+            identifiers: ['SAMPLE_IDENTIFIER']
         };
         const readAsText = (mockFileService.readAsText as jest.Mock)
             .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');

@@ -41,23 +41,12 @@ import {AppInfo} from '../../util/app';
 import {FileUtil} from '../../util/file/util/file-util';
 import {DownloadStatus} from '../../util/download';
 import {DownloadCertificateResponse} from '../def/download-certificate-response';
-import {CourseAssessmentEntry} from "../../summarizer/db/schema";
-import {SunbirdTelemetry} from "../../telemetry";
+import {CourseAssessmentEntry} from '../../summarizer/db/schema';
+import {SunbirdTelemetry} from '../../telemetry';
 import * as MD5 from 'crypto-js/md5';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
-
-  public static readonly GET_CONTENT_STATE_KEY_PREFIX = 'getContentState';
-  public static readonly GET_ENROLLED_COURSE_KEY_PREFIX = 'enrolledCourses';
-  public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
-  public static readonly LAST_READ_CONTENTID_PREFIX = 'lastReadContentId';
-  private static readonly UPDATE_CONTENT_STATE_ENDPOINT = '/content/state/update';
-
-  private readonly courseServiceConfig: CourseServiceConfig;
-  private readonly profileServiceConfig: ProfileServiceConfig;
-
-  private static readonly CERTIFICATE_SIGN_ENDPOINT = '/certs/download';
 
   constructor(
     @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -72,6 +61,17 @@ export class CourseServiceImpl implements CourseService {
     this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
     this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
   }
+
+  public static readonly GET_CONTENT_STATE_KEY_PREFIX = 'getContentState';
+  public static readonly GET_ENROLLED_COURSE_KEY_PREFIX = 'enrolledCourses';
+  public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
+  public static readonly LAST_READ_CONTENTID_PREFIX = 'lastReadContentId';
+  private static readonly UPDATE_CONTENT_STATE_ENDPOINT = '/content/state/update';
+
+  private static readonly CERTIFICATE_SIGN_ENDPOINT = '/certs/download';
+
+  private readonly courseServiceConfig: CourseServiceConfig;
+  private readonly profileServiceConfig: ProfileServiceConfig;
 
   getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch> {
     return new GetBatchDetailsHandler(this.apiService, this.courseServiceConfig)
@@ -186,10 +186,6 @@ export class CourseServiceImpl implements CourseService {
       }).mapTo(true);
   }
 
-  checkContentStatus(request: GetContentStateRequest): Observable<number> {
-    return Observable.of(0);
-  }
-
   public downloadCurrentProfileCourseCertificate(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
     return this.profileService.getActiveProfileSession()
       .mergeMap((session) => {
@@ -284,27 +280,27 @@ export class CourseServiceImpl implements CourseService {
   }
 
   public syncAssessmentEvents(): Observable<undefined> {
-    type RawEntry = {
-      [CourseAssessmentEntry.COLUMN_NAME_USER_ID]: string,
-      [CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID]: string,
-      [CourseAssessmentEntry.COLUMN_NAME_COURSE_ID]: string,
-      [CourseAssessmentEntry.COLUMN_NAME_BATCH_ID]: string,
-      first_ts: number,
-      events: string
-    };
+    interface RawEntry {
+      [CourseAssessmentEntry.COLUMN_NAME_USER_ID]: string;
+      [CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID]: string;
+      [CourseAssessmentEntry.COLUMN_NAME_COURSE_ID]: string;
+      [CourseAssessmentEntry.COLUMN_NAME_BATCH_ID]: string;
+      first_ts: number;
+      events: string;
+    }
 
-    type Entry = {
-      userId: string,
-      contentId: string,
-      courseId: string,
-      batchId: string,
-      firstTs: number,
-      events: SunbirdTelemetry.Telemetry[]
-    };
+    interface Entry {
+      userId: string;
+      contentId: string;
+      courseId: string;
+      batchId: string;
+      firstTs: number;
+      events: SunbirdTelemetry.Telemetry[];
+    }
 
-    type AssessmentTelemetrySyncRequest = {
+    interface AssessmentTelemetrySyncRequest {
       assessments: {
-        assessmentTs: number; //Assessment time in epoch
+        assessmentTs: number; // Assessment time in epoch
         userId: string,  // User Identifier - required
         contentId: string, // Content Identifier - required
         courseId: string, // Course Identifier - required
@@ -312,7 +308,7 @@ export class CourseServiceImpl implements CourseService {
         attemptId: string, // Attempt Identifier - required
         events: SunbirdTelemetry.Telemetry[] // Only 'ASSESS' Events - required
       }[];
-    };
+    }
 
     return this.dbService.execute(`
             SELECT
@@ -321,7 +317,7 @@ export class CourseServiceImpl implements CourseService {
                 ${CourseAssessmentEntry.COLUMN_NAME_COURSE_ID},
                 ${CourseAssessmentEntry.COLUMN_NAME_BATCH_ID},
                 MIN(${CourseAssessmentEntry.COLUMN_NAME_CREATED_AT}) as first_ts,
-                GROUP_CONCAT(${CourseAssessmentEntry.COLUMN_NAME_ASSESSMENT_EVENT},',') as events 
+                GROUP_CONCAT(${CourseAssessmentEntry.COLUMN_NAME_ASSESSMENT_EVENT},',') as events
             FROM ${CourseAssessmentEntry.TABLE_NAME}
             GROUP BY
                 ${CourseAssessmentEntry.COLUMN_NAME_USER_ID},
@@ -338,7 +334,7 @@ export class CourseServiceImpl implements CourseService {
           batchId: entry[CourseAssessmentEntry.COLUMN_NAME_BATCH_ID],
           firstTs: entry.first_ts,
           events: JSON.parse('[' + entry.events + ']')
-        } as Entry
+        } as Entry;
       });
     }).mergeMap((entries: Entry[]) => {
       if (!entries.length) {
@@ -360,7 +356,7 @@ export class CourseServiceImpl implements CourseService {
               userId
             }),
             events
-          }
+          };
         })
       };
 
@@ -382,13 +378,13 @@ export class CourseServiceImpl implements CourseService {
             console.error(e);
             return Observable.of(undefined);
           })
-          .mapTo(undefined)
+          .mapTo(undefined);
     }).mapTo(undefined);
   }
 
   generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string {
     return MD5(
         [request.courseId, request.batchId, request.contentId, request.userId].join('-')
-    ).toString()
+    ).toString();
   }
 }

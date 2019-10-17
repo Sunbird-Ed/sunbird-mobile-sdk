@@ -19,15 +19,15 @@ export declare class CourseServiceImpl implements CourseService {
     private sharedPreferences;
     private authService;
     private appInfo;
+    constructor(sdkConfig: SdkConfig, apiService: ApiService, profileService: ProfileService, keyValueStore: KeyValueStore, dbService: DbService, sharedPreferences: SharedPreferences, authService: AuthService, appInfo: AppInfo);
     static readonly GET_CONTENT_STATE_KEY_PREFIX: string;
     static readonly GET_ENROLLED_COURSE_KEY_PREFIX: string;
     static readonly UPDATE_CONTENT_STATE_KEY_PREFIX: string;
     static readonly LAST_READ_CONTENTID_PREFIX: string;
     private static readonly UPDATE_CONTENT_STATE_ENDPOINT;
+    private static readonly CERTIFICATE_SIGN_ENDPOINT;
     private readonly courseServiceConfig;
     private readonly profileServiceConfig;
-    private static readonly CERTIFICATE_SIGN_ENDPOINT;
-    constructor(sdkConfig: SdkConfig, apiService: ApiService, profileService: ProfileService, keyValueStore: KeyValueStore, dbService: DbService, sharedPreferences: SharedPreferences, authService: AuthService, appInfo: AppInfo);
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
     updateContentState(request: UpdateContentStateRequest): Observable<boolean>;
     getCourseBatches(request: CourseBatchesRequest): Observable<Batch[]>;
@@ -35,7 +35,6 @@ export declare class CourseServiceImpl implements CourseService {
     enrollCourse(request: EnrollCourseRequest): Observable<boolean>;
     getContentState(request: GetContentStateRequest): Observable<ContentStateResponse | undefined>;
     unenrollCourse(unenrollCourseRequest: UnenrollCourseRequest): Observable<boolean>;
-    checkContentStatus(request: GetContentStateRequest): Observable<number>;
     downloadCurrentProfileCourseCertificate(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse>;
     syncAssessmentEvents(): Observable<undefined>;
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;

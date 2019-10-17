@@ -1,6 +1,6 @@
 import {ContentEventType, FileName, ImportContentContext} from '../..';
-import { SharedPreferences } from './../../../util/shared-preferences';
-import { UpdateSizeOnDevice } from './update-size-on-device';
+import {SharedPreferences} from './../../../util/shared-preferences';
+import {UpdateSizeOnDevice} from './update-size-on-device';
 import {Response} from '../../../api';
 import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
@@ -198,7 +198,6 @@ export class ExtractPayloads {
             const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
                 JSON.stringify(item), mimeType, contentType, visibility, basePath,
                 referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade);
-            commonContentModelsMap.set(identifier, newContentModel);
             if (!existingContentModel) {
                 insertNewContentModels.push(newContentModel);
             } else {
@@ -207,8 +206,13 @@ export class ExtractPayloads {
                     || isUnzippingSuccessful    // If unzip is success it means artifact is available.
                     || MimeType.COLLECTION.valueOf() === mimeType) {
                     updateNewContentModels.push(newContentModel);
+                } else {
+                    newContentModel[ContentEntry.COLUMN_NAME_CONTENT_STATE] = this.getContentState(existingContentModel, contentState);
                 }
             }
+
+            commonContentModelsMap.set(identifier, newContentModel);
+
             // increase the current count
             currentCount++;
             if (currentCount % 20 === 0 || currentCount === (importContext.items!.length)) {

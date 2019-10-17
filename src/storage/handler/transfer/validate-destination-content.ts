@@ -42,7 +42,6 @@ export class ValidateDestinationContent {
                 if (!manifest) {
                     continue;
                 }
-
                 const items = manifest.archive.items;
                 for (const item of items) {
                     if (ContentUtil.readVisibility(item) === Visibility.PARENT ||
@@ -66,19 +65,19 @@ export class ValidateDestinationContent {
             directoryEntry.nativeURL, FileName.MANIFEST.valueOf());
         return JSON.parse(manifestStringified);
     }
+    // TODO: Swayangjit
+    // private validateManifest(manifest: Manifest): boolean {
+    //     return manifest.version !== '1.0' &&
+    //         !!manifest['archive'] &&
+    //         !!manifest['archive']['items'] &&
+    //         !!manifest['archive']['items'].length &&
+    //         this.validateItems(manifest['archive']['items']);
+    // }
 
-    private validateManifest(manifest: Manifest): boolean {
-        return manifest.version !== '1.0' &&
-            !!manifest['archive'] &&
-            !!manifest['archive']['items'] &&
-            !!manifest['archive']['items'].length &&
-            this.validateItems(manifest['archive']['items']);
-    }
-
-    private validateItems(items: any[]): boolean {
-        return items.every((item) =>
-            ContentUtil.readVisibility(item) === Visibility.PARENT ||
-            !ContentUtil.isCompatible(this.appConfig, ContentUtil.readCompatibilityLevel(item))
-        ) && items.every((item) => ContentUtil.isDraftContent(item.status) && ContentUtil.isExpired(item.expires));
-    }
+    // private validateItems(items: any[]): boolean {
+    //     return items.every((item) =>
+    //         ContentUtil.readVisibility(item) === Visibility.PARENT ||
+    //         !ContentUtil.isCompatible(this.appConfig, ContentUtil.readCompatibilityLevel(item))
+    //     ) && items.every((item) => ContentUtil.isDraftContent(item.status) && ContentUtil.isExpired(item.expires));
+    // }
 }
