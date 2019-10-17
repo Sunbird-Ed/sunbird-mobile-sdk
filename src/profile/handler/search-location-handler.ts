@@ -15,7 +15,7 @@ export class SearchLocationHandler implements ApiRequestHandler<LocationSearchCr
             .withType(HttpRequestType.POST)
             .withPath(this.locationSearchApiConfig.searchLocationApiPath + this.GET_SEARCH_LOCATION_ENDPOINT)
             .withApiToken(true)
-            .withSessionToken(true)
+            .withSessionToken(false)
             .withBody({request})
             .build();
 
