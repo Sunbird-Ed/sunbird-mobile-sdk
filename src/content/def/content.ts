@@ -40,6 +40,7 @@ export interface ContentData {
     me_averageRating: string;
     me_totalDownloads: string;
     copyright: string;
+    copyrightYear: string;
     license: string;
     expires: string;
     downloadUrl: string;
