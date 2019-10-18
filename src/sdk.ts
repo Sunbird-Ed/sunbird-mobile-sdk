@@ -70,6 +70,8 @@ import {SearchHistoryServiceImpl} from './util/search-history/impl/search-histor
 import {RecentlyViewedMigration} from './db/migrations/recently-viewed-migration';
 import {CourseAssessmentMigration} from './db/migrations/course-assessment-migration';
 import { CodePushExperimentService, CodePUshExperimentServiceImpl } from './codepush-experiment';
+import {FaqService, FaqServiceImpl} from './faq';
+
 
 export class SunbirdSdk {
     private _isInitialised: boolean = false;
@@ -206,6 +208,10 @@ export class SunbirdSdk {
         return this._container.get<CodePushExperimentService>(InjectionTokens.CODEPUSH_EXPERIMENT_SERVICE);
     }
 
+    get faqService(): FaqService {
+        return this._container.get<FaqService>(InjectionTokens.FAQ_SERVICE);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
@@ -306,6 +312,8 @@ export class SunbirdSdk {
 
         this._container.bind<CodePushExperimentService>(InjectionTokens.CODEPUSH_EXPERIMENT_SERVICE).to(CodePUshExperimentServiceImpl)
         .inSingletonScope();
+
+        this._container.bind<FaqService>(InjectionTokens.FAQ_SERVICE).to(FaqServiceImpl).inSingletonScope();
 
         this.apiService.setDefaultApiAuthenticators([
             new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)
