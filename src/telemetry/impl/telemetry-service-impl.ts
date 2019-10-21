@@ -50,7 +50,7 @@ import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {ErrorLoggerService} from '../../util/error-stack';
 import {SharedPreferences} from '../../util/shared-preferences';
-import {AppInfo} from "../../util/app";
+import {AppInfo} from '../../util/app';
 
 @injectable()
 export class TelemetryServiceImpl implements TelemetryService {
@@ -133,8 +133,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         return this.decorateAndPersist(log);
     }
 
-    share({dir, type, items, correlationData}: TelemetryShareRequest): Observable<boolean> {
-        const share = new SunbirdTelemetry.Share(dir, type, [], correlationData);
+    share({dir, type, items, correlationData, objId, objType, objVer}: TelemetryShareRequest): Observable<boolean> {
+        const share = new SunbirdTelemetry.Share(dir, type, [], correlationData, objId, objType, objVer);
         items.forEach((item) => {
             share.addItem(item.type, item.origin, item.identifier, item.pkgVersion, item.transferCount, item.size);
         });
