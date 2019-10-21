@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request, ApiConfig} from '../../api';
+import {ApiConfig, ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {InteractSubType, InteractType, TelemetrySyncStat} from '..';
 import {Observable} from 'rxjs';
 import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
@@ -6,24 +6,23 @@ import {StringToGzippedString} from '../impl/string-to-gzipped-string';
 import {TelemetryEntriesToStringPreprocessor} from '../impl/telemetry-entries-to-string-preprocessor';
 import {KeyValueStore} from '../../key-value-store';
 import {SdkConfig} from '../../sdk-config';
-import {DeviceInfo, DeviceSpec} from '../../util/device';
+import {DeviceInfo} from '../../util/device';
 import {DbService, InsertQuery} from '../../db';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {UniqueId} from '../../db/util/unique-id';
 import moment from 'moment';
 import {FrameworkService} from '../../framework';
 import {TelemetryLogger} from '../util/telemetry-logger';
+import {TelemetryConfig} from '../config/telemetry-config';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {CodePush} from '../../preference-keys';
+import {AppInfo} from '../../util/app';
+import {DeviceRegisterService} from '../../device-register/def/device-register-service';
 import COLUMN_NAME_MSG_ID = TelemetryProcessedEntry.COLUMN_NAME_MSG_ID;
 import COLUMN_NAME_NUMBER_OF_EVENTS = TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS;
 import COLUMN_NAME_PRIORITY = TelemetryEntry.COLUMN_NAME_PRIORITY;
 import COLUMN_NAME_DATA = TelemetryProcessedEntry.COLUMN_NAME_DATA;
 import COLUMN_NAME_EVENT = TelemetryEntry.COLUMN_NAME_EVENT;
-import { TelemetryConfig } from '../config/telemetry-config';
-import { SharedPreferences } from '../../util/shared-preferences';
-import { CodePush } from '../../preference-keys';
-import {AppInfo} from "../../util/app";
-
-// import * as pako from 'pako';
 
 interface ProcessedEventsMeta {
     processedEvents?: string;
@@ -31,15 +30,12 @@ interface ProcessedEventsMeta {
     messageId?: string;
 }
 
-interface DeviceRegisterResponse {
-    ts: string;
-}
-
 export class TelemetrySyncHandler implements ApiRequestHandler<boolean, TelemetrySyncStat> {
+
     public static readonly TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY = 'telemetry_log_min_allowed_offset_key';
+
     private static readonly LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY = 'last_synced_device_register_attempt_time_stamp';
     private static readonly LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY = 'last_synced_device_register_is_successful';
-    private static readonly DEVICE_REGISTER_ENDPOINT = '/register';
     private static readonly TELEMETRY_ENDPOINT = '/telemetry';
     private static readonly REGISTER_API_SUCCESS_TTL = 24 * 60 * 60 * 1000;
     private static readonly REGISTER_API_FAILURE_TTL = 60 * 60 * 1000;
@@ -55,6 +51,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
         private frameworkService: FrameworkService,
         private sharedPreferences: SharedPreferences,
         private appInfoService: AppInfo,
+        private deviceRegisterService: DeviceRegisterService,
         private keyValueStore?: KeyValueStore,
         private apiService?: ApiService
     ) {
@@ -114,19 +111,25 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
             });
     }
 
+    public processEventsBatch(): Observable<number> {
+        return this.fetchEvents()
+            .mergeMap((events) =>
+                this.processEvents(events)
+                    .mergeMap((processedEventsMeta) =>
+                        this.persistProcessedEvents(processedEventsMeta, processedEventsMeta.processedEventsSize)
+                            .mergeMap(() => this.deleteEvents(events))
+                            .mapTo(events.length)
+                    )
+            );
+    }
+
     private registerDevice(): Observable<undefined> {
         return Observable.zip(
             this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY),
             this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY),
-            this.deviceInfo.getDeviceSpec(),
-            this.frameworkService.getActiveChannelId(),
-            this.appInfoService.getFirstAccessTimestamp(),
         ).mergeMap((results: any) => {
             const lastSyncDeviceRegisterAttemptTimestamp = results[0];
             const lastSyncDeviceRegisterIsSuccessful = results[1];
-            const deviceSpec: DeviceSpec = results[2];
-            const activeChannelId: string = results[3];
-            const firstAccessTimestamp = results[4];
 
             if (lastSyncDeviceRegisterAttemptTimestamp && lastSyncDeviceRegisterIsSuccessful) {
                 const offset = lastSyncDeviceRegisterIsSuccessful === 'false' ?
@@ -137,33 +140,16 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
                 }
             }
 
-            const apiRequest: Request = new Request.Builder()
-                .withType(HttpRequestType.POST)
-                .withHost(this.telemetryConfig!.deviceRegisterHost)
-                .withPath(this.telemetryConfig!.deviceRegisterApiPath +
-                    TelemetrySyncHandler.DEVICE_REGISTER_ENDPOINT + '/' + this.deviceInfo!.getDeviceID())
-                .withApiToken(true)
-                .withBody({
-                    request: {
-                        dspec: deviceSpec,
-                        channel: activeChannelId,
-                        fcmToken: this.telemetryConfig.fcmToken,
-                        producer: this.apiConfig.api_authentication.producerId,
-                        first_access: parseInt(firstAccessTimestamp)
-                    }
-                })
-                .build();
-
-            return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
+            return this.deviceRegisterService.registerDevice()
                 .do(async (res) => {
-                    const actions = res.body['result'].actions;
+                    const actions = res.result.actions;
                     actions.forEach(element => {
                         if (element.type === 'experiment' && element.key) {
                             this.sharedPreferences.putString(CodePush.DEPLOYMENT_KEY,
                                 element.data.key).toPromise();
                         }
                     });
-                    const serverTime = new Date(res.body.ts).getTime();
+                    const serverTime = new Date(res.ts).getTime();
                     const now = Date.now();
                     const currentOffset = serverTime - now;
                     const allowedOffset =
@@ -204,18 +190,6 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
                     });
                 });
         });
-    }
-
-    public processEventsBatch(): Observable<number> {
-        return this.fetchEvents()
-            .mergeMap((events) =>
-                this.processEvents(events)
-                    .mergeMap((processedEventsMeta) =>
-                        this.persistProcessedEvents(processedEventsMeta, processedEventsMeta.processedEventsSize)
-                            .mergeMap(() => this.deleteEvents(events))
-                            .mapTo(events.length)
-                    )
-            );
     }
 
     private hasTelemetryThresholdCrossed(): Observable<boolean> {
