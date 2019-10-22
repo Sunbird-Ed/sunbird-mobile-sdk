@@ -104,9 +104,12 @@ export declare class TelemetryShareRequest {
     items: Array<Item>;
     env: string;
     correlationData?: Array<CorrelationData>;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
 }
 export interface Item {
-    type: ShareItemType;
+    type: ShareItemType | string;
     origin: string;
     identifier: string;
     pkgVersion: number;
