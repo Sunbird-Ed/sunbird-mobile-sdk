@@ -16,7 +16,7 @@ import {TelemetryConfig} from '../config/telemetry-config';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {CodePush} from '../../preference-keys';
 import {AppInfo} from '../../util/app';
-import {DeviceRegisterService} from '../../device-register/def/device-register-service';
+import {DeviceRegisterService} from '../../device-register';
 import COLUMN_NAME_MSG_ID = TelemetryProcessedEntry.COLUMN_NAME_MSG_ID;
 import COLUMN_NAME_NUMBER_OF_EVENTS = TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS;
 import COLUMN_NAME_PRIORITY = TelemetryEntry.COLUMN_NAME_PRIORITY;

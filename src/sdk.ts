@@ -70,8 +70,7 @@ import {SearchHistoryServiceImpl} from './util/search-history/impl/search-histor
 import {RecentlyViewedMigration} from './db/migrations/recently-viewed-migration';
 import {CourseAssessmentMigration} from './db/migrations/course-assessment-migration';
 import {CodePushExperimentService, CodePUshExperimentServiceImpl} from './codepush-experiment';
-import {DeviceRegisterService} from './device-register/def/device-register-service';
-import {DeviceRegisterConfig, DeviceRegisterServiceImpl} from './device-register';
+import {DeviceRegisterConfig, DeviceRegisterService, DeviceRegisterServiceImpl} from './device-register';
 
 export class SunbirdSdk {
     private _container: Container;
