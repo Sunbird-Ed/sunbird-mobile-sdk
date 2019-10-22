@@ -5,7 +5,6 @@ import { KeyValueStore } from '../../key-value-store';
 import { SdkConfig } from '../../sdk-config';
 import { DeviceInfo } from '../../util/device';
 import { DbService } from '../../db';
-import { FrameworkService } from '../../framework';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { AppInfo } from '../../util/app';
 import { DeviceRegisterService } from '../../device-register/def/device-register-service';
@@ -13,7 +12,6 @@ export declare class TelemetrySyncHandler implements ApiRequestHandler<boolean, 
     private dbService;
     private sdkConfig;
     private deviceInfo;
-    private frameworkService;
     private sharedPreferences;
     private appInfoService;
     private deviceRegisterService;
@@ -28,7 +26,7 @@ export declare class TelemetrySyncHandler implements ApiRequestHandler<boolean, 
     private readonly preprocessors;
     private readonly telemetryConfig;
     private readonly apiConfig;
-    constructor(dbService: DbService, sdkConfig: SdkConfig, deviceInfo: DeviceInfo, frameworkService: FrameworkService, sharedPreferences: SharedPreferences, appInfoService: AppInfo, deviceRegisterService: DeviceRegisterService, keyValueStore?: KeyValueStore | undefined, apiService?: ApiService | undefined);
+    constructor(dbService: DbService, sdkConfig: SdkConfig, deviceInfo: DeviceInfo, sharedPreferences: SharedPreferences, appInfoService: AppInfo, deviceRegisterService: DeviceRegisterService, keyValueStore?: KeyValueStore | undefined, apiService?: ApiService | undefined);
     resetDeviceRegisterTTL(): Observable<undefined>;
     handle(ignoreSyncThreshold: boolean): Observable<TelemetrySyncStat>;
     processEventsBatch(): Observable<number>;

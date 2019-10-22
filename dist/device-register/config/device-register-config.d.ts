@@ -1,5 +1,5 @@
 export interface DeviceRegisterConfig {
-    deviceRegisterHost: string;
-    deviceRegisterApiPath: string;
+    host: string;
+    apiPath: string;
     fcmToken?: string;
 }
