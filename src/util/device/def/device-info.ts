@@ -27,9 +27,12 @@ export interface StorageVolume {
     };
 }
 
-export interface  DeviceInfo {
+export interface DeviceInfo {
     getDeviceID(): string;
+
     getDeviceSpec(): Observable<DeviceSpec>;
+
     getAvailableInternalMemorySize(): Observable<string>;
+
     getStorageVolumes(): Observable<StorageVolume[]>;
 }

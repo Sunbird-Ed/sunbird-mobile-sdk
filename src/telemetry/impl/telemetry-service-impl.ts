@@ -192,7 +192,6 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.dbService,
             this.sdkConfig,
             this.deviceInfo,
-            this.frameworkService,
             this.sharedPreferences,
             this.appInfoService,
             this.deviceRegisterService
@@ -249,7 +248,6 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.dbService,
             this.sdkConfig,
             this.deviceInfo,
-            this.frameworkService,
             this.sharedPreferences,
             this.appInfoService,
             this.deviceRegisterService,
@@ -273,7 +271,6 @@ export class TelemetryServiceImpl implements TelemetryService {
                     this.dbService,
                     this.sdkConfig,
                     this.deviceInfo,
-                    this.frameworkService,
                     this.sharedPreferences,
                     this.appInfoService,
                     this.deviceRegisterService,

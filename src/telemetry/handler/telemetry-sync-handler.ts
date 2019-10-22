@@ -11,7 +11,6 @@ import {DbService, InsertQuery} from '../../db';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {UniqueId} from '../../db/util/unique-id';
 import moment from 'moment';
-import {FrameworkService} from '../../framework';
 import {TelemetryLogger} from '../util/telemetry-logger';
 import {TelemetryConfig} from '../config/telemetry-config';
 import {SharedPreferences} from '../../util/shared-preferences';
@@ -48,7 +47,6 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
         private dbService: DbService,
         private sdkConfig: SdkConfig,
         private deviceInfo: DeviceInfo,
-        private frameworkService: FrameworkService,
         private sharedPreferences: SharedPreferences,
         private appInfoService: AppInfo,
         private deviceRegisterService: DeviceRegisterService,
@@ -318,8 +316,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
         const apiRequest: Request = new Request.Builder()
             .withHost(this.telemetryConfig.host!)
             .withType(HttpRequestType.POST)
-            .withPath(this.telemetryConfig.telemetryApiPath +
-                TelemetrySyncHandler.TELEMETRY_ENDPOINT)
+            .withPath(this.telemetryConfig.apiPath + TelemetrySyncHandler.TELEMETRY_ENDPOINT)
             .withBody(body)
             .withApiToken(true)
             .build();

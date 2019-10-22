@@ -3,9 +3,7 @@ import {DeviceRegisterConfig, DeviceRegisterRequest, DeviceRegisterResponse} fro
 import {Observable} from 'rxjs';
 import {DeviceInfo, DeviceSpec} from '../../util/device';
 import {AppInfo} from '../../util/app';
-import {KeyValueStore} from '../../key-value-store';
 import {SdkConfig} from '../../sdk-config';
-import {SharedPreferences} from '../../util/shared-preferences';
 import {FrameworkService} from '../../framework';
 
 export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRequest, DeviceRegisterResponse> {
@@ -20,8 +18,6 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
         private deviceInfo: DeviceInfo,
         private frameworkService: FrameworkService,
         private appInfoService: AppInfo,
-        private keyValueStore: KeyValueStore,
-        private sharedPreferences: SharedPreferences,
         private apiService: ApiService
     ) {
         this.deviceRegisterConfig = this.sdkConfig.deviceRegisterConfig;
@@ -60,9 +56,9 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
 
             const apiRequest: Request = new Request.Builder()
                 .withType(HttpRequestType.POST)
-                .withHost(this.deviceRegisterConfig!.deviceRegisterHost)
-                .withPath(this.deviceRegisterConfig!.deviceRegisterApiPath +
-                    DeviceRegisterHandler.DEVICE_REGISTER_ENDPOINT + '/' + this.deviceInfo!.getDeviceID())
+                .withHost(this.deviceRegisterConfig!.host)
+                .withPath(this.deviceRegisterConfig!.apiPath + DeviceRegisterHandler.DEVICE_REGISTER_ENDPOINT
+                    + '/' + this.deviceInfo!.getDeviceID())
                 .withApiToken(true)
                 .withBody(request)
                 .build();
