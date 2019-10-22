@@ -14,7 +14,7 @@ import { SdkConfig } from '../../sdk-config';
 import { ErrorLoggerService } from '../../util/error-stack';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { AppInfo } from '../../util/app';
-import { DeviceRegisterService } from '../../device-register/def/device-register-service';
+import { DeviceRegisterService } from '../../device-register';
 export declare class TelemetryServiceImpl implements TelemetryService {
     private dbService;
     private decorator;

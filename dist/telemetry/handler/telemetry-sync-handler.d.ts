@@ -7,7 +7,7 @@ import { DeviceInfo } from '../../util/device';
 import { DbService } from '../../db';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { AppInfo } from '../../util/app';
-import { DeviceRegisterService } from '../../device-register/def/device-register-service';
+import { DeviceRegisterService } from '../../device-register';
 export declare class TelemetrySyncHandler implements ApiRequestHandler<boolean, TelemetrySyncStat> {
     private dbService;
     private sdkConfig;

@@ -26,8 +26,7 @@ import { ErrorLoggerService } from './util/error-stack';
 import { NetworkInfoService } from './util/network';
 import { SearchHistoryService } from './util/search-history';
 import { CodePushExperimentService } from './codepush-experiment';
-import { DeviceRegisterService } from './device-register/def/device-register-service';
-import { DeviceRegisterConfig } from './device-register';
+import { DeviceRegisterConfig, DeviceRegisterService } from './device-register';
 export declare class SunbirdSdk {
     private _container;
     private static _instance?;
