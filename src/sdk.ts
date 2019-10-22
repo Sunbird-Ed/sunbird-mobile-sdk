@@ -71,18 +71,12 @@ import {RecentlyViewedMigration} from './db/migrations/recently-viewed-migration
 import {CourseAssessmentMigration} from './db/migrations/course-assessment-migration';
 import {CodePushExperimentService, CodePUshExperimentServiceImpl} from './codepush-experiment';
 import {DeviceRegisterService} from './device-register/def/device-register-service';
-import {DeviceRegisterServiceImpl} from './device-register';
+import {DeviceRegisterConfig, DeviceRegisterServiceImpl} from './device-register';
 
 export class SunbirdSdk {
-    private _isInitialised: boolean = false;
-
     private _container: Container;
 
     private static _instance?: SunbirdSdk;
-
-    get isInitialised(): boolean {
-        return this._isInitialised;
-    }
 
     public static get instance(): SunbirdSdk {
         if (!SunbirdSdk._instance) {
@@ -90,6 +84,12 @@ export class SunbirdSdk {
         }
 
         return SunbirdSdk._instance;
+    }
+
+    private _isInitialised: boolean = false;
+
+    get isInitialised(): boolean {
+        return this._isInitialised;
     }
 
     get sdkConfig(): SdkConfig {
@@ -311,7 +311,7 @@ export class SunbirdSdk {
         this._container.bind<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE).to(SearchHistoryServiceImpl).inSingletonScope();
 
         this._container.bind<CodePushExperimentService>(InjectionTokens.CODEPUSH_EXPERIMENT_SERVICE).to(CodePUshExperimentServiceImpl)
-        .inSingletonScope();
+            .inSingletonScope();
 
         this._container.bind<DeviceRegisterService>(InjectionTokens.DEVICE_REGISTER_SERVICE).to(DeviceRegisterServiceImpl)
             .inSingletonScope();
@@ -337,6 +337,14 @@ export class SunbirdSdk {
         for (const key in update) {
             if (update.hasOwnProperty(key)) {
                 this.sdkConfig.telemetryConfig[key] = update[key];
+            }
+        }
+    }
+
+    public updateDeviceRegisterConfig(update: Partial<DeviceRegisterConfig>) {
+        for (const key in update) {
+            if (update.hasOwnProperty(key)) {
+                this.sdkConfig.deviceRegisterConfig[key] = update[key];
             }
         }
     }

@@ -1,5 +1,5 @@
 import {ApiConfig, ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {DeviceRegisterConfig, DeviceRegisterRequest} from '..';
+import {DeviceRegisterConfig, DeviceRegisterRequest, DeviceRegisterResponse} from '..';
 import {Observable} from 'rxjs';
 import {DeviceInfo, DeviceSpec} from '../../util/device';
 import {AppInfo} from '../../util/app';

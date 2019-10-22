@@ -1,5 +1,5 @@
 import {DeviceRegisterService} from '../def/device-register-service';
-import {DeviceRegisterRequest} from '..';
+import {DeviceRegisterRequest, DeviceRegisterResponse} from '..';
 import {Observable} from 'rxjs';
 import {inject, injectable} from 'inversify';
 import {DeviceRegisterHandler} from '../handler/device-register-handler';
