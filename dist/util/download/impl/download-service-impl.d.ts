@@ -31,5 +31,4 @@ export declare class DownloadServiceImpl implements DownloadService, SdkServiceO
     private emitProgressInEventBus;
     private getDownloadProgress;
     private listenForDownloadProgressChanges;
-    private generateDownloadSpeedTelemetry;
 }

@@ -1,4 +1,4 @@
-import { DirectoryEntry, Entry, FileEntry, Flags, RemoveResult, Metadata, IWriteOptions } from '../index';
+import { DirectoryEntry, Entry, FileEntry, Flags, IWriteOptions, Metadata, RemoveResult } from '../index';
 export interface FileService {
     readAsText(path: string, file: string): Promise<string>;
     readFileFromAssets(fileName: string): Promise<string>;
