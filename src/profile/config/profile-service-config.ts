@@ -3,5 +3,6 @@ export interface ProfileServiceConfig {
     tenantApiPath: string;
     otpApiPath: string;
     searchLocationApiPath: string;
+    locationDirPath: string;
 }
 

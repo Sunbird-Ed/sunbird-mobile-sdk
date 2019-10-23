@@ -2,9 +2,9 @@ import {CachedItemStore, KeyValueStore} from '..';
 import {Observable} from 'rxjs';
 import {ApiConfig} from '../../api';
 import {SharedPreferences} from '../../util/shared-preferences';
-import { SdkConfig } from '../../sdk-config';
-import { InjectionTokens } from '../../injection-tokens';
-import { inject, injectable } from 'inversify';
+import {SdkConfig} from '../../sdk-config';
+import {InjectionTokens} from '../../injection-tokens';
+import {inject, injectable} from 'inversify';
 
 @injectable()
 export class CachedItemStoreImpl implements CachedItemStore {
@@ -40,7 +40,8 @@ export class CachedItemStoreImpl implements CachedItemStore {
         return this.isItemCachedInDb(timeToLiveKey, id)
             .mergeMap((isItemCachedInDb: boolean) => {
                 if (isItemCachedInDb) {
-                    return this.isItemTTLExpired(timeToLiveKey, id, !isNaN(timeToLive!) ? timeToLive! : this.apiConfig.cached_requests.timeToLive)
+                    return this.isItemTTLExpired(timeToLiveKey, id,
+                        !isNaN(timeToLive!) ? timeToLive! : this.apiConfig.cached_requests.timeToLive)
                         .mergeMap((isItemTTLExpired: boolean) => {
                             if (isItemTTLExpired) {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id)
@@ -92,15 +93,15 @@ export class CachedItemStoreImpl implements CachedItemStore {
 
     private isItemTTLExpired(timeToLiveKey: string, id: string, timeToLive: number): Observable<boolean> {
         return this.sharedPreferences.getString(timeToLiveKey + '-' + id)
-        .map((ttl) => {
-            const savedTimestamp: number = Number(ttl);
-            const nowTimeStamp: number = Date.now();
-            if (nowTimeStamp - savedTimestamp < timeToLive) {
-                return false;
-            }
-            
-            return true;
-        });
+            .map((ttl) => {
+                const savedTimestamp: number = Number(ttl);
+                const nowTimeStamp: number = Date.now();
+                if (nowTimeStamp - savedTimestamp < timeToLive) {
+                    return false;
+                }
+
+                return true;
+            });
     }
 
     private saveItem<T>(id: string, timeToLiveKey: string, noSqlkey: string, item: T, emptyCondition?: (item: T) => boolean) {
@@ -118,9 +119,9 @@ export class CachedItemStoreImpl implements CachedItemStore {
 
     private saveItemTTL(id: string, timeToLiveKey: string): Observable<boolean> {
         return this.sharedPreferences.putString(timeToLiveKey + '-' + id, Date.now() + '')
-        .mergeMap((val) => {
-            return Observable.of(true);
-        });
+            .mergeMap((val) => {
+                return Observable.of(true);
+            });
     }
 
     private saveItemToDb(id: string, noSqlkey: string, item): Observable<boolean> {

@@ -3,15 +3,18 @@ import {
     CourseBatchDetailsRequest,
     CourseBatchesRequest,
     EnrollCourseRequest,
-    FetchEnrolledCourseRequest, GenerateAttemptIdRequest, GetContentStateRequest,
+    FetchEnrolledCourseRequest,
+    GenerateAttemptIdRequest,
+    GetContentStateRequest,
     UpdateContentStateRequest
 } from './request-types';
 import {Observable} from 'rxjs';
 import {Batch} from './batch';
 import {Course} from './course';
 import {UnenrollCourseRequest} from './unenrollCourseRequest';
-import { DownloadCertificateRequest } from './download-certificate-request';
-import { DownloadCertificateResponse } from './download-certificate-response';
+import {DownloadCertificateRequest} from './download-certificate-request';
+import {DownloadCertificateResponse} from './download-certificate-response';
+
 export interface CourseService {
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
 

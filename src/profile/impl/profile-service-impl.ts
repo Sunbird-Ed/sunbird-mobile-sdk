@@ -443,7 +443,8 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     searchLocation(locationSearchCriteria: LocationSearchCriteria): Observable<LocationSearchResult[]> {
-        return new SearchLocationHandler(this.apiService, this.sdkConfig.profileServiceConfig).handle(locationSearchCriteria);
+        return new SearchLocationHandler(this.apiService, this.sdkConfig.profileServiceConfig, this.fileService, this.cachedItemStore)
+            .handle(locationSearchCriteria);
     }
 
     getAllContentAccess(criteria: ContentAccessFilterCriteria): Observable<ContentAccess[]> {
@@ -496,8 +497,6 @@ export class ProfileServiceImpl implements ProfileService {
                     }
                 });
             });
-
-
     }
 
     exportProfile(profileExportRequest: ProfileExportRequest): Observable<ProfileExportResponse> {
@@ -553,20 +552,20 @@ export class ProfileServiceImpl implements ProfileService {
 
     mergeServerProfiles(mergeServerProfilesRequest: MergeServerProfilesRequest): Observable<undefined> {
         const apiRequest = new Request.Builder()
-          .withType(HttpRequestType.PATCH)
-          .withPath(ProfileServiceImpl.MERGE_SERVER_PROFILES_PATH)
-          .withApiToken(true)
-          .withHeaders({
-              'x-source-user-token': mergeServerProfilesRequest.from.accessToken,
-              'x-authenticated-user-token': mergeServerProfilesRequest.to.accessToken
-          })
-          .withBody({
-              request: {
-                  fromAccountId: mergeServerProfilesRequest.from.userId,
-                  toAccountId: mergeServerProfilesRequest.to.userId
-              }
-          })
-          .build();
+            .withType(HttpRequestType.PATCH)
+            .withPath(ProfileServiceImpl.MERGE_SERVER_PROFILES_PATH)
+            .withApiToken(true)
+            .withHeaders({
+                'x-source-user-token': mergeServerProfilesRequest.from.accessToken,
+                'x-authenticated-user-token': mergeServerProfilesRequest.to.accessToken
+            })
+            .withBody({
+                request: {
+                    fromAccountId: mergeServerProfilesRequest.from.userId,
+                    toAccountId: mergeServerProfilesRequest.to.userId
+                }
+            })
+            .build();
 
         return this.apiService.fetch(apiRequest).map((res) => {
             console.log(res);
@@ -583,7 +582,7 @@ export class ProfileServiceImpl implements ProfileService {
                     inAppBrowserRef.close();
                 }
             });
-        })
+        });
     }
 
     isDefaultChannelProfile(): Observable<boolean> {
@@ -591,7 +590,7 @@ export class ProfileServiceImpl implements ProfileService {
             this.frameworkService.getDefaultChannelDetails(),
             this.frameworkService.getActiveChannelId()
         ).map((results) => {
-            return results[0].identifier === results[1]
+            return results[0].identifier === results[1];
         });
     }
 
