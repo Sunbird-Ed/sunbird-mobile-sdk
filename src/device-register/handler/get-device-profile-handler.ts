@@ -25,7 +25,7 @@ export class GetDeviceProfileHandler implements ApiRequestHandler<undefined, Dev
     }
 
     fetchFromServer(): Observable<DeviceProfileResponse> {
-        return this.apiService.fetch<{ result: { deviceProfile: DeviceProfileResponse } }>(
+        return this.apiService.fetch<{ result: DeviceProfileResponse }>(
             new Request.Builder()
                 .withHost(this.deviceRegisterConfig.host)
                 .withType(HttpRequestType.GET)
@@ -34,7 +34,7 @@ export class GetDeviceProfileHandler implements ApiRequestHandler<undefined, Dev
                 .withApiToken(true)
                 .build()
         ).map((response) => {
-            return response.body.result.deviceProfile;
+            return response.body.result;
         });
     }
 
