@@ -388,6 +388,16 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         this.dbService, this.deviceInfo, this.getContentDetailsHandler, this.eventsBusService, this.sharedPreferences)
                         .execute(importResponse.body);
                 }).then((importResponse: Response) => {
+                    this.eventsBusService.emit({
+                        namespace: EventNamespace.CONTENT,
+                        event: {
+                            type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                            payload: {
+                                contentId: importContentContext.rootIdentifier ?
+                                    importContentContext.rootIdentifier : importContentContext.identifiers![0]
+                            }
+                        }
+                    });
                     const response: Response = new Response();
                     return new CreateContentImportManifest(this.dbService, this.deviceInfo, this.fileService).execute(importResponse.body);
                 // }).then((importResponse: Response) => {
@@ -403,9 +413,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         }).catch(() => {
                             return Promise.reject(response);
                         });
-                }).then((importResponse: Response) => {
-                    // new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
-                    return importResponse;
+                // }).then((importResponse: Response) => {
+                //     new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
+                //     return importResponse;
                 }).then((importResponse: Response) => {
                     return new GenerateImportShareTelemetry(this.telemetryService).execute(importResponse.body);
                 }).then((importResponse: Response) => {

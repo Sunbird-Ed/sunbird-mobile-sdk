@@ -20,6 +20,7 @@ export interface Content {
     contentFeedback?: ContentFeedback[];
     contentAccess?: ContentAccess[];
     contentMarker?: ContentMarker[];
+    index?: number;
 }
 
 export interface ContentData {
