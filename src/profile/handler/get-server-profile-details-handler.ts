@@ -44,7 +44,7 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
     private fetchFromServer(request: ServerProfileDetailsRequest): Observable<ServerProfile> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath('/api/user/v2' + this.GET_SERVER_PROFILE_DETAILS_ENDPOINT + '/' + request.userId)
+            .withPath(this.profileServiceConfig.profileApiPath_V2 + this.GET_SERVER_PROFILE_DETAILS_ENDPOINT + '/' + request.userId)
             .withParameters({'fields': request.requiredFields.join(',')})
             .withApiToken(true)
             .withSessionToken(true)
