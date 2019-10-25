@@ -188,17 +188,17 @@ export class ChildContentsHandler {
         });
 
         const childIdentifiers: string[] = [];
-        let whennAndThen = '';
+        let whenAndThen = '';
         let i = 0;
         childContents.forEach(childContent => {
             childIdentifiers.push(childContent.identifier);
-            whennAndThen = whennAndThen.concat(` WHEN '${childContent.identifier}' THEN ${i}`);
+            whenAndThen = whenAndThen.concat(` WHEN '${childContent.identifier}' THEN ${i}`);
             i = i + 1;
         });
 
         let orderBy = '';
         if (i > 0) {
-            orderBy = orderBy.concat(` ORDER BY CASE  ${ContentEntry.COLUMN_NAME_IDENTIFIER}  ${whennAndThen}  END`);
+            orderBy = orderBy.concat(` ORDER BY CASE  ${ContentEntry.COLUMN_NAME_IDENTIFIER}  ${whenAndThen}  END`);
         }
 
         let filter = '';
