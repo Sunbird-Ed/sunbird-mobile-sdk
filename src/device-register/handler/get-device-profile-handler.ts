@@ -27,9 +27,9 @@ export class GetDeviceProfileHandler implements ApiRequestHandler<undefined, Dev
     fetchFromServer(): Observable<DeviceProfileResponse> {
         return this.apiService.fetch<{ result: DeviceProfileResponse }>(
             new Request.Builder()
-                .withHost(this.deviceRegisterConfig.host)
+                .withHost(this.apiConfig.host)
                 .withType(HttpRequestType.GET)
-                .withPath(this.deviceRegisterConfig.apiPath + GetDeviceProfileHandler.GET_DEVICE_PROFILE_ENDPOINT
+                .withPath(this.deviceRegisterConfig.deviceProfileApiPath + GetDeviceProfileHandler.GET_DEVICE_PROFILE_ENDPOINT
                     + '/' + this.deviceInfo.getDeviceID())
                 .withApiToken(true)
                 .build()
