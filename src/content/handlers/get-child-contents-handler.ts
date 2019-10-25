@@ -8,11 +8,14 @@ import {GetContentDetailsHandler} from './get-content-details-handler';
 import {Stack} from '../util/stack';
 import {ContentMapper} from '../util/content-mapper';
 import {ArrayUtil} from '../../util/array-util';
+import {FileService} from '../../util/file/def/file-service';
+import { FileName } from './../util/content-constants';
 
 export class ChildContentsHandler {
 
     constructor(private dbService: DbService,
-                private getContentDetailsHandler: GetContentDetailsHandler) {
+                private getContentDetailsHandler: GetContentDetailsHandler,
+                private fileService: FileService) {
     }
 
     public async fetchChildrenOfContent(contentInDb: ContentEntry.SchemaMap,
@@ -62,8 +65,9 @@ export class ChildContentsHandler {
             node = contentStack.pop();
             if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
                 const childContentsMap: Map<string, ContentEntry.SchemaMap> = new Map<string, ContentEntry.SchemaMap>();
-                const data = JSON.parse(node[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
-                const childIdentifiers = data.childNodes;
+                // const data = JSON.parse(node[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+                // const childIdentifiers = data.childNodes;
+                const childIdentifiers = await this.getChildIdentifiersFromManifest(node[ContentEntry.COLUMN_NAME_PATH]!);
                 console.log('childIdentifiers', childIdentifiers);
 
                 const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
@@ -218,6 +222,24 @@ export class ChildContentsHandler {
 
         return childContentsFromDB;
 
+    }
+
+    public async getChildIdentifiersFromManifest (path: string) {
+        const manifestPath = 'file:///' + path;
+        const childIdentifiers: string[] = [];
+        await this.fileService.readAsText(manifestPath, FileName.MANIFEST.valueOf())
+        .then(async (fileContents) => {
+            console.log('fileContents', JSON.parse(fileContents));
+            const childContents = JSON.parse(fileContents).archive.items;
+            childContents.shift();
+            childContents.forEach(element => {
+                childIdentifiers.push(element.identifier);
+            });
+            return childIdentifiers;
+        }).catch((err) => {
+            console.log('getChildIdentifiersFromManifest err', err);
+        });
+        return childIdentifiers;
     }
 
 

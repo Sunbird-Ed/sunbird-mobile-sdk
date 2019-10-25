@@ -296,7 +296,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         if (!childContentRequest.level) {
             childContentRequest.level = -1;
         }
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.fileService);
         let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
         if (!hierarchyInfoList) {
             hierarchyInfoList = [];
@@ -310,11 +310,11 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const childContentsMap: Map<string, ContentEntry.SchemaMap> = new Map<string, ContentEntry.SchemaMap>();
-
+                // const parentContent = ContentMapper.mapContentDBEntryToContent(rows[0]);
                 // const data = JSON.parse(rows[0][ContentEntry.COLUMN_NAME_LOCAL_DATA]);
-                // const childIdentifiers = data.childNodes;
 
-                const childIdentifiers = await this.getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
+                // const childIdentifiers = await this.getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
+                const childIdentifiers = await childContentHandler.getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
 
                 console.log('childIdentifiers', childIdentifiers);
 
@@ -466,7 +466,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.fileService);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
@@ -477,7 +477,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.fileService);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
@@ -770,21 +770,4 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             });
     }
 
-    public async getChildIdentifiersFromManifest (path: string) {
-        const manifestPath = 'file:///' + path;
-        const childIdentifiers: string[] = [];
-        await this.fileService.readAsText(manifestPath, FileName.MANIFEST.valueOf())
-        .then(async (fileContents) => {
-            console.log('fileContents', JSON.parse(fileContents));
-            const childContents = JSON.parse(fileContents).archive.items;
-            childContents.shift();
-            childContents.forEach(element => {
-                childIdentifiers.push(element.identifier);
-            });
-            return childIdentifiers;
-        }).catch((err) => {
-            console.log('getChildIdentifiersFromManifest err', err);
-        });
-        return childIdentifiers;
-    }
 }
