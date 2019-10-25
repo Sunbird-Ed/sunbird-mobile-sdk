@@ -311,11 +311,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const childContentsMap: Map<string, ContentEntry.SchemaMap> = new Map<string, ContentEntry.SchemaMap>();
                 // const parentContent = ContentMapper.mapContentDBEntryToContent(rows[0]);
-                // const data = JSON.parse(rows[0][ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+                const data = JSON.parse(rows[0][ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+                const childIdentifiers = data.childNodes;
 
-                // const childIdentifiers = await this.getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
-                const childIdentifiers = await childContentHandler.getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
-
+                // const childIdentifiers = await childContentHandler.getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
                 console.log('childIdentifiers', childIdentifiers);
 
                 const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
@@ -323,7 +322,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                 IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)})`;
 
                 const childContents = await this.dbService.execute(query).toPromise();
-                console.log('childContents', childContents);
+                // console.log('childContents', childContents);
                 childContents.forEach(element => {
                     childContentsMap.set(element.identifier, element);
                 });
