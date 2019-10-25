@@ -186,7 +186,6 @@ export class ChildContentsHandler {
     }
 
     private getSortedChildrenList(localData: string, level: number, childContentsMap): ContentEntry.SchemaMap[] {
-        console.log('in getSortedChildrenList');
         const data = JSON.parse(localData);
         let childContents: ChildContent[] = data.children;
         if (!childContents || !childContents.length) {
