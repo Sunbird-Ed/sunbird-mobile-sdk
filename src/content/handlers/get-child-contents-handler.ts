@@ -16,13 +16,13 @@ export class ChildContentsHandler {
     }
 
     public async fetchChildrenOfContent(contentInDb: ContentEntry.SchemaMap,
+                                        childContentsMap,
                                         currentLevel: number,
                                         level: number,
                                         sourceInfoList?: HierarchyInfo[]): Promise<Content> {
         const content: Content = ContentMapper.mapContentDBEntryToContent(contentInDb);
         const childContentModels: ContentEntry.SchemaMap[] =
-            await this.getSortedChildrenList(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA], ChildContents.ALL);
-
+            await this.getSortedChildrenList(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA], ChildContents.ALL, childContentsMap);
         if (childContentModels && childContentModels.length) {
             let hierarchyInfoList: HierarchyInfo[] = [];
             hierarchyInfoList = hierarchyInfoList.concat(sourceInfoList!);
@@ -37,6 +37,7 @@ export class ChildContentsHandler {
                 for (const element of childContentModels) {
                     const childContentModel = element as ContentEntry.SchemaMap;
                     const childContent: Content = await this.fetchChildrenOfContent(childContentModel,
+                        childContentsMap,
                         currentLevel + 1,
                         level,
                         hierarchyInfoList);
@@ -60,9 +61,22 @@ export class ChildContentsHandler {
         while (!contentStack.isEmpty()) {
             node = contentStack.pop();
             if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
+                const childContentsMap: Map<string, ContentEntry.SchemaMap> = new Map<string, ContentEntry.SchemaMap>();
+                const data = JSON.parse(node[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+                const childIdentifiers = data.childNodes;
+                console.log('childIdentifiers', childIdentifiers);
+
+                const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
+                                WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER}
+                                IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)})`;
+                const childContents = await this.dbService.execute(query).toPromise();
+                childContents.forEach(element => {
+                    childContentsMap.set(element.identifier, element);
+                });
                 const childContentsInDb: ContentEntry.SchemaMap[] = await this.getSortedChildrenList(
                     node[ContentEntry.COLUMN_NAME_LOCAL_DATA],
-                    ChildContents.ALL);
+                    ChildContents.ALL,
+                    childContentsMap);
                 childContentsInDb.forEach((childContentInDb) => {
                     contentStack.push(childContentInDb);
                     parentChildRelation.push(node[ContentEntry.COLUMN_NAME_IDENTIFIER].concat('/',
@@ -171,7 +185,8 @@ export class ChildContentsHandler {
         return previousContentIdentifier;
     }
 
-    private async getSortedChildrenList(localData: string, level: number): Promise<ContentEntry.SchemaMap[]> {
+    private getSortedChildrenList(localData: string, level: number, childContentsMap): ContentEntry.SchemaMap[] {
+        console.log('in getSortedChildrenList');
         const data = JSON.parse(localData);
         let childContents: ChildContent[] = data.children;
         if (!childContents || !childContents.length) {
@@ -182,38 +197,29 @@ export class ChildContentsHandler {
             return (childContent1.index - childContent2.index);
         });
 
-        const childIdentifiers: string[] = [];
-        let whenAndThen = '';
-        let i = 0;
+        let childContentsFromDB: ContentEntry.SchemaMap[] = [];
         childContents.forEach(childContent => {
-            childIdentifiers.push(childContent.identifier);
-            whenAndThen = whenAndThen.concat(` WHEN '${childContent.identifier}' THEN ${i}`);
-            i = i + 1;
+            childContentsFromDB.push(childContentsMap.get(childContent.identifier));
         });
 
-        let orderBy = '';
-        if (i > 0) {
-            orderBy = orderBy.concat(` ORDER BY CASE  ${ContentEntry.COLUMN_NAME_IDENTIFIER}  ${whenAndThen}  END`);
-        }
-
-        let filter = '';
         switch (level) {
             case ChildContents.DOWNLOADED.valueOf():
-                filter = ' AND ' + ContentEntry.COLUMN_NAME_CONTENT_STATE + '=\'' + State.ARTIFACT_AVAILABLE + '\'';
+                // filter = ' AND ' + ContentEntry.COLUMN_NAME_CONTENT_STATE + '=\'' + State.ARTIFACT_AVAILABLE + '\'';
+                childContentsFromDB = childContentsFromDB
+                                        .filter((c) => c[ContentEntry.COLUMN_NAME_CONTENT_STATE] = State.ARTIFACT_AVAILABLE);
                 break;
             case ChildContents.SPINE.valueOf():
-                filter = ' AND ' + ContentEntry.COLUMN_NAME_CONTENT_STATE + '=\'' + State.ONLY_SPINE + '\'';
+                // filter = ' AND ' + ContentEntry.COLUMN_NAME_CONTENT_STATE + '=\'' + State.ONLY_SPINE + '\'';
+                childContentsFromDB = childContentsFromDB.filter((c) => c[ContentEntry.COLUMN_NAME_CONTENT_STATE] = State.ONLY_SPINE);
                 break;
             case ChildContents.ALL.valueOf():
             default:
-                filter = '';
                 break;
         }
 
-        const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
-                        WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER}
-                        IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)}) ${filter} ${orderBy}`;
-        return this.dbService.execute(query).toPromise();
+        return childContentsFromDB;
+
     }
+
 
 }

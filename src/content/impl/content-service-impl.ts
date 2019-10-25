@@ -93,6 +93,7 @@ import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
+import { FileName } from './../util/content-constants';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -225,7 +226,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         await deleteContentHandler.deleteAllChildren(contentInDb, contentDelete.isChildContent);
                     }
 
-                    await deleteContentHandler.deleteOrUpdateContent(contentInDb, false, contentDelete.isChildContent);
+                        await deleteContentHandler.deleteOrUpdateContent(contentInDb, false, contentDelete.isChildContent);
                 } else {
                     contentDeleteResponse.push({
                         identifier: contentDelete.contentId,
@@ -307,8 +308,33 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         }
 
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId))
-            .mergeMap((rows: ContentEntry.SchemaMap[]) => {
-                return childContentHandler.fetchChildrenOfContent(rows[0], 0, childContentRequest.level!, hierarchyInfoList);
+            .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
+                const childContentsMap: Map<string, ContentEntry.SchemaMap> = new Map<string, ContentEntry.SchemaMap>();
+
+                // const data = JSON.parse(rows[0][ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+                // const childIdentifiers = data.childNodes;
+
+                const childIdentifiers = await this.getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
+
+                console.log('childIdentifiers', childIdentifiers);
+
+                const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
+                                WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER}
+                                IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)})`;
+
+                const childContents = await this.dbService.execute(query).toPromise();
+                console.log('childContents', childContents);
+                childContents.forEach(element => {
+                    childContentsMap.set(element.identifier, element);
+                });
+                return childContentHandler
+                .fetchChildrenOfContent(
+                    rows[0],
+                    childContentsMap,
+                    0,
+                    childContentRequest.level!,
+                    hierarchyInfoList
+                );
             });
     }
 
@@ -742,5 +768,23 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
                 return Observable.of(undefined);
             });
+    }
+
+    public async getChildIdentifiersFromManifest (path: string) {
+        const manifestPath = 'file:///' + path;
+        const childIdentifiers: string[] = [];
+        await this.fileService.readAsText(manifestPath, FileName.MANIFEST.valueOf())
+        .then(async (fileContents) => {
+            console.log('fileContents', JSON.parse(fileContents));
+            const childContents = JSON.parse(fileContents).archive.items;
+            childContents.shift();
+            childContents.forEach(element => {
+                childIdentifiers.push(element.identifier);
+            });
+            return childIdentifiers;
+        }).catch((err) => {
+            console.log('getChildIdentifiersFromManifest err', err);
+        });
+        return childIdentifiers;
     }
 }
