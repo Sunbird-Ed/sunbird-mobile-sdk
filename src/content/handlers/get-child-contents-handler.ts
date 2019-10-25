@@ -15,7 +15,7 @@ export class ChildContentsHandler {
 
     constructor(private dbService: DbService,
                 private getContentDetailsHandler: GetContentDetailsHandler,
-                private fileService: FileService) {
+                private fileService?: FileService) {
     }
 
     public async fetchChildrenOfContent(contentInDb: ContentEntry.SchemaMap,
@@ -64,23 +64,9 @@ export class ChildContentsHandler {
         while (!contentStack.isEmpty()) {
             node = contentStack.pop();
             if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
-                const childContentsMap: Map<string, ContentEntry.SchemaMap> = new Map<string, ContentEntry.SchemaMap>();
-                // const data = JSON.parse(node[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
-                // const childIdentifiers = data.childNodes;
-                const childIdentifiers = await this.getChildIdentifiersFromManifest(node[ContentEntry.COLUMN_NAME_PATH]!);
-                console.log('childIdentifiers', childIdentifiers);
-
-                const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
-                                WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER}
-                                IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)})`;
-                const childContents = await this.dbService.execute(query).toPromise();
-                childContents.forEach(element => {
-                    childContentsMap.set(element.identifier, element);
-                });
-                const childContentsInDb: ContentEntry.SchemaMap[] = await this.getSortedChildrenList(
+                const childContentsInDb: ContentEntry.SchemaMap[] = await this.getSortedChildrenListOld(
                     node[ContentEntry.COLUMN_NAME_LOCAL_DATA],
-                    ChildContents.ALL,
-                    childContentsMap);
+                    ChildContents.ALL);
                 childContentsInDb.forEach((childContentInDb) => {
                     contentStack.push(childContentInDb);
                     parentChildRelation.push(node[ContentEntry.COLUMN_NAME_IDENTIFIER].concat('/',
@@ -189,7 +175,54 @@ export class ChildContentsHandler {
         return previousContentIdentifier;
     }
 
-    private getSortedChildrenList(localData: string, level: number, childContentsMap): ContentEntry.SchemaMap[] {
+    // remove this later and use 'getSortedChildrenList' by passing childrencontentmap
+    private async getSortedChildrenListOld(localData: string, level: number): Promise<ContentEntry.SchemaMap[]> {
+        const data = JSON.parse(localData);
+        let childContents: ChildContent[] = data.children;
+        if (!childContents || !childContents.length) {
+            return [];
+        }
+
+        childContents = childContents.sort((childContent1, childContent2) => {
+            return (childContent1.index - childContent2.index);
+        });
+
+        const childIdentifiers: string[] = [];
+        let whennAndThen = '';
+        let i = 0;
+        childContents.forEach(childContent => {
+            childIdentifiers.push(childContent.identifier);
+            whennAndThen = whennAndThen.concat(` WHEN '${childContent.identifier}' THEN ${i}`);
+            i = i + 1;
+        });
+
+        let orderBy = '';
+        if (i > 0) {
+            orderBy = orderBy.concat(` ORDER BY CASE  ${ContentEntry.COLUMN_NAME_IDENTIFIER}  ${whennAndThen}  END`);
+        }
+
+        let filter = '';
+        switch (level) {
+            case ChildContents.DOWNLOADED.valueOf():
+                filter = ' AND ' + ContentEntry.COLUMN_NAME_CONTENT_STATE + '=\'' + State.ARTIFACT_AVAILABLE + '\'';
+                break;
+            case ChildContents.SPINE.valueOf():
+                filter = ' AND ' + ContentEntry.COLUMN_NAME_CONTENT_STATE + '=\'' + State.ONLY_SPINE + '\'';
+                break;
+            case ChildContents.ALL.valueOf():
+            default:
+                filter = '';
+                break;
+        }
+
+        const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
+                        WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER}
+                        IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)}) ${filter} ${orderBy}`;
+        return this.dbService.execute(query).toPromise();
+    }
+
+
+    private async getSortedChildrenList(localData: string, level: number, childContentsMap): Promise<ContentEntry.SchemaMap[]> {
         const data = JSON.parse(localData);
         let childContents: ChildContent[] = data.children;
         if (!childContents || !childContents.length) {
@@ -201,9 +234,19 @@ export class ChildContentsHandler {
         });
 
         let childContentsFromDB: ContentEntry.SchemaMap[] = [];
-        childContents.forEach(childContent => {
-            childContentsFromDB.push(childContentsMap.get(childContent.identifier));
-        });
+        for (const childContent of childContents) {
+            const child = childContentsMap.get(childContent.identifier);
+            if (child) {
+                childContentsFromDB.push(child);
+            } else {
+                const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
+                 WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER} = '${childContent.identifier}'`;
+                const childFromDb = await this.dbService.execute(query).toPromise();
+                if (childFromDb.length) {
+                    childContentsFromDB.push(childFromDb[0]);
+                }
+            }
+        }
 
         switch (level) {
             case ChildContents.DOWNLOADED.valueOf():
@@ -224,10 +267,11 @@ export class ChildContentsHandler {
 
     }
 
+    // need to pass fileservice in constructor to use this method
     public async getChildIdentifiersFromManifest (path: string) {
         const manifestPath = 'file:///' + path;
         const childIdentifiers: string[] = [];
-        await this.fileService.readAsText(manifestPath, FileName.MANIFEST.valueOf())
+        await this.fileService!.readAsText(manifestPath, FileName.MANIFEST.valueOf())
         .then(async (fileContents) => {
             console.log('fileContents', JSON.parse(fileContents));
             const childContents = JSON.parse(fileContents).archive.items;

@@ -296,7 +296,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         if (!childContentRequest.level) {
             childContentRequest.level = -1;
         }
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.fileService);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
         let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
         if (!hierarchyInfoList) {
             hierarchyInfoList = [];
@@ -465,7 +465,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.fileService);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
@@ -476,7 +476,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.fileService);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
