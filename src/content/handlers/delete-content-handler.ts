@@ -19,6 +19,9 @@ import { ContentData } from '..';
 
 export class DeleteContentHandler {
 
+    private updateNewContentModels: ContentEntry.SchemaMap[] = [];
+    private fileMapList: { [key: string]: any }[] = [];
+
     constructor(private dbService: DbService,
         private fileService: FileService,
         private sharedPreferences: SharedPreferences) {
@@ -29,7 +32,6 @@ export class DeleteContentHandler {
         const manifestPath = 'file:///' + row[ContentEntry.COLUMN_NAME_PATH];
         await this.fileService.readAsText(manifestPath, FileName.MANIFEST.valueOf())
             .then(async (fileContents) => {
-                console.log('fileContents', JSON.parse(fileContents));
                 const childContents = JSON.parse(fileContents).archive.items;
                 childContents.shift();
                 const childIdentifiers: string[] = [];
@@ -37,9 +39,8 @@ export class DeleteContentHandler {
                     childIdentifiers.push(element.identifier);
                 });
                 const childContentsFromDb: ContentEntry.SchemaMap[] = await this.findAllContentsFromDbWithIdentifiers(childIdentifiers);
-                // console.log('childContentsFromDb', childContentsFromDb);
                 childContentsFromDb.forEach(async child => {
-                    await this.deleteOrUpdateContent(child, isChildContent);
+                    await this.deleteOrUpdateContent(child, true, isChildContent);
                     isUpdateLastModifiedTime = true;
                     const path: string = child[COLUMN_NAME_PATH]!;
                     if (path && isUpdateLastModifiedTime) {
@@ -57,10 +58,36 @@ export class DeleteContentHandler {
             }).catch((err) => {
                 console.log('fileread err', err);
             });
+
+        const metaDataList = await this.getMetaData(this.fileMapList);
+        if (this.updateNewContentModels.length) {
+            this.dbService.beginTransaction();
+            // Update existing content in DB
+            for (const e of this.updateNewContentModels) {
+                const newContentModel = e as ContentEntry.SchemaMap;
+                const identifier = newContentModel[ContentEntry.COLUMN_NAME_IDENTIFIER];
+
+                let size = 0;
+                if (metaDataList) {
+                    size = metaDataList[identifier] ? metaDataList[identifier].size : 0;
+                    // metaDataList[identifier].lastModifiedTime
+                }
+                newContentModel[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = size;
+
+                await this.dbService.update({
+                    table: ContentEntry.TABLE_NAME,
+                    selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
+                    selectionArgs: [identifier],
+                    modelJson: newContentModel
+                }).toPromise();
+
+            }
+            this.dbService.endTransaction(true);
+        }
     }
 
 
-    async deleteOrUpdateContent(contentInDb: ContentEntry.SchemaMap, isChildContent: boolean) {
+    async deleteOrUpdateContent(contentInDb: ContentEntry.SchemaMap, isChildItems: boolean, isChildContent: boolean) {
         let refCount: number = contentInDb[COLUMN_NAME_REF_COUNT]!;
         let contentState: number;
         let visibility: string = contentInDb[COLUMN_NAME_VISIBILITY]!;
@@ -87,10 +114,9 @@ export class DeleteContentHandler {
             // Do not update the content state if mimeType is "application/vnd.ekstep.content-collection" and refCount is more than 1.
             if (mimeType === MimeType.COLLECTION.valueOf() && refCount > 1) {
                 contentState = State.ARTIFACT_AVAILABLE.valueOf();
-                // } else if (refCount > 1 && isChildItems) {
-                //     // Visibility will remain Default only.
-                //     contentState = State.ARTIFACT_AVAILABLE.valueOf();
-                // }
+            } else if (refCount > 1 && isChildItems) {
+                // Visibility will remain Default only.
+                contentState = State.ARTIFACT_AVAILABLE.valueOf();
             } else {
                 // Set the visibility to Parent so that this content will not visible in My contents / Downloads section.
                 // Update visibility
@@ -116,13 +142,23 @@ export class DeleteContentHandler {
             contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY] = visibility;
             contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT] = ContentUtil.addOrUpdateRefCount(refCount);
             contentInDb[ContentEntry.COLUMN_NAME_CONTENT_STATE] = contentState;
-            contentInDb[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = 0;
-            await this.dbService.update({
-                table: ContentEntry.TABLE_NAME,
-                modelJson: contentInDb,
-                selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
-                selectionArgs: [contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]]
-            }).map(v => v > 0).toPromise();
+            if (!isChildItems) {
+                contentInDb[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = 0;
+                await this.dbService.update({
+                    table: ContentEntry.TABLE_NAME,
+                    modelJson: contentInDb,
+                    selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
+                    selectionArgs: [contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]]
+                }).map(v => v > 0).toPromise();
+            } else {
+                const fileMap: { [key: string]: any } = {};
+                fileMap['identifier'] = contentInDb[COLUMN_NAME_IDENTIFIER];
+                fileMap['path'] = ContentUtil.getBasePath(path);
+
+                this.fileMapList.push(fileMap);
+
+                this.updateNewContentModels.push(contentInDb);
+            }
         }
     }
 
@@ -151,17 +187,17 @@ export class DeleteContentHandler {
     }
 
     // TODO: move this method to file-service
-    // private async getMetaData(fileMapList: any[]) {
-    //     return new Promise((resolve, reject) => {
-    //         buildconfigreader.getMetaData(fileMapList,
-    //             (entry) => {
-    //                 resolve(entry);
-    //             }, err => {
-    //                 console.error(err);
-    //                 reject(err);
-    //             });
-    //     });
-    // }
+    private async getMetaData(fileMapList: any[]) {
+        return new Promise((resolve, reject) => {
+            buildconfigreader.getMetaData(fileMapList,
+                (entry) => {
+                    resolve(entry);
+                }, err => {
+                    console.error(err);
+                    reject(err);
+                });
+        });
+    }
 
 
 }

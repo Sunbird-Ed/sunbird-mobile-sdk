@@ -225,7 +225,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         await deleteContentHandler.deleteAllChildren(contentInDb, contentDelete.isChildContent);
                     }
 
-                    await deleteContentHandler.deleteOrUpdateContent(contentInDb, contentDelete.isChildContent);
+                    await deleteContentHandler.deleteOrUpdateContent(contentInDb, false, contentDelete.isChildContent);
                 } else {
                     contentDeleteResponse.push({
                         identifier: contentDelete.contentId,
