@@ -74,28 +74,6 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
         }).mapTo(undefined).toPromise();
     }
 
-    private static async generateNetworkSpeedTelemetry(
-        downloads: { downloadSpeed: number, bytesDownloaded: number, totalSizeInBytes: number }[]
-    ): Promise<void> {
-        return TelemetryLogger.log.interact({
-            type: InteractType.OTHER,
-            subType: InteractSubType.NETWORK_SPEED,
-            env: 'sdk',
-            pageId: 'sdk',
-            valueMap: {
-                'networkSpeedPercentileMap': {
-                    '25': percentile(25, downloads.map(d => d.downloadSpeed)),
-                    '50': percentile(50, downloads.map(d => d.downloadSpeed)),
-                    '75': percentile(75, downloads.map(d => d.downloadSpeed))
-                },
-                'totalSizeInBytes': downloads.reduce((acc, d) => {
-                    return acc > d.totalSizeInBytes ? acc : d.totalSizeInBytes;
-                }, 0),
-                'networkType': navigator['connection']['type']
-            },
-        }).mapTo(undefined).toPromise();
-    }
-
     onInit(): Observable<undefined> {
         return this.switchToNextDownloadRequest()
             .mergeMap(() => {

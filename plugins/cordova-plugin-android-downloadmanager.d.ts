@@ -50,8 +50,14 @@ interface EnqueuedEntry {
     totalSizeBytes: number;
 }
 
+interface DownloadSpeedLog {
+    totalKBdownloaded: number;
+    distributionInKiloBytesPerSecond: {[key: string]: number};
+}
+
 declare var downloadManager: {
     enqueue: (enqueueRequest: EnqueueRequest, callback?: (err, id: string) => void) => void;
     query: (filter: EnqueueFilter | undefined, callback?: (err, entries: EnqueuedEntry[]) => void) => void;
     remove: (ids: string[], callback?: (err, removeCount: number) => void) => void;
+    fetchSpeedLog: (successCallback: (downloadSpeedLog: DownloadSpeedLog) => void, errorCallback: () => void) => void;
 };
