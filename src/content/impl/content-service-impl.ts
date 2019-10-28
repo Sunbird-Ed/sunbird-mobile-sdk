@@ -251,7 +251,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     exportContent(contentExportRequest: ContentExportRequest): Observable<ContentExportResponse> {
-        const exportHandler = new ImportNExportHandler(this.deviceInfo, this.dbService);
+        const exportHandler = new ImportNExportHandler(this.deviceInfo, this.dbService, this.fileService);
         return Observable.fromPromise(exportHandler.getContentExportDBModelToExport(contentExportRequest.contentIds)
             .then((contentsInDb: ContentEntry.SchemaMap[]) => {
                 return this.fileService.getTempLocation(contentExportRequest.destinationFolder)
