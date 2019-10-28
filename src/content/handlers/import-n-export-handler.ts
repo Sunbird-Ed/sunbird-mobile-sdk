@@ -98,7 +98,6 @@ export class ImportNExportHandler {
         await this.fileService!.readAsText(manifestPath, FileName.MANIFEST.valueOf())
         .then(async (fileContents) => {
             const childContents = JSON.parse(fileContents).archive.items;
-            childContents.shift();
             const childIdentifiers: string[] = [];
             childContents.forEach(element => {
                 childIdentifiers.push(element.identifier);
