@@ -5,7 +5,7 @@ import {TelemetryLogger} from './telemetry-logger';
 export class TelemetryAutoSyncUtil {
     private shouldSync = false;
 
-    private static async generateDownloadSpeedTelemetry(): Promise<void> {
+    private static async generateDownloadSpeedTelemetry(interval: number): Promise<void> {
         const downloadSpeedLog: DownloadSpeedLog =  await new Promise<any>((resolve, reject) => {
             if (downloadManager.fetchSpeedLog) {
                 downloadManager.fetchSpeedLog(resolve, reject);
@@ -29,6 +29,7 @@ export class TelemetryAutoSyncUtil {
         };
 
         const valueMap = {
+            duration: interval,
             totalKiloBytesDownloaded: downloadSpeedLog.totalKBdownloaded,
             distributionInKiloBytesPerSecond: Object.keys(rangeMap).reduce<{[key: string]: number}>((acc, key) => {
                 if (downloadSpeedLog.distributionInKiloBytesPerSecond[key]) {
@@ -58,7 +59,7 @@ export class TelemetryAutoSyncUtil {
 
         return Observable
             .interval(interval)
-            .do(() => TelemetryAutoSyncUtil.generateDownloadSpeedTelemetry())
+            .do(() => TelemetryAutoSyncUtil.generateDownloadSpeedTelemetry(interval))
             .filter(() => this.shouldSync)
             .do(() => this.shouldSync = false)
             .mergeMap(() => this.telemetryService.sync()
