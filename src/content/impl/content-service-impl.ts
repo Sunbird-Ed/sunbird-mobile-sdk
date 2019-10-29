@@ -93,6 +93,7 @@ import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
+import { FileName } from './../util/content-constants';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -225,7 +226,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         await deleteContentHandler.deleteAllChildren(contentInDb, contentDelete.isChildContent);
                     }
 
-                    await deleteContentHandler.deleteOrUpdateContent(contentInDb, false, contentDelete.isChildContent);
+                        await deleteContentHandler.deleteOrUpdateContent(contentInDb, false, contentDelete.isChildContent);
                 } else {
                     contentDeleteResponse.push({
                         identifier: contentDelete.contentId,
@@ -307,8 +308,32 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         }
 
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId))
-            .mergeMap((rows: ContentEntry.SchemaMap[]) => {
-                return childContentHandler.fetchChildrenOfContent(rows[0], 0, childContentRequest.level!, hierarchyInfoList);
+            .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
+                const childContentsMap: Map<string, ContentEntry.SchemaMap> = new Map<string, ContentEntry.SchemaMap>();
+                // const parentContent = ContentMapper.mapContentDBEntryToContent(rows[0]);
+                const data = JSON.parse(rows[0][ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+                const childIdentifiers = data.childNodes;
+
+                // const childIdentifiers = await childContentHandler.getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
+                console.log('childIdentifiers', childIdentifiers);
+
+                const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
+                                WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER}
+                                IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)})`;
+
+                const childContents = await this.dbService.execute(query).toPromise();
+                // console.log('childContents', childContents);
+                childContents.forEach(element => {
+                    childContentsMap.set(element.identifier, element);
+                });
+                return childContentHandler
+                .fetchChildrenOfContent(
+                    rows[0],
+                    childContentsMap,
+                    0,
+                    childContentRequest.level!,
+                    hierarchyInfoList
+                );
             });
     }
 
@@ -388,6 +413,16 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         this.dbService, this.deviceInfo, this.getContentDetailsHandler, this.eventsBusService, this.sharedPreferences)
                         .execute(importResponse.body);
                 }).then((importResponse: Response) => {
+                    this.eventsBusService.emit({
+                        namespace: EventNamespace.CONTENT,
+                        event: {
+                            type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                            payload: {
+                                contentId: importContentContext.rootIdentifier ?
+                                    importContentContext.rootIdentifier : importContentContext.identifiers![0]
+                            }
+                        }
+                    });
                     const response: Response = new Response();
                     return new CreateContentImportManifest(this.dbService, this.deviceInfo, this.fileService).execute(importResponse.body);
                 // }).then((importResponse: Response) => {
@@ -403,9 +438,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         }).catch(() => {
                             return Promise.reject(response);
                         });
-                }).then((importResponse: Response) => {
-                    // new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
-                    return importResponse;
+                // }).then((importResponse: Response) => {
+                //     new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
+                //     return importResponse;
                 }).then((importResponse: Response) => {
                     return new GenerateImportShareTelemetry(this.telemetryService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
@@ -733,4 +768,5 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return Observable.of(undefined);
             });
     }
+
 }

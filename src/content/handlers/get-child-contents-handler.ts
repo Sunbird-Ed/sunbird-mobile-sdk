@@ -8,21 +8,24 @@ import {GetContentDetailsHandler} from './get-content-details-handler';
 import {Stack} from '../util/stack';
 import {ContentMapper} from '../util/content-mapper';
 import {ArrayUtil} from '../../util/array-util';
+import {FileService} from '../../util/file/def/file-service';
+import { FileName } from './../util/content-constants';
 
 export class ChildContentsHandler {
 
     constructor(private dbService: DbService,
-                private getContentDetailsHandler: GetContentDetailsHandler) {
+                private getContentDetailsHandler: GetContentDetailsHandler,
+                private fileService?: FileService) {
     }
 
     public async fetchChildrenOfContent(contentInDb: ContentEntry.SchemaMap,
+                                        childContentsMap,
                                         currentLevel: number,
                                         level: number,
                                         sourceInfoList?: HierarchyInfo[]): Promise<Content> {
         const content: Content = ContentMapper.mapContentDBEntryToContent(contentInDb);
         const childContentModels: ContentEntry.SchemaMap[] =
-            await this.getSortedChildrenList(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA], ChildContents.ALL);
-
+            await this.getSortedChildrenList(contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA], ChildContents.ALL, childContentsMap);
         if (childContentModels && childContentModels.length) {
             let hierarchyInfoList: HierarchyInfo[] = [];
             hierarchyInfoList = hierarchyInfoList.concat(sourceInfoList!);
@@ -37,6 +40,7 @@ export class ChildContentsHandler {
                 for (const element of childContentModels) {
                     const childContentModel = element as ContentEntry.SchemaMap;
                     const childContent: Content = await this.fetchChildrenOfContent(childContentModel,
+                        childContentsMap,
                         currentLevel + 1,
                         level,
                         hierarchyInfoList);
@@ -60,7 +64,7 @@ export class ChildContentsHandler {
         while (!contentStack.isEmpty()) {
             node = contentStack.pop();
             if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
-                const childContentsInDb: ContentEntry.SchemaMap[] = await this.getSortedChildrenList(
+                const childContentsInDb: ContentEntry.SchemaMap[] = await this.getSortedChildrenListOld(
                     node[ContentEntry.COLUMN_NAME_LOCAL_DATA],
                     ChildContents.ALL);
                 childContentsInDb.forEach((childContentInDb) => {
@@ -171,7 +175,8 @@ export class ChildContentsHandler {
         return previousContentIdentifier;
     }
 
-    private async getSortedChildrenList(localData: string, level: number): Promise<ContentEntry.SchemaMap[]> {
+    // remove this later and use 'getSortedChildrenList' by passing childrencontentmap
+    private async getSortedChildrenListOld(localData: string, level: number): Promise<ContentEntry.SchemaMap[]> {
         const data = JSON.parse(localData);
         let childContents: ChildContent[] = data.children;
         if (!childContents || !childContents.length) {
@@ -215,5 +220,71 @@ export class ChildContentsHandler {
                         IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)}) ${filter} ${orderBy}`;
         return this.dbService.execute(query).toPromise();
     }
+
+
+    private async getSortedChildrenList(localData: string, level: number, childContentsMap): Promise<ContentEntry.SchemaMap[]> {
+        const data = JSON.parse(localData);
+        let childContents: ChildContent[] = data.children;
+        if (!childContents || !childContents.length) {
+            return [];
+        }
+
+        childContents = childContents.sort((childContent1, childContent2) => {
+            return (childContent1.index - childContent2.index);
+        });
+
+        let childContentsFromDB: ContentEntry.SchemaMap[] = [];
+        for (const childContent of childContents) {
+            const child = childContentsMap.get(childContent.identifier);
+            if (child) {
+                childContentsFromDB.push(child);
+            } else {
+                const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
+                 WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER} = '${childContent.identifier}'`;
+                const childFromDb = await this.dbService.execute(query).toPromise();
+                if (childFromDb.length) {
+                    childContentsFromDB.push(childFromDb[0]);
+                }
+            }
+        }
+
+        switch (level) {
+            case ChildContents.DOWNLOADED.valueOf():
+                // filter = ' AND ' + ContentEntry.COLUMN_NAME_CONTENT_STATE + '=\'' + State.ARTIFACT_AVAILABLE + '\'';
+                childContentsFromDB = childContentsFromDB
+                                        .filter((c) => c[ContentEntry.COLUMN_NAME_CONTENT_STATE] = State.ARTIFACT_AVAILABLE);
+                break;
+            case ChildContents.SPINE.valueOf():
+                // filter = ' AND ' + ContentEntry.COLUMN_NAME_CONTENT_STATE + '=\'' + State.ONLY_SPINE + '\'';
+                childContentsFromDB = childContentsFromDB.filter((c) => c[ContentEntry.COLUMN_NAME_CONTENT_STATE] = State.ONLY_SPINE);
+                break;
+            case ChildContents.ALL.valueOf():
+            default:
+                break;
+        }
+
+        return childContentsFromDB;
+
+    }
+
+    // need to pass fileservice in constructor to use this method
+    public async getChildIdentifiersFromManifest (path: string) {
+        const manifestPath = 'file:///' + path;
+        const childIdentifiers: string[] = [];
+        await this.fileService!.readAsText(manifestPath, FileName.MANIFEST.valueOf())
+        .then(async (fileContents) => {
+            console.log('fileContents', JSON.parse(fileContents));
+            const childContents = JSON.parse(fileContents).archive.items;
+            childContents.shift();
+            childContents.forEach(element => {
+                childIdentifiers.push(element.identifier);
+            });
+            return childIdentifiers;
+        }).catch((err) => {
+            console.log('getChildIdentifiersFromManifest err', err);
+        });
+        return childIdentifiers;
+    }
+
 
 }
