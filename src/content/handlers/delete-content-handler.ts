@@ -29,7 +29,7 @@ export class DeleteContentHandler {
 
     async deleteAllChildren(row: ContentEntry.SchemaMap, isChildContent: boolean) {
         let isUpdateLastModifiedTime = false;
-        const manifestPath = 'file:///' + row[ContentEntry.COLUMN_NAME_PATH];
+        const manifestPath = ContentUtil.getBasePath(row[ContentEntry.COLUMN_NAME_PATH]!);
         await this.fileService.readAsText(manifestPath, FileName.MANIFEST.valueOf())
             .then(async (fileContents) => {
                 const childContents = JSON.parse(fileContents).archive.items;
