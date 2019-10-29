@@ -14,4 +14,5 @@ export declare class UpdateSizeOnDevice {
     private getSizeOnDevice;
     private updateInDb;
     private getMetaData;
+    private updateTextBookSize;
 }
