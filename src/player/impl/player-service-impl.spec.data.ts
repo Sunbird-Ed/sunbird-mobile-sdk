@@ -7,7 +7,8 @@ export const mockSdkConfigWithSamplePlayerConfig: Partial<SdkConfig> = {
         user_authentication: {
             redirectUrl: 'SAMPLE_REDIRECT_URL',
             authUrl: 'SAMPLE_AUTH_URL',
-            mergeUserHost: ''
+            mergeUserHost: '',
+            autoMergeApiPath: ''
         },
         api_authentication: {
             mobileAppKey: 'SAMPLE_MOBILE_APP_KEY',
