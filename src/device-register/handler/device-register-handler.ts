@@ -60,7 +60,7 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
                 .withPath(this.deviceRegisterConfig!.apiPath + DeviceRegisterHandler.DEVICE_REGISTER_ENDPOINT
                     + '/' + this.deviceInfo!.getDeviceID())
                 .withApiToken(true)
-                .withBody(request)
+                .withBody({request: request})
                 .build();
 
             return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
