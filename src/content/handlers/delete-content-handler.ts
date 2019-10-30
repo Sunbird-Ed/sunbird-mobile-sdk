@@ -1,21 +1,21 @@
-import {DbService} from '../../db';
-import {ContentEntry} from '../db/schema';
-import {ContentUtil} from '../util/content-util';
-import {MimeType, State, Visibility} from '../util/content-constants';
+import { DbService } from '../../db';
+import { ContentEntry } from '../db/schema';
+import { ContentUtil } from '../util/content-util';
+import { MimeType, State, Visibility, FileName } from '../util/content-constants';
 import Queue from 'typescript-collections/dist/lib/Queue';
-import {FileService} from '../../util/file/def/file-service';
-import {SharedPreferences} from '../../util/shared-preferences';
-import {ContentKeys} from '../../preference-keys';
-import {ArrayUtil} from '../../util/array-util';
+import { FileService } from '../../util/file/def/file-service';
+import { SharedPreferences } from '../../util/shared-preferences';
+import { ContentKeys } from '../../preference-keys';
+import { ArrayUtil } from '../../util/array-util';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 import KEY_LAST_MODIFIED = ContentKeys.KEY_LAST_MODIFIED;
-import {FileUtil} from '../../util/file/util/file-util';
+import { FileUtil } from '../../util/file/util/file-util';
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
-import {ContentData} from '..';
+import { ContentData } from '..';
 
 export class DeleteContentHandler {
 
@@ -23,46 +23,41 @@ export class DeleteContentHandler {
     private fileMapList: { [key: string]: any }[] = [];
 
     constructor(private dbService: DbService,
-                private fileService: FileService,
-                private sharedPreferences: SharedPreferences) {
+        private fileService: FileService,
+        private sharedPreferences: SharedPreferences) {
     }
 
     async deleteAllChildren(row: ContentEntry.SchemaMap, isChildContent: boolean) {
         let isUpdateLastModifiedTime = false;
-        const contentInDbList: Queue<ContentEntry.SchemaMap> = new Queue();
-        // TODO Add LinkedList for ordering issue
-        contentInDbList.add(row);
-        let node: ContentEntry.SchemaMap | undefined;
-        while (!contentInDbList.isEmpty()) {
-            node = contentInDbList.dequeue();
-            if (ContentUtil.hasChildren(node![ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
-                const childContentsIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(
-                    node![ContentEntry.COLUMN_NAME_LOCAL_DATA]);
-                const contentsInDB: ContentEntry.SchemaMap[] = await this.findAllContentsFromDbWithIdentifiers(childContentsIdentifiers);
-                contentsInDB.forEach((contentInDb: ContentEntry.SchemaMap) => {
-                    contentInDbList.add(contentInDb);
+        const manifestPath = ContentUtil.getBasePath(row[ContentEntry.COLUMN_NAME_PATH]!);
+        await this.fileService.readAsText(manifestPath, FileName.MANIFEST.valueOf())
+            .then(async (fileContents) => {
+                const childContents = JSON.parse(fileContents).archive.items;
+                childContents.shift();
+                const childIdentifiers: string[] = [];
+                childContents.forEach(element => {
+                    childIdentifiers.push(element.identifier);
                 });
-            }
-
-            // Deleting only child content
-            if (!(row[COLUMN_NAME_IDENTIFIER] === node![COLUMN_NAME_IDENTIFIER])) {
-                isUpdateLastModifiedTime = true;
-                await this.deleteOrUpdateContent(node!, true, isChildContent);
-            }
-        }
-
-        const path: string = row[COLUMN_NAME_PATH]!;
-        if (path && isUpdateLastModifiedTime) {
-            const contentRootPath: string | undefined = ContentUtil.getFirstPartOfThePathNameOnLastDelimiter(path);
-            if (contentRootPath) {
-                try {
-                    // Update last modified time
-                    await this.sharedPreferences.putString(KEY_LAST_MODIFIED, new Date().getMilliseconds() + '').toPromise();
-                } catch (e) {
-                    console.log('Error', e);
-                }
-            }
-        }
+                const childContentsFromDb: ContentEntry.SchemaMap[] = await this.findAllContentsFromDbWithIdentifiers(childIdentifiers);
+                childContentsFromDb.forEach(async child => {
+                    await this.deleteOrUpdateContent(child, true, isChildContent);
+                    isUpdateLastModifiedTime = true;
+                    const path: string = child[COLUMN_NAME_PATH]!;
+                    if (path && isUpdateLastModifiedTime) {
+                        const contentRootPath: string | undefined = ContentUtil.getFirstPartOfThePathNameOnLastDelimiter(path);
+                        if (contentRootPath) {
+                            try {
+                                // Update last modified time
+                                this.sharedPreferences.putString(KEY_LAST_MODIFIED, new Date().getMilliseconds() + '').toPromise();
+                            } catch (e) {
+                                console.log('Error', e);
+                            }
+                        }
+                    }
+                });
+            }).catch((err) => {
+                console.log('fileread err', err);
+            });
 
         const metaDataList = await this.getMetaData(this.fileMapList);
         if (this.updateNewContentModels.length) {
@@ -90,6 +85,7 @@ export class DeleteContentHandler {
             this.dbService.endTransaction(true);
         }
     }
+
 
     async deleteOrUpdateContent(contentInDb: ContentEntry.SchemaMap, isChildItems: boolean, isChildContent: boolean) {
         let refCount: number = contentInDb[COLUMN_NAME_REF_COUNT]!;
@@ -122,7 +118,6 @@ export class DeleteContentHandler {
                 // Visibility will remain Default only.
                 contentState = State.ARTIFACT_AVAILABLE.valueOf();
             } else {
-
                 // Set the visibility to Parent so that this content will not visible in My contents / Downloads section.
                 // Update visibility
                 if (visibility === Visibility.DEFAULT.valueOf()) {
@@ -142,7 +137,7 @@ export class DeleteContentHandler {
                 if (localData) {
                     appIcon = localContentData.appIcon;
                 }
-                await this.rm(ContentUtil.getBasePath(path), appIcon ? FileUtil.getFileName(appIcon) : '');
+                this.rm(ContentUtil.getBasePath(path), appIcon ? FileUtil.getFileName(appIcon) : '');
             }
             contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY] = visibility;
             contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT] = ContentUtil.addOrUpdateRefCount(refCount);
