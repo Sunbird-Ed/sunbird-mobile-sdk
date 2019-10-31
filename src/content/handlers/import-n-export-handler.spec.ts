@@ -3,6 +3,7 @@ import {DeviceInfo} from '../../util/device';
 import {DbService} from '../../db';
 import {ContentEntry} from '../db/schema';
 import {Observable} from 'rxjs';
+import { FileService } from '../../util/file/def/file-service';
 
 
 // jest.mock('moment');
@@ -11,11 +12,13 @@ describe('ImportNExportHandler', () => {
     let importNExportHandler: ImportNExportHandler;
     const mockDeviceInfo: Partial<DeviceInfo> = {};
     const mockDbService: Partial<DbService> = {};
+    const mockFileService: Partial<FileService> = {};
 
     beforeAll(() => {
         importNExportHandler = new ImportNExportHandler(
             mockDeviceInfo as DeviceInfo,
-            mockDbService as DbService
+            mockDbService as DbService,
+            mockFileService as FileService
         );
     });
 
@@ -35,7 +38,8 @@ describe('ImportNExportHandler', () => {
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
             mime_type: 'MIME_TYPE',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE'
+            content_type: 'CONTENT_TYPE',
+            path: 'sample_path'
         }];
         mockDeviceInfo.getDeviceID = jest.fn(() => Observable.of([]));
         // act
@@ -56,10 +60,25 @@ describe('ImportNExportHandler', () => {
         expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
     });
 
-    it('should export Ecar feature', async (done) => {
+    it('should fetch all children from manifest.json file', async (done) => {
         // arrange
-        const request = [];
-        mockDbService.execute = jest.fn(() => Observable.of([]));
+        const request = ['content_id_1', 'content_id_2'];
+        mockDbService.execute = jest.fn(() => {});
+        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of([{
+            identifier: 'IDENTIFIER',
+            server_data: 'SERVER_DATA',
+            local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
+            mime_type: 'MIME_TYPE',
+            manifest_version: 'MAINFEST_VERSION',
+            content_type: 'CONTENT_TYPE',
+            path: 'sample_path'
+        }]));
+        mockFileService.readAsText = jest.fn(() => {});
+        const readAsText = (mockFileService.readAsText as jest.Mock)
+        .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
+        readAsText().then((value) => {
+            return value;
+        });
         // act
         await importNExportHandler.getContentExportDBModelToExport(request).then(() => {
             // assert

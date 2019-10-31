@@ -5,6 +5,7 @@ import { ContentEntry } from '../db/schema';
 import { ContentMapper } from '../util/content-mapper';
 import { Observable } from 'rxjs';
 import { HierarchyInfo } from '../def/content';
+import { ChildContent } from '..';
 
 describe('ChildContentsHandler', () => {
     let childContentHandler: ChildContentsHandler;
@@ -38,11 +39,20 @@ describe('ChildContentsHandler', () => {
         };
         const currentLevel = -1;
         const level = -1;
+        const childData: ChildContent = {
+            identifier: 'IDENTIFIER',
+            name: 'SAMPLE_NAME',
+            objectType: '',
+            relation: '',
+            index: 1
+        };
+        const childContentsMap = new Map();
+        childContentsMap.set('IDENTIFIER', 'd0_id');
         ContentMapper.mapContentDBEntryToContent = jest.fn(() => Observable.of([]));
         const data = JSON.parse(request[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
         mockDbService.execute = jest.fn(() => Observable.of([]));
         // act
-        await childContentHandler.fetchChildrenOfContent(request, currentLevel, level).then(() => {
+        await childContentHandler.fetchChildrenOfContent(request, childContentsMap, currentLevel, level).then(() => {
             // assert
             expect(ContentMapper.mapContentDBEntryToContent).toHaveBeenCalled();
             expect(mockDbService.execute).toHaveBeenCalled();

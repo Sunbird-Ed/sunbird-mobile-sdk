@@ -478,7 +478,7 @@ describe.only('ProfileServiceImpl', () => {
         it('should delegate to SearchLocationHandler', (done) => {
             // arrange
             const response: LocationSearchResult[] = [];
-            (SearchLocationHandler as jest.Mock<SearchLocationHandler>).mockImplementation(() => {
+            (SearchLocationHandler as any as jest.Mock<SearchLocationHandler>).mockImplementation(() => {
                 return {
                     handle: jest.fn(() => Observable.of(response))
                 };
@@ -517,7 +517,7 @@ describe.only('ProfileServiceImpl', () => {
                 identifier: 'SAMPLE_CHANNEL'
             } as Partial<Channel>;
             mockFrameworkService.getDefaultChannelDetails = () => Observable.of(sampleChannel as Channel);
-            mockFrameworkService.getActiveChannelId = () => Observable.of('SAMPLE_CHANNEL_1');;
+            mockFrameworkService.getActiveChannelId = () => Observable.of('SAMPLE_CHANNEL_1');
 
             // act
             profileService.isDefaultChannelProfile().subscribe((isDefaultChannelProfile) => {
