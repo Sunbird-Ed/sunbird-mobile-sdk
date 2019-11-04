@@ -24,9 +24,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
 
     handle(request: FormRequest): Observable<{ [key: string]: {} }> {
         if (request.from && request.from === CachedItemRequestSourceFrom.SERVER) {
-            return this.fetchFormServer(request)
-            // TODO: remove fallback for production
-                .catch(() => this.fetchFromFile(request));
+            return this.fetchFormServer(request).map(res => res['form']);
         }
 
         return this.cachedItemStore.getCached(
