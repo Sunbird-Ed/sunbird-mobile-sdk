@@ -1,15 +1,14 @@
 import {ContentEntry} from '../db/schema';
-import Queue from 'typescript-collections/dist/lib/Queue';
 import {ContentUtil} from '../util/content-util';
-import {Visibility, FileName} from '../util/content-constants';
-import {DeviceInfo} from '../../util/device/def/device-info';
 import * as moment from 'moment';
 import {DbService} from '../../db';
 import {ArrayUtil} from '../../util/array-util';
+import {FileService} from '../../util/file/def/file-service';
+import {DeviceInfo} from '../../util/device';
+import {FileName, Visibility} from '..';
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
-import { FileService } from '../../util/file/def/file-service';
 
 export class ImportNExportHandler {
     private static readonly EKSTEP_CONTENT_ARCHIVE = 'ekstep.content.archive';
@@ -17,8 +16,8 @@ export class ImportNExportHandler {
 
     constructor(private deviceInfo: DeviceInfo,
                 private dbService?: DbService,
-                private fileService?: FileService,
-                ) {
+                private fileService?: FileService
+    ) {
 
     }
 
@@ -92,20 +91,20 @@ export class ImportNExportHandler {
 
     public async getContentExportDBModelToExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {
         let contentModelToExport: ContentEntry.SchemaMap[] = [];
-       // const queue: Queue<ContentEntry.SchemaMap> = new Queue();
+        // const queue: Queue<ContentEntry.SchemaMap> = new Queue();
         const contentsInDb: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(contentIds);
         const manifestPath = ContentUtil.getBasePath(contentsInDb[0][ContentEntry.COLUMN_NAME_PATH]!);
         await this.fileService!.readAsText(manifestPath, FileName.MANIFEST.valueOf())
-        .then(async (fileContents) => {
-            const childContents = JSON.parse(fileContents).archive.items;
-            const childIdentifiers: string[] = [];
-            childContents.forEach(element => {
-                childIdentifiers.push(element.identifier);
+            .then(async (fileContents) => {
+                const childContents = JSON.parse(fileContents).archive.items;
+                const childIdentifiers: string[] = [];
+                childContents.forEach(element => {
+                    childIdentifiers.push(element.identifier);
+                });
+                contentModelToExport = await this.findAllContentsWithIdentifiers(childIdentifiers);
+            }).catch((err) => {
+                console.log('fileRead error', err);
             });
-            contentModelToExport = await this.findAllContentsWithIdentifiers(childIdentifiers);
-        }).catch((err) => {
-            console.log('fileRead error', err);
-        });
         // contentsInDb.forEach((contentInDb) => {
         //     queue.add(contentInDb);
         // });

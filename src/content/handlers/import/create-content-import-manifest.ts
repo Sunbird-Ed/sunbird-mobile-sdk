@@ -4,7 +4,7 @@ import {ContentEntry} from '../../db/schema';
 import Queue from 'typescript-collections/dist/lib/Queue';
 import {ContentUtil} from '../../util/content-util';
 import {ImportNExportHandler} from '../import-n-export-handler';
-import {DeviceInfo} from '../../../util/device/def/device-info';
+import {DeviceInfo} from '../../../util/device';
 import {FileService} from '../../../util/file/def/file-service';
 import {Response} from '../../../api';
 

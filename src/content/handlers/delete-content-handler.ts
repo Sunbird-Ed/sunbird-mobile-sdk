@@ -1,21 +1,12 @@
-import { DbService } from '../../db';
-import { ContentEntry } from '../db/schema';
-import { ContentUtil } from '../util/content-util';
-import { MimeType, State, Visibility, FileName } from '../util/content-constants';
-import Queue from 'typescript-collections/dist/lib/Queue';
-import { FileService } from '../../util/file/def/file-service';
-import { SharedPreferences } from '../../util/shared-preferences';
-import { ContentKeys } from '../../preference-keys';
-import { ArrayUtil } from '../../util/array-util';
-import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
-import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
-import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
-import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
-import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
-import KEY_LAST_MODIFIED = ContentKeys.KEY_LAST_MODIFIED;
-import { FileUtil } from '../../util/file/util/file-util';
-import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
-import { ContentData } from '..';
+import {DbService} from '../../db';
+import {ContentEntry} from '../db/schema';
+import {ContentUtil} from '../util/content-util';
+import {ContentData, FileName, MimeType, State, Visibility} from '..';
+import {FileService} from '../../util/file/def/file-service';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {ContentKeys} from '../../preference-keys';
+import {ArrayUtil} from '../../util/array-util';
+import {FileUtil} from '../../util/file/util/file-util';
 
 export class DeleteContentHandler {
 
@@ -23,8 +14,8 @@ export class DeleteContentHandler {
     private fileMapList: { [key: string]: any }[] = [];
 
     constructor(private dbService: DbService,
-        private fileService: FileService,
-        private sharedPreferences: SharedPreferences) {
+                private fileService: FileService,
+                private sharedPreferences: SharedPreferences) {
     }
 
     async deleteAllChildren(row: ContentEntry.SchemaMap, isChildContent: boolean) {
@@ -42,13 +33,14 @@ export class DeleteContentHandler {
                 childContentsFromDb.forEach(async child => {
                     await this.deleteOrUpdateContent(child, true, isChildContent);
                     isUpdateLastModifiedTime = true;
-                    const path: string = child[COLUMN_NAME_PATH]!;
+                    const path: string = child[ContentEntry.COLUMN_NAME_PATH]!;
                     if (path && isUpdateLastModifiedTime) {
                         const contentRootPath: string | undefined = ContentUtil.getFirstPartOfThePathNameOnLastDelimiter(path);
                         if (contentRootPath) {
                             try {
                                 // Update last modified time
-                                this.sharedPreferences.putString(KEY_LAST_MODIFIED, new Date().getMilliseconds() + '').toPromise();
+                                this.sharedPreferences.putString(ContentKeys.KEY_LAST_MODIFIED,
+                                    new Date().getMilliseconds() + '').toPromise();
                             } catch (e) {
                                 console.log('Error', e);
                             }
@@ -86,13 +78,12 @@ export class DeleteContentHandler {
         }
     }
 
-
     async deleteOrUpdateContent(contentInDb: ContentEntry.SchemaMap, isChildItems: boolean, isChildContent: boolean) {
-        let refCount: number = contentInDb[COLUMN_NAME_REF_COUNT]!;
+        let refCount: number = contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT]!;
         let contentState: number;
-        let visibility: string = contentInDb[COLUMN_NAME_VISIBILITY]!;
-        const mimeType: string = contentInDb[COLUMN_NAME_MIME_TYPE];
-        const path: string = contentInDb[COLUMN_NAME_PATH]!;
+        let visibility: string = contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY]!;
+        const mimeType: string = contentInDb[ContentEntry.COLUMN_NAME_MIME_TYPE];
+        const path: string = contentInDb[ContentEntry.COLUMN_NAME_PATH]!;
         if (isChildContent) {
             // If visibility is Default it means this content was visible in my downloads.
             // After deleting artifact for this content it should not visible as well so reduce the refCount also for this.
@@ -131,7 +122,7 @@ export class DeleteContentHandler {
         // if there are no entry in DB for any content then on this case contentModel.getPath() will be null
         if (path) {
             if (contentState === State.ONLY_SPINE.valueOf()) {
-                const localData = contentInDb[COLUMN_NAME_LOCAL_DATA];
+                const localData = contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA];
                 const localContentData: ContentData = localData && JSON.parse(localData);
                 let appIcon = '';
                 if (localData) {
@@ -152,7 +143,7 @@ export class DeleteContentHandler {
                 }).map(v => v > 0).toPromise();
             } else {
                 const fileMap: { [key: string]: any } = {};
-                fileMap['identifier'] = contentInDb[COLUMN_NAME_IDENTIFIER];
+                fileMap['identifier'] = contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER];
                 fileMap['path'] = ContentUtil.getBasePath(path);
 
                 this.fileMapList.push(fileMap);
@@ -164,7 +155,7 @@ export class DeleteContentHandler {
 
     private findAllContentsFromDbWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
         const identifiersStr = ArrayUtil.joinPreservingQuotes(identifiers);
-        const filter = ` WHERE ${COLUMN_NAME_IDENTIFIER} IN (${identifiersStr}) AND ${COLUMN_NAME_REF_COUNT} > 0`;
+        const filter = ` WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER} IN (${identifiersStr}) AND ${ContentEntry.COLUMN_NAME_REF_COUNT} > 0`;
         const query = `SELECT * FROM ${ContentEntry.TABLE_NAME} ${filter}`;
         return this.dbService.execute(query).toPromise();
     }
@@ -198,6 +189,5 @@ export class DeleteContentHandler {
                 });
         });
     }
-
 
 }
