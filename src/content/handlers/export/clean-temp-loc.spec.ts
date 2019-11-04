@@ -71,29 +71,21 @@ describe('CleanTempLoc', () => {
             contentModelsToExport: request,
             metadata: { ['SAMPLE_KEY']: 'META_DATA' },
         };
-        const dir = (mockFileService.listDir as jest.Mock).mockResolvedValue([{'1': 'one'}]);
+        (mockFileService.listDir as jest.Mock).mockReturnValue(Observable.of([{name: 'one'}]));
 
-        spyOn(dir[0], 'remove').and.callFake(
-            (a, b) => {
-                setTimeout(() => {
-                    a();
-                    b();
-                }, 0);
-            }
-        );
+        // spyOn(dir[0], 'remove').and.callFake(
+        //     (a, b) => {
+        //         setTimeout(() => {
+        //             a();
+        //             b();
+        //         }, 0);
+        //     }
+        // );
        // console.log(directory[0].remove());
         (FileUtil.getFileExtension as jest.Mock).mockReturnValue('ecar');
         (mockFileService.getMetaData as jest.Mock).mockResolvedValue({modificationTime: 'July 20, 69 00:20:18'});
-
-        // spyOn(diretory, 'remove').and.callFake((success, error) => {
-        //     setTimeout(() => {});
-        // });
-       // (arr[0].remove()).resolves.toEqual('1');
-        // act
         await cleanTempLoc.execute(exportContext).then(() => {
             // assert
-            //  expect(mockFileService.listDir).toHaveBeenCalled();
-          // expect(arr[0].remove()).resolves.toEqual('1');
             done();
         });
        // await expect(arr[0].remove()).resolves.toEqual('1');

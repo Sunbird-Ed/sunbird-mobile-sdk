@@ -50,9 +50,13 @@ describe('GetFrameworkCategoryTermsHandler', () => {
             language: 'SOME_LANGUAGE',
         };
         mockframeworkService.getFrameworkDetails = jest.fn(() => []);
+        (mockframeworkService.getFrameworkDetails as jest.Mock).mockReturnValue(Observable.of({
+            name: 'SAMPLE_NAME',
+            identifier: 'SAMPLE_ID'
+        }));
         mockSharedPreferences.putString = jest.fn(() => Observable.of([]));
         // act
-          getFrameworkCategoryTermsHandler.handle(request).subscribe(async (done) => {
+          getFrameworkCategoryTermsHandler.handle(request).subscribe( () => {
                // assert
             expect(request.frameworkId).toBe('SOME_FRAMEWORK_ID');
             expect(mockSharedPreferences.putString).toHaveBeenCalledWith(FrameworkKeys.KEY_ACTIVE_CHANNEL_ACTIVE_FRAMEWORK_ID,

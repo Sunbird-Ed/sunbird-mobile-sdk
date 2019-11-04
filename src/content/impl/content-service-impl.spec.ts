@@ -205,19 +205,31 @@ describe('ContentServiceImpl', () => {
         });
     });
 
-    it('should offline textbook contents with online textbook contents group by section', async (done) => {
+    it('should offline textbook contents with online textbook contents group by section', async () => {
         // arrange
         const request: ContentSearchCriteria = {
         };
-       // spyOn(contentService, 'getContents').and.returnValues(Observable.of([{}]));
-      //  mockDownloadService.cancel = jest.fn(() => Observable.of([]));
         mockDbService.execute = jest.fn(() => Observable.of([]));
-        (mockCachedItemStore.getCached as jest.Mock).mockResolvedValue('');
+        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(Observable.of({id: 'd0_id'}));
         // act
-        return await contentService.searchContentGroupedByPageSection(request).toPromise().then(() => {
+        return await contentService.searchContentGroupedByPageSection(request).toPromise().catch(() => {
             // assert
             expect(mockDbService.execute).toHaveBeenCalled();
-            done();
+          //  done();
+        });
+    });
+
+    it('should offline textbook contents with online textbook contents group by section for catch part', async () => {
+        // arrange
+        const request: ContentSearchCriteria = {
+        };
+        mockDbService.execute = jest.fn(() => Observable.of([]));
+        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(Observable.throw({err: 'err'}));
+        // act
+        return await contentService.searchContentGroupedByPageSection(request).toPromise().catch(() => {
+            // assert
+            expect(mockDbService.execute).toHaveBeenCalled();
+          //  done();
         });
     });
 
