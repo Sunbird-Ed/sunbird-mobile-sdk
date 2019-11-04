@@ -1,7 +1,7 @@
 import { ContentEntry } from '../db/schema';
-import { DeviceInfo } from '../../util/device/def/device-info';
 import { DbService } from '../../db';
 import { FileService } from '../../util/file/def/file-service';
+import { DeviceInfo } from '../../util/device';
 export declare class ImportNExportHandler {
     private deviceInfo;
     private dbService?;
