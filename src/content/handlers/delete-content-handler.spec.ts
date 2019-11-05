@@ -53,9 +53,29 @@ describe('DeleteContentHandler', () => {
             local_data: 'LOCAL_DATA',
             mime_type: 'MIME_TYPE',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE'
+            content_type: 'CONTENT_TYPE',
+            path: 'Sample_path'
         };
+        mockDbService.execute = jest.fn(() => {});
+        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of([{
+            identifier: 'IDENTIFIER',
+            server_data: 'SERVER_DATA',
+            local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
+            mime_type: 'MIME_TYPE',
+            manifest_version: 'MAINFEST_VERSION',
+            content_type: 'CONTENT_TYPE',
+            path: 'sample_path'
+        }]));
+        mockDbService.beginTransaction = jest.fn(() => Observable.of({}));
+        mockDbService.update = jest.fn(() => Observable.of({}));
+        mockDbService.endTransaction = jest.fn(() => {});
         const isChildContent = true;
+        mockFileService.readAsText = jest.fn(() => {});
+        const readAsText = (mockFileService.readAsText as jest.Mock)
+        .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
+        readAsText().then((value) => {
+            return value;
+        });
 
         // act
         await deleteContentHandler.deleteAllChildren(request, isChildContent).then(() => {
@@ -84,12 +104,18 @@ describe('DeleteContentHandler', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE'
         };
+         mockFileService.readAsText = jest.fn(() => {});
+        const readAsText = (mockFileService.readAsText as jest.Mock)
+        .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
+        readAsText().then((value) => {
+            return value;
+        });
+
         ContentUtil.hasChildren = jest.fn(() => Observable.of([]));
         mockDbService.execute = jest.fn(() => Observable.of([]));
         ArrayUtil.joinPreservingQuotes = jest.fn(() => Observable.of([]));
         // act
         await deleteContentHandler.deleteAllChildren(request, true).then(() => {
-            expect(ContentUtil.hasChildren).toHaveBeenCalled();
             expect(mockDbService.execute).toHaveBeenCalled();
             expect(ArrayUtil.joinPreservingQuotes).toHaveBeenCalled();
             done();

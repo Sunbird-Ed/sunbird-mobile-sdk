@@ -1,4 +1,4 @@
-import {SdkConfig} from '../sdk-config';
+import {SdkConfig} from '../../sdk-config';
 
 export const mockSdkConfigWithSampleApiConfig: Partial<SdkConfig> = {
     apiConfig: {
@@ -21,5 +21,11 @@ export const mockSdkConfigWithSampleApiConfig: Partial<SdkConfig> = {
         cached_requests: {
             timeToLive: 2 * 60 * 60 * 1000
         }
+    },
+    deviceRegisterConfig: {
+        host: '',
+        apiPath: '',
+        deviceProfileApiPath: '',
+        fcmToken: 'SAMPLE_FCM_TOKEN'
     }
 };

@@ -31,7 +31,6 @@ import {
     HierarchyInfo,
     ImportContentContext,
     MimeType,
-    PageSection,
     RelevantContentRequest,
     RelevantContentResponse,
     RelevantContentResponsePlayer,
@@ -53,7 +52,6 @@ import {DirectoryEntry, Entry} from '../../util/file';
 import {GetContentsHandler} from '../handlers/get-contents-handler';
 import {ContentMapper} from '../util/content-mapper';
 import {ImportNExportHandler} from '../handlers/import-n-export-handler';
-import {DeviceInfo} from '../../util/device/def/device-info';
 import {CleanTempLoc} from '../handlers/export/clean-temp-loc';
 import {CreateContentExportManifest} from '../handlers/export/create-content-export-manifest';
 import {WriteManifest} from '../handlers/export/write-manifest';
@@ -85,7 +83,6 @@ import {GenerateInteractTelemetry} from '../handlers/import/generate-interact-te
 import {CachedItemStore} from '../../key-value-store';
 import * as SHA1 from 'crypto-js/sha1';
 import {ContentKeys, FrameworkKeys} from '../../preference-keys';
-import {CreateHierarchy} from '../handlers/import/create-hierarchy';
 import {ContentStorageHandler} from '../handlers/content-storage-handler';
 import {SharedPreferencesSetCollection} from '../../util/shared-preferences/def/shared-preferences-set-collection';
 import {SharedPreferencesSetCollectionImpl} from '../../util/shared-preferences/impl/shared-preferences-set-collection-impl';
@@ -93,6 +90,7 @@ import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
+import {DeviceInfo} from '../../util/device';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -251,7 +249,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     exportContent(contentExportRequest: ContentExportRequest): Observable<ContentExportResponse> {
-        const exportHandler = new ImportNExportHandler(this.deviceInfo, this.dbService);
+        const exportHandler = new ImportNExportHandler(this.deviceInfo, this.dbService, this.fileService);
         return Observable.fromPromise(exportHandler.getContentExportDBModelToExport(contentExportRequest.contentIds)
             .then((contentsInDb: ContentEntry.SchemaMap[]) => {
                 return this.fileService.getTempLocation(contentExportRequest.destinationFolder)
@@ -307,8 +305,31 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         }
 
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(childContentRequest.contentId))
-            .mergeMap((rows: ContentEntry.SchemaMap[]) => {
-                return childContentHandler.fetchChildrenOfContent(rows[0], 0, childContentRequest.level!, hierarchyInfoList);
+            .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
+                const childContentsMap: Map<string, ContentEntry.SchemaMap> = new Map<string, ContentEntry.SchemaMap>();
+                // const parentContent = ContentMapper.mapContentDBEntryToContent(rows[0]);
+                const data = JSON.parse(rows[0][ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+                const childIdentifiers = data.childNodes;
+
+                // const childIdentifiers = await childContentHandler.getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
+                console.log('childIdentifiers', childIdentifiers);
+
+                const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
+                                WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER}
+                                IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)})`;
+
+                const childContents = await this.dbService.execute(query).toPromise();
+                // console.log('childContents', childContents);
+                childContents.forEach(element => {
+                    childContentsMap.set(element.identifier, element);
+                });
+                return childContentHandler.fetchChildrenOfContent(
+                    rows[0],
+                    childContentsMap,
+                    0,
+                    childContentRequest.level!,
+                    hierarchyInfoList
+                );
             });
     }
 
@@ -388,10 +409,20 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         this.dbService, this.deviceInfo, this.getContentDetailsHandler, this.eventsBusService, this.sharedPreferences)
                         .execute(importResponse.body);
                 }).then((importResponse: Response) => {
+                    this.eventsBusService.emit({
+                        namespace: EventNamespace.CONTENT,
+                        event: {
+                            type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                            payload: {
+                                contentId: importContentContext.rootIdentifier ?
+                                    importContentContext.rootIdentifier : importContentContext.identifiers![0]
+                            }
+                        }
+                    });
                     const response: Response = new Response();
                     return new CreateContentImportManifest(this.dbService, this.deviceInfo, this.fileService).execute(importResponse.body);
-                // }).then((importResponse: Response) => {
-                //     return new CreateHierarchy(this.dbService, this.fileService).execute(importResponse.body);
+                    // }).then((importResponse: Response) => {
+                    //     return new CreateHierarchy(this.dbService, this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
                     return new EcarCleanup(this.fileService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
@@ -403,9 +434,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         }).catch(() => {
                             return Promise.reject(response);
                         });
-                }).then((importResponse: Response) => {
-                    // new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
-                    return importResponse;
+                    // }).then((importResponse: Response) => {
+                    //     new UpdateSizeOnDevice(this.dbService, this.sharedPreferences).execute();
+                    //     return importResponse;
                 }).then((importResponse: Response) => {
                     return new GenerateImportShareTelemetry(this.telemetryService).execute(importResponse.body);
                 }).then((importResponse: Response) => {
@@ -670,7 +701,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 ]
             } as ContentSearchResult;
         }).map<ContentSearchResult, ContentsGroupedByPageSection>((result: ContentSearchResult) => {
-            const contentsGroupedBySubject = result.contentDataList.reduce<{[key: string]: ContentData[]}>((acc, contentData) => {
+            const contentsGroupedBySubject = result.contentDataList.reduce<{ [key: string]: ContentData[] }>((acc, contentData) => {
                 if (Array.isArray(contentData.subject)) {
                     contentData.subject.forEach((sub) => {
                         sub = sub.toLowerCase().trim();
@@ -700,7 +731,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         contents: contentsGroupedBySubject[sub],
                         name: sub.charAt(0).toUpperCase() + sub.slice(1),
                         display: {name: {en: sub}} // TODO : need to handle localization
-                    }
+                    };
                 })
             };
         });
@@ -733,4 +764,5 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return Observable.of(undefined);
             });
     }
+
 }

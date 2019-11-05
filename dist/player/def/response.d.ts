@@ -31,4 +31,10 @@ export interface PlayerConfig {
         enableUserSwitcher: boolean;
         showUser: boolean;
     };
+    plugins?: Plugin[];
+}
+export interface Plugin {
+    id: string;
+    version: string;
+    type: string;
 }

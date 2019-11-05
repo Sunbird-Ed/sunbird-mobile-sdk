@@ -24,7 +24,7 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {ProfileService} from '../../profile';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
-import {EventObserver} from "../../events-bus/def/event-observer";
+import {EventObserver} from '../../events-bus/def/event-observer';
 import Telemetry = SunbirdTelemetry.Telemetry;
 
 @injectable()

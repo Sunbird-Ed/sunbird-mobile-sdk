@@ -1,7 +1,7 @@
-import {Container} from "inversify";
-import {ZipService} from "../def/zip-service";
-import {InjectionTokens} from "../../../injection-tokens";
-import {ZipServiceImpl} from "./zip-service-impl";
+import {Container} from 'inversify';
+import {ZipService} from '../def/zip-service';
+import {InjectionTokens} from '../../../injection-tokens';
+import {ZipServiceImpl} from './zip-service-impl';
 
 describe('ZipServiceImpl', () => {
     let zipService: ZipService;
@@ -22,24 +22,24 @@ describe('ZipServiceImpl', () => {
         it('should delegate to cordova JJzip.unzip', (done) => {
             // arrange
             spyOn(window['JJzip'], 'unzip').and.callFake((a, b, c, d) => {
-                setTimeout(() => c(), 0)
+                setTimeout(() => c(), 0);
             });
 
             // act
             zipService.unzip('SOME_ZIP', {}, () => {
-                done()
+                done();
             });
         });
 
         it('should delegate to cordova JJzip.unzip', (done) => {
             // arrange
             spyOn(window['JJzip'], 'unzip').and.callFake((a, b, c, d) => {
-                setTimeout(() => d(), 0)
+                setTimeout(() => d(), 0);
             });
 
             // act
             zipService.unzip('SOME_ZIP', {}, null, () => {
-                done()
+                done();
             });
         });
     });
@@ -48,24 +48,24 @@ describe('ZipServiceImpl', () => {
         it('should delegate to cordova JJzip.zip', (done) => {
             // arrange
             spyOn(window['JJzip'], 'zip').and.callFake((a, b, c, d, e, f) => {
-                setTimeout(() => e(), 0)
+                setTimeout(() => e(), 0);
             });
 
             // act
             zipService.zip('SOME_ZIP', {}, [], [], () => {
-                done()
+                done();
             });
         });
 
         it('should delegate to cordova JJzip.zip', (done) => {
             // arrange
             spyOn(window['JJzip'], 'zip').and.callFake((a, b, c, d, e, f) => {
-                setTimeout(() => f(), 0)
+                setTimeout(() => f(), 0);
             });
 
             // act
             zipService.zip('SOME_ZIP', {}, [], [], null, () => {
-                done()
+                done();
             });
         });
     });
