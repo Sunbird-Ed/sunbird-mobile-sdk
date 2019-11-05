@@ -204,9 +204,6 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         } else if (event.eid === 'END' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
             return this.processOEEnd(event)
                 .do(async () => {
-                    await this.courseService.syncAssessmentEvents().toPromise();
-                })
-                .do(async () => {
                     await this.summarizerService.saveLearnerContentSummaryDetails(event)
                         .mapTo(undefined)
                         .toPromise();
