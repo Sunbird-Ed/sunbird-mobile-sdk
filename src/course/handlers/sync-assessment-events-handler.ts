@@ -122,6 +122,10 @@ export class SyncAssessmentEventsHandler {
             })
         };
 
+        if (!assessmentTelemetrySyncRequest.assessments.length) {
+            return;
+        }
+
         return this.invokeSyncApi(assessmentTelemetrySyncRequest);
     }
 
