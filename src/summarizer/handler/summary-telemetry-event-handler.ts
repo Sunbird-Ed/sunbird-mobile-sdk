@@ -17,8 +17,7 @@ import {EventNamespace, EventsBusService} from '../../events-bus';
 import {Content, ContentDetailRequest, ContentEventType, ContentMarkerRequest, ContentService, MarkerType, MimeType} from '../../content';
 import {ContentAccess, ContentAccessStatus, ProfileService} from '../../profile';
 import {ArrayUtil} from '../../util/array-util';
-import {CourseAssessmentEntry} from "../db/schema";
-import {DbService} from "../../db";
+import {DbService} from '../../db';
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -194,7 +193,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                         event.context.cdata.find((c) => c.type === 'AttemptId')
                         && context.userId && context.courseId && context.batchId
                     ) {
-                        await this.persistAssessEvent(event, context);
+                        await this.courseService.captureAssessmentEvent({event, courseContext: context});
                     }
                 })
                 .do(async () => {
@@ -303,20 +302,6 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
 
     private processOEEnd(event: Telemetry): Observable<undefined> {
         return Observable.of(undefined);
-    }
-
-    public persistAssessEvent(event: SunbirdTelemetry.Telemetry, courseContext): Promise<undefined> {
-        return this.dbService.insert({
-            table: CourseAssessmentEntry.TABLE_NAME,
-            modelJson: {
-                [CourseAssessmentEntry.COLUMN_NAME_ASSESSMENT_EVENT]: JSON.stringify(event),
-                [CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID]: event.object.id,
-                [CourseAssessmentEntry.COLUMN_NAME_CREATED_AT]: event.ets,
-                [CourseAssessmentEntry.COLUMN_NAME_USER_ID]: courseContext.userId,
-                [CourseAssessmentEntry.COLUMN_NAME_COURSE_ID]: courseContext.courseId,
-                [CourseAssessmentEntry.COLUMN_NAME_BATCH_ID]: courseContext.batchId,
-            } as CourseAssessmentEntry.SchemaMap
-        }).mapTo(undefined).toPromise();
     }
 }
 
