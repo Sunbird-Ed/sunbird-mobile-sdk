@@ -1,4 +1,4 @@
-import { ContentData } from "../def/content";
+import {ContentData} from '..';
 
 export const mockContentData: ContentData = {
     previewUrl: 'https: //ekstep-public-qa.s3-ap-south-1.amazonaws.com/content/ecml/do_21252596311301324811205-latest',
@@ -21,7 +21,7 @@ export const mockContentData: ContentData = {
     variants: {
         spine: {
             ecarUrl: 'https: //ekstep-public-qa.s3-ap-south-1.amazonaws.com/ecar_files/do_21252596311301324811205/' +
-            'a-b-c-d-learning_1529048740459_do_21252596311301324811205_1.0_spine.ecar',
+                'a-b-c-d-learning_1529048740459_do_21252596311301324811205_1.0_spine.ecar',
             size: 16487
         }
     },

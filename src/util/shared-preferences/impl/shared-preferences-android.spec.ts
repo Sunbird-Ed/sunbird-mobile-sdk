@@ -1,7 +1,7 @@
-import {Container} from "inversify";
-import {InjectionTokens} from "../../../injection-tokens";
-import {SharedPreferences} from "..";
-import {SharedPreferencesAndroid} from "./shared-preferences-android";
+import {Container} from 'inversify';
+import {InjectionTokens} from '../../../injection-tokens';
+import {SharedPreferences} from '..';
+import {SharedPreferencesAndroid} from './shared-preferences-android';
 
 describe('SharedPreferencesAndroid', () => {
     let sharedPreferences: SharedPreferences;

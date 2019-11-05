@@ -1,5 +1,5 @@
-import {DbService, Migration} from "..";
-import {CourseAssessmentEntry} from "../../summarizer/db/schema";
+import {DbService, Migration} from '..';
+import {CourseAssessmentEntry} from '../../summarizer/db/schema';
 
 export class CourseAssessmentMigration extends Migration {
 
