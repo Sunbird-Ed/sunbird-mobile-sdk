@@ -52,7 +52,7 @@ interface EnqueuedEntry {
 
 interface DownloadSpeedLog {
     totalKBdownloaded: number;
-    distributionInKiloBytesPerSecond: {[key: string]: number};
+    distributionInKBPS: {[key: string]: number};
 }
 
 declare var downloadManager: {
