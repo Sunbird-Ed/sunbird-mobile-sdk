@@ -5,6 +5,8 @@ import {DeviceInfo, DeviceSpec} from '../../util/device';
 import {AppInfo} from '../../util/app';
 import {SdkConfig} from '../../sdk-config';
 import {FrameworkService} from '../../framework';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {DeviceRegister} from '../../preference-keys';
 
 export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRequest, DeviceRegisterResponse> {
 
@@ -16,6 +18,7 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
     constructor(
         private sdkConfig: SdkConfig,
         private deviceInfo: DeviceInfo,
+        private sharedPreferences: SharedPreferences,
         private frameworkService: FrameworkService,
         private appInfoService: AppInfo,
         private apiService: ApiService
@@ -33,10 +36,12 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
             this.deviceInfo.getDeviceSpec(),
             this.frameworkService.getActiveChannelId(),
             this.appInfoService.getFirstAccessTimestamp(),
+            this.sharedPreferences.getString(DeviceRegister.DEVICE_LOCATION)
         ).mergeMap((results: any) => {
             const deviceSpec: DeviceSpec = results[0];
             const activeChannelId: string = results[1];
             const firstAccessTimestamp = results[2];
+            const deviceLocation = results[3];
 
             if (request) {
                 request.dspec = deviceSpec;
@@ -52,6 +57,10 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
                     producer: this.apiConfig.api_authentication.producerId,
                     first_access: Number(firstAccessTimestamp)
                 };
+            }
+
+            if (!request.userDeclaredLocation && deviceLocation) {
+                request.userDeclaredLocation = JSON.parse(deviceLocation);
             }
 
             const apiRequest: Request = new Request.Builder()
