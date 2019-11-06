@@ -66,7 +66,7 @@ import {ValidateEcar} from '../handlers/import/validate-ecar';
 import {ExtractPayloads} from '../handlers/import/extract-payloads';
 import {CreateContentImportManifest} from '../handlers/import/create-content-import-manifest';
 import {EcarCleanup} from '../handlers/import/ecar-cleanup';
-import {TelemetryService} from '../../telemetry';
+import {Rollup, TelemetryService} from '../../telemetry';
 import {UpdateSizeOnDevice} from '../handlers/import/update-size-on-device';
 import {CreateTempLoc} from '../handlers/export/create-temp-loc';
 import {SearchRequest} from '../def/search-request';
@@ -368,6 +368,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                     isChildContent: contentImport.isChildContent,
                                     filename: contentId.concat('.', FileExtension.CONTENT),
                                     correlationData: contentImport.correlationData,
+                                    rollUp: contentImport.rollUp,
                                     contentMeta: contentData
                                 };
                                 downloadRequestList.push(downloadRequest);
@@ -393,6 +394,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 items: [],
                 contentImportResponseList: [],
                 correlationData: ecarImportRequest.correlationData || [],
+                rollUp: ecarImportRequest.rollUp || new Rollup(),
                 contentIdsToDelete: new Set()
             };
             return new GenerateInteractTelemetry(this.telemetryService).execute(importContentContext, 'ContentImport-Initiated')
@@ -634,7 +636,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             isChildContent: request.isChildContent!,
             sourceFilePath: request.downloadedFilePath!,
             destinationFolder: request.destinationFolder!,
-            correlationData: request.correlationData!
+            correlationData: request.correlationData!,
+            rollUp: request.rollUp!
         };
         return this.importEcar(importEcarRequest)
             .mergeMap(() =>

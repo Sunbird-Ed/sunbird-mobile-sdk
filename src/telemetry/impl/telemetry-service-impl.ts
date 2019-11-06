@@ -135,8 +135,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         return this.decorateAndPersist(log);
     }
 
-    share({dir, type, items, correlationData, objId, objType, objVer}: TelemetryShareRequest): Observable<boolean> {
-        const share = new SunbirdTelemetry.Share(dir, type, [], correlationData, objId, objType, objVer);
+    share({dir, type, items, correlationData, objId, objType, objVer, rollUp}: TelemetryShareRequest): Observable<boolean> {
+        const share = new SunbirdTelemetry.Share(dir, type, [], correlationData, objId, objType, objVer, rollUp);
         items.forEach((item) => {
             share.addItem(item.type, item.origin, item.identifier, item.pkgVersion, item.transferCount, item.size);
         });
