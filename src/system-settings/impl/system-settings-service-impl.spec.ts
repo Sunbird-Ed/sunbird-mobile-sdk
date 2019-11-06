@@ -17,13 +17,9 @@ describe('SystemSettingsServiceImpl', () => {
 
     const container = new Container();
 
-    const mockApiService: Partial<ApiService> = {
-        fetch: jest.fn(() => {})
-    };
+    const mockApiService: Partial<ApiService> = {};
     const mockCachedItemStore: Partial<CachedItemStore> = {};
-    const mockFileService: Partial<FileService> = {
-        readFileFromAssets: jest.fn(() => {})
-    };
+    const mockFileService: Partial<FileService> = {};
 
     beforeAll(() => {
         container.bind<SystemSettingsService>(InjectionTokens.SYSTEM_SETTINGS_SERVICE).to(SystemSettingsServiceImpl);
@@ -63,8 +59,8 @@ describe('SystemSettingsServiceImpl', () => {
         );
 
         // act
-        systemSettingsService.getSystemSettings(request).subscribe((v) => {
-            expect(v).toBeTruthy();
+        systemSettingsService.getSystemSettings(request).subscribe(() => {
+            expect(GetSystemSettingsHandler).toHaveBeenCalled();
             // assert
             done();
         });
