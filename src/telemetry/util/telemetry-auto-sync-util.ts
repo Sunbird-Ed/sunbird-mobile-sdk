@@ -35,7 +35,7 @@ export class TelemetryAutoSyncUtil {
 
         const valueMap = {
             duration: interval / 1000,
-            totalKiloBytesDownloaded: downloadSpeedLog.totalKBdownloaded,
+            totalKBDownloaded: downloadSpeedLog.totalKBdownloaded,
             distributionInKBPS: Object.keys(rangeMap).reduce<{ [key: string]: number }>((acc, key) => {
                 if (downloadSpeedLog.distributionInKBPS[key]) {
                     acc[rangeMap[key]] = downloadSpeedLog.distributionInKBPS[key];
