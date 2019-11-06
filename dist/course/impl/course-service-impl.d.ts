@@ -24,10 +24,11 @@ export declare class CourseServiceImpl implements CourseService {
     static readonly GET_ENROLLED_COURSE_KEY_PREFIX: string;
     static readonly UPDATE_CONTENT_STATE_KEY_PREFIX: string;
     static readonly LAST_READ_CONTENTID_PREFIX: string;
-    private static readonly UPDATE_CONTENT_STATE_ENDPOINT;
     private static readonly CERTIFICATE_SIGN_ENDPOINT;
     private readonly courseServiceConfig;
     private readonly profileServiceConfig;
+    private capturedAssessmentEvents;
+    private syncAssessmentEventsHandler;
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
     updateContentState(request: UpdateContentStateRequest): Observable<boolean>;
     getCourseBatches(request: CourseBatchesRequest): Observable<Batch[]>;
@@ -36,6 +37,10 @@ export declare class CourseServiceImpl implements CourseService {
     getContentState(request: GetContentStateRequest): Observable<ContentStateResponse | undefined>;
     unenrollCourse(unenrollCourseRequest: UnenrollCourseRequest): Observable<boolean>;
     downloadCurrentProfileCourseCertificate(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse>;
+    captureAssessmentEvent({ event, courseContext }: {
+        event: any;
+        courseContext: any;
+    }): void;
     syncAssessmentEvents(): Observable<undefined>;
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 }
