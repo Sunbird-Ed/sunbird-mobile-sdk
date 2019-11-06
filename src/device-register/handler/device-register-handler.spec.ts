@@ -63,7 +63,11 @@ describe('DeviceRegisterHandler', () => {
         // act
         deviceRegisterHandler.handle(request).subscribe(() => {
             // assert
-            // expect().toHaveBeenCalled();
+             expect(mockDeviceInfo.getDeviceSpec).toHaveBeenCalled();
+             expect(mockFrameworkService.getActiveChannelId).toHaveBeenCalled();
+             expect(mockAppInfo.getFirstAccessTimestamp).toHaveBeenCalled();
+             expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
+             expect(mockApiService.fetch).toHaveBeenCalled();
             done();
         });
     });
@@ -97,7 +101,11 @@ describe('DeviceRegisterHandler', () => {
         // act
         deviceRegisterHandler.handle().subscribe(() => {
             // assert
-            // expect().toHaveBeenCalled();
+            expect(mockDeviceInfo.getDeviceSpec).toHaveBeenCalled();
+            expect(mockFrameworkService.getActiveChannelId).toHaveBeenCalled();
+            expect(mockAppInfo.getFirstAccessTimestamp).toHaveBeenCalled();
+            expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
+            expect(mockApiService.fetch).toHaveBeenCalled();
             done();
         });
     });

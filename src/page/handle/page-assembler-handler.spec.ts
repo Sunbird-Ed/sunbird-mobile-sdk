@@ -37,9 +37,10 @@ describe('PageAssemblerHandler', () => {
             source: 'app',
         };
         mockCachedItemStore.getCached = jest.fn(() => {});
-        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(Observable.of({}));
+        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(Observable.of(''));
         // act
         pageAssemblerHandler.handle(request).subscribe(() => {
+            expect(mockCachedItemStore.getCached).toHaveBeenCalled();
              // assert
             done();
         });
@@ -53,12 +54,48 @@ describe('PageAssemblerHandler', () => {
             from: CachedItemRequestSourceFrom.SERVER
         };
         mockCachedItemStore.getCached = jest.fn(() => {});
+        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(Observable.of({
+            name: 'SAMPLE_NAME',
+            id: 'SAMPLE_ID',
+            sections: []
+        }));
+        mockApiService.fetch = jest.fn(() => {});
+        (mockApiService.fetch as jest.Mock).mockReturnValue(Observable.of({
+            body: {
+                result: {
+                    response: 'SAMPLE_RESPONSE'
+                }
+            }
+        }));
+        mockSharedPreferences.putString = jest.fn(() => {});
+        (mockSharedPreferences.putString as jest.Mock).mockReturnValue(Observable.of(''));
+        mockKeyValueStore.setValue = jest.fn(() => {});
+        (mockKeyValueStore.setValue as jest.Mock).mockReturnValue(Observable.of(true));
+        // act
+        await pageAssemblerHandler.handle(request).subscribe(() => {
+             // assert
+             expect(mockSharedPreferences.putString).toHaveBeenCalled();
+             expect(mockApiService.fetch).toHaveBeenCalled();
+             expect(mockKeyValueStore.setValue).toBeTruthy();
+            done();
+        });
+    });
+
+    it('should be handle QrCode Scan for Page Assembler from local', async(done) => {
+        // arrange
+        const request: PageAssembleCriteria = {
+            name: PageName.DIAL_CODE,
+            source: 'app',
+            from: CachedItemRequestSourceFrom.SERVER
+        };
+        mockCachedItemStore.getCached = jest.fn(() => {});
         (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(Observable.of({}));
         mockApiService.fetch = jest.fn(() => {});
         (mockApiService.fetch as jest.Mock).mockReturnValue(Observable.of({}));
         // act
         await pageAssemblerHandler.handle(request).subscribe(() => {
              // assert
+             expect(mockCachedItemStore.getCached).toHaveBeenCalled();
             done();
         });
     });

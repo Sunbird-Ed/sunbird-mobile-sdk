@@ -45,13 +45,17 @@ describe('PageAssembleServiceImpl', () => {
             name: PageName.RESOURCE,
             source: 'app'
         };
+
+        const handleMethod = jest.fn(() => Observable.of(''));
+
         (PageAssemblerHandler as any as jest.Mock<PageAssemblerHandler>).mockImplementation(() => {
             return {
-                handle: jest.fn(() => Observable.of('')),
+                handle: handleMethod,
             };
         });
         // act
         pageAssembleServiceImpl.getPageAssemble(request).subscribe(() => {
+            expect(handleMethod).toBeCalled();
             done();
         });
         // assert

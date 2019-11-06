@@ -43,28 +43,32 @@ describe('DeviceRegisterServiceImpl', () => {
 
     it('should decoupled device register Api for telemetry sync by invoked registerDevice()', (done) => {
         // arrange
+        const handleResponse = jest.fn(() => Observable.of(''));
         (DeviceRegisterHandler as any as jest.Mock<DeviceRegisterHandler>).mockImplementation(() => {
             return {
-                handle: jest.fn(() => Observable.of('')),
+                handle: handleResponse,
             };
         });
         // act
         deviceRegisterServiceImpl.registerDevice().subscribe(() => {
              // assert
+             expect(handleResponse).toBeCalled();
             done();
         });
     });
 
     it('should get device profile by invoked getDeviceProfile()', (done) => {
         // arrange
+        const profileHandlerData = jest.fn(() => Observable.of(''));
         (GetDeviceProfileHandler as any as jest.Mock<GetDeviceProfileHandler>).mockImplementation(() => {
             return {
-                handle: jest.fn(() => Observable.of('')),
+                handle: profileHandlerData,
             };
         });
         // act
         deviceRegisterServiceImpl.getDeviceProfile().subscribe(() => {
              // assert
+             expect(profileHandlerData).toHaveBeenCalled();
             done();
         });
     });
