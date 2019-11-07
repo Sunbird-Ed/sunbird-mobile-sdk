@@ -46,6 +46,8 @@ describe('GetDeviceProfileHandler', () => {
         // act
         getDeviceProfileHandler.handle().subscribe(() => {
             // assert
+            expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
+            expect(mockApiService.fetch).toHaveBeenCalled();
             done();
         });
     });

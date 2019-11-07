@@ -34,7 +34,8 @@ export class GenerateImportShareTelemetry {
                 objType: importContentContext.items && importContentContext.items.length ?
                     importContentContext.items[0]['contentType'] : '',
                 objVer: importContentContext.items && importContentContext.items.length ?
-                    ContentUtil.readPkgVersion(importContentContext.items[0]) + '' : ''
+                    ContentUtil.readPkgVersion(importContentContext.items[0]) + '' : '',
+                rollUp: importContentContext.rollUp
             }
         ;
 

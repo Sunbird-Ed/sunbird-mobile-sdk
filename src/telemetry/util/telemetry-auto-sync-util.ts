@@ -25,19 +25,20 @@ export class TelemetryAutoSyncUtil {
             '2048': '1536-2048',
             '2560': '2048-2560',
             '3072': '2560-3072',
-            '3584': '3072-above'
+            '3584': '3072-3584',
+            '4096' : '3584-above'
         };
 
-        if (!Object.keys(downloadSpeedLog.distributionInKiloBytesPerSecond).length) {
+        if (!Object.keys(downloadSpeedLog.distributionInKBPS).length) {
             return undefined;
         }
 
         const valueMap = {
-            duration: interval,
-            totalKiloBytesDownloaded: downloadSpeedLog.totalKBdownloaded,
-            distributionInKiloBytesPerSecond: Object.keys(rangeMap).reduce<{ [key: string]: number }>((acc, key) => {
-                if (downloadSpeedLog.distributionInKiloBytesPerSecond[key]) {
-                    acc[rangeMap[key]] = downloadSpeedLog.distributionInKiloBytesPerSecond[key];
+            duration: interval / 1000,
+            totalKBDownloaded: downloadSpeedLog.totalKBdownloaded,
+            distributionInKBPS: Object.keys(rangeMap).reduce<{ [key: string]: number }>((acc, key) => {
+                if (downloadSpeedLog.distributionInKBPS[key]) {
+                    acc[rangeMap[key]] = downloadSpeedLog.distributionInKBPS[key];
                 } else {
                     acc[rangeMap[key]] = 0;
                 }

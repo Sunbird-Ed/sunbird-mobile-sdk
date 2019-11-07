@@ -1,4 +1,4 @@
-import { DbService, Migration } from "..";
+import { DbService, Migration } from '..';
 export declare class CourseAssessmentMigration extends Migration {
     constructor();
     apply(dbService: DbService): Promise<undefined>;
