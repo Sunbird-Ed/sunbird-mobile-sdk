@@ -93,7 +93,7 @@ export class DeviceInfoImpl implements DeviceInfo {
 
             window.addEventListener('native.keyboardhide', hideCallback1);
             window.addEventListener('keyboardWillHide', hideCallback1);
-        }).do(() => {
+        }).distinctUntilChanged().do(() => {
             console.log('Subscribed isKeyboardShown event');
         }).finally(() => {
             console.log('Unsubscribed isKeyboardShown event');
