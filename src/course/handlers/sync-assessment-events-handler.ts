@@ -181,6 +181,8 @@ export class SyncAssessmentEventsHandler {
             };
 
             return this.invokeSyncApi(assessmentTelemetrySyncRequest);
-        }).mapTo(undefined).toPromise();
+        }).do(async () =>
+              await this.dbService.execute(`DELETE FROM ${CourseAssessmentEntry.TABLE_NAME}`)
+        ).mapTo(undefined).toPromise();
     }
 }
