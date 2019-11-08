@@ -51,6 +51,10 @@ describe('SummaryTelemetryEventHandler', () => {
         const data = (mockSharedPreference.putString as jest.Mock).mockReturnValue(Observable.of('SAMPLE_RESULT'));
         summaryTelemetryEventHandler.updateContentState(telemetry).subscribe(() => {
             // assert
+            expect(mockSharedPreference.getString).toHaveBeenCalled();
+            expect(mockProfileService.addContentAccess).toBeTruthy();
+            expect(mockCourseService.getContentState).toHaveBeenCalled();
+            expect(mockSharedPreference.putString).toHaveBeenCalled();
             done();
         });
     });
@@ -74,6 +78,11 @@ describe('SummaryTelemetryEventHandler', () => {
         // act
         summaryTelemetryEventHandler.updateContentState(telemetry).subscribe(() => {
             // assert
+            expect(mockSharedPreference.getString).toHaveBeenCalled();
+            expect(mockCourseService.getContentState).toHaveBeenCalled();
+            expect(mockContentService.getContentDetails).toHaveBeenCalled();
+            expect(mockEventBusService.emit).toHaveBeenCalled();
+            expect(mockSharedPreference.putString).toHaveBeenCalled();
             done();
         });
     });
@@ -101,6 +110,10 @@ describe('SummaryTelemetryEventHandler', () => {
         // act
         summaryTelemetryEventHandler.updateContentState(telemetry).subscribe(() => {
             // assert
+            expect(mockSharedPreference.getString).toHaveBeenCalled();
+            expect(mockCourseService.getContentState).toHaveBeenCalled();
+            expect(mockContentService.getContentDetails).toHaveBeenCalled();
+            expect(mockSharedPreference.putString).toHaveBeenCalled();
             done();
         });
     });
@@ -120,6 +133,8 @@ describe('SummaryTelemetryEventHandler', () => {
         // act
         summaryTelemetryEventHandler.updateContentState(telemetry).subscribe(() => {
             // assert
+            expect(mockSharedPreference.getString).toHaveBeenCalled();
+            expect(mockProfileService.addContentAccess).toBeTruthy();
             done();
         });
     });
@@ -146,6 +161,7 @@ describe('SummaryTelemetryEventHandler', () => {
         // act
         summaryTelemetryEventHandler.handle(telemetry).subscribe(() => {
             // assert
+            expect(mockSharedPreference.getString).toHaveBeenCalledWith(expect.any(String));
             done();
         });
     });
@@ -166,6 +182,8 @@ describe('SummaryTelemetryEventHandler', () => {
         // act
         summaryTelemetryEventHandler.handle(telemetry).subscribe(() => {
             // assert
+            expect(mockSharedPreference.getString).toHaveBeenCalled();
+            expect(mockSummarizerService.deletePreviousAssessmentDetails).toHaveBeenCalled();
             done();
         });
     });
@@ -179,6 +197,7 @@ describe('SummaryTelemetryEventHandler', () => {
         // act
         summaryTelemetryEventHandler.handle(telemetry).subscribe(() => {
             // assert
+            expect(mockSharedPreference.getString).toHaveBeenCalled();
             done();
         });
     });
@@ -190,6 +209,7 @@ describe('SummaryTelemetryEventHandler', () => {
         // act
         summaryTelemetryEventHandler.handle(telemetry).subscribe(() => {
             // assert
+         //   expect(mockCourseService.updateContentState).toHaveBeenCalled();
             done();
         });
     });
