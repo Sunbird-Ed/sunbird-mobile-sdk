@@ -64,7 +64,9 @@ export class SyncAssessmentEventsHandler {
                     Object.keys(this.capturedAssessmentEvents).forEach((key) => {
                         const context = JSON.parse(key);
                         this.capturedAssessmentEvents[key]!.forEach((event) => {
-                            this.persistAssessEvent(event, context);
+                            if (context.batchStatus !== 2) {
+                                this.persistAssessEvent(event, context);
+                            }
                         });
                     });
                 })
@@ -181,6 +183,8 @@ export class SyncAssessmentEventsHandler {
             };
 
             return this.invokeSyncApi(assessmentTelemetrySyncRequest);
-        }).mapTo(undefined).toPromise();
+        }).do(async () =>
+              await this.dbService.execute(`DELETE FROM ${CourseAssessmentEntry.TABLE_NAME}`)
+        ).mapTo(undefined).toPromise();
     }
 }

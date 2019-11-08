@@ -1,6 +1,6 @@
 import { ContentData, SearchType } from '..';
 import { Content, HierarchyInfo } from './content';
-import { CorrelationData } from '../../telemetry';
+import { CorrelationData, Rollup } from '../../telemetry';
 import { ContentImportResponse } from './response';
 import { ContentEntry } from '../db/schema';
 import { DownloadRequest } from '../../util/download';
@@ -60,6 +60,7 @@ export interface EcarImportRequest {
     destinationFolder: string;
     sourceFilePath: string;
     correlationData: CorrelationData[];
+    rollUp?: Rollup;
 }
 export interface ContentImportRequest {
     contentImportArray: ContentImport[];
@@ -71,6 +72,7 @@ export interface ContentImport {
     destinationFolder: string;
     contentId: string;
     correlationData?: CorrelationData[];
+    rollUp?: Rollup;
 }
 export interface ContentExportRequest {
     destinationFolder: string;
@@ -157,6 +159,7 @@ export interface ImportContentContext {
     tmpLocation?: string;
     rootIdentifier?: string;
     correlationData?: CorrelationData[];
+    rollUp?: Rollup;
     existedContentIdentifiers?: {
         [identifier: string]: boolean;
     };
@@ -177,6 +180,7 @@ export interface ContentDownloadRequest extends DownloadRequest {
     contentMeta: Partial<Content>;
     isChildContent?: boolean;
     correlationData?: CorrelationData[];
+    rollUp?: Rollup;
 }
 export interface RelevantContentRequest extends DownloadRequest {
     hierarchyInfo?: HierarchyInfo[];

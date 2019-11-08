@@ -42,7 +42,7 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     impression({ type, subType, pageId, visits, env, objId, objType, objVer, rollup, correlationData }: TelemetryImpressionRequest): Observable<boolean>;
     interact({ type, subType, id, pageId, pos, env, rollup, valueMap, correlationData, objId, objType, objVer }: TelemetryInteractRequest): Observable<boolean>;
     log({ type, level, message, pageId, params, env, actorType }: TelemetryLogRequest): Observable<boolean>;
-    share({ dir, type, items, correlationData, objId, objType, objVer }: TelemetryShareRequest): Observable<boolean>;
+    share({ dir, type, items, correlationData, objId, objType, objVer, rollUp }: TelemetryShareRequest): Observable<boolean>;
     feedback({ rating, comments, env, objId, objType, objVer }: TelemetryFeedbackRequest): Observable<boolean>;
     start({ type, deviceSpecification, loc, mode, duration, pageId, env, objId, objType, objVer, rollup, correlationData }: TelemetryStartRequest): Observable<boolean>;
     interrupt({ type, pageId }: TelemetryInterruptRequest): Observable<boolean>;

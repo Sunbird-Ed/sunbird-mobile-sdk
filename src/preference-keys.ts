@@ -54,3 +54,6 @@ export namespace CodePushExperiment {
     export const EXPERIMENT_APP_VERSION = 'emperiment_app_version';
 }
 
+export namespace DeviceRegister {
+    export const DEVICE_LOCATION = 'device_location';
+}

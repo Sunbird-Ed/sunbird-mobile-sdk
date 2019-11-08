@@ -110,6 +110,7 @@ export class TelemetryShareRequest {
     objId?: string;
     objType?: string;
     objVer?: string;
+    rollUp?: Rollup;
 
 }
 

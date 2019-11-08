@@ -366,7 +366,8 @@ export namespace SunbirdTelemetry {
                     correlationData: Array<CorrelationData> = [],
                     objId: string = '',
                     objType: string = '',
-                    objVer: string = '') {
+                    objVer: string = '',
+                    rollUp: Rollup = new Rollup()) {
             super(Share.EID);
 
             this.edata = {
@@ -376,6 +377,7 @@ export namespace SunbirdTelemetry {
             };
             this.context.cdata = correlationData;
             this.object = new TelemetryObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '');
+            this.object.rollup = rollUp;
         }
 
         addItem(type: ShareItemType | string, origin: string, identifier: string, pkgVersion: number,

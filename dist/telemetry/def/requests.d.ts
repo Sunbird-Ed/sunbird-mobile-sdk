@@ -107,6 +107,7 @@ export declare class TelemetryShareRequest {
     objId?: string;
     objType?: string;
     objVer?: string;
+    rollUp?: Rollup;
 }
 export interface Item {
     type: ShareItemType | string;

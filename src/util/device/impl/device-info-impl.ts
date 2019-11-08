@@ -74,4 +74,35 @@ export class DeviceInfoImpl implements DeviceInfo {
             });
         });
     }
+
+    isKeyboardShown(): Observable<boolean> {
+        let shownCallback1;
+        let shownCallback2;
+
+        let hideCallback1;
+        let hideCallback2;
+
+        return new Observable<boolean>((observer) => {
+            shownCallback1 = () => observer.next(true);
+            shownCallback2 = () => observer.next(true);
+            hideCallback1 = () => observer.next(false);
+            hideCallback2 = () => observer.next(false);
+
+            window.addEventListener('native.keyboardshow', shownCallback1);
+            window.addEventListener('keyboardWillShow', shownCallback2);
+
+            window.addEventListener('native.keyboardhide', hideCallback1);
+            window.addEventListener('keyboardWillHide', hideCallback1);
+        }).distinctUntilChanged().do(() => {
+            console.log('Subscribed isKeyboardShown event');
+        }).finally(() => {
+            console.log('Unsubscribed isKeyboardShown event');
+
+            window.removeEventListener('native.keyboardshow', shownCallback1);
+            window.removeEventListener('keyboardWillShow', shownCallback2);
+
+            window.removeEventListener('native.keyboardhide', hideCallback1);
+            window.removeEventListener('keyboardWillHide', hideCallback1);
+        });
+    }
 }

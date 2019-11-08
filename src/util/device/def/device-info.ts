@@ -35,4 +35,6 @@ export interface DeviceInfo {
     getAvailableInternalMemorySize(): Observable<string>;
 
     getStorageVolumes(): Observable<StorageVolume[]>;
+
+    isKeyboardShown(): Observable<boolean>;
 }

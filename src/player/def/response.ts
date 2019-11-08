@@ -38,6 +38,6 @@ export interface PlayerConfig {
 
 export interface Plugin {
     id: string;
-    version: string;
+    ver: string;
     type: string;
 }

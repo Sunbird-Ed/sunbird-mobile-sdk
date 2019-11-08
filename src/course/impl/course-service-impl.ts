@@ -308,7 +308,7 @@ export class CourseServiceImpl implements CourseService {
 
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string {
         return MD5(
-            [request.courseId, request.batchId, request.contentId, request.userId].join('-')
+            [request.courseId, request.batchId, request.contentId, request.userId, Date.now()].join('-')
         ).toString();
     }
 }
