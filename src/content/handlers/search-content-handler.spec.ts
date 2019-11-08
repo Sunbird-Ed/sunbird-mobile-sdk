@@ -56,10 +56,11 @@ describe('SearchContentHandler', () => {
         // act
         searchContentHandler.getSearchCriteria(request);
         // assert
+        expect(sortCriteria[0]).toEqual(criteria);
     });
 
 
-    it('should search content sort criteria for error case', () => {
+    it('should search content sort criteria for error case', (done) => {
         // arrange
         const request = {
             request: {
@@ -73,17 +74,28 @@ describe('SearchContentHandler', () => {
         // act
         searchContentHandler.getSearchCriteria(request);
         // assert
+        expect(request.request.query).toBe('Sample_query');
+        done();
     });
 
     it('should added subject filter and searchRequest for required fields and searchType as SEARCH', () => {
         // arrange
         const criteria: ContentSearchCriteria = {
-            searchType: SearchType.SEARCH
+            searchType: SearchType.SEARCH,
+            query: 'SAMPLE_QUERY',
+            offset: 1,
+            limit: 2,
+            mode: 'SAMPLE_MODE',
+            facets: [],
+            exists: ['SAMPLE_1', 'SAMPLE_2']
         };
         // spyOn(searchContentHandler, 'getSearchFilter').and.stub();
         // act
         searchContentHandler.getSearchContentRequest(criteria);
         // assert
+        expect(criteria.searchType).toBe('search');
+        expect(criteria.query).toBe('SAMPLE_QUERY');
+        expect(criteria.exists!.length).toBeGreaterThan(0);
     });
 
     it('should added subject filter and searchRequest for required fields and searchType as FILTER', () => {
@@ -92,8 +104,10 @@ describe('SearchContentHandler', () => {
             searchType: SearchType.FILTER
         };
         // spyOn(searchContentHandler, 'getSearchFilter').and.stub();
+
         // act
         searchContentHandler.getSearchContentRequest(criteria);
+        expect(criteria.searchType).toBe('filter');
         // assert
     });
 
@@ -111,6 +125,7 @@ describe('SearchContentHandler', () => {
         // act
         searchContentHandler.addFiltersToRequest(searchFilter, filter);
         // assert
+        expect(filter.length).toBeGreaterThan(0);
     });
 
     it('should sort all Attributes to invocked getSortByRequest()', () => {
@@ -122,12 +137,20 @@ describe('SearchContentHandler', () => {
         // act
         searchContentHandler.getSortByRequest(sortCriteria);
         // assert
+        expect(sortCriteria[0].sortAttribute).toBe('key');
+        expect(sortCriteria[0].sortOrder).toBe('asc');
     });
 
     it('should create filter by previousCriteria and return contentFilterCriteria', () => {
         // arrange
+        const sortCriteria: ContentSortCriteria[] = [{
+            sortAttribute: 'key',
+            sortOrder: SortOrder.ASC
+        }];
         const previouscriteria: ContentSearchCriteria = {
-            searchType: SearchType.SEARCH
+            searchType: SearchType.SEARCH,
+            mode: 'soft',
+            sortCriteria: sortCriteria
         };
         const valueRequest: FilterValue[] = [{
             name: 'SAMPLE_NAME',
@@ -141,6 +164,8 @@ describe('SearchContentHandler', () => {
         // act
         searchContentHandler.createFilterCriteria(previouscriteria, facets, appliedFilterMap);
         // assert
+        expect(previouscriteria.mode).toBe('soft');
+        expect(previouscriteria.sortCriteria!.length).toBeGreaterThan(0);
     });
 
     it('should added filter value with appliedFilter', () => {
@@ -157,6 +182,7 @@ describe('SearchContentHandler', () => {
         // act
         searchContentHandler.addFilterValue(facets, filter);
         // assert
+        expect(facets.length).toBeGreaterThan(0);
     });
 
     it('should return filter value to invoked getFilterValuesWithAppliedFilter()', () => {
@@ -169,6 +195,8 @@ describe('SearchContentHandler', () => {
         // act
         searchContentHandler.getFilterValuesWithAppliedFilter(facetValues, appliedFilter);
         // assert
+        expect(appliedFilter.indexOf('SAMPLE_BOARD')).toBeGreaterThan(-1);
+
     });
 
     it('should added importContent functionlity for telemetry service', () => {
@@ -179,5 +207,6 @@ describe('SearchContentHandler', () => {
         // act
         searchContentHandler.buildContentLoadingEvent(subType, identifier);
         // assert
+        expect(mockTelemetryService.interact).toHaveBeenCalled();
     });
 });
