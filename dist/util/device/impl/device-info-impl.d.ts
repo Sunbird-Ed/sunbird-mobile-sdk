@@ -10,4 +10,5 @@ export declare class DeviceInfoImpl implements DeviceInfo {
     getDeviceSpec(): Observable<DeviceSpec>;
     getAvailableInternalMemorySize(): Observable<string>;
     getStorageVolumes(): Observable<StorageVolume[]>;
+    isKeyboardShown(): Observable<boolean>;
 }
