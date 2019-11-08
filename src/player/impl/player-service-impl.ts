@@ -27,6 +27,7 @@ export class PlayerServiceImpl implements PlayerService {
     getPlayerConfig(content: Content, extraInfo: { [key: string]: any }): Observable<PlayerInput> {
         const context: Context = {};
         context.did = this.deviceInfo.getDeviceID();
+        context.origin = this.config.apiConfig.host ;
         const pData = new ProducerData();
         pData.id = this.config.apiConfig.api_authentication.producerId;
         pData.pid = this.config.apiConfig.api_authentication.producerUniqueId;

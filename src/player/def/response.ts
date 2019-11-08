@@ -18,6 +18,7 @@ export interface Context {
     cdata?: CorrelationData[];
     contextRollup?: Rollup;
     objectRollup?: Rollup;
+    origin?: string;
 }
 
 export interface PlayerConfig {
