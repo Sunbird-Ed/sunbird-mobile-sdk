@@ -64,6 +64,29 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
                                 ).provide()
                             )
                         )); break;
+
+                        case 'password-reset-success': acc.push(dsl.capture({
+                            host: forCase.when.host,
+                            path: forCase.when.path,
+                            params: [
+                                ...forCase.when.params,
+                                {
+                                    key: 'client_id',
+                                    resolveTo: 'client_id',
+                                    match: 'portal'
+                                },
+                                {
+                                    key: 'automerge',
+                                    resolveTo: 'automerge',
+                                    exists: 'false'
+                                }
+                            ]
+                        }).then(() =>
+                            dsl.closeWebview().then(() =>
+                                new Promise((resolve) => setTimeout(resolve, 500))
+                                    .then(() => this.provide())
+                            )
+                        )); break;
                     }
 
                     return acc;
