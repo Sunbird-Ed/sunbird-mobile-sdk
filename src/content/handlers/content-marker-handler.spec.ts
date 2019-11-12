@@ -22,7 +22,7 @@ describe('ContentMarkerHandler', () => {
         expect(contentMarkerHandler).toBeTruthy();
     });
 
-    it('should added contentMarker in contain details', () => {
+    it('should added contentMarker in contain details', (done) => {
         // arrange
         const identifier = 'SAMPLE_IDENTIFIER';
         const uid = 'SAMPLE_UID';
@@ -31,6 +31,7 @@ describe('ContentMarkerHandler', () => {
         contentMarkerHandler.getContentMarker(identifier, uid).subscribe(() => {
             // assert
             expect(mockDbService.execute).toHaveBeenCalled();
+            done();
         });
     });
 });

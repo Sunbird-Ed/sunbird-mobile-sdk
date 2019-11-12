@@ -106,14 +106,24 @@ export class WebviewRunnerImpl implements WebviewRunner {
         });
     }
 
-    capture({host, path, params}: { host: string; path: string; params: { key: string; resolveTo: string }[] }): Promise<void> {
+    capture({host, path, params}: { host: string; path: string; params: { key: string; resolveTo: string, match?: string, exists?: 'true' | 'false' }[] }): Promise<void> {
         if (!this.inAppBrowser) {
             throw new NoInappbrowserSessionAssertionFailError('InAppBrowser Session not found');
         }
 
         const isHostMatching = (url: URL) => url.origin === host;
         const isPathMatching = (url: URL) => url.pathname === path;
-        const areParamsMatching = (url: URL) => params.map(p => p.key).every(param => url.searchParams.has(param));
+        const areParamsMatching = (url: URL) => params.map(p => p).every(param => {
+            if (param.exists === 'false') {
+                return !url.searchParams.has(param.key);
+            } else {
+                if (param.match) {
+                    return url.searchParams.has(param.key) && url.searchParams.get(param.key) === param.match;
+                }
+
+                return url.searchParams.has(param.key);
+            }
+        });
 
         return new Promise((resolve) => {
             const onLoadStart = (event) => {

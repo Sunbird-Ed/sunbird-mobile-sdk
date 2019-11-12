@@ -66,3 +66,9 @@ global.buildconfigreader = {
     getFreeUsableSpace: () => {},
     canWrite: () => {}
 };
+
+global.customtabs = {
+    isAvailable: () => {},
+    launch: () => {},
+    launchInBrowser: () => {}
+};

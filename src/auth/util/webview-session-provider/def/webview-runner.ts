@@ -3,7 +3,7 @@ export interface WebviewRunner {
 
     launchCustomTab(args: { host: string, path: string, params: {[key: string]: string} }): Promise<void>;
 
-    capture(args: { host: string, path: string, params: { key: string, resolveTo: string }[] }): Promise<void>;
+    capture(args: { host: string, path: string, params: { key: string, resolveTo: string, match?: string, exists?: 'true' | 'false' }[] }): Promise<void>;
 
     resolveCaptured(param: string): Promise<string>;
 
