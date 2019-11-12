@@ -70,6 +70,7 @@ export interface EcarImportRequest {
     sourceFilePath: string;
     correlationData: CorrelationData[];
     rollUp?: Rollup;
+    identifier?: string;
 }
 
 export interface ContentImportRequest {
@@ -178,6 +179,7 @@ export interface ImportContentContext {
     existedContentIdentifiers?: { [identifier: string]: boolean };   // Update the content, but do not update refCount.
     // Because for the same content it was increasing the refCount when updating/re-importing/while importing artifact.
     contentIdsToDelete: Set<string>;    // Orphan contents which is not part of updated version of Book/Course, needs to delete.
+    identifier?: string; // identifier of the content only required only for telemetry.
 }
 
 export interface ExportContentContext {
