@@ -28,6 +28,7 @@ export interface PlayerConfig {
         webLink: string
     };
     showEndPage: boolean;
+    endPage: Array<any>;
     overlay: {
         enableUserSwitcher: boolean,
         showUser: boolean
