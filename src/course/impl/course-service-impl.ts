@@ -1,5 +1,5 @@
 import {
-    Batch, ContentState,
+    Batch,
     ContentStateResponse,
     Course,
     CourseBatchDetailsRequest,
@@ -41,10 +41,10 @@ import {AppInfo} from '../../util/app';
 import {FileUtil} from '../../util/file/util/file-util';
 import {DownloadStatus} from '../../util/download';
 import {DownloadCertificateResponse} from '../def/download-certificate-response';
-import {CourseAssessmentEntry} from '../../summarizer/db/schema';
 import {SunbirdTelemetry} from '../../telemetry';
 import * as MD5 from 'crypto-js/md5';
 import {SyncAssessmentEventsHandler} from '../handlers/sync-assessment-events-handler';
+import * as Collections from 'typescript-collections';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -288,8 +288,18 @@ export class CourseServiceImpl implements CourseService {
             .map((entry) => ({path: entry.localUri}));
     }
 
+    public hasCapturedAssessmentEvent({courseContext}: { courseContext: any }) {
+        const key = Collections.util.makeString(courseContext, '-');
+
+        return !!this.capturedAssessmentEvents[key];
+    }
+
     public captureAssessmentEvent({event, courseContext}) {
-        const key = JSON.stringify(courseContext);
+        const key = Collections.util.makeString(courseContext, '-');
+
+        if (Object.keys(this.capturedAssessmentEvents).length) {
+            this.resetCapturedAssessmentEvents();
+        }
 
         if (!this.capturedAssessmentEvents[key]) {
             this.capturedAssessmentEvents[key] = [];
@@ -299,11 +309,17 @@ export class CourseServiceImpl implements CourseService {
     }
 
     public syncAssessmentEvents(): Observable<undefined> {
+        const capturedAssessmentEvents = this.capturedAssessmentEvents;
+
+        this.resetCapturedAssessmentEvents();
+
         return this.syncAssessmentEventsHandler.handle(
-            this.capturedAssessmentEvents
-        ).do(() => {
-            this.capturedAssessmentEvents = {};
-        });
+            capturedAssessmentEvents
+        );
+    }
+
+    private resetCapturedAssessmentEvents() {
+        this.capturedAssessmentEvents = {};
     }
 
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string {
