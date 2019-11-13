@@ -17,6 +17,10 @@ export interface CourseService {
     getContentState(contentStateRequest: GetContentStateRequest): Observable<ContentStateResponse | undefined>;
     downloadCurrentProfileCourseCertificate(downloadCertificateRequest: DownloadCertificateRequest): Observable<DownloadCertificateResponse>;
     /** @internal */
+    hasCapturedAssessmentEvent(request: {
+        courseContext: any;
+    }): boolean;
+    /** @internal */
     captureAssessmentEvent(capture: {
         event: Telemetry;
         courseContext: any;
