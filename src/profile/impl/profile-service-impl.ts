@@ -587,10 +587,10 @@ export class ProfileServiceImpl implements ProfileService {
 
     isDefaultChannelProfile(): Observable<boolean> {
         return Observable.zip(
-            this.frameworkService.getDefaultChannelDetails(),
+            this.frameworkService.getDefaultChannelId(),
             this.frameworkService.getActiveChannelId()
         ).map((results) => {
-            return results[0].identifier === results[1];
+            return results[0] === results[1];
         });
     }
 
