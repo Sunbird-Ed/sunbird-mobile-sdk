@@ -1,6 +1,7 @@
 import {InteractType, TelemetryInteractRequest, TelemetryService} from '../../../telemetry';
 import {ImportContentContext} from '../..';
 import {Response} from '../../../api';
+import {ContentUtil} from '../../util/content-util';
 
 export class GenerateInteractTelemetry {
 
@@ -14,7 +15,11 @@ export class GenerateInteractTelemetry {
         telemetryInteractRequest.pageId = 'ImportContent';
         telemetryInteractRequest.id = 'ImportContent';
         telemetryInteractRequest.env = 'sdk';
-        telemetryInteractRequest.objType = 'Content';
+        telemetryInteractRequest.objId =  importContext.identifier,
+        telemetryInteractRequest.objType = importContext.items && importContext.items.length ?
+            importContext.items[0]['contentType'] : '';
+        telemetryInteractRequest.objVer = importContext.items && importContext.items.length ?
+            ContentUtil.readPkgVersion(importContext.items[0]) + '' : ''
         telemetryInteractRequest.correlationData = importContext.correlationData;
 
         const response: Response = new Response();

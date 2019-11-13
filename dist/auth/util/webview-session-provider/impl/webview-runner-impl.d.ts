@@ -30,6 +30,8 @@ export declare class WebviewRunnerImpl implements WebviewRunner {
         params: {
             key: string;
             resolveTo: string;
+            match?: string;
+            exists?: 'true' | 'false';
         }[];
     }): Promise<void>;
     resolveCaptured(param: string): Promise<string>;

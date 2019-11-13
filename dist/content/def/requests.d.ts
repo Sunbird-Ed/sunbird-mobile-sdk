@@ -61,6 +61,7 @@ export interface EcarImportRequest {
     sourceFilePath: string;
     correlationData: CorrelationData[];
     rollUp?: Rollup;
+    identifier?: string;
 }
 export interface ContentImportRequest {
     contentImportArray: ContentImport[];
@@ -164,6 +165,7 @@ export interface ImportContentContext {
         [identifier: string]: boolean;
     };
     contentIdsToDelete: Set<string>;
+    identifier?: string;
 }
 export interface ExportContentContext {
     ecarFilePath?: string;

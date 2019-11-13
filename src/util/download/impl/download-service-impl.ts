@@ -43,7 +43,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'ContentDetail',
             id: 'ContentDetail',
             objId: downloadRequest.identifier,
-            objType: ObjectType.CONTENT,
+            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['contentType'] ?
+                downloadRequest['contentMeta']['contentType'] : 'Content',
+            objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
+                downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
         }).mapTo(undefined).toPromise();
     }
@@ -56,7 +59,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'ContentDetail',
             id: 'ContentDetail',
             objId: downloadRequest.identifier,
-            objType: ObjectType.CONTENT,
+            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['contentType'] ?
+                downloadRequest['contentMeta']['contentType'] : 'Content',
+            objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
+                downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
         }).mapTo(undefined).toPromise();
     }
@@ -69,7 +75,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'ContentDetail',
             id: 'ContentDetail',
             objId: downloadRequest.identifier,
-            objType: ObjectType.CONTENT,
+            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['contentType'] ?
+                downloadRequest['contentMeta']['contentType'] : 'Content',
+            objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
+                downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
         }).mapTo(undefined).toPromise();
     }
