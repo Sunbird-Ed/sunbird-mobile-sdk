@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import * as dayjs from 'dayjs';
 import {ProcessedEventModel} from '..';
 import {UniqueId} from '../../db/util/unique-id';
 
@@ -30,9 +30,7 @@ export class EventProcessor {
     }
 
     private formatCurrentDate() {
-        const time = new Date();
-        const format = `yyyy-MM-dd'T'HH:mm:ssZZ`;
-        return moment(time).format(format);
+        return dayjs().format();
     }
 
 }
