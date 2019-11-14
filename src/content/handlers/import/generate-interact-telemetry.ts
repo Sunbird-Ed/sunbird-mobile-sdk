@@ -9,17 +9,19 @@ export class GenerateInteractTelemetry {
     }
 
     execute(importContext: ImportContentContext, subType): Promise<Response> {
+        const identifier =  importContext.items && importContext.items!.length ?
+            importContext.items[0]['identifier'] : '';
         const telemetryInteractRequest = new TelemetryInteractRequest();
         telemetryInteractRequest.type = InteractType.OTHER;
         telemetryInteractRequest.subType = subType;
         telemetryInteractRequest.pageId = 'ImportContent';
         telemetryInteractRequest.id = 'ImportContent';
         telemetryInteractRequest.env = 'sdk';
-        telemetryInteractRequest.objId =  importContext.identifier,
+        telemetryInteractRequest.objId =  identifier ? identifier : importContext.identifier,
         telemetryInteractRequest.objType = importContext.items && importContext.items.length ?
             importContext.items[0]['contentType'] : '';
         telemetryInteractRequest.objVer = importContext.items && importContext.items.length ?
-            ContentUtil.readPkgVersion(importContext.items[0]) + '' : ''
+            ContentUtil.readPkgVersion(importContext.items[0]) + '' : '';
         telemetryInteractRequest.correlationData = importContext.correlationData;
 
         const response: Response = new Response();
