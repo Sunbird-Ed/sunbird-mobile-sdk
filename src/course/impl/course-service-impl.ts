@@ -211,11 +211,11 @@ export class CourseServiceImpl implements CourseService {
                     .find((course) => course.courseId === request.courseId)!;
             })
             .map((course: Course) => {
-                if (!course.certificates) {
+                if (!course.certificates || !course.certificates.length ) {
                     throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
                 }
 
-                const certificate = course.certificates.find((certificate) => certificate.name === '100PercentCompletionCertificate');
+                const certificate = course.certificates[0];
 
                 if (!certificate) {
                     throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
