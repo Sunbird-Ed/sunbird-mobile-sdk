@@ -89,7 +89,7 @@ describe('ChildContentsHandler', () => {
     //     // assert
     // });
 
-    it('should parent child relation', () => {
+    it('should parent child relation', (done) => {
         // arrange
         const request: ContentEntry.SchemaMap = {
             identifier: 'IDENTIFIER',
@@ -104,6 +104,7 @@ describe('ChildContentsHandler', () => {
         // act
         childContentHandler.getContentsKeyList(request).then(() => {
             expect(key).toEqual('IDENTIFIER');
+            done();
         });
         // assert
     });
@@ -127,7 +128,7 @@ describe('ChildContentsHandler', () => {
         // assert
     });
 
-    it('should fetch next content', () => {
+    it('should fetch next content', (done) => {
         // arrange
         const request: HierarchyInfo[] = [{
             identifier: 'SAMPLE_IDENTIFIER_1',
@@ -143,9 +144,10 @@ describe('ChildContentsHandler', () => {
         // act
         childContentHandler.getNextContentIdentifier(request, currentIdentifier, contentKeyList);
         // assert
+        done();
     });
 
-    it('should fetch previous content', () => {
+    it('should fetch previous content', (done) => {
         // arrange
         const request: HierarchyInfo[] = [{
             identifier: 'SAMPLE_IDENTIFIER_1',
@@ -161,5 +163,6 @@ describe('ChildContentsHandler', () => {
         // act
         childContentHandler.getPreviousContentIdentifier(request, currentIdentifier, contentKeyList);
         // assert
+        done();
     });
 });

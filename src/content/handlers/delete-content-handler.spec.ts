@@ -3,7 +3,7 @@ import { DbService } from '../../db';
 import { FileService } from '../../util/file/def/file-service';
 import { SharedPreferences } from '../..';
 import { ContentEntry } from '../db/schema';
-import {ContentUtil} from '../util/content-util';
+import { ContentUtil } from '../util/content-util';
 // import {buildconfigreader} from '../../../plugins/cordova-plugin-buildconfig-reader';
 import { Observable } from 'rxjs';
 import { ArrayUtil } from '../../util/array-util';
@@ -28,7 +28,7 @@ describe('DeleteContentHandler', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-      //  (ContentUtil as jest.Mock<ContentUtil>).
+        //  (ContentUtil as jest.Mock<ContentUtil>).
     });
 
     it('should be able to create an instance of deleteContentHandler', () => {
@@ -56,7 +56,7 @@ describe('DeleteContentHandler', () => {
             content_type: 'CONTENT_TYPE',
             path: 'Sample_path'
         };
-        mockDbService.execute = jest.fn(() => {});
+        mockDbService.execute = jest.fn(() => { });
         (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
@@ -68,11 +68,11 @@ describe('DeleteContentHandler', () => {
         }]));
         mockDbService.beginTransaction = jest.fn(() => Observable.of({}));
         mockDbService.update = jest.fn(() => Observable.of({}));
-        mockDbService.endTransaction = jest.fn(() => {});
+        mockDbService.endTransaction = jest.fn(() => { });
         const isChildContent = true;
-        mockFileService.readAsText = jest.fn(() => {});
+        mockFileService.readAsText = jest.fn(() => { });
         const readAsText = (mockFileService.readAsText as jest.Mock)
-        .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
+            .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
         readAsText().then((value) => {
             return value;
         });
@@ -80,12 +80,12 @@ describe('DeleteContentHandler', () => {
         // act
         await deleteContentHandler.deleteAllChildren(request, isChildContent).then(() => {
             // assert
-          expect(buildconfigreader.getMetaData).toHaveBeenCalled();
-          done();
+            expect(buildconfigreader.getMetaData).toHaveBeenCalled();
+            done();
         });
     });
 
-    it('should ', async(done) => {
+    it('should ', async (done) => {
         // arrange
         spyOn(buildconfigreader, 'getMetaData').and.callFake((mapList, cb) => {
             setTimeout(() => {
@@ -104,9 +104,9 @@ describe('DeleteContentHandler', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE'
         };
-         mockFileService.readAsText = jest.fn(() => {});
+        mockFileService.readAsText = jest.fn(() => { });
         const readAsText = (mockFileService.readAsText as jest.Mock)
-        .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
+            .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
         readAsText().then((value) => {
             return value;
         });
@@ -158,7 +158,7 @@ describe('DeleteContentHandler', () => {
     //     // assert
     // });
 
-    it('should delete or update a content when invoked deleteOrUpdateContent()', () => {
+    it('should delete or update a content when invoked deleteOrUpdateContent()', (done) => {
         // arrange
         const request: ContentEntry.SchemaMap = {
             identifier: 'IDENTIFIER',
@@ -166,15 +166,16 @@ describe('DeleteContentHandler', () => {
             local_data: 'LOCAL_DATA',
             mime_type: 'MIME_TYPE',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE'
+            content_type: 'CONTENT_TYPE',
+            ref_count: 2
         };
         const isChildItems = true;
         const isChildContent = true;
         // act
         deleteContentHandler.deleteOrUpdateContent(request, isChildItems, isChildContent).then(() => {
-
+            // assert
+            done();
         });
-        // assert
     });
 
 });

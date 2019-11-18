@@ -503,10 +503,11 @@ describe.only('ProfileServiceImpl', () => {
             } as Partial<Channel>;
             mockFrameworkService.getDefaultChannelDetails = () => Observable.of(sampleChannel as Channel);
             mockFrameworkService.getActiveChannelId = () => Observable.of('SAMPLE_CHANNEL');
+            mockFrameworkService.getDefaultChannelId = () => Observable.of('DEFAULT_CHANNEL');
 
             // act
             profileService.isDefaultChannelProfile().subscribe((isDefaultChannelProfile) => {
-                expect(isDefaultChannelProfile).toBe(true);
+                expect(isDefaultChannelProfile).toBe(false);
                 done();
             });
         });
