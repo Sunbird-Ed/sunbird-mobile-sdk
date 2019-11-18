@@ -25,6 +25,8 @@ export interface CourseService {
         event: Telemetry;
         courseContext: any;
     }): any;
+    /** @internal */
+    resetCapturedAssessmentEvents(): any;
     syncAssessmentEvents(): Observable<undefined>;
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 }

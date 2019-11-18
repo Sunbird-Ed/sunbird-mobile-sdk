@@ -173,6 +173,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
 
     handle(event: SunbirdTelemetry.Telemetry): Observable<undefined> {
         if (event.eid === 'START' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
+            this.courseService.resetCapturedAssessmentEvents();
             return this.processOEStart(event)
                 .do(async () => {
                     await this.summarizerService.saveLearnerAssessmentDetails(event)

@@ -44,7 +44,7 @@ import {DownloadCertificateResponse} from '../def/download-certificate-response'
 import {SunbirdTelemetry} from '../../telemetry';
 import * as MD5 from 'crypto-js/md5';
 import {SyncAssessmentEventsHandler} from '../handlers/sync-assessment-events-handler';
-import * as Collections from 'typescript-collections';
+import {ObjectUtil} from '../../util/object-util';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -211,11 +211,11 @@ export class CourseServiceImpl implements CourseService {
                     .find((course) => course.courseId === request.courseId)!;
             })
             .map((course: Course) => {
-                if (!course.certificates) {
+                if (!course.certificates || !course.certificates.length ) {
                     throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
                 }
 
-                const certificate = course.certificates.find((certificate) => certificate.name === '100PercentCompletionCertificate');
+                const certificate = course.certificates[0];
 
                 if (!certificate) {
                     throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
@@ -289,17 +289,13 @@ export class CourseServiceImpl implements CourseService {
     }
 
     public hasCapturedAssessmentEvent({courseContext}: { courseContext: any }) {
-        const key = Collections.util.makeString(courseContext, '-');
+        const key = ObjectUtil.toOrderedString(courseContext);
 
         return !!this.capturedAssessmentEvents[key];
     }
 
     public captureAssessmentEvent({event, courseContext}) {
-        const key = Collections.util.makeString(courseContext, '-');
-
-        if (Object.keys(this.capturedAssessmentEvents).length) {
-            this.resetCapturedAssessmentEvents();
-        }
+        const key = ObjectUtil.toOrderedString(courseContext);
 
         if (!this.capturedAssessmentEvents[key]) {
             this.capturedAssessmentEvents[key] = [];
@@ -318,7 +314,7 @@ export class CourseServiceImpl implements CourseService {
         );
     }
 
-    private resetCapturedAssessmentEvents() {
+    public resetCapturedAssessmentEvents() {
         this.capturedAssessmentEvents = {};
     }
 

@@ -13,7 +13,6 @@ import {SharedPreferencesSetCollection} from '../../shared-preferences/def/share
 import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import * as percentile from 'percentile';
 
 @injectable()
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
