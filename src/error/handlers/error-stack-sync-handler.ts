@@ -1,13 +1,13 @@
 import {Observable} from 'rxjs';
 import {ErrorStackEntry} from '../db/schema';
-import {ApiService, HttpRequestType, Request} from '../../../api';
-import {DbService} from '../../../db';
+import {ApiService, HttpRequestType, Request} from '../../api';
+import {DbService} from '../../db';
 import {ErrorLoggerConfig} from '../config/error-logger-config';
 import _ID = ErrorStackEntry._ID;
-import {NetworkInfoService, NetworkStatus} from '../../network';
+import {NetworkInfoService, NetworkStatus} from '../../util/network';
 import {ErrorStackMapper} from '../util/error-stack-mapper';
 import {ErrorStack} from '../def/error-stack';
-import {DeviceSpec} from '../../device';
+import {DeviceSpec} from '../../util/device';
 import {ErrorStackSyncRequestDecorator} from './error-stack-sync-request-decorator';
 
 interface ErrorLoggerRequest {

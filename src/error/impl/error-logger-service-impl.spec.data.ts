@@ -1,4 +1,4 @@
-import {SdkConfig} from '../../../sdk-config';
+import {SdkConfig} from '../../sdk-config';
 
 export const mockSdkConfigWithErrorLoggerConfig: Partial<SdkConfig> = {
     errorLoggerConfig: {
