@@ -48,7 +48,7 @@ import {NetworkInfoService, NetworkStatus} from '../../util/network';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
-import {ErrorLoggerService} from '../../util/error-stack';
+import {ErrorLoggerService} from '../../error';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AppInfo} from '../../util/app';
 import {DeviceRegisterService} from '../../device-register';
