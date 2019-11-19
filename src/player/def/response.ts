@@ -18,6 +18,7 @@ export interface Context {
     cdata?: CorrelationData[];
     contextRollup?: Rollup;
     objectRollup?: Rollup;
+    origin?: string;
 }
 
 export interface PlayerConfig {
@@ -35,7 +36,6 @@ export interface PlayerConfig {
     };
     plugins?: Plugin[];
 }
-
 
 export interface Plugin {
     id: string;
