@@ -8,7 +8,7 @@ import * as downloadManagerInstance from 'cordova-plugin-android-downloadmanager
 import {DownloadCompleteDelegate} from '../def/download-complete-delegate';
 import {DownloadKeys} from '../../../preference-keys';
 import {TelemetryLogger} from '../../../telemetry/util/telemetry-logger';
-import {InteractSubType, InteractType, ObjectType} from '../../../telemetry';
+import {InteractSubType, InteractType} from '../../../telemetry';
 import {SharedPreferencesSetCollection} from '../../shared-preferences/def/shared-preferences-set-collection';
 import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
 import {inject, injectable} from 'inversify';
