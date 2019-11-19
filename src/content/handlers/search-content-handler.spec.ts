@@ -2,10 +2,11 @@ import { ContentServiceConfig } from '../config/content-config';
 import { SearchContentHandler } from './search-content-handler';
 import { TelemetryService, ContentSortCriteria } from '../..';
 import { AppConfig } from '../../api/config/app-config';
-import { SortOrder, ContentSearchCriteria, ContentSearchFilter, FilterValue } from '../def/requests';
+import { SortOrder, ContentSearchCriteria, ContentSearchFilter, FilterValue, ContentImport } from '../def/requests';
 import { SearchFilter } from '../def/search-request';
 import { SearchType } from '../util/content-constants';
 import { Observable } from 'rxjs';
+import { identifier } from '@babel/types';
 
 describe('SearchContentHandler', () => {
     let searchContentHandler: SearchContentHandler;
@@ -202,10 +203,15 @@ describe('SearchContentHandler', () => {
     it('should added importContent functionlity for telemetry service', () => {
         // arrange
         const subType = 'SAMPLE_SUB_TYPE';
-        const identifier = 'SAMPLE_IDENTIFIER';
+        const contentImport: ContentImport = {
+            isChildContent: true,
+            destinationFolder: '',
+            contentId: 'd0'
+        };
+
         mockTelemetryService.interact = jest.fn(() => Observable.of([]));
         // act
-        searchContentHandler.buildContentLoadingEvent(subType, identifier);
+        searchContentHandler.buildContentLoadingEvent(subType, contentImport, '', '');
         // assert
         expect(mockTelemetryService.interact).toHaveBeenCalled();
     });

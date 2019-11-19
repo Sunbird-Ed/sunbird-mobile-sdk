@@ -1,6 +1,6 @@
 import {ContentEntry} from '../db/schema';
 import {ContentUtil} from '../util/content-util';
-import * as moment from 'moment';
+import * as dayjs from 'dayjs';
 import {DbService} from '../../db';
 import {ArrayUtil} from '../../util/array-util';
 import {FileService} from '../../util/file/def/file-service';
@@ -136,7 +136,7 @@ export class ImportNExportHandler {
         // Initialize manifest
         manifest['id'] = ImportNExportHandler.EKSTEP_CONTENT_ARCHIVE;
         manifest['ver'] = ImportNExportHandler.SUPPORTED_MANIFEST_VERSION;
-        manifest['ts'] = moment(Date.now()).format('YYYY-MM-DDTHH:mm:ss[Z]');
+        manifest['ts'] = dayjs().format('YYYY-MM-DDTHH:mm:ss[Z]');
         manifest['archive'] = archive;
         return manifest;
     }

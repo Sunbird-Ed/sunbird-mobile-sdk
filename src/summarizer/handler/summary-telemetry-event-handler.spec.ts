@@ -99,7 +99,11 @@ describe('SummaryTelemetryEventHandler', () => {
         mockCourseService.getContentState = jest.fn(() => { });
         (mockCourseService.getContentState as jest.Mock).mockReturnValue(Observable.of({}));
         mockContentService.getContentDetails = jest.fn(() => { });
-        (mockContentService.getContentDetails as jest.Mock).mockReturnValue(Observable.of({ name: 'CONTENT_NAME', sections: {} }));
+        (mockContentService.getContentDetails as jest.Mock).mockReturnValue(Observable.of({
+         name: 'CONTENT_NAME', sections: {},
+         contentType: 'SELFASSESS' }));
+         mockCourseService.hasCapturedAssessmentEvent = jest.fn(() => {});
+         (mockCourseService.hasCapturedAssessmentEvent as jest.Mock).mockReturnValue(true);
         telemetry.edata.summary = [{ progress: -2 }];
         mockEventBusService.emit = jest.fn(() => { });
         (mockEventBusService.emit as jest.Mock).mockReturnValue(Observable.of());
@@ -141,6 +145,7 @@ describe('SummaryTelemetryEventHandler', () => {
 
     it('should added content in content marker table for pid is contentPlayer', (done) => {
         // arrange
+        mockCourseService.resetCapturedAssessmentEvents = () => Observable.of('DEFAULT_CHANNEL');
         // act
         summaryTelemetryEventHandler.handle(telemetry).subscribe(() => {
             // assert

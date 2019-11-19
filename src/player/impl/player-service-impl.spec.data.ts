@@ -33,7 +33,8 @@ export const mockSdkConfigWithSamplePlayerConfig: Partial<SdkConfig> = {
         overlay: {
             enableUserSwitcher: false,
             showUser: false
-        }
+        },
+        endPage: []
     },
     appConfig: {
         deepLinkBasePath: 'SAMPLE_DEEP_LINKING_BASE_PATH',

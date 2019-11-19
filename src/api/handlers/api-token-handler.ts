@@ -1,6 +1,6 @@
 import {ApiConfig, ApiService, HttpRequestType, JWTokenType, JWTUtil, Request} from '..';
 import {Observable} from 'rxjs';
-import * as moment from 'moment';
+import * as dayjs from 'dayjs';
 import {DeviceInfo} from '../../util/device';
 
 export class ApiTokenHandler {
@@ -38,7 +38,7 @@ export class ApiTokenHandler {
             .withBody({
                 id: ApiTokenHandler.ID,
                 ver: ApiTokenHandler.VERSION,
-                ts: moment().format(),
+                ts: dayjs().format(),
                 request: {
                     key: this.getMobileDeviceConsumerKey()
                 }

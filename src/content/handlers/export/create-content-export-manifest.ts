@@ -1,7 +1,7 @@
 import {DbService} from '../../../db';
 import {ExportContentContext} from '../..';
 import {Response} from '../../../api';
-import * as moment from 'moment';
+import * as dayjs from 'dayjs';
 import {ImportNExportHandler} from '../import-n-export-handler';
 
 export class CreateContentExportManifest {
@@ -27,7 +27,7 @@ export class CreateContentExportManifest {
         // Initialize manifest
         exportContentContext.manifest['id'] = CreateContentExportManifest.EKSTEP_CONTENT_ARCHIVE;
         exportContentContext.manifest['ver'] = CreateContentExportManifest.SUPPORTED_MANIFEST_VERSION;
-        exportContentContext.manifest['ts'] = moment().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'');
+        exportContentContext.manifest['ts'] = dayjs().format();
         exportContentContext.manifest['archive'] = archive;
         response.body = exportContentContext;
         return Promise.resolve(response);

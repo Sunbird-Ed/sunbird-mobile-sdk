@@ -10,7 +10,7 @@ import {DeviceInfo} from '../../util/device';
 import {DbService, InsertQuery} from '../../db';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {UniqueId} from '../../db/util/unique-id';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import {TelemetryLogger} from '../util/telemetry-logger';
 import {TelemetryConfig} from '../config/telemetry-config';
 import {SharedPreferences} from '../../util/shared-preferences';
@@ -221,7 +221,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
             }, {
                 id: 'ekstep.telemetry',
                 ver: '1.0',
-                ts: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ss[Z]'),
+                ts: dayjs().format('YYYY-MM-DDTHH:mm:ss[Z]'),
                 events: events.map((e) => JSON.parse(e[TelemetryEntry.COLUMN_NAME_EVENT])),
                 params: {
                     did: this.deviceInfo.getDeviceID(),

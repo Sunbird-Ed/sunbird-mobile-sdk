@@ -6,7 +6,7 @@ import {AppConfig} from '../../api/config/app-config';
 import {ContentEntry} from '../db/schema';
 import {NumberUtil} from '../../util/number-util';
 import {ArrayUtil} from '../../util/array-util';
-import * as moment from 'moment';
+import * as dayjs from 'dayjs';
 
 export class ContentUtil {
     public static defaultCompatibilityLevel = 1;
@@ -503,7 +503,7 @@ export class ContentUtil {
             [ContentEntry.COLUMN_NAME_VISIBILITY]: visibility,
             [ContentEntry.COLUMN_NAME_AUDIENCE]: audience,
             [ContentEntry.COLUMN_NAME_PRAGMA]: pragma,
-            [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ssZ'),
+            [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: dayjs().format(),
             [ContentEntry.COLUMN_NAME_BOARD]: ContentUtil.getContentAttribute(board),
             [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
             [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)
