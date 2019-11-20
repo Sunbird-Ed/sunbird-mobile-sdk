@@ -1,16 +1,4 @@
-import {Observable} from 'rxjs';
-import {
-    DirectoryEntry,
-    Entry,
-    FileEntry,
-    Flags,
-    LocalFileSystem,
-    FileSystem,
-    FileError,
-    ErrorCallback,
-    EntryCallback,
-    RemoveResult, Metadata, IWriteOptions
-} from '../index';
+import {DirectoryEntry, Entry, FileEntry, Flags, IWriteOptions, Metadata, RemoveResult} from '../index';
 
 
 export interface FileService {
@@ -19,7 +7,7 @@ export interface FileService {
 
     readFileFromAssets(fileName: string): Promise<string>;
 
-    writeFile(path: string, fileName: string, text: string , options: IWriteOptions): Promise<string>;
+    writeFile(path: string, fileName: string, text: string, options: IWriteOptions): Promise<string>;
 
     createFile(path: string, fileName: string, replace: boolean): Promise<FileEntry>;
 

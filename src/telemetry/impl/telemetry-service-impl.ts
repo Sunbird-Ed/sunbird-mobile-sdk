@@ -1,5 +1,6 @@
 import {DbService, InsertQuery} from '../../db';
 import {
+    Context,
     ExportTelemetryContext,
     ImportTelemetryContext,
     SunbirdTelemetry,
@@ -19,8 +20,7 @@ import {
     TelemetryShareRequest,
     TelemetryStartRequest,
     TelemetryStat,
-    TelemetrySyncStat,
-    Context
+    TelemetrySyncStat
 } from '..';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {Observable} from 'rxjs';
@@ -50,7 +50,8 @@ import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {ErrorLoggerService} from '../../util/error-stack';
 import {SharedPreferences} from '../../util/shared-preferences';
-import {AppInfo} from "../../util/app";
+import {AppInfo} from '../../util/app';
+import {DeviceRegisterService} from '../../device-register';
 
 @injectable()
 export class TelemetryServiceImpl implements TelemetryService {
@@ -73,6 +74,7 @@ export class TelemetryServiceImpl implements TelemetryService {
         @inject(InjectionTokens.ERROR_LOGGER_SERVICE) private errorLoggerService: ErrorLoggerService,
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.APP_INFO) private appInfoService: AppInfo,
+        @inject(InjectionTokens.DEVICE_REGISTER_SERVICE) private deviceRegisterService: DeviceRegisterService,
     ) {
         this.telemetryConfig = this.sdkConfig.telemetryConfig;
     }
@@ -133,8 +135,8 @@ export class TelemetryServiceImpl implements TelemetryService {
         return this.decorateAndPersist(log);
     }
 
-    share({dir, type, items, correlationData}: TelemetryShareRequest): Observable<boolean> {
-        const share = new SunbirdTelemetry.Share(dir, type, [], correlationData);
+    share({dir, type, items, correlationData, objId, objType, objVer, rollUp}: TelemetryShareRequest): Observable<boolean> {
+        const share = new SunbirdTelemetry.Share(dir, type, [], correlationData, objId, objType, objVer, rollUp);
         items.forEach((item) => {
             share.addItem(item.type, item.origin, item.identifier, item.pkgVersion, item.transferCount, item.size);
         });
@@ -190,9 +192,9 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.dbService,
             this.sdkConfig,
             this.deviceInfo,
-            this.frameworkService,
             this.sharedPreferences,
-            this.appInfoService
+            this.appInfoService,
+            this.deviceRegisterService
         );
         return Observable.fromPromise(
             telemetrySyncHandler.processEventsBatch().expand((processedEventsCount: number) =>
@@ -246,9 +248,9 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.dbService,
             this.sdkConfig,
             this.deviceInfo,
-            this.frameworkService,
             this.sharedPreferences,
             this.appInfoService,
+            this.deviceRegisterService,
             this.keyValueStore,
             this.apiService
         ).resetDeviceRegisterTTL();
@@ -269,9 +271,9 @@ export class TelemetryServiceImpl implements TelemetryService {
                     this.dbService,
                     this.sdkConfig,
                     this.deviceInfo,
-                    this.frameworkService,
                     this.sharedPreferences,
                     this.appInfoService,
+                    this.deviceRegisterService,
                     this.keyValueStore,
                     this.apiService
                 ).handle(shouldIgnoreSyncThreshold);
@@ -280,6 +282,15 @@ export class TelemetryServiceImpl implements TelemetryService {
                 this.keyValueStore.setValue(TelemetryServiceImpl.KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP, telemetrySyncStat.syncTime + '')
                     .mapTo(telemetrySyncStat)
             );
+    }
+
+    buildContext(): Observable<Context> {
+        return this.profileService.getActiveProfileSession()
+            .map((session) => {
+                return this.decorator.buildContext(
+                    session!.sid,
+                    this.frameworkService.activeChannelId!, new Context());
+            });
     }
 
     private decorateAndPersist(telemetry: SunbirdTelemetry.Telemetry): Observable<boolean> {
@@ -311,14 +322,5 @@ export class TelemetryServiceImpl implements TelemetryService {
                         .map((count) => count > 1);
                 });
         });
-    }
-
-    buildContext(): Observable<Context> {
-        return this.profileService.getActiveProfileSession()
-          .map((session) => {
-              return this.decorator.buildContext(
-                session!.sid,
-                this.frameworkService.activeChannelId!, new Context());
-          });
     }
 }

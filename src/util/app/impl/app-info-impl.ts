@@ -1,10 +1,10 @@
 import {SdkConfig} from '../../../sdk-config';
 import {AppInfo} from '..';
-import {injectable, inject} from 'inversify';
+import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {SharedPreferences} from "../../shared-preferences";
-import {AppInfoKeys} from "../../../preference-keys";
-import {Observable} from "rxjs";
+import {SharedPreferences} from '../../shared-preferences';
+import {AppInfoKeys} from '../../../preference-keys';
+import {Observable} from 'rxjs';
 
 @injectable()
 export class AppInfoImpl implements AppInfo {

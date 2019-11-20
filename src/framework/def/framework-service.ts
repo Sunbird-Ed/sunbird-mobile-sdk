@@ -11,6 +11,8 @@ export interface FrameworkService extends SdkServicePreInitDelegate {
 
     getDefaultChannelDetails(): Observable<Channel>;
 
+    getDefaultChannelId(): Observable<string>;
+
     getChannelDetails(request: ChannelDetailsRequest): Observable<Channel>;
 
     getFrameworkDetails(request: FrameworkDetailsRequest): Observable<Framework>;

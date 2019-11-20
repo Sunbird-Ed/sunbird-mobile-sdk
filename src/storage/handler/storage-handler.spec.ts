@@ -51,6 +51,11 @@ describe('StorageHandler', () => {
         spyOn(ContentUtil, 'doesContentExist').and.returnValue(true);
         mockFileService.getDirectorySize = jest.fn(() => {});
         (mockFileService.getDirectorySize as jest.Mock).mockReturnValue(256);
+        mockDeviceInfo.getDeviceID = jest.fn(() => {});
+        (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(Observable.of(''));
+        mockDbService.beginTransaction = jest.fn(() => Observable.of());
+        mockDbService.update = jest.fn(() => Observable.of());
+        mockDbService.endTransaction = jest.fn(() => {});
         // act
         await storageHandler.addDestinationContentInDb(identifier, storageFolder, keepLowerVersion).then(() => {
              // assert

@@ -1,6 +1,7 @@
-import "rxjs-compat";
+import 'rxjs-compat';
 
 export * from './db';
+export * from './device-register';
 export * from './api';
 export * from './telemetry';
 export * from './auth';

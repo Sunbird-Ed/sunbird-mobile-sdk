@@ -1,7 +1,7 @@
 import { SdkConfig } from '../../../sdk-config';
 import { AppInfo } from '..';
-import { SharedPreferences } from "../../shared-preferences";
-import { Observable } from "rxjs";
+import { SharedPreferences } from '../../shared-preferences';
+import { Observable } from 'rxjs';
 export declare class AppInfoImpl implements AppInfo {
     private sdkConfig;
     private sharedPreferences;

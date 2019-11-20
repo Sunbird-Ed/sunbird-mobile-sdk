@@ -1,4 +1,4 @@
-import {DbConstants} from "../../db";
+import {DbConstants} from '../../db';
 
 export namespace CourseAssessmentEntry {
     export const TABLE_NAME = 'course_assessment';
@@ -24,13 +24,13 @@ export namespace CourseAssessmentEntry {
 
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS' + DbConstants.SPACE + CourseAssessmentEntry.TABLE_NAME + DbConstants.SPACE + '(' +
-                CourseAssessmentEntry._ID + DbConstants.SPACE + 'INTEGER PRIMARY KEY,' +
-                CourseAssessmentEntry.COLUMN_NAME_ASSESSMENT_EVENT + DbConstants.SPACE + DbConstants.TEXT_TYPE + ',' +
-                CourseAssessmentEntry.COLUMN_NAME_CREATED_AT + DbConstants.SPACE + DbConstants.INT_TYPE + ',' +
-                CourseAssessmentEntry.COLUMN_NAME_USER_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ',' +
-                CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ',' +
-                CourseAssessmentEntry.COLUMN_NAME_COURSE_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ',' +
-                CourseAssessmentEntry.COLUMN_NAME_BATCH_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ')'
+            CourseAssessmentEntry._ID + DbConstants.SPACE + 'INTEGER PRIMARY KEY,' +
+            CourseAssessmentEntry.COLUMN_NAME_ASSESSMENT_EVENT + DbConstants.SPACE + DbConstants.TEXT_TYPE + ',' +
+            CourseAssessmentEntry.COLUMN_NAME_CREATED_AT + DbConstants.SPACE + DbConstants.INT_TYPE + ',' +
+            CourseAssessmentEntry.COLUMN_NAME_USER_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ',' +
+            CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ',' +
+            CourseAssessmentEntry.COLUMN_NAME_COURSE_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ',' +
+            CourseAssessmentEntry.COLUMN_NAME_BATCH_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + ')';
     };
 
     export const deleteTable: (() => string) = () => {

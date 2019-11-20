@@ -42,3 +42,6 @@ export declare namespace CodePushExperiment {
     const EXPERIMENT_KEY = "emperiment_key";
     const EXPERIMENT_APP_VERSION = "emperiment_app_version";
 }
+export declare namespace DeviceRegister {
+    const DEVICE_LOCATION = "device_location";
+}

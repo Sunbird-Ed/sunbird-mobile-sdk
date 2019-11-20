@@ -3,15 +3,20 @@ import {
     CourseBatchDetailsRequest,
     CourseBatchesRequest,
     EnrollCourseRequest,
-    FetchEnrolledCourseRequest, GenerateAttemptIdRequest, GetContentStateRequest,
+    FetchEnrolledCourseRequest,
+    GenerateAttemptIdRequest,
+    GetContentStateRequest,
     UpdateContentStateRequest
 } from './request-types';
 import {Observable} from 'rxjs';
 import {Batch} from './batch';
 import {Course} from './course';
 import {UnenrollCourseRequest} from './unenrollCourseRequest';
-import { DownloadCertificateRequest } from './download-certificate-request';
-import { DownloadCertificateResponse } from './download-certificate-response';
+import {DownloadCertificateRequest} from './download-certificate-request';
+import {DownloadCertificateResponse} from './download-certificate-response';
+import {SunbirdTelemetry} from '../../telemetry';
+import Telemetry = SunbirdTelemetry.Telemetry;
+
 export interface CourseService {
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
 
@@ -30,6 +35,15 @@ export interface CourseService {
     downloadCurrentProfileCourseCertificate(
         downloadCertificateRequest: DownloadCertificateRequest
     ): Observable<DownloadCertificateResponse>;
+
+    /** @internal */
+    hasCapturedAssessmentEvent(request: {courseContext: any}): boolean;
+
+    /** @internal */
+    captureAssessmentEvent(capture: {event: Telemetry, courseContext: any});
+
+    /** @internal */
+    resetCapturedAssessmentEvents();
 
     syncAssessmentEvents(): Observable<undefined>;
 

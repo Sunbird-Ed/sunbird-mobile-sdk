@@ -1,9 +1,12 @@
 import {
     AcceptTermsConditionRequest,
-    GenerateOtpRequest, GetAllProfileRequest,
+    GenerateOtpRequest,
+    GetAllProfileRequest,
     IsProfileAlreadyInUseRequest,
     LocationSearchCriteria,
-    MergeServerProfilesRequest, NoActiveSessionError, NoProfileFoundError,
+    MergeServerProfilesRequest,
+    NoActiveSessionError,
+    NoProfileFoundError,
     Profile,
     ProfileService,
     ProfileServiceImpl,
@@ -30,22 +33,19 @@ import {FileService} from '../../util/file/def/file-service';
 import {InjectionTokens} from '../../injection-tokens';
 import {Observable} from 'rxjs';
 import {ProfileEntry} from '../db/schema';
-import { AuthService } from '../../auth';
-import {FetchHandler} from "../../api/handlers/fetch-handler";
-import {UpdateServerProfileInfoHandler} from "../handler/update-server-profile-info-handler";
-import {TenantInfo} from "../def/tenant-info";
-import {TenantInfoHandler} from "../handler/tenant-info-handler";
-import {SearchServerProfileHandler} from "../handler/search-server-profile-handler";
-import {GetServerProfileDetailsHandler} from "../handler/get-server-profile-details-handler";
-import {AcceptTermConditionHandler} from "../handler/accept-term-condition-handler";
-import {ProfileExistsResponse} from "../def/profile-exists-response";
-import {IsProfileAlreadyInUseHandler} from "../handler/is-profile-already-in-use-handler";
-import {GenerateOtpHandler} from "../handler/generate-otp-handler";
-import {VerifyOtpHandler} from "../handler/verify-otp-handler";
-import {SearchLocationHandler} from "../handler/search-location-handler";
-import {LocationSearchResult} from "../def/location-search-result";
-import {instance} from "ts-mockito";
-import {TelemetryLogger} from "../../telemetry/util/telemetry-logger";
+import {AuthService} from '../../auth';
+import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
+import {TenantInfo} from '../def/tenant-info';
+import {TenantInfoHandler} from '../handler/tenant-info-handler';
+import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
+import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
+import {AcceptTermConditionHandler} from '../handler/accept-term-condition-handler';
+import {ProfileExistsResponse} from '../def/profile-exists-response';
+import {IsProfileAlreadyInUseHandler} from '../handler/is-profile-already-in-use-handler';
+import {GenerateOtpHandler} from '../handler/generate-otp-handler';
+import {VerifyOtpHandler} from '../handler/verify-otp-handler';
+import {SearchLocationHandler} from '../handler/search-location-handler';
+import {LocationSearchResult} from '../def/location-search-result';
 
 jest.mock('../handler/update-server-profile-info-handler');
 jest.mock('../handler/search-server-profile-handler');
@@ -64,7 +64,7 @@ jest.mock('../../telemetry/util/telemetry-logger',
                 return {
                     start: jest.fn(() => Observable.of(undefined)),
                     end: jest.fn(() => Observable.of(undefined))
-                }
+                };
             }
         }
     })
@@ -301,7 +301,7 @@ describe.only('ProfileServiceImpl', () => {
     describe('updateServerProfile()', () => {
         it('should delegate to UpdateServerProfileHandler', (done) => {
             // arrange
-            const response = { uid: 'SAMPLE_UID' } as Partial<Profile>;
+            const response = {uid: 'SAMPLE_UID'} as Partial<Profile>;
             (UpdateServerProfileInfoHandler as jest.Mock<UpdateServerProfileInfoHandler>).mockImplementation(() => {
                 return {
                     handle: jest.fn(() => Observable.of(response))
@@ -314,7 +314,7 @@ describe.only('ProfileServiceImpl', () => {
                 // assert
                 expect(res).toBe(response);
                 done();
-            })
+            });
         });
     });
 
@@ -334,7 +334,7 @@ describe.only('ProfileServiceImpl', () => {
                 // assert
                 expect(res).toBe(response);
                 done();
-            })
+            });
         });
     });
 
@@ -362,7 +362,7 @@ describe.only('ProfileServiceImpl', () => {
                 // assert
                 expect(res).toBe(response);
                 done();
-            })
+            });
         });
     });
 
@@ -386,7 +386,7 @@ describe.only('ProfileServiceImpl', () => {
                 // assert
                 expect(res).toBe(response);
                 done();
-            })
+            });
         });
     });
 
@@ -406,7 +406,7 @@ describe.only('ProfileServiceImpl', () => {
                 // assert
                 expect(res).toBe(true);
                 done();
-            })
+            });
         });
     });
 
@@ -430,7 +430,7 @@ describe.only('ProfileServiceImpl', () => {
                 // assert
                 expect(res).toBe(response);
                 done();
-            })
+            });
         });
     });
 
@@ -450,7 +450,7 @@ describe.only('ProfileServiceImpl', () => {
                 // assert
                 expect(res).toBe(false);
                 done();
-            })
+            });
         });
     });
 
@@ -470,7 +470,7 @@ describe.only('ProfileServiceImpl', () => {
                 // assert
                 expect(res).toBe(false);
                 done();
-            })
+            });
         });
     });
 
@@ -478,7 +478,7 @@ describe.only('ProfileServiceImpl', () => {
         it('should delegate to SearchLocationHandler', (done) => {
             // arrange
             const response: LocationSearchResult[] = [];
-            (SearchLocationHandler as jest.Mock<SearchLocationHandler>).mockImplementation(() => {
+            (SearchLocationHandler as any as jest.Mock<SearchLocationHandler>).mockImplementation(() => {
                 return {
                     handle: jest.fn(() => Observable.of(response))
                 };
@@ -491,7 +491,7 @@ describe.only('ProfileServiceImpl', () => {
                 // assert
                 expect(res).toBe(response);
                 done();
-            })
+            });
         });
     });
 
@@ -502,7 +502,7 @@ describe.only('ProfileServiceImpl', () => {
                 identifier: 'SAMPLE_CHANNEL'
             } as Partial<Channel>;
             mockFrameworkService.getDefaultChannelDetails = () => Observable.of(sampleChannel as Channel);
-            mockFrameworkService.getActiveChannelId = () => Observable.of('SAMPLE_CHANNEL');;
+            mockFrameworkService.getActiveChannelId = () => Observable.of('SAMPLE_CHANNEL');
 
             // act
             profileService.isDefaultChannelProfile().subscribe((isDefaultChannelProfile) => {
@@ -517,7 +517,7 @@ describe.only('ProfileServiceImpl', () => {
                 identifier: 'SAMPLE_CHANNEL'
             } as Partial<Channel>;
             mockFrameworkService.getDefaultChannelDetails = () => Observable.of(sampleChannel as Channel);
-            mockFrameworkService.getActiveChannelId = () => Observable.of('SAMPLE_CHANNEL_1');;
+            mockFrameworkService.getActiveChannelId = () => Observable.of('SAMPLE_CHANNEL_1');
 
             // act
             profileService.isDefaultChannelProfile().subscribe((isDefaultChannelProfile) => {
@@ -573,7 +573,7 @@ describe.only('ProfileServiceImpl', () => {
     describe('getActiveProfileSession', () => {
         it('should resolve if profile session exists', (done) => {
             // arrange
-            const response = JSON.stringify({ uid: 'SAMPLE_UID' });
+            const response = JSON.stringify({uid: 'SAMPLE_UID'});
             mockSharedPreferences.getString = jest.fn(() => Observable.of(response));
 
             // act
@@ -581,7 +581,7 @@ describe.only('ProfileServiceImpl', () => {
                 expect(res).toBeTruthy();
                 expect(res.uid).toEqual('SAMPLE_UID');
                 done();
-            })
+            });
         });
 
         it('should reject if profile session does not exist', (done) => {
@@ -592,7 +592,7 @@ describe.only('ProfileServiceImpl', () => {
             profileService.getActiveProfileSession().subscribe(null, (e) => {
                 expect(e instanceof NoActiveSessionError).toBeTruthy();
                 done();
-            })
+            });
         });
     });
 
@@ -611,13 +611,13 @@ describe.only('ProfileServiceImpl', () => {
                     })
                 );
                 done();
-            })
+            });
         });
 
         it('should resolve with all profiles filtered by groupId in request', (done) => {
             // arrange
             const response = [];
-            const profileRequest = { local: true } as GetAllProfileRequest;
+            const profileRequest = {local: true} as GetAllProfileRequest;
             mockDbService.read = jest.fn(() => Observable.of(response));
 
             // act
@@ -631,42 +631,42 @@ describe.only('ProfileServiceImpl', () => {
                     })
                 );
                 done();
-            })
+            });
         });
 
         it('should resolve with all profiles filtered by groupId and (local or server) in request', (done) => {
             // arrange
             const response = [];
-            const profileRequest = { groupId: 'SAMPLE_GROUP_ID', local: true } as GetAllProfileRequest;
+            const profileRequest = {groupId: 'SAMPLE_GROUP_ID', local: true} as GetAllProfileRequest;
             mockDbService.execute = jest.fn(() => Observable.of(response));
 
             // act
             profileService.getAllProfiles(profileRequest as GetAllProfileRequest).subscribe((res) => {
                 expect(mockDbService.execute).toHaveBeenCalledWith(expect.any(String));
                 done();
-            })
+            });
         });
 
         it('should resolve with all profiles filtered by groupId in request', (done) => {
             // arrange
             const response = [];
-            const profileRequest = { groupId: 'SAMPLE_GROUP_ID' } as GetAllProfileRequest;
+            const profileRequest = {groupId: 'SAMPLE_GROUP_ID'} as GetAllProfileRequest;
             mockDbService.execute = jest.fn(() => Observable.of(response));
 
             // act
             profileService.getAllProfiles(profileRequest as GetAllProfileRequest).subscribe((res) => {
                 expect(mockDbService.execute).toHaveBeenCalledWith(expect.any(String));
                 done();
-            })
+            });
         });
     });
 
     describe('getActiveSessionProfile()', () => {
         it('should reject if no profile in DB for session profile', (done) => {
             // arrange
-            const request = { requiredFields: [] } as Pick<ServerProfileDetailsRequest, 'requiredFields'>;
+            const request = {requiredFields: []} as Pick<ServerProfileDetailsRequest, 'requiredFields'>;
             mockDbService.read = jest.fn(() => Observable.of([]));
-            spyOn(profileService, 'getActiveProfileSession').and.returnValue(Observable.of({ uid: 'SAMPLE_UID' }));
+            spyOn(profileService, 'getActiveProfileSession').and.returnValue(Observable.of({uid: 'SAMPLE_UID'}));
 
             // act
             profileService.getActiveSessionProfile(request).subscribe(null, (e) => {
@@ -677,11 +677,11 @@ describe.only('ProfileServiceImpl', () => {
 
         it('should resolve if local profile in DB for session profile', (done) => {
             // arrange
-            const request = { requiredFields: [] } as Pick<ServerProfileDetailsRequest, 'requiredFields'>;
+            const request = {requiredFields: []} as Pick<ServerProfileDetailsRequest, 'requiredFields'>;
             mockDbService.read = jest.fn(() => Observable.of([{
                 [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID'
             }]));
-            spyOn(profileService, 'getActiveProfileSession').and.returnValue(Observable.of({ uid: 'SAMPLE_UID' }));
+            spyOn(profileService, 'getActiveProfileSession').and.returnValue(Observable.of({uid: 'SAMPLE_UID'}));
 
             // act
             profileService.getActiveSessionProfile(request).subscribe((res) => {
@@ -692,13 +692,13 @@ describe.only('ProfileServiceImpl', () => {
 
         it('should resolve if server profile in DB for session profile', (done) => {
             // arrange
-            const request = { requiredFields: [] } as Pick<ServerProfileDetailsRequest, 'requiredFields'>;
+            const request = {requiredFields: []} as Pick<ServerProfileDetailsRequest, 'requiredFields'>;
             mockDbService.read = jest.fn(() => Observable.of([{
                 [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID',
                 [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.SERVER
             }]));
-            spyOn(profileService, 'getActiveProfileSession').and.returnValue(Observable.of({ uid: 'SAMPLE_UID' }));
-            spyOn(profileService, 'getServerProfilesDetails').and.returnValue(Observable.of({ uid: 'SAMPLE_UID' }));
+            spyOn(profileService, 'getActiveProfileSession').and.returnValue(Observable.of({uid: 'SAMPLE_UID'}));
+            spyOn(profileService, 'getServerProfilesDetails').and.returnValue(Observable.of({uid: 'SAMPLE_UID'}));
 
             // act
             profileService.getActiveSessionProfile(request).subscribe((res) => {
@@ -739,7 +739,7 @@ describe.only('ProfileServiceImpl', () => {
             mockSharedPreferences.putString = jest.fn(() => Observable.of(undefined));
 
             // act
-            profileService.setActiveSessionForProfile('SAMPLE_UID').subscribe( (res) => {
+            profileService.setActiveSessionForProfile('SAMPLE_UID').subscribe((res) => {
                 // assert
                 expect(mockFrameworkService.setActiveChannelId).toHaveBeenCalledWith('SAMPLE_CHANNEL_ID');
                 expect(res).toBeTruthy();
@@ -769,7 +769,7 @@ describe.only('ProfileServiceImpl', () => {
             mockSharedPreferences.putString = jest.fn(() => Observable.of(undefined));
 
             // act
-            profileService.setActiveSessionForProfile('SAMPLE_UID').subscribe( (res) => {
+            profileService.setActiveSessionForProfile('SAMPLE_UID').subscribe((res) => {
                 // assert
                 expect(mockFrameworkService.setActiveChannelId).toHaveBeenCalledWith('SAMPLE_ROOT_ORG_ID');
                 expect(res).toBeTruthy();

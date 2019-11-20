@@ -101,4 +101,31 @@ export class UpdateSizeOnDevice {
         });
     }
 
+    private updateTextBookSize(rootContentId: string) {
+        console.log('in updateAllRootContentSize');
+        const query = `SELECT * FROM ${ContentEntry.TABLE_NAME} WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER} == ${rootContentId}`;
+        return this.dbService.execute(query)
+        .do(async () =>
+            this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, false).toPromise()
+        )
+        .mergeMap(async (rootContentsInDb: ContentEntry.SchemaMap[]) => {
+            const updateContentModels: ContentEntry.SchemaMap[] = [];
+            await Promise.all(rootContentsInDb.map(async (item) => {
+                let sizeOnDevice = await this.getSizeOnDevice(item);
+                const identifiers = JSON.parse(item[ContentEntry.COLUMN_NAME_LOCAL_DATA]).childNodes;
+                if (identifiers) {
+                    const childContentsInDb: ContentEntry.SchemaMap[] = await this.findAllChildContents(identifiers);
+                    childContentsInDb.forEach(content => {
+                        sizeOnDevice += content[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] || 0;
+                    });
+                    item[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE] = sizeOnDevice;
+                    updateContentModels.push(item);
+                }
+            }));
+            this.updateInDb(updateContentModels);
+        }).do(async () =>
+            this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, true).toPromise()
+        );
+    }
+
 }

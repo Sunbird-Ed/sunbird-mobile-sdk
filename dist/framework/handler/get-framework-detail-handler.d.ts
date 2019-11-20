@@ -7,12 +7,12 @@ export declare class GetFrameworkDetailsHandler implements ApiRequestHandler<Fra
     private frameworkService;
     private apiService;
     private frameworkServiceConfig;
-    private fileservice;
+    private fileService;
     private cachedItemStore;
     private readonly FRAMEWORK_FILE_KEY_PREFIX;
     private readonly FRAMEWORK_LOCAL_KEY;
     private readonly GET_FRAMEWORK_DETAILS_ENDPOINT;
-    constructor(frameworkService: FrameworkService, apiService: ApiService, frameworkServiceConfig: FrameworkServiceConfig, fileservice: FileService, cachedItemStore: CachedItemStore);
+    constructor(frameworkService: FrameworkService, apiService: ApiService, frameworkServiceConfig: FrameworkServiceConfig, fileService: FileService, cachedItemStore: CachedItemStore);
     handle(request: FrameworkDetailsRequest): Observable<Framework>;
     private fetchFromServer;
     private fetchFromFile;

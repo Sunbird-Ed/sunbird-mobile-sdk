@@ -158,8 +158,8 @@ export declare namespace SunbirdTelemetry {
         private static readonly EID;
         constructor(dir: string | undefined, type: string | undefined, items: Array<{
             [index: string]: any;
-        }> | undefined, correlationData?: Array<CorrelationData>);
-        addItem(type: ShareItemType, origin: string, identifier: string, pkgVersion: number, transferCount: number, size: string): void;
+        }> | undefined, correlationData?: Array<CorrelationData>, objId?: string, objType?: string, objVer?: string, rollUp?: Rollup);
+        addItem(type: ShareItemType | string, origin: string, identifier: string, pkgVersion: number, transferCount: number, size: string): void;
         capitalize(input: any): string;
     }
     class Feedback extends Telemetry {

@@ -1,11 +1,9 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {PageAssembleCriteria, PageServiceConfig} from '..';
-import {PageAssemble} from '../def/page-assemble';
+import {PageAssemble, PageAssembleCriteria, PageName, PageServiceConfig} from '..';
 import {CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {Observable} from 'rxjs';
 import * as SHA1 from 'crypto-js/sha1';
 import {SharedPreferences} from '../../util/shared-preferences';
-import {PageName} from '../def/requests';
 
 export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private readonly PAGE_ASSEMBLE_LOCAL_KEY = 'page_assemble-';

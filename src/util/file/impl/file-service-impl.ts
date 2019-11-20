@@ -25,8 +25,6 @@ declare var cordova: {
         service: string,
         action: string,
         arguments: string[])
-
-
 };
 
 /**
@@ -48,13 +46,11 @@ declare var file: {
     /* Android: the application space on external storage. */
     externalApplicationStorageDirectory: string;
 
-
     requestFileSystem(
         type: LocalFileSystem,
         size: number,
         successCallback: (fileSystem: FileSystem) => void,
         errorCallback?: (fileError: FileError) => void): void;
-
 };
 
 @injectable()
@@ -200,7 +196,6 @@ export class FileServiceImpl implements FileService {
                 return this.getDirectory(fse, dirName, options);
             });
         });
-
     }
 
     /**
@@ -330,67 +325,6 @@ export class FileServiceImpl implements FileService {
         });
     }
 
-    private readEntries(dr: DirectoryReader): Promise<Entry[]> {
-        return new Promise<Entry[]>((resolve, reject) => {
-            dr.readEntries(
-                entries => {
-                    resolve(entries);
-                },
-                err => {
-                    reject(err);
-                }
-            );
-        });
-    }
-
-    private readFile<T>(
-        path: string,
-        filePath: string,
-        readAs: 'ArrayBuffer' | 'BinaryString' | 'DataURL' | 'Text'
-    ): Promise<T> {
-
-        return this.resolveDirectoryUrl(path)
-            .then((directoryEntry: DirectoryEntry) => {
-                return this.getFile(directoryEntry, filePath, {create: false});
-            })
-            .then((fileEntry: FileEntry) => {
-                const reader = new FileReader();
-                return new Promise<T>((resolve, reject) => {
-                    reader.onloadend = () => {
-                        if (reader.result !== undefined || reader.result !== null) {
-                            resolve((reader.result as any) as T);
-                        } else if (reader.error !== undefined || reader.error !== null) {
-                            reject(reader.error);
-                        } else {
-                            reject({code: null, message: 'READER_ONLOADEND_ERR'});
-                        }
-                    };
-
-                    fileEntry.file(
-                        entry => {
-                            reader[`readAs${readAs}`].call(reader, entry);
-                        },
-                        error => {
-                            reject(error);
-                        }
-                    );
-                });
-            }).catch(err => {
-                throw err;
-            });
-    }
-
-
-    private resolveDirectoryUrl(directoryUrl: string): Promise<DirectoryEntry> {
-        return this.resolveLocalFilesystemUrl(directoryUrl).then(de => {
-            if (de.isDirectory) {
-                return de as DirectoryEntry;
-            } else {
-                return Promise.reject<DirectoryEntry>('input is not a directory');
-            }
-        });
-    }
-
     /**
      * Resolves a local file system URL
      * @param fileUrl {string} file system url
@@ -429,11 +363,45 @@ export class FileServiceImpl implements FileService {
         });
     }
 
-    private remove(fe: Entry): Promise<RemoveResult> {
-        return new Promise<RemoveResult>((resolve, reject) => {
-            fe.remove(
-                () => {
-                    resolve({success: true, fileRemoved: fe});
+    getExternalApplicationStorageDirectory(): string {
+        return file.externalApplicationStorageDirectory;
+    }
+
+    getDirectorySize(path: string): Promise<number> {
+        return this.resolveDirectoryUrl(path)
+            .then((directoryEntry: DirectoryEntry) => {
+                return this.size(directoryEntry);
+            }).catch(() => {
+                return 0;
+            });
+    }
+
+    size(entry: Entry): Promise<number> {
+        if (entry.isFile) {
+            return new Promise<number>((resolve, reject) => {
+                entry.getMetadata(f => resolve(f.size), error => reject(error));
+            });
+        } else if (entry.isDirectory) {
+            return new Promise<number>((resolve, reject) => {
+                const directoryReader = (entry as DirectoryEntry).createReader();
+                directoryReader.readEntries((entries: Entry[]) => {
+                        Promise.all(entries.map(e => this.size(e))).then((size: number[]) => {
+                            const dirSize = size.reduce((prev, current) => prev + current, 0);
+                            resolve(dirSize);
+                        }).catch(err => reject(err));
+                    },
+                    (error) => reject(error));
+            });
+        } else {
+            return Promise.resolve(0);
+        }
+    }
+
+    private readEntries(dr: DirectoryReader): Promise<Entry[]> {
+        return new Promise<Entry[]>((resolve, reject) => {
+            dr.readEntries(
+                entries => {
+                    resolve(entries);
                 },
                 err => {
                     reject(err);
@@ -458,6 +426,65 @@ export class FileServiceImpl implements FileService {
     //     });
     // }
 
+    private readFile<T>(
+        path: string,
+        filePath: string,
+        readAs: 'ArrayBuffer' | 'BinaryString' | 'DataURL' | 'Text'
+    ): Promise<T> {
+
+        return this.resolveDirectoryUrl(path)
+            .then((directoryEntry: DirectoryEntry) => {
+                return this.getFile(directoryEntry, filePath, {create: false});
+            })
+            .then((fileEntry: FileEntry) => {
+                const reader = new FileReader();
+                return new Promise<T>((resolve, reject) => {
+                    reader.onloadend = () => {
+                        if (reader.result !== undefined || reader.result !== null) {
+                            resolve((reader.result as any) as T);
+                        } else if (reader.error !== undefined || reader.error !== null) {
+                            reject(reader.error);
+                        } else {
+                            reject({code: null, message: 'READER_ONLOADEND_ERR'});
+                        }
+                    };
+
+                    fileEntry.file(
+                        entry => {
+                            reader[`readAs${readAs}`].call(reader, entry);
+                        },
+                        error => {
+                            reject(error);
+                        }
+                    );
+                });
+            }).catch(err => {
+                throw err;
+            });
+    }
+
+    private resolveDirectoryUrl(directoryUrl: string): Promise<DirectoryEntry> {
+        return this.resolveLocalFilesystemUrl(directoryUrl).then(de => {
+            if (de.isDirectory) {
+                return de as DirectoryEntry;
+            } else {
+                return Promise.reject<DirectoryEntry>('input is not a directory');
+            }
+        });
+    }
+
+    private remove(fe: Entry): Promise<RemoveResult> {
+        return new Promise<RemoveResult>((resolve, reject) => {
+            fe.remove(
+                () => {
+                    resolve({success: true, fileRemoved: fe});
+                },
+                err => {
+                    reject(err);
+                }
+            );
+        });
+    }
 
     private copy(
         srce: Entry,
@@ -477,7 +504,6 @@ export class FileServiceImpl implements FileService {
             );
         });
     }
-
 
     private getDirectory(
         directoryEntry: DirectoryEntry,
@@ -501,7 +527,6 @@ export class FileServiceImpl implements FileService {
             }
         });
     }
-
 
     private rimraf(de: DirectoryEntry): Promise<RemoveResult> {
         return new Promise<RemoveResult>((resolve, reject) => {
@@ -572,39 +597,5 @@ export class FileServiceImpl implements FileService {
             };
             writer.write(gu);
         });
-    }
-
-    getExternalApplicationStorageDirectory(): string {
-        return file.externalApplicationStorageDirectory;
-    }
-
-    getDirectorySize(path: string): Promise<number> {
-        return this.resolveDirectoryUrl(path)
-            .then((directoryEntry: DirectoryEntry) => {
-                return this.size(directoryEntry);
-            }).catch(() => {
-                return 0;
-            });
-    }
-
-    size(entry: Entry): Promise<number> {
-        if (entry.isFile) {
-            return new Promise<number>((resolve, reject) => {
-                entry.getMetadata(f => resolve(f.size), error => reject(error));
-            });
-        } else if (entry.isDirectory) {
-            return new Promise<number>((resolve, reject) => {
-                const directoryReader = (entry as DirectoryEntry).createReader();
-                directoryReader.readEntries((entries: Entry[]) => {
-                        Promise.all(entries.map(e => this.size(e))).then((size: number[]) => {
-                            const dirSize = size.reduce((prev, current) => prev + current, 0);
-                            resolve(dirSize);
-                        }).catch(err => reject(err));
-                    },
-                    (error) => reject(error));
-            });
-        } else {
-            return Promise.resolve(0);
-        }
     }
 }

@@ -1,8 +1,10 @@
-import {ImportNExportHandler} from './import-n-export-handler';
-import {DeviceInfo} from '../../util/device';
-import {DbService} from '../../db';
-import {ContentEntry} from '../db/schema';
-import {Observable} from 'rxjs';
+import { ImportNExportHandler } from './import-n-export-handler';
+import { DeviceInfo } from '../../util/device';
+import { DbService } from '../../db';
+import { ContentEntry } from '../db/schema';
+import { Observable } from 'rxjs';
+import { FileService } from '../../util/file/def/file-service';
+import { ArrayUtil } from '../../util/array-util';
 
 
 // jest.mock('moment');
@@ -11,11 +13,13 @@ describe('ImportNExportHandler', () => {
     let importNExportHandler: ImportNExportHandler;
     const mockDeviceInfo: Partial<DeviceInfo> = {};
     const mockDbService: Partial<DbService> = {};
+    const mockFileService: Partial<FileService> = {};
 
     beforeAll(() => {
         importNExportHandler = new ImportNExportHandler(
             mockDeviceInfo as DeviceInfo,
-            mockDbService as DbService
+            mockDbService as DbService,
+            mockFileService as FileService
         );
     });
 
@@ -27,7 +31,7 @@ describe('ImportNExportHandler', () => {
         expect(importNExportHandler).toBeTruthy();
     });
 
-    it('should items children only to mark children with visibility as Parent', () => {
+    it('should items children only to mark children with visibility as Parent', (done) => {
         // arrange
         const request: ContentEntry.SchemaMap[] = [{
             identifier: 'IDENTIFIER',
@@ -35,16 +39,18 @@ describe('ImportNExportHandler', () => {
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
             mime_type: 'MIME_TYPE',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE'
+            content_type: 'CONTENT_TYPE',
+            path: 'sample_path'
         }];
         mockDeviceInfo.getDeviceID = jest.fn(() => Observable.of([]));
         // act
         importNExportHandler.populateItems(request);
         // assert
         expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
+        done();
     });
 
-    it('should moved directory certain and mainfest file creation in native layer', () => {
+    it('should moved directory certain and mainfest file creation in native layer', (done) => {
         // arrange
         const request = [{
             'key': 'Sample_key'
@@ -54,28 +60,49 @@ describe('ImportNExportHandler', () => {
         importNExportHandler.populateItemList(request);
         // assert
         expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
+        done();
     });
 
-    it('should export Ecar feature', async (done) => {
+    it('should fetch all children from manifest.json file', async (done) => {
         // arrange
-        const request = [];
-        mockDbService.execute = jest.fn(() => Observable.of([]));
+        const request = ['content_id_1', 'content_id_2'];
+        mockDbService.execute = jest.fn(() => { });
+        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of([{
+            identifier: 'IDENTIFIER',
+            server_data: 'SERVER_DATA',
+            local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
+            mime_type: 'MIME_TYPE',
+            manifest_version: 'MAINFEST_VERSION',
+            content_type: 'CONTENT_TYPE',
+            path: 'sample_path'
+        }]));
+        mockFileService.readAsText = jest.fn(() => { });
+        const readAsText = (mockFileService.readAsText as jest.Mock)
+            .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
+        readAsText().then((value) => {
+            return value;
+        });
+        ArrayUtil.joinPreservingQuotes = jest.fn(() => Observable.of([]));
         // act
-        await importNExportHandler.getContentExportDBModelToExport(request).then(() => {
+        await importNExportHandler.getContentExportDBModelToExport(request).then((res) => {
             // assert
-            // expect(mockDbService.execute).toHaveBeenCalled();
+            expect(mockDbService.execute).toHaveBeenCalled();
+            expect(mockFileService.readAsText).toHaveBeenCalled();
+            expect(res[0].path!).toBe('sample_path');
+            expect(ArrayUtil.joinPreservingQuotes).toHaveBeenCalled();
             done();
         });
     });
 
-    it('should initialize mainfest', () => {
+    it('should initialize mainfest', (done) => {
         // arrange
         const request = [1, 2, 3];
         const now = jest.fn(() => 'April 11, 2019');
-        // (moment as any as jest.Mock).mockReturnValue(Observable.of(now));
         // act
-        importNExportHandler.generateManifestForArchive(request);
+        const data = importNExportHandler.generateManifestForArchive(request);
         // assert
-        // expect(Date.now).toHaveBeenCalled();
+        expect(data.id).toBe('ekstep.content.archive');
+        expect(data.ver).toBe('1.1');
+        done();
     });
 });

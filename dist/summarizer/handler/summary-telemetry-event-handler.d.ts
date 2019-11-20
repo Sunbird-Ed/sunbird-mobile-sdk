@@ -8,7 +8,7 @@ import Telemetry = SunbirdTelemetry.Telemetry;
 import { EventsBusService } from '../../events-bus';
 import { ContentService } from '../../content';
 import { ProfileService } from '../../profile';
-import { DbService } from "../../db";
+import { DbService } from '../../db';
 export declare class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private courseService;
     private sharedPreference;
@@ -38,5 +38,4 @@ export declare class SummaryTelemetryEventHandler implements ApiRequestHandler<T
     private processOEStart;
     private processOEAssess;
     private processOEEnd;
-    persistAssessEvent(event: SunbirdTelemetry.Telemetry, courseContext: any): Promise<undefined>;
 }

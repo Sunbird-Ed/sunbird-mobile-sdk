@@ -5,6 +5,8 @@ import { Course } from './course';
 import { UnenrollCourseRequest } from './unenrollCourseRequest';
 import { DownloadCertificateRequest } from './download-certificate-request';
 import { DownloadCertificateResponse } from './download-certificate-response';
+import { SunbirdTelemetry } from '../../telemetry';
+import Telemetry = SunbirdTelemetry.Telemetry;
 export interface CourseService {
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
     updateContentState(request: UpdateContentStateRequest): Observable<boolean>;
@@ -14,6 +16,17 @@ export interface CourseService {
     unenrollCourse(unenrollCourseRequest: UnenrollCourseRequest): Observable<boolean>;
     getContentState(contentStateRequest: GetContentStateRequest): Observable<ContentStateResponse | undefined>;
     downloadCurrentProfileCourseCertificate(downloadCertificateRequest: DownloadCertificateRequest): Observable<DownloadCertificateResponse>;
+    /** @internal */
+    hasCapturedAssessmentEvent(request: {
+        courseContext: any;
+    }): boolean;
+    /** @internal */
+    captureAssessmentEvent(capture: {
+        event: Telemetry;
+        courseContext: any;
+    }): any;
+    /** @internal */
+    resetCapturedAssessmentEvents(): any;
     syncAssessmentEvents(): Observable<undefined>;
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 }

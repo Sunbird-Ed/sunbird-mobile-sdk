@@ -16,7 +16,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
     constructor(private frameworkService: FrameworkService,
                 private apiService: ApiService,
                 private frameworkServiceConfig: FrameworkServiceConfig,
-                private fileservice: FileService,
+                private fileService: FileService,
                 private cachedItemStore: CachedItemStore) {
     }
 
@@ -64,7 +64,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
         const dir = Path.ASSETS_PATH + this.frameworkServiceConfig.frameworkConfigDirPath;
         const file = this.FRAMEWORK_FILE_KEY_PREFIX + request.frameworkId + '.json';
 
-        return Observable.fromPromise(this.fileservice.readFileFromAssets(dir.concat('/', file)))
+        return Observable.fromPromise(this.fileService.readFileFromAssets(dir.concat('/', file)))
             .map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
                 return result.result.framework;

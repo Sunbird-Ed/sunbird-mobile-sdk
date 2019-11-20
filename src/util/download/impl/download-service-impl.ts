@@ -43,7 +43,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'ContentDetail',
             id: 'ContentDetail',
             objId: downloadRequest.identifier,
-            objType: ObjectType.CONTENT,
+            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['contentType'] ?
+                downloadRequest['contentMeta']['contentType'] : 'Content',
+            objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
+                downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
         }).mapTo(undefined).toPromise();
     }
@@ -56,7 +59,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'ContentDetail',
             id: 'ContentDetail',
             objId: downloadRequest.identifier,
-            objType: ObjectType.CONTENT,
+            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['contentType'] ?
+                downloadRequest['contentMeta']['contentType'] : 'Content',
+            objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
+                downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
         }).mapTo(undefined).toPromise();
     }
@@ -69,41 +75,19 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'ContentDetail',
             id: 'ContentDetail',
             objId: downloadRequest.identifier,
-            objType: ObjectType.CONTENT,
+            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['contentType'] ?
+                downloadRequest['contentMeta']['contentType'] : 'Content',
+            objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
+                downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
         }).mapTo(undefined).toPromise();
     }
 
-    private static async generateNetworkSpeedTelemetry(
-        downloads: { downloadSpeed: number, bytesDownloaded: number, totalSizeInBytes: number }[]
-    ): Promise<void> {
-        return TelemetryLogger.log.interact({
-            type: InteractType.OTHER,
-            subType: InteractSubType.NETWORK_SPEED,
-            env: 'sdk',
-            pageId: 'sdk',
-            valueMap: {
-                'networkSpeedPercentileMap': {
-                    '25': percentile(25, downloads.map(d => d.downloadSpeed)),
-                    '50': percentile(50, downloads.map(d => d.downloadSpeed)),
-                    '75': percentile(75, downloads.map(d => d.downloadSpeed))
-                },
-                'totalSizeInBytes': downloads.reduce((acc, d) => {
-                    return acc > d.totalSizeInBytes ? acc : d.totalSizeInBytes;
-                }, 0),
-                'networkType': navigator['connection']['type']
-            },
-        }).mapTo(undefined).toPromise();
-    }
-
     onInit(): Observable<undefined> {
-        return Observable.combineLatest(
-            this.switchToNextDownloadRequest()
-                .mergeMap(() => {
-                    return this.listenForDownloadProgressChanges();
-                }),
-            this.generateDownloadSpeedTelemetry()
-        ).mapTo(undefined);
+        return this.switchToNextDownloadRequest()
+            .mergeMap(() => {
+                return this.listenForDownloadProgressChanges();
+            });
     }
 
     download(downloadRequests: DownloadRequest[]): Observable<undefined> {
@@ -365,48 +349,5 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     })
                     .mapTo(undefined);
             });
-    }
-
-    private generateDownloadSpeedTelemetry(): Observable<undefined> {
-        const events$ = this.eventsBusService
-            .events(EventNamespace.DOWNLOADS)
-            .share();
-
-        const start$ = events$.filter((e) => e.type === DownloadEventType.START);
-
-        const toggle$ = events$.filter((e) => e.type === DownloadEventType.END);
-
-        return events$
-            .filter((e) =>
-                e.type === DownloadEventType.START ||
-                e.type === DownloadEventType.PROGRESS ||
-                e.type === DownloadEventType.END
-            )
-            .windowToggle(
-                start$,
-                () => toggle$
-            )
-            .switchMap((r) =>
-                r.throttleTime(5000, undefined, {trailing: true, leading: false})
-                    .concat(Observable.of(null))
-                    .mergeMap((v) => {
-                        return new Promise<number>((resolve, reject) => {
-                            networkspeed.getNetworkSpeed((speed) => resolve(parseFloat(speed || '0')), reject);
-                        }).then((downloadSpeed) => {
-                            return {
-                                downloadSpeed,
-                                bytesDownloaded: (v && (v as DownloadProgress).payload)
-                                    ? (v as DownloadProgress).payload.bytesDownloaded : 0,
-                                totalSizeInBytes: (v && (v as DownloadProgress).payload)
-                                    ? (v as DownloadProgress).payload.totalSizeInBytes : 0
-                            };
-                        });
-                    })
-                    .bufferTime(1000 * 60 * 5)
-            )
-            .do(async (downloads) => {
-                await DownloadServiceImpl.generateNetworkSpeedTelemetry(downloads);
-            })
-            .mapTo(undefined);
     }
 }
