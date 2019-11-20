@@ -37,10 +37,14 @@ export declare class CourseServiceImpl implements CourseService {
     getContentState(request: GetContentStateRequest): Observable<ContentStateResponse | undefined>;
     unenrollCourse(unenrollCourseRequest: UnenrollCourseRequest): Observable<boolean>;
     downloadCurrentProfileCourseCertificate(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse>;
+    hasCapturedAssessmentEvent({ courseContext }: {
+        courseContext: any;
+    }): boolean;
     captureAssessmentEvent({ event, courseContext }: {
         event: any;
         courseContext: any;
     }): void;
     syncAssessmentEvents(): Observable<undefined>;
+    resetCapturedAssessmentEvents(): void;
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 }

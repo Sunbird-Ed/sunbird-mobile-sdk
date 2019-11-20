@@ -1,14 +1,8 @@
 import {DeviceInfo, DeviceSpec, StorageVolume} from '..';
 import * as SHA1 from 'crypto-js/sha1';
-import {SdkConfig} from '../../../sdk-config';
 import {Observable} from 'rxjs';
-import {inject, injectable} from 'inversify';
-import {InjectionTokens} from '../../../injection-tokens';
+import {injectable} from 'inversify';
 import {StorageDestination} from '../../../storage';
-
-declare const device: {
-    uuid: string;
-};
 
 @injectable()
 export class DeviceInfoImpl implements DeviceInfo {
@@ -16,12 +10,8 @@ export class DeviceInfoImpl implements DeviceInfo {
     private readonly deviceId: string;
     private deviceSpec: DeviceSpec;
 
-    constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig) {
-        if (this.sdkConfig.apiConfig.debugMode) {
-            return this.deviceId = SHA1('4adce7fad56e02b7').toString();
-        }
-
-        this.deviceId = SHA1(device.uuid).toString();
+    constructor() {
+        this.deviceId = SHA1(window.device.uuid).toString();
     }
 
     getDeviceID(): string {

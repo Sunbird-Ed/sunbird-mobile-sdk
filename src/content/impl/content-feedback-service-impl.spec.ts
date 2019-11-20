@@ -35,7 +35,7 @@ describe('ContentFeedbackServiceImpl', () => {
         expect(contentFeedbackService).toBeTruthy();
     });
 
-    it('should return content feedback DBEntry to responseFeedback', () => {
+    it('should return content feedback DBEntry to responseFeedback', (done) => {
         // arrange
         const request: ContentFeedbackFilterCriteria = {
             uid: 'SAMPLE_UID',
@@ -46,11 +46,12 @@ describe('ContentFeedbackServiceImpl', () => {
          contentFeedbackService.getFeedback(request).subscribe(() => {
              // assert
              expect(mockDbService.execute).toHaveBeenCalled();
+             done();
          });
         // assert
     });
 
-    it('should checked feedback send or not', () => {
+    it('should checked feedback send or not', (done) => {
         // arrange
         const request: ContentFeedback = {
             contentId: 'SAMPLE_CONTENT_ID',
@@ -67,6 +68,8 @@ describe('ContentFeedbackServiceImpl', () => {
             // assert
             expect(mockDbService.read).toHaveBeenCalled();
             expect(mockDbService.insert).toHaveBeenCalled();
+            expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
+            done();
         });
     });
 });

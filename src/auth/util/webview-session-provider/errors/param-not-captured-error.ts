@@ -4,6 +4,6 @@ export class ParamNotCapturedError extends WebviewRunnerError {
     constructor(message: string) {
         super(message, 'PARAM_NOT_CAPTURED');
 
-        Object.setPrototypeOf(this, WebviewRunnerError.prototype);
+        Object.setPrototypeOf(this, ParamNotCapturedError.prototype);
     }
 }

@@ -1,18 +1,17 @@
-import {PlayerService} from '../def/player-service';
+import {PlayerService} from '..';
 import {Content} from '../../content';
 import {Profile, ProfileService, ProfileSession} from '../../profile';
 import {GroupService, GroupSession} from '../../group';
 import {Observable} from 'rxjs';
 import {Context, PlayerInput} from '../def/response';
-import {DeviceInfo} from '../../util/device/def/device-info';
-import {Actor, CorrelationData, ProducerData, Rollup} from '../../telemetry';
+import {DeviceInfo} from '../../util/device';
+import {Actor, CorrelationData, ProducerData} from '../../telemetry';
 import {SdkConfig} from '../../sdk-config';
 import {FrameworkService} from '../../framework';
 import {ContentUtil} from '../../content/util/content-util';
-import {AppInfo} from '../../util/app/def/app-info';
-import {CachedItemRequestSourceFrom} from '../../key-value-store';
-import { inject, injectable } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
+import {AppInfo} from '../../util/app';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
 
 @injectable()
 export class PlayerServiceImpl implements PlayerService {
@@ -27,6 +26,7 @@ export class PlayerServiceImpl implements PlayerService {
     getPlayerConfig(content: Content, extraInfo: { [key: string]: any }): Observable<PlayerInput> {
         const context: Context = {};
         context.did = this.deviceInfo.getDeviceID();
+        context.origin = this.config.apiConfig.host;
         const pData = new ProducerData();
         pData.id = this.config.apiConfig.api_authentication.producerId;
         pData.pid = this.config.apiConfig.api_authentication.producerUniqueId;
@@ -63,7 +63,7 @@ export class PlayerServiceImpl implements PlayerService {
         }).mergeMap((groupSession: GroupSession | undefined) => {
             let corRelationList: CorrelationData[] = [];
             if (groupSession && groupSession.gid) {
-                corRelationList.push({id: groupSession.gid , type: 'group'});
+                corRelationList.push({id: groupSession.gid, type: 'group'});
             }
             const isStreaming = extraInfo && extraInfo.hasOwnProperty('streaming');
             const appCorrelationData: CorrelationData[] = extraInfo['correlationData'];

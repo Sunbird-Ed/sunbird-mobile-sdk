@@ -22,6 +22,7 @@ export * from './storage';
 export * from './notification';
 export * from './util/error-stack';
 export * from './codepush-experiment';
+export * from './faq';
 // utils
 export * from './util/shared-preferences';
 export * from './util/download';
@@ -30,3 +31,4 @@ export * from './player';
 export * from './util/app';
 export * from './util/search-history';
 export * from './util/network';
+

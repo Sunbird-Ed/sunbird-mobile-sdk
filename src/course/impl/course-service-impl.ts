@@ -1,5 +1,5 @@
 import {
-    Batch, ContentState,
+    Batch,
     ContentStateResponse,
     Course,
     CourseBatchDetailsRequest,
@@ -41,10 +41,10 @@ import {AppInfo} from '../../util/app';
 import {FileUtil} from '../../util/file/util/file-util';
 import {DownloadStatus} from '../../util/download';
 import {DownloadCertificateResponse} from '../def/download-certificate-response';
-import {CourseAssessmentEntry} from '../../summarizer/db/schema';
 import {SunbirdTelemetry} from '../../telemetry';
 import * as MD5 from 'crypto-js/md5';
 import {SyncAssessmentEventsHandler} from '../handlers/sync-assessment-events-handler';
+import {ObjectUtil} from '../../util/object-util';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -211,11 +211,11 @@ export class CourseServiceImpl implements CourseService {
                     .find((course) => course.courseId === request.courseId)!;
             })
             .map((course: Course) => {
-                if (!course.certificates) {
+                if (!course.certificates || !course.certificates.length ) {
                     throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
                 }
 
-                const certificate = course.certificates.find((certificate) => certificate.name === '100PercentCompletionCertificate');
+                const certificate = course.certificates[0];
 
                 if (!certificate) {
                     throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
@@ -288,8 +288,14 @@ export class CourseServiceImpl implements CourseService {
             .map((entry) => ({path: entry.localUri}));
     }
 
+    public hasCapturedAssessmentEvent({courseContext}: { courseContext: any }) {
+        const key = ObjectUtil.toOrderedString(courseContext);
+
+        return !!this.capturedAssessmentEvents[key];
+    }
+
     public captureAssessmentEvent({event, courseContext}) {
-        const key = JSON.stringify(courseContext);
+        const key = ObjectUtil.toOrderedString(courseContext);
 
         if (!this.capturedAssessmentEvents[key]) {
             this.capturedAssessmentEvents[key] = [];
@@ -299,11 +305,17 @@ export class CourseServiceImpl implements CourseService {
     }
 
     public syncAssessmentEvents(): Observable<undefined> {
+        const capturedAssessmentEvents = this.capturedAssessmentEvents;
+
+        this.resetCapturedAssessmentEvents();
+
         return this.syncAssessmentEventsHandler.handle(
-            this.capturedAssessmentEvents
-        ).do(() => {
-            this.capturedAssessmentEvents = {};
-        });
+            capturedAssessmentEvents
+        );
+    }
+
+    public resetCapturedAssessmentEvents() {
+        this.capturedAssessmentEvents = {};
     }
 
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string {

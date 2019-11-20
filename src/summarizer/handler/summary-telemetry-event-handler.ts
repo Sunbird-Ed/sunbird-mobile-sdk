@@ -94,7 +94,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                                 status: 2,
                                 progress: 100
                             };
-                            return this.validEndEvent(event).mergeMap((isValid: boolean) => {
+                            return this.validEndEvent(event, courseContext).mergeMap((isValid: boolean) => {
                                 if (isValid) {
                                     return this.courseService.updateContentState(updateContentStateRequest)
                                         .do(() => {
@@ -125,7 +125,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         });
     }
 
-    private validEndEvent(event: Telemetry): Observable<boolean> {
+    private validEndEvent(event: Telemetry, courseContext?: any): Observable<boolean> {
         const uid = event.actor.id;
         const identifier = event.object.id;
         const request: ContentDetailRequest = {
@@ -136,6 +136,10 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
             const contentMimeType = content.mimeType;
             // const validSummary = (summaryList: Array<any>) => (percentage: number) => _find(summaryList, (requiredProgress =>
             //     summary => summary && summary.progress >= requiredProgress)(percentage));
+            if (content.contentType.toLowerCase() === 'selfassess' && courseContext && this.courseService.hasCapturedAssessmentEvent({courseContext})) {
+                return false;
+            }
+
             if (this.findValidProgress(playerSummary, 20) &&
                 ArrayUtil.contains([MimeType.YOUTUBE, MimeType.VIDEO, MimeType.WEBM], contentMimeType)) {
                 return true;
@@ -169,6 +173,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
 
     handle(event: SunbirdTelemetry.Telemetry): Observable<undefined> {
         if (event.eid === 'START' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
+            this.courseService.resetCapturedAssessmentEvents();
             return this.processOEStart(event)
                 .do(async () => {
                     await this.summarizerService.saveLearnerAssessmentDetails(event)

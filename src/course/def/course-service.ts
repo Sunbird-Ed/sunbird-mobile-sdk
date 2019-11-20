@@ -37,7 +37,13 @@ export interface CourseService {
     ): Observable<DownloadCertificateResponse>;
 
     /** @internal */
+    hasCapturedAssessmentEvent(request: {courseContext: any}): boolean;
+
+    /** @internal */
     captureAssessmentEvent(capture: {event: Telemetry, courseContext: any});
+
+    /** @internal */
+    resetCapturedAssessmentEvents();
 
     syncAssessmentEvents(): Observable<undefined>;
 

@@ -18,6 +18,7 @@ export interface Context {
     cdata?: CorrelationData[];
     contextRollup?: Rollup;
     objectRollup?: Rollup;
+    origin?: string;
 }
 
 export interface PlayerConfig {
@@ -28,13 +29,13 @@ export interface PlayerConfig {
         webLink: string
     };
     showEndPage: boolean;
+    endPage: Array<any>;
     overlay: {
         enableUserSwitcher: boolean,
         showUser: boolean
     };
     plugins?: Plugin[];
 }
-
 
 export interface Plugin {
     id: string;

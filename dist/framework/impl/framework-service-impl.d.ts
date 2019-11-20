@@ -20,6 +20,7 @@ export declare class FrameworkServiceImpl implements FrameworkService {
     constructor(sdkConfig: SdkConfig, fileService: FileService, apiService: ApiService, cachedItemStore: CachedItemStore, sharedPreferences: SharedPreferences, systemSettingsService: SystemSettingsService);
     readonly activeChannelId: string | undefined;
     preInit(): Observable<undefined>;
+    getDefaultChannelId(): Observable<string>;
     getDefaultChannelDetails(): Observable<Channel>;
     getChannelDetails(request: ChannelDetailsRequest): Observable<Channel>;
     getFrameworkDetails(request: FrameworkDetailsRequest): Observable<Framework>;

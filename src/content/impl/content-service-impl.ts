@@ -354,12 +354,12 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     for (const contentId of contentIds) {
                         const contentData: ContentData | undefined = contents.find(x => x.identifier === contentId);
                         if (contentData) {
-                            const downloadUrl = await searchContentHandler.getDownloadUrl(contentData);
+                            const contentImport: ContentImport =
+                                contentImportRequest.contentImportArray.find((i) => i.contentId === contentId)!;
+                            const downloadUrl = await searchContentHandler.getDownloadUrl(contentData, contentImport);
                             let status: ContentImportStatus = ContentImportStatus.NOT_FOUND;
                             if (downloadUrl && FileUtil.getFileExtension(downloadUrl) === FileExtension.CONTENT.valueOf()) {
                                 status = ContentImportStatus.ENQUEUED_FOR_DOWNLOAD;
-                                const contentImport: ContentImport =
-                                    contentImportRequest.contentImportArray.find((i) => i.contentId === contentId)!;
                                 const downloadRequest: ContentDownloadRequest = {
                                     identifier: contentId,
                                     downloadUrl: downloadUrl,
@@ -395,7 +395,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 contentImportResponseList: [],
                 correlationData: ecarImportRequest.correlationData || [],
                 rollUp: ecarImportRequest.rollUp || new Rollup(),
-                contentIdsToDelete: new Set()
+                contentIdsToDelete: new Set(),
+                identifier: ecarImportRequest.identifier
             };
             return new GenerateInteractTelemetry(this.telemetryService).execute(importContentContext, 'ContentImport-Initiated')
                 .then(() => {
@@ -637,7 +638,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             sourceFilePath: request.downloadedFilePath!,
             destinationFolder: request.destinationFolder!,
             correlationData: request.correlationData!,
-            rollUp: request.rollUp!
+            rollUp: request.rollUp!,
+            identifier: request.identifier
         };
         return this.importEcar(importEcarRequest)
             .mergeMap(() =>
