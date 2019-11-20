@@ -1,14 +1,14 @@
-import { DbService } from '../../db';
+import { DbService } from '../../../db';
 import { Observable } from 'rxjs';
-import { ErrorLoggerService } from '../index';
+import { ErrorLoggerService } from '..';
 import { SystemSettingsService } from 'src/system-settings';
-import { AppInfo } from '../../util/app';
-import { ApiService } from '../../api';
-import { SdkConfig } from '../../sdk-config';
-import { TelemetryErrorRequest } from '../../telemetry';
-import { NetworkInfoService } from '../../util/network';
-import { DeviceInfo } from '../../util/device';
-import { SharedPreferences } from '../../util/shared-preferences';
+import { AppInfo } from '../../app';
+import { ApiService } from '../../../api';
+import { SdkConfig } from '../../../sdk-config';
+import { TelemetryErrorRequest } from '../../../telemetry';
+import { NetworkInfoService } from '../../network';
+import { DeviceInfo } from '../../device';
+import { SharedPreferences } from '../../../util/shared-preferences';
 export declare class ErrorLoggerServiceImpl implements ErrorLoggerService {
     private systemSettingsService;
     private dbService;

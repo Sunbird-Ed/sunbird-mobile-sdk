@@ -11,7 +11,7 @@ import { FileService } from '../../util/file/def/file-service';
 import { FrameworkService } from '../../framework';
 import { NetworkInfoService } from '../../util/network';
 import { SdkConfig } from '../../sdk-config';
-import { ErrorLoggerService } from '../../error';
+import { ErrorLoggerService } from '../../util/error-stack';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { AppInfo } from '../../util/app';
 import { DeviceRegisterService } from '../../device-register';

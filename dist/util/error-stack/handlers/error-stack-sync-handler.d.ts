@@ -1,8 +1,8 @@
 import { Observable } from 'rxjs';
-import { ApiService } from '../../api';
-import { DbService } from '../../db';
+import { ApiService } from '../../../api';
+import { DbService } from '../../../db';
 import { ErrorLoggerConfig } from '../config/error-logger-config';
-import { NetworkInfoService } from '../../util/network';
+import { NetworkInfoService } from '../../network';
 import { ErrorStackSyncRequestDecorator } from './error-stack-sync-request-decorator';
 export declare class ErrorStackSyncHandler {
     private apiService;

@@ -22,7 +22,7 @@ import { PlayerService } from './player';
 import { TelemetryConfig } from './telemetry/config/telemetry-config';
 import { StorageService } from './storage';
 import { NotificationService } from './notification';
-import { ErrorLoggerService } from './error';
+import { ErrorLoggerService } from './util/error-stack';
 import { NetworkInfoService } from './util/network';
 import { SearchHistoryService } from './util/search-history';
 import { CodePushExperimentService } from './codepush-experiment';
