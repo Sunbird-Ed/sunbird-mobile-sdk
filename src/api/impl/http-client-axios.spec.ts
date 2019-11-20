@@ -1,5 +1,5 @@
 import {HttpClientAxios} from './http-client-axios';
-import {HttpSerializer, NetworkError, ResponseCode, HttpServerError} from '..';
+import {HttpSerializer, NetworkError, ResponseCode, ServerError} from '..';
 import * as axios from 'axios';
 import {AxiosError, AxiosInstance, AxiosResponse} from 'axios';
 
@@ -232,7 +232,7 @@ describe('HttpClientAxios', () => {
     httpClientAxios.get('/', '/', {}, {})
       .subscribe(() => {}, (e) => {
         // assert
-        expect(e instanceof HttpServerError).toBeTruthy();
+        expect(e instanceof ServerError).toBeTruthy();
         done();
       });
   });

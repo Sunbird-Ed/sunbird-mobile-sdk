@@ -1,22 +1,22 @@
-import {ErrorLoggerService} from '../index';
+import {ErrorLoggerService} from '..';
 import {Container} from 'inversify';
-import {InjectionTokens} from '../../injection-tokens';
+import {InjectionTokens} from '../../../injection-tokens';
 import {ErrorLoggerServiceImpl} from './error-logger-service-impl';
-import {SystemSettings, SystemSettingsService} from '../../system-settings';
-import {DbService} from '../../db';
-import {AppInfo} from '../../util/app';
-import {ApiService} from '../../api';
-import {SdkConfig} from '../../sdk-config';
-import {NetworkInfoService} from '../../util/network';
-import {DeviceInfo} from '../../util/device';
-import {SharedPreferences} from '../../util/shared-preferences';
+import {SystemSettings, SystemSettingsService} from '../../../system-settings';
+import {DbService} from '../../../db';
+import {AppInfo} from '../../app';
+import {ApiService} from '../../../api';
+import {SdkConfig} from '../../../sdk-config';
+import {NetworkInfoService} from '../../network';
+import {DeviceInfo} from '../../device';
+import {SharedPreferences} from '../../shared-preferences';
 import {mockSdkConfigWithErrorLoggerConfig} from './error-logger-service-impl.spec.data';
 import {Observable} from 'rxjs';
-import {TelemetryErrorRequest} from '../../telemetry';
+import {TelemetryErrorRequest} from '../../../telemetry';
 import {ErrorStack} from '../def/error-stack';
 import {ErrorStackSyncHandler} from '../handlers/error-stack-sync-handler';
 
-jest.mock('../handlers/error-sync-handler');
+jest.mock('../handlers/error-stack-sync-handler');
 
 describe('ErrorLoggerServiceImpl', () => {
     let errorLoggerService: ErrorLoggerService;

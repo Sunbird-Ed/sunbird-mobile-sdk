@@ -1,4 +1,4 @@
-import {HttpClient, HttpSerializer, NetworkError, Response, ResponseCode, HttpServerError} from '..';
+import {HttpClient, HttpSerializer, NetworkError, Response, ResponseCode, ServerError} from '..';
 import {Observable} from 'rxjs';
 import * as axiosDefault from 'axios';
 import * as qs from 'qs';
@@ -79,7 +79,7 @@ export class HttpClientAxios implements HttpClient {
                             || sunbirdResponse.responseCode === ResponseCode.HTTP_FORBIDDEN) {
                             return sunbirdResponse;
                         } else {
-                            throw new HttpServerError(`
+                            throw new ServerError(`
                                 ${e.request.url} -
                                 ${e || ''}
                             `, sunbirdResponse);

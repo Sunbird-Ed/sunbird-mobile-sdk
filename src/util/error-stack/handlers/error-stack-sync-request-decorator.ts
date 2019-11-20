@@ -1,8 +1,8 @@
-import {ProducerData} from '../../telemetry';
-import {ApiConfig} from '../../api';
-import {DeviceInfo, DeviceSpec} from '../../util/device';
+import {ProducerData} from '../../../telemetry';
+import {ApiConfig} from '../../../api';
+import {DeviceInfo, DeviceSpec} from '../../device';
 import {Observable} from 'rxjs';
-import {AppInfo} from '../../util/app';
+import {AppInfo} from '../../app';
 
 interface Context {
     did: string;

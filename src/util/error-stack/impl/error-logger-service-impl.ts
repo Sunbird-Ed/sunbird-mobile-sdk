@@ -1,24 +1,24 @@
-import {DbService} from '../../db';
+import {DbService} from '../../../db';
 import {Observable} from 'rxjs';
-import {ErrorLoggerService} from '../index';
+import {ErrorLoggerService} from '..';
 import {ErrorStackEntry} from '../db/schema';
 import {inject, injectable} from 'inversify';
-import {InjectionTokens} from '../../injection-tokens';
+import {InjectionTokens} from '../../../injection-tokens';
 import {GetSystemSettingsRequest, SystemSettingsService} from 'src/system-settings';
-import {SystemSettingsOrgIds} from '../../system-settings/def/system-settings-org-ids';
-import {AppInfo} from '../../util/app';
-import {ApiService} from '../../api';
-import {SdkConfig} from '../../sdk-config';
+import {SystemSettingsOrgIds} from '../../../system-settings/def/system-settings-org-ids';
+import {AppInfo} from '../../app';
+import {ApiService} from '../../../api';
+import {SdkConfig} from '../../../sdk-config';
 import {ErrorLoggerConfig} from '../config/error-logger-config';
-import {TelemetryErrorRequest} from '../../telemetry';
+import {TelemetryErrorRequest} from '../../../telemetry';
 import {ErrorStack} from '../def/error-stack';
 import {ErrorStackMapper} from '../util/error-stack-mapper';
 import {ErrorStackSyncHandler} from '../handlers/error-stack-sync-handler';
-import {NetworkInfoService} from '../../util/network';
+import {NetworkInfoService} from '../../network';
 import {ErrorStackSyncRequestDecorator} from '../handlers/error-stack-sync-request-decorator';
-import {DeviceInfo} from '../../util/device';
-import {ErrorLogKeys} from '../../preference-keys';
-import { SharedPreferences } from '../../util/shared-preferences';
+import {DeviceInfo} from '../../device';
+import {ErrorLogKeys} from '../../../preference-keys';
+import { SharedPreferences } from '../../../util/shared-preferences';
 import { SdkServiceOnInitDelegate } from 'src/sdk-service-on-init-delegate';
 
 @injectable()

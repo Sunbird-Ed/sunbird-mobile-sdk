@@ -20,7 +20,7 @@ export * from './summarizer';
 export * from './key-value-store';
 export * from './storage';
 export * from './notification';
-export * from './error';
+export * from './util/error-stack';
 export * from './codepush-experiment';
 // utils
 export * from './util/shared-preferences';
