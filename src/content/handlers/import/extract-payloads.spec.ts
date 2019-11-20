@@ -9,7 +9,6 @@ import { Observable } from 'rxjs';
 import { ContentUtil } from '../../util/content-util';
 import { ContentEntry } from '../../db/schema';
 import { doesNotReject } from 'assert';
-import { mockImportContentContext } from './extract-payloads.spec.data';
 
 declare const buildconfigreader;
 
@@ -107,13 +106,11 @@ describe('ExtractPayloads', () => {
         (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(Observable.of(''));
         spyOn(ContentUtil, 'addOrUpdateViralityMetadata').and.stub();
         // act
-        await extractPayloads.execute(mockImportContentContext).then(() => {
-            // assert
+        await extractPayloads.execute(request).then(() => {
             expect(Boolean(existingContentModel)).toBe(true);
-            expect(mockFileService.createDir).toBeCalled();
-            expect(buildconfigreader.createDirectories).toBeCalled();
             done();
         });
+        // assert
     });
 
     it('should Update the contents in DB with actual size', async (done) => {
