@@ -1,3 +1,4 @@
+import { GetFaqRequest } from './../def/get-faq-request';
 import { CachedItemStore } from '../../key-value-store';
 import { Path } from '../../util/file/util/path';
 import { FileService } from '../../util/file/def/file-service';
@@ -9,9 +10,6 @@ import { FaqServiceConfig, Faq } from '..';
 export class GetFaqDetailsHandler {
     private readonly FAQ_FILE_KEY_PREFIX = 'faq-';
     private readonly FAQ_LOCAL_KEY = 'faq-';
-    // private readonly GET_FAQ_DETAILS_ENDPOINT = '/read';
-    // private readonly GET_FAQ_HOST = 'https://ntpstagingall.blob.core.windows.net/';
-
 
     constructor(
         private apiService: ApiService,
@@ -20,23 +18,21 @@ export class GetFaqDetailsHandler {
         private cachedItemStore: CachedItemStore) {
     }
 
-    handle(language: string): Observable<any> {
-        const identifier = language;
+    handle(request: GetFaqRequest): Observable<any> {
         return this.cachedItemStore.getCached(
-            identifier,
+            request.language,
             this.FAQ_LOCAL_KEY,
             'ttl_' + this.FAQ_LOCAL_KEY,
-            () => this.fetchFromServer(language),
-            () => this.fetchFromFile(language)
+            () => this.fetchFromServer(request),
+            () => this.fetchFromFile(request.language)
         );
     }
 
-
-    private fetchFromServer(language): Observable <Faq> {
+    private fetchFromServer(request: GetFaqRequest): Observable <Faq> {
     const apiRequest: Request = new Request.Builder()
         .withType(HttpRequestType.GET)
-        .withHost(this.faqServiceConfig.faqHost)
-        .withPath(this.faqServiceConfig.faqApiPath + language + '.json')
+        .withHost(request.faqUrl)
+        .withPath( '/faq-' + request.language + '.json')
         .withApiToken(false)
         .build();
 
@@ -54,7 +50,7 @@ export class GetFaqDetailsHandler {
         return Observable.fromPromise(this.fileservice.readFileFromAssets(dir.concat('/', file)))
         .map((filecontent: string) => {
             const result = JSON.parse(filecontent);
-            return result.result;
+            return result;
         });
     }
 

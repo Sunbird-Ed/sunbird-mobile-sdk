@@ -1,7 +1,8 @@
+import { GetFaqRequest } from './get-faq-request';
 import { Faq } from '..';
 import { Observable } from 'rxjs';
 
 
 export interface FaqService {
-    getFaqDetails(language?: string): Observable<Faq>;
+    getFaqDetails(request: GetFaqRequest): Observable<Faq>;
 }
