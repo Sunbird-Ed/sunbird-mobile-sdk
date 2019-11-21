@@ -37,7 +37,7 @@ import {
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
-import {ApiService, Response, HttpRequestType, Request} from '../../api';
+import {ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
 import {DbService} from '../../db';
@@ -777,6 +777,5 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return Observable.of(undefined);
             });
     }
-
 
 }
