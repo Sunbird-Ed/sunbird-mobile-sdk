@@ -54,16 +54,18 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
                             path: forCase.when.path,
                             params: forCase.when.params
                         }).then(() =>
-                            dsl.resolveCaptured('payload')
-                        ).then((payload) =>
-                            dsl.clearCapture().then(() =>
+                            dsl.success()
+                        ).then((captured) => {
+                            dsl.resetInAppBrowserEventListeners();
+
+                            return dsl.clearCapture().then(() =>
                                 new WebviewAutoMergeSessionProvider(
                                     this.autoMergeConfig,
                                     this.webviewRunner,
-                                    payload
+                                    captured
                                 ).provide()
-                            )
-                        )); break;
+                            );
+                        })); break;
 
                         case 'password-reset-success': acc.push(dsl.capture({
                             host: forCase.when.host,
