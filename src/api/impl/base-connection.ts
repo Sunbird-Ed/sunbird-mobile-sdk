@@ -1,4 +1,14 @@
-import {ApiConfig, HttpClient, HttpRequestType, HttpSerializer, Request, Response, ResponseCode} from '..';
+import {
+    ApiConfig,
+    HttpClient,
+    HttpClientError,
+    HttpRequestType,
+    HttpSerializer,
+    HttpServerError,
+    Request,
+    Response,
+    ResponseCode
+} from '..';
 import {Observable} from 'rxjs';
 import {Connection} from '../def/connection';
 import {Authenticator} from '../def/authenticator';
@@ -142,13 +152,24 @@ export class BaseConnection implements Connection {
                         sunbirdResponse.errorMesg = 'NETWORK ERROR';
                         sunbirdResponse.responseCode = xhr.status;
 
-                        try {
-                            sunbirdResponse.body = JSON.parse(xhr.responseText);
-                        } catch (e) {
-                            sunbirdResponse.body = xhr.responseText;
+                        if (
+                            sunbirdResponse.responseCode === ResponseCode.HTTP_UNAUTHORISED ||
+                            sunbirdResponse.responseCode === ResponseCode.HTTP_FORBIDDEN
+                        ) {
+                            resolve(sunbirdResponse);
+                        } else {
+                            if (sunbirdResponse.responseCode >= 400 && sunbirdResponse.responseCode <= 499) {
+                                reject(new HttpClientError(`
+                                    ${(request.host || this.apiConfig.host) + request.path} -
+                                    ${xhr.responseText || ''}
+                                `, sunbirdResponse));
+                            } else {
+                                reject(new HttpServerError(`
+                                    ${(request.host || this.apiConfig.host) + request.path} -
+                                    ${xhr.responseText || ''}
+                                `, sunbirdResponse));
+                            }
                         }
-
-                        resolve(sunbirdResponse);
                     }
                 }
             };
