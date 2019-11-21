@@ -37,7 +37,7 @@ import {
     SearchResponse
 } from '..';
 import {Observable} from 'rxjs';
-import {ApiService, Response} from '../../api';
+import {ApiService, Response, HttpRequestType, Request} from '../../api';
 import {ProfileService} from '../../profile';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
 import {DbService} from '../../db';
@@ -91,6 +91,7 @@ import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
+import { GetContentHeirarchyHandler } from './../handlers/get-content-heirarchy-handler';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -98,6 +99,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     private static readonly KEY_CONTENT_DELETE_REQUEST_LIST = ContentKeys.KEY_CONTENT_DELETE_REQUEST_LIST;
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
     private readonly getContentDetailsHandler: GetContentDetailsHandler;
+    private readonly getContentHeirarchyHandler: GetContentHeirarchyHandler;
     private readonly contentServiceConfig: ContentServiceConfig;
     private readonly appConfig: AppConfig;
 
@@ -123,6 +125,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         this.getContentDetailsHandler = new GetContentDetailsHandler(
             this.contentFeedbackService, this.profileService,
             this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
+
+            this.getContentHeirarchyHandler = new GetContentHeirarchyHandler(this.apiService, this.contentServiceConfig);
 
         this.contentDeleteRequestSet = new SharedPreferencesSetCollectionImpl(
             this.sharedPreferences,
@@ -152,6 +156,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
         return this.getContentDetailsHandler.handle(request);
+    }
+
+    getContentHeirarchy(request: ContentDetailRequest): Observable<Content> {
+        return this.getContentHeirarchyHandler.handle(request);
     }
 
     getContents(request: ContentRequest): Observable<Content[]> {
@@ -769,5 +777,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return Observable.of(undefined);
             });
     }
+
 
 }
