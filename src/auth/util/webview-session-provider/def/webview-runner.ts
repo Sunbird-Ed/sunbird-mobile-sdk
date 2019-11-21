@@ -1,4 +1,6 @@
 export interface WebviewRunner {
+    resetInAppBrowserEventListeners();
+
     launchWebview(args: { host: string, path: string, params: {[key: string]: string} }): Promise<void>;
 
     launchCustomTab(args: { host: string, path: string, params: {[key: string]: string} }): Promise<void>;
