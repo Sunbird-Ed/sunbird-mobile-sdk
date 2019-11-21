@@ -21,6 +21,7 @@ export * from './storage';
 export * from './notification';
 export * from './util/error-stack';
 export * from './codepush-experiment';
+export * from './faq';
 export * from './util/shared-preferences';
 export * from './util/download';
 export * from './util/device';

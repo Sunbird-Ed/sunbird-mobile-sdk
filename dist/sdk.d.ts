@@ -26,6 +26,7 @@ import { ErrorLoggerService } from './util/error-stack';
 import { NetworkInfoService } from './util/network';
 import { SearchHistoryService } from './util/search-history';
 import { CodePushExperimentService } from './codepush-experiment';
+import { FaqService } from './faq';
 import { DeviceRegisterConfig, DeviceRegisterService } from './device-register';
 export declare class SunbirdSdk {
     private _container;
@@ -62,6 +63,7 @@ export declare class SunbirdSdk {
     readonly networkInfoService: NetworkInfoService;
     readonly searchHistoryService: SearchHistoryService;
     readonly codePushExperimentService: CodePushExperimentService;
+    readonly faqService: FaqService;
     readonly deviceRegisterService: DeviceRegisterService;
     init(sdkConfig: SdkConfig): Promise<void>;
     updateTelemetryConfig(update: Partial<TelemetryConfig>): void;
