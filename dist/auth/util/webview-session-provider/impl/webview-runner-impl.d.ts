@@ -6,7 +6,7 @@ export declare class WebviewRunnerImpl implements WebviewRunner {
     static buildUrl(host: string, path: string, params: {
         [p: string]: string;
     }): string;
-    private resetInAppBrowserEventListeners;
+    resetInAppBrowserEventListeners(): void;
     launchWebview({ host, path, params }: {
         host: string;
         path: string;

@@ -1,3 +1,4 @@
+import { GetFaqRequest } from './../def/get-faq-request';
 import {CachedItemStore} from '../../key-value-store';
 import {FaqService, Faq} from '..';
 import {GetFaqDetailsHandler} from '../handler/get-faq-details-handler';
@@ -17,13 +18,13 @@ export class FaqServiceImpl implements FaqService {
                 @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore) {
     }
 
-    getFaqDetails(language: string): Observable<Faq> {
+    getFaqDetails(request: GetFaqRequest): Observable<Faq> {
         return new GetFaqDetailsHandler(
             this.apiService,
             this.sdkConfig.faqServiceConfig,
             this.fileService,
             this.cachedItemStore,
-        ).handle(language);
+        ).handle(request);
     }
 
 }
