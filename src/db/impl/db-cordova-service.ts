@@ -1,10 +1,10 @@
 import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery} from '..';
-import {Observable, Subject} from 'rxjs';
 import {InitialMigration} from '../migrations/initial-migration';
 import {QueryBuilder} from '../util/query-builder';
 import {injectable, inject} from 'inversify';
 import {SdkConfig} from '../../sdk-config';
 import {InjectionTokens} from '../../injection-tokens';
+import {Observable} from 'rxjs/Observable';
 
 @injectable()
 export class DbCordovaService implements DbService {
@@ -19,21 +19,19 @@ export class DbCordovaService implements DbService {
 
 
     update(updateQuery: UpdateQuery): Observable<number> {
-        const observable = new Subject<any>();
-
-        db.update(updateQuery.table,
-            updateQuery.selection || '',
-            updateQuery.selectionArgs || [],
-            updateQuery.modelJson,
-            updateQuery.useExternalDb || false,
-            (count: any) => {
-                observable.next(count);
-                observable.complete();
-            }, (error: string) => {
-                observable.error(error);
-            });
-
-        return observable;
+        return new Observable<number>(observer => {
+            db.update(updateQuery.table,
+                updateQuery.selection || '',
+                updateQuery.selectionArgs || [],
+                updateQuery.modelJson,
+                updateQuery.useExternalDb || false,
+                (count: any) => {
+                    observer.next(count);
+                    observer.complete();
+                }, (error: string) => {
+                    observer.error(error);
+                });
+        });
     }
 
     public async init(): Promise<undefined> {
@@ -66,16 +64,14 @@ export class DbCordovaService implements DbService {
             WHERE ${new QueryBuilder().where(deleteQuery.selection).args(deleteQuery.selectionArgs).end().build()}
         `;
 
-        const observable = new Subject<any>();
-
-        db.execute(query, deleteQuery.useExternalDb || false, value => {
-            observable.next(value);
-            observable.complete();
-        }, error => {
-            observable.error(error);
+        return new Observable<undefined>(observer => {
+            db.execute(query, deleteQuery.useExternalDb || false, value => {
+                observer.next(value);
+                observer.complete();
+            }, error => {
+                observer.error(error);
+            });
         });
-
-        return observable;
     }
 
     private async onCreate() {
@@ -83,61 +79,55 @@ export class DbCordovaService implements DbService {
     }
 
     private async onUpgrade(oldVersion: number, newVersion: number) {
-        this.appMigrationList.forEach(async (migration) => {
+        for (const migration of this.appMigrationList) {
             if (migration.required(oldVersion, newVersion)) {
                 await migration.apply(this);
             }
-        });
+        }
     }
 
     execute(query: string, useExternalDb?: boolean): Observable<any> {
-        const observable = new Subject<any>();
-
-        db.execute(query, useExternalDb || false, (value) => {
-            observable.next(value);
-            observable.complete();
-        }, error => {
-            observable.error(error);
+        return new Observable<any>(observer => {
+            db.execute(query, useExternalDb || false, (value) => {
+                observer.next(value);
+                observer.complete();
+            }, error => {
+                observer.error(error);
+            });
         });
-
-        return observable;
     }
 
     read(readQuery: ReadQuery): Observable<any[]> {
-        const observable = new Subject<any[]>();
-
-        db.read(!!readQuery.distinct,
-            readQuery.table,
-            readQuery.columns || [],
-            readQuery.selection || '',
-            readQuery.selectionArgs || [],
-            readQuery.groupBy || '',
-            readQuery.having || '',
-            readQuery.orderBy || '',
-            readQuery.limit || '',
-            readQuery.useExternalDb || false,
-            (json: any[]) => {
-                observable.next(json);
-                observable.complete();
-            }, (error: string) => {
-                observable.error(error);
-            });
-
-        return observable;
+        return new Observable(observer => {
+            db.read(!!readQuery.distinct,
+                readQuery.table,
+                readQuery.columns || [],
+                readQuery.selection || '',
+                readQuery.selectionArgs || [],
+                readQuery.groupBy || '',
+                readQuery.having || '',
+                readQuery.orderBy || '',
+                readQuery.limit || '',
+                readQuery.useExternalDb || false,
+                (json: any[]) => {
+                    observer.next(json);
+                    observer.complete();
+                }, (error: string) => {
+                    observer.error(error);
+                });
+        });
     }
 
     insert(inserQuery: InsertQuery): Observable<number> {
-        const observable = new Subject<number>();
-
-        db.insert(inserQuery.table,
-            inserQuery.modelJson, inserQuery.useExternalDb || false, (number: number) => {
-                observable.next(number);
-                observable.complete();
-            }, (error: string) => {
-                observable.error(error);
-            });
-
-        return observable;
+        return new Observable(observer => {
+            db.insert(inserQuery.table,
+                inserQuery.modelJson, inserQuery.useExternalDb || false, (number: number) => {
+                    observer.next(number);
+                    observer.complete();
+                }, (error: string) => {
+                    observer.error(error);
+                });
+        });
     }
 
     beginTransaction(): void {
@@ -149,16 +139,14 @@ export class DbCordovaService implements DbService {
     }
 
     copyDatabase(destination: string): Observable<boolean> {
-        const observable = new Subject<boolean>();
-
-        db.copyDatabase(destination, (success: boolean) => {
-            observable.next(success);
-            observable.complete();
-        }, (error: string) => {
-            observable.error(error);
+        return new Observable<boolean>(observer => {
+            db.copyDatabase(destination, (success: boolean) => {
+                observer.next(success);
+                observer.complete();
+            }, (error: string) => {
+                observer.error(error);
+            });
         });
-
-        return observable;
     }
 
     open(dbFilePath: string): Promise<undefined> {
