@@ -5,8 +5,10 @@ import { WebviewBaseSessionProvider } from './webview-base-session-provider';
 export declare class WebviewAutoMergeSessionProvider extends WebviewBaseSessionProvider {
     private autoMergeConfig;
     private webviewRunner;
-    private payload;
-    constructor(autoMergeConfig: WebviewSessionProviderConfig, webviewRunner: WebviewRunner, payload: string);
+    private captured;
+    constructor(autoMergeConfig: WebviewSessionProviderConfig, webviewRunner: WebviewRunner, captured: {
+        [key: string]: string;
+    });
     provide(): Promise<OAuthSession>;
     private performAutoMerge;
 }

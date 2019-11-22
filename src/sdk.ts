@@ -69,7 +69,8 @@ import {SearchHistoryService} from './util/search-history';
 import {SearchHistoryServiceImpl} from './util/search-history/impl/search-history-service-impl';
 import {RecentlyViewedMigration} from './db/migrations/recently-viewed-migration';
 import {CourseAssessmentMigration} from './db/migrations/course-assessment-migration';
-import {CodePushExperimentService, CodePUshExperimentServiceImpl} from './codepush-experiment';
+import { CodePushExperimentService, CodePUshExperimentServiceImpl } from './codepush-experiment';
+import {FaqService, FaqServiceImpl} from './faq';
 import {DeviceRegisterConfig, DeviceRegisterService, DeviceRegisterServiceImpl} from './device-register';
 
 export class SunbirdSdk {
@@ -207,6 +208,10 @@ export class SunbirdSdk {
         return this._container.get<CodePushExperimentService>(InjectionTokens.CODEPUSH_EXPERIMENT_SERVICE);
     }
 
+    get faqService(): FaqService {
+        return this._container.get<FaqService>(InjectionTokens.FAQ_SERVICE);
+    }
+
     get deviceRegisterService(): DeviceRegisterService {
         return this._container.get<DeviceRegisterService>(InjectionTokens.DEVICE_REGISTER_SERVICE);
     }
@@ -314,6 +319,8 @@ export class SunbirdSdk {
 
         this._container.bind<DeviceRegisterService>(InjectionTokens.DEVICE_REGISTER_SERVICE).to(DeviceRegisterServiceImpl)
             .inSingletonScope();
+
+        this._container.bind<FaqService>(InjectionTokens.FAQ_SERVICE).to(FaqServiceImpl).inSingletonScope();
 
         this.apiService.setDefaultApiAuthenticators([
             new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)
