@@ -1,6 +1,5 @@
 import { ApiRequestHandler } from '../../api';
 import { SunbirdTelemetry } from '../../telemetry';
-import { Observable } from 'rxjs';
 import { SummarizerService } from '..';
 import { CourseService } from '../../course';
 import { SharedPreferences } from '../../util/shared-preferences';
@@ -9,6 +8,7 @@ import { EventsBusService } from '../../events-bus';
 import { ContentService } from '../../content';
 import { ProfileService } from '../../profile';
 import { DbService } from '../../db';
+import { Observable } from 'rxjs';
 export declare class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private courseService;
     private sharedPreference;

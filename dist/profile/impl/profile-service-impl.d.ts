@@ -1,6 +1,5 @@
 import { AcceptTermsConditionRequest, ContentAccess, GenerateOtpRequest, GetAllProfileRequest, IsProfileAlreadyInUseRequest, LocationSearchCriteria, MergeServerProfilesRequest, Profile, ProfileExportRequest, ProfileExportResponse, ProfileService, ProfileSession, ProfileSource, ServerProfile, ServerProfileDetailsRequest, ServerProfileSearchCriteria, TenantInfoRequest, UpdateServerProfileInfoRequest, VerifyOtpRequest } from '..';
 import { DbService } from '../../db';
-import { Observable } from 'rxjs';
 import { TenantInfo } from '../def/tenant-info';
 import { ApiService } from '../../api';
 import { CachedItemStore, KeyValueStore } from '../../key-value-store';
@@ -16,6 +15,7 @@ import { DeviceInfo } from '../../util/device';
 import { SdkConfig } from '../../sdk-config';
 import { Container } from 'inversify';
 import { AuthService } from '../../auth';
+import { Observable } from 'rxjs';
 export declare class ProfileServiceImpl implements ProfileService {
     private container;
     private sdkConfig;

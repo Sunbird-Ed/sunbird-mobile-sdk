@@ -1,9 +1,9 @@
 import { ApiRequestHandler, ApiService } from '../../api';
 import { LocationSearchCriteria, ProfileServiceConfig } from '..';
 import { LocationSearchResult } from '../def/location-search-result';
-import { Observable } from 'rxjs';
 import { CachedItemStore } from '../../key-value-store';
 import { FileService } from '../../util/file/def/file-service';
+import { Observable } from 'rxjs';
 export declare class SearchLocationHandler implements ApiRequestHandler<LocationSearchCriteria, LocationSearchResult[]> {
     private apiService;
     private profileServiceConfig;
