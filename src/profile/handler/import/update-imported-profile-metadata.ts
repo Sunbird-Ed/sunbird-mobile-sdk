@@ -1,6 +1,6 @@
 import {DbService} from '../../../db';
 import {Response} from '../../../api';
-import {ImportedMetadataEntry} from '../../../profile/db/schema';
+import {ImportedMetadataEntry} from '../../db/schema';
 import {ImportProfileContext} from '../../def/import-profile-context';
 
 export class UpdateImportedProfileMetadata {

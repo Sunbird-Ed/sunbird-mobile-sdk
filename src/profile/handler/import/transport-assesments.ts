@@ -3,8 +3,7 @@ import {ImportProfileContext} from '../../def/import-profile-context';
 import {LearnerAssessmentsEntry, LearnerSummaryEntry, ProfileEntry} from '../../db/schema';
 import {Response} from '../../../api';
 import {ArrayUtil} from '../../../util/array-util';
-import {GroupProfileEntry} from '../../../group/db/schema';
-import {SummarizerQueries} from '../../../summarizer/handler/summarizer-queries';
+import {SummarizerQueries} from '../../../summarizer';
 
 export class TransportAssesments {
     constructor(private dbService: DbService) {
