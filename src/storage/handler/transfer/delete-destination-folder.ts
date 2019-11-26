@@ -1,4 +1,4 @@
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {TransferContentContext} from '../transfer-content-handler';
 
 export class DeleteDestinationFolder {
@@ -6,6 +6,6 @@ export class DeleteDestinationFolder {
     }
 
     execute(context: TransferContentContext): Observable<TransferContentContext> {
-        return Observable.of(context);
+        return of(context);
     }
 }
