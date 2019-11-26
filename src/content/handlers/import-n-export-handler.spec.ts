@@ -7,8 +7,6 @@ import { FileService } from '../../util/file/def/file-service';
 import { ArrayUtil } from '../../util/array-util';
 
 
-// jest.mock('moment');
-
 describe('ImportNExportHandler', () => {
     let importNExportHandler: ImportNExportHandler;
     const mockDeviceInfo: Partial<DeviceInfo> = {};
