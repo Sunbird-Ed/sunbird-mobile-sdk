@@ -1,12 +1,12 @@
-import {ContentState, ContentStateResponse, CourseServiceImpl, UpdateContentStateAPIRequest, UpdateContentStateRequest} from '..';
+import {CourseServiceImpl, UpdateContentStateRequest} from '..';
 import {UpdateContentStateApiHandler} from './update-content-state-api-handler';
 import {CourseUtil} from '../course-util';
 import {KeyValueStore} from '../../key-value-store';
 import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 import {DbService} from '../../db';
-import {Observable} from 'rxjs';
 import {SharedPreferences} from '../../util/shared-preferences';
-import {ContentKeys} from '../../preference-keys';
+import {from, Observable, of} from 'rxjs';
+import {map, mapTo, mergeMap} from 'rxjs/operators';
 
 export class ContentStatesSyncHandler {
 
@@ -19,9 +19,11 @@ export class ContentStatesSyncHandler {
 
     public updateContentState(): Observable<boolean> {
         return this.prepareContentStateRequest()
-            .mergeMap((updateContentRequestMap: { [key: string]: UpdateContentStateRequest[] }) => {
-                return Observable.fromPromise(this.invokeContentStateAPI(updateContentRequestMap));
-            });
+            .pipe(
+                mergeMap((updateContentRequestMap: { [key: string]: UpdateContentStateRequest[] }) => {
+                    return from(this.invokeContentStateAPI(updateContentRequestMap));
+                })
+            );
     }
 
 
@@ -29,22 +31,24 @@ export class ContentStatesSyncHandler {
         const query = `SELECT * FROM ${KeyValueStoreEntry.TABLE_NAME}
                            WHERE ${KeyValueStoreEntry.COLUMN_NAME_KEY}
                            LIKE '%%${CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX}%%'`;
-        return this.dbService.execute(query).map((keyValueEntries: KeyValueStoreEntry.SchemaMap[]) => {
-            const updateContentRequestMap: { [key: string]: UpdateContentStateRequest[] } = {};
-            keyValueEntries.forEach((keyValueEntry: KeyValueStoreEntry.SchemaMap) => {
-                const updateContentStateRequest: UpdateContentStateRequest =
-                    JSON.parse(keyValueEntry['value']) as UpdateContentStateRequest;
-                if (updateContentStateRequest && updateContentStateRequest.userId) {
-                    if (updateContentRequestMap.hasOwnProperty(updateContentStateRequest.userId)) {
-                        updateContentRequestMap[updateContentStateRequest.userId].push(updateContentStateRequest);
-                    } else {
-                        const updateContentStateRequestList: UpdateContentStateRequest[] = [];
-                        updateContentRequestMap[updateContentStateRequest.userId] = [updateContentStateRequest];
-                    }
-                }
-            });
-            return updateContentRequestMap;
-        });
+        return this.dbService.execute(query)
+            .pipe(
+                map((keyValueEntries: KeyValueStoreEntry.SchemaMap[]) => {
+                    const updateContentRequestMap: { [key: string]: UpdateContentStateRequest[] } = {};
+                    keyValueEntries.forEach((keyValueEntry: KeyValueStoreEntry.SchemaMap) => {
+                        const updateContentStateRequest: UpdateContentStateRequest =
+                            JSON.parse(keyValueEntry['value']) as UpdateContentStateRequest;
+                        if (updateContentStateRequest && updateContentStateRequest.userId) {
+                            if (updateContentRequestMap.hasOwnProperty(updateContentStateRequest.userId)) {
+                                updateContentRequestMap[updateContentStateRequest.userId].push(updateContentStateRequest);
+                            } else {
+                                const updateContentStateRequestList: UpdateContentStateRequest[] = [];
+                                updateContentRequestMap[updateContentStateRequest.userId] = [updateContentStateRequest];
+                            }
+                        }
+                    });
+                    return updateContentRequestMap;
+                }));
 
     }
 
@@ -75,15 +79,19 @@ export class ContentStatesSyncHandler {
                     .concat(contentSateRequest.courseId)
                     .concat(contentSateRequest.contentId)
                     .concat(contentSateRequest.batchId);
-                await this.keyValueStore.getValue(key).map((value: string | undefined) => {
-                    if (value) {
-                        const deleteQuery = `DELETE FROM ${KeyValueStoreEntry.TABLE_NAME}
-                                         WHERE ${KeyValueStoreEntry.COLUMN_NAME_KEY} = '${key}' `;
-                        return this.dbService.execute(deleteQuery).mapTo(true);
-                    } else {
-                        return Observable.of(true);
-                    }
-                }).toPromise();
+                await this.keyValueStore.getValue(key)
+                    .pipe(
+                        map((value: string | undefined) => {
+                            if (value) {
+                                const deleteQuery = `DELETE FROM ${KeyValueStoreEntry.TABLE_NAME}
+                                             WHERE ${KeyValueStoreEntry.COLUMN_NAME_KEY} = '${key}' `;
+                                return this.dbService.execute(deleteQuery).pipe(
+                                    mapTo(true));
+                            } else {
+                                return of(true);
+                            }
+                        })
+                    ).toPromise();
             }
         }
         return Promise.resolve(true);
