@@ -100,7 +100,7 @@ export class ChildContentsHandler {
         return contentKeyList;
     }
 
-    async getContentFromDB(hierarchyInfoList: HierarchyInfo[], identifier: string): Promise<Content> {
+    async getContentFromDB(hierarchyInfoList: HierarchyInfo[], identifier: string,  shouldConvertBasePath?: boolean): Promise<Content> {
         const nextContentHierarchyList: HierarchyInfo[] = [];
         let nextContent;
         // const nextContentIdentifier = this.getPreviousContentIdentifier(hierarchyInfoList, currentIdentifier, contentKeyList);
@@ -125,7 +125,7 @@ export class ChildContentsHandler {
                 const nextContentInDb = await this.getContentDetailsHandler.fetchFromDB(
                     nextContentIdentifierList[idCount - 1]).toPromise();
                 if (nextContentInDb) {
-                    nextContent = ContentMapper.mapContentDBEntryToContent(nextContentInDb);
+                    nextContent = ContentMapper.mapContentDBEntryToContent(nextContentInDb, shouldConvertBasePath);
                     nextContent.hierarchyInfo = nextContentHierarchyList;
                     nextContent.rollup = ContentUtil.getContentRollup(nextContent.identifier, nextContent.hierarchyInfo);
                 }
