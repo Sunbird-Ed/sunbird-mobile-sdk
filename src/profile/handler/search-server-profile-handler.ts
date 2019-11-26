@@ -1,7 +1,8 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {ProfileServiceConfig, ServerProfileSearchCriteria} from '..';
-import {ServerProfile} from '../def/server-profile';
+import {ServerProfile} from '..';
 import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 export class SearchServerProfileHandler implements ApiRequestHandler<ServerProfileSearchCriteria, ServerProfile[]> {
     private readonly GET_SEARCH_USER_ENDPOINT = '/search';
@@ -26,9 +27,11 @@ export class SearchServerProfileHandler implements ApiRequestHandler<ServerProfi
             })
             .build();
 
-        return this.apiService.fetch<{ result: { response: { content: ServerProfile[] } } }>(apiRequest).map((success) => {
-            return success.body.result.response.content;
-        });
+        return this.apiService.fetch<{ result: { response: { content: ServerProfile[] } } }>(apiRequest).pipe(
+            map((success) => {
+                return success.body.result.response.content;
+            })
+        );
     }
 
 }
