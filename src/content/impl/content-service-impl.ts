@@ -126,7 +126,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             this.contentFeedbackService, this.profileService,
             this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
 
-            this.getContentHeirarchyHandler = new GetContentHeirarchyHandler(this.apiService, this.contentServiceConfig);
+        this.getContentHeirarchyHandler = new GetContentHeirarchyHandler(this.apiService, this.contentServiceConfig);
 
         this.contentDeleteRequestSet = new SharedPreferencesSetCollectionImpl(
             this.sharedPreferences,

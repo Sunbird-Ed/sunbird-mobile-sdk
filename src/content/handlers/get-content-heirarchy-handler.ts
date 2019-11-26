@@ -3,6 +3,7 @@ import {
     Content,
     ContentDetailRequest,
     ContentServiceConfig,
+    ContentData
 } from '..';
 
 export class GetContentHeirarchyHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
@@ -20,7 +21,7 @@ export class GetContentHeirarchyHandler implements ApiRequestHandler<ContentDeta
             .withApiToken(true)
             .build();
         console.time('getContentHeirarchyFromServer');
-        return this.apiService.fetch<{ result: any }>(apiRequest)
+        return this.apiService.fetch<{ result: { content: ContentData } }>(apiRequest)
             .map((response) => {
                 console.timeEnd('getContentHeirarchyFromServer');
                 return this.mapContentFromContentHeirarchyData(response.body.result.content);
