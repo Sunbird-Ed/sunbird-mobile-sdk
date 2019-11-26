@@ -10,7 +10,7 @@
     "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
     "test": "jest",
     "test:coverage": "jest --coverage --collectCoverageFrom=src/**/*.{ts,tsx}",
-    "test:ci": "jest --ci --collectCoverage=true --coverageReporters=lcov -w 1",
+    "test:ci": "jest --ci --runInBand --collectCoverage=true --coverageReporters=lcov",
     "build:prod": "rm -rf dist && NODE_ENV=production webpack --output-file index.js",
     "build:dev": "rm -rf tmp && mkdir tmp && cp ./package-dev.json ./tmp/package.json && tsc -w --outDir ./tmp"
   },
