@@ -2,6 +2,7 @@ import {DbService} from '../../db';
 import {ContentEntry} from '../db/schema';
 import {ContentSpaceUsageSummaryResponse, MimeType, Visibility} from '..';
 import {Observable} from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export class ContentStorageHandler {
     constructor(private dbService: DbService) {
@@ -12,9 +13,9 @@ export class ContentStorageHandler {
                       FROM ${ContentEntry.TABLE_NAME}
                       WHERE ${ContentEntry.COLUMN_NAME_VISIBILITY} = '${Visibility.DEFAULT.valueOf()}'
                       AND  ${ContentEntry.COLUMN_NAME_PATH} LIKE '${path.replace('file://', '')}%'`;
-        return this.dbService.execute(query).map((result) => {
+        return this.dbService.execute(query).pipe(map((result) => {
             return result[0]['total_size'] || 0;
-        });
+        }));
     }
 
     public async getContentUsageSummary(paths: string[]): Promise<ContentSpaceUsageSummaryResponse[]> {

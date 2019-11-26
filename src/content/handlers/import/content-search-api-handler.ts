@@ -2,6 +2,7 @@ import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../../
 import {ContentServiceConfig, SearchResponse} from '../..';
 import {Observable} from 'rxjs';
 import {SearchRequest} from '../../def/search-request';
+import { map } from 'rxjs/operators';
 
 export class ContentSearchApiHandler implements ApiRequestHandler<SearchRequest, SearchResponse> {
     private readonly SEARCH_ENDPOINT = '/search';
@@ -22,9 +23,9 @@ export class ContentSearchApiHandler implements ApiRequestHandler<SearchRequest,
             .withBody({request})
             .build();
 
-        return this.apiService.fetch<SearchResponse>(apiRequest).map((success) => {
+        return this.apiService.fetch<SearchResponse>(apiRequest).pipe(map((success) => {
             return success.body;
-        });
+        }));
     }
 
 }

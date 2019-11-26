@@ -358,7 +358,7 @@ export class SearchContentHandler {
         telemetryInteractRequest.objType = contentType;
         telemetryInteractRequest.objVer = contentVersion;
         telemetryInteractRequest.rollup = contentImport.rollUp;
-        telemetryInteractRequest.correlationData = contentImport.correlationData
+        telemetryInteractRequest.correlationData = contentImport.correlationData;
         return this.telemetryService.interact(telemetryInteractRequest).toPromise();
     }
 

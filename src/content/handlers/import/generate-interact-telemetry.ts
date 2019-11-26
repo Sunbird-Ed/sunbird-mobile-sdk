@@ -2,6 +2,7 @@ import {InteractType, TelemetryInteractRequest, TelemetryService} from '../../..
 import {ImportContentContext} from '../..';
 import {Response} from '../../../api';
 import {ContentUtil} from '../../util/content-util';
+import { map } from 'rxjs/operators';
 
 export class GenerateInteractTelemetry {
 
@@ -26,9 +27,9 @@ export class GenerateInteractTelemetry {
 
         const response: Response = new Response();
         response.body = importContext;
-        return this.telemetryService.interact(telemetryInteractRequest).map(() => {
+        return this.telemetryService.interact(telemetryInteractRequest).pipe(map(() => {
             return response;
-        }).toPromise();
+        })).toPromise();
     }
 
 }

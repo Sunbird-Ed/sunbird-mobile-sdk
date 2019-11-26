@@ -4,11 +4,10 @@ import {Response} from '../../../api';
 import {DbService} from '../../../db';
 import {ContentEntry} from '../../db/schema';
 import {Observable} from 'rxjs';
-import {ContentUtil} from '../../util/content-util';
-import Queue from 'typescript-collections/dist/lib/Queue';
 import {ArrayUtil} from '../../../util/array-util';
 import {ContentKeys} from '../../../preference-keys';
 import {SharedPreferences} from '../../../util/shared-preferences';
+import { tap, mergeMap } from 'rxjs/operators';
 
 export class UpdateSizeOnDevice {
 
@@ -29,11 +28,11 @@ export class UpdateSizeOnDevice {
     updateAllRootContentSize(): Observable<any> {
         const query = `SELECT * FROM ${ContentEntry.TABLE_NAME} WHERE ${ContentEntry.COLUMN_NAME_REF_COUNT} > 0
         AND ${ContentEntry.COLUMN_NAME_VISIBILITY} = '${Visibility.DEFAULT.valueOf()}'`;
-        return this.dbService.execute(query)
-        .do(async () =>
+        return this.dbService.execute(query).pipe(
+        tap(async () =>
             this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, false).toPromise()
-        )
-        .mergeMap(async (rootContentsInDb: ContentEntry.SchemaMap[]) => {
+        ),
+        mergeMap(async (rootContentsInDb: ContentEntry.SchemaMap[]) => {
             const updateContentModels: ContentEntry.SchemaMap[] = [];
 
             await Promise.all(rootContentsInDb.map(async (item) => {
@@ -49,9 +48,10 @@ export class UpdateSizeOnDevice {
                 }
             }));
             this.updateInDb(updateContentModels);
-        }).do(async () =>
+        }),
+        tap(async () =>
             this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, true).toPromise()
-        );
+        ));
     }
 
     private async getSizeOnDevice(node): Promise<number> {
@@ -104,11 +104,11 @@ export class UpdateSizeOnDevice {
     private updateTextBookSize(rootContentId: string) {
         console.log('in updateAllRootContentSize');
         const query = `SELECT * FROM ${ContentEntry.TABLE_NAME} WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER} == ${rootContentId}`;
-        return this.dbService.execute(query)
-        .do(async () =>
+        return this.dbService.execute(query).pipe(
+        tap(async () =>
             this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, false).toPromise()
-        )
-        .mergeMap(async (rootContentsInDb: ContentEntry.SchemaMap[]) => {
+        ),
+        mergeMap(async (rootContentsInDb: ContentEntry.SchemaMap[]) => {
             const updateContentModels: ContentEntry.SchemaMap[] = [];
             await Promise.all(rootContentsInDb.map(async (item) => {
                 let sizeOnDevice = await this.getSizeOnDevice(item);
@@ -123,9 +123,10 @@ export class UpdateSizeOnDevice {
                 }
             }));
             this.updateInDb(updateContentModels);
-        }).do(async () =>
+        }),
+        tap(async () =>
             this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, true).toPromise()
-        );
+        ));
     }
 
 }

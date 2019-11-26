@@ -7,6 +7,7 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {ContentKeys} from '../../preference-keys';
 import {ArrayUtil} from '../../util/array-util';
 import {FileUtil} from '../../util/file/util/file-util';
+import { map } from 'rxjs/operators';
 
 export class DeleteContentHandler {
 
@@ -140,7 +141,7 @@ export class DeleteContentHandler {
                     modelJson: contentInDb,
                     selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
                     selectionArgs: [contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]]
-                }).map(v => v > 0).toPromise();
+                }).pipe(map(v => v > 0)).toPromise();
             } else {
                 const fileMap: { [key: string]: any } = {};
                 fileMap['identifier'] = contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER];
