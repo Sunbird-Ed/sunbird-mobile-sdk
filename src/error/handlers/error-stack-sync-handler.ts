@@ -1,14 +1,15 @@
-import {Observable} from 'rxjs';
+import {Observable, of, throwError, EMPTY} from 'rxjs';
 import {ErrorStackEntry} from '../db/schema';
 import {ApiService, HttpRequestType, Request} from '../../api';
 import {DbService} from '../../db';
 import {ErrorLoggerConfig} from '../config/error-logger-config';
-import _ID = ErrorStackEntry._ID;
 import {NetworkInfoService, NetworkStatus} from '../../util/network';
 import {ErrorStackMapper} from '../util/error-stack-mapper';
 import {ErrorStack} from '../def/error-stack';
 import {DeviceSpec} from '../../util/device';
 import {ErrorStackSyncRequestDecorator} from './error-stack-sync-request-decorator';
+import {catchError, expand, map, mapTo, mergeMap} from 'rxjs/operators';
+import _ID = ErrorStackEntry._ID;
 
 interface ErrorLoggerRequest {
     pdata: ProducerData;
@@ -40,23 +41,26 @@ export class ErrorStackSyncHandler {
 
     handle(errorSyncBandwidth: number): Observable<undefined> {
         return this.processBatch(errorSyncBandwidth)
-            .expand((processedCount) => {
-                console.log('processedCount', processedCount);
-                if (processedCount > 0) {
-                    return this.processBatch(errorSyncBandwidth);
-                }
+            .pipe(
+                expand(processedCount => {
+                    if (processedCount > 0) {
+                        return this.processBatch(errorSyncBandwidth);
+                    }
 
-                return Observable.empty();
-            })
-            .mapTo(undefined)
-            .catch(() => Observable.of(undefined));
+                    return EMPTY;
+                }),
+                mapTo(undefined),
+                catchError(() => of(undefined))
+            );
     }
 
     private processBatch(errorSyncBandwidth: number): Observable<number> {
         return this.getErrorStackBatch(errorSyncBandwidth)
-            .mergeMap((errorStackList) => this.sync(errorStackList))
-            .mergeMap((errorStackList) => this.clearLogs(errorStackList))
-            .map((errorStackList) => errorStackList.length);
+            .pipe(
+                mergeMap((errorStackList) => this.sync(errorStackList)),
+                mergeMap((errorStackList) => this.clearLogs(errorStackList)),
+                map((errorStackList) => errorStackList.length)
+            );
     }
 
     private getErrorStackBatch(errorSyncBandwidth: number): Observable<ErrorStackEntry.SchemaMap[]> {
@@ -68,47 +72,53 @@ export class ErrorStackSyncHandler {
 
     private clearLogs(errorStackList: ErrorStackEntry.SchemaMap[]): Observable<ErrorStackEntry.SchemaMap[]> {
         if (!errorStackList.length) {
-            return Observable.of(errorStackList);
+            return of(errorStackList);
         }
 
         return this.dbService.execute(`
                 DELETE FROM ${ErrorStackEntry.TABLE_NAME}
                 WHERE ${ErrorStackEntry._ID} IN (${errorStackList.map((e) => e[_ID]).join(',')})
             `)
-            .mapTo(errorStackList);
+            .pipe(
+                mapTo(errorStackList)
+            );
     }
 
     private sync(errorStackList: ErrorStackEntry.SchemaMap[]): Observable<ErrorStackEntry.SchemaMap[]> {
         if (!errorStackList.length) {
-            return Observable.of(errorStackList);
+            return of(errorStackList);
         }
 
         return this.networkInfoService.networkStatus$
-            .mergeMap((status) => {
-                if (status === NetworkStatus.OFFLINE) {
-                    return Observable.throw(new Error('Fake Error'));
-                }
+            .pipe(
+                mergeMap((status) => {
+                    if (status === NetworkStatus.OFFLINE) {
+                        return throwError(new Error('Fake Error'));
+                    }
 
-                const request = {
-                    pdata: undefined,
-                    context: undefined,
-                    logs: errorStackList.map(e => ErrorStackMapper.mapErrorSatckDBEntryToErrorStack(e))
-                };
+                    const request = {
+                        pdata: undefined,
+                        context: undefined,
+                        logs: errorStackList.map(e => ErrorStackMapper.mapErrorSatckDBEntryToErrorStack(e))
+                    };
 
-                return this.errorStackSyncRequestDecorator.decorate(request)
-                    .mergeMap(() => {
-                        const apiRequest: Request = new Request.Builder()
-                            .withType(HttpRequestType.POST)
-                            .withPath(this.errorLoggerConfig.errorLoggerApiPath)
-                            .withApiToken(true)
-                            .withBody({
-                                request
+                    return this.errorStackSyncRequestDecorator.decorate(request)
+                        .pipe(
+                            mergeMap(() => {
+                                const apiRequest: Request = new Request.Builder()
+                                    .withType(HttpRequestType.POST)
+                                    .withPath(this.errorLoggerConfig.errorLoggerApiPath)
+                                    .withApiToken(true)
+                                    .withBody({
+                                        request
+                                    })
+                                    .build();
+
+                                return this.apiService.fetch(apiRequest);
                             })
-                            .build();
-
-                        return this.apiService.fetch(apiRequest);
-                    });
-            })
-            .mapTo(errorStackList);
+                        );
+                }),
+                mapTo(errorStackList)
+            );
     }
 }

@@ -1,12 +1,13 @@
 import {ApiConfig, ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {DeviceRegisterConfig, DeviceRegisterRequest, DeviceRegisterResponse} from '..';
-import {Observable} from 'rxjs';
+import {Observable, zip} from 'rxjs';
 import {DeviceInfo, DeviceSpec} from '../../util/device';
 import {AppInfo} from '../../util/app';
 import {SdkConfig} from '../../sdk-config';
 import {FrameworkService} from '../../framework';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {DeviceRegister} from '../../preference-keys';
+import {map, mergeMap} from 'rxjs/operators';
 
 export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRequest, DeviceRegisterResponse> {
 
@@ -32,51 +33,56 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
     }
 
     private registerDevice(request?: DeviceRegisterRequest): Observable<DeviceRegisterResponse> {
-        return Observable.zip(
+        return zip(
             this.deviceInfo.getDeviceSpec(),
             this.frameworkService.getActiveChannelId(),
             this.appInfoService.getFirstAccessTimestamp(),
             this.sharedPreferences.getString(DeviceRegister.DEVICE_LOCATION)
-        ).mergeMap((results: any) => {
-            const deviceSpec: DeviceSpec = results[0];
-            const activeChannelId: string = results[1];
-            const firstAccessTimestamp = results[2];
-            const deviceLocation = results[3];
+        )
+            .pipe(
+                mergeMap((results: any) => {
+                    const deviceSpec: DeviceSpec = results[0];
+                    const activeChannelId: string = results[1];
+                    const firstAccessTimestamp = results[2];
+                    const deviceLocation = results[3];
 
-            if (request) {
-                request.dspec = deviceSpec;
-                request.channel = activeChannelId;
-                request.fcmToken = this.deviceRegisterConfig.fcmToken!;
-                request.producer = this.apiConfig.api_authentication.producerId;
-                request.first_access = Number(firstAccessTimestamp);
-            } else {
-                request = {
-                    dspec: deviceSpec,
-                    channel: activeChannelId,
-                    fcmToken: this.deviceRegisterConfig.fcmToken!,
-                    producer: this.apiConfig.api_authentication.producerId,
-                    first_access: Number(firstAccessTimestamp)
-                };
-            }
+                    if (request) {
+                        request.dspec = deviceSpec;
+                        request.channel = activeChannelId;
+                        request.fcmToken = this.deviceRegisterConfig.fcmToken!;
+                        request.producer = this.apiConfig.api_authentication.producerId;
+                        request.first_access = Number(firstAccessTimestamp);
+                    } else {
+                        request = {
+                            dspec: deviceSpec,
+                            channel: activeChannelId,
+                            fcmToken: this.deviceRegisterConfig.fcmToken!,
+                            producer: this.apiConfig.api_authentication.producerId,
+                            first_access: Number(firstAccessTimestamp)
+                        };
+                    }
 
-            if (!request.userDeclaredLocation && deviceLocation) {
-                request.userDeclaredLocation = JSON.parse(deviceLocation);
-            }
+                    if (!request.userDeclaredLocation && deviceLocation) {
+                        request.userDeclaredLocation = JSON.parse(deviceLocation);
+                    }
 
-            const apiRequest: Request = new Request.Builder()
-                .withType(HttpRequestType.POST)
-                .withHost(this.deviceRegisterConfig!.host)
-                .withPath(this.deviceRegisterConfig!.apiPath + DeviceRegisterHandler.DEVICE_REGISTER_ENDPOINT
-                    + '/' + this.deviceInfo!.getDeviceID())
-                .withApiToken(true)
-                .withBody({request: request})
-                .build();
+                    const apiRequest: Request = new Request.Builder()
+                        .withType(HttpRequestType.POST)
+                        .withHost(this.deviceRegisterConfig!.host)
+                        .withPath(this.deviceRegisterConfig!.apiPath + DeviceRegisterHandler.DEVICE_REGISTER_ENDPOINT
+                            + '/' + this.deviceInfo!.getDeviceID())
+                        .withApiToken(true)
+                        .withBody({request: request})
+                        .build();
 
-            return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
-                .map((res) => {
-                    return res.body;
-                });
-        });
+                    return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
+                        .pipe(
+                            map((res) => {
+                                return res.body;
+                            })
+                        );
+                })
+            );
     }
 
 }
