@@ -1,5 +1,5 @@
 import {HttpClient, HttpSerializer, NetworkError, Response, ResponseCode, HttpServerError} from '..';
-import {Observable} from 'rxjs';
+import {Observable, from} from 'rxjs';
 import * as axiosDefault from 'axios';
 import * as qs from 'qs';
 
@@ -53,7 +53,7 @@ export class HttpClientAxios implements HttpClient {
     }
 
     private handleResponse(promise: Promise<any>): Observable<Response> {
-        return Observable.fromPromise(
+        return from(
             promise.then(async (axiosResponse) => {
                 const sunbirdResponse = new Response<any>();
                 sunbirdResponse.responseCode = axiosResponse.status;

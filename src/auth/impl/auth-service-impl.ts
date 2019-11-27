@@ -1,7 +1,7 @@
 import {AuthService, OAuthSession, SessionProvider} from '..';
 import {ApiConfig, ApiService} from '../../api';
 import {AuthUtil} from '../util/auth-util';
-import {Observable} from 'rxjs';
+import {Observable, from} from 'rxjs';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {EventsBusService} from '../../events-bus';
 import { inject, injectable } from 'inversify';
@@ -25,21 +25,21 @@ export class AuthServiceImpl implements AuthService {
     }
 
     setSession(sessionProvider: SessionProvider): Observable<undefined> {
-        return Observable.fromPromise(sessionProvider.provide().then((sessionData) => {
+        return from(sessionProvider.provide().then((sessionData) => {
             this.authUtil.startSession(sessionData);
             return undefined;
         }));
     }
 
     getSession(): Observable<OAuthSession | undefined> {
-        return Observable.fromPromise(this.authUtil.getSessionData());
+        return from(this.authUtil.getSessionData());
     }
 
     resignSession(): Observable<void> {
-        return Observable.fromPromise(this.authUtil.endSession());
+        return from(this.authUtil.endSession());
     }
 
     refreshSession(): Observable<void> {
-        return Observable.fromPromise(this.authUtil.refreshSession());
+        return from(this.authUtil.refreshSession());
     }
 }

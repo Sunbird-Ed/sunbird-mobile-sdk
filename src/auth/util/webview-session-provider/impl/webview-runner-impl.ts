@@ -1,8 +1,9 @@
 import {WebviewRunner} from '../def/webview-runner';
 import * as qs from 'qs';
-import {Observable} from 'rxjs';
+import {zip, race} from 'rxjs';
 import {NoInappbrowserSessionAssertionFailError} from '../errors/no-inappbrowser-session-assertion-fail-error';
 import {ParamNotCapturedError} from '../errors/param-not-captured-error';
+import { take, mapTo } from 'rxjs/operators';
 
 export class WebviewRunnerImpl implements WebviewRunner {
     private extras: {[key: string]: string} = {};
@@ -66,15 +67,15 @@ export class WebviewRunnerImpl implements WebviewRunner {
     }
 
     any<T>(...args: Promise<T>[]): Promise<T> {
-        return Observable.race(
+        return race(
             ...args
-        ).take(1).toPromise();
+        ).pipe(take(1)).toPromise();
     }
 
     all(...args: Promise<any>[]): Promise<void> {
-        return Observable.zip(
+        return zip(
             ...args
-        ).take(1).mapTo(undefined).toPromise();
+        ).pipe(take(1), mapTo(undefined)).toPromise();
     }
 
     launchCustomTab({host, path, params}: { host: string; path: string; params: { [p: string]: string } }): Promise<void> {

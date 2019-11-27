@@ -2,7 +2,7 @@ import {ApiConfig} from './config/api-config';
 import {Request} from './def/request';
 import {Response} from './def/response';
 import {FetchHandler} from './handlers/fetch-handler';
-import {Observable} from 'rxjs';
+import {Observable, throwError, of} from 'rxjs';
 import {ApiService} from './def/api-service';
 import {DeviceInfo} from '../util/device';
 import {SharedPreferences} from '../util/shared-preferences';
@@ -16,6 +16,7 @@ import {ErrorEventType, EventNamespace, EventsBusEvent, EventsBusService, HttpCl
 import {HttpServerError} from './errors/http-server-error';
 import {EmitRequest} from '../events-bus/def/emit-request';
 import {HttpClientError} from './errors/http-client-error';
+import {catchError, mergeMap} from 'rxjs/operators';
 
 @injectable()
 export class ApiServiceImpl implements ApiService {
@@ -34,18 +35,19 @@ export class ApiServiceImpl implements ApiService {
     }
 
     onInit(): Observable<undefined> {
-        return this.sharedPreferences.getString(ApiKeys.KEY_API_TOKEN)
-            .mergeMap((apiToken) => {
+        return this.sharedPreferences.getString(ApiKeys.KEY_API_TOKEN).pipe(
+            mergeMap((apiToken) => {
                 if (!apiToken) {
-                    return new ApiTokenHandler(this.apiConfig, this, this.deviceInfo).refreshAuthToken()
-                        .mergeMap((bearerToken) =>
+                    return new ApiTokenHandler(this.apiConfig, this, this.deviceInfo).refreshAuthToken().pipe(
+                        mergeMap((bearerToken) =>
                             this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken)
-                        )
-                        .catch(() => Observable.of(undefined));
+                        ),
+                        catchError(() => of(undefined))
+            )       ;
                 }
 
-                return Observable.of(undefined);
-            });
+                return of(undefined);
+            }));
     }
 
     public fetch<T = any>(request: Request): Observable<Response<T>> {
@@ -56,8 +58,8 @@ export class ApiServiceImpl implements ApiService {
             this.sharedPreferences,
             this.defaultApiAuthenticators,
             this.defaultSessionAuthenticators
-        ).doFetch()
-            .catch((e) => {
+        ).doFetch().pipe(
+            catchError((e) => {
                 if (e instanceof HttpServerError) {
                     this.eventsBusService.emit({
                         namespace: EventNamespace.ERROR,
@@ -76,8 +78,8 @@ export class ApiServiceImpl implements ApiService {
                     } as EmitRequest<EventsBusEvent>);
                 }
 
-                return Observable.throwError(e);
-            });
+                return throwError(e);
+            }));
     }
 
     setDefaultApiAuthenticators(authenticators: Authenticator[]): void {

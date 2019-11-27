@@ -1,7 +1,8 @@
 import {ApiConfig, ApiService, HttpRequestType, JWTokenType, JWTUtil, Request} from '..';
-import {Observable} from 'rxjs';
+import {Observable, from} from 'rxjs';
 import * as dayjs from 'dayjs';
 import {DeviceInfo} from '../../util/device';
+import { map } from 'rxjs/operators';
 
 export class ApiTokenHandler {
 
@@ -16,11 +17,11 @@ export class ApiTokenHandler {
     }
 
     public refreshAuthToken(): Observable<string> {
-        return Observable.fromPromise(
+        return from(
             this.getMobileDeviceConsumerSecret()
-        ).map((mobileDeviceConsumerSecret: string) => {
+        ).pipe(map((mobileDeviceConsumerSecret: string) => {
             return JWTUtil.createJWToken({iss: this.getMobileDeviceConsumerKey()}, mobileDeviceConsumerSecret, JWTokenType.HS256);
-        });
+        }));
     }
 
     private getMobileDeviceConsumerKey() {

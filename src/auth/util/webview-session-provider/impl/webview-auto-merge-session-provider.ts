@@ -5,6 +5,7 @@ import {WebviewBaseSessionProvider} from './webview-base-session-provider';
 import {SunbirdSdk} from '../../../../sdk';
 import {HttpRequestType, Request} from '../../../../api';
 import {EventNamespace, EventsBusService} from '../../../../events-bus';
+import { mapTo } from 'rxjs/operators';
 
 export class WebviewAutoMergeSessionProvider extends WebviewBaseSessionProvider {
     constructor(
@@ -77,7 +78,7 @@ export class WebviewAutoMergeSessionProvider extends WebviewBaseSessionProvider 
             })
             .build();
 
-        return this.apiService.fetch(apiRequest).mapTo(undefined).toPromise().then(() => {
+        return this.apiService.fetch(apiRequest).pipe(mapTo(undefined)).toPromise().then(() => {
             this.eventsBusService.emit({
                 namespace: EventNamespace.AUTH,
                 event: {
