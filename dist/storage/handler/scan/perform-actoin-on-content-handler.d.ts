@@ -1,6 +1,6 @@
 import { ScanContentContext } from '../../def/scan-requests';
-import { Observable } from 'rxjs';
 import { StorageHandler } from '../storage-handler';
+import { Observable } from 'rxjs';
 export declare class PerformActoinOnContentHandler {
     private storageHandler;
     constructor(storageHandler: StorageHandler);

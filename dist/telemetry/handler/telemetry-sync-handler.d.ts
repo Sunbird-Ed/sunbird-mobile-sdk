@@ -1,6 +1,5 @@
 import { ApiRequestHandler, ApiService } from '../../api';
 import { TelemetrySyncStat } from '..';
-import { Observable } from 'rxjs';
 import { KeyValueStore } from '../../key-value-store';
 import { SdkConfig } from '../../sdk-config';
 import { DeviceInfo } from '../../util/device';
@@ -8,6 +7,7 @@ import { DbService } from '../../db';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { AppInfo } from '../../util/app';
 import { DeviceRegisterService } from '../../device-register';
+import { Observable } from 'rxjs';
 export declare class TelemetrySyncHandler implements ApiRequestHandler<boolean, TelemetrySyncStat> {
     private dbService;
     private sdkConfig;

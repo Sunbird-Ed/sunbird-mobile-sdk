@@ -1,5 +1,4 @@
 import { ContentCache, LearnerAssessmentSummary, ReportDetailPerUser, SummarizerService, SummaryRequest } from '..';
-import { Observable } from 'rxjs';
 import { DbService } from '../../db';
 import { SunbirdTelemetry } from '../../telemetry';
 import { EventsBusService } from '../../events-bus';
@@ -9,6 +8,7 @@ import { CourseService } from '../../course';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { ProfileService } from '../../profile';
 import { EventObserver } from '../../events-bus/def/event-observer';
+import { Observable } from 'rxjs';
 import Telemetry = SunbirdTelemetry.Telemetry;
 export declare class SummarizerServiceImpl implements SummarizerService, EventObserver<TelemetryEvent> {
     private dbService;
