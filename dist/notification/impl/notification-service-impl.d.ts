@@ -1,8 +1,8 @@
-import { NotificationService } from '../def/notification-service';
-import { Observable } from 'rxjs';
-import { Notification, NotificationFilterCriteria } from '../def/requests';
+import { NotificationService } from '..';
+import { Notification, NotificationFilterCriteria } from '..';
 import { DbService } from '../../db';
 import { SharedPreferences } from '../../util/shared-preferences';
+import { Observable } from 'rxjs';
 export declare class NotificationServiceImpl implements NotificationService {
     private dbService;
     private sharedPreferences;

@@ -1,12 +1,12 @@
 import { ExistingContentAction, TransferContentsRequest } from '..';
 import { Content } from '../../content';
-import { Observable } from 'rxjs';
 import { EventsBusService } from '../../events-bus';
 import { ContentEntry } from '../../content/db/schema';
 import { FileService } from '../../util/file/def/file-service';
 import { DbService } from '../../db';
 import { SdkConfig } from '../../sdk-config';
 import { DeviceInfo } from '../../util/device';
+import { Observable } from 'rxjs';
 export declare enum MoveContentStatus {
     SAME_VERSION_IN_BOTH = "SAME_VERSION_IN_BOTH",
     HIGHER_VERSION_IN_DESTINATION = "HIGHER_VERSION_IN_DESTINATION",

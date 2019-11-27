@@ -13,6 +13,7 @@ import {SdkConfig} from '../../sdk-config';
 import {FrameworkKeys} from '../../preference-keys';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
+import {catchError, map, mapTo, mergeMap, tap} from 'rxjs/operators';
 
 @injectable()
 export class FrameworkServiceImpl implements FrameworkService {
@@ -34,29 +35,36 @@ export class FrameworkServiceImpl implements FrameworkService {
     }
 
     preInit(): Observable<undefined> {
-        return this.getActiveChannelId()
-            .do((activeChannelId) => this._activeChannelId = activeChannelId)
-            .mapTo(undefined)
-            .catch((e) => {
+        return this.getActiveChannelId().pipe(
+            tap((activeChannelId) => this._activeChannelId = activeChannelId),
+            mapTo(undefined),
+            catchError((e) => {
                 if (e instanceof NoActiveChannelFoundError) {
                     return this.setActiveChannelId(this.sdkConfig.apiConfig.api_authentication.channelId);
                 }
 
                 throw e;
-            });
+            })
+        );
     }
 
     getDefaultChannelId(): Observable<string> {
-        return this.systemSettingsService.getSystemSettings({id: this.sdkConfig.frameworkServiceConfig.systemSettingsDefaultChannelIdKey})
-            .map((r) => r.value);
+        return this.systemSettingsService.getSystemSettings({
+            id: this.sdkConfig.frameworkServiceConfig.systemSettingsDefaultChannelIdKey
+        }).pipe(
+            map((r) => r.value)
+        );
     }
 
     getDefaultChannelDetails(): Observable<Channel> {
-        return this.systemSettingsService.getSystemSettings({id: this.sdkConfig.frameworkServiceConfig.systemSettingsDefaultChannelIdKey})
-            .map((r) => r.value)
-            .mergeMap((channelId: string) => {
+        return this.systemSettingsService.getSystemSettings({
+            id: this.sdkConfig.frameworkServiceConfig.systemSettingsDefaultChannelIdKey
+        }).pipe(
+            map((r) => r.value),
+            mergeMap((channelId: string) => {
                 return this.getChannelDetails({channelId: channelId});
-            });
+            })
+        );
     }
 
     getChannelDetails(request: ChannelDetailsRequest): Observable<Channel> {
@@ -86,20 +94,23 @@ export class FrameworkServiceImpl implements FrameworkService {
             .withApiToken(true)
             .build();
 
-        return this.apiService.fetch<{ result: { response: Organization<T> } }>(apiRequest).map((response) => {
-            return response.body.result.response;
-        });
+        return this.apiService.fetch<{ result: { response: Organization<T> } }>(apiRequest).pipe(
+            map((response) => {
+                return response.body.result.response;
+            })
+        );
     }
 
     getActiveChannelId(): Observable<string> {
-        return this.sharedPreferences.getString(FrameworkServiceImpl.KEY_ACTIVE_CHANNEL_ID)
-            .map((channelId: string | undefined) => {
+        return this.sharedPreferences.getString(FrameworkServiceImpl.KEY_ACTIVE_CHANNEL_ID).pipe(
+            map((channelId: string | undefined) => {
                 if (!channelId) {
                     throw new NoActiveChannelFoundError('No Active channel ID set in preferences');
                 }
 
                 return channelId;
-            });
+            })
+        );
     }
 
     setActiveChannelId(channelId: string): Observable<undefined> {

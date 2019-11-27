@@ -1,9 +1,9 @@
-import { Observable } from 'rxjs';
 import { FileService } from '../../../util/file/def/file-service';
 import { TransferContentContext } from '../transfer-content-handler';
 import { DbService } from '../../../db';
 import { AppConfig } from '../../../api/config/app-config';
 import { DeviceInfo } from '../../../util/device';
+import { Observable } from 'rxjs';
 export declare class StoreDestinationContentInDb {
     private appConfig;
     private fileService;

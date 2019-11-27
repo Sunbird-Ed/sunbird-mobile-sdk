@@ -53,7 +53,7 @@ export class ContentMapper {
 
     }
 
-    public static mapContentDBEntryToContent(contentEntry: ContentEntry.SchemaMap): Content {
+    public static mapContentDBEntryToContent(contentEntry: ContentEntry.SchemaMap, shouldConvertBasePath?: boolean): Content {
         let contentData;
         const serverInfo = contentEntry[ContentEntry.COLUMN_NAME_SERVER_DATA];
         const localInfo = contentEntry[ContentEntry.COLUMN_NAME_LOCAL_DATA];
@@ -120,12 +120,13 @@ export class ContentMapper {
         const sizeOnDevice = Number(contentEntry[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]);
         const size = sizeOnDevice ? sizeOnDevice : Number(serverData ? serverData.size : 0 );
 
+        const basePath = contentEntry[ContentEntry.COLUMN_NAME_PATH]! || '';
         return {
             identifier: identifier,
             contentData: contentData,
             isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
             mimeType: mimeType,
-            basePath: contentEntry[ContentEntry.COLUMN_NAME_PATH]! || '',
+            basePath: !shouldConvertBasePath ? basePath :  '/_app_file_' + basePath   ,
             contentType: contentType,
             isAvailableLocally: ContentUtil.isAvailableLocally(contentEntry[ContentEntry.COLUMN_NAME_CONTENT_STATE]!),
             referenceCount: Number(contentEntry[ContentEntry.COLUMN_NAME_REF_COUNT]) || 0,
