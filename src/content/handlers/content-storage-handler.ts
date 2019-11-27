@@ -13,7 +13,7 @@ export class ContentStorageHandler {
                       WHERE ${ContentEntry.COLUMN_NAME_VISIBILITY} = '${Visibility.DEFAULT.valueOf()}'
                       AND  ${ContentEntry.COLUMN_NAME_PATH} LIKE '${path.replace('file://', '')}%'`;
         return this.dbService.execute(query).map((result) => {
-            return result[0]['total_size'];
+            return result[0]['total_size'] || 0;
         });
     }
 

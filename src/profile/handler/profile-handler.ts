@@ -1,7 +1,5 @@
-import {ProfileEntry} from '../db/schema';
-import {Profile, ProfileSource, ProfileType} from '..';
 import {ContentAccessEntry} from '../../content/db/schema';
-import {ContentAccess} from '../def/content-access';
+import {ContentAccess} from '..';
 
 export class ProfileHandler {
     public static mapDBEntryToContenetAccess(contentAccess: ContentAccessEntry.SchemaMap): ContentAccess {

@@ -3,7 +3,6 @@ import { CreateContentExportManifest } from './create-content-export-manifest';
 import { ImportNExportHandler } from '../import-n-export-handler';
 import { ContentEntry } from '../../db/schema';
 import { Observable } from 'rxjs';
-import moment = require('moment');
 
 declare var require;
 
@@ -23,10 +22,6 @@ describe('CreateContentExportManifest', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
-
-    // jest.mock('moment', () => () => ({
-    //     format: () => '2019–09–27T10:34:56+00:00'
-    //   }));
 
     it('should be create a instance of createContentExportManifest', () => {
         expect(createContentExportManifest).toBeTruthy();
@@ -53,7 +48,6 @@ describe('CreateContentExportManifest', () => {
         mockImportNExportHandler.populateItems = jest.fn(() => Observable.of([]));
         // act
         createContentExportManifest.execute(request).then(() => {
-        // expect(moment.format).toHaveBeenCalled();
         });
         // assert
     });

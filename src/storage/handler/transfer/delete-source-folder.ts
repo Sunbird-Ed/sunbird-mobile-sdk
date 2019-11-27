@@ -1,18 +1,18 @@
 import {MoveContentResponse, MoveContentStatus, TransferContentContext} from '../transfer-content-handler';
-import {Observable} from 'rxjs';
 import {ContentEntry} from '../../../content/db/schema';
-import {ExistingContentAction, StorageEventType, StorageTransferProgress} from '../../index';
-import {EventNamespace, EventsBusService} from '../../../events-bus';
+import {ExistingContentAction} from '../..';
+import {EventsBusService} from '../../../events-bus';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 import {ArrayUtil} from '../../../util/array-util';
+import {defer, Observable} from 'rxjs';
 
 export class DeleteSourceFolder {
     constructor(private eventsBusService: EventsBusService) {
     }
 
     execute(context: TransferContentContext): Observable<TransferContentContext> {
-        return Observable.defer(async () => {
+        return defer(async () => {
             for (let i = 0; i < context.contentsInSource!.length; i++) {
                 const content = context.contentsInSource![i];
                 const moveContentResponse = context.duplicateContents!.find((m: MoveContentResponse) =>

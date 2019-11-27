@@ -14,6 +14,7 @@ import {SharedPreferencesConfig} from './util/shared-preferences';
 import {PlayerConfig} from './player/def/response';
 import {EventsBusConfig} from './events-bus/config/events-bus-config';
 import {ErrorLoggerConfig} from './error/config/error-logger-config';
+import {FaqServiceConfig} from './faq';
 import {DeviceRegisterConfig} from './device-register';
 
 export interface SdkConfig {
@@ -25,6 +26,7 @@ export interface SdkConfig {
     courseServiceConfig: CourseServiceConfig;
     formServiceConfig: FormServiceConfig;
     frameworkServiceConfig: FrameworkServiceConfig;
+    faqServiceConfig: FaqServiceConfig;
     profileServiceConfig: ProfileServiceConfig;
     pageServiceConfig: PageServiceConfig;
     appConfig: AppConfig;

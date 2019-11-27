@@ -1,6 +1,5 @@
 import { DbService } from '../../db';
 import { Context, TelemetryAuditRequest, TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryExportResponse, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryInterruptRequest, TelemetryLogRequest, TelemetryService, TelemetryShareRequest, TelemetryStartRequest, TelemetryStat, TelemetrySyncStat } from '..';
-import { Observable } from 'rxjs';
 import { ProfileService } from '../../profile';
 import { GroupService } from '../../group';
 import { KeyValueStore } from '../../key-value-store';
@@ -11,10 +10,11 @@ import { FileService } from '../../util/file/def/file-service';
 import { FrameworkService } from '../../framework';
 import { NetworkInfoService } from '../../util/network';
 import { SdkConfig } from '../../sdk-config';
-import { ErrorLoggerService } from '../../util/error-stack';
+import { ErrorLoggerService } from '../../error';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { AppInfo } from '../../util/app';
 import { DeviceRegisterService } from '../../device-register';
+import { Observable } from 'rxjs';
 export declare class TelemetryServiceImpl implements TelemetryService {
     private dbService;
     private decorator;

@@ -1,13 +1,12 @@
 import {Response} from '../../../api';
 import {DbService} from '../../../db';
-import {ImportedMetadataEntry} from '../../../profile/db/schema';
+import {ImportedMetadataEntry} from '../../db/schema';
 import {
     ImportTelemetryContext,
     Item,
     ShareDirection,
     ShareItemType,
     ShareType,
-    TelemetryService,
     TelemetryShareRequest
 } from '../../../telemetry';
 import {TelemetryLogger} from '../../../telemetry/util/telemetry-logger';

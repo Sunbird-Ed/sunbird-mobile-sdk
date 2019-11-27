@@ -1,4 +1,5 @@
 export interface WebviewRunner {
+    resetInAppBrowserEventListeners(): any;
     launchWebview(args: {
         host: string;
         path: string;

@@ -1,17 +1,17 @@
-import {Observable} from 'rxjs';
 import {TransferContentContext} from '../transfer-content-handler';
 import {DbService} from '../../../db';
 import {ContentStorageHandler} from '../../../content/handlers/content-storage-handler';
 import {ContentSpaceUsageSummaryResponse} from '../../../content';
 import {ContentUtil} from '../../../content/util/content-util';
 import {LowMemoryError} from '../../errors/low-memory-error';
+import {defer, Observable} from 'rxjs';
 
 export class DeviceMemoryCheck {
     constructor(private dbService: DbService) {
     }
 
     execute(context: TransferContentContext): Observable<TransferContentContext> {
-        return Observable.defer(async () => {
+        return defer(async () => {
             const usableSpace = await this.getFreeUsableSpace(context.destinationFolder!);
             const storageHandler = new ContentStorageHandler(this.dbService);
             const contentStorageResponse: ContentSpaceUsageSummaryResponse[] = await storageHandler.getContentUsageSummary(

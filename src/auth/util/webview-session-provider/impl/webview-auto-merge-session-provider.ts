@@ -10,7 +10,7 @@ export class WebviewAutoMergeSessionProvider extends WebviewBaseSessionProvider 
     constructor(
         private autoMergeConfig: WebviewSessionProviderConfig,
         private webviewRunner: WebviewRunner,
-        private payload: string
+        private captured: {[key: string]: string}
     ) {
         super(
             SunbirdSdk.instance.sdkConfig.apiConfig,
@@ -22,9 +22,11 @@ export class WebviewAutoMergeSessionProvider extends WebviewBaseSessionProvider 
     public async provide(): Promise<OAuthSession> {
         const dsl = this.webviewRunner;
 
-        this.autoMergeConfig.target.params.push({
-            key: 'payload',
-            value: this.payload
+        Object.keys(this.captured).forEach(p => {
+            this.autoMergeConfig.target.params.push({
+                key: p,
+                value: this.captured[p]
+            });
         });
 
         return dsl.redirectTo({
@@ -40,7 +42,7 @@ export class WebviewAutoMergeSessionProvider extends WebviewBaseSessionProvider 
                     switch (forCase.type) {
                         case 'password': acc.push(
                             this.buildPasswordSessionProvider(dsl, forCase).then((session) =>
-                                    this.performAutoMerge({ payload: this.payload, session  })
+                                    this.performAutoMerge({ payload: this.captured['payload'], session  })
                                 )
                         ); break;
 
@@ -51,7 +53,7 @@ export class WebviewAutoMergeSessionProvider extends WebviewBaseSessionProvider 
                         case 'google': acc.push(
                             this.buildGoogleSessionProvider(dsl, forCase)
                                 .then((session) =>
-                                    this.performAutoMerge({ payload: this.payload, session  })
+                                    this.performAutoMerge({ payload: this.captured['payload'], session  })
                                 )
                         ); break;
                     }

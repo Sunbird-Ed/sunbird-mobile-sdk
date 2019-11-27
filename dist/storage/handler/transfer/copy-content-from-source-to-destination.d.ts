@@ -1,6 +1,6 @@
 import { TransferContentContext } from '../transfer-content-handler';
-import { Observable } from 'rxjs';
 import { EventsBusService } from '../../../events-bus';
+import { Observable } from 'rxjs';
 export declare class CopyContentFromSourceToDestination {
     private eventsBusService;
     private contentsTransferred;

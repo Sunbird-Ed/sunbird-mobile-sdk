@@ -19,7 +19,7 @@ export class WebviewRunnerImpl implements WebviewRunner {
         return `${host}${path}?${qs.stringify(params)}`;
     }
 
-    private resetInAppBrowserEventListeners() {
+    public resetInAppBrowserEventListeners() {
         if (!this.inAppBrowser) {
             throw new NoInappbrowserSessionAssertionFailError('InAppBrowser Session not found when resetInAppBrowserEventListeners()');
         }

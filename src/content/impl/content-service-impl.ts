@@ -471,25 +471,25 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         }));
     }
 
-    nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {
+    nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string, shouldConvertBasePath?: boolean): Observable<Content> {
         const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
                 const nextContentIdentifier = childContentHandler.getNextContentIdentifier(hierarchyInfo,
                     currentContentIdentifier, contentKeyList);
-                return childContentHandler.getContentFromDB(hierarchyInfo, nextContentIdentifier);
+                return childContentHandler.getContentFromDB(hierarchyInfo, nextContentIdentifier, shouldConvertBasePath);
             });
     }
 
-    prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content> {
+    prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string, shouldConvertBasePath?: boolean): Observable<Content> {
         const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier))
             .mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
                 const previousContentIdentifier = childContentHandler.getPreviousContentIdentifier(hierarchyInfo,
                     currentContentIdentifier, contentKeyList);
-                return childContentHandler.getContentFromDB(hierarchyInfo, previousContentIdentifier);
+                return childContentHandler.getContentFromDB(hierarchyInfo, previousContentIdentifier, shouldConvertBasePath);
             });
     }
 
@@ -498,7 +498,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return Observable.of(relevantContentResponse)
             .mergeMap((content) => {
                 if (request.next) {
-                    return this.nextContent(request.hierarchyInfo!, request.contentIdentifier!).map((nextContet: Content) => {
+                    return this.nextContent(request.hierarchyInfo!, request.contentIdentifier!, request.shouldConvertBasePath).map((nextContet: Content) => {
                         relevantContentResponse.nextContent = nextContet;
                         return relevantContentResponse;
                     });
@@ -508,7 +508,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             })
             .mergeMap((content) => {
                 if (request.prev) {
-                    return this.prevContent(request.hierarchyInfo!, request.contentIdentifier!).map((prevContent: Content) => {
+                    return this.prevContent(request.hierarchyInfo!, request.contentIdentifier!, request.shouldConvertBasePath).map((prevContent: Content) => {
                         relevantContentResponse.previousContent = prevContent;
                         return relevantContentResponse;
                     });

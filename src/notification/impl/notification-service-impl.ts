@@ -1,14 +1,15 @@
 import {inject, injectable} from 'inversify';
-import {NotificationService} from '../def/notification-service';
-import {Observable} from 'rxjs';
-import {Notification, NotificationFilterCriteria} from '../def/requests';
+import {NotificationService} from '..';
+import {Notification, NotificationFilterCriteria} from '..';
 import {InjectionTokens} from '../../injection-tokens';
 import {DbService} from '../../db';
 import {NotificationEntry} from '../db/schema';
 import {NotificationHandler} from '../handler/notification-handler';
 import { SharedPreferences } from '../../util/shared-preferences';
 import COLUMN_NAME_NOTIFICATION_JSON = NotificationEntry.COLUMN_NAME_NOTIFICATION_JSON;
-import { CodePush } from '../../preference-keys';
+import {CodePush} from '../../preference-keys';
+import {Observable, of} from 'rxjs';
+import {map, mapTo, mergeMap} from 'rxjs/operators';
 
 @injectable()
 export class NotificationServiceImpl implements NotificationService {
@@ -28,38 +29,47 @@ export class NotificationServiceImpl implements NotificationService {
             selection: `${NotificationEntry.COLUMN_NAME_MESSAGE_ID}= ?`,
             selectionArgs: [notification.id.toString()],
             limit: '1'
-        }).mergeMap((notificationInDb: NotificationEntry.SchemaMap[]) => {
-            if (notificationInDb && notificationInDb.length) {
-                return this.dbService.update({
-                    table: NotificationEntry.TABLE_NAME,
-                    selection: `${NotificationEntry.COLUMN_NAME_MESSAGE_ID}= ?`,
-                    selectionArgs: [notification.id.toString()],
-                    modelJson: NotificationHandler.constructNotificationDBModel(notification)
-                }).mapTo(true);
-            } else {
-                return this.dbService.insert({
-                    table: NotificationEntry.TABLE_NAME,
-                    modelJson: NotificationHandler.constructNotificationDBModel(notification)
-                }).mapTo(true);
-            }
-        });
+        }).pipe(
+            mergeMap((notificationInDb: NotificationEntry.SchemaMap[]) => {
+                if (notificationInDb && notificationInDb.length) {
+                    return this.dbService.update({
+                        table: NotificationEntry.TABLE_NAME,
+                        selection: `${NotificationEntry.COLUMN_NAME_MESSAGE_ID}= ?`,
+                        selectionArgs: [notification.id.toString()],
+                        modelJson: NotificationHandler.constructNotificationDBModel(notification)
+                    }).pipe(
+                        mapTo(true)
+                    );
+                } else {
+                    return this.dbService.insert({
+                        table: NotificationEntry.TABLE_NAME,
+                        modelJson: NotificationHandler.constructNotificationDBModel(notification)
+                    }).pipe(
+                        mapTo(true)
+                    );
+                }
+            })
+        );
     }
 
     deleteNotification(messageId?: number): Observable<boolean> {
         const query = `DELETE FROM ${NotificationEntry.TABLE_NAME} `
             .concat(messageId ? `WHERE ${NotificationEntry.COLUMN_NAME_MESSAGE_ID} = ${messageId}` : '');
-        return this.dbService.execute(query).mapTo(true);
+        return this.dbService.execute(query).pipe(
+            mapTo(true)
+        );
     }
 
     getAllNotifications(criteria: NotificationFilterCriteria): Observable<Notification[]> {
-        return this.dbService.read(NotificationHandler.getFilterForNotification(criteria))
-            .map((notificationInDb: NotificationEntry.SchemaMap[]) => {
+        return this.dbService.read(NotificationHandler.getFilterForNotification(criteria)).pipe(
+            map((notificationInDb: NotificationEntry.SchemaMap[]) => {
                 return notificationInDb.map((notification) => {
                     const notificationRes: Notification = JSON.parse(notification[COLUMN_NAME_NOTIFICATION_JSON]!);
                     notificationRes.isRead = notification[NotificationEntry.COLUMN_NAME_IS_READ]!;
                     return notificationRes;
                 });
-            });
+            })
+        );
     }
 
     updateNotification(notification: Notification): Observable<boolean> {
@@ -68,18 +78,22 @@ export class NotificationServiceImpl implements NotificationService {
             selection: `${NotificationEntry.COLUMN_NAME_MESSAGE_ID}= ?`,
             selectionArgs: [notification.id.toString()],
             limit: '1'
-        }).mergeMap((notificationInDb: NotificationEntry.SchemaMap[]) => {
-            if (notificationInDb && notificationInDb.length) {
-                return this.dbService.update({
-                    table: NotificationEntry.TABLE_NAME,
-                    selection: `${NotificationEntry.COLUMN_NAME_MESSAGE_ID}= ?`,
-                    selectionArgs: [notification.id.toString()],
-                    modelJson: NotificationHandler.constructNotificationDBModel(notification)
-                }).mapTo(true);
-            } else {
-                return Observable.of(false);
-            }
-        });
+        }).pipe(
+            mergeMap((notificationInDb: NotificationEntry.SchemaMap[]) => {
+                if (notificationInDb && notificationInDb.length) {
+                    return this.dbService.update({
+                        table: NotificationEntry.TABLE_NAME,
+                        selection: `${NotificationEntry.COLUMN_NAME_MESSAGE_ID}= ?`,
+                        selectionArgs: [notification.id.toString()],
+                        modelJson: NotificationHandler.constructNotificationDBModel(notification)
+                    }).pipe(
+                        mapTo(true)
+                    );
+                } else {
+                    return of(false);
+                }
+            })
+        );
     }
 
 }
