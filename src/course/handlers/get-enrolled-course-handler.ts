@@ -22,20 +22,19 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
             .pipe(
                 mergeMap((value: string | undefined) => {
                     if (!value) {
-                        return this.fetchFromServer(request)
-                            .pipe(
-                                mergeMap((courses: GetEnrolledCourseResponse) => {
-                                    return this.keyValueStore.setValue(
-                                        this.STORED_ENROLLED_COURSES_PREFIX + request.userId,
-                                        JSON.stringify(courses)
-                                    ).pipe(
-                                        mapTo(courses.result.courses),
-                                        tap((courseList) => {
-                                            return from(this.updateLastPlayedContent(courseList));
-                                        })
-                                    );
-                                })
-                            );
+                        return this.fetchFromServer(request).pipe(
+                            mergeMap((courses: GetEnrolledCourseResponse) => {
+                                return this.keyValueStore.setValue(
+                                    this.STORED_ENROLLED_COURSES_PREFIX + request.userId,
+                                    JSON.stringify(courses)
+                                ).pipe(
+                                    mapTo(courses.result.courses),
+                                    tap((courseList) => {
+                                        return from(this.updateLastPlayedContent(courseList));
+                                    })
+                                );
+                            })
+                        );
                     } else if (request.returnFreshCourses) {
                         return this.fetchFromServer(request)
                             .pipe(

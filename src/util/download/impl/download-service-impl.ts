@@ -48,7 +48,9 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
                 downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
-        }).pipe(mapTo(undefined)).toPromise();
+        }).pipe(
+            mapTo(undefined)
+        ).toPromise();
     }
 
     private static async generateDownloadCompleteTelemetry(downloadRequest: DownloadRequest): Promise<void> {
@@ -64,7 +66,9 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
                 downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
-        }).pipe(mapTo(undefined)).toPromise();
+        }).pipe(
+            mapTo(undefined)
+        ).toPromise();
     }
 
     private static async generateDownloadCancelTelemetry(downloadRequest: DownloadRequest): Promise<void> {
@@ -210,8 +214,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                             anyDownloadRequest.downloadId = downloadId;
                             this.currentDownloadRequest$.next(anyDownloadRequest);
                         }),
-                        tap(async () => await DownloadServiceImpl.generateDownloadStartTelemetry
-                        (anyDownloadRequest!)),
+                        tap(async () => await DownloadServiceImpl.generateDownloadStartTelemetry(anyDownloadRequest!)),
                         mapTo(undefined),
                         catchError(() => {
                             return this.cancel({
@@ -224,7 +227,9 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     }
 
     private addToDownloadList(requests: DownloadRequest[]): Observable<undefined> {
-        return this.sharedPreferencesSetCollection.addAll(requests).pipe(mapTo(undefined));
+        return this.sharedPreferencesSetCollection.addAll(requests).pipe(
+            mapTo(undefined)
+        );
     }
 
     private removeFromDownloadList(request: DownloadCancelRequest, generateTelemetry: boolean): Observable<undefined> {
@@ -282,7 +287,9 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                                 this.downloadCompleteDelegate!.onDownloadCompletion(currentDownloadRequest!).toPromise();
                             }),
                             defer(() => of(undefined))
-                        ).pipe(mapTo(undefined));
+                        ).pipe(
+                            mapTo(undefined)
+                        );
                     }
 
                     return of(undefined);
@@ -295,7 +302,9 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             return of(this.eventsBusService.emit({
                 namespace: EventNamespace.DOWNLOADS,
                 event: downloadProgress
-            })).pipe(mapTo(undefined));
+            })).pipe(
+                mapTo(undefined)
+            );
         });
     }
 

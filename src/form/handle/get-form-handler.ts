@@ -58,10 +58,11 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
         const dir = Path.ASSETS_PATH + this.formServiceConfig.formConfigDirPath;
         const file = this.FORM_FILE_KEY_PREFIX + GetFormHandler.getIdForRequest(request) + '.json';
 
-        return from(this.fileService.readFileFromAssets(dir.concat('/', file)))
-            .pipe(map((filecontent: string) => {
+        return from(this.fileService.readFileFromAssets(dir.concat('/', file))).pipe(
+            map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
                 return (result.result.form);
-            }));
+            })
+        );
     }
 }

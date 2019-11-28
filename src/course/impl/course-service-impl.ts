@@ -310,7 +310,7 @@ export class CourseServiceImpl implements CourseService {
                         headers: []
                     };
 
-                    return Observable.create((observer: Observer<string>) => {
+                    return new Observable<string>((observer: Observer<string>) => {
                         downloadManager.enqueue(downloadRequest, (err, id: string) => {
                             if (err) {
                                 return observer.error(err);

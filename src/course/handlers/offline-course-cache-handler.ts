@@ -80,8 +80,7 @@ export class OfflineCourseCacheHandler {
             .pipe(
                 map((result: Content) => {
                     return this.getLeafNodeCount(result);
-                })
-            ).pipe(
+                }),
                 mergeMap((leafNodeCount: number) => {
                     return this.contentService.getContentDetails({contentId: enrollCourseRequest.courseId})
                         .pipe(
