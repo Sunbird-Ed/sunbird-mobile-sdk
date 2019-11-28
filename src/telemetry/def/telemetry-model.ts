@@ -363,7 +363,11 @@ export namespace SunbirdTelemetry {
         constructor(dir: string | undefined,
                     type: string | undefined,
                     items: Array<{ [index: string]: any }> | undefined,
-                    correlationData: Array<CorrelationData> = []) {
+                    correlationData: Array<CorrelationData> = [],
+                    objId: string = '',
+                    objType: string = '',
+                    objVer: string = '',
+                    rollUp: Rollup = new Rollup()) {
             super(Share.EID);
 
             this.edata = {
@@ -372,9 +376,11 @@ export namespace SunbirdTelemetry {
                 ...(items ? {items: items} : {})
             };
             this.context.cdata = correlationData;
+            this.object = new TelemetryObject(objId ? objId : '', objType ? objType : '', objVer ? objVer : '');
+            this.object.rollup = rollUp;
         }
 
-        addItem(type: ShareItemType, origin: string, identifier: string, pkgVersion: number,
+        addItem(type: ShareItemType | string, origin: string, identifier: string, pkgVersion: number,
                 transferCount: number, size: string) {
             const item: { [index: string]: any } = {};
             item['origin'] = origin;

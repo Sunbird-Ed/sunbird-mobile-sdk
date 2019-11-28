@@ -1,13 +1,13 @@
-import { PlayerService } from '../def/player-service';
+import { PlayerService } from '..';
 import { Content } from '../../content';
 import { ProfileService } from '../../profile';
 import { GroupService } from '../../group';
-import { Observable } from 'rxjs';
 import { PlayerInput } from '../def/response';
-import { DeviceInfo } from '../../util/device/def/device-info';
+import { DeviceInfo } from '../../util/device';
 import { SdkConfig } from '../../sdk-config';
 import { FrameworkService } from '../../framework';
-import { AppInfo } from '../../util/app/def/app-info';
+import { AppInfo } from '../../util/app';
+import { Observable } from 'rxjs';
 export declare class PlayerServiceImpl implements PlayerService {
     private profileService;
     private groupService;

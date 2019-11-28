@@ -1,6 +1,7 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Profile, ProfileServiceConfig, UpdateServerProfileInfoRequest} from '..';
 import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateServerProfileInfoRequest, Profile> {
     private readonly GET_SERVER_PROFILE_INFO_API = '/update';
@@ -19,8 +20,10 @@ export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateS
             .withSessionToken(true)
             .withBody({request})
             .build();
-        return this.apiService.fetch <{ result: Profile }>(apiRequest).map((success) => {
-            return success.body.result;
-        });
+        return this.apiService.fetch <{ result: Profile }>(apiRequest).pipe(
+            map((success) => {
+                return success.body.result;
+            })
+        );
     }
 }

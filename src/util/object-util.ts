@@ -55,4 +55,8 @@ export class ObjectUtil {
     public static getTruthyProps(obj: {}): string[] {
         return Object.keys(obj).filter((key) => !!obj[key]);
     }
+
+    public static toOrderedString(obj: {}): string {
+        return JSON.stringify(Object.keys(obj).sort().reduce<{}>((acc, k) => { acc[k] = obj[k]; return acc; }, {}));
+    }
 }

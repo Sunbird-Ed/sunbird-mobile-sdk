@@ -9,8 +9,12 @@ export interface DownloadProgress extends DownloadEvent {
         identifier: string;
         progress: number;
         status: DownloadStatus;
+        bytesDownloaded: number;
+        totalSizeInBytes: number;
     };
 }
 export declare enum DownloadEventType {
-    PROGRESS = "PROGRESS"
+    START = "START",
+    PROGRESS = "PROGRESS",
+    END = "END"
 }

@@ -107,11 +107,15 @@ export class TelemetryShareRequest {
     items: Array<Item> = [];
     env: string;
     correlationData?: Array<CorrelationData>;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
+    rollUp?: Rollup;
 
 }
 
 export interface Item {
-    type: ShareItemType;
+    type: ShareItemType | string;
     origin: string;
     identifier: string;
     pkgVersion: number;

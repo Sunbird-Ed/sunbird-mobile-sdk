@@ -3,7 +3,8 @@ import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
 import {GetSystemSettingsRequest, SystemSettings, SystemSettingsConfig} from '..';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {Observable} from 'rxjs';
+import {Observable, from} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSettingsRequest, SystemSettings> {
     private readonly SYSTEM_SETTINGS_FILE_KEY_PREFIX = 'system-setting-';
@@ -33,19 +34,22 @@ export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSett
             .withApiToken(true)
             .build();
 
-        return this.apiService.fetch<{ result: { response: SystemSettings } }>(apiRequest).map((response) => {
-            return response.body.result.response;
-        });
+        return this.apiService.fetch<{ result: { response: SystemSettings } }>(apiRequest).pipe(
+            map((response) => {
+                return response.body.result.response;
+            })
+        );
     }
 
     private fetchFromFile(request: GetSystemSettingsRequest): Observable<SystemSettings> {
         const dir = Path.ASSETS_PATH + this.systemSettingsConfig.systemSettingsDirPath;
         const file = this.SYSTEM_SETTINGS_FILE_KEY_PREFIX + request.id + '.json';
-        return Observable.fromPromise(this.fileservice.readFileFromAssets(dir.concat('/', file)))
-            .map((filecontent: string) => {
-                const result = JSON.parse(filecontent);
+        return from(this.fileservice.readFileFromAssets(dir.concat('/', file))).pipe(
+            map((fileContent: string) => {
+                const result = JSON.parse(fileContent);
                 return (result.result.response);
-            });
+            })
+        );
     }
 
 }

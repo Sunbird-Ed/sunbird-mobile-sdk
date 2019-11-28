@@ -1,5 +1,5 @@
 import {
-    ContentData,
+    ContentData, ContentImport,
     ContentSearchCriteria,
     ContentSearchFilter,
     ContentSearchResult,
@@ -321,41 +321,44 @@ export class SearchContentHandler {
             },
             fields: [
                 ...fields,
-                'downloadUrl', 'variants', 'mimeType'
+                'downloadUrl', 'variants', 'mimeType', 'contentType', 'pkgVersion'
             ]
         };
     }
 
-    public async getDownloadUrl(contentData: ContentData): Promise<string> {
+    public async getDownloadUrl(contentData: ContentData, contentImport?: ContentImport ): Promise<string> {
         let downladUrl;
         if (contentData.mimeType === MimeType.COLLECTION.valueOf()) {
             const variants = contentData.variants;
             if (variants && variants['online']) {
                 const spineData = variants['online'];
                 downladUrl = spineData && spineData['ecarUrl'];
-                await this.buildContentLoadingEvent('online', contentData.identifier);
+                await this.buildContentLoadingEvent('online', contentImport!, contentData.contentType, contentData.pkgVersion);
             } else if (variants && variants['spine']) {
                 const spineData = variants['spine'];
                 downladUrl = spineData && spineData['ecarUrl'];
-                await this.buildContentLoadingEvent('spine', contentData.identifier);
+                await this.buildContentLoadingEvent('spine', contentImport!, contentData.contentType, contentData.pkgVersion);
             }
         }
 
         if (!downladUrl) {
             downladUrl = contentData.downloadUrl!.trim();
-            await this.buildContentLoadingEvent('full', contentData.identifier);
+            await this.buildContentLoadingEvent('full', contentImport!, contentData.contentType, contentData.pkgVersion);
         }
         return downladUrl;
     }
 
-    buildContentLoadingEvent(subtype: string, identifier: string): Promise<boolean> {
+    buildContentLoadingEvent(subtype: string, contentImport: ContentImport, contentType: string, contentVersion: string): Promise<boolean> {
         const telemetryInteractRequest = new TelemetryInteractRequest();
         telemetryInteractRequest.type = InteractType.OTHER;
         telemetryInteractRequest.subType = subtype;
         telemetryInteractRequest.pageId = 'ImportContent';
         telemetryInteractRequest.id = 'ImportContent';
-        telemetryInteractRequest.objId = identifier;
-        telemetryInteractRequest.objType = 'Content';
+        telemetryInteractRequest.objId = contentImport.contentId;
+        telemetryInteractRequest.objType = contentType;
+        telemetryInteractRequest.objVer = contentVersion;
+        telemetryInteractRequest.rollup = contentImport.rollUp;
+        telemetryInteractRequest.correlationData = contentImport.correlationData;
         return this.telemetryService.interact(telemetryInteractRequest).toPromise();
     }
 

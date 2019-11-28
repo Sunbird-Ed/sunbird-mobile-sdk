@@ -1,6 +1,5 @@
-import {Notification, NotificationFilterCriteria, NotificationStatus} from '../def/requests';
+import {Notification, NotificationFilterCriteria, NotificationStatus} from '..';
 import {NotificationEntry} from '../db/schema';
-import {ReadQuery} from '../../db';
 
 export class NotificationHandler {
     public static constructNotificationDBModel(notification: Notification): NotificationEntry.SchemaMap {

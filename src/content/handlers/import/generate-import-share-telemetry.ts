@@ -13,7 +13,7 @@ export class GenerateImportShareTelemetry {
         const items: Item[] = [];
         for (const element of importContentContext.items!) {
             const item: Item = {
-                type: ShareItemType.CONTENT,
+                type: ContentUtil.readContentType(element),
                 origin: ContentUtil.readOriginFromContentMap(element),
                 identifier: element.identifier,
                 pkgVersion: Number(element.pkgVersion),
@@ -24,12 +24,20 @@ export class GenerateImportShareTelemetry {
         }
 
         const req: TelemetryShareRequest = {
-            dir: ShareDirection.IN,
-            type: ShareType.FILE.valueOf(),
-            items: items,
-            env: 'sdk',
-            correlationData: importContentContext.correlationData
-        };
+                dir: ShareDirection.IN,
+                type: ShareType.FILE.valueOf(),
+                items: items,
+                env: 'sdk',
+                correlationData: importContentContext.correlationData,
+                objId: importContentContext.items && importContentContext.items!.length ?
+                    importContentContext.items[0]['identifier'] : '',
+                objType: importContentContext.items && importContentContext.items.length ?
+                    importContentContext.items[0]['contentType'] : '',
+                objVer: importContentContext.items && importContentContext.items.length ?
+                    ContentUtil.readPkgVersion(importContentContext.items[0]) + '' : '',
+                rollUp: importContentContext.rollUp
+            }
+        ;
 
         const response: Response = new Response();
         return this.telemetryService.share(req).toPromise()

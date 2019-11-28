@@ -1,11 +1,11 @@
 import {ContentEntry} from '../db/schema';
-import Queue from 'typescript-collections/dist/lib/Queue';
 import {ContentUtil} from '../util/content-util';
-import {Visibility} from '../util/content-constants';
-import {DeviceInfo} from '../../util/device/def/device-info';
-import moment from 'moment';
+import * as dayjs from 'dayjs';
 import {DbService} from '../../db';
 import {ArrayUtil} from '../../util/array-util';
+import {FileService} from '../../util/file/def/file-service';
+import {DeviceInfo} from '../../util/device';
+import {FileName, Visibility} from '..';
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_REF_COUNT = ContentEntry.COLUMN_NAME_REF_COUNT;
@@ -15,7 +15,9 @@ export class ImportNExportHandler {
     private static readonly SUPPORTED_MANIFEST_VERSION = '1.1';
 
     constructor(private deviceInfo: DeviceInfo,
-                private dbService?: DbService) {
+                private dbService?: DbService,
+                private fileService?: FileService
+    ) {
 
     }
 
@@ -88,28 +90,39 @@ export class ImportNExportHandler {
     }
 
     public async getContentExportDBModelToExport(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {
-        const contentModelToExport: ContentEntry.SchemaMap[] = [];
-        const queue: Queue<ContentEntry.SchemaMap> = new Queue();
-
+        let contentModelToExport: ContentEntry.SchemaMap[] = [];
+        // const queue: Queue<ContentEntry.SchemaMap> = new Queue();
         const contentsInDb: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(contentIds);
-        contentsInDb.forEach((contentInDb) => {
-            queue.add(contentInDb);
-        });
-        let node: ContentEntry.SchemaMap;
-        while (!queue.isEmpty()) {
-            node = queue.dequeue()!;
-            if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
-                const childContentsIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(node[COLUMN_NAME_LOCAL_DATA]);
-                const contentModelListInDB: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(
-                    childContentsIdentifiers);
-                if (contentModelListInDB && contentModelListInDB.length > 0) {
-                    contentModelListInDB.forEach((contentModelInDb) => {
-                        queue.add(contentModelInDb);
-                    });
-                }
-            }
-            contentModelToExport.push(node);
-        }
+        const manifestPath = ContentUtil.getBasePath(contentsInDb[0][ContentEntry.COLUMN_NAME_PATH]!);
+        await this.fileService!.readAsText(manifestPath, FileName.MANIFEST.valueOf())
+            .then(async (fileContents) => {
+                const childContents = JSON.parse(fileContents).archive.items;
+                const childIdentifiers: string[] = [];
+                childContents.forEach(element => {
+                    childIdentifiers.push(element.identifier);
+                });
+                contentModelToExport = await this.findAllContentsWithIdentifiers(childIdentifiers);
+            }).catch((err) => {
+                console.log('fileRead error', err);
+            });
+        // contentsInDb.forEach((contentInDb) => {
+        //     queue.add(contentInDb);
+        // });
+        // let node: ContentEntry.SchemaMap;
+        // while (!queue.isEmpty()) {
+        //     node = queue.dequeue()!;
+        //     if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
+        //         const childContentsIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(node[COLUMN_NAME_LOCAL_DATA]);
+        //         const contentModelListInDB: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(
+        //             childContentsIdentifiers);
+        //         if (contentModelListInDB && contentModelListInDB.length > 0) {
+        //             contentModelListInDB.forEach((contentModelInDb) => {
+        //                 queue.add(contentModelInDb);
+        //             });
+        //         }
+        //     }
+        //     contentModelToExport.push(node);
+        // }
         return Promise.resolve(ContentUtil.deDupe(contentModelToExport, 'identifier'));
     }
 
@@ -123,7 +136,7 @@ export class ImportNExportHandler {
         // Initialize manifest
         manifest['id'] = ImportNExportHandler.EKSTEP_CONTENT_ARCHIVE;
         manifest['ver'] = ImportNExportHandler.SUPPORTED_MANIFEST_VERSION;
-        manifest['ts'] = moment(Date.now()).format('YYYY-MM-DDTHH:mm:ss[Z]');
+        manifest['ts'] = dayjs().format('YYYY-MM-DDTHH:mm:ss[Z]');
         manifest['archive'] = archive;
         return manifest;
     }

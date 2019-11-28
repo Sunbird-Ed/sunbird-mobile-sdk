@@ -1,6 +1,5 @@
 import { ApiRequestHandler } from '../../api';
 import { SunbirdTelemetry } from '../../telemetry';
-import { Observable } from 'rxjs';
 import { SummarizerService } from '..';
 import { CourseService } from '../../course';
 import { SharedPreferences } from '../../util/shared-preferences';
@@ -8,6 +7,8 @@ import Telemetry = SunbirdTelemetry.Telemetry;
 import { EventsBusService } from '../../events-bus';
 import { ContentService } from '../../content';
 import { ProfileService } from '../../profile';
+import { DbService } from '../../db';
+import { Observable } from 'rxjs';
 export declare class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private courseService;
     private sharedPreference;
@@ -15,11 +16,12 @@ export declare class SummaryTelemetryEventHandler implements ApiRequestHandler<T
     private eventBusService;
     private contentService;
     private profileService;
+    private dbService;
     private static readonly CONTENT_PLAYER_PID;
     private currentUID?;
     private currentContentID?;
     private courseContext;
-    constructor(courseService: CourseService, sharedPreference: SharedPreferences, summarizerService: SummarizerService, eventBusService: EventsBusService, contentService: ContentService, profileService: ProfileService);
+    constructor(courseService: CourseService, sharedPreference: SharedPreferences, summarizerService: SummarizerService, eventBusService: EventsBusService, contentService: ContentService, profileService: ProfileService, dbService: DbService);
     private static checkPData;
     private static checkIsCourse;
     private setCourseContextEmpty;

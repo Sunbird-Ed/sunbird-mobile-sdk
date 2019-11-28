@@ -1,6 +1,6 @@
 import { DbService } from '../../../db';
 import { ImportContentContext } from '../..';
-import { DeviceInfo } from '../../../util/device/def/device-info';
+import { DeviceInfo } from '../../../util/device';
 import { FileService } from '../../../util/file/def/file-service';
 import { Response } from '../../../api';
 export declare class CreateContentImportManifest {

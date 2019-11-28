@@ -38,6 +38,7 @@ export interface ContentData {
     me_averageRating: string;
     me_totalDownloads: string;
     copyright: string;
+    copyrightYear: string;
     license: string;
     expires: string;
     downloadUrl: string;
@@ -78,6 +79,7 @@ export interface ContentData {
     collaborators?: string;
     originData?: OriginData;
     origin?: string;
+    totalQuestions?: number;
 }
 export interface ComingSoonMsg {
     key: string;

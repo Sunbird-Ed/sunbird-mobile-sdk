@@ -1,10 +1,20 @@
-import {ApiConfig, HttpClient, HttpRequestType, HttpSerializer, Request, Response, ResponseCode} from '..';
-import {Observable} from 'rxjs';
+import {
+    ApiConfig,
+    HttpClient,
+    HttpClientError,
+    HttpRequestType,
+    HttpSerializer,
+    HttpServerError,
+    Request,
+    Response,
+    ResponseCode
+} from '..';
 import {Connection} from '../def/connection';
 import {Authenticator} from '../def/authenticator';
 import * as qs from 'qs';
 import {DeviceInfo} from '../../util/device';
 import {SharedPreferences} from '../../util/shared-preferences';
+import {from, Observable} from 'rxjs';
 
 export class BaseConnection implements Connection {
 
@@ -53,7 +63,7 @@ export class BaseConnection implements Connection {
             return response;
         })();
 
-        return Observable.fromPromise(response);
+        return from(response as Promise<Response<any>>);
 
     }
 
@@ -142,17 +152,28 @@ export class BaseConnection implements Connection {
                         sunbirdResponse.errorMesg = 'NETWORK ERROR';
                         sunbirdResponse.responseCode = xhr.status;
 
-                        try {
-                            sunbirdResponse.body = JSON.parse(xhr.responseText);
-                        } catch (e) {
-                            sunbirdResponse.body = xhr.responseText;
+                        if (
+                            sunbirdResponse.responseCode === ResponseCode.HTTP_UNAUTHORISED ||
+                            sunbirdResponse.responseCode === ResponseCode.HTTP_FORBIDDEN
+                        ) {
+                            resolve(sunbirdResponse);
+                        } else {
+                            if (sunbirdResponse.responseCode >= 400 && sunbirdResponse.responseCode <= 499) {
+                                reject(new HttpClientError(`
+                                    ${(request.host || this.apiConfig.host) + request.path} -
+                                    ${xhr.responseText || ''}
+                                `, sunbirdResponse));
+                            } else {
+                                reject(new HttpServerError(`
+                                    ${(request.host || this.apiConfig.host) + request.path} -
+                                    ${xhr.responseText || ''}
+                                `, sunbirdResponse));
+                            }
                         }
-
-                        resolve(sunbirdResponse);
                     }
                 }
             };
-            xhr.send(request.body);
+            xhr.send(request.body as any);
         });
     }
 

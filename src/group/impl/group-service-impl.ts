@@ -1,5 +1,4 @@
 import {DbService} from '../../db';
-import {Observable} from 'rxjs';
 import {GroupEntry, GroupProfileEntry} from '../db/schema';
 import {
     GetAllGroupRequest,
@@ -19,6 +18,8 @@ import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} 
 import {ObjectUtil} from '../../util/object-util';
 import {Container, inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
+import {defer, from, Observable, of, throwError, zip} from 'rxjs';
+import {catchError, map, mapTo, mergeMap, reduce, tap} from 'rxjs/operators';
 
 @injectable()
 export class GroupServiceImpl implements GroupService {
@@ -42,33 +43,36 @@ export class GroupServiceImpl implements GroupService {
         return this.dbService.insert({
             table: GroupEntry.TABLE_NAME,
             modelJson: GroupMapper.mapGroupToGroupDBEntry(group)
-        }).do(async () => {
-            await this.profileService.getActiveProfileSession()
-                .map((session) => session.uid)
-                .mergeMap((uid) => {
-                    const actor = new Actor();
-                    actor.id = uid;
-                    actor.type = Actor.TYPE_SYSTEM;
+        }).pipe(
+            tap(async () => {
+                await this.profileService.getActiveProfileSession().pipe(
+                    map((session) => session.uid),
+                    mergeMap((uid) => {
+                        const actor = new Actor();
+                        actor.id = uid;
+                        actor.type = Actor.TYPE_SYSTEM;
 
-                    const auditRequest: TelemetryAuditRequest = {
-                        env: 'sdk',
-                        actor,
-                        currentState: AuditState.AUDIT_CREATED,
-                        updatedProperties: ObjectUtil.getTruthyProps(group),
-                        objId: group.gid,
-                        objType: ObjectType.GROUP
-                    };
+                        const auditRequest: TelemetryAuditRequest = {
+                            env: 'sdk',
+                            actor,
+                            currentState: AuditState.AUDIT_CREATED,
+                            updatedProperties: ObjectUtil.getTruthyProps(group),
+                            objId: group.gid,
+                            objType: ObjectType.GROUP
+                        };
 
-                    return this.telemetryService.audit(auditRequest);
-                }).toPromise();
-        }).map(() => group);
+                        return this.telemetryService.audit(auditRequest);
+                    })
+                ).toPromise();
+            }),
+            map(() => group)
+        );
     }
 
     deleteGroup(gid: string): Observable<undefined> {
-        return Observable
-            .defer(() => Observable.of(this.dbService.beginTransaction()))
-            .mergeMap(() => {
-                return Observable.zip(
+        return defer(() => of(this.dbService.beginTransaction())).pipe(
+            mergeMap(() => {
+                return zip(
                     this.dbService.delete({
                         table: GroupEntry.TABLE_NAME,
                         selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
@@ -79,12 +83,16 @@ export class GroupServiceImpl implements GroupService {
                         selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ?`,
                         selectionArgs: [gid]
                     })
-                ).mapTo(undefined);
-            }).do(() => {
+                ).pipe(
+                    mapTo(undefined)
+                );
+            }),
+            tap(() => {
                 this.dbService.endTransaction(true);
-            }).do(async () => {
-                await this.profileService.getActiveProfileSession()
-                    .mergeMap((session: ProfileSession) => {
+            }),
+            tap(async () => {
+                await this.profileService.getActiveProfileSession().pipe(
+                    mergeMap((session: ProfileSession) => {
                         const actor = new Actor();
                         actor.id = session.uid;
                         actor.type = Actor.TYPE_SYSTEM;
@@ -98,11 +106,14 @@ export class GroupServiceImpl implements GroupService {
                         };
 
                         return this.telemetryService.audit(auditRequest);
-                    }).toPromise();
-            }).catch((e) => {
+                    })
+                ).toPromise();
+            }),
+            catchError((e) => {
                 this.dbService.endTransaction(false);
                 return Observable.throw(e);
-            });
+            })
+        );
     }
 
     updateGroup(group: Group): Observable<Group> {
@@ -110,104 +121,117 @@ export class GroupServiceImpl implements GroupService {
             table: GroupEntry.TABLE_NAME,
             selection: 'gid = ?',
             selectionArgs: [group.gid],
-        }).map((rows) => {
-            if (!rows || !rows[0]) {
-                return Observable.throw(new NoGroupFoundError(`No Group found with ID ${group.gid}`));
-            }
-
-            return GroupMapper.mapGroupDBEntryToGroup(rows[0]);
-        }).do(async (prevGroup) => {
-            await this.profileService.getActiveProfileSession()
-                .mergeMap((session: ProfileSession) => {
-                    const actor = new Actor();
-                    actor.id = session.uid;
-                    actor.type = Actor.TYPE_SYSTEM;
-
-                    const auditRequest: TelemetryAuditRequest = {
-                        env: 'sdk',
-                        actor,
-                        currentState: AuditState.AUDIT_UPDATED,
-                        updatedProperties: ObjectUtil.getPropDiff(group, prevGroup),
-                        objId: group.gid,
-                        objType: ObjectType.GROUP
-                    };
-
-                    return this.telemetryService.audit(auditRequest);
-                }).toPromise();
-        }).mergeMap(() => {
-            return this.dbService.update({
-                table: GroupEntry.TABLE_NAME,
-                selection: 'gid = ?',
-                selectionArgs: [group.gid],
-                modelJson: {
-                    [GroupEntry.COLUMN_NAME_NAME]: group.name,
-                    [GroupEntry.COLUMN_NAME_SYLLABUS]: group.syllabus.join(','),
-                    [GroupEntry.COLUMN_NAME_UPDATED_AT]: Date.now(),
-                    [GroupEntry.COLUMN_NAME_GRADE]: group.grade.join(','),
-                    [GroupEntry.COLUMN_NAME_GRADE_VALUE]: JSON.stringify(group.gradeValue)
+        }).pipe(
+            map((rows) => {
+                if (!rows || !rows[0]) {
+                    return Observable.throw(new NoGroupFoundError(`No Group found with ID ${group.gid}`));
                 }
-            }).mapTo(group);
-        });
+
+                return GroupMapper.mapGroupDBEntryToGroup(rows[0]);
+            }),
+            tap(async (prevGroup) => {
+                await this.profileService.getActiveProfileSession().pipe(
+                    mergeMap((session: ProfileSession) => {
+                        const actor = new Actor();
+                        actor.id = session.uid;
+                        actor.type = Actor.TYPE_SYSTEM;
+
+                        const auditRequest: TelemetryAuditRequest = {
+                            env: 'sdk',
+                            actor,
+                            currentState: AuditState.AUDIT_UPDATED,
+                            updatedProperties: ObjectUtil.getPropDiff(group, prevGroup),
+                            objId: group.gid,
+                            objType: ObjectType.GROUP
+                        };
+
+                        return this.telemetryService.audit(auditRequest);
+                    })
+                ).toPromise();
+            }),
+            mergeMap(() => {
+                return this.dbService.update({
+                    table: GroupEntry.TABLE_NAME,
+                    selection: 'gid = ?',
+                    selectionArgs: [group.gid],
+                    modelJson: {
+                        [GroupEntry.COLUMN_NAME_NAME]: group.name,
+                        [GroupEntry.COLUMN_NAME_SYLLABUS]: group.syllabus.join(','),
+                        [GroupEntry.COLUMN_NAME_UPDATED_AT]: Date.now(),
+                        [GroupEntry.COLUMN_NAME_GRADE]: group.grade.join(','),
+                        [GroupEntry.COLUMN_NAME_GRADE_VALUE]: JSON.stringify(group.gradeValue)
+                    }
+                }).pipe(
+                    mapTo(group)
+                );
+            })
+        );
     }
 
     getActiveSessionGroup(): Observable<Group> {
-        return this.getActiveGroupSession()
-            .map((profileSession: GroupSession | undefined) => {
+        return this.getActiveGroupSession().pipe(
+            map((profileSession: GroupSession | undefined) => {
                 if (!profileSession) {
                     throw new NoActiveGroupSessionError('No active session available');
                 }
 
                 return profileSession;
-            })
-            .mergeMap((profileSession: GroupSession) => {
+            }),
+            mergeMap((profileSession: GroupSession) => {
                 return this.dbService.read({
                     table: GroupEntry.TABLE_NAME,
                     selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
                     selectionArgs: [profileSession.gid]
-                }).map((rows) => rows && rows[0]);
-            });
+                }).pipe(
+                    map((rows) => rows && rows[0])
+                );
+            })
+        );
     }
 
     setActiveSessionForGroup(gid: string): Observable<boolean> {
-        return this.dbService
-            .read({
-                table: GroupEntry.TABLE_NAME,
-                selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
-                selectionArgs: [gid]
-            })
-            .map((rows: GroupEntry.SchemaMap[]) =>
+        return this.dbService.read({
+            table: GroupEntry.TABLE_NAME,
+            selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
+            selectionArgs: [gid]
+        }).pipe(
+            map((rows: GroupEntry.SchemaMap[]) =>
                 rows && rows[0] && GroupMapper.mapGroupDBEntryToGroup(rows[0])
-            )
-            .map((group: Group | undefined) => {
+            ),
+            map((group: Group | undefined) => {
                 if (!group) {
                     throw new NoGroupFoundError('No Profile found');
                 }
 
                 return group;
-            })
-            .mergeMap((group: Group) => {
+            }),
+            mergeMap((group: Group) => {
                 const groupSession = new GroupSession(group.gid);
                 return this.sharedPreferences.putString(GroupServiceImpl.KEY_GROUP_SESSION, JSON.stringify({
                     gid: groupSession.gid,
                     sid: groupSession.sid,
                     createdTime: groupSession.createdTime
-                })).mapTo(true);
-            });
+                })).pipe(
+                    mapTo(true)
+                );
+            })
+        );
     }
 
     getActiveGroupSession(): Observable<GroupSession | undefined> {
-        return this.sharedPreferences.getString(GroupServiceImpl.KEY_GROUP_SESSION)
-            .map((response) => {
+        return this.sharedPreferences.getString(GroupServiceImpl.KEY_GROUP_SESSION).pipe(
+            map((response) => {
                 if (!response) {
                     return undefined;
                 }
                 return JSON.parse(response);
 
-            });
+            })
+        );
     }
 
     getAllGroups(groupRequest?: GetAllGroupRequest): Observable<Group[]> {
-        return Observable.defer(() => {
+        return defer(() => {
             if (groupRequest) {
                 return this.dbService.execute(`
                     SELECT * FROM ${GroupEntry.TABLE_NAME}
@@ -215,44 +239,53 @@ export class GroupServiceImpl implements GroupService {
                     ${GroupEntry.TABLE_NAME}.${GroupEntry.COLUMN_NAME_GID} =
                     ${GroupProfileEntry.TABLE_NAME}.${GroupProfileEntry.COLUMN_NAME_GID}
                     WHERE ${GroupProfileEntry.COLUMN_NAME_UID} = "${groupRequest!.uid}"`
-                ).map((groups: GroupEntry.SchemaMap[]) =>
-                    groups.map((group: GroupEntry.SchemaMap) => GroupMapper.mapGroupDBEntryToGroup(group))
+                ).pipe(
+                    map((groups: GroupEntry.SchemaMap[]) =>
+                        groups.map((group: GroupEntry.SchemaMap) => GroupMapper.mapGroupDBEntryToGroup(group))
+                    )
                 );
             }
 
             return this.dbService.read({
                 table: GroupEntry.TABLE_NAME,
                 columns: []
-            }).map((groups: GroupEntry.SchemaMap[]) =>
-                groups.map((group: GroupEntry.SchemaMap) => GroupMapper.mapGroupDBEntryToGroup(group))
+            }).pipe(
+                map((groups: GroupEntry.SchemaMap[]) =>
+                    groups.map((group: GroupEntry.SchemaMap) => GroupMapper.mapGroupDBEntryToGroup(group))
+                )
             );
-        }).mergeMap((groups: Group[]) =>
-            Observable.from(groups)
-        ).mergeMap((group: Group) =>
-            this.profileService.getAllProfiles({
-                groupId: group.gid
-            }).map((profiles) => ({
-                ...group,
-                profilesCount: profiles.length
-            }))
-        ).reduce((allResponses, currentResponse) => [...allResponses, currentResponse], []);
+        }).pipe(
+            mergeMap((groups: Group[]) =>
+                from(groups)
+            ),
+            mergeMap((group: Group) =>
+                this.profileService.getAllProfiles({
+                    groupId: group.gid
+                }).pipe(
+                    map((profiles) => ({
+                        ...group,
+                        profilesCount: profiles.length
+                    }))
+                )
+            ),
+            reduce((allResponses: Group[], currentResponse: Group) => [...allResponses, currentResponse], [])
+        );
     }
 
 
     addProfilesToGroup(profileToGroupRequest: ProfilesToGroupRequest): Observable<number> {
-        return Observable
-            .defer(() => Observable.of(this.dbService.beginTransaction()))
-            .mergeMap(() => this.dbService.delete({
+        return defer(() => of(this.dbService.beginTransaction())).pipe(
+            mergeMap(() => this.dbService.delete({
                 table: GroupProfileEntry.TABLE_NAME,
                 selection: `${GroupProfileEntry.COLUMN_NAME_GID} = ?`,
                 selectionArgs: [profileToGroupRequest.groupId]
-            }))
-            .mergeMap(() => {
+            })),
+            mergeMap(() => {
                 if (!profileToGroupRequest.uidList.length) {
-                    return Observable.of(undefined);
+                    return of(0);
                 }
 
-                return Observable.zip(
+                return zip(
                     ...profileToGroupRequest.uidList.map((uid) => {
                         return this.dbService.insert({
                             table: GroupProfileEntry.TABLE_NAME,
@@ -262,24 +295,28 @@ export class GroupServiceImpl implements GroupService {
                             }
                         });
                     })
-                ).mapTo(undefined);
-            })
-            .do(() => {
+                ).pipe(
+                    mapTo(profileToGroupRequest.uidList.length)
+                );
+            }),
+            tap(() => {
                 this.dbService.endTransaction(true);
-            })
-            .catch((e) => {
+            }),
+            catchError((e) => {
                 this.dbService.endTransaction(false);
-                return Observable.throw(e);
-            });
+                return throwError(e);
+            })
+        );
     }
 
     removeActiveGroupSession(): Observable<undefined> {
-        return this.getActiveGroupSession()
-        .mergeMap( (groupSession) => {
-            if (!groupSession) {
-                return Observable.of(undefined);
-            }
-            return this.sharedPreferences.putString(GroupServiceImpl.KEY_GROUP_SESSION, '');
-        });
+        return this.getActiveGroupSession().pipe(
+            mergeMap( (groupSession) => {
+                if (!groupSession) {
+                    return of(undefined);
+                }
+                return this.sharedPreferences.putString(GroupServiceImpl.KEY_GROUP_SESSION, '');
+            })
+        );
     }
 }

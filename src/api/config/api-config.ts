@@ -4,6 +4,8 @@ export interface ApiConfig {
     user_authentication: {
         redirectUrl: string;
         authUrl: string;
+        mergeUserHost: string;
+        autoMergeApiPath: string;
     };
     api_authentication: {
         mobileAppKey: string,

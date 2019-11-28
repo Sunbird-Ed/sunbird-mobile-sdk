@@ -1,10 +1,11 @@
 import {CachedItemStore, KeyValueStore} from '..';
-import {Observable} from 'rxjs';
+import {defer, iif, Observable, of, zip} from 'rxjs';
 import {ApiConfig} from '../../api';
 import {SharedPreferences} from '../../util/shared-preferences';
-import { SdkConfig } from '../../sdk-config';
-import { InjectionTokens } from '../../injection-tokens';
-import { inject, injectable } from 'inversify';
+import {SdkConfig} from '../../sdk-config';
+import {InjectionTokens} from '../../injection-tokens';
+import {inject, injectable} from 'inversify';
+import {catchError, map, mergeMap, switchMap, tap} from 'rxjs/operators';
 
 @injectable()
 export class CachedItemStoreImpl implements CachedItemStore {
@@ -37,90 +38,107 @@ export class CachedItemStoreImpl implements CachedItemStore {
         timeToLive?: number,
         emptyCondition?: (item: T) => boolean
     ): Observable<T> {
-        return this.isItemCachedInDb(timeToLiveKey, id)
-            .mergeMap((isItemCachedInDb: boolean) => {
+        return this.isItemCachedInDb(timeToLiveKey, id).pipe(
+            mergeMap((isItemCachedInDb: boolean) => {
                 if (isItemCachedInDb) {
-                    return this.isItemTTLExpired(timeToLiveKey, id, !isNaN(timeToLive!) ? timeToLive! : this.apiConfig.cached_requests.timeToLive)
-                        .mergeMap((isItemTTLExpired: boolean) => {
+                    return this.isItemTTLExpired(timeToLiveKey, id,
+                        !isNaN(timeToLive!) ? timeToLive! : this.apiConfig.cached_requests.timeToLive).pipe(
+                        mergeMap((isItemTTLExpired: boolean) => {
                             if (isItemTTLExpired) {
-                                return this.keyValueStore.getValue(noSqlkey + '-' + id)
-                                    .map((v) => JSON.parse(v!))
-                                    .do(async () => {
+                                return this.keyValueStore.getValue(noSqlkey + '-' + id).pipe(
+                                    map((v) => JSON.parse(v!)),
+                                    tap(async () => {
                                         try {
-                                            await fromServer().switchMap((item: T) => {
-                                                return this.saveItem<T>(id, timeToLiveKey, noSqlkey, item, emptyCondition);
-                                            }).toPromise();
+                                            await fromServer().pipe(
+                                                switchMap((item: T) => {
+                                                    return this.saveItem<T>(id, timeToLiveKey, noSqlkey, item, emptyCondition);
+                                                })
+                                            ).toPromise();
                                         } catch (e) {
                                             console.error(e);
                                         }
-                                    });
+                                    })
+                                );
                             } else {
-                                return this.keyValueStore.getValue(noSqlkey + '-' + id)
-                                    .map((v) => JSON.parse(v!));
+                                return this.keyValueStore.getValue(noSqlkey + '-' + id).pipe(
+                                    map((v) => JSON.parse(v!))
+                                );
                             }
-                        });
+                        })
+                    );
                 } else {
                     if (initial) {
-                        return initial().switchMap((item: T) => {
-                            return this.saveItem<T>(id, timeToLiveKey, noSqlkey, item, emptyCondition);
-                        }).catch((e) => {
-                            return fromServer()
-                                .switchMap((item: T) => {
-                                    return this.saveItem<T>(id, timeToLiveKey, noSqlkey, item, emptyCondition);
-                                });
-                        });
-                    } else {
-                        return fromServer()
-                            .switchMap((item: T) => {
+                        return initial().pipe(
+                            switchMap((item: T) => {
                                 return this.saveItem<T>(id, timeToLiveKey, noSqlkey, item, emptyCondition);
-                            });
+                            }),
+                            catchError((e) => {
+                                return fromServer().pipe(
+                                    switchMap((item: T) => {
+                                        return this.saveItem<T>(id, timeToLiveKey, noSqlkey, item, emptyCondition);
+                                    })
+                                );
+                            })
+                        );
+                    } else {
+                        return fromServer().pipe(
+                            switchMap((item: T) => {
+                                return this.saveItem<T>(id, timeToLiveKey, noSqlkey, item, emptyCondition);
+                            })
+                        );
                     }
                 }
-            });
+            })
+        );
     }
 
     private isItemCachedInDb(timeToLiveKey: string, id: string): Observable<boolean> {
-        return this.sharedPreferences.getString(timeToLiveKey + '-' + id)
-            .mergeMap((ttl) => {
-                return Observable.if(
+        return this.sharedPreferences.getString(timeToLiveKey + '-' + id).pipe(
+            mergeMap((ttl) => {
+                return iif(
                     () => !!ttl,
-                    Observable.defer(() => Observable.of(true)),
-                    Observable.defer(() => Observable.of(false))
+                    defer(() => of(true)),
+                    defer(() => of(false))
                 );
-            });
+            })
+        );
     }
 
     private isItemTTLExpired(timeToLiveKey: string, id: string, timeToLive: number): Observable<boolean> {
-        return this.sharedPreferences.getString(timeToLiveKey + '-' + id)
-        .map((ttl) => {
-            const savedTimestamp: number = Number(ttl);
-            const nowTimeStamp: number = Date.now();
-            if (nowTimeStamp - savedTimestamp < timeToLive) {
-                return false;
-            }
-            
-            return true;
-        });
+        return this.sharedPreferences.getString(timeToLiveKey + '-' + id).pipe(
+            map((ttl) => {
+                const savedTimestamp: number = Number(ttl);
+                const nowTimeStamp: number = Date.now();
+                if (nowTimeStamp - savedTimestamp < timeToLive) {
+                    return false;
+                }
+
+                return true;
+            })
+        );
     }
 
     private saveItem<T>(id: string, timeToLiveKey: string, noSqlkey: string, item: T, emptyCondition?: (item: T) => boolean) {
         if (CachedItemStoreImpl.isItemEmpty(item) || (emptyCondition && emptyCondition(item))) {
-            return Observable.of(item);
+            return of(item);
         }
 
-        return Observable.zip(
+        return zip(
             this.saveItemTTL(id, timeToLiveKey),
             this.saveItemToDb(id, noSqlkey, item)
-        ).switchMap(() => {
-            return Observable.of(item);
-        });
+        ).pipe(
+            switchMap(() => {
+                return of(item);
+            })
+        );
     }
 
     private saveItemTTL(id: string, timeToLiveKey: string): Observable<boolean> {
-        return this.sharedPreferences.putString(timeToLiveKey + '-' + id, Date.now() + '')
-        .mergeMap((val) => {
-            return Observable.of(true);
-        });
+        return this.sharedPreferences.putString(timeToLiveKey + '-' + id, Date.now() + '').pipe(
+            mergeMap((val) => {
+                return of(true);
+            })
+        );
     }
 
     private saveItemToDb(id: string, noSqlkey: string, item): Observable<boolean> {

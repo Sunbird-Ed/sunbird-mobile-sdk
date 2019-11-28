@@ -10,4 +10,7 @@ export interface UpdateServerProfileInfoRequest {
     framework?: {
         [key: string]: any;
     };
+    profileSummary?: string;
+    recoveryEmail?: string;
+    recoveryPhone?: string;
 }

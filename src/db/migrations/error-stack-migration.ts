@@ -1,5 +1,5 @@
 import {DbService, Migration} from '..';
-import {ErrorStackEntry} from '../../util/error-stack/db/schema';
+import {ErrorStackEntry} from '../../error/db/schema';
 
 export class ErrorStackMigration extends Migration {
 

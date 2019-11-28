@@ -9,4 +9,5 @@ export * from './def/api-request-handler';
 export * from './util/jwt.util';
 export * from './api-service-impl';
 export * from './errors/network-error';
-export * from './errors/server-error';
+export * from './errors/http-server-error';
+export * from './errors/http-client-error';

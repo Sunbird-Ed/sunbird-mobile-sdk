@@ -1,7 +1,5 @@
-import {HttpClient, HttpRequestType, HttpSerializer, Response, ResponseCode} from '..';
+import {HttpClient, HttpRequestType, HttpSerializer, Response, ResponseCode, NetworkError, HttpServerError, HttpClientError} from '..';
 import {Observable, Subject} from 'rxjs';
-import {NetworkError} from '../errors/network-error';
-import {ServerError} from '../errors/server-error';
 
 interface CordovaHttpClientResponse {
     data?: string;
@@ -85,10 +83,17 @@ export class HttpClientImpl implements HttpClient {
                     observable.next(r);
                     observable.complete();
                 } else {
-                    observable.error(new ServerError(`
-                        ${url} -
-                        ${response.error || ''}
-                    `, r));
+                    if (r.responseCode >= 400 && r.responseCode <= 499) {
+                        observable.error(new HttpClientError(`
+                            ${url} -
+                            ${response.error || ''}
+                        `, r));
+                    } else {
+                        observable.error(new HttpServerError(`
+                            ${url} -
+                            ${response.error || ''}
+                        `, r));
+                    }
                 }
             } catch (e) {
                 observable.error(new NetworkError(`

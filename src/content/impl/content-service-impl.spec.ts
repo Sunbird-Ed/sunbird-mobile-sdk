@@ -5,11 +5,14 @@ import { InjectionTokens } from '../../injection-tokens';
 import { DbService } from '../../db';
 import { SdkConfig } from '../../sdk-config';
 import { ApiService, Request } from '../../api';
-import { ProfileService, ContentDelete, ContentDetailRequest, ContentDeleteRequest, ContentMarkerRequest } from '../..';
+import {
+    ProfileService, ContentDelete, ContentDetailRequest, ContentDeleteRequest,
+    ContentMarkerRequest, Content, HttpRequestType, ContentData
+} from '../..';
 import { FileService } from '../../util/file/def/file-service';
 import { ZipService } from '../../util/zip/def/zip-service';
 import { DeviceInfo } from '../../util/device';
-import { TelemetryService } from '../../telemetry';
+import { TelemetryService, CorrelationData } from '../../telemetry';
 import { ContentFeedbackService } from '../def/content-feedback-service';
 import { DownloadService } from '../../util/download';
 import { SharedPreferences } from '../../util/shared-preferences';
@@ -19,16 +22,48 @@ import { Observable } from 'rxjs';
 import { SharedPreferencesSetCollection } from '../../util/shared-preferences/def/shared-preferences-set-collection';
 import { ContentServiceConfig } from '../config/content-config';
 import { OpenRapConfigurable } from '../../open-rap-configurable';
-import { MarkerType, ContentSearchCriteria, EcarImportRequest, RelevantContentRequest } from '../def/requests';
+import {
+    MarkerType, ContentSearchCriteria, EcarImportRequest, RelevantContentRequest,
+    ContentSpaceUsageSummaryRequest, ContentDownloadRequest, ContentExportRequest,
+    ContentRequest, ChildContentRequest, ContentImportRequest, ContentImport
+} from '../def/requests';
 import { SharedPreferencesSetCollectionImpl } from '../../util/shared-preferences/impl/shared-preferences-set-collection-impl';
 import { GenerateInteractTelemetry } from '../handlers/import/generate-interact-telemetry';
 import { HierarchyInfo } from '../def/content';
+import { CleanTempLoc } from '../handlers/export/clean-temp-loc';
+import { AppConfig } from '../../api/config/app-config';
+import { SearchContentHandler } from '../handlers/search-content-handler';
+import { ContentMapper } from '../util/content-mapper';
+import { GetContentDetailsHandler } from '../handlers/get-content-details-handler';
+import { FrameworkKeys, ContentKeys } from '../../preference-keys';
+import { ChildContentsHandler } from '../handlers/get-child-contents-handler';
+import { ImportNExportHandler } from '../handlers/import-n-export-handler';
+import { ArrayUtil } from '../../util/array-util';
+import { FileUtil } from '../../util/file/util/file-util';
+
+
+jest.mock('../handlers/search-content-handler');
+jest.mock('../handlers/get-content-details-handler');
+jest.mock('../handlers/get-child-contents-handler');
+jest.mock('../handlers/import-n-export-handler');
+
 describe('ContentServiceImpl', () => {
     let contentService: ContentService;
 
     const container = new Container();
-    const mockSdkConfig: Partial<SdkConfig> = {};
-    const mockApiService: Partial<ApiService> = {};
+    const mockSdkConfig: Partial<SdkConfig> = {
+        contentServiceConfig: {
+            host: 'SAMPLE_HOST',
+            searchApiPath: 'SAMPLE_PATH'
+        } as Partial<ContentServiceConfig> as ContentServiceConfig,
+        appConfig: {
+            maxCompatibilityLevel: 2,
+            minCompatibilityLevel: 1
+        }
+    };
+    const mockApiService: Partial<ApiService> = {
+        fetch: jest.fn(() => { })
+    };
     const mockDbService: Partial<DbService> = {};
     const mockProfileService: Partial<ProfileService> = {};
     const mockFileService: Partial<FileService> = {
@@ -53,8 +88,6 @@ describe('ContentServiceImpl', () => {
         getCached: jest.fn(() => { })
     };
 
-
-
     beforeAll(() => {
         container.bind<ContentService>(InjectionTokens.CONTENT_SERVICE).to(ContentServiceImpl);
         container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(mockSdkConfig as SdkConfig);
@@ -77,6 +110,10 @@ describe('ContentServiceImpl', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        (SearchContentHandler as any as jest.Mock<SearchContentHandler>).mockClear();
+        (GetContentDetailsHandler as any as jest.Mock<GetContentDetailsHandler>).mockClear();
+        (ChildContentsHandler as any as jest.Mock<ChildContentsHandler>).mockClear();
+        (ImportNExportHandler as any as jest.Mock<ImportNExportHandler>).mockClear();
     });
 
     it('should return an instance of ContentServiceImpl from container', () => {
@@ -85,22 +122,18 @@ describe('ContentServiceImpl', () => {
     });
 
     it('should register as download service observe onInit()', (done) => {
-        // arrange
+        mockSharedPreferences.getBoolean = jest.fn(() => Observable.of([]));
+        mockSharedPreferences.getString = jest.fn(() => Observable.of([]));
         (mockDownloadService.registerOnDownloadCompleteDelegate as jest.Mock).mockReturnValue(Observable.of(''));
-        const contentDelete: ContentDelete = {
-            contentId: 'SAMPLE_CONTENT_ID',
-            isChildContent: true
-        };
-        const mockSharedPreferencesSetCollection: Partial<SharedPreferencesSetCollection<ContentDelete>> = {
-            asListChanges: jest.fn(() => { })
-        };
-
-        // (mockSharedPreferences.getBoolean as jest.Mock).mockReturnValue(Observable.of(''));
-        // spyOn(contentService, 'deleteContent').and.returnValue(Observable.of(''));
+        (mockSharedPreferences.getBoolean as jest.Mock).mockReturnValue(Observable.of([]));
+        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(Observable.of('[]'));
+        spyOn(contentService, 'deleteContent').and.returnValue('');
         // act
         contentService.onInit().subscribe(() => {
             // assert
-            expect(mockSharedPreferencesSetCollection.asListChanges).toHaveBeenCalledWith('');
+            expect(mockSharedPreferences.getBoolean).toHaveBeenCalled();
+            expect(mockDownloadService.registerOnDownloadCompleteDelegate).toHaveBeenCalled();
+            expect(mockSharedPreferences.getString).toHaveBeenCalled();
             done();
         });
     });
@@ -110,15 +143,17 @@ describe('ContentServiceImpl', () => {
         const request: ContentDetailRequest = {
             contentId: 'SAMPLE_CONTENT_ID'
         };
-        mockDbService.read = jest.fn(() => Observable.of([]));
-        mockApiService.fetch = jest.fn(() => Observable.of([]));
-        spyOn(mockApiService, 'fetch').and.stub();
-        // spyOn(contentService, 'getConte')
+        const handleMethod = jest.fn(() => Observable.of('request'));
+        (GetContentDetailsHandler as any as jest.Mock<GetContentDetailsHandler>).mockImplementation(() => {
+            return {
+                handle: handleMethod
+            };
+        });
+        contentService = container.get(InjectionTokens.CONTENT_SERVICE);
         // act
         contentService.getContentDetails(request).subscribe(() => {
             // assert
-            //   expect(mockDbService.read).toHaveBeenCalledWith();
-            // expect(mockApiService.fetch).toHaveBeenCalled();
+            expect(handleMethod).toBeCalled();
             done();
         });
     });
@@ -133,7 +168,7 @@ describe('ContentServiceImpl', () => {
             done();
         });
     });
-    it('should delete downloaded content from local', (done) => {
+    it('should delete downloaded content from local', async (done) => {
         // arrange
         const contentDelete: ContentDelete[] = [{
             contentId: 'SAMPLE_CONTENT_ID',
@@ -142,14 +177,25 @@ describe('ContentServiceImpl', () => {
         const request: ContentDeleteRequest = {
             contentDeleteList: contentDelete
         };
-        mockDbService.read = jest.fn(() => Observable.of([]));
-        mockDbService.execute = jest.fn(() => Observable.of([]));
-        console.log('length is', contentDelete[0].contentId);
+        const data = mockDbService.read = jest.fn(() => Observable.of([{
+            identifier: 'SAMPLE_IDENTIFIER',
+            serverData: 'SERVER_DATA'
+        }]));
+        const fetchData = jest.fn(() => Observable.of(data));
+        (GetContentDetailsHandler as any as jest.Mock<GetContentDetailsHandler>).mockImplementation(() => {
+            return {
+                fetchFromDB: fetchData
+            };
+        });
+
+        contentService = container.get(InjectionTokens.CONTENT_SERVICE);
+        mockDbService.execute = jest.fn(() => Observable.of({}));
+
         // act
         contentService.deleteContent(request).subscribe(() => {
             // assert
-            expect(mockDbService.read).toHaveBeenCalled();
-            expect(mockDbService.execute).toHaveBeenCalled();
+            expect(mockDbService.execute).toBeCalled();
+            expect(fetchData).toHaveBeenCalled();
             done();
         });
     });
@@ -185,26 +231,37 @@ describe('ContentServiceImpl', () => {
         // act
         contentService.setContentMarker(request).subscribe(() => {
             // assert
+            expect(mockDbService.insert).toHaveBeenCalled();
             expect(mockDbService.execute).toHaveBeenCalled();
             done();
         });
     });
 
-    it('should search content group by page for online and offline', (done) => {
+    it('should offline textbook contents with online textbook contents group by section', (done) => {
         // arrange
         const request: ContentSearchCriteria = {
         };
-        spyOn(contentService, 'searchContent').and.stub();
-        mockDownloadService.cancel = jest.fn(() => Observable.of([]));
         mockDbService.execute = jest.fn(() => Observable.of([]));
-        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(Observable.of(''));
+        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(Observable.of({ id: 'd0_id' }));
+        // act
+        contentService.searchContentGroupedByPageSection(request).toPromise().catch(() => {
+            // assert
+            expect(mockDbService.execute).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should offline textbook contents with online textbook contents group by section for catch part', (done) => {
+        // arrange
+        const request: ContentSearchCriteria = {
+        };
+        mockDbService.execute = jest.fn(() => Observable.of([]));
+        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(Observable.throw({ err: 'err' }));
         // act
         contentService.searchContentGroupedByPageSection(request).subscribe(() => {
             // assert
-
-            expect(mockDownloadService.cancel).toHaveBeenCalled();
             expect(mockDbService.execute).toHaveBeenCalled();
-            // expect(mockCachedItemStore.getCached).toHaveBeenCalled();
+            expect(mockCachedItemStore.getCached).toHaveBeenCalled();
             done();
         });
     });
@@ -212,12 +269,14 @@ describe('ContentServiceImpl', () => {
     it('should clear content from delete queue', (done) => {
         // arrange
         const contentDeleteRequestSet: Partial<SharedPreferencesSetCollection<ContentDelete>> = {
-            clear: jest.fn(() => Observable.of([]))
+            clear: jest.fn(() => Observable.of())
         };
+        contentService = container.get(InjectionTokens.CONTENT_SERVICE);
         (mockSharedPreferences.putString as jest.Mock).mockReturnValue(Observable.of(''));
         // act
         contentService.clearContentDeleteQueue().subscribe(() => {
             // assert
+            expect(mockSharedPreferences.putString).toHaveBeenCalledWith(ContentKeys.KEY_CONTENT_DELETE_REQUEST_LIST, expect.any(String));
             done();
         });
     });
@@ -227,32 +286,45 @@ describe('ContentServiceImpl', () => {
         const contentDeleteRequestSet: Partial<SharedPreferencesSetCollection<ContentDelete>> = {
             clear: jest.fn(() => Observable.of([]))
         };
-        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(Observable.of(''));
+        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(Observable.of('[]'));
         // act
-        contentService.getContentDeleteQueue().subscribe(() => { done(); });
-        // arrange
+        contentService.getContentDeleteQueue().subscribe(() => {
+            // assert
+            expect(mockSharedPreferences.getString).toHaveBeenCalledWith(ContentKeys.KEY_CONTENT_DELETE_REQUEST_LIST);
+            done();
+        });
     });
 
     it('should delete content from queue', (done) => {
         // arrange
+        //   contentService = container.get(InjectionTokens.CONTENT_SERVICE);
         const contentDelete: ContentDelete[] = [{
-            contentId: 'SAMPLE_CONTENT_ID',
+            contentId: 'SAMPLE_CONTENT',
             isChildContent: true
         }];
         const request: ContentDeleteRequest = {
             contentDeleteList: contentDelete
         };
+        const data = jest.fn(() => Observable.from([
+            {
+                contentId: 'SAMPLE_CONTENT_ID',
+                isChildContent: true,
+            }
+        ]));
         const mockSharedPreferencesSetCollection: Partial<SharedPreferencesSetCollection<ContentDelete>> = {
-            asSet: jest.fn(() => { })
+            addAll: jest.fn(() => Observable.of(undefined)),
         };
-        (mockSharedPreferencesSetCollection.asSet as jest.Mock).mockReturnValue(Observable.of([]));
-      //  (mockSharedPreferences.getString as jest.Mock).mockReturnValue(Observable.of(''));
+        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(Observable.of('[]'));
+        mockSharedPreferences.putString = jest.fn(() => { });
+        (mockSharedPreferences.putString as jest.Mock).mockReturnValue(Observable.of(undefined));
         // act
         contentService.enqueueContentDelete(request).subscribe(() => {
-        //    expect(contentDeleteRequestSet.addAll).toHaveBeenCalled();
+            // assert
+            // expect(mockSharedPreferencesSetCollection.addAll).toBe('');
+            expect(mockSharedPreferences.getString).toHaveBeenCalledWith(ContentKeys.KEY_CONTENT_DELETE_REQUEST_LIST);
+            expect(mockSharedPreferences.putString).toHaveBeenCalledWith(ContentKeys.KEY_CONTENT_DELETE_REQUEST_LIST, expect.any(String));
             done();
         });
-        // assert
     });
 
     it('should import ecar file', (done) => {
@@ -277,27 +349,53 @@ describe('ContentServiceImpl', () => {
         // act
         contentService.importEcar(request).subscribe(() => {
             // assert
-            expect(mockFileService.exists).toHaveBeenCalled();
+            expect(mockFileService.exists).toBeCalled();
             done();
         });
     });
 
-    it('should return relevant content', () => {
+    it('should return relevant content', (done) => {
         // arrange
+        const data: HierarchyInfo[] = [{
+            identifier: 'SAMPLE_IDENTIFIER',
+            contentType: 'YOUTUBE'
+        }];
         const request: RelevantContentRequest = {
             identifier: 'SAMPLE_IDENTIFIER',
             downloadUrl: 'SAMPLE_DOWNLOAD_URL',
             mimeType: 'SAMPLE_MIME_TYPE',
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             filename: 'SAMPLE_FILE_NAME',
+            next: true,
+            prev: true,
+            hierarchyInfo: data,
         };
+        (GetContentDetailsHandler as any as jest.Mock<GetContentDetailsHandler>).mockImplementation(() => {
+            return {
+                getReadContentQuery: jest.fn(() => { })
+            };
+        });
+        mockDbService.read = jest.fn(() => Observable.of({}));
+        const response = 'SAMPLE_STRING';
+        (ChildContentsHandler as any as jest.Mock<ChildContentsHandler>).mockImplementation(() => {
+            return {
+                getContentsKeyList: jest.fn(() => '[]'),
+                getNextContentIdentifier: jest.fn(() => Observable.of(response)),
+                getContentFromDB: jest.fn(() => Observable.of({})),
+                getPreviousContentIdentifier: jest.fn(() => response)
+            };
+        });
+        contentService = container.get(InjectionTokens.CONTENT_SERVICE);
         // act
-        contentService.getRelevantContent(request).subscribe(() => {
+        contentService.getRelevantContent(request).subscribe((res) => {
             // assert
+            expect(mockDbService.read).toBeCalled();
+            expect(ChildContentsHandler).toHaveBeenCalled();
+            done();
         });
     });
 
-    it('should be next content', () => {
+    it('should be next content', (done) => {
         // arrange
         const hierarchyInfo: HierarchyInfo[] = [{
             identifier: 'd0_123',
@@ -305,14 +403,14 @@ describe('ContentServiceImpl', () => {
         }];
         const currentContentIdentifier = 'CONTENT_IDENTIFIER';
         mockDbService.read = jest.fn(() => Observable.of([]));
-        console.log('data', hierarchyInfo[0].identifier);
         // act
         contentService.nextContent(hierarchyInfo, currentContentIdentifier).subscribe(() => {
             // assert
             expect(mockDbService.read).toHaveBeenCalled();
+            done();
         });
     });
-    it('should be return previous content', () => {
+    it('should be return previous content', (done) => {
         // arrange
         const hierarchyInfo: HierarchyInfo[] = [{
             identifier: 'd0_123',
@@ -324,6 +422,197 @@ describe('ContentServiceImpl', () => {
         contentService.prevContent(hierarchyInfo, currentContentIdentifier).subscribe(() => {
             // arrange
             expect(mockDbService.read).toHaveBeenCalled();
+            done();
+        });
+    });
+    it('should space useage for content', (done) => {
+        // arrange
+        const request: ContentSpaceUsageSummaryRequest = {
+            paths: ['SAMPLE_PATHS_1', 'SAMPLE_PATHS_2']
+        };
+        mockDbService.execute = jest.fn(() => Observable.of([{
+            total_Size: ''
+        }]));
+        // (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of({}))
+        // act
+        contentService.getContentSpaceUsageSummary(request).subscribe(() => {
+            // assert
+            expect(mockDbService.execute).toBeCalled();
+            done();
+        });
+    });
+    it('should complete download', (done) => {
+        // arrange
+        const content: Partial<Content> = {
+            identifier: 'Sample_identifier'
+        };
+        const request: ContentDownloadRequest = {
+            identifier: 'Sample_identifier',
+            downloadUrl: '',
+            mimeType: '',
+            destinationFolder: '',
+            filename: '',
+            contentMeta: content
+        };
+        const correlationRequest: CorrelationData[] = [{
+            id: 'SAMPLE_ID',
+            type: 'SAMPLE_TYPE'
+        }];
+        const importRequest: EcarImportRequest = {
+            isChildContent: true,
+            destinationFolder: 'DESTINATION_FOLDER',
+            sourceFilePath: 'SOURCE_FILE_PATH',
+            correlationData: correlationRequest
+        };
+        mockDownloadService.cancel = jest.fn(() => Observable.of(undefined));
+        mockFileService.exists = jest.fn(() => Observable.of(undefined));
+        (mockFileService.exists as jest.Mock).mockResolvedValue('');
+        // act
+        contentService.onDownloadCompletion(request).subscribe(() => {
+            // assert
+            expect(mockDownloadService.cancel).toHaveBeenCalled();
+            done();
+        });
+    });
+    it('should export content for delete content', (done) => {
+        // arrange
+        const request: ContentExportRequest = {
+            destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
+            contentIds: ['SAMPLE_CONTENT_ID_1', 'SAMPLE_CONTENT_ID_2']
+        };
+        mockFileService.getTempLocation = jest.fn(() => Promise.resolve({nativeURL: 'native_url'}));
+        // (mockFileService.getTempLocation as jest.Mock).mockResolvedValue(jest.fn(() => Promise.resolve({
+        //     nativeURL: 'NATIVE_URL'
+        // })));
+        mockFileService.exists = jest.fn(() => Observable.of(undefined));
+        (mockFileService.exists as jest.Mock).mockResolvedValue('');
+        const cleanTempSession: Partial<CleanTempLoc> = {
+            execute: jest.fn(() => { })
+        };
+        (cleanTempSession.execute as jest.Mock).mockResolvedValue('');
+        mockDbService.execute = jest.fn(() => Observable.of({}));
+        (ImportNExportHandler as any as jest.Mock<ImportNExportHandler>).mockImplementation(() => {
+            return {
+                getContentExportDBModelToExport: jest.fn(() => Promise.resolve(
+                    [{
+                        identifier: 'IDENTIFIER',
+                        server_data: 'SERVER_DATA',
+                        local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "name": "SAMPLE_NAME"}',
+                        mime_type: 'MIME_TYPE',
+                        manifest_version: 'MAINFEST_VERSION',
+                        content_type: 'CONTENT_TYPE',
+                        path: 'sample_path',
+                    }]
+                )),
+                populateItems: jest.fn(() => [{'key': 'do_id'}])
+            };
+        });
+        // contentService = container.get(InjectionTokens.CONTENT_SERVICE);
+        mockFileService.listDir = jest.fn(() => Promise.resolve([{
+            name: 'ENTRY_NAME'
+        }]));
+        spyOn(FileUtil, 'getFileExtension').and.returnValue('');
+        mockFileService.createDir = jest.fn(() => Promise.resolve([{
+            name: 'sunbird'
+        }]));
+        mockDeviceInfo.getAvailableInternalMemorySize = jest.fn(() => {});
+        (mockDeviceInfo.getAvailableInternalMemorySize as jest.Mock).mockReturnValue(Observable.throw(undefined));
+        // act
+        contentService.exportContent(request).subscribe(null, (e) => {
+            expect(e.errorMesg).toBe('EXPORT_FAILED_WRITE_MANIFEST');
+            expect(mockFileService.getTempLocation).toBeCalled();
+            expect(mockFileService.listDir).toHaveBeenCalled();
+            expect(mockDbService.execute).not.toHaveBeenCalledWith(expect.any(String));
+            expect(mockDeviceInfo.getAvailableInternalMemorySize).toHaveBeenCalled();
+           // expect(cleanTempSession.execute).toHaveBeenCalled();
+            done();
+        });
+    });
+    it('should be find child content', (done) => {
+        // arrange
+        const hierarInfoData: HierarchyInfo[] = [{
+            identifier: 'd0_123',
+            contentType: 'content_type'
+        }];
+        const request: ChildContentRequest = {
+            contentId: 'SAMPLE_CONTENT_ID',
+            hierarchyInfo: hierarInfoData
+        };
+        mockDbService.read = jest.fn(() => Observable.of([{
+            local_data: ''
+        }]));
+        JSON.parse = jest.fn().mockImplementationOnce(() => {
+            return mockDbService.read;
+        });
+        (ChildContentsHandler as any as jest.Mock<ChildContentsHandler>).mockImplementation(() => {
+            return {
+                fetchChildrenOfContent: jest.fn(() => Promise.resolve({}))
+            };
+        });
+        ArrayUtil.joinPreservingQuotes = jest.fn(() => Observable.of([]));
+        mockDbService.execute = jest.fn(() => Observable.of([]));
+        // act
+        contentService.getChildContents(request).subscribe(() => {
+            // assert
+            expect(mockDbService.read).toHaveBeenCalled();
+            expect(ArrayUtil.joinPreservingQuotes).toHaveBeenCalled();
+            expect(mockDbService.execute).toBeCalled();
+            done();
+        });
+        // assert
+    });
+    it('should import content', (done) => {
+        // arrange
+        const contentImport: ContentImport[] = [{
+            isChildContent: true,
+            destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
+            contentId: 'SAMPLE_CONTENT_ID'
+        }];
+        const request: ContentImportRequest = {
+            contentImportArray: contentImport,
+            contentStatusArray: ['SAMPLE_1', 'SAMPLE_2']
+        };
+        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+            body: {
+                result: {
+                    response: 'SAMPLE_RESPONSE'
+                }
+            }
+        }));
+        // act
+        contentService.importContent(request).subscribe(() => {
+            // assert
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            done();
+        });
+    });
+    it('should used for search content', (done) => {
+        // arrange
+        const request: ContentSearchCriteria = {
+            limit: 1,
+            offset: 2
+        };
+        (SearchContentHandler as any as jest.Mock<SearchContentHandler>).mockImplementation(() => {
+            return {
+                getSearchContentRequest: jest.fn(() => Observable.of('')),
+                mapSearchResponse: jest.fn(() => Observable.of(''))
+            };
+        });
+
+        mockSharedPreferences.getString = jest.fn(() => Observable.of([]));
+        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+            body: {
+                result: {
+                    response: 'SAMPLE_RESPONSE'
+                }
+            }
+        }));
+        // act
+        contentService.searchContent(request).subscribe(() => {
+            // assert
+            expect(mockSharedPreferences.getString).toHaveBeenCalled();
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            done();
         });
     });
 });

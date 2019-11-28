@@ -1,6 +1,5 @@
 import { ApiRequestHandler, ApiService } from '../../api';
-import { PageAssembleCriteria, PageServiceConfig } from '..';
-import { PageAssemble } from '../def/page-assemble';
+import { PageAssemble, PageAssembleCriteria, PageServiceConfig } from '..';
 import { CachedItemStore, KeyValueStore } from '../../key-value-store';
 import { Observable } from 'rxjs';
 import { SharedPreferences } from '../../util/shared-preferences';

@@ -1,4 +1,3 @@
-import {Observable} from 'rxjs';
 import {FileService} from '../../../util/file/def/file-service';
 import {Manifest, MoveContentStatus, TransferContentContext} from '../transfer-content-handler';
 import {ContentEntry} from '../../../content/db/schema';
@@ -6,8 +5,9 @@ import {ContentUtil} from '../../../content/util/content-util';
 import {ContentStatus, FileName, MimeType, State, Visibility} from '../../../content';
 import {DbService} from '../../../db';
 import {AppConfig} from '../../../api/config/app-config';
-import {ExistingContentAction} from '../../index';
+import {ExistingContentAction} from '../..';
 import {DeviceInfo} from '../../../util/device';
+import {defer, Observable} from 'rxjs';
 
 export class StoreDestinationContentInDb {
 
@@ -20,7 +20,7 @@ export class StoreDestinationContentInDb {
     }
 
     execute(context: TransferContentContext): Observable<void> {
-        return Observable.defer(async () => {
+        return defer(async () => {
             let addedContentIdentifiers;
 
             for (const duplicateContent of context.duplicateContents!) {
