@@ -1,6 +1,7 @@
 import {ApiService, HttpRequestType, Request} from '../../api';
 import {CourseServiceConfig, GetContentStateRequest} from '..';
 import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 export class GetContentStateHandler {
     private readonly GET_CONTENT_STATE_KEY_PREFIX = 'getContentState';
@@ -20,8 +21,10 @@ export class GetContentStateHandler {
             .withBody({request: contentStateRequest})
             .build();
 
-        return this.apiService.fetch<any>(apiRequest).map((response) => {
-            return response.body;
-        });
+        return this.apiService.fetch<any>(apiRequest).pipe(
+            map((response) => {
+                return response.body;
+            })
+        );
     }
 }
