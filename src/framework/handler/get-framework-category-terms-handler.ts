@@ -15,6 +15,7 @@ import * as Collections from 'typescript-collections';
 import {FrameworkMapper} from '../util/framework-mapper';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {FrameworkKeys} from '../../preference-keys';
+import {map, mergeMap, tap} from 'rxjs/operators';
 
 export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFrameworkCategoryTermsRequest, CategoryTerm[]> {
 
@@ -30,11 +31,13 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
             }
 
             return this.getActiveChannelTranslatedDefaultFrameworkDetails(request.requiredCategories, request.language);
-        }) as () => Observable<Framework>)()
-            .do(async (framework: Framework) =>
-                await this.sharedPreferences.putString(FrameworkKeys.KEY_ACTIVE_CHANNEL_ACTIVE_FRAMEWORK_ID, framework.identifier).toPromise()
-            )
-            .map((framework: Framework) => {
+        }) as () => Observable<Framework>)().pipe(
+            tap(async (framework: Framework) =>
+                await this.sharedPreferences.putString(
+                    FrameworkKeys.KEY_ACTIVE_CHANNEL_ACTIVE_FRAMEWORK_ID, framework.identifier
+                ).toPromise()
+            ),
+            map((framework: Framework) => {
                 let terms: CategoryTerm[] = [];
 
                 if (!request.prevCategoryCode && request.currentCategoryCode) {
@@ -48,17 +51,19 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
                 terms.sort((i, j) => (i.index || maxIndex + 1) - (j.index || maxIndex + 1));
 
                 return terms;
-            });
+            })
+        );
     }
 
     private getActiveChannelTranslatedDefaultFrameworkDetails(
         requiredCategories: FrameworkCategoryCode[],
         language: string
     ): Observable<Framework> {
-        return this.frameworkUtilService.getActiveChannel()
-            .mergeMap((channel: Channel) => {
+        return this.frameworkUtilService.getActiveChannel().pipe(
+            mergeMap((channel: Channel) => {
                 return this.getTranslatedFrameworkDetails(channel.defaultFramework, requiredCategories, language);
-            });
+            })
+        );
     }
 
     private getTranslatedFrameworkDetails(
@@ -69,7 +74,9 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
         return this.frameworkService.getFrameworkDetails({
             frameworkId,
             requiredCategories
-        }).map((f) => FrameworkMapper.prepareFrameworkTranslations(f, language));
+        }).pipe(
+            map((f) => FrameworkMapper.prepareFrameworkTranslations(f, language))
+        );
     }
 
     private getAllCategoriesTermsSet(framework: Framework): Collections.Set<CategoryTerm> {

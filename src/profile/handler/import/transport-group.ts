@@ -1,6 +1,5 @@
 import {DbService} from '../../../db';
 import {ImportProfileContext} from '../../def/import-profile-context';
-import {ProfileEntry} from '../../db/schema';
 import {Response} from '../../../api';
 import {GroupEntry} from '../../../group/db/schema';
 

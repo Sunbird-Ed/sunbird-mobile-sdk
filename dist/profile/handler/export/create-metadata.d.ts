@@ -1,6 +1,6 @@
 import { DbService } from '../../../db';
 import { Response } from '../../../api';
-import { DeviceInfo } from '../../../util/device/def/device-info';
+import { DeviceInfo } from '../../../util/device';
 import { FileService } from '../../../util/file/def/file-service';
 import { ExportProfileContext } from '../../def/export-profile-context';
 export declare class CreateMetaData {

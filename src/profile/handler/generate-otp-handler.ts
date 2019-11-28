@@ -2,6 +2,7 @@ import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api
 import {GenerateOtpRequest} from '..';
 import {ProfileServiceConfig} from '..';
 import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 export class GenerateOtpHandler implements ApiRequestHandler<GenerateOtpRequest, boolean> {
     private readonly GET_GENERATE_OTP_ENDPOINT = '/generate';
@@ -24,9 +25,11 @@ export class GenerateOtpHandler implements ApiRequestHandler<GenerateOtpRequest,
             })
             .build();
 
-        return this.apiService.fetch <{ result: { response: string } }>(apiRequest).map((success) => {
-            return success.body.result.response === 'SUCCESS';
-        });
+        return this.apiService.fetch <{ result: { response: string } }>(apiRequest).pipe(
+            map((success) => {
+                return success.body.result.response === 'SUCCESS';
+            })
+        );
     }
 
 }

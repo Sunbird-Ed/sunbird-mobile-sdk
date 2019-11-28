@@ -50,8 +50,8 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     getDownloadState(): Promise<any>;
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]>;
     importEcar(ecarImportRequest: EcarImportRequest): Observable<ContentImportResponse[]>;
-    nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
-    prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
+    nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string, shouldConvertBasePath?: boolean): Observable<Content>;
+    prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string, shouldConvertBasePath?: boolean): Observable<Content>;
     getRelevantContent(request: RelevantContentRequest): Observable<RelevantContentResponsePlayer>;
     subscribeForImportStatus(contentId: string): Observable<any>;
     searchContent(contentSearchCriteria: ContentSearchCriteria, request?: {
