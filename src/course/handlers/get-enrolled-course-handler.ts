@@ -1,9 +1,10 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {Course, CourseServiceConfig, CourseServiceImpl, FetchEnrolledCourseRequest} from '..';
-import {Observable} from 'rxjs';
+import {from, Observable, of} from 'rxjs';
 import {KeyValueStore} from '../../key-value-store';
 import {GetEnrolledCourseResponse} from '../def/get-enrolled-course-response';
 import {SharedPreferences} from '../../util/shared-preferences';
+import {catchError, map, mapTo, mergeMap, tap} from 'rxjs/operators';
 
 export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolledCourseRequest, Course[]> {
 
@@ -18,50 +19,62 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
 
     handle(request: FetchEnrolledCourseRequest): Observable<Course[]> {
         return this.keyValueStore.getValue(this.STORED_ENROLLED_COURSES_PREFIX + request.userId)
-            .mergeMap((value: string | undefined) => {
-                if (!value) {
-                    return this.fetchFromServer(request)
-                        .mergeMap((courses: GetEnrolledCourseResponse) => {
-                            return this.keyValueStore.setValue(
-                                this.STORED_ENROLLED_COURSES_PREFIX + request.userId,
-                                JSON.stringify(courses)
-                            ).mapTo(courses.result.courses).do((courseList) => {
-                                return Observable.fromPromise(this.updateLastPlayedContent(courseList));
-                            });
-                        });
-                } else if (request.returnFreshCourses) {
-                    return this.fetchFromServer(request)
-                        .mergeMap((courses: GetEnrolledCourseResponse) => {
-                            return this.keyValueStore.setValue(
-                                this.STORED_ENROLLED_COURSES_PREFIX + request.userId,
-                                JSON.stringify(courses)
-                            ).mapTo(courses.result.courses).do((courseList) => {
-                                return Observable.fromPromise(this.updateLastPlayedContent(courseList));
-                            });
-                        }).catch(() => {
-                            const response = JSON.parse(value);
-                            const result = response['result'];
-                            let courses: Course[];
-                            if (result && result.hasOwnProperty('courses')) {
-                                courses = result['courses'];
-                            } else {
-                                courses = response['courses'];
-                            }
-                            return Observable.of(courses);
-                        });
-                } else {
-                    // TODO
-                    const response = JSON.parse(value);
-                    const result = response['result'];
-                    let courses: Course[];
-                    if (result && result.hasOwnProperty('courses')) {
-                        courses = result['courses'];
+            .pipe(
+                mergeMap((value: string | undefined) => {
+                    if (!value) {
+                        return this.fetchFromServer(request).pipe(
+                            mergeMap((courses: GetEnrolledCourseResponse) => {
+                                return this.keyValueStore.setValue(
+                                    this.STORED_ENROLLED_COURSES_PREFIX + request.userId,
+                                    JSON.stringify(courses)
+                                ).pipe(
+                                    mapTo(courses.result.courses),
+                                    tap((courseList) => {
+                                        return from(this.updateLastPlayedContent(courseList));
+                                    })
+                                );
+                            })
+                        );
+                    } else if (request.returnFreshCourses) {
+                        return this.fetchFromServer(request)
+                            .pipe(
+                                mergeMap((courses: GetEnrolledCourseResponse) => {
+                                    return this.keyValueStore.setValue(
+                                        this.STORED_ENROLLED_COURSES_PREFIX + request.userId,
+                                        JSON.stringify(courses)
+                                    ).pipe(
+                                        mapTo(courses.result.courses),
+                                        tap((courseList) => {
+                                            return from(this.updateLastPlayedContent(courseList));
+                                        })
+                                    );
+                                }),
+                                catchError(() => {
+                                    const response = JSON.parse(value);
+                                    const result = response['result'];
+                                    let courses: Course[];
+                                    if (result && result.hasOwnProperty('courses')) {
+                                        courses = result['courses'];
+                                    } else {
+                                        courses = response['courses'];
+                                    }
+                                    return of(courses);
+                                })
+                            );
                     } else {
-                        courses = response['courses'];
+                        // TODO
+                        const response = JSON.parse(value);
+                        const result = response['result'];
+                        let courses: Course[];
+                        if (result && result.hasOwnProperty('courses')) {
+                            courses = result['courses'];
+                        } else {
+                            courses = response['courses'];
+                        }
+                        return of(courses);
                     }
-                    return Observable.of(courses);
-                }
-            });
+                })
+            );
     }
 
     private async updateLastPlayedContent(courses: Course[]): Promise<boolean> {
@@ -89,8 +102,11 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
             .withSessionToken(true)
             .build();
 
-        return this.apiService.fetch<GetEnrolledCourseResponse>(apiRequest).map((response) => {
-            return response.body;
-        });
+        return this.apiService.fetch<GetEnrolledCourseResponse>(apiRequest)
+            .pipe(
+                map((response) => {
+                    return response.body;
+                })
+            );
     }
 }

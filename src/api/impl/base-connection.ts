@@ -9,12 +9,12 @@ import {
     Response,
     ResponseCode
 } from '..';
-import {Observable} from 'rxjs';
 import {Connection} from '../def/connection';
 import {Authenticator} from '../def/authenticator';
 import * as qs from 'qs';
 import {DeviceInfo} from '../../util/device';
 import {SharedPreferences} from '../../util/shared-preferences';
+import {from, Observable} from 'rxjs';
 
 export class BaseConnection implements Connection {
 
@@ -63,7 +63,7 @@ export class BaseConnection implements Connection {
             return response;
         })();
 
-        return Observable.fromPromise(response);
+        return from(response as Promise<Response<any>>);
 
     }
 
@@ -173,7 +173,7 @@ export class BaseConnection implements Connection {
                     }
                 }
             };
-            xhr.send(request.body);
+            xhr.send(request.body as any);
         });
     }
 

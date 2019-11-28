@@ -1,6 +1,7 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {CourseServiceConfig, EnrollCourseRequest} from '..';
 import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseRequest, boolean> {
 
@@ -20,8 +21,11 @@ export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseReques
             .withBody({request})
             .build();
 
-        return this.apiService.fetch<{ result: { response: string } }>(apiRequest).map((success) => {
-            return success.body.result.response === 'SUCCESS';
-        });
+        return this.apiService.fetch<{ result: { response: string } }>(apiRequest)
+            .pipe(
+                map((success) => {
+                    return success.body.result.response === 'SUCCESS';
+                })
+            );
     }
 }

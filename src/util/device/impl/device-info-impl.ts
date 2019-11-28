@@ -1,8 +1,9 @@
 import {DeviceInfo, DeviceSpec, StorageVolume} from '..';
 import * as SHA1 from 'crypto-js/sha1';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {injectable} from 'inversify';
 import {StorageDestination} from '../../../storage';
+import {distinctUntilChanged, finalize, tap} from 'rxjs/operators';
 
 @injectable()
 export class DeviceInfoImpl implements DeviceInfo {
@@ -20,9 +21,9 @@ export class DeviceInfoImpl implements DeviceInfo {
 
     getDeviceSpec(): Observable<DeviceSpec> {
         if (this.deviceSpec) {
-            return Observable.of(this.deviceSpec);
+            return of(this.deviceSpec);
         }
-        return Observable.create((observer) => {
+        return new Observable((observer) => {
             buildconfigreader.getDeviceSpec((deviceSpec: DeviceSpec) => {
                 this.deviceSpec = deviceSpec;
                 observer.next(deviceSpec);
@@ -32,7 +33,7 @@ export class DeviceInfoImpl implements DeviceInfo {
     }
 
     getAvailableInternalMemorySize(): Observable<string> {
-        return Observable.create((observer) => {
+        return new Observable((observer) => {
             buildconfigreader.getAvailableInternalMemorySize((value) => {
                 observer.next(value);
                 observer.complete();
@@ -83,16 +84,21 @@ export class DeviceInfoImpl implements DeviceInfo {
 
             window.addEventListener('native.keyboardhide', hideCallback1);
             window.addEventListener('keyboardWillHide', hideCallback1);
-        }).distinctUntilChanged().do(() => {
-            console.log('Subscribed isKeyboardShown event');
-        }).finally(() => {
-            console.log('Unsubscribed isKeyboardShown event');
+        })
+            .pipe(
+                distinctUntilChanged(),
+                tap(() => {
+                    console.log('Subscribed isKeyboardShown event');
+                }),
+                finalize(() => {
+                    console.log('Unsubscribed isKeyboardShown event');
 
-            window.removeEventListener('native.keyboardshow', shownCallback1);
-            window.removeEventListener('keyboardWillShow', shownCallback2);
+                    window.removeEventListener('native.keyboardshow', shownCallback1);
+                    window.removeEventListener('keyboardWillShow', shownCallback2);
 
-            window.removeEventListener('native.keyboardhide', hideCallback1);
-            window.removeEventListener('keyboardWillHide', hideCallback1);
-        });
+                    window.removeEventListener('native.keyboardhide', hideCallback1);
+                    window.removeEventListener('keyboardWillHide', hideCallback1);
+                })
+            );
     }
 }

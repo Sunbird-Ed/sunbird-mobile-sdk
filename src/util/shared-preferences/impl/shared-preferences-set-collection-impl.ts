@@ -2,6 +2,7 @@ import {SharedPreferencesSetCollection} from '../def/shared-preferences-set-coll
 import {SharedPreferences} from '..';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import * as Collections from 'typescript-collections';
+import {map, mapTo, mergeMap, tap} from 'rxjs/operators';
 
 export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesSetCollection<T> {
     private changes: Subject<undefined> = new BehaviorSubject<undefined>(undefined);
@@ -11,75 +12,94 @@ export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesS
 
     addAll(items: T[]): Observable<void> {
         return this.asSet()
-            .mergeMap((set: Collections.Set<T>) => {
-                items.forEach((item) => set.add(item));
+            .pipe(
+                mergeMap((set: Collections.Set<T>) => {
+                    items.forEach((item) => set.add(item));
 
-                return this.sharedPreferences.putString(this.key, JSON.stringify(set.toArray()))
-                    .mapTo(undefined);
-            })
-            .do(() => this.changes.next(undefined));
+                    return this.sharedPreferences.putString(this.key, JSON.stringify(set.toArray())).pipe(
+                        mapTo(undefined)
+                    );
+                }),
+                tap(() => this.changes.next(undefined))
+            );
     }
 
     add(item: T): Observable<void> {
         return this.asSet()
-            .mergeMap((set: Collections.Set<T>) => {
-                set.add(item);
+            .pipe(
+                mergeMap((set: Collections.Set<T>) => {
+                    set.add(item);
 
-                return this.sharedPreferences.putString(this.key, JSON.stringify(set.toArray()))
-                    .mapTo(undefined);
-            })
-            .do(() => this.changes.next(undefined));
+                    return this.sharedPreferences.putString(this.key, JSON.stringify(set.toArray())).pipe(
+                        mapTo(undefined)
+                    );
+                }),
+                tap(() => this.changes.next(undefined))
+            );
     }
 
     clear(): Observable<void> {
         return this.sharedPreferences.putString(this.key, '[]')
-            .mapTo(undefined)
-            .do(() => this.changes.next(undefined));
+            .pipe(
+                mapTo(undefined),
+                tap(() => this.changes.next(undefined))
+            );
     }
 
     remove(item: T): Observable<boolean> {
         return this.asSet()
-            .mergeMap((set: Collections.Set<T>) => {
-                const hasRemoved = set.remove(item);
+            .pipe(
+                mergeMap((set: Collections.Set<T>) => {
+                    const hasRemoved = set.remove(item);
 
-                return this.sharedPreferences.putString(this.key, JSON.stringify(set.toArray()))
-                    .mapTo(hasRemoved);
-            })
-            .do(() => this.changes.next(undefined));
+                    return this.sharedPreferences.putString(this.key, JSON.stringify(set.toArray())).pipe(
+                        mapTo(hasRemoved)
+                    );
+                }),
+                tap(() => this.changes.next(undefined))
+            );
     }
 
     contains(item: T): Observable<boolean> {
         return this.asSet()
-            .map((set) => {
-                return set.contains(item);
-            });
+            .pipe(
+                map((set) => {
+                    return set.contains(item);
+                })
+            );
     }
 
     asList(): Observable<T[]> {
         return this.sharedPreferences.getString(this.key)
-            .map((downloadListStringified?) => {
-                if (!downloadListStringified) {
-                    return [];
-                }
+            .pipe(
+                map((downloadListStringified?) => {
+                    if (!downloadListStringified) {
+                        return [];
+                    }
 
-                return JSON.parse(downloadListStringified);
-            });
+                    return JSON.parse(downloadListStringified);
+                })
+            );
     }
 
     asSet(): Observable<Collections.Set<T>> {
         return this.asList()
-            .map((items: T[]) => {
-                return items.reduce((acc, item) => {
-                    acc.add(item);
-                    return acc;
-                }, new Collections.Set<T>(this.toStringFunction));
-            });
+            .pipe(
+                map((items: T[]) => {
+                    return items.reduce((acc, item) => {
+                        acc.add(item);
+                        return acc;
+                    }, new Collections.Set<T>(this.toStringFunction));
+                })
+            );
     }
 
     asListChanges(): Observable<T[]> {
         return this.changes.asObservable()
-            .mergeMap(() => {
-                return this.asList();
-            });
+            .pipe(
+                mergeMap(() => {
+                    return this.asList();
+                })
+            );
     }
 }

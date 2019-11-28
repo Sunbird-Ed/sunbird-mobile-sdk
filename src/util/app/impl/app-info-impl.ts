@@ -5,6 +5,7 @@ import {InjectionTokens} from '../../../injection-tokens';
 import {SharedPreferences} from '../../shared-preferences';
 import {AppInfoKeys} from '../../../preference-keys';
 import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 @injectable()
 export class AppInfoImpl implements AppInfo {
@@ -58,7 +59,9 @@ export class AppInfoImpl implements AppInfo {
     /** @internal */
     getFirstAccessTimestamp(): Observable<string> {
         return this.sharedPreferences.getString(AppInfoKeys.KEY_FIRST_ACCESS_TIMESTAMP)
-            .map((ts) => ts!);
+            .pipe(
+                map((ts) => ts!)
+            );
     }
 
     private async setFirstAccessTimestamp(): Promise<boolean> {
