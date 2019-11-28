@@ -35,8 +35,11 @@ export class ApiServiceImpl implements ApiService {
     }
 
     onInit(): Observable<undefined> {
+        window.cordova.plugin.http.setServerTrustMode('pinned', () => {}, () => {});
+
         return this.sharedPreferences.getString(ApiKeys.KEY_API_TOKEN).pipe(
             mergeMap((apiToken) => {
+
                 if (!apiToken) {
                     return new ApiTokenHandler(this.apiConfig, this, this.deviceInfo).refreshAuthToken().pipe(
                         mergeMap((bearerToken) =>
