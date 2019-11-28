@@ -48,7 +48,8 @@ export class ContentStatesSyncHandler {
                         }
                     });
                     return updateContentRequestMap;
-                }));
+                })
+            );
 
     }
 
@@ -86,7 +87,8 @@ export class ContentStatesSyncHandler {
                                 const deleteQuery = `DELETE FROM ${KeyValueStoreEntry.TABLE_NAME}
                                              WHERE ${KeyValueStoreEntry.COLUMN_NAME_KEY} = '${key}' `;
                                 return this.dbService.execute(deleteQuery).pipe(
-                                    mapTo(true));
+                                    mapTo(true)
+                                );
                             } else {
                                 return of(true);
                             }
