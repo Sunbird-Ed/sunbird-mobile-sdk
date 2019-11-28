@@ -23,9 +23,11 @@ export class ContentSearchApiHandler implements ApiRequestHandler<SearchRequest,
             .withBody({request})
             .build();
 
-        return this.apiService.fetch<SearchResponse>(apiRequest).pipe(map((success) => {
-            return success.body;
-        }));
+        return this.apiService.fetch<SearchResponse>(apiRequest).pipe(
+            map((success) => {
+                return success.body;
+            })
+        );
     }
 
 }

@@ -43,7 +43,7 @@ export class ApiServiceImpl implements ApiService {
                             this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken)
                         ),
                         catchError(() => of(undefined))
-            )       ;
+                    );
                 }
 
                 return of(undefined);

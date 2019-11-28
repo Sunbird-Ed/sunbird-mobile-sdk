@@ -13,8 +13,11 @@ export class ContentMarkerHandler {
         const query = `SELECT * FROM ${ContentMarkerEntry.TABLE_NAME}
                        ${ContentUtil.getUidnIdentifierFiler(uid, identifier)}
                        ORDER BY ${ContentMarkerEntry.COLUMN_NAME_EPOCH_TIMESTAMP} DESC `;
-        return this.dbService.execute(query).pipe(map((markersInDb: ContentMarkerEntry.SchemaMap[]) =>
-            this.mapDBEntriesToContentMarkerDetails(markersInDb)));
+        return this.dbService.execute(query).pipe(
+            map((markersInDb: ContentMarkerEntry.SchemaMap[]) =>
+                this.mapDBEntriesToContentMarkerDetails(markersInDb)
+            )
+        );
     }
 
     public mapDBEntriesToContentMarkerDetails(markersInDb: ContentMarkerEntry.SchemaMap[]): ContentMarker[] {

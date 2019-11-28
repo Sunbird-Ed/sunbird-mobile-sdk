@@ -78,7 +78,9 @@ export class WebviewAutoMergeSessionProvider extends WebviewBaseSessionProvider 
             })
             .build();
 
-        return this.apiService.fetch(apiRequest).pipe(mapTo(undefined)).toPromise().then(() => {
+        return this.apiService.fetch(apiRequest).pipe(
+            mapTo(undefined)
+        ).toPromise().then(() => {
             this.eventsBusService.emit({
                 namespace: EventNamespace.AUTH,
                 event: {

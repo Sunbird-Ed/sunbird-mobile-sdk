@@ -27,9 +27,11 @@ export class GenerateInteractTelemetry {
 
         const response: Response = new Response();
         response.body = importContext;
-        return this.telemetryService.interact(telemetryInteractRequest).pipe(map(() => {
-            return response;
-        })).toPromise();
+        return this.telemetryService.interact(telemetryInteractRequest).pipe(
+            map(() => {
+                return response;
+            })
+        ).toPromise();
     }
 
 }

@@ -74,7 +74,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                             attachContentMarker: request.attachContentMarker
                         });
                     }),
-                    tap (async (localContent) => {
+                    tap(async (localContent) => {
                         if (!request.emitUpdateIfAny || GetContentDetailsHandler.isUnit(contentDbEntry)) {
                             return;
                         }
@@ -139,7 +139,9 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
             selectionArgs: [contentId],
             limit: '1'
-        }).pipe(map((contentsFromDB: ContentEntry.SchemaMap[]) => contentsFromDB[0]));
+        }).pipe(
+            map((contentsFromDB: ContentEntry.SchemaMap[]) => contentsFromDB[0])
+        );
     }
 
     public fetchFromDBForAll(contentIds: string): Observable<ContentEntry.SchemaMap[]> {
@@ -157,9 +159,11 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 .withPath(this.contentServiceConfig.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + '/' + request.contentId)
                 .withApiToken(true)
                 .build()
-        ).pipe(map((response) => {
-            return response.body.result.content;
-        }));
+        ).pipe(
+            map((response) => {
+                return response.body.result.content;
+            })
+        );
     }
 
 
@@ -212,12 +216,14 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 return this.profileService.getAllContentAccess({
                     contentId: content.identifier,
                     uid
-                }).pipe(map((contentAccess: ContentAccess[]) => {
-                    return {
-                        ...content,
-                        contentAccess
-                    };
-                }));
+                }).pipe(
+                    map((contentAccess: ContentAccess[]) => {
+                        return {
+                            ...content,
+                            contentAccess
+                        };
+                    })
+                );
             })
         );
     }
@@ -228,12 +234,14 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 return this.contentFeedbackService.getFeedback({
                     contentId: content.identifier,
                     uid
-                }).pipe(map((contentFeedback: ContentFeedback[]) => {
-                    return {
-                        ...content,
-                        contentFeedback
-                    };
-                }));
+                }).pipe(
+                    map((contentFeedback: ContentFeedback[]) => {
+                        return {
+                            ...content,
+                            contentFeedback
+                        };
+                    })
+                );
             })
         );
     }

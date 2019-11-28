@@ -148,7 +148,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return combineLatest([
             this.handleContentDeleteRequestSetChanges(),
             this.handleUpdateSizeOnDeviceFail()
-        ]).pipe(mapTo(undefined));
+        ]).pipe(
+            mapTo(undefined)
+        );
     }
 
     getContentDetails(request: ContentDetailRequest): Observable<Content> {
@@ -545,10 +547,12 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             mergeMap((frameworkId?: string) => {
                 return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig, frameworkId!,
                     contentSearchCriteria.languageCode).handle(searchRequest).pipe(
-                    map((searchResponse: SearchResponse) => {
-                        return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
-                    }));
-            }));
+                        map((searchResponse: SearchResponse) => {
+                            return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
+                        })
+                    );
+            })
+        );
     }
 
     cancelDownload(contentId: string): Observable<undefined> {
@@ -560,43 +564,51 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                        WHERE ${ContentMarkerEntry.COLUMN_NAME_UID} = '${contentMarkerRequest.uid}'
                        AND ${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER}='${contentMarkerRequest.contentId}'
                        AND ${ContentMarkerEntry.COLUMN_NAME_MARKER} = ${contentMarkerRequest.marker}`;
-        return this.dbService.execute(query).pipe(mergeMap((contentMarker: ContentMarkerEntry.SchemaMap[]) => {
+        return this.dbService.execute(query).pipe(
+            mergeMap((contentMarker: ContentMarkerEntry.SchemaMap[]) => {
 
-            const markerModel: ContentMarkerEntry.SchemaMap = {
-                uid: contentMarkerRequest.uid,
-                identifier: contentMarkerRequest.contentId,
-                epoch_timestamp: Date.now(),
-                data: contentMarkerRequest.data,
-                extra_info: JSON.stringify(contentMarkerRequest.extraInfo),
-                marker: contentMarkerRequest.marker.valueOf(),
-                mime_type: this.getMimeType(contentMarkerRequest.data)
-            };
-            if (ArrayUtil.isEmpty(contentMarker)) {
-                return this.dbService.insert({
-                    table: ContentMarkerEntry.TABLE_NAME,
-                    modelJson: markerModel
-                }).pipe(map(v => v > 0));
-            } else {
-                if (contentMarkerRequest.isMarked) {
-                    return this.dbService.update({
+                const markerModel: ContentMarkerEntry.SchemaMap = {
+                    uid: contentMarkerRequest.uid,
+                    identifier: contentMarkerRequest.contentId,
+                    epoch_timestamp: Date.now(),
+                    data: contentMarkerRequest.data,
+                    extra_info: JSON.stringify(contentMarkerRequest.extraInfo),
+                    marker: contentMarkerRequest.marker.valueOf(),
+                    mime_type: this.getMimeType(contentMarkerRequest.data)
+                };
+                if (ArrayUtil.isEmpty(contentMarker)) {
+                    return this.dbService.insert({
                         table: ContentMarkerEntry.TABLE_NAME,
-                        selection:
-                            `${ContentMarkerEntry.COLUMN_NAME_UID}= ? AND ${ContentMarkerEntry
-                                .COLUMN_NAME_CONTENT_IDENTIFIER}= ? AND ${ContentMarkerEntry.COLUMN_NAME_MARKER}= ?`,
-                        selectionArgs: [contentMarkerRequest.uid, contentMarkerRequest.contentId,
-                            contentMarkerRequest.marker.valueOf().toString()],
                         modelJson: markerModel
-                    }).pipe(map(v => v > 0));
+                    }).pipe(
+                        map(v => v > 0)
+                    );
                 } else {
-                    return this.dbService.delete({
-                        table: ContentMarkerEntry.TABLE_NAME,
-                        selection: `${ContentMarkerEntry.COLUMN_NAME_UID} = ? AND ${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER
-                            } = ? AND ${ContentMarkerEntry.COLUMN_NAME_MARKER} = ?`,
-                        selectionArgs: [contentMarkerRequest.uid, contentMarkerRequest.contentId, '' + contentMarkerRequest.marker]
-                    }).pipe(map(v => v!));
+                    if (contentMarkerRequest.isMarked) {
+                        return this.dbService.update({
+                            table: ContentMarkerEntry.TABLE_NAME,
+                            selection:
+                                `${ContentMarkerEntry.COLUMN_NAME_UID}= ? AND ${ContentMarkerEntry
+                                    .COLUMN_NAME_CONTENT_IDENTIFIER}= ? AND ${ContentMarkerEntry.COLUMN_NAME_MARKER}= ?`,
+                            selectionArgs: [contentMarkerRequest.uid, contentMarkerRequest.contentId,
+                                contentMarkerRequest.marker.valueOf().toString()],
+                            modelJson: markerModel
+                        }).pipe(
+                            map(v => v > 0)
+                        );
+                    } else {
+                        return this.dbService.delete({
+                            table: ContentMarkerEntry.TABLE_NAME,
+                            selection: `${ContentMarkerEntry.COLUMN_NAME_UID} = ? AND ${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER
+                                } = ? AND ${ContentMarkerEntry.COLUMN_NAME_MARKER} = ?`,
+                            selectionArgs: [contentMarkerRequest.uid, contentMarkerRequest.contentId, '' + contentMarkerRequest.marker]
+                        }).pipe(
+                            map(v => v!)
+                        );
+                    }
                 }
-            }
-        }));
+            })
+        );
     }
 
     searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection> {
@@ -605,12 +617,14 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             board: request.board,
             medium: request.medium,
             grade: request.grade
-        }).pipe(map((contents: Content[]) => contents.map((content) => {
-            if (content.contentData.appIcon && !content.contentData.appIcon.startsWith('https://')) {
-                content.contentData.appIcon = content.basePath + content.contentData.appIcon;
-            }
-            return content.contentData;
-        })));
+        }).pipe(
+            map((contents: Content[]) => contents.map((content) => {
+                if (content.contentData.appIcon && !content.contentData.appIcon.startsWith('https://')) {
+                    content.contentData.appIcon = content.basePath + content.contentData.appIcon;
+                }
+                return content.contentData;
+            }))
+        );
 
         const onlineTextbookContents$: Observable<ContentSearchResult> = this.cachedItemStore.getCached(
             ContentServiceImpl.getIdForDb(request),
@@ -623,16 +637,18 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 !contentSearchResult ||
                 !contentSearchResult.contentDataList ||
                 contentSearchResult.contentDataList.length === 0
-        ).pipe(catchError((e) => {
-            console.error(e);
+        ).pipe(
+            catchError((e) => {
+                console.error(e);
 
-            return of({
-                id: 'OFFLINE_RESPONSE_ID',
-                responseMessageId: 'OFFLINE_RESPONSE_ID',
-                filterCriteria: request,
-                contentDataList: []
-            });
-        }));
+                return of({
+                    id: 'OFFLINE_RESPONSE_ID',
+                    responseMessageId: 'OFFLINE_RESPONSE_ID',
+                    filterCriteria: request,
+                    contentDataList: []
+                });
+            })
+        );
 
         return this.searchContentAndGroupByPageSection(
             offlineTextbookContents$.pipe(take(1)),
@@ -681,7 +697,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             contentDeleteList.push(contentDeleteRequest);
         }
         return this.deleteContent({contentDeleteList: contentDeleteList})
-            .pipe(mapTo(undefined));
+            .pipe(
+                mapTo(undefined)
+            );
     }
 
     private getMimeType(data: string): string {
@@ -775,13 +793,16 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     private handleUpdateSizeOnDeviceFail(): Observable<undefined> {
         return this.sharedPreferences.getBoolean(ContentServiceImpl.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL).pipe(
             mergeMap((hasUpdated) => {
-            if (!hasUpdated) {
-                return from(
-                    new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute()
-                ).pipe(mapTo(undefined));
-            }
-            return of(undefined);
-        }));
+                if (!hasUpdated) {
+                    return from(
+                        new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute()
+                    ).pipe(
+                        mapTo(undefined)
+                    );
+                }
+                return of(undefined);
+            })
+        );
     }
 
 }

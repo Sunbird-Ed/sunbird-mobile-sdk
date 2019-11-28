@@ -73,12 +73,16 @@ export class ContentFeedbackServiceImpl implements ContentFeedbackService {
                                                     .COLUMN_NAME_CONTENT_ID}= ?`,
                                             selectionArgs: [response!.uid, contentFeedback.contentId],
                                             modelJson: feedbackModel
-                                        }).pipe(map(v => v > 0));
+                                        }).pipe(
+                                            map(v => v > 0)
+                                        );
                                     } else {
                                         return this.dbService.insert({
                                             table: ContentFeedbackEntry.TABLE_NAME,
                                             modelJson: feedbackModel
-                                        }).pipe(map(v => v > 0));
+                                        }).pipe(
+                                            map(v => v > 0)
+                                        );
                                     }
                                 })
                             );

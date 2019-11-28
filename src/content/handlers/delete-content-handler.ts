@@ -141,7 +141,9 @@ export class DeleteContentHandler {
                     modelJson: contentInDb,
                     selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} =?`,
                     selectionArgs: [contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]]
-                }).pipe(map(v => v > 0)).toPromise();
+                }).pipe(
+                    map(v => v > 0)
+                ).toPromise();
             } else {
                 const fileMap: { [key: string]: any } = {};
                 fileMap['identifier'] = contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER];

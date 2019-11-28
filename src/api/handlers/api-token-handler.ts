@@ -19,9 +19,11 @@ export class ApiTokenHandler {
     public refreshAuthToken(): Observable<string> {
         return from(
             this.getMobileDeviceConsumerSecret()
-        ).pipe(map((mobileDeviceConsumerSecret: string) => {
-            return JWTUtil.createJWToken({iss: this.getMobileDeviceConsumerKey()}, mobileDeviceConsumerSecret, JWTokenType.HS256);
-        }));
+        ).pipe(
+            map((mobileDeviceConsumerSecret: string) => {
+                return JWTUtil.createJWToken({iss: this.getMobileDeviceConsumerKey()}, mobileDeviceConsumerSecret, JWTokenType.HS256);
+            })
+        );
     }
 
     private getMobileDeviceConsumerKey() {

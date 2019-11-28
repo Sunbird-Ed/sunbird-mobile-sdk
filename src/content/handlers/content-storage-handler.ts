@@ -13,9 +13,11 @@ export class ContentStorageHandler {
                       FROM ${ContentEntry.TABLE_NAME}
                       WHERE ${ContentEntry.COLUMN_NAME_VISIBILITY} = '${Visibility.DEFAULT.valueOf()}'
                       AND  ${ContentEntry.COLUMN_NAME_PATH} LIKE '${path.replace('file://', '')}%'`;
-        return this.dbService.execute(query).pipe(map((result) => {
-            return result[0]['total_size'] || 0;
-        }));
+        return this.dbService.execute(query).pipe(
+            map((result) => {
+                return result[0]['total_size'] || 0;
+            })
+        );
     }
 
     public async getContentUsageSummary(paths: string[]): Promise<ContentSpaceUsageSummaryResponse[]> {

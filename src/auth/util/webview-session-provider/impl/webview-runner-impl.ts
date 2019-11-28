@@ -69,13 +69,18 @@ export class WebviewRunnerImpl implements WebviewRunner {
     any<T>(...args: Promise<T>[]): Promise<T> {
         return race(
             ...args
-        ).pipe(take(1)).toPromise();
+        ).pipe(
+            take(1)
+        ).toPromise();
     }
 
     all(...args: Promise<any>[]): Promise<void> {
         return zip(
             ...args
-        ).pipe(take(1), mapTo(undefined)).toPromise();
+        ).pipe(
+            take(1),
+            mapTo(undefined)
+        ).toPromise();
     }
 
     launchCustomTab({host, path, params}: { host: string; path: string; params: { [p: string]: string } }): Promise<void> {

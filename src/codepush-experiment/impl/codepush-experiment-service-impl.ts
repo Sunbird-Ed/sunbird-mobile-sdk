@@ -24,20 +24,22 @@ export class CodePUshExperimentServiceImpl implements CodePushExperimentService 
 
     setExperimentKey(experimentKey: string): Observable<void> {
         return this.sharedPreferences.putString(CodePushExperiment.EXPERIMENT_KEY, experimentKey).pipe(
-        tap(() => {
-            if (!this.experimentKey) {
-                this.experimentKey = experimentKey;
-            }
-        }));
+            tap(() => {
+                if (!this.experimentKey) {
+                    this.experimentKey = experimentKey;
+                }
+            })
+        );
     }
 
     getExperimentKey(): string | Observable<string | undefined> {
         if (!this.experimentKey) {
             return this.sharedPreferences.getString(CodePushExperiment.EXPERIMENT_KEY).pipe(
-            tap(key => {
-                this.experimentKey = key;
-                return key;
-            }));
+                tap(key => {
+                    this.experimentKey = key;
+                    return key;
+                })
+            );
         } else {
             return this.experimentKey;
         }
