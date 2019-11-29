@@ -166,7 +166,7 @@ describe('ContentServiceImpl', () => {
         const request: ContentDetailRequest = {
             contentId: 'SAMPLE_CONTENT_ID'
         };
-        const handleMethod = jest.fn(() => Observable.of('request'));
+        const handleMethod = jest.fn(() => of('request'));
         (GetContentHeirarchyHandler as any as jest.Mock<GetContentHeirarchyHandler>).mockImplementation(() => {
             return {
                 handle: handleMethod
