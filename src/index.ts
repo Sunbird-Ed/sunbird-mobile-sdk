@@ -1,3 +1,5 @@
+import 'rxjs-compat';
+
 export * from './db';
 export * from './device-register';
 export * from './api';

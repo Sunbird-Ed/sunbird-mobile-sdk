@@ -1,3 +1,4 @@
+import { GetContentHeirarchyHandler } from '../handlers/get-content-heirarchy-handler';
 import { ContentService } from '..';
 import { ContentServiceImpl } from './content-service-impl';
 import { Container } from 'inversify';
@@ -46,6 +47,7 @@ jest.mock('../handlers/search-content-handler');
 jest.mock('../handlers/get-content-details-handler');
 jest.mock('../handlers/get-child-contents-handler');
 jest.mock('../handlers/import-n-export-handler');
+jest.mock('../handlers/get-content-heirarchy-handler');
 
 describe('ContentServiceImpl', () => {
     let contentService: ContentService;
@@ -157,6 +159,27 @@ describe('ContentServiceImpl', () => {
             done();
         });
     });
+
+    it('should return heirarchy details', (done) => {
+        // arrange
+        const request: ContentDetailRequest = {
+            contentId: 'SAMPLE_CONTENT_ID'
+        };
+        const handleMethod = jest.fn(() => Observable.of('request'));
+        (GetContentHeirarchyHandler as any as jest.Mock<GetContentHeirarchyHandler>).mockImplementation(() => {
+            return {
+                handle: handleMethod
+            };
+        });
+        contentService = container.get(InjectionTokens.CONTENT_SERVICE);
+        // act
+        contentService.getContentHeirarchy(request).subscribe(() => {
+            // assert
+            expect(handleMethod).toBeCalled();
+            done();
+        });
+    });
+
     it('should cancel the downloading content cancelImport()', (done) => {
         // arrange
         mockDownloadService.cancel = jest.fn(() => Observable.of([]));

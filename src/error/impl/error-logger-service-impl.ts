@@ -1,10 +1,10 @@
 import {DbService} from '../../db';
 import {Observable, of} from 'rxjs';
-import {ErrorLoggerService} from '../index';
+import {ErrorLoggerService} from '..';
 import {ErrorStackEntry} from '../db/schema';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
-import {GetSystemSettingsRequest, SystemSettingsService} from 'src/system-settings';
+import {GetSystemSettingsRequest, SystemSettingsService} from '../../system-settings';
 import {SystemSettingsOrgIds} from '../../system-settings/def/system-settings-org-ids';
 import {AppInfo} from '../../util/app';
 import {ApiService} from '../../api';

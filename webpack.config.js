@@ -1,8 +1,13 @@
 const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const webpackRxjsExternals = require('webpack-rxjs-externals');
 
 const config = {
     entry: './src/index.ts',
+    externals: [
+        webpackRxjsExternals(),
+        // other externals here
+    ],
     output: {
         filename: 'index.js',
         path: path.resolve(__dirname, 'dist'),

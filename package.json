@@ -17,9 +17,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dayjs": "^1.8.17",
-    "rxjs": "^6.5.2",
     "crypto-js": "^3.1.9-1",
+    "dayjs": "^1.8.17",
     "inversify": "^5.0.1",
     "jsonwebtoken": "^8.4.0",
     "pako": "^1.0.8",
@@ -29,7 +28,8 @@
     "uuid": "^3.3.2"
   },
   "peerDependencies": {
-    "rxjs": ">=5 < 6",
+    "rxjs": ">=6",
+    "rxjs-compat": ">=6",
     "cordova-plugin-advanced-http": "^2.0.2",
     "cordova-plugin-file": "^6.0.1",
     "cordova-plugin-awesome-shared-preferences": "^0.1.0",
@@ -48,6 +48,7 @@
     "cordova-plugin-android-downloadmanager": "^0.5.0",
     "cordova-plugin-file": "^6.0.1",
     "jest": "^24.8.0",
+    "rxjs": "^6.5.3",
     "ts-jest": "^24.0.2",
     "ts-loader": "^5.3.2",
     "ts-mockito": "^2.4.2",
@@ -58,7 +59,8 @@
     "typescript": "^2.9.2",
     "uglifyjs-webpack-plugin": "^2.1.1",
     "webpack": "^4.28.3",
-    "webpack-cli": "^3.1.2"
+    "webpack-cli": "^3.1.2",
+    "webpack-rxjs-externals": "^2.0.0"
   },
   "jest": {
     "browser": false,
