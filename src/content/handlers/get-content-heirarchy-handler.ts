@@ -1,3 +1,4 @@
+import { map } from 'rxjs/operators';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {
     Content,
@@ -13,29 +14,28 @@ export class GetContentHeirarchyHandler implements ApiRequestHandler<ContentDeta
     }
 
     handle(request: ContentDetailRequest) {
-        console.log('in getContentHeirarchyFromServer');
         const getContentHeirarchyEndPoint = '/api/course/v1/hierarchy';
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
             .withPath(this.contentServiceConfig.contentHeirarchyAPIPath + this.GET_CONTENT_HEIRARCHY_ENDPOINT + '/' + request.contentId)
             .withApiToken(true)
             .build();
-        console.time('getContentHeirarchyFromServer');
         return this.apiService.fetch<{ result: { content: ContentData } }>(apiRequest)
-            .map((response) => {
-                console.timeEnd('getContentHeirarchyFromServer');
-                return this.mapContentFromContentHeirarchyData(response.body.result.content);
-            });
+            .pipe(
+                map((response) => {
+                    return this.mapContentFromContentHeirarchyData(response.body.result.content);
+                })
+            );
     }
 
     private mapContentFromContentHeirarchyData(serverContentData) {
-            serverContentData['contentData'] = {...serverContentData};
-            if (serverContentData['children'] && serverContentData['children'].length) {
-                serverContentData['children'] = serverContentData['children'].map((childContent) => {
-                    return this.mapContentFromContentHeirarchyData({...childContent});
-                });
-            }
-            return serverContentData;
+        serverContentData['contentData'] = {...serverContentData};
+        if (serverContentData['children'] && serverContentData['children'].length) {
+            serverContentData['children'] = serverContentData['children'].map((childContent) => {
+                return this.mapContentFromContentHeirarchyData({...childContent});
+            });
+        }
+        return serverContentData;
     }
 }
 
