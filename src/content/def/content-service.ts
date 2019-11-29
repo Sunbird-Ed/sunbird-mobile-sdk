@@ -32,6 +32,8 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
 
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
 
+    getContentHeirarchy(request: ContentDetailRequest): Observable<Content>;
+
     getContents(criteria: ContentRequest): Observable<Content[]>;
 
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
