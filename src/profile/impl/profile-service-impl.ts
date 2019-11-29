@@ -76,6 +76,11 @@ import {SdkConfig} from '../../sdk-config';
 import {Container, inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {AuthService} from '../../auth';
+import { UserFeedResponse } from '../def/user-feed-response';
+import { GetUserFeedHandler } from '../handler/get-userfeed-handler';
+import { UserMigrateRequest } from '../def/user-migrate-request';
+import { UserMigrateResponse } from '../def/user-migrate-response';
+import { UserMigrateVerificationHandler } from '../handler/user-migrate-verification-handler';
 import {defer, from, Observable, of, zip, iif, throwError} from 'rxjs';
 import {catchError, finalize, map, mapTo, mergeMap, tap} from 'rxjs/operators';
 
@@ -681,5 +686,15 @@ export class ProfileServiceImpl implements ProfileService {
                 duration: Math.floor((Date.now() - profileSession.createdTime) / 1000)
             }).toPromise();
         }
+    }
+
+    getUserFeed(uid: string): Observable<UserFeedResponse> {
+        return new GetUserFeedHandler(this.sdkConfig, this.apiService)
+        .handle(uid);
+    }
+
+    userMigrateVerification(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse> {
+        return new UserMigrateVerificationHandler(this.sdkConfig, this.apiService)
+        .handle(userMigrateRequest);
     }
 }

@@ -23,6 +23,7 @@ import {ProfileImportResponse} from './profile-import-response';
 import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
 import {TenantInfoRequest} from './tenant-info-request';
 import {MergeServerProfilesRequest} from './merge-server-profiles-request';
+import {UserFeedResponse} from './user-feed-response';
 
 
 export interface ProfileService extends SdkServicePreInitDelegate {
@@ -69,4 +70,6 @@ export interface ProfileService extends SdkServicePreInitDelegate {
     mergeServerProfiles(mergeServerProfilesRequest: MergeServerProfilesRequest): Observable<undefined>;
 
     isDefaultChannelProfile(): Observable<boolean>;
+
+    getUserFeed(uid: string): Observable<UserFeedResponse>;
 }
