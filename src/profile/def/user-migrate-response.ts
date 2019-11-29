@@ -1,7 +1,11 @@
 export interface UserMigrateResponse {
-    userId: string;
-    externalId?: string;
-    channel?: string;
-    action: string;
-    feedId?: string;
+    params: {
+        resmsgid: string,
+        msgid: string,
+        err: string,
+        status: string,
+        errmsg: string
+    };
+    responseCode: string;
+    response: {};
 }
