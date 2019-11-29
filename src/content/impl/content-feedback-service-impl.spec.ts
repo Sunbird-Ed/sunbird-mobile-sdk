@@ -4,7 +4,7 @@ import { Container } from 'inversify';
 import { ContentFeedbackServiceImpl } from './content-feedback-service-impl';
 import { DbService, ProfileService, ContentFeedbackFilterCriteria, ContentFeedback } from '../..';
 import { TelemetryService } from '../../telemetry';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 describe('ContentFeedbackServiceImpl', () => {
     let contentFeedbackService: ContentFeedbackService;
@@ -41,7 +41,7 @@ describe('ContentFeedbackServiceImpl', () => {
             uid: 'SAMPLE_UID',
             contentId: 'SAMPLE_CONTENT_ID'
         };
-        mockDbService.execute = jest.fn(() => Observable.of([]));
+        mockDbService.execute = jest.fn(() => of([]));
         // act
          contentFeedbackService.getFeedback(request).subscribe(() => {
              // assert
@@ -59,10 +59,10 @@ describe('ContentFeedbackServiceImpl', () => {
             comments: 'SAMPLE_COMMENTS',
             contentVersion: 'SAMPLE_CONTENT_VERSION'
         };
-        (mockProfileService.getActiveProfileSession as jest.Mock).mockReturnValue(Observable.of([]));
-        (mockTelemetryService.feedback as jest.Mock).mockReturnValue(Observable.of([]));
-        mockDbService.read = jest.fn(() => Observable.of([]));
-        mockDbService.insert = jest.fn(() => Observable.of([]));
+        (mockProfileService.getActiveProfileSession as jest.Mock).mockReturnValue(of([]));
+        (mockTelemetryService.feedback as jest.Mock).mockReturnValue(of([]));
+        mockDbService.read = jest.fn(() => of([]));
+        mockDbService.insert = jest.fn(() => of([]));
         // act
         contentFeedbackService.sendFeedback(request).subscribe(() => {
             // assert

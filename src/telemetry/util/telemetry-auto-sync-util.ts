@@ -1,11 +1,12 @@
-import {Observable} from 'rxjs';
 import {InteractSubType, InteractType, TelemetryService, TelemetrySyncStat} from '..';
 import {TelemetryLogger} from './telemetry-logger';
+import {Observable, interval} from 'rxjs';
+import {filter, mergeMap, tap, finalize, mapTo} from 'rxjs/operators';
 
 export class TelemetryAutoSyncUtil {
     private shouldSync = false;
 
-    private static async generateDownloadSpeedTelemetry(interval: number): Promise<void> {
+    private static async generateDownloadSpeedTelemetry(intervalTime: number): Promise<void> {
         const downloadSpeedLog: DownloadSpeedLog = await new Promise<any>((resolve, reject) => {
             if (downloadManager.fetchSpeedLog) {
                 downloadManager.fetchSpeedLog(resolve, reject);
@@ -34,7 +35,7 @@ export class TelemetryAutoSyncUtil {
         }
 
         const valueMap = {
-            duration: interval / 1000,
+            duration: intervalTime / 1000,
             totalKBDownloaded: downloadSpeedLog.totalKBdownloaded,
             distributionInKBPS: Object.keys(rangeMap).reduce<{ [key: string]: number }>((acc, key) => {
                 if (downloadSpeedLog.distributionInKBPS[key]) {
@@ -53,22 +54,25 @@ export class TelemetryAutoSyncUtil {
             env: 'sdk',
             pageId: 'sdk',
             valueMap
-        }).mapTo(undefined).toPromise();
+        }).pipe(
+            mapTo(undefined)
+        ).toPromise();
     }
 
     constructor(private telemetryService: TelemetryService) {
     }
 
-    start(interval: number): Observable<TelemetrySyncStat> {
+    start(intervalTime: number): Observable<TelemetrySyncStat> {
         this.shouldSync = true;
 
-        return Observable
-            .interval(interval)
-            .do(() => TelemetryAutoSyncUtil.generateDownloadSpeedTelemetry(interval))
-            .filter(() => this.shouldSync)
-            .do(() => this.shouldSync = false)
-            .mergeMap(() => this.telemetryService.sync()
-                .finally(() => this.shouldSync = true));
+        return interval(intervalTime).pipe(
+            tap(() => TelemetryAutoSyncUtil.generateDownloadSpeedTelemetry(intervalTime)),
+            filter(() => this.shouldSync),
+            tap(() => this.shouldSync = false),
+            mergeMap(() => this.telemetryService.sync().pipe(
+                finalize(() => this.shouldSync = true)
+            ))
+        );
     }
 
     pause(): void {

@@ -1,10 +1,11 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {LocationSearchCriteria, ProfileServiceConfig} from '..';
 import {LocationSearchResult} from '../def/location-search-result';
-import {Observable} from 'rxjs';
 import {CachedItemStore} from '../../key-value-store';
 import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
+import {from, Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 export class SearchLocationHandler implements ApiRequestHandler<LocationSearchCriteria, LocationSearchResult[]> {
     private static readonly GET_SEARCH_LOCATION_ENDPOINT = '/location/search';
@@ -42,10 +43,11 @@ export class SearchLocationHandler implements ApiRequestHandler<LocationSearchCr
             .withBody({request})
             .build();
 
-        return this.apiService.fetch<{ result: { response: LocationSearchResult[] } }>(apiRequest)
-            .map((success) => {
+        return this.apiService.fetch<{ result: { response: LocationSearchResult[] } }>(apiRequest).pipe(
+            map((success) => {
                 return success.body.result.response;
-            });
+            })
+        );
     }
 
     private fetchFromFile(request: LocationSearchCriteria): Observable<LocationSearchResult[]> {
@@ -57,11 +59,12 @@ export class SearchLocationHandler implements ApiRequestHandler<LocationSearchCr
         }
         file = file + '.json';
 
-        return Observable.fromPromise(this.fileService.readFileFromAssets(dir.concat('/', file)))
-            .map((filecontent: string) => {
+        return from(this.fileService.readFileFromAssets(dir.concat('/', file))).pipe(
+            map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
                 return result.result.response;
-            });
+            })
+        );
     }
 
 }

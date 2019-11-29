@@ -189,6 +189,7 @@ export interface RelevantContentRequest extends DownloadRequest {
     contentIdentifier?: string;
     next?: boolean;
     prev?: boolean;
+    shouldConvertBasePath?: boolean;
 }
 export interface ContentSpaceUsageSummaryRequest {
     paths: string[];

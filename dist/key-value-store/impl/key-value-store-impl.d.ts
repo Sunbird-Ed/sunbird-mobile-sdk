@@ -1,6 +1,6 @@
 import { KeyValueStore } from '..';
-import { Observable } from 'rxjs';
 import { DbService } from '../../db';
+import { Observable } from 'rxjs';
 export declare class KeyValueStoreImpl implements KeyValueStore {
     private dbService;
     constructor(dbService: DbService);

@@ -1,6 +1,4 @@
 import {DbService} from '../../db';
-import {Observable, observable} from 'rxjs';
-import {GroupEntry, GroupProfileEntry} from '../db/schema';
 import {
     GetAllGroupRequest,
     Group,
@@ -21,6 +19,8 @@ import {Container, inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import { GroupServiceImpl } from './group-service-impl';
 import { instance, mock } from 'ts-mockito';
+import { of } from 'rxjs/observable/of';
+
 describe('GroupServiceImpl', () => {
 
     let groupService: GroupService;
@@ -63,8 +63,8 @@ describe('GroupServiceImpl', () => {
             createdAt: 123,
             updatedAt: 1234
         };
-        mockDbService.insert = jest.fn(() => Observable.of([]));
-        mockProfileService.getActiveProfileSession = jest.fn(() => Observable.of([]));
+        mockDbService.insert = jest.fn(() => of([]));
+        mockProfileService.getActiveProfileSession = jest.fn(() => of([]));
         // act
          groupService.createGroup(group).subscribe(() => {
              // assert
@@ -85,10 +85,10 @@ describe('GroupServiceImpl', () => {
             createdAt: 123,
             updatedAt: 1234
         };
-        mockDbService.beginTransaction = jest.fn(() => Observable.of([]));
-        mockDbService.delete = jest.fn(() => Observable.of([]));
-        mockProfileService.getActiveProfileSession = jest.fn(() => Observable.of([]));
-        mockDbService.endTransaction = jest.fn(() => Observable.of([]));
+        mockDbService.beginTransaction = jest.fn(() => of([]));
+        mockDbService.delete = jest.fn(() => of([]));
+        mockProfileService.getActiveProfileSession = jest.fn(() => of([]));
+        mockDbService.endTransaction = jest.fn(() => of([]));
         // act
         groupService.deleteGroup(group.gid).subscribe(() => {
             // assert
@@ -109,9 +109,9 @@ describe('GroupServiceImpl', () => {
             createdAt: 123,
             updatedAt: 1234
         };
-        mockDbService.read = jest.fn(() => Observable.of([]));
-        mockDbService.update = jest.fn(() => Observable.of([]));
-        mockProfileService.getActiveProfileSession = jest.fn(() => Observable.of([]));
+        mockDbService.read = jest.fn(() => of([]));
+        mockDbService.update = jest.fn(() => of([]));
+        mockProfileService.getActiveProfileSession = jest.fn(() => of([]));
         // act
         groupService.updateGroup(group).subscribe(() => {
             // assert
@@ -122,8 +122,8 @@ describe('GroupServiceImpl', () => {
 
     it('should return getActiveSessionGroup Using ProfileService', () => {
         // arrange
-        mockDbService.read = jest.fn(() => Observable.of([]));
-        spyOn(groupService, 'getActiveGroupSession').and.returnValue(Observable.of([]));
+        mockDbService.read = jest.fn(() => of([]));
+        spyOn(groupService, 'getActiveGroupSession').and.returnValue(of([]));
         // act
         groupService.getActiveSessionGroup().subscribe(() => {
             // assert
@@ -135,11 +135,11 @@ describe('GroupServiceImpl', () => {
     it('should return setActiveSessionForGroup Using ProfileService', () => {
         // arrange
         const gid = '123';
-        mockDbService.read = jest.fn(() => Observable.of([]));
-        (mockDbService.read as jest.Mock).mockResolvedValue(Observable.of([]));
-        mockSharedPreferences.putString = jest.fn(() => Observable.of([]));
-        (mockSharedPreferences.putString as jest.Mock).mockReturnValue(Observable.of(''));
-        spyOn(groupService, 'setActiveSessionForGroup').and.returnValue(Observable.of([]));
+        mockDbService.read = jest.fn(() => of([]));
+        (mockDbService.read as jest.Mock).mockResolvedValue(of([]));
+        mockSharedPreferences.putString = jest.fn(() => of([]));
+        (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(''));
+        spyOn(groupService, 'setActiveSessionForGroup').and.returnValue(of([]));
         // act
         groupService.setActiveSessionForGroup(gid).subscribe(() => {
             // assert
@@ -154,8 +154,8 @@ describe('GroupServiceImpl', () => {
 
     it('should return getActiveGroupSession Using GroupService', () => {
         // arrange
-        mockSharedPreferences.getString = jest.fn(() => Observable.of([]));
-        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(Observable.of(''));
+        mockSharedPreferences.getString = jest.fn(() => of([]));
+        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of(''));
         // act
         groupService.getActiveGroupSession().subscribe(() => {
             // assert
@@ -166,8 +166,8 @@ describe('GroupServiceImpl', () => {
     it('should return getAllGroups Using GroupService', () => {
         // arrange
         const groupRequest: GetAllGroupRequest = {uid: '123'};
-        mockDbService.execute = jest.fn(() => Observable.of([]));
-        mockDbService.read = jest.fn(() => Observable.of([]));
+        mockDbService.execute = jest.fn(() => of([]));
+        mockDbService.read = jest.fn(() => of([]));
 
         // act
         groupService.getAllGroups(groupRequest).subscribe(() => {
@@ -181,10 +181,10 @@ describe('GroupServiceImpl', () => {
     it('should return addProfilesToGroup Using GroupService', () => {
         // arrange
         const profileToGroupRequest: ProfilesToGroupRequest = {groupId: '123', uidList: ['2', '23']};
-        mockDbService.beginTransaction = jest.fn(() => Observable.of([]));
-        mockDbService.delete = jest.fn(() => Observable.of([]));
-        mockDbService.read = jest.fn(() => Observable.of([]));
-        mockDbService.endTransaction = jest.fn(() => Observable.of([true]));
+        mockDbService.beginTransaction = jest.fn(() => of([]));
+        mockDbService.delete = jest.fn(() => of([]));
+        mockDbService.read = jest.fn(() => of([]));
+        mockDbService.endTransaction = jest.fn(() => of([true]));
 
         // act
         groupService.addProfilesToGroup(profileToGroupRequest).subscribe(() => {
@@ -199,10 +199,10 @@ describe('GroupServiceImpl', () => {
     it('should Catch addProfilesToGroup Using GroupService', () => {
         // arrange
         const profileToGroupRequest: ProfilesToGroupRequest = {groupId: '123', uidList: ['2', '23']};
-        mockDbService.beginTransaction = jest.fn(() => Observable.of([]));
-        mockDbService.delete = jest.fn(() => Observable.of([]));
-        mockDbService.read = jest.fn(() => Observable.of([]));
-        mockDbService.endTransaction = jest.fn(() => Observable.of([false]));
+        mockDbService.beginTransaction = jest.fn(() => of([]));
+        mockDbService.delete = jest.fn(() => of([]));
+        mockDbService.read = jest.fn(() => of([]));
+        mockDbService.endTransaction = jest.fn(() => of([false]));
 
         // act
         groupService.addProfilesToGroup(profileToGroupRequest).subscribe(() => {
@@ -217,8 +217,8 @@ describe('GroupServiceImpl', () => {
 
     it('should return removeActiveGroupSession Using ProfileService', () => {
         // arrange
-        mockSharedPreferences.putString = jest.fn(() => Observable.of([]));
-        (mockSharedPreferences.putString as jest.Mock).mockReturnValue(Observable.of(''));
+        mockSharedPreferences.putString = jest.fn(() => of([]));
+        (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(''));
         // act
         groupService.removeActiveGroupSession().subscribe(() => {
             // assert

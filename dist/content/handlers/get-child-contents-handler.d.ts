@@ -10,7 +10,7 @@ export declare class ChildContentsHandler {
     constructor(dbService: DbService, getContentDetailsHandler: GetContentDetailsHandler, fileService?: FileService | undefined);
     fetchChildrenOfContent(contentInDb: ContentEntry.SchemaMap, childContentsMap: any, currentLevel: number, level: number, sourceInfoList?: HierarchyInfo[]): Promise<Content>;
     getContentsKeyList(contentInDb: ContentEntry.SchemaMap): Promise<string[]>;
-    getContentFromDB(hierarchyInfoList: HierarchyInfo[], identifier: string): Promise<Content>;
+    getContentFromDB(hierarchyInfoList: HierarchyInfo[], identifier: string, shouldConvertBasePath?: boolean): Promise<Content>;
     getNextContentIdentifier(hierarchyInfoList: HierarchyInfo[], currentIdentifier: string, contentKeyList: string[]): string;
     getPreviousContentIdentifier(hierarchyInfoList: HierarchyInfo[], currentIdentifier: string, contentKeyList: string[]): string;
     private getSortedChildrenListOld;

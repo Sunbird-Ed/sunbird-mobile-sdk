@@ -2,7 +2,7 @@ import { GetModifiedContentHandler } from './get-modified-content-handler';
 import { FileService } from '../../../util/file/def/file-service';
 import { DbService } from '../../..';
 import { ScanContentContext } from '../../def/scan-requests';
-import { Observable, observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('GetModifiedContentHandler', () => {
     let getModifiedContentHandler: GetModifiedContentHandler;
@@ -30,7 +30,7 @@ describe('GetModifiedContentHandler', () => {
             currentStoragePath: 'SAMPLE_CURRENT_STORAGE_PATH'
         };
         mockDbService.execute = jest.fn(() => { });
-        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of([{
+        (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
             local_data: '{"childNodes": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
@@ -69,7 +69,7 @@ describe('GetModifiedContentHandler', () => {
             currentStoragePath: 'SAMPLE_CURRENT_STORAGE_PATH'
         };
         mockDbService.execute = jest.fn(() => { });
-        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of([{
+        (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
             local_data: '{"childNodes": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
@@ -108,7 +108,7 @@ describe('GetModifiedContentHandler', () => {
             currentStoragePath: ''
         };
         mockDbService.execute = jest.fn(() => { });
-        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of([{
+        (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
             local_data: '{"childNodes": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',

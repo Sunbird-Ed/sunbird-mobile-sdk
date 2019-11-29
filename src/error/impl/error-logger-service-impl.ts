@@ -1,10 +1,10 @@
 import {DbService} from '../../db';
-import {Observable} from 'rxjs';
-import {ErrorLoggerService} from '../index';
+import {Observable, of} from 'rxjs';
+import {ErrorLoggerService} from '..';
 import {ErrorStackEntry} from '../db/schema';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
-import {GetSystemSettingsRequest, SystemSettingsService} from 'src/system-settings';
+import {GetSystemSettingsRequest, SystemSettingsService} from '../../system-settings';
 import {SystemSettingsOrgIds} from '../../system-settings/def/system-settings-org-ids';
 import {AppInfo} from '../../util/app';
 import {ApiService} from '../../api';
@@ -18,8 +18,8 @@ import {NetworkInfoService} from '../../util/network';
 import {ErrorStackSyncRequestDecorator} from '../handlers/error-stack-sync-request-decorator';
 import {DeviceInfo} from '../../util/device';
 import {ErrorLogKeys} from '../../preference-keys';
-import { SharedPreferences } from '../../util/shared-preferences';
-import { SdkServiceOnInitDelegate } from 'src/sdk-service-on-init-delegate';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {map, mergeMap} from 'rxjs/operators';
 
 @injectable()
 export class ErrorLoggerServiceImpl implements ErrorLoggerService {
@@ -56,13 +56,15 @@ export class ErrorLoggerServiceImpl implements ErrorLoggerService {
 
     onInit() {
         return this.sharedPreferences.getString(ErrorLogKeys.KEY_ERROR_LOG_LAST_SYNCED_TIME_STAMP)
-            .mergeMap((timestamp) => {
-                if (!timestamp) {
-                    return this.sharedPreferences.putString(ErrorLogKeys.KEY_ERROR_LOG_LAST_SYNCED_TIME_STAMP, Date.now() + '');
-                }
+            .pipe(
+                mergeMap((timestamp) => {
+                    if (!timestamp) {
+                        return this.sharedPreferences.putString(ErrorLogKeys.KEY_ERROR_LOG_LAST_SYNCED_TIME_STAMP, Date.now() + '');
+                    }
 
-                return Observable.of(undefined);
-            });
+                    return of(undefined);
+                })
+            );
     }
 
     logError(request: TelemetryErrorRequest): Observable<undefined> {
@@ -77,51 +79,59 @@ export class ErrorLoggerServiceImpl implements ErrorLoggerService {
             table: ErrorStackEntry.TABLE_NAME,
             modelJson: ErrorStackMapper.mapErrorStackToErrorStackDBEntry(errorStack)
         })
-            .mergeMap(() => this.getErrorCount())
-            .mergeMap((errorCount) =>
-                this.getErrorLogSyncSettings()
-                    .map((settings) => ({ ...settings, errorCount }))
-            )
-            .map(({ errorCount, frequency, bandwidth }) => {
-                return {
-                    errorCount,
-                    errorLogSyncFrequency: frequency,
-                    errorLogSyncBandwidth: bandwidth
-                };
-            })
-            .mergeMap(({ errorCount, errorLogSyncFrequency, errorLogSyncBandwidth }) => {
-                return this.hasErrorLogSyncFrequencyCrossed(errorCount, errorLogSyncFrequency)
-                    .map((shouldSync) => ({
-                        shouldSync,
-                        errorLogSyncBandwidth
-                    }));
-            })
-            .mergeMap(({ shouldSync, errorLogSyncBandwidth }) => {
-                if (shouldSync) {
-                    return this.errorStackSyncHandler.handle(errorLogSyncBandwidth)
-                        .mergeMap(() =>
-                            this.sharedPreferences.putString(ErrorLogKeys.KEY_ERROR_LOG_LAST_SYNCED_TIME_STAMP, Date.now() + ''));
-                }
+            .pipe(
+                mergeMap(() => this.getErrorCount()),
+                mergeMap((errorCount) =>
+                    this.getErrorLogSyncSettings()
+                        .pipe(
+                            map((settings) => ({...settings, errorCount}))
+                        )
+                ),
+                map(({errorCount, frequency, bandwidth}) => {
+                    return {
+                        errorCount,
+                        errorLogSyncFrequency: frequency,
+                        errorLogSyncBandwidth: bandwidth
+                    };
+                }),
+                mergeMap(({errorCount, errorLogSyncFrequency, errorLogSyncBandwidth}) => {
+                    return this.hasErrorLogSyncFrequencyCrossed(errorCount, errorLogSyncFrequency)
+                        .pipe(
+                            map((shouldSync) => ({
+                                shouldSync,
+                                errorLogSyncBandwidth
+                            }))
+                        );
+                }),
+                mergeMap(({shouldSync, errorLogSyncBandwidth}) => {
+                    if (shouldSync) {
+                        return this.errorStackSyncHandler.handle(errorLogSyncBandwidth)
+                            .pipe(
+                                mergeMap(() =>
+                                    this.sharedPreferences.putString(ErrorLogKeys.KEY_ERROR_LOG_LAST_SYNCED_TIME_STAMP, Date.now() + ''))
+                            );
+                    }
 
-                return Observable.of(undefined);
-            });
+                    return of(undefined);
+                })
+            );
     }
 
     private hasErrorLogSyncFrequencyCrossed(errorCount: number, errorLogSyncFrequency: number): Observable<boolean> {
         return this.sharedPreferences.getString(ErrorLogKeys.KEY_ERROR_LOG_LAST_SYNCED_TIME_STAMP)
-            .map((timestamp) => parseInt(timestamp!, 10))
-            .map((timestamp) => {
-                if ((timestamp + errorLogSyncFrequency) < Date.now()) {
-                    return true;
-                }
-
-                return false;
-            });
+            .pipe(
+                map((timestamp) => parseInt(timestamp!, 10)),
+                map((timestamp) => {
+                    return (timestamp + errorLogSyncFrequency) < Date.now();
+                })
+            );
     }
 
     private getErrorCount(): Observable<number> {
         return this.dbService.execute(`SELECT COUNT(*) as count FROM ${ErrorStackEntry.TABLE_NAME}`)
-            .map((result: ErrorStackEntry.SchemaMap[]) => result[0]['count']);
+            .pipe(
+                map((result: ErrorStackEntry.SchemaMap[]) => result[0]['count'])
+            );
     }
 
     private getErrorLogSyncSettings(): Observable<{ frequency: number, bandwidth: number }> {
@@ -130,6 +140,8 @@ export class ErrorLoggerServiceImpl implements ErrorLoggerService {
         };
 
         return this.systemSettingsService.getSystemSettings(getSystemSettingsRequest)
-            .map((r) => JSON.parse(r.value));
+            .pipe(
+                map((r) => JSON.parse(r.value))
+            );
     }
 }

@@ -1,7 +1,7 @@
 import {ProducerData} from '../../telemetry';
 import {ApiConfig} from '../../api';
 import {DeviceInfo, DeviceSpec} from '../../util/device';
-import {Observable} from 'rxjs';
+import {defer, Observable} from 'rxjs';
 import {AppInfo} from '../../util/app';
 
 interface Context {
@@ -23,11 +23,11 @@ export class ErrorStackSyncRequestDecorator {
     }
 
     decorate(request: Request): Observable<Request> {
-        return Observable.defer(async () => {
-            this.patchPData(request);
-            await this.patchContext(request);
-            return request;
-        });
+        return defer(async () => {
+                this.patchPData(request);
+                await this.patchContext(request);
+                return request;
+            });
     }
 
     private async patchContext(request: Request) {

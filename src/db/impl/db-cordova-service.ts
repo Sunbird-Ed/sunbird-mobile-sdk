@@ -4,7 +4,7 @@ import {QueryBuilder} from '../util/query-builder';
 import {injectable, inject} from 'inversify';
 import {SdkConfig} from '../../sdk-config';
 import {InjectionTokens} from '../../injection-tokens';
-import {Observable} from 'rxjs/Observable';
+import {Observable} from 'rxjs';
 
 @injectable()
 export class DbCordovaService implements DbService {

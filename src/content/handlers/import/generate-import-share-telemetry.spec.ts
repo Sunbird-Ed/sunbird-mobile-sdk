@@ -1,6 +1,6 @@
 import { GenerateImportShareTelemetry } from './generate-import-share-telemetry';
 import { TelemetryService, ContentImportResponse, ContentImportStatus, ImportContentContext } from '../../..';
-import { observable, Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('GenerateImportShareTelemetry', () => {
     let generateImportShareTelemetry: GenerateImportShareTelemetry;
@@ -38,7 +38,7 @@ describe('GenerateImportShareTelemetry', () => {
             items: ['item_1', 'item_2', 'item_3'],
             existedContentIdentifiers: {'identifier' : true}
         };
-        (mockTelemetryService.share as jest.Mock).mockReturnValue(Observable.of(false));
+        (mockTelemetryService.share as jest.Mock).mockReturnValue(of(false));
         // act
         generateImportShareTelemetry.execute(request).then(() => {
 
@@ -62,7 +62,7 @@ describe('GenerateImportShareTelemetry', () => {
             items: ['item_1', 'item_2', 'item_3'],
             existedContentIdentifiers: {'identifier' : true}
         };
-        (mockTelemetryService.share as jest.Mock).mockReturnValue(Observable.of(''));
+        (mockTelemetryService.share as jest.Mock).mockReturnValue(of(''));
         // act
         generateImportShareTelemetry.execute(request).catch(() => {
 

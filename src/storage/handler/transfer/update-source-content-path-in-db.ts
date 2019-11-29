@@ -1,17 +1,18 @@
-import {Observable} from 'rxjs';
 import {TransferContentContext} from '../transfer-content-handler';
 import {DbService} from '../../../db';
 import {ContentEntry} from '../../../content/db/schema';
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import {ContentUtil} from '../../../content/util/content-util';
+import {defer, Observable} from 'rxjs';
+import {mapTo} from 'rxjs/operators';
 
 export class UpdateSourceContentPathInDb {
     constructor(private dbService: DbService) {
     }
 
     execute(context: TransferContentContext): Observable<TransferContentContext> {
-        return Observable.defer(async () => {
+        return defer(async () => {
             this.dbService.beginTransaction();
 
             try {
@@ -31,6 +32,8 @@ export class UpdateSourceContentPathInDb {
             } catch (e) {
                 this.dbService.endTransaction(false);
             }
-        }).mapTo(context);
+        }).pipe(
+            mapTo(context)
+        );
     }
 }

@@ -1,10 +1,10 @@
-import {Observable} from 'rxjs';
 import {FileService} from '../../../util/file/def/file-service';
 import {AppConfig} from '../../../api/config/app-config';
 import {Manifest, TransferContentContext} from '../transfer-content-handler';
 import {ContentUtil} from '../../../content/util/content-util';
 import {Entry} from '../../../util/file';
 import {FileName, Visibility} from '../../../content';
+import {defer, Observable} from 'rxjs';
 
 export class ValidateDestinationContent {
 
@@ -13,7 +13,7 @@ export class ValidateDestinationContent {
     }
 
     execute(context: TransferContentContext): Observable<TransferContentContext> {
-        return Observable.defer(async () => {
+        return defer(async () => {
             context.validContentIdsInDestination =
                 await this.getSubdirectoriesEntries(context.destinationFolder!)
                     .then((entries) => this.extractValidContentIdsInDestination(entries));

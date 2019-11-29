@@ -1,8 +1,8 @@
 import { ApiRequestHandler, ApiService } from '../../api';
 import { TenantInfo } from '../def/tenant-info';
 import { ProfileServiceConfig } from '..';
+import { TenantInfoRequest } from '..';
 import { Observable } from 'rxjs';
-import { TenantInfoRequest } from '../def/tenant-info-request';
 export declare class TenantInfoHandler implements ApiRequestHandler<TenantInfoRequest, TenantInfo> {
     private apiService;
     private tenantServiceConfig;

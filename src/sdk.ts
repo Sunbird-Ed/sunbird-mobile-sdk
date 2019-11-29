@@ -44,7 +44,6 @@ import {ContentFeedbackServiceImpl} from './content/impl/content-feedback-servic
 import {EventsBusService} from './events-bus';
 import {EventsBusServiceImpl} from './events-bus/impl/events-bus-service-impl';
 import {SummarizerService, SummarizerServiceImpl} from './summarizer';
-import {Observable} from 'rxjs';
 import {DownloadService} from './util/download';
 import {DownloadServiceImpl} from './util/download/impl/download-service-impl';
 import {AppInfo} from './util/app';
@@ -72,6 +71,8 @@ import {CourseAssessmentMigration} from './db/migrations/course-assessment-migra
 import { CodePushExperimentService, CodePUshExperimentServiceImpl } from './codepush-experiment';
 import {FaqService, FaqServiceImpl} from './faq';
 import {DeviceRegisterConfig, DeviceRegisterService, DeviceRegisterServiceImpl} from './device-register';
+import {combineLatest, Observable} from 'rxjs';
+import {concatMap} from 'rxjs/operators';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -376,12 +377,13 @@ export class SunbirdSdk {
     }
 
     private preInit() {
-        return this.frameworkService.preInit()
-            .concatMap(() => this.profileService.preInit());
+        return this.frameworkService.preInit().pipe(
+            concatMap(() => this.profileService.preInit())
+        );
     }
 
     private postInit() {
-        return Observable.combineLatest(
+        return combineLatest([
             this.apiService.onInit(),
             this.summarizerService.onInit(),
             this.errorLoggerService.onInit(),
@@ -389,6 +391,6 @@ export class SunbirdSdk {
             this.downloadService.onInit(),
             this.contentService.onInit(),
             this.storageService.onInit()
-        );
+        ]);
     }
 }

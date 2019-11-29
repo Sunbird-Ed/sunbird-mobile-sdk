@@ -7,7 +7,7 @@ import { ApiService } from '../../api';
 import { mockSdkConfig } from './page-assemble-service-impl.spec.data';
 import { PageName, PageAssembleCriteria } from '../def/requests';
 import {PageAssemblerHandler} from '../handle/page-assembler-handler';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 jest.mock('../handle/page-assembler-handler');
 
@@ -46,7 +46,7 @@ describe('PageAssembleServiceImpl', () => {
             source: 'app'
         };
 
-        const handleMethod = jest.fn(() => Observable.of(''));
+        const handleMethod = jest.fn(() => of(''));
 
         (PageAssemblerHandler as any as jest.Mock<PageAssemblerHandler>).mockImplementation(() => {
             return {

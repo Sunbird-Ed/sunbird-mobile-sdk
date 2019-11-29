@@ -1,5 +1,5 @@
 import { PageAssembleCriteria, PageAssembleService } from '..';
-import { PageAssemble } from '../def/page-assemble';
+import { PageAssemble } from '..';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../api';
 import { CachedItemStore, KeyValueStore } from '../../key-value-store';

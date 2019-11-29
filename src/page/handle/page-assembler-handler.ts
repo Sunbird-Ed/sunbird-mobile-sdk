@@ -1,9 +1,10 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {PageAssemble, PageAssembleCriteria, PageName, PageServiceConfig} from '..';
 import {CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import * as SHA1 from 'crypto-js/sha1';
 import {SharedPreferences} from '../../util/shared-preferences';
+import {catchError, map, mergeMap, tap} from 'rxjs/operators';
 
 export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private readonly PAGE_ASSEMBLE_LOCAL_KEY = 'page_assemble-';
@@ -30,11 +31,11 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
 
         request.from = request.from || CachedItemRequestSourceFrom.CACHE;
 
-        return Observable.of(request.from)
-            .mergeMap((from: CachedItemRequestSourceFrom) => {
+        return of(request.from).pipe(
+            mergeMap((from: CachedItemRequestSourceFrom) => {
                 if (from === CachedItemRequestSourceFrom.SERVER) {
-                    return this.fetchFromServer(request)
-                        .do(async (pageAssembleRes) => {
+                    return this.fetchFromServer(request).pipe(
+                        tap(async (pageAssembleRes) => {
                             const pageAssemble = JSON.stringify(pageAssembleRes);
                             await this.sharedPreferences.putString(
                                 ('ttl_' + this.PAGE_ASSEMBLE_LOCAL_KEY + '-' + PageAssemblerHandler.getIdForDb(request)), Date.now() + ''
@@ -43,14 +44,16 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
                             await this.keyValueStore.setValue(
                                 this.PAGE_ASSEMBLE_LOCAL_KEY + '-' + PageAssemblerHandler.getIdForDb(request), pageAssemble
                             ).toPromise();
-                        })
-                        .catch(() => {
+                        }),
+                        catchError(() => {
                             return this.fetchFromCache(request);
-                        });
+                        })
+                    );
                 }
 
                 return this.fetchFromCache(request);
-            });
+            })
+        );
     }
 
 
@@ -65,10 +68,11 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
             .withApiToken(true)
             .withBody({request})
             .build();
-        return this.apiService.fetch<{ result: { response: PageAssemble } }>(apiRequest)
-            .map((success) => {
+        return this.apiService.fetch<{ result: { response: PageAssemble } }>(apiRequest).pipe(
+            map((success) => {
                 return success.body.result.response;
-            });
+            })
+        );
     }
 
     private fetchFromCache(request: PageAssembleCriteria): Observable<PageAssemble> {

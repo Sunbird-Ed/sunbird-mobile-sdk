@@ -1,5 +1,5 @@
 import {PageAssembleCriteria, PageAssembleService, PageServiceConfig} from '..';
-import {PageAssemble} from '../def/page-assemble';
+import {PageAssemble} from '..';
 import {Observable} from 'rxjs';
 import {PageAssemblerHandler} from '../handle/page-assembler-handler';
 import {ApiService} from '../../api';

@@ -12,7 +12,7 @@ import {
     MimeType,
     Visibility
 } from '..';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {DbService, ReadQuery} from '../../db';
 import {ContentEntry} from '../db/schema';
 import {QueryBuilder} from '../../db/util/query-builder';
@@ -23,6 +23,7 @@ import {ContentUtil} from '../util/content-util';
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
+import { map, mergeMap, tap } from 'rxjs/operators';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
     private readonly GET_CONTENT_DETAILS_ENDPOINT = '/read';
@@ -55,14 +56,14 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
     public handle(request: ContentDetailRequest): Observable<Content> {
         request.emitUpdateIfAny = request.emitUpdateIfAny === undefined ? true : request.emitUpdateIfAny;
 
-        return this.fetchFromDB(request.contentId)
-            .mergeMap((contentDbEntry: ContentEntry.SchemaMap | undefined) => {
+        return this.fetchFromDB(request.contentId).pipe(
+            mergeMap((contentDbEntry: ContentEntry.SchemaMap | undefined) => {
                 if (!contentDbEntry) {
                     return this.fetchAndDecorate(request);
                 }
 
-                return Observable.of(ContentMapper.mapContentDBEntryToContent(contentDbEntry))
-                    .mergeMap((content: Content) => {
+                return of(ContentMapper.mapContentDBEntryToContent(contentDbEntry)).pipe(
+                    mergeMap((content: Content) => {
                         if (typeof(content.contentData.originData) === 'string') {
                             content.contentData.originData = JSON.parse(content.contentData.originData);
                         }
@@ -72,7 +73,8 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                             attachContentAccess: request.attachContentAccess,
                             attachContentMarker: request.attachContentMarker
                         });
-                    }).do(async (localContent) => {
+                    }),
+                    tap(async (localContent) => {
                         if (!request.emitUpdateIfAny || GetContentDetailsHandler.isUnit(contentDbEntry)) {
                             return;
                         }
@@ -124,8 +126,10 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                                 }
                             });
                         }
-                    });
-            });
+                    })
+                );
+            })
+        );
     }
 
     /** @internal */
@@ -135,7 +139,9 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
             selectionArgs: [contentId],
             limit: '1'
-        }).map((contentsFromDB: ContentEntry.SchemaMap[]) => contentsFromDB[0]);
+        }).pipe(
+            map((contentsFromDB: ContentEntry.SchemaMap[]) => contentsFromDB[0])
+        );
     }
 
     public fetchFromDBForAll(contentIds: string): Observable<ContentEntry.SchemaMap[]> {
@@ -153,93 +159,106 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 .withPath(this.contentServiceConfig.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + '/' + request.contentId)
                 .withApiToken(true)
                 .build()
-        ).map((response) => {
-            return response.body.result.content;
-        });
+        ).pipe(
+            map((response) => {
+                return response.body.result.content;
+            })
+        );
     }
 
 
     fetchAndDecorate(request: ContentDetailRequest): Observable<Content> {
-        return this.fetchFromServer(request).map((contentData: ContentData) => {
-            return ContentMapper.mapServerResponseToContent(contentData);
-        }).mergeMap((content: Content) => {
-            return this.decorateContent({
-                content,
-                attachFeedback: request.attachFeedback,
-                attachContentAccess: request.attachContentAccess,
-                attachContentMarker: request.attachContentMarker
-            });
-        });
+        return this.fetchFromServer(request).pipe(
+            map((contentData: ContentData) => {
+                return ContentMapper.mapServerResponseToContent(contentData);
+            }),
+            mergeMap((content: Content) => {
+                return this.decorateContent({
+                    content,
+                    attachFeedback: request.attachFeedback,
+                    attachContentAccess: request.attachContentAccess,
+                    attachContentMarker: request.attachContentMarker
+                });
+            })
+        );
     }
 
     /** @internal */
     public decorateContent(request: ContentDecorateRequest): Observable<Content> {
-        return Observable.of(request.content)
-            .mergeMap((content) => {
+        return of(request.content).pipe(
+            mergeMap((content) => {
                 if (request.attachContentAccess) {
                     return this.attachContentAccess(content);
                 }
 
-                return Observable.of(content);
-            })
-            .mergeMap((content) => {
+                return of(content);
+            }),
+            mergeMap((content) => {
                 if (request.attachFeedback) {
                     return this.attachFeedback(content);
                 }
 
-                return Observable.of(content);
-            })
-            .mergeMap((content) => {
+                return of(content);
+            }),
+            mergeMap((content) => {
                 if (request.attachContentMarker) {
                     return this.attachContentMarker(content);
                 }
 
-                return Observable.of(content);
-            });
+                return of(content);
+            })
+        );
     }
 
     private attachContentAccess(content: Content): Observable<Content> {
-        return this.profileService.getActiveProfileSession()
-            .mergeMap(({uid}: ProfileSession) => {
+        return this.profileService.getActiveProfileSession().pipe(
+            mergeMap(({ uid }: ProfileSession) => {
                 return this.profileService.getAllContentAccess({
                     contentId: content.identifier,
                     uid
-                }).map((contentAccess: ContentAccess[]) => {
-                    return {
-                        ...content,
-                        contentAccess
-                    };
-                });
-            });
+                }).pipe(
+                    map((contentAccess: ContentAccess[]) => {
+                        return {
+                            ...content,
+                            contentAccess
+                        };
+                    })
+                );
+            })
+        );
     }
 
     private attachFeedback(content: Content): Observable<Content> {
-        return this.profileService.getActiveProfileSession()
-            .mergeMap(({uid}: ProfileSession) => {
+        return this.profileService.getActiveProfileSession().pipe(
+            mergeMap(({ uid }: ProfileSession) => {
                 return this.contentFeedbackService.getFeedback({
                     contentId: content.identifier,
                     uid
-                }).map((contentFeedback: ContentFeedback[]) => {
-                    return {
-                        ...content,
-                        contentFeedback
-                    };
-                });
-            });
+                }).pipe(
+                    map((contentFeedback: ContentFeedback[]) => {
+                        return {
+                            ...content,
+                            contentFeedback
+                        };
+                    })
+                );
+            })
+        );
     }
 
     private attachContentMarker(content: Content): Observable<Content> {
-        return this.profileService.getActiveProfileSession()
-            .mergeMap(({uid}: ProfileSession) => {
-                return new ContentMarkerHandler(this.dbService).getContentMarker(content.identifier, uid)
-                    .map
-                    ((contentMarkers: ContentMarker[]) => {
+        return this.profileService.getActiveProfileSession().pipe(
+            mergeMap(({uid}: ProfileSession) => {
+                return new ContentMarkerHandler(this.dbService).getContentMarker(content.identifier, uid).pipe(
+                    map((contentMarkers: ContentMarker[]) => {
                         return {
                             ...content,
                             contentMarkers
                         };
-                    });
-            });
+                    })
+                );
+            })
+        );
     }
 }
 

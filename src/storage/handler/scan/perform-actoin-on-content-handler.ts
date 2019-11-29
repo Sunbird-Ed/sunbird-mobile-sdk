@@ -1,15 +1,15 @@
-import {DbService} from '../../../db';
 import {ScanContentContext} from '../../def/scan-requests';
-import {Observable} from 'rxjs';
 import {StorageHandler} from '../storage-handler';
 import {ContentUtil} from '../../../content/util/content-util';
+import {defer, Observable} from 'rxjs';
+import {mapTo} from 'rxjs/operators';
 
 export class PerformActoinOnContentHandler {
     constructor(private storageHandler: StorageHandler) {
     }
 
     public exexute(context: ScanContentContext): Observable<ScanContentContext> {
-        return Observable.defer(async () => {
+        return defer(async () => {
             if (context.deletedIdentifiers!.length) {
                 await this.storageHandler.deleteContentsFromDb(context.deletedIdentifiers!);
             }
@@ -20,6 +20,8 @@ export class PerformActoinOnContentHandler {
                         ContentUtil.getContentRootDir(context.currentStoragePath).concat('/'), false);
                 }
             }
-        }).mapTo(context);
+        }).pipe(
+            mapTo(context)
+        );
     }
 }

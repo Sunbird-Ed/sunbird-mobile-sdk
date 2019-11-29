@@ -1,12 +1,12 @@
 import {MoveContentResponse, MoveContentStatus, TransferContentContext} from '../transfer-content-handler';
-import {Observable} from 'rxjs';
 import {ContentEntry} from '../../../content/db/schema';
-import {ExistingContentAction, StorageEventType, StorageTransferProgress} from '../../index';
+import {ExistingContentAction, StorageEventType, StorageTransferProgress} from '../..';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
 import {ArrayUtil} from '../../../util/array-util';
 import {CancellationError} from '../../errors/cancellation-error';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_PATH = ContentEntry.COLUMN_NAME_PATH;
+import {defer, Observable} from 'rxjs';
 
 export class CopyContentFromSourceToDestination {
     private contentsTransferred = 0;
@@ -15,7 +15,7 @@ export class CopyContentFromSourceToDestination {
     }
 
     execute(context: TransferContentContext): Observable<TransferContentContext> {
-        return Observable.defer(async () => {
+        return defer(async () => {
             for (const content of context.contentsInSource!) {
 
                 if (context.hasTransferCancelled) {

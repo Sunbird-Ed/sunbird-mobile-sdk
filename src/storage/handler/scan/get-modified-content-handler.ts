@@ -3,9 +3,9 @@ import {ScanContentContext} from '../../def/scan-requests';
 import {DbService} from '../../../db';
 import {ContentEntry} from '../../../content/db/schema';
 import {ContentUtil} from '../../../content/util/content-util';
-import {Observable} from 'rxjs';
 import {ArrayUtil} from '../../../util/array-util';
-import {SharedPreferences} from '../../../util/shared-preferences';
+import {defer, Observable} from 'rxjs';
+import {map, mapTo} from 'rxjs/operators';
 
 export class GetModifiedContentHandler {
     constructor(private fileService: FileService,
@@ -14,7 +14,7 @@ export class GetModifiedContentHandler {
     }
 
     public execute(context: ScanContentContext): Observable<ScanContentContext> {
-        return Observable.defer(async () => {
+        return defer(async () => {
             const dbContentIdentifiers = await this.getContentsInDb();
             if (context.currentStoragePath) {
                 const destination = ContentUtil.getContentRootDir(context.currentStoragePath).concat('/');
@@ -25,7 +25,9 @@ export class GetModifiedContentHandler {
                 context.newlyAddedIdentifiers = [];
                 context.deletedIdentifiers = dbContentIdentifiers;
             }
-        }).mapTo(context);
+        }).pipe(
+            mapTo(context)
+        );
     }
 
     private doesDestinationStorageExist(destination: string): Promise<boolean> {
@@ -38,15 +40,17 @@ export class GetModifiedContentHandler {
 
     private async getContentsInDb(): Promise<string[]> {
 
-        return this.dbService.execute(ContentUtil.getFindAllContentsQuery()).map((contentsInDb: ContentEntry.SchemaMap[]) => {
-            const dbContentIdentifiers: string[] = contentsInDb
-                .filter((contentInDb) => {
-                    return contentInDb[ContentEntry.COLUMN_NAME_CONTENT_TYPE].toLowerCase() !== 'textbookunit';
-                }).map((contentInDb) => {
-                    return contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER];
-                });
-            return dbContentIdentifiers;
-        }).toPromise();
+        return this.dbService.execute(ContentUtil.getFindAllContentsQuery()).pipe(
+            map((contentsInDb: ContentEntry.SchemaMap[]) => {
+                const dbContentIdentifiers: string[] = contentsInDb
+                    .filter((contentInDb) => {
+                        return contentInDb[ContentEntry.COLUMN_NAME_CONTENT_TYPE].toLowerCase() !== 'textbookunit';
+                    }).map((contentInDb) => {
+                        return contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER];
+                    });
+                return dbContentIdentifiers;
+            })
+        ).toPromise();
     }
 
     private getNewlyAddedContents(folderList: string[], contentIdentifiers: string[]): string[] {

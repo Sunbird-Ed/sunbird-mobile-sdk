@@ -1,6 +1,7 @@
 import {DbService, Migration} from '..';
-import {GroupEntry, GroupProfileEntry, LearnerAssessmentsEntry, LearnerSummaryEntry, ProfileEntry} from '../../profile/db/schema';
+import {GroupEntry, GroupProfileEntry, ProfileEntry} from '../../profile/db/schema';
 import {ProfileSource} from '../../profile';
+import {map} from 'rxjs/operators';
 
 export class GroupProfileMigration extends Migration {
 
@@ -16,20 +17,22 @@ export class GroupProfileMigration extends Migration {
         await dbService.read({
             table: ProfileEntry.TABLE_NAME,
             columns: []
-        }).map((rows: ProfileEntry.SchemaMap[]) => {
-            rows.forEach(async (row: ProfileEntry.SchemaMap) => {
-                if (row[ProfileEntry.COLUMN_NAME_UID] === row[ProfileEntry.COLUMN_NAME_HANDLE]) {
-                    row[ProfileEntry.COLUMN_NAME_SOURCE] = ProfileSource.SERVER.valueOf();
+        }).pipe(
+            map((rows: ProfileEntry.SchemaMap[]) => {
+                rows.forEach(async (row: ProfileEntry.SchemaMap) => {
+                    if (row[ProfileEntry.COLUMN_NAME_UID] === row[ProfileEntry.COLUMN_NAME_HANDLE]) {
+                        row[ProfileEntry.COLUMN_NAME_SOURCE] = ProfileSource.SERVER.valueOf();
 
-                } else {
-                    row[ProfileEntry.COLUMN_NAME_SOURCE] = ProfileSource.SERVER.valueOf();
-                }
-                await dbService.update({
-                    table: ProfileEntry.TABLE_NAME,
-                    modelJson: row
-                }).toPromise();
-            });
-        }).toPromise();
+                    } else {
+                        row[ProfileEntry.COLUMN_NAME_SOURCE] = ProfileSource.SERVER.valueOf();
+                    }
+                    await dbService.update({
+                        table: ProfileEntry.TABLE_NAME,
+                        modelJson: row
+                    }).toPromise();
+                });
+            })
+        ).toPromise();
 
         return undefined;
     }
