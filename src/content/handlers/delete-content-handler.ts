@@ -52,7 +52,7 @@ export class DeleteContentHandler {
                 console.log('fileread err', err);
             });
 
-        const metaDataList = await this.getMetaData(this.fileMapList);
+        const metaDataList: any = await this.getMetaData(this.fileMapList);
         if (this.updateNewContentModels.length) {
             this.dbService.beginTransaction();
             // Update existing content in DB
