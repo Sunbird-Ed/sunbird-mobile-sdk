@@ -20,3 +20,6 @@ export * from './def/profile-export-request';
 export * from './def/profile-export-response';
 export * from './def/tenant-info-request';
 export * from './def/merge-server-profiles-request';
+export * from './def/user-feed-response';
+export * from './def/user-migrate-request';
+
