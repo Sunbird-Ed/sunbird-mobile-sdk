@@ -65,7 +65,7 @@ export class UpdateSizeOnDevice {
                 fileMap['identifier'] = identifier;
                 fileMap['path'] = node[ContentEntry.COLUMN_NAME_PATH]!;
                 fileMapList.push(fileMap);
-                const metaDataList = await this.getMetaData(fileMapList);
+                const metaDataList: any = await this.getMetaData(fileMapList);
                 size = metaDataList[identifier] ? metaDataList[identifier].size : 0;
             }
         } else {
