@@ -2,7 +2,7 @@ import {GenerateExportShareTelemetry} from './generate-export-share-telemetry';
 import { ContentEntry } from '../../db/schema';
 import { ExportContentContext } from '../..';
 import { TelemetryService } from '../../../telemetry';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 describe('GenerateExportShareTelemetry', () => {
     let generateExportShareTelemetry: GenerateExportShareTelemetry;
     const mockTelemetryService: Partial<TelemetryService> = {
@@ -43,7 +43,7 @@ describe('GenerateExportShareTelemetry', () => {
             metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
 
         };
-        (mockTelemetryService.share as jest.Mock).mockReturnValue(Observable.of(false));
+        (mockTelemetryService.share as jest.Mock).mockReturnValue(of(false));
         // act
         generateExportShareTelemetry.execute(request).then(() => {
         });
@@ -70,7 +70,7 @@ describe('GenerateExportShareTelemetry', () => {
             metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
 
         };
-        (mockTelemetryService.share as jest.Mock).mockReturnValue(Observable.of(1));
+        (mockTelemetryService.share as jest.Mock).mockReturnValue(of(1));
         // act
         generateExportShareTelemetry.execute(request).then(() => {
             done();

@@ -1,6 +1,6 @@
 import { inject, injectable, Container } from 'inversify';
 import { NotificationService } from '../def/notification-service';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import { Notification, NotificationFilterCriteria, ActionData, NotificationStatus } from '../def/requests';
 import { InjectionTokens } from '../../injection-tokens';
 import { DbService } from '../../db';
@@ -54,12 +54,12 @@ describe('NotificationServiceImpl', () => {
             isRead: 879000,
             actionData: sampleactionData
         };
-        mockSharedPreferences.putString = jest.fn(() => Observable.of([]));
-       // (mockSharedPreferences.putString as jest.Mock).mockReturnValue(Observable.of(''));
-        mockDbService.read = jest.fn(() => Observable.of([]));
-        mockDbService.update = jest.fn(() => Observable.of([]));
-        mockDbService.insert = jest.fn(() => Observable.of([]));
-       // (mockDbService.read as jest.Mock).mockResolvedValue(Observable.of([]));
+        mockSharedPreferences.putString = jest.fn(() => of([]));
+       // (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(''));
+        mockDbService.read = jest.fn(() => of([]));
+        mockDbService.update = jest.fn(() => of([]));
+        mockDbService.insert = jest.fn(() => of([]));
+       // (mockDbService.read as jest.Mock).mockResolvedValue(of([]));
 
         // act
         notificationServiceImpl.addNotification(notification).subscribe(() => {
@@ -73,7 +73,7 @@ describe('NotificationServiceImpl', () => {
 
     it('should call deleteNotification method on NotificationServiceImpl', () => {
         // arrange
-        mockDbService.execute = jest.fn(() => Observable.of([]));
+        mockDbService.execute = jest.fn(() => of([]));
 
         // act
         notificationServiceImpl.deleteNotification().subscribe(() => {
@@ -85,7 +85,7 @@ describe('NotificationServiceImpl', () => {
         const notificationFilterCriteria:  NotificationFilterCriteria = {
             notificationStatus: NotificationStatus.ALL,
         };
-        mockDbService.read = jest.fn(() => Observable.of([]));
+        mockDbService.read = jest.fn(() => of([]));
 
         // act
         notificationServiceImpl.getAllNotifications(notificationFilterCriteria).subscribe(() => {
@@ -97,7 +97,7 @@ describe('NotificationServiceImpl', () => {
         const notificationFilterCriteria:  NotificationFilterCriteria = {
             notificationStatus: NotificationStatus.UNREAD,
         };
-        mockDbService.read = jest.fn(() => Observable.of([]));
+        mockDbService.read = jest.fn(() => of([]));
 
         // act
         notificationServiceImpl.getAllNotifications(notificationFilterCriteria).subscribe(() => {
@@ -109,7 +109,7 @@ describe('NotificationServiceImpl', () => {
         const notificationFilterCriteria:  NotificationFilterCriteria = {
             notificationStatus: NotificationStatus.READ,
         };
-        mockDbService.read = jest.fn(() => Observable.of([]));
+        mockDbService.read = jest.fn(() => of([]));
 
         // act
         notificationServiceImpl.getAllNotifications(notificationFilterCriteria).subscribe(() => {
@@ -137,8 +137,8 @@ describe('NotificationServiceImpl', () => {
             isRead: 879000,
             actionData: sampleactionData
         };
-        mockDbService.read = jest.fn(() => Observable.of([]));
-        mockDbService.update = jest.fn(() => Observable.of([]));
+        mockDbService.read = jest.fn(() => of([]));
+        mockDbService.update = jest.fn(() => of([]));
 
         // act
         notificationServiceImpl.updateNotification(notification).subscribe(() => {

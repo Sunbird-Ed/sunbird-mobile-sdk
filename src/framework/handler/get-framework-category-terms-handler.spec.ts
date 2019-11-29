@@ -10,7 +10,7 @@ import {
     FrameworkUtilService,
     GetFrameworkCategoryTermsRequest
 } from '..';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 import * as Collections from 'typescript-collections';
 import {FrameworkMapper} from '../util/framework-mapper';
 import {SharedPreferences} from '../../util/shared-preferences';
@@ -50,11 +50,11 @@ describe('GetFrameworkCategoryTermsHandler', () => {
             language: 'SOME_LANGUAGE',
         };
         mockframeworkService.getFrameworkDetails = jest.fn(() => []);
-        (mockframeworkService.getFrameworkDetails as jest.Mock).mockReturnValue(Observable.of({
+        (mockframeworkService.getFrameworkDetails as jest.Mock).mockReturnValue(of({
             name: 'SAMPLE_NAME',
             identifier: 'SAMPLE_ID'
         }));
-        mockSharedPreferences.putString = jest.fn(() => Observable.of([]));
+        mockSharedPreferences.putString = jest.fn(() => of([]));
         // act
           getFrameworkCategoryTermsHandler.handle(request).subscribe( () => {
                // assert

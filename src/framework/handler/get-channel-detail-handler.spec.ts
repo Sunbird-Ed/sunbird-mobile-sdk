@@ -3,7 +3,7 @@ import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
 import {Channel, ChannelDetailsRequest, FrameworkServiceConfig, Framework} from '..';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 import { ProfileService, DbService, TelemetryService } from '../..';
 import { Container } from 'inversify';
 import { GetChannelDetailsHandler } from './get-channel-detail-handler';
@@ -58,7 +58,7 @@ describe('GetChannelDetailHandler', () => {
             frameworks : [sampleframeworks]
         };
         mockCacheItemStore.getCached = jest.fn((a, b, c, d, e) => d());
-        mockApiService.fetch = jest.fn(() => Observable.of({ body: {result: channel}}));
+        mockApiService.fetch = jest.fn(() => of({ body: {result: channel}}));
         // act
        // expect(channel.frameworks[0].name).toBe('SOME_NAME');
         getChannelDetailHandler.handle(request).subscribe(() => {

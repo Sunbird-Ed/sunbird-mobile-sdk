@@ -1,5 +1,5 @@
 import {FetchHandler} from './fetch-handler';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 import {ApiConfig, HttpRequestType, Request, Response} from '..';
 import {BaseConnection} from '../impl/base-connection';
 import {DeviceInfo} from '../../util/device';
@@ -43,7 +43,7 @@ describe('FetchHandler', () => {
             // arrange
             const mockApiConfigWithApiDebugMode: Partial<ApiConfig> = {debugMode: true};
             const mockBaseConnection: Partial<BaseConnection> = {
-                invoke: jest.fn(() => Observable.of(new Response()))
+                invoke: jest.fn(() => of(new Response()))
             };
             (BaseConnection as jest.Mock<BaseConnection>).mockImplementation(() => {
                 return mockBaseConnection;
@@ -72,7 +72,7 @@ describe('FetchHandler', () => {
             // arrange
             const mockApiConfigWithApiDebugMode: Partial<ApiConfig> = {debugMode: false};
             const mockBaseConnection: Partial<BaseConnection> = {
-                invoke: jest.fn(() => Observable.of(new Response()))
+                invoke: jest.fn(() => of(new Response()))
             };
             (BaseConnection as jest.Mock<BaseConnection>).mockImplementation(() => {
                 return mockBaseConnection;
@@ -101,7 +101,7 @@ describe('FetchHandler', () => {
     it('should delegate to baseConnection.invoke() on doFetch()', (done) => {
         // arrange
         const mockBaseConnection: Partial<BaseConnection> = {
-            invoke: jest.fn(() => Observable.of(new Response()))
+            invoke: jest.fn(() => of(new Response()))
         };
         (BaseConnection as jest.Mock<BaseConnection>).mockImplementation(() => {
             return mockBaseConnection;

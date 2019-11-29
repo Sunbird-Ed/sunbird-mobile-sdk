@@ -7,10 +7,11 @@ import {mockSdkConfigWithSampleApiConfig} from './api-service-impl.spec.data';
 import {DeviceInfo} from '../util/device';
 import {SharedPreferences} from '../util/shared-preferences';
 import {ApiKeys} from '../preference-keys';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 import {FetchHandler} from './handlers/fetch-handler';
 import {Response} from './def/response';
 import {HttpRequestType, Request} from './def/request';
+import { EventsBusService } from '..';
 
 jest.mock('./handlers/fetch-handler');
 
@@ -28,12 +29,14 @@ describe('ApiServiceImpl', () => {
         putString: jest.fn(() => {
         }),
     };
+    const mockEventsBusService: Partial<EventsBusService> = {};
 
     beforeAll(() => {
         container.bind<ApiService>(InjectionTokens.API_SERVICE).to(ApiServiceImpl);
         container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(mockSdkConfigWithSampleApiConfig as SdkConfig);
         container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).toConstantValue(mockDeviceInfoService as DeviceInfo);
         container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).toConstantValue(mockSharedPreferences as SharedPreferences);
+        container.bind<EventsBusService>(InjectionTokens.EVENTS_BUS_SERVICE).toConstantValue(mockEventsBusService as EventsBusService);
 
         apiService = container.get(InjectionTokens.API_SERVICE);
     });
@@ -50,11 +53,11 @@ describe('ApiServiceImpl', () => {
     describe('should check for API token onInit()', () => {
         it('should fetch new API token if not found', (done) => {
             // arrange
-            (mockSharedPreferences.getString as jest.Mock).mockReturnValue(Observable.of(''));
-            (mockSharedPreferences.putString as jest.Mock).mockReturnValue(Observable.of(undefined));
+            (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of(''));
+            (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(undefined));
             (mockDeviceInfoService.getDeviceID as jest.Mock).mockReturnValue('SAMPLE_DEVICE_ID');
 
-            spyOn(apiService, 'fetch').and.returnValue(Observable.of({
+            spyOn(apiService, 'fetch').and.returnValue(of({
                 body: {
                     result: {
                         secret: 'SAMPLE_SECRET'
@@ -77,7 +80,7 @@ describe('ApiServiceImpl', () => {
 
         it('should do nothing if API token found', (done) => {
             // arrange
-            (mockSharedPreferences.getString as jest.Mock).mockReturnValue(Observable.of('SAMPLE_API_TOKEN'));
+            (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of('SAMPLE_API_TOKEN'));
 
             spyOn(apiService, 'fetch').and.stub();
 
@@ -93,8 +96,8 @@ describe('ApiServiceImpl', () => {
 
         it('should fail gracefully if fetch API token fails', (done) => {
             // arrange
-            (mockSharedPreferences.getString as jest.Mock).mockReturnValue(Observable.of(''));
-            (mockSharedPreferences.putString as jest.Mock).mockReturnValue(Observable.of(undefined));
+            (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of(''));
+            (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(undefined));
             (mockDeviceInfoService.getDeviceID as jest.Mock).mockReturnValue('SAMPLE_DEVICE_ID');
 
             spyOn(apiService, 'fetch').and.throwError('some error');
@@ -112,7 +115,7 @@ describe('ApiServiceImpl', () => {
         // arrange
         (FetchHandler as jest.Mock<FetchHandler>).mockImplementation(() => {
             return {
-                doFetch: jest.fn(() => Observable.of(new Response()))
+                doFetch: jest.fn(() => of(new Response()))
             };
         });
 

@@ -4,7 +4,7 @@ import {DeviceInfo} from '../../util/device';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {ApiAuthenticator} from '../../util/authenticators/impl/api-authenticator';
 import {SessionAuthenticator} from '../../util/authenticators/impl/session-authenticator';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 import {anything, instance, mock, when} from 'ts-mockito';
 
 describe('BaseConnection', () => {
@@ -22,7 +22,7 @@ describe('BaseConnection', () => {
   } as Partial<ApiConfig>;
   const mockDeviceInfo = {
     getDeviceID(): string {
-      return 'SAMPLE_DEVICE_ID'
+      return 'SAMPLE_DEVICE_ID';
     }
   } as Partial<DeviceInfo>;
   const mockSharedPreferences = {} as Partial<SharedPreferences>;
@@ -50,7 +50,7 @@ describe('BaseConnection', () => {
       const res = new Response();
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.body = {};
-      return Observable.of(res);
+      return of(res);
     });
 
     const req = new Request.Builder()
@@ -73,7 +73,7 @@ describe('BaseConnection', () => {
       const res = new Response();
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.body = {};
-      return Observable.of(res);
+      return of(res);
     });
 
     const req = new Request.Builder()
@@ -96,7 +96,7 @@ describe('BaseConnection', () => {
       const res = new Response();
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.body = {};
-      return Observable.of(res);
+      return of(res);
     });
 
     const req = new Request.Builder()
@@ -116,8 +116,8 @@ describe('BaseConnection', () => {
   it('should append default defaultApiAuthenticators if request.withApiToken is set', (done) => {
     // arrange
     const MockApiAuthenticator = mock<ApiAuthenticator>();
-    when(MockApiAuthenticator.interceptRequest(anything())).thenCall((req) => Observable.of(req));
-    when(MockApiAuthenticator.interceptResponse(anything(), anything())).thenCall((req, res) => Observable.of(res));
+    when(MockApiAuthenticator.interceptRequest(anything())).thenCall((req) => of(req));
+    when(MockApiAuthenticator.interceptResponse(anything(), anything())).thenCall((req, res) => of(res));
     const mockApiAuthenticator = instance(MockApiAuthenticator);
     const defaultApiAuthenticators = [mockApiAuthenticator];
 
@@ -135,7 +135,7 @@ describe('BaseConnection', () => {
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.body = {};
-      return Observable.of(res);
+      return of(res);
     });
 
     const req = new Request.Builder()
@@ -160,8 +160,8 @@ describe('BaseConnection', () => {
   it('should append default defaultApiAuthenticators if request.withApiToken is set', (done) => {
     // arrange
     const MockSessionAuthenticator = mock<SessionAuthenticator>();
-    when(MockSessionAuthenticator.interceptRequest(anything())).thenCall((req) => Observable.of(req));
-    when(MockSessionAuthenticator.interceptResponse(anything(), anything())).thenCall((req, res) => Observable.of(res));
+    when(MockSessionAuthenticator.interceptRequest(anything())).thenCall((req) => of(req));
+    when(MockSessionAuthenticator.interceptResponse(anything(), anything())).thenCall((req, res) => of(res));
     const mockSessionAuthenticator = instance(MockSessionAuthenticator);
     const defaultSessionAuthenticators = [mockSessionAuthenticator];
 
@@ -179,7 +179,7 @@ describe('BaseConnection', () => {
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.body = {};
-      return Observable.of(res);
+      return of(res);
     });
 
     const req = new Request.Builder()
@@ -206,7 +206,7 @@ describe('BaseConnection', () => {
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.body = {};
-      return Observable.of(res);
+      return of(res);
     });
     mockHttpClient.setSerializer = jest.fn((serializer) => serializer);
 
@@ -246,7 +246,7 @@ describe('BaseConnection', () => {
       const res = new Response();
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.body = {};
-      return Observable.of(res);
+      return of(res);
     });
 
     const req = new Request.Builder()

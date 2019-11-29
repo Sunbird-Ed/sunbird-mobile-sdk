@@ -3,7 +3,7 @@ import { DbService } from '../../../db';
 import { SharedPreferences } from '../../../util/shared-preferences';
 import { FileService } from '../../../util/file/def/file-service';
 import { ContentEntry } from '../../db/schema';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('UpdateSizeOnDevice', () => {
     let updateSizeOnDevice: UpdateSizeOnDevice;
@@ -40,7 +40,7 @@ describe('UpdateSizeOnDevice', () => {
             content_state: 2,
             visibility: 'Default'
         }];
-        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of(rootContentsInDb));
+        (mockDbService.execute as jest.Mock).mockReturnValue(of(rootContentsInDb));
         // act
         updateSizeOnDevice.execute().then(() => {
            // expect(mockDbService.execute).toHaveBeenCalled();
@@ -60,7 +60,7 @@ describe('UpdateSizeOnDevice', () => {
             content_type: 'CONTENT_TYPE',
             content_state: 2,
         }];
-        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of(rootContentsInDb));
+        (mockDbService.execute as jest.Mock).mockReturnValue(of(rootContentsInDb));
         // act
         updateSizeOnDevice.execute().then(() => {
            // expect(mockDbService.execute).toHaveBeenCalled();

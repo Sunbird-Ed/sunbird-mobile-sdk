@@ -4,7 +4,7 @@ import {FileService} from '../../util/file/def/file-service';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {mockSdkConfigWithFormServiceConfig} from '../impl/form-service-impl.spec.data';
 import {FormRequest, FormServiceConfig} from '..';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 
 describe('GetFormHandler', () => {
     let getFormHandler: GetFormHandler;
@@ -40,7 +40,7 @@ describe('GetFormHandler', () => {
             frameWork: 'sample_framework'
         };
         mockCachedItemStore.getCached = jest.fn((a, b, c, d, e) => d());
-        mockApiService.fetch = jest.fn(() => Observable.of({
+        mockApiService.fetch = jest.fn(() => of({
             body: {
                 result: 'sample_result'
             }
@@ -64,7 +64,7 @@ describe('GetFormHandler', () => {
             frameWork: 'sample_framework'
         };
         mockCachedItemStore.getCached = jest.fn((a, b, c, d, e) => e());
-        mockFileService.readFileFromAssets = jest.fn((result) => Observable.of({
+        mockFileService.readFileFromAssets = jest.fn((result) => of({
             result: result.form
         }));
         // act
@@ -86,7 +86,7 @@ describe('GetFormHandler', () => {
             frameWork: 'sample_framework'
         };
 
-        mockApiService.fetch = jest.fn(() => Observable.of({
+        mockApiService.fetch = jest.fn(() => of({
             body: {
                 result: 'sample'
             }

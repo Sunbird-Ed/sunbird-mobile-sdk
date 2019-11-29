@@ -46,6 +46,7 @@ import {GenerateOtpHandler} from '../handler/generate-otp-handler';
 import {VerifyOtpHandler} from '../handler/verify-otp-handler';
 import {SearchLocationHandler} from '../handler/search-location-handler';
 import {LocationSearchResult} from '../def/location-search-result';
+import { of } from 'rxjs';
 
 jest.mock('../handler/update-server-profile-info-handler');
 jest.mock('../handler/search-server-profile-handler');
@@ -62,8 +63,8 @@ jest.mock('../../telemetry/util/telemetry-logger',
         'TelemetryLogger': class {
             public static get log() {
                 return {
-                    start: jest.fn(() => Observable.of(undefined)),
-                    end: jest.fn(() => Observable.of(undefined))
+                    start: jest.fn(() => of(undefined)),
+                    end: jest.fn(() => of(undefined))
                 };
             }
         }
@@ -86,7 +87,7 @@ describe.only('ProfileServiceImpl', () => {
     const mockAuthService: Partial<AuthService> = {};
     const mockTelemetryService: Partial<TelemetryService> = {
         audit(request: TelemetryAuditRequest): Observable<boolean> {
-            return Observable.of(true);
+            return of(true);
         }
     };
 
@@ -122,14 +123,14 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             mockSharedPreferences.getString = jest.fn(() => {
                 const profileSession = new ProfileSession('SAMPLE_UID');
-                return Observable.of(JSON.stringify({
+                return of(JSON.stringify({
                     uid: profileSession.uid,
                     sid: profileSession.sid,
                     createdTime: profileSession.createdTime
                 }));
             });
             spyOn(profileService, 'createProfile').and.stub();
-            spyOn(profileService, 'setActiveSessionForProfile').and.returnValue(Observable.of(true));
+            spyOn(profileService, 'setActiveSessionForProfile').and.returnValue(of(true));
 
             // act
             profileService.preInit().subscribe(() => {
@@ -142,11 +143,11 @@ describe.only('ProfileServiceImpl', () => {
 
         it('should create new Profile and Session if no Profile exists on preInit()', (done) => {
             // arrange
-            mockSharedPreferences.getString = jest.fn(() => Observable.of(undefined));
-            spyOn(profileService, 'createProfile').and.returnValue(Observable.of({
+            mockSharedPreferences.getString = jest.fn(() => of(undefined));
+            spyOn(profileService, 'createProfile').and.returnValue(of({
                 uid: 'SAMPLE_UID'
             }) as Partial<ProfileSession>);
-            spyOn(profileService, 'setActiveSessionForProfile').and.returnValue(Observable.of(true));
+            spyOn(profileService, 'setActiveSessionForProfile').and.returnValue(of(true));
 
             // act
             profileService.preInit().subscribe(() => {
@@ -161,7 +162,7 @@ describe.only('ProfileServiceImpl', () => {
     describe('createProfile()', () => {
         it('should create a profile saved in db on createProfile()', (done) => {
             // arrange
-            mockDbService.insert = jest.fn(() => Observable.of(1));
+            mockDbService.insert = jest.fn(() => of(1));
             const profile: Profile = {
                 uid: 'SAMPLE_UID',
                 handle: 'SAMPLE_HANDLE',
@@ -184,8 +185,8 @@ describe.only('ProfileServiceImpl', () => {
 
         it('should create a server profile saved in db only if serverProfile field is set on createProfile()', (done) => {
             // arrange
-            mockTelemetryService.audit = jest.fn(() => Observable.of(true));
-            mockDbService.insert = jest.fn(() => Observable.of(1));
+            mockTelemetryService.audit = jest.fn(() => of(true));
+            mockDbService.insert = jest.fn(() => of(1));
             const profile: Profile = {
                 uid: 'SAMPLE_UID',
                 handle: 'SAMPLE_HANDLE',
@@ -207,9 +208,9 @@ describe.only('ProfileServiceImpl', () => {
         it('should delete profile from db on deleteProfile()', async (done) => {
             // arrange
             expect.assertions(1);
-            mockDbService.read = jest.fn(() => Observable.of([{} as Partial<ProfileEntry.SchemaMap>]));
-            mockDbService.delete = jest.fn(() => Observable.of(undefined));
-            spyOn(profileService, 'getActiveProfileSession').and.returnValue(Observable.of(new ProfileSession('SAMPLE_UID')));
+            mockDbService.read = jest.fn(() => of([{} as Partial<ProfileEntry.SchemaMap>]));
+            mockDbService.delete = jest.fn(() => of(undefined));
+            spyOn(profileService, 'getActiveProfileSession').and.returnValue(of(new ProfileSession('SAMPLE_UID')));
 
             // act
             return await profileService.deleteProfile('SAMPLE_UID').toPromise().then(() => {
@@ -225,8 +226,8 @@ describe.only('ProfileServiceImpl', () => {
 
         it('should delete profile from db only if profile in db on deleteProfile()', async (done) => {
             // arrange
-            mockDbService.read = jest.fn(() => Observable.of([]));
-            mockDbService.delete = jest.fn(() => Observable.of(undefined));
+            mockDbService.read = jest.fn(() => of([]));
+            mockDbService.delete = jest.fn(() => of(undefined));
 
             // act
             return await profileService.deleteProfile('SAMPLE_UID').toPromise().then(
@@ -250,14 +251,14 @@ describe.only('ProfileServiceImpl', () => {
                 profileType: ProfileType.STUDENT,
                 source: ProfileSource.LOCAL
             };
-            mockDbService.read = jest.fn(() => Observable.of([{
+            mockDbService.read = jest.fn(() => of([{
                 [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID',
                 [ProfileEntry.COLUMN_NAME_HANDLE]: 'SAMPLE_HANDLE',
                 [ProfileEntry.COLUMN_NAME_PROFILE_TYPE]: ProfileType.STUDENT,
                 [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.LOCAL,
             } as ProfileEntry.SchemaMap]));
-            mockDbService.update = jest.fn(() => Observable.of(undefined));
-            spyOn(profileService, 'getActiveProfileSession').and.returnValue(Observable.of(new ProfileSession('SAMPLE_UID')));
+            mockDbService.update = jest.fn(() => of(undefined));
+            spyOn(profileService, 'getActiveProfileSession').and.returnValue(of(new ProfileSession('SAMPLE_UID')));
 
             // act
             profileService.updateProfile(profile).subscribe(() => {
@@ -281,8 +282,8 @@ describe.only('ProfileServiceImpl', () => {
                 profileType: ProfileType.STUDENT,
                 source: ProfileSource.LOCAL
             };
-            mockDbService.read = jest.fn(() => Observable.of(undefined));
-            mockDbService.update = jest.fn(() => Observable.of(undefined));
+            mockDbService.read = jest.fn(() => of(undefined));
+            mockDbService.update = jest.fn(() => of(undefined));
 
             // act
             await profileService.updateProfile(profile).toPromise().then(
@@ -304,7 +305,7 @@ describe.only('ProfileServiceImpl', () => {
             const response = {uid: 'SAMPLE_UID'} as Partial<Profile>;
             (UpdateServerProfileInfoHandler as jest.Mock<UpdateServerProfileInfoHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => Observable.of(response))
+                    handle: jest.fn(() => of(response))
                 };
             });
             const request = {} as Partial<UpdateServerProfileInfoRequest>;
@@ -324,7 +325,7 @@ describe.only('ProfileServiceImpl', () => {
             const response: ServerProfile[] = [];
             (SearchServerProfileHandler as jest.Mock<SearchServerProfileHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => Observable.of(response))
+                    handle: jest.fn(() => of(response))
                 };
             });
             const request = {} as Partial<ServerProfileSearchCriteria>;
@@ -351,7 +352,7 @@ describe.only('ProfileServiceImpl', () => {
 
             (TenantInfoHandler as jest.Mock<TenantInfoHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => Observable.of(response))
+                    handle: jest.fn(() => of(response))
                 };
             });
 
@@ -375,7 +376,7 @@ describe.only('ProfileServiceImpl', () => {
 
             (GetServerProfileDetailsHandler as jest.Mock<GetServerProfileDetailsHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => Observable.of(response))
+                    handle: jest.fn(() => of(response))
                 };
             });
 
@@ -395,7 +396,7 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             (AcceptTermConditionHandler as jest.Mock<AcceptTermConditionHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => Observable.of(true))
+                    handle: jest.fn(() => of(true))
                 };
             });
 
@@ -419,7 +420,7 @@ describe.only('ProfileServiceImpl', () => {
 
             (IsProfileAlreadyInUseHandler as jest.Mock<IsProfileAlreadyInUseHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => Observable.of(response))
+                    handle: jest.fn(() => of(response))
                 };
             });
 
@@ -439,7 +440,7 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             (GenerateOtpHandler as jest.Mock<GenerateOtpHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => Observable.of(false))
+                    handle: jest.fn(() => of(false))
                 };
             });
 
@@ -459,7 +460,7 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             (VerifyOtpHandler as jest.Mock<VerifyOtpHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => Observable.of(false))
+                    handle: jest.fn(() => of(false))
                 };
             });
 
@@ -480,7 +481,7 @@ describe.only('ProfileServiceImpl', () => {
             const response: LocationSearchResult[] = [];
             (SearchLocationHandler as any as jest.Mock<SearchLocationHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => Observable.of(response))
+                    handle: jest.fn(() => of(response))
                 };
             });
 
@@ -501,9 +502,9 @@ describe.only('ProfileServiceImpl', () => {
             const sampleChannel = {
                 identifier: 'SAMPLE_CHANNEL'
             } as Partial<Channel>;
-            mockFrameworkService.getDefaultChannelDetails = () => Observable.of(sampleChannel as Channel);
-            mockFrameworkService.getActiveChannelId = () => Observable.of('SAMPLE_CHANNEL');
-            mockFrameworkService.getDefaultChannelId = () => Observable.of('DEFAULT_CHANNEL');
+            mockFrameworkService.getDefaultChannelDetails = () => of(sampleChannel as Channel);
+            mockFrameworkService.getActiveChannelId = () => of('SAMPLE_CHANNEL');
+            mockFrameworkService.getDefaultChannelId = () => of('DEFAULT_CHANNEL');
 
             // act
             profileService.isDefaultChannelProfile().subscribe((isDefaultChannelProfile) => {
@@ -517,8 +518,8 @@ describe.only('ProfileServiceImpl', () => {
             const sampleChannel = {
                 identifier: 'SAMPLE_CHANNEL'
             } as Partial<Channel>;
-            mockFrameworkService.getDefaultChannelDetails = () => Observable.of(sampleChannel as Channel);
-            mockFrameworkService.getActiveChannelId = () => Observable.of('SAMPLE_CHANNEL_1');
+            mockFrameworkService.getDefaultChannelDetails = () => of(sampleChannel as Channel);
+            mockFrameworkService.getActiveChannelId = () => of('SAMPLE_CHANNEL_1');
 
             // act
             profileService.isDefaultChannelProfile().subscribe((isDefaultChannelProfile) => {
@@ -537,7 +538,7 @@ describe.only('ProfileServiceImpl', () => {
                     autoMergeApiPath: 'SAMPLE_AUTO_MERGE_API_PATH'
                 }
             } as any;
-            mockApiService.fetch = jest.fn(() => Observable.of(new Response()));
+            mockApiService.fetch = jest.fn(() => of(new Response()));
             const request: MergeServerProfilesRequest = {
                 from: {
                     userId: 'SAMPLE_USER_ID',
@@ -575,7 +576,7 @@ describe.only('ProfileServiceImpl', () => {
         it('should resolve if profile session exists', (done) => {
             // arrange
             const response = JSON.stringify({uid: 'SAMPLE_UID'});
-            mockSharedPreferences.getString = jest.fn(() => Observable.of(response));
+            mockSharedPreferences.getString = jest.fn(() => of(response));
 
             // act
             profileService.getActiveProfileSession().subscribe((res) => {
@@ -587,7 +588,7 @@ describe.only('ProfileServiceImpl', () => {
 
         it('should reject if profile session does not exist', (done) => {
             // arrange
-            mockSharedPreferences.getString = jest.fn(() => Observable.of(undefined));
+            mockSharedPreferences.getString = jest.fn(() => of(undefined));
 
             // act
             profileService.getActiveProfileSession().subscribe(null, (e) => {
@@ -601,7 +602,7 @@ describe.only('ProfileServiceImpl', () => {
         it('should resolve with all profiles if no profile request filter is passed', (done) => {
             // arrange
             const response = [];
-            mockDbService.read = jest.fn(() => Observable.of(response));
+            mockDbService.read = jest.fn(() => of(response));
 
             // act
             profileService.getAllProfiles().subscribe((res) => {
@@ -619,7 +620,7 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             const response = [];
             const profileRequest = {local: true} as GetAllProfileRequest;
-            mockDbService.read = jest.fn(() => Observable.of(response));
+            mockDbService.read = jest.fn(() => of(response));
 
             // act
             profileService.getAllProfiles(profileRequest as GetAllProfileRequest).subscribe((res) => {
@@ -639,7 +640,7 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             const response = [];
             const profileRequest = {groupId: 'SAMPLE_GROUP_ID', local: true} as GetAllProfileRequest;
-            mockDbService.execute = jest.fn(() => Observable.of(response));
+            mockDbService.execute = jest.fn(() => of(response));
 
             // act
             profileService.getAllProfiles(profileRequest as GetAllProfileRequest).subscribe((res) => {
@@ -652,7 +653,7 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             const response = [];
             const profileRequest = {groupId: 'SAMPLE_GROUP_ID'} as GetAllProfileRequest;
-            mockDbService.execute = jest.fn(() => Observable.of(response));
+            mockDbService.execute = jest.fn(() => of(response));
 
             // act
             profileService.getAllProfiles(profileRequest as GetAllProfileRequest).subscribe((res) => {
@@ -666,8 +667,8 @@ describe.only('ProfileServiceImpl', () => {
         it('should reject if no profile in DB for session profile', (done) => {
             // arrange
             const request = {requiredFields: []} as Pick<ServerProfileDetailsRequest, 'requiredFields'>;
-            mockDbService.read = jest.fn(() => Observable.of([]));
-            spyOn(profileService, 'getActiveProfileSession').and.returnValue(Observable.of({uid: 'SAMPLE_UID'}));
+            mockDbService.read = jest.fn(() => of([]));
+            spyOn(profileService, 'getActiveProfileSession').and.returnValue(of({uid: 'SAMPLE_UID'}));
 
             // act
             profileService.getActiveSessionProfile(request).subscribe(null, (e) => {
@@ -679,10 +680,10 @@ describe.only('ProfileServiceImpl', () => {
         it('should resolve if local profile in DB for session profile', (done) => {
             // arrange
             const request = {requiredFields: []} as Pick<ServerProfileDetailsRequest, 'requiredFields'>;
-            mockDbService.read = jest.fn(() => Observable.of([{
+            mockDbService.read = jest.fn(() => of([{
                 [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID'
             }]));
-            spyOn(profileService, 'getActiveProfileSession').and.returnValue(Observable.of({uid: 'SAMPLE_UID'}));
+            spyOn(profileService, 'getActiveProfileSession').and.returnValue(of({uid: 'SAMPLE_UID'}));
 
             // act
             profileService.getActiveSessionProfile(request).subscribe((res) => {
@@ -694,12 +695,12 @@ describe.only('ProfileServiceImpl', () => {
         it('should resolve if server profile in DB for session profile', (done) => {
             // arrange
             const request = {requiredFields: []} as Pick<ServerProfileDetailsRequest, 'requiredFields'>;
-            mockDbService.read = jest.fn(() => Observable.of([{
+            mockDbService.read = jest.fn(() => of([{
                 [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID',
                 [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.SERVER
             }]));
-            spyOn(profileService, 'getActiveProfileSession').and.returnValue(Observable.of({uid: 'SAMPLE_UID'}));
-            spyOn(profileService, 'getServerProfilesDetails').and.returnValue(Observable.of({uid: 'SAMPLE_UID'}));
+            spyOn(profileService, 'getActiveProfileSession').and.returnValue(of({uid: 'SAMPLE_UID'}));
+            spyOn(profileService, 'getServerProfilesDetails').and.returnValue(of({uid: 'SAMPLE_UID'}));
 
             // act
             profileService.getActiveSessionProfile(request).subscribe((res) => {
@@ -713,7 +714,7 @@ describe.only('ProfileServiceImpl', () => {
     describe('setActiveSessionForProfile', () => {
         it('should reject if not profile in db for profile id in request', (done) => {
             // arrange
-            mockDbService.read = jest.fn(() => Observable.of([]));
+            mockDbService.read = jest.fn(() => of([]));
 
             // act
             profileService.setActiveSessionForProfile('SAMPLE_UID').subscribe(null, (e) => {
@@ -730,14 +731,14 @@ describe.only('ProfileServiceImpl', () => {
                     channelId: 'SAMPLE_CHANNEL_ID'
                 }
             } as any;
-            mockDbService.read = jest.fn(() => Observable.of([
+            mockDbService.read = jest.fn(() => of([
                 {
                     [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID',
                     [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.LOCAL
                 }
             ]));
-            mockFrameworkService.setActiveChannelId = jest.fn(() => Observable.of(undefined));
-            mockSharedPreferences.putString = jest.fn(() => Observable.of(undefined));
+            mockFrameworkService.setActiveChannelId = jest.fn(() => of(undefined));
+            mockSharedPreferences.putString = jest.fn(() => of(undefined));
 
             // act
             profileService.setActiveSessionForProfile('SAMPLE_UID').subscribe((res) => {
@@ -755,19 +756,19 @@ describe.only('ProfileServiceImpl', () => {
                     channelId: 'SAMPLE_CHANNEL_ID'
                 }
             } as any;
-            mockDbService.read = jest.fn(() => Observable.of([
+            mockDbService.read = jest.fn(() => of([
                 {
                     [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID',
                     [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.SERVER
                 }
             ]));
-            spyOn(profileService, 'getServerProfilesDetails').and.returnValue(Observable.of({
+            spyOn(profileService, 'getServerProfilesDetails').and.returnValue(of({
                 rootOrg: {
                     hashTagId: 'SAMPLE_ROOT_ORG_ID'
                 }
             }));
-            mockFrameworkService.setActiveChannelId = jest.fn(() => Observable.of(undefined));
-            mockSharedPreferences.putString = jest.fn(() => Observable.of(undefined));
+            mockFrameworkService.setActiveChannelId = jest.fn(() => of(undefined));
+            mockSharedPreferences.putString = jest.fn(() => of(undefined));
 
             // act
             profileService.setActiveSessionForProfile('SAMPLE_UID').subscribe((res) => {

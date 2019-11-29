@@ -5,7 +5,7 @@ import {DbService} from '../../db';
 import {EventsBusService} from '../../events-bus';
 import {DeviceInfo} from '../../util/device';
 import {ExistingContentAction} from '..';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 import {ValidateDestinationFolder} from './transfer/validate-destination-folder';
 import {DeleteDestinationFolder} from './transfer/delete-destination-folder';
 import {DeviceMemoryCheck} from './transfer/device-memory-check';
@@ -58,7 +58,7 @@ describe('TransferContentHandler', () => {
     const mockStepFactory = () => {
       return {
         execute: (context) => {
-          return Observable.of(context);
+          return of(context);
         }
       };
     };

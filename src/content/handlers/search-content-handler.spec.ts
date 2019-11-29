@@ -5,7 +5,7 @@ import { AppConfig } from '../../api/config/app-config';
 import { SortOrder, ContentSearchCriteria, ContentSearchFilter, FilterValue, ContentImport } from '../def/requests';
 import { SearchFilter } from '../def/search-request';
 import { SearchType } from '../util/content-constants';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import { identifier } from '@babel/types';
 
 describe('SearchContentHandler', () => {
@@ -209,7 +209,7 @@ describe('SearchContentHandler', () => {
             contentId: 'd0'
         };
 
-        mockTelemetryService.interact = jest.fn(() => Observable.of([]));
+        mockTelemetryService.interact = jest.fn(() => of([]));
         // act
         searchContentHandler.buildContentLoadingEvent(subType, contentImport, '', '');
         // assert
