@@ -4,7 +4,7 @@ import { InjectionTokens } from '../../injection-tokens';
 import {SdkConfig, DeviceInfo, FrameworkService, AppInfo, ApiService, SharedPreferences} from '../..';
 import {DeviceRegisterHandler} from '../handler/device-register-handler';
 import {GetDeviceProfileHandler} from '../handler/get-device-profile-handler';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 jest.mock('../handler/device-register-handler');
 jest.mock('../handler/get-device-profile-handler');
@@ -43,7 +43,7 @@ describe('DeviceRegisterServiceImpl', () => {
 
     it('should decoupled device register Api for telemetry sync by invoked registerDevice()', (done) => {
         // arrange
-        const handleResponse = jest.fn(() => Observable.of(''));
+        const handleResponse = jest.fn(() => of(''));
         (DeviceRegisterHandler as any as jest.Mock<DeviceRegisterHandler>).mockImplementation(() => {
             return {
                 handle: handleResponse,
@@ -59,7 +59,7 @@ describe('DeviceRegisterServiceImpl', () => {
 
     it('should get device profile by invoked getDeviceProfile()', (done) => {
         // arrange
-        const profileHandlerData = jest.fn(() => Observable.of(''));
+        const profileHandlerData = jest.fn(() => of(''));
         (GetDeviceProfileHandler as any as jest.Mock<GetDeviceProfileHandler>).mockImplementation(() => {
             return {
                 handle: profileHandlerData,

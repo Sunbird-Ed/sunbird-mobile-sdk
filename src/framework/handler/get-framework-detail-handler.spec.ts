@@ -2,7 +2,7 @@ import {CachedItemStore} from '../../key-value-store';
 import {Path} from '../../util/file/util/path';
 import {FileService} from '../../util/file/def/file-service';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request, HttpClient, HttpSerializer} from '../../api';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 import {Channel, Framework, FrameworkDetailsRequest, FrameworkService, FrameworkServiceConfig} from '..';
 import {FrameworkMapper} from '../util/framework-mapper';
 import { Container } from 'inversify';
@@ -49,10 +49,10 @@ describe('GetFrameworkDetailsHandler', () => {
 
         const GET_FRAMEWORK_DETAILS_ENDPOINT = '/read';
 
-        mockApiService.fetch =  jest.fn(() => Observable.of({ body: {result: framework}}));
+        mockApiService.fetch =  jest.fn(() => of({ body: {result: framework}}));
         mockCacheItemStore.getCached = jest.fn((a, b, c, d, e) => d());
         mockFileService.readFileFromAssets = jest.fn(() => []);
-        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+        spyOn(mockApiService, 'fetch').and.returnValue(of({
             body: {
                 result: {
                     response: 'SAMPLE_RESPONSE'
@@ -81,7 +81,7 @@ describe('GetFrameworkDetailsHandler', () => {
 
         const GET_FRAMEWORK_DETAILS_ENDPOINT = '/read';
 
-        mockApiService.fetch =  jest.fn(() => Observable.of(''));
+        mockApiService.fetch =  jest.fn(() => of(''));
         mockCacheItemStore.getCached = jest.fn((a, b, c, d, e) => e());
         mockFileService.readFileFromAssets =  jest.fn(() => []);
         // act

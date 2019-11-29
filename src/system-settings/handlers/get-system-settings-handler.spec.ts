@@ -4,7 +4,7 @@ import {mockSdkConfigWithSystemSettingsConfig} from '../impl/system-settings-ser
 import {GetSystemSettingsRequest, SystemSettings, SystemSettingsConfig} from '..';
 import {FileService} from '../../util/file/def/file-service';
 import {CachedItemStore} from '../../key-value-store';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 
 describe('GetSystemSettingsHandler', () => {
     let getSystemSettingsHandler: GetSystemSettingsHandler;
@@ -40,7 +40,7 @@ describe('GetSystemSettingsHandler', () => {
             value: 'sample_value'
         };
         mockCachedItemStore.getCached = jest.fn((a, b, c, d, e) => d());
-        mockApiService.fetch = jest.fn(() => Observable.of({
+        mockApiService.fetch = jest.fn(() => of({
             body: {
                 result: {
                     response: response
@@ -61,7 +61,7 @@ describe('GetSystemSettingsHandler', () => {
             id: 'sample_id'
         };
         mockCachedItemStore.getCached = jest.fn((a, b, c, d, e) => e());
-        mockFileService.readFileFromAssets = jest.fn((result) => Observable.of({
+        mockFileService.readFileFromAssets = jest.fn((result) => of({
             result: result.response
         }));
         // act

@@ -3,6 +3,7 @@ import { AcceptTermConditionHandler } from './accept-term-condition-handler';
 import { ApiService, ProfileServiceConfig } from '../..';
 import { mockProfileServiceConfig } from './accept-term-condition-handler.spec.data';
 import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('GetDeviceProfileHandler', () => {
     let acceptTermConditionHandler: AcceptTermConditionHandler;
@@ -30,7 +31,7 @@ describe('GetDeviceProfileHandler', () => {
             version: ''
         };
         mockApiService.fetch = jest.fn(() => { });
-        (mockApiService.fetch as jest.Mock).mockReturnValue(Observable.of({
+        (mockApiService.fetch as jest.Mock).mockReturnValue(of({
             body: {
                  result: {
                      response: 'SUCCESS'
@@ -52,7 +53,7 @@ describe('GetDeviceProfileHandler', () => {
             version: ''
         };
         mockApiService.fetch = jest.fn(() => { });
-        (mockApiService.fetch as jest.Mock).mockReturnValue(Observable.of({
+        (mockApiService.fetch as jest.Mock).mockReturnValue(of({
             body: {
                  result: {
                      response: 'SUCC'

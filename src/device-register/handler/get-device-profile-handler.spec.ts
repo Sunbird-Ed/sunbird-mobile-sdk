@@ -1,7 +1,7 @@
 import { GetDeviceProfileHandler } from './get-device-profile-handler';
 import { SdkConfig, DeviceInfo, ApiService } from '../..';
 import { mockSdkConfigWithSampleApiConfig } from './device-register-handler.spec.data';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('GetDeviceProfileHandler', () => {
     let getDeviceProfileHandler: GetDeviceProfileHandler;
@@ -28,9 +28,9 @@ describe('GetDeviceProfileHandler', () => {
     it('should handle to get device profile details', (done) => {
         // arrange
         mockDeviceInfo.getDeviceID = jest.fn(() => { });
-        (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(Observable.of('SAMPLE_DEVICE_ID'));
+        (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of('SAMPLE_DEVICE_ID'));
         mockApiService.fetch = jest.fn(() => { });
-        (mockApiService.fetch as jest.Mock).mockReturnValue(Observable.of({
+        (mockApiService.fetch as jest.Mock).mockReturnValue(of({
             body: {
                 userDeclaredLocation: {
                     state: 'AP',
