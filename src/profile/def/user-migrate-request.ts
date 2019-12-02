@@ -1,6 +1,6 @@
 export interface UserMigrateRequest {
     userId: string;
-    externalId?: string;
+    userExtId?: string;
     channel?: string;
     action: 'reject' | 'accept';
     feedId?: string;
