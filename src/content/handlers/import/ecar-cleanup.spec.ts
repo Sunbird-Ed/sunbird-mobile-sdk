@@ -1,7 +1,7 @@
 import { EcarCleanup } from './ecar-cleanup';
 import { FileService } from '../../../util/file/def/file-service';
 import { ContentImportResponse, ImportContentContext, ContentImportStatus } from '../..';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('EcarCleanup', () => {
     let ecarCleanup: EcarCleanup;
@@ -36,7 +36,7 @@ describe('EcarCleanup', () => {
             contentImportResponseList: contentImportResponse,
             contentIdsToDelete: new Set(['1', '2'])
         };
-        (mockFileService.removeRecursively as jest.Mock).mockResolvedValue(Observable.of([]));
+        (mockFileService.removeRecursively as jest.Mock).mockResolvedValue(of([]));
         // act
         ecarCleanup.execute(request).then(() => {
             done();
@@ -57,7 +57,7 @@ describe('EcarCleanup', () => {
             contentImportResponseList: contentImportResponse,
             contentIdsToDelete: new Set(['1', '2'])
         };
-        (mockFileService.removeRecursively as jest.Mock).mockRejectedValue(Observable.of([]));
+        (mockFileService.removeRecursively as jest.Mock).mockRejectedValue(of([]));
         // act
         ecarCleanup.execute(request).catch(() => {
             done();

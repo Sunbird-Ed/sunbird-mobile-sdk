@@ -1,8 +1,8 @@
 import { ApiRequestHandler, ApiService } from '../../api';
 import { Batch, CourseBatchesRequest, CourseServiceConfig } from '..';
-import { Observable } from 'rxjs';
 import { ProfileService } from '../../profile';
 import { AuthService } from '../../auth';
+import { Observable } from 'rxjs';
 export declare class GetCourseBatchesHandler implements ApiRequestHandler<CourseBatchesRequest, Batch[]> {
     private apiService;
     private courseServiceConfig;

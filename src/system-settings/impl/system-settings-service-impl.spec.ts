@@ -8,7 +8,7 @@ import {CachedItemStore} from '../../key-value-store';
 import {FileService} from '../../util/file/def/file-service';
 import {mockSdkConfigWithSystemSettingsConfig} from './system-settings-service-impl.spec.data';
 import {GetSystemSettingsHandler} from '../handlers/get-system-settings-handler';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 
 jest.mock('../handlers/get-system-settings-handler');
 
@@ -48,7 +48,7 @@ describe('SystemSettingsServiceImpl', () => {
 
         (GetSystemSettingsHandler as jest.Mock<GetSystemSettingsHandler>).mockImplementation(
             () => ({
-                handle: () => Observable.of({
+                handle: () => of({
                     body: {
                         result: {
                             response: 'SUCCESS'

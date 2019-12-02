@@ -11,6 +11,7 @@ import {AppInfo} from '../../util/app';
 import {Observable} from 'rxjs';
 import {Content} from '../../content';
 import {Rollup} from '../../telemetry';
+import { of } from 'rxjs';
 
 describe('PlayerServiceImpl', () => {
     let playerService: PlayerService;
@@ -63,13 +64,13 @@ describe('PlayerServiceImpl', () => {
         } as Partial<Content> as Content;
 
         const mockProfileSession: ProfileSession = new ProfileSession('SAMPLE_UID');
-        mockProfileService.getActiveProfileSession = jest.fn(() => Observable.of(mockProfileSession));
-        (mockProfileService.getActiveSessionProfile as jest.Mock).mockReturnValue(Observable.of('MOCK_PROFILE'));
+        mockProfileService.getActiveProfileSession = jest.fn(() => of(mockProfileSession));
+        (mockProfileService.getActiveSessionProfile as jest.Mock).mockReturnValue(of('MOCK_PROFILE'));
 
         const mockGroupSession: GroupSession = new GroupSession('MOCK_GID');
-        mockGroupService.getActiveGroupSession = jest.fn(() => Observable.of(mockGroupSession));
+        mockGroupService.getActiveGroupSession = jest.fn(() => of(mockGroupSession));
 
-        (mockFrameWorkService.getActiveChannelId as jest.Mock).mockReturnValue(Observable.of('MOCK_CHANNEL_ID'));
+        (mockFrameWorkService.getActiveChannelId as jest.Mock).mockReturnValue(of('MOCK_CHANNEL_ID'));
         (mockDeviceInfoService.getDeviceID as jest.Mock).mockReturnValue('SAMPLE_DEVICE_ID');
         (mockAppInfo.getVersionName as jest.Mock).mockReturnValue('SAMPLE_APP_VERSION_NAME');
         // act

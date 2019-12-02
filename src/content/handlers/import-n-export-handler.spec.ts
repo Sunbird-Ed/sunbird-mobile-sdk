@@ -2,7 +2,7 @@ import { ImportNExportHandler } from './import-n-export-handler';
 import { DeviceInfo } from '../../util/device';
 import { DbService } from '../../db';
 import { ContentEntry } from '../db/schema';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import { FileService } from '../../util/file/def/file-service';
 import { ArrayUtil } from '../../util/array-util';
 
@@ -40,7 +40,7 @@ describe('ImportNExportHandler', () => {
             content_type: 'CONTENT_TYPE',
             path: 'sample_path'
         }];
-        mockDeviceInfo.getDeviceID = jest.fn(() => Observable.of([]));
+        mockDeviceInfo.getDeviceID = jest.fn(() => of([]));
         // act
         importNExportHandler.populateItems(request);
         // assert
@@ -53,7 +53,7 @@ describe('ImportNExportHandler', () => {
         const request = [{
             'key': 'Sample_key'
         }];
-        mockDeviceInfo.getDeviceID = jest.fn(() => Observable.of([]));
+        mockDeviceInfo.getDeviceID = jest.fn(() => of([]));
         // act
         importNExportHandler.populateItemList(request);
         // assert
@@ -65,7 +65,7 @@ describe('ImportNExportHandler', () => {
         // arrange
         const request = ['content_id_1', 'content_id_2'];
         mockDbService.execute = jest.fn(() => { });
-        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of([{
+        (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
@@ -80,7 +80,7 @@ describe('ImportNExportHandler', () => {
         readAsText().then((value) => {
             return value;
         });
-        ArrayUtil.joinPreservingQuotes = jest.fn(() => Observable.of([]));
+        ArrayUtil.joinPreservingQuotes = jest.fn(() => of([]));
         // act
         await importNExportHandler.getContentExportDBModelToExport(request).then((res) => {
             // assert

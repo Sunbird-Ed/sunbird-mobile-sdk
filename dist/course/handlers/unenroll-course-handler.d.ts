@@ -1,7 +1,6 @@
 import { ApiRequestHandler, ApiService } from '../../api';
-import { UnenrollCourseRequest } from '..';
+import { CourseServiceConfig, UnenrollCourseRequest } from '..';
 import { Observable } from 'rxjs';
-import { CourseServiceConfig } from '..';
 export declare class UnenrollCourseHandler implements ApiRequestHandler<UnenrollCourseRequest, boolean> {
     private apiService;
     private unenrollCourseServiceApiConfig;

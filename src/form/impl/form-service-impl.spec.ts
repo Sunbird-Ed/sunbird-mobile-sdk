@@ -8,7 +8,7 @@ import {Container} from 'inversify';
 import {FormRequest, FormService} from '..';
 import {InjectionTokens} from '../../injection-tokens';
 import {GetFormHandler} from '../handle/get-form-handler';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 
 jest.mock('../handle/get-form-handler');
 
@@ -55,7 +55,7 @@ describe('FormServiceImpl', () => {
         // @ts-ignore
         (GetFormHandler as jest.Mock<GetFormHandler>).mockImplementation(
             () => ({
-                handle: () => Observable.of({
+                handle: () => of({
                     body: {
                         result: 'sample_response'
                     }

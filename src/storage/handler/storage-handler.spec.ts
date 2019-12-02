@@ -5,6 +5,7 @@ import { DbService, DeviceInfo } from '../..';
 import { Observable } from 'rxjs';
 import { ContentUtil } from '../../content/util/content-util';
 import { async } from 'rxjs/internal/scheduler/async';
+import { of } from 'rxjs';
 
 describe('StorageHandler', () => {
     let storageHandler: StorageHandler;
@@ -38,7 +39,7 @@ describe('StorageHandler', () => {
         mockFileService.readAsText = jest.fn(() => {});
         (mockFileService.readAsText as jest.Mock).mockResolvedValue('{"ver": "1.0", "archive": {"items": ["item_1"]}}');
         mockDbService.read = jest.fn(() => {});
-        (mockDbService.read as jest.Mock).mockReturnValue(Observable.of([{
+        (mockDbService.read as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
             local_data: '{"childNodes": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
@@ -52,9 +53,9 @@ describe('StorageHandler', () => {
         mockFileService.getDirectorySize = jest.fn(() => {});
         (mockFileService.getDirectorySize as jest.Mock).mockReturnValue(256);
         mockDeviceInfo.getDeviceID = jest.fn(() => {});
-        (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(Observable.of(''));
-        mockDbService.beginTransaction = jest.fn(() => Observable.of());
-        mockDbService.update = jest.fn(() => Observable.of());
+        (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of(''));
+        mockDbService.beginTransaction = jest.fn(() => of());
+        mockDbService.update = jest.fn(() => of());
         mockDbService.endTransaction = jest.fn(() => {});
         // act
         await storageHandler.addDestinationContentInDb(identifier, storageFolder, keepLowerVersion).then(() => {
@@ -67,7 +68,7 @@ describe('StorageHandler', () => {
         // arrange
         const deletedIdentifiers = ['SAMPALE_1', 'SAMPLE_2'];
         mockDbService.execute = jest.fn(() => {});
-        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of([{
+        (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
             local_data: '{"childNodes": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
@@ -79,7 +80,7 @@ describe('StorageHandler', () => {
         }]));
         mockDbService.beginTransaction = jest.fn(() => {});
         mockDbService.update = jest.fn(() => {});
-        (mockDbService.update as jest.Mock).mockReturnValue(Observable.of({}));
+        (mockDbService.update as jest.Mock).mockReturnValue(of({}));
         mockDbService.endTransaction = jest.fn(() => {});
         // act
         await storageHandler.deleteContentsFromDb(deletedIdentifiers).then(() => {

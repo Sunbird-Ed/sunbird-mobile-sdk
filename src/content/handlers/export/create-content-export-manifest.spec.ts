@@ -2,7 +2,7 @@ import { DbService, ExportContentContext } from '../../..';
 import { CreateContentExportManifest } from './create-content-export-manifest';
 import { ImportNExportHandler } from '../import-n-export-handler';
 import { ContentEntry } from '../../db/schema';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 declare var require;
 
@@ -45,7 +45,7 @@ describe('CreateContentExportManifest', () => {
             metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
 
         };
-        mockImportNExportHandler.populateItems = jest.fn(() => Observable.of([]));
+        mockImportNExportHandler.populateItems = jest.fn(() => of([]));
         // act
         createContentExportManifest.execute(request).then(() => {
         });

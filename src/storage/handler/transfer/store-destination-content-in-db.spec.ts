@@ -4,7 +4,7 @@ import { FileService } from '../../../util/file/def/file-service';
 import { DbService, DeviceInfo, ExistingContentAction } from '../../..';
 import { ContentEntry } from '../../../content/db/schema';
 import { MoveContentResponse, MoveContentStatus, TransferContentContext } from '../transfer-content-handler';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('StoreDestinationContentInDb', () => {
     let storeDestinationContentInDb: StoreDestinationContentInDb;
@@ -64,14 +64,14 @@ describe('StoreDestinationContentInDb', () => {
             return value;
         });
         mockDbService.read = jest.fn(() => {});
-        (mockDbService.read as jest.Mock).mockReturnValue(Observable.of([]));
+        (mockDbService.read as jest.Mock).mockReturnValue(of([]));
         mockFileService.getDirectorySize = jest.fn(() => {});
         (mockFileService.getDirectorySize as jest.Mock).mockResolvedValue(1);
         mockDeviceInfo.getDeviceID = jest.fn(() => {});
         (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue('');
         mockDbService.beginTransaction = jest.fn(() => {});
         mockDbService.insert = jest.fn(() => {});
-        (mockDbService.insert as jest.Mock).mockReturnValue(Observable.of(1));
+        (mockDbService.insert as jest.Mock).mockReturnValue(of(1));
         mockDbService.endTransaction = jest.fn(() => {});
         // act
         storeDestinationContentInDb.execute(request).subscribe(() => {
@@ -114,14 +114,14 @@ describe('StoreDestinationContentInDb', () => {
             return value;
         });
         mockDbService.read = jest.fn(() => {});
-        (mockDbService.read as jest.Mock).mockReturnValue(Observable.of([]));
+        (mockDbService.read as jest.Mock).mockReturnValue(of([]));
         mockFileService.getDirectorySize = jest.fn(() => {});
         (mockFileService.getDirectorySize as jest.Mock).mockResolvedValue(1);
         mockDeviceInfo.getDeviceID = jest.fn(() => {});
         (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue('');
         mockDbService.beginTransaction = jest.fn(() => {});
         mockDbService.insert = jest.fn(() => {});
-        (mockDbService.insert as jest.Mock).mockReturnValue(Observable.of(1));
+        (mockDbService.insert as jest.Mock).mockReturnValue(of(1));
         mockDbService.endTransaction = jest.fn(() => {});
         // act
         storeDestinationContentInDb.execute(request).subscribe(() => {
@@ -164,14 +164,14 @@ describe('StoreDestinationContentInDb', () => {
             return value;
         });
         mockDbService.read = jest.fn(() => {});
-        (mockDbService.read as jest.Mock).mockReturnValue(Observable.of([]));
+        (mockDbService.read as jest.Mock).mockReturnValue(of([]));
         mockFileService.getDirectorySize = jest.fn(() => {});
         (mockFileService.getDirectorySize as jest.Mock).mockResolvedValue(1);
         mockDeviceInfo.getDeviceID = jest.fn(() => {});
         (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue('');
         mockDbService.beginTransaction = jest.fn(() => {});
         mockDbService.insert = jest.fn(() => {});
-        (mockDbService.insert as jest.Mock).mockReturnValue(Observable.of(1));
+        (mockDbService.insert as jest.Mock).mockReturnValue(of(1));
         mockDbService.endTransaction = jest.fn(() => {});
         // act
         storeDestinationContentInDb.execute(request).subscribe(() => {

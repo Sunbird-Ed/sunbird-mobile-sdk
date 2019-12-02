@@ -2,7 +2,7 @@ import { SummaryTelemetryEventHandler } from './summary-telemetry-event-handler'
 import { CourseService, SharedPreferences, EventsBusService, ContentService, ProfileService, DbService } from '../..';
 import { SummarizerService } from '..';
 import { telemetry } from './summary-telemetry-event-handler.spec.data';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('SummaryTelemetryEventHandler', () => {
     let summaryTelemetryEventHandler: SummaryTelemetryEventHandler;
@@ -38,17 +38,17 @@ describe('SummaryTelemetryEventHandler', () => {
         // arrange
         mockSharedPreference.getString = jest.fn(() => { });
         (mockSharedPreference.getString as jest.Mock)
-            .mockReturnValue(Observable.of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id", "batchStatus": 1}'));
+            .mockReturnValue(of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id", "batchStatus": 1}'));
 
         mockProfileService.addContentAccess = jest.fn(() => { });
-        (mockProfileService.addContentAccess as jest.Mock).mockReturnValue(Observable.of(true));
+        (mockProfileService.addContentAccess as jest.Mock).mockReturnValue(of(true));
         mockCourseService.getContentState = jest.fn(() => { });
-        (mockCourseService.getContentState as jest.Mock).mockReturnValue(Observable.of({}));
+        (mockCourseService.getContentState as jest.Mock).mockReturnValue(of({}));
         // act
         mockCourseService.updateContentState = jest.fn(() => { });
-        (mockCourseService.updateContentState as jest.Mock).mockReturnValue(Observable.of(true));
+        (mockCourseService.updateContentState as jest.Mock).mockReturnValue(of(true));
         mockSharedPreference.putString = jest.fn(() => { });
-        const data = (mockSharedPreference.putString as jest.Mock).mockReturnValue(Observable.of('SAMPLE_RESULT'));
+        const data = (mockSharedPreference.putString as jest.Mock).mockReturnValue(of('SAMPLE_RESULT'));
         summaryTelemetryEventHandler.updateContentState(telemetry).subscribe(() => {
             // assert
             expect(mockSharedPreference.getString).toHaveBeenCalled();
@@ -64,17 +64,17 @@ describe('SummaryTelemetryEventHandler', () => {
         telemetry.eid = 'END';
         mockSharedPreference.getString = jest.fn(() => { });
         (mockSharedPreference.getString as jest.Mock)
-            .mockReturnValue(Observable.of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id", "batchStatus": 1}'));
+            .mockReturnValue(of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id", "batchStatus": 1}'));
         mockCourseService.getContentState = jest.fn(() => { });
-        (mockCourseService.getContentState as jest.Mock).mockReturnValue(Observable.of({}));
+        (mockCourseService.getContentState as jest.Mock).mockReturnValue(of({}));
         mockContentService.getContentDetails = jest.fn(() => { });
-        (mockContentService.getContentDetails as jest.Mock).mockReturnValue(Observable.of({ name: 'CONTENT_NAME', sections: {} }));
+        (mockContentService.getContentDetails as jest.Mock).mockReturnValue(of({ name: 'CONTENT_NAME', sections: {} }));
         telemetry.edata.summary = [{ progress: 100 }];
         mockEventBusService.emit = jest.fn(() => { });
-        (mockEventBusService.emit as jest.Mock).mockReturnValue(Observable.of());
+        (mockEventBusService.emit as jest.Mock).mockReturnValue(of());
         mockSharedPreference.putString = jest.fn(() => { });
         // act
-        const data = (mockSharedPreference.putString as jest.Mock).mockReturnValue(Observable.of('SAMPLE_RESULT'));
+        const data = (mockSharedPreference.putString as jest.Mock).mockReturnValue(of('SAMPLE_RESULT'));
         // act
         summaryTelemetryEventHandler.updateContentState(telemetry).subscribe(() => {
             // assert
@@ -92,25 +92,25 @@ describe('SummaryTelemetryEventHandler', () => {
         telemetry.eid = 'END';
         mockSharedPreference.getString = jest.fn(() => { });
         (mockSharedPreference.getString as jest.Mock)
-            .mockReturnValue(Observable.of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id", "batchStatus": 1}'));
+            .mockReturnValue(of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id", "batchStatus": 1}'));
 
         // mockProfileService.addContentAccess = jest.fn(() => { });
-        // (mockProfileService.addContentAccess as jest.Mock).mockReturnValue(Observable.of(true));
+        // (mockProfileService.addContentAccess as jest.Mock).mockReturnValue(of(true));
         mockCourseService.getContentState = jest.fn(() => { });
-        (mockCourseService.getContentState as jest.Mock).mockReturnValue(Observable.of({}));
+        (mockCourseService.getContentState as jest.Mock).mockReturnValue(of({}));
         mockContentService.getContentDetails = jest.fn(() => { });
-        (mockContentService.getContentDetails as jest.Mock).mockReturnValue(Observable.of({
+        (mockContentService.getContentDetails as jest.Mock).mockReturnValue(of({
          name: 'CONTENT_NAME', sections: {},
          contentType: 'SELFASSESS' }));
          mockCourseService.hasCapturedAssessmentEvent = jest.fn(() => {});
          (mockCourseService.hasCapturedAssessmentEvent as jest.Mock).mockReturnValue(true);
         telemetry.edata.summary = [{ progress: -2 }];
         mockEventBusService.emit = jest.fn(() => { });
-        (mockEventBusService.emit as jest.Mock).mockReturnValue(Observable.of());
+        (mockEventBusService.emit as jest.Mock).mockReturnValue(of());
         // mockCourseService.updateContentState = jest.fn(() => {});
-        // (mockCourseService.updateContentState as jest.Mock).mockReturnValue(Observable.of(true));
+        // (mockCourseService.updateContentState as jest.Mock).mockReturnValue(of(true));
         mockSharedPreference.putString = jest.fn(() => { });
-        const data = (mockSharedPreference.putString as jest.Mock).mockReturnValue(Observable.of('SAMPLE_RESULT'));
+        const data = (mockSharedPreference.putString as jest.Mock).mockReturnValue(of('SAMPLE_RESULT'));
         // act
         summaryTelemetryEventHandler.updateContentState(telemetry).subscribe(() => {
             // assert
@@ -127,13 +127,13 @@ describe('SummaryTelemetryEventHandler', () => {
         telemetry.eid = 'START';
         mockSharedPreference.getString = jest.fn(() => { });
         const data = (mockSharedPreference.getString as jest.Mock)
-            .mockReturnValue(Observable.of(''));
+            .mockReturnValue(of(''));
         JSON.parse = jest.fn().mockImplementationOnce(() => {
             return data;
         });
 
         mockProfileService.addContentAccess = jest.fn(() => { });
-        (mockProfileService.addContentAccess as jest.Mock).mockReturnValue(Observable.of(true));
+        (mockProfileService.addContentAccess as jest.Mock).mockReturnValue(of(true));
         // act
         summaryTelemetryEventHandler.updateContentState(telemetry).subscribe(() => {
             // assert
@@ -145,7 +145,7 @@ describe('SummaryTelemetryEventHandler', () => {
 
     it('should added content in content marker table for pid is contentPlayer', (done) => {
         // arrange
-        mockCourseService.resetCapturedAssessmentEvents = () => Observable.of('DEFAULT_CHANNEL');
+        mockCourseService.resetCapturedAssessmentEvents = () => of('DEFAULT_CHANNEL');
         // act
         summaryTelemetryEventHandler.handle(telemetry).subscribe(() => {
             // assert
@@ -158,7 +158,7 @@ describe('SummaryTelemetryEventHandler', () => {
         telemetry.context.pdata.pid = 'sunbird.app';
         mockSharedPreference.getString = jest.fn(() => { });
         const data = (mockSharedPreference.getString as jest.Mock)
-            .mockReturnValue(Observable.of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id"}'));
+            .mockReturnValue(of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id"}'));
         JSON.parse = jest.fn().mockImplementationOnce(() => {
             return data;
         });
@@ -177,10 +177,10 @@ describe('SummaryTelemetryEventHandler', () => {
         telemetry.context.pdata.pid = 'contentplayer';
         mockSharedPreference.getString = jest.fn(() => { });
         await (mockSharedPreference.getString as jest.Mock)
-            .mockReturnValue(Observable.of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id"}'));
+            .mockReturnValue(of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id"}'));
 
         mockSummarizerService.deletePreviousAssessmentDetails = jest.fn(() => { });
-        (mockSummarizerService.deletePreviousAssessmentDetails as jest.Mock).mockReturnValue(Observable.of({
+        (mockSummarizerService.deletePreviousAssessmentDetails as jest.Mock).mockReturnValue(of({
             currentUID: undefined,
             currentContentID: undefined
         }));
@@ -197,7 +197,7 @@ describe('SummaryTelemetryEventHandler', () => {
         // arrange
         telemetry.eid = 'END';
         mockSharedPreference.putString = jest.fn(() => { });
-        const data = (mockSharedPreference.putString as jest.Mock).mockReturnValue(Observable.of('SAMPLE_RESULT'));
+        const data = (mockSharedPreference.putString as jest.Mock).mockReturnValue(of('SAMPLE_RESULT'));
 
         // act
         summaryTelemetryEventHandler.handle(telemetry).subscribe(() => {

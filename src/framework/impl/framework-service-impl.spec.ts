@@ -3,7 +3,7 @@ import {Channel, ChannelDetailsRequest, FrameworkService, OrganizationSearchCrit
 import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
 import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
 import {FileService} from '../../util/file/def/file-service';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 import {Organization} from '../def/Organization';
 import {ApiService, HttpRequestType, Request, HttpClient} from '../../api';
 import {SharedPreferences} from '../../util/shared-preferences';
@@ -63,7 +63,7 @@ describe('FrameworkServiceImpl', () => {
     });
     it('should return preInit Using FrameworkService', (done) => {
         // arrange
-         frameworkService.getActiveChannelId = jest.fn(() => Observable.of('SOME_CHANNEL_ID'));
+         frameworkService.getActiveChannelId = jest.fn(() => of('SOME_CHANNEL_ID'));
         // act
          frameworkService.preInit().subscribe(() => {
              // assert
@@ -75,7 +75,7 @@ describe('FrameworkServiceImpl', () => {
     it('should execute preInit Catch Error Using FrameworkService', () => {
         // arrange
          const channelId = '1233';
-         frameworkService.getActiveChannelId = jest.fn(() => Observable.of(''));
+         frameworkService.getActiveChannelId = jest.fn(() => of(''));
         // act
          frameworkService.preInit().subscribe(() => {}, (e) => {
              // assert
@@ -87,12 +87,12 @@ describe('FrameworkServiceImpl', () => {
 
     it('should return getDefaultChannelDetails Using FrameworkService', (done) => {
         // arrange
-         mockSystemSettingsService.getSystemSettings = jest.fn(() => Observable.of<SystemSettings>({
+         mockSystemSettingsService.getSystemSettings = jest.fn(() => of<SystemSettings>({
              id: 'SOME_ID',
              field: 'SOME_FIELD',
              value: 'SOME_CHANNEL_ID'
          }));
-         frameworkService.getChannelDetails = jest.fn(() => Observable.of<Partial<Channel>>({
+         frameworkService.getChannelDetails = jest.fn(() => of<Partial<Channel>>({
              identifier: 'SOME_IDENTIFIER',
          }));
         // act
@@ -106,7 +106,7 @@ describe('FrameworkServiceImpl', () => {
 
     it('should return getActiveChannelId using framework Service', () => {
        // arrange
-        mockSharedPreferences.getString = jest.fn(() => Observable.of(FrameworkKeys.KEY_ACTIVE_CHANNEL_ID));
+        mockSharedPreferences.getString = jest.fn(() => of(FrameworkKeys.KEY_ACTIVE_CHANNEL_ID));
         // act
         frameworkService.getActiveChannelId().subscribe((channelId: string) => {
              // assert
@@ -118,7 +118,7 @@ describe('FrameworkServiceImpl', () => {
 
     it('should throw error when getActiveChannelId() if no active channel set', () => {
         // arrange
-         mockSharedPreferences.getString = jest.fn(() => Observable.of({}));
+         mockSharedPreferences.getString = jest.fn(() => of({}));
          // act
          frameworkService.getActiveChannelId().subscribe((channelId: string) => {}, (e) => {
             expect(mockSharedPreferences.getString).toHaveBeenCalled();
@@ -130,8 +130,8 @@ describe('FrameworkServiceImpl', () => {
     it('should return setActiveChannelId Using FrameworkService', () => {
         // arrange
         const  channelId = '12345';
-        mockSharedPreferences.putString = jest.fn(() => Observable.of([]));
-        (mockSharedPreferences.putString as jest.Mock).mockReturnValue(Observable.of(''));
+        mockSharedPreferences.putString = jest.fn(() => of([]));
+        (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(''));
         // act
          frameworkService.setActiveChannelId(channelId).subscribe(() => {
              // assert
@@ -150,7 +150,7 @@ describe('FrameworkServiceImpl', () => {
         (GetChannelDetailsHandler as any).mockImplementation(() => {
             return {
                 handle: () => {
-                    return Observable.of({
+                    return of({
                         identifier: 'SOME_IDENTIFIER',
                     } as Channel);
                 }
@@ -172,7 +172,7 @@ describe('FrameworkServiceImpl', () => {
             }
         };
 
-        mockApiService.fetch =  jest.fn(() => Observable.of({ body: {result: request}}));
+        mockApiService.fetch =  jest.fn(() => of({ body: {result: request}}));
         // act
         frameworkService.searchOrganization(request).subscribe(() => {
             expect(mockApiService.fetch).toHaveBeenCalled();

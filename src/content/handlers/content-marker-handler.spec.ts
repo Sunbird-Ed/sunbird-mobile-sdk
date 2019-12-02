@@ -3,6 +3,7 @@ import { Container } from 'inversify';
 import { InjectionTokens } from '../../injection-tokens';
 import { DbService } from '../../db';
 import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('ContentMarkerHandler', () => {
     let contentMarkerHandler: ContentMarkerHandler;
@@ -26,7 +27,7 @@ describe('ContentMarkerHandler', () => {
         // arrange
         const identifier = 'SAMPLE_IDENTIFIER';
         const uid = 'SAMPLE_UID';
-        mockDbService.execute = jest.fn(() => Observable.of([]));
+        mockDbService.execute = jest.fn(() => of([]));
         // act
         contentMarkerHandler.getContentMarker(identifier, uid).subscribe(() => {
             // assert

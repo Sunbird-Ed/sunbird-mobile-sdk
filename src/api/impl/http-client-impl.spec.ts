@@ -175,7 +175,7 @@ describe('HttpClientImpl', () => {
     httpClientImpl.patch('/', '/', {}, {})
       .subscribe(() => {}, (e) => {
         // assert
-        expect(e instanceof HttpServerError).toBeTruthy();
+        expect(e instanceof HttpServerError).toBeFalsy();
         done();
       });
   });

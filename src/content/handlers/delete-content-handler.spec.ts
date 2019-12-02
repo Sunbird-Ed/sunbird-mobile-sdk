@@ -7,6 +7,7 @@ import { ContentUtil } from '../util/content-util';
 // import {buildconfigreader} from '../../../plugins/cordova-plugin-buildconfig-reader';
 import { Observable } from 'rxjs';
 import { ArrayUtil } from '../../util/array-util';
+import { of } from 'rxjs';
 
 jest.mock('../util/content-util');
 declare const buildconfigreader;
@@ -57,7 +58,7 @@ describe('DeleteContentHandler', () => {
             path: 'Sample_path'
         };
         mockDbService.execute = jest.fn(() => { });
-        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of([{
+        (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
@@ -66,8 +67,8 @@ describe('DeleteContentHandler', () => {
             content_type: 'CONTENT_TYPE',
             path: 'sample_path'
         }]));
-        mockDbService.beginTransaction = jest.fn(() => Observable.of({}));
-        mockDbService.update = jest.fn(() => Observable.of({}));
+        mockDbService.beginTransaction = jest.fn(() => of({}));
+        mockDbService.update = jest.fn(() => of({}));
         mockDbService.endTransaction = jest.fn(() => { });
         const isChildContent = true;
         mockFileService.readAsText = jest.fn(() => { });
@@ -111,9 +112,9 @@ describe('DeleteContentHandler', () => {
             return value;
         });
 
-        ContentUtil.hasChildren = jest.fn(() => Observable.of([]));
-        mockDbService.execute = jest.fn(() => Observable.of([]));
-        ArrayUtil.joinPreservingQuotes = jest.fn(() => Observable.of([]));
+        ContentUtil.hasChildren = jest.fn(() => of([]));
+        mockDbService.execute = jest.fn(() => of([]));
+        ArrayUtil.joinPreservingQuotes = jest.fn(() => of([]));
         // act
         await deleteContentHandler.deleteAllChildren(request, true).then(() => {
             expect(mockDbService.execute).toHaveBeenCalled();
@@ -146,7 +147,7 @@ describe('DeleteContentHandler', () => {
     //     const request = undefined;
     //  //   spyOn(deleteContentHandler, 'deleteOrUpdateContent').and.stub();
     //     const isUpdateLastModifiedTime = true;
-    //     ContentUtil.getFirstPartOfThePathNameOnLastDelimiter = jest.fn(() => Observable.of([]));
+    //     ContentUtil.getFirstPartOfThePathNameOnLastDelimiter = jest.fn(() => of([]));
     //     // act
     //     await deleteContentHandler.deleteAllChildren(request_1, true).then(() => {
     //       // console.log(expect(request_1[ContentEntry.COLUMN_NAME_IDENTIFIER]).not.toEqual(''));
