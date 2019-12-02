@@ -10,7 +10,7 @@ export declare class EventsBusServiceImpl implements EventsBusService {
     private eventsBusConfig;
     constructor(sdkConfig: SdkConfig);
     onInit(): Observable<undefined>;
-    events(filter?: string): Observable<any>;
+    events(eventFilter?: string): Observable<any>;
     emit({ namespace, event }: EmitRequest<EventsBusEvent>): void;
     registerObserver({ namespace, observer }: RegisterObserverRequest): void;
 }

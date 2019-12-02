@@ -32,6 +32,7 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     private static readonly KEY_CONTENT_DELETE_REQUEST_LIST;
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY;
     private readonly getContentDetailsHandler;
+    private readonly getContentHeirarchyHandler;
     private readonly contentServiceConfig;
     private readonly appConfig;
     private contentDeleteRequestSet;
@@ -39,6 +40,7 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     private static getIdForDb;
     onInit(): Observable<undefined>;
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
+    getContentHeirarchy(request: ContentDetailRequest): Observable<Content>;
     getContents(request: ContentRequest): Observable<Content[]>;
     cancelImport(contentId: string): Observable<any>;
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;

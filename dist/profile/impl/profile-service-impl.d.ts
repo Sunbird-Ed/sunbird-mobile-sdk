@@ -16,6 +16,9 @@ import { SdkConfig } from '../../sdk-config';
 import { Container } from 'inversify';
 import { AuthService } from '../../auth';
 import { Observable } from 'rxjs';
+import { UserFeed } from '../def/user-feed-response';
+import { UserMigrateRequest } from '../def/user-migrate-request';
+import { UserMigrateResponse } from '../def/user-migrate-response';
 export declare class ProfileServiceImpl implements ProfileService {
     private container;
     private sdkConfig;
@@ -59,4 +62,6 @@ export declare class ProfileServiceImpl implements ProfileService {
     private mapDbProfileEntriesToProfiles;
     private generateSessionStartTelemetry;
     private generateSessionEndTelemetry;
+    getUserFeed(): Observable<UserFeed[]>;
+    userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse>;
 }

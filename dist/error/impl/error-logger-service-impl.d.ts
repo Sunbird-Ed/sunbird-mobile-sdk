@@ -1,7 +1,7 @@
 import { DbService } from '../../db';
 import { Observable } from 'rxjs';
-import { ErrorLoggerService } from '../index';
-import { SystemSettingsService } from 'src/system-settings';
+import { ErrorLoggerService } from '..';
+import { SystemSettingsService } from '../../system-settings';
 import { AppInfo } from '../../util/app';
 import { ApiService } from '../../api';
 import { SdkConfig } from '../../sdk-config';
