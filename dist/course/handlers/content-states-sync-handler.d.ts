@@ -1,8 +1,8 @@
 import { UpdateContentStateApiHandler } from './update-content-state-api-handler';
 import { KeyValueStore } from '../../key-value-store';
 import { DbService } from '../../db';
-import { Observable } from 'rxjs';
 import { SharedPreferences } from '../../util/shared-preferences';
+import { Observable } from 'rxjs';
 export declare class ContentStatesSyncHandler {
     private updateContentStateHandler;
     private dbService;

@@ -1,9 +1,9 @@
 import { DbService } from '../../db';
-import { Observable } from 'rxjs';
 import { GetAllGroupRequest, Group, GroupService, GroupSession, ProfilesToGroupRequest } from '..';
 import { ProfileService } from '../../profile';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { Container } from 'inversify';
+import { Observable } from 'rxjs';
 export declare class GroupServiceImpl implements GroupService {
     private container;
     private dbService;

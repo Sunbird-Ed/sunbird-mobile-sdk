@@ -1,8 +1,8 @@
 import { CachedItemStore } from '../../key-value-store';
 import { FileService } from '../../util/file/def/file-service';
 import { ApiRequestHandler, ApiService } from '../../api';
-import { Observable } from 'rxjs';
 import { Framework, FrameworkDetailsRequest, FrameworkService, FrameworkServiceConfig } from '..';
+import { Observable } from 'rxjs';
 export declare class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDetailsRequest, Framework> {
     private frameworkService;
     private apiService;

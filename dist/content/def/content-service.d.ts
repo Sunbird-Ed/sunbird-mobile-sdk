@@ -7,6 +7,7 @@ import { DownloadCompleteDelegate } from '../../util/download/def/download-compl
 import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
 export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnInitDelegate {
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
+    getContentHeirarchy(request: ContentDetailRequest): Observable<Content>;
     getContents(criteria: ContentRequest): Observable<Content[]>;
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
     searchContent(criteria: ContentSearchCriteria, request?: {
