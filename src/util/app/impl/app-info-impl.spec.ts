@@ -69,7 +69,6 @@ describe('AppInfoImpl', () => {
         await appInfoImpl.init().then(() => {
         // assert
         expect(mockSharedPreferences.getString).toHaveBeenCalledWith(AppInfoKeys.KEY_FIRST_ACCESS_TIMESTAMP);
-        //  expect(buildconfigreader.getBuildConfigValue).toHaveBeenCalled();
         done();
     });
     });
@@ -122,7 +121,18 @@ describe('AppInfoImpl', () => {
             // assert
             expect(mockSharedPreferences.getString).toHaveBeenCalledWith(AppInfoKeys.KEY_FIRST_ACCESS_TIMESTAMP);
             expect(mockSharedPreferences.putString).toHaveBeenCalledWith(AppInfoKeys.KEY_FIRST_ACCESS_TIMESTAMP, expect.any(String));
-            //  expect(buildconfigreader.getBuildConfigValue).toHaveBeenCalled();
+              expect(buildconfigreader.getBuildConfigValue).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should get FirstAccessTimestamp', (done) => {
+        // arrange
+        mockSharedPreferences.getString = jest.fn(() => of('first_access_timestamp'));
+        // act
+        appInfoImpl.getFirstAccessTimestamp().subscribe(() => {
+            // assert
+            expect(mockSharedPreferences.getString).toHaveBeenCalledWith(AppInfoKeys.KEY_FIRST_ACCESS_TIMESTAMP);
             done();
         });
     });
