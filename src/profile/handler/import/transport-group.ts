@@ -37,7 +37,7 @@ export class TransportGroup {
                 await this.dbService.insert({
                     table: GroupEntry.TABLE_NAME,
                     modelJson: group
-                });
+                }).toPromise();
                 imported++;
 
             } else {

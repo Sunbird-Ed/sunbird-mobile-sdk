@@ -33,7 +33,7 @@ export class TransportUser {
                 await this.dbService.insert({
                     table: UserEntry.TABLE_NAME,
                     modelJson: user
-                });
+                }).toPromise();
             }
         });
 
