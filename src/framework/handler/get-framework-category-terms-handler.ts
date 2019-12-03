@@ -11,7 +11,8 @@ import {
     GetFrameworkCategoryTermsRequest
 } from '..';
 import {Observable} from 'rxjs';
-import * as Collections from 'typescript-collections';
+import Set from 'typescript-collections/dist/lib/Set';
+import {makeString} from 'typescript-collections/dist/lib/util';
 import {FrameworkMapper} from '../util/framework-mapper';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {FrameworkKeys} from '../../preference-keys';
@@ -79,9 +80,9 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
         );
     }
 
-    private getAllCategoriesTermsSet(framework: Framework): Collections.Set<CategoryTerm> {
+    private getAllCategoriesTermsSet(framework: Framework): Set<CategoryTerm> {
         if (!framework.categories) {
-            return new Collections.Set<CategoryTerm>();
+            return new Set<CategoryTerm>();
         }
 
         return framework.categories
@@ -90,28 +91,28 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
             .reduce((acc, val) => {
                     acc.add(val);
                     return acc;
-                }, new Collections.Set<CategoryTerm>((term) => Collections.util.makeString(term))
+                }, new Set<CategoryTerm>((term) => makeString(term))
             );
     }
 
-    private getCategoryTerms(framework: Framework, request: GetFrameworkCategoryTermsRequest): Collections.Set<CategoryTerm> {
+    private getCategoryTerms(framework: Framework, request: GetFrameworkCategoryTermsRequest): Set<CategoryTerm> {
         return framework.categories!.find((category) => category.code === request.currentCategoryCode)!.terms!
             .reduce((acc, val) => {
                     acc.add(val!);
                     return acc;
-                }, new Collections.Set<CategoryTerm>((term) => Collections.util.makeString(term))
+                }, new Set<CategoryTerm>((term) => makeString(term))
             );
     }
 
-    private getCategoryAssociationTerms(framework: Framework, request: GetFrameworkCategoryTermsRequest): Collections.Set<CategoryTerm> {
+    private getCategoryAssociationTerms(framework: Framework, request: GetFrameworkCategoryTermsRequest): Set<CategoryTerm> {
         if (!framework.categories) {
-            return new Collections.Set<CategoryTerm>();
+            return new Set<CategoryTerm>();
         }
 
         const categoryTerms = framework.categories.find((category) => category.code === request.prevCategoryCode)!.terms;
 
         if (!categoryTerms) {
-            return new Collections.Set<CategoryTerm>();
+            return new Set<CategoryTerm>();
         }
 
         const categoryAssociationsArray: CategoryAssociation[][] = categoryTerms
@@ -123,7 +124,7 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
                 .reduce((acc, val) => {
                         acc.add(val!);
                         return acc;
-                    }, new Collections.Set<CategoryTerm>((term) => Collections.util.makeString(term))
+                    }, new Set<CategoryTerm>((term) => makeString(term))
                 );
         } else {
             return categoryAssociationsArray
@@ -131,7 +132,7 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
                 .reduce((acc, val) => {
                         acc.add(val);
                         return acc;
-                    }, new Collections.Set<CategoryAssociation>((term) => Collections.util.makeString(term))
+                    }, new Set<CategoryAssociation>((term) => makeString(term))
                 )
                 .toArray()
                 .map((association: CategoryAssociation) =>
@@ -139,7 +140,7 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
                 .reduce((acc, val) => {
                         acc.add(val!);
                         return acc;
-                    }, new Collections.Set<CategoryTerm>((term) => Collections.util.makeString(term))
+                    }, new Set<CategoryTerm>((term) => makeString(term))
                 );
         }
     }
