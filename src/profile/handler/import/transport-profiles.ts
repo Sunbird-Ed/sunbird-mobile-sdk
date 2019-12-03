@@ -24,13 +24,14 @@ export class TransportProfiles {
     private async saveProfilesToDb(importContext: ImportProfileContext, profiles: ProfileEntry.SchemaMap[]) {
         let imported = 0;
         let failed = 0;
-        profiles.forEach(async (profile: ProfileEntry.SchemaMap) => {
+        for (const profile of profiles) {
             const existingProfile: ProfileEntry.SchemaMap[] = await this.dbService.read({
                 table: ProfileEntry.TABLE_NAME,
                 selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
                 selectionArgs: [profile[ProfileEntry.COLUMN_NAME_UID]],
                 limit: '1'
             }).toPromise();
+
             if (!existingProfile || !existingProfile.length) {
                 if (!profile[ProfileEntry.COLUMN_NAME_CREATED_AT]) {
                     profile[ProfileEntry.COLUMN_NAME_CREATED_AT] = new Date().getTime();
@@ -39,16 +40,14 @@ export class TransportProfiles {
                 await this.dbService.insert({
                     table: ProfileEntry.TABLE_NAME,
                     modelJson: profile
-                });
+                }).toPromise();
                 imported++;
                 importContext.imported = imported;
-
             } else {
                 failed++;
                 importContext.failed = failed;
             }
-
-        });
+        }
         importContext.failed = failed;
         importContext.imported = imported;
     }

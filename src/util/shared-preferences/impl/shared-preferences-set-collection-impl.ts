@@ -1,7 +1,7 @@
 import {SharedPreferencesSetCollection} from '../def/shared-preferences-set-collection';
 import {SharedPreferences} from '..';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import * as Collections from 'typescript-collections';
+import Set from 'typescript-collections/dist/lib/Set';
 import {map, mapTo, mergeMap, tap} from 'rxjs/operators';
 
 export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesSetCollection<T> {
@@ -13,7 +13,7 @@ export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesS
     addAll(items: T[]): Observable<void> {
         return this.asSet()
             .pipe(
-                mergeMap((set: Collections.Set<T>) => {
+                mergeMap((set: Set<T>) => {
                     items.forEach((item) => set.add(item));
 
                     return this.sharedPreferences.putString(this.key, JSON.stringify(set.toArray())).pipe(
@@ -27,7 +27,7 @@ export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesS
     add(item: T): Observable<void> {
         return this.asSet()
             .pipe(
-                mergeMap((set: Collections.Set<T>) => {
+                mergeMap((set: Set<T>) => {
                     set.add(item);
 
                     return this.sharedPreferences.putString(this.key, JSON.stringify(set.toArray())).pipe(
@@ -49,7 +49,7 @@ export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesS
     remove(item: T): Observable<boolean> {
         return this.asSet()
             .pipe(
-                mergeMap((set: Collections.Set<T>) => {
+                mergeMap((set: Set<T>) => {
                     const hasRemoved = set.remove(item);
 
                     return this.sharedPreferences.putString(this.key, JSON.stringify(set.toArray())).pipe(
@@ -82,14 +82,14 @@ export class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesS
             );
     }
 
-    asSet(): Observable<Collections.Set<T>> {
+    asSet(): Observable<Set<T>> {
         return this.asList()
             .pipe(
                 map((items: T[]) => {
                     return items.reduce((acc, item) => {
                         acc.add(item);
                         return acc;
-                    }, new Collections.Set<T>(this.toStringFunction));
+                    }, new Set<T>(this.toStringFunction));
                 })
             );
     }
