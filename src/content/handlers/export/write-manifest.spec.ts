@@ -3,7 +3,7 @@ import { FileService } from '../../../util/file/def/file-service';
 import { ContentEntry } from '../../db/schema';
 import { ExportContentContext } from '../..';
 import { DeviceInfo } from '../../..';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 describe('writeManifest', () => {
     let writeManifest: WriteManifest;
     const mockFileService: Partial<FileService> = {
@@ -48,8 +48,8 @@ describe('writeManifest', () => {
             metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
 
         };
-        const async1 = (mockDeviceInfo.getAvailableInternalMemorySize as jest.Mock).mockReturnValue(Observable.of('1024'));
-        const async2 = (mockDeviceInfo.getAvailableInternalMemorySize as jest.Mock).mockReturnValue(Observable.of('102'));
+        const async1 = (mockDeviceInfo.getAvailableInternalMemorySize as jest.Mock).mockReturnValue(of('1024'));
+        const async2 = (mockDeviceInfo.getAvailableInternalMemorySize as jest.Mock).mockReturnValue(of('102'));
         // act
          writeManifest.execute(request).then(() => {
              expect(async1).toHaveBeenCalledWith('1024');
@@ -78,8 +78,8 @@ describe('writeManifest', () => {
             metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
 
         };
-        const async1 = (mockDeviceInfo.getAvailableInternalMemorySize as jest.Mock).mockReturnValue(Observable.of('-23'));
-        (mockFileService.writeFile as jest.Mock).mockReturnValue(Observable.of('111'));
+        const async1 = (mockDeviceInfo.getAvailableInternalMemorySize as jest.Mock).mockReturnValue(of('-23'));
+        (mockFileService.writeFile as jest.Mock).mockReturnValue(of('111'));
         // act
          writeManifest.execute(request).then(() => {
              expect(async1).toHaveBeenCalledWith('-23');

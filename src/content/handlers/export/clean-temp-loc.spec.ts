@@ -2,7 +2,7 @@ import { CleanTempLoc } from './clean-temp-loc';
 import { FileService } from '../../../util/file/def/file-service';
 import { ExportContentContext } from '../..';
 import { ContentEntry } from '../../db/schema';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import { FileUtil } from '../../../util/file/util/file-util';
 
 jest.mock('../../../util/file/util/file-util');
@@ -71,7 +71,7 @@ describe('CleanTempLoc', () => {
             contentModelsToExport: request,
             metadata: { ['SAMPLE_KEY']: 'META_DATA' },
         };
-        (mockFileService.listDir as jest.Mock).mockReturnValue(Observable.of([{name: 'one'}]));
+        (mockFileService.listDir as jest.Mock).mockReturnValue(of([{name: 'one'}]));
 
         // spyOn(dir[0], 'remove').and.callFake(
         //     (a, b) => {

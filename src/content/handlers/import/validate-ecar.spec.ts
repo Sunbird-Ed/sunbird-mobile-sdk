@@ -3,7 +3,7 @@ import { FileService } from '../../../util/file/def/file-service';
 import { DbService, ContentImportResponse, ContentImportStatus, ImportContentContext } from '../../..';
 import { AppConfig } from '../../../api/config/app-config';
 import { GetContentDetailsHandler } from '../get-content-details-handler';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('ValidateEcar', () => {
     let validateEcar: ValidateEcar;
@@ -78,7 +78,7 @@ describe('ValidateEcar', () => {
         const data = readAsText().then((value) => {
             return value;
         });
-        (mockGetContentDetailsHandler.fetchFromDBForAll as jest.Mock).mockReturnValue(Observable.of([{
+        (mockGetContentDetailsHandler.fetchFromDBForAll as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
@@ -116,7 +116,7 @@ describe('ValidateEcar', () => {
             return value;
         });
 
-        (mockGetContentDetailsHandler.fetchFromDBForAll as jest.Mock).mockReturnValue(Observable.of([{
+        (mockGetContentDetailsHandler.fetchFromDBForAll as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
@@ -154,7 +154,7 @@ describe('ValidateEcar', () => {
         const data = readAsText().then((value) => {
             return value;
         });
-       // (mockGetContentDetailsHandler.fetchFromDBForAll as jest.Mock).mockReturnValue(Observable.of([{}]));
+       // (mockGetContentDetailsHandler.fetchFromDBForAll as jest.Mock).mockReturnValue(of([{}]));
         // console.log(J);
         // act
         await validateEcar.execute(request).catch(() => {
@@ -185,7 +185,7 @@ describe('ValidateEcar', () => {
             return value;
         });
 
-        (mockGetContentDetailsHandler.fetchFromDBForAll as jest.Mock).mockReturnValue(Observable.of([{
+        (mockGetContentDetailsHandler.fetchFromDBForAll as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',

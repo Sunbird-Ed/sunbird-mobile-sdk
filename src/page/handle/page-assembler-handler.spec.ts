@@ -2,7 +2,7 @@ import {PageAssemblerHandler} from './page-assembler-handler';
 import { ApiService, CachedItemStore, KeyValueStore, SharedPreferences, CachedItemRequestSourceFrom } from '../..';
 import { PageServiceConfig, PageAssembleCriteria } from '..';
 import { PageName } from '../def/requests';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('PageAssemblerHandler', () => {
     let pageAssemblerHandler: PageAssemblerHandler;
@@ -37,7 +37,7 @@ describe('PageAssemblerHandler', () => {
             source: 'app',
         };
         mockCachedItemStore.getCached = jest.fn(() => {});
-        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(Observable.of(''));
+        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(of(''));
         // act
         pageAssemblerHandler.handle(request).subscribe(() => {
             expect(mockCachedItemStore.getCached).toHaveBeenCalled();
@@ -54,13 +54,13 @@ describe('PageAssemblerHandler', () => {
             from: CachedItemRequestSourceFrom.SERVER
         };
         mockCachedItemStore.getCached = jest.fn(() => {});
-        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(Observable.of({
+        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(of({
             name: 'SAMPLE_NAME',
             id: 'SAMPLE_ID',
             sections: []
         }));
         mockApiService.fetch = jest.fn(() => {});
-        (mockApiService.fetch as jest.Mock).mockReturnValue(Observable.of({
+        (mockApiService.fetch as jest.Mock).mockReturnValue(of({
             body: {
                 result: {
                     response: 'SAMPLE_RESPONSE'
@@ -68,9 +68,9 @@ describe('PageAssemblerHandler', () => {
             }
         }));
         mockSharedPreferences.putString = jest.fn(() => {});
-        (mockSharedPreferences.putString as jest.Mock).mockReturnValue(Observable.of(''));
+        (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(''));
         mockKeyValueStore.setValue = jest.fn(() => {});
-        (mockKeyValueStore.setValue as jest.Mock).mockReturnValue(Observable.of(true));
+        (mockKeyValueStore.setValue as jest.Mock).mockReturnValue(of(true));
         // act
         await pageAssemblerHandler.handle(request).subscribe(() => {
              // assert
@@ -89,9 +89,9 @@ describe('PageAssemblerHandler', () => {
             from: CachedItemRequestSourceFrom.SERVER
         };
         mockCachedItemStore.getCached = jest.fn(() => {});
-        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(Observable.of({}));
+        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(of({}));
         mockApiService.fetch = jest.fn(() => {});
-        (mockApiService.fetch as jest.Mock).mockReturnValue(Observable.of({}));
+        (mockApiService.fetch as jest.Mock).mockReturnValue(of({}));
         // act
         await pageAssemblerHandler.handle(request).subscribe(() => {
              // assert

@@ -3,7 +3,7 @@ import {
     ContentFeedbackService, ProfileService, ApiService, ContentServiceConfig, DbService,
     EventsBusService, ContentDetailRequest, ContentData, ContentDecorateRequest
 } from '../..';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import { ContentMapper } from '../util/content-mapper';
 import { Content, OriginData } from '../def/content';
 import { mockContentData } from './get-content-details-handler.spec.data';
@@ -44,13 +44,13 @@ describe('GetContentDetailsHandler', () => {
         const request: ContentDetailRequest = {
             contentId: 'SAMPLE_CONTENT_ID'
         };
-        mockDbService.read = jest.fn(() => Observable.of([]));
-        mockApiService.fetch = jest.fn(() => Observable.of({
+        mockDbService.read = jest.fn(() => of([]));
+        mockApiService.fetch = jest.fn(() => of({
             body: {
                 result: 'sample_result'
             }
         }));
-        spyOn(getContentDetailsHandler, 'fetchFromServer').and.returnValue(Observable.of([]));
+        spyOn(getContentDetailsHandler, 'fetchFromServer').and.returnValue(of([]));
         getContentDetailsHandler.handle(request).subscribe(() => {
             // assert
             expect(mockDbService.read).toHaveBeenCalled();
@@ -74,20 +74,20 @@ describe('GetContentDetailsHandler', () => {
         const req_data = {
             content: content
         };
-        mockApiService.fetch = jest.fn(() => Observable.of({
+        mockApiService.fetch = jest.fn(() => of({
             body: {
                 result: {
                     content: 'SAMPLE_CONTENT'
                 }
             }
         }));
-        spyOn(getContentDetailsHandler, 'fetchFromDB').and.returnValue(Observable.of([]));
+        spyOn(getContentDetailsHandler, 'fetchFromDB').and.returnValue(of([]));
         ContentMapper.mapContentDBEntryToContent = jest.fn(() => { });
         (ContentMapper.mapContentDBEntryToContent as jest.Mock).mockReturnValue((req_data.content));
         JSON.parse = jest.fn().mockImplementationOnce(() => {
             return req_data.content;
         });
-        mockDbService.update = jest.fn(() => Observable.of(undefined));
+        mockDbService.update = jest.fn(() => of(undefined));
         getContentDetailsHandler.handle(request).subscribe((res) => {
             // assert
             expect(ContentMapper.mapContentDBEntryToContent).toHaveBeenCalled();
@@ -99,7 +99,7 @@ describe('GetContentDetailsHandler', () => {
     it('should be fetch all content from DB', (done) => {
         // arrange
         const contentIds = 'SAMPLE_CONTENT_ID';
-        mockDbService.read = jest.fn(() => Observable.of([]));
+        mockDbService.read = jest.fn(() => of([]));
         // act
         getContentDetailsHandler.fetchFromDBForAll(contentIds).subscribe(() => {
             // assert
@@ -130,12 +130,12 @@ describe('GetContentDetailsHandler', () => {
             attachContentMarker: true
         };
         mockProfileService.getActiveProfileSession = jest.fn(() => { });
-        (mockProfileService.getActiveProfileSession as jest.Mock).mockReturnValue(Observable.of([]));
+        (mockProfileService.getActiveProfileSession as jest.Mock).mockReturnValue(of([]));
         mockContentFeedbackService.getFeedback = jest.fn(() => { });
-        (mockContentFeedbackService.getFeedback as jest.Mock).mockReturnValue(Observable.of([]));
+        (mockContentFeedbackService.getFeedback as jest.Mock).mockReturnValue(of([]));
         mockProfileService.getAllContentAccess = jest.fn(() => { });
-        (mockProfileService.getAllContentAccess as jest.Mock).mockReturnValue(Observable.of([]));
-        mockDbService.execute = jest.fn(() => Observable.of([]));
+        (mockProfileService.getAllContentAccess as jest.Mock).mockReturnValue(of([]));
+        mockDbService.execute = jest.fn(() => of([]));
         // act
         getContentDetailsHandler.decorateContent(request).subscribe(() => {
             // assert

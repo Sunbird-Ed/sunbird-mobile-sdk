@@ -1,9 +1,9 @@
 import { ApiConfig, HttpClient, Request, Response } from '..';
-import { Observable } from 'rxjs';
 import { Connection } from '../def/connection';
 import { Authenticator } from '../def/authenticator';
 import { DeviceInfo } from '../../util/device';
 import { SharedPreferences } from '../../util/shared-preferences';
+import { Observable } from 'rxjs';
 export declare class BaseConnection implements Connection {
     protected http: HttpClient;
     protected apiConfig: ApiConfig;

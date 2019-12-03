@@ -5,7 +5,7 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {MockApiService, MockEventsBusService, MockSharedPreferences} from '../../__test__/mocks';
 import {OAuthSession} from '..';
-import {Observable} from 'rxjs';
+import {of, throwError} from 'rxjs';
 import {AuthKeys} from '../../preference-keys';
 import {AuthEndPoints} from '../def/auth-end-points';
 import {NoActiveSessionError} from '../../profile';
@@ -44,7 +44,7 @@ describe('AuthUtil', () => {
       const mockApConfig: ApiConfig = {} as Partial<ApiConfig> as ApiConfig;
       const mockApiService: ApiService = instance(MockApiService);
 
-      when(MockSharedPreferences.putString(anyString(), anyString())).thenReturn(Observable.of(undefined));
+      when(MockSharedPreferences.putString(anyString(), anyString())).thenReturn(of(undefined));
 
       const mockSharedPreferences: SharedPreferences = instance(MockSharedPreferences);
       const mockEventsBusService: EventsBusService = instance(MockEventsBusService);
@@ -82,7 +82,7 @@ describe('AuthUtil', () => {
       const mockApConfig: ApiConfig = {} as Partial<ApiConfig> as ApiConfig;
       const mockApiService: ApiService = instance(MockApiService);
 
-      when(MockSharedPreferences.getString(anyString())).thenReturn(Observable.of(JSON.stringify(sessionData)));
+      when(MockSharedPreferences.getString(anyString())).thenReturn(of(JSON.stringify(sessionData)));
 
       const mockSharedPreferences: SharedPreferences = instance(MockSharedPreferences);
       const mockEventsBusService: EventsBusService = instance(MockEventsBusService);
@@ -107,7 +107,7 @@ describe('AuthUtil', () => {
       const mockApConfig: ApiConfig = {} as Partial<ApiConfig> as ApiConfig;
       const mockApiService: ApiService = instance(MockApiService);
 
-      when(MockSharedPreferences.getString(anyString())).thenReturn(Observable.of(undefined));
+      when(MockSharedPreferences.getString(anyString())).thenReturn(of(undefined));
 
       const mockSharedPreferences: SharedPreferences = instance(MockSharedPreferences);
       const mockEventsBusService: EventsBusService = instance(MockEventsBusService);
@@ -147,7 +147,7 @@ describe('AuthUtil', () => {
             if (event === 'exit') {
               setTimeout(() => {
                 cb();
-              })
+              });
             }
           }
         }
@@ -170,7 +170,7 @@ describe('AuthUtil', () => {
         );
 
         done();
-      })
+      });
     });
 
     it('should reject if InAppBrowser closed without expected callback', (done) => {
@@ -191,7 +191,7 @@ describe('AuthUtil', () => {
             if (event === 'exit') {
               setTimeout(() => {
                 cb();
-              })
+              });
             }
           }
         }
@@ -206,7 +206,7 @@ describe('AuthUtil', () => {
 
       authUtil.endSession().catch(() => {
         done();
-      })
+      });
     });
 
     it('should reset sharedPreferences if InAppBrowser closes with expected callback', (done) => {
@@ -218,7 +218,7 @@ describe('AuthUtil', () => {
         }
       } as Partial<ApiConfig> as ApiConfig;
       const mockApiService: ApiService = instance(MockApiService);
-      when(MockSharedPreferences.putString(anyString(), anyString())).thenReturn(Observable.of(undefined));
+      when(MockSharedPreferences.putString(anyString(), anyString())).thenReturn(of(undefined));
       const mockSharedPreferences: SharedPreferences = instance(MockSharedPreferences);
       const mockEventsBusService: EventsBusService = instance(MockEventsBusService);
 
@@ -232,7 +232,7 @@ describe('AuthUtil', () => {
                 cb({
                   url: 'SAMPLE_URL/oauth2callback'
                 });
-              })
+              });
             }
           }
         }
@@ -248,7 +248,7 @@ describe('AuthUtil', () => {
       authUtil.endSession().then(() => {
         verify(MockSharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '')).called();
         done();
-      })
+      });
     });
   });
 
@@ -274,14 +274,14 @@ describe('AuthUtil', () => {
         // assert
         expect(e instanceof NoActiveSessionError).toBeTruthy();
         done();
-      })
+      });
     });
 
     it('should reject if refresh token API fails', (done) => {
       // arrange
       const mockApConfig: ApiConfig = {} as Partial<ApiConfig> as ApiConfig;
 
-      when(MockApiService.fetch(anything())).thenReturn(Observable.throw('SAMPLE_ERROR'));
+      when(MockApiService.fetch(anything())).thenReturn(throwError('SAMPLE_ERROR'));
 
       const mockApiService: ApiService = instance(MockApiService);
       const mockSharedPreferences: SharedPreferences = instance(MockSharedPreferences);
@@ -316,7 +316,7 @@ describe('AuthUtil', () => {
         res.responseCode = ResponseCode.HTTP_BAD_REQUEST;
         return res;
       })());
-      when(MockApiService.fetch(anything())).thenReturn(Observable.throw(badRequestError));
+      when(MockApiService.fetch(anything())).thenReturn(throwError(badRequestError));
 
       const mockApiService: ApiService = instance(MockApiService);
       const mockSharedPreferences: SharedPreferences = instance(MockSharedPreferences);
@@ -355,7 +355,7 @@ describe('AuthUtil', () => {
       };
       response.responseCode = ResponseCode.HTTP_SUCCESS;
 
-      when(MockApiService.fetch(anything())).thenReturn(Observable.of(response));
+      when(MockApiService.fetch(anything())).thenReturn(of(response));
 
       const mockApiService: ApiService = instance(MockApiService);
       const mockSharedPreferences: SharedPreferences = instance(MockSharedPreferences);
@@ -398,7 +398,7 @@ describe('AuthUtil', () => {
       };
       response.responseCode = ResponseCode.HTTP_SUCCESS;
 
-      when(MockApiService.fetch(anything())).thenReturn(Observable.of(response));
+      when(MockApiService.fetch(anything())).thenReturn(of(response));
 
       const mockApiService: ApiService = instance(MockApiService);
       const mockSharedPreferences: SharedPreferences = instance(MockSharedPreferences);

@@ -78,6 +78,11 @@ import {InjectionTokens} from '../../injection-tokens';
 import {AuthService} from '../../auth';
 import {defer, from, Observable, of, zip, iif, throwError} from 'rxjs';
 import {catchError, finalize, map, mapTo, mergeMap, tap} from 'rxjs/operators';
+import {UserFeed} from '../def/user-feed-response';
+import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
+import {UserMigrateRequest} from '../def/user-migrate-request';
+import {UserMigrateResponse} from '../def/user-migrate-response';
+import {UserMigrateHandler} from '../handler/user-migrate-handler';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -681,5 +686,23 @@ export class ProfileServiceImpl implements ProfileService {
                 duration: Math.floor((Date.now() - profileSession.createdTime) / 1000)
             }).toPromise();
         }
+    }
+
+    getUserFeed(): Observable<UserFeed[]> {
+        return this.authService.getSession().pipe(
+            mergeMap((session) => {
+                if (!session) {
+                    throw new NoActiveSessionError('No Active Session Found');
+                }
+                return new GetUserFeedHandler(this.sdkConfig, this.apiService)
+                .handle(session.userToken);
+            })
+        );
+
+    }
+
+    userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse> {
+        return new UserMigrateHandler(this.sdkConfig, this.apiService)
+        .handle(userMigrateRequest);
     }
 }

@@ -1,6 +1,6 @@
 import {DeviceRegisterHandler} from './device-register-handler';
 import {ApiService, AppInfo, DeviceInfo, DeviceRegisterRequest, FrameworkService, SdkConfig, SharedPreferences} from '../..';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 import {mockSdkConfigWithSampleApiConfig} from './device-register-handler.spec.data';
 
 describe('DeviceRegisterHandler', () => {
@@ -38,27 +38,27 @@ describe('DeviceRegisterHandler', () => {
         };
         mockDeviceInfo.getDeviceSpec = jest.fn(() => {
         });
-        (mockDeviceInfo.getDeviceSpec as jest.Mock).mockReturnValue(Observable.of({}));
+        (mockDeviceInfo.getDeviceSpec as jest.Mock).mockReturnValue(of({}));
 
         mockFrameworkService.getActiveChannelId = jest.fn(() => {
         });
-        (mockFrameworkService.getActiveChannelId as jest.Mock).mockReturnValue(Observable.of(''));
+        (mockFrameworkService.getActiveChannelId as jest.Mock).mockReturnValue(of(''));
 
         mockAppInfo.getFirstAccessTimestamp = jest.fn(() => {
         });
-        (mockAppInfo.getFirstAccessTimestamp as jest.Mock).mockReturnValue(Observable.of(''));
+        (mockAppInfo.getFirstAccessTimestamp as jest.Mock).mockReturnValue(of(''));
 
         mockDeviceInfo.getDeviceID = jest.fn(() => {
         });
-        (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(Observable.of('SAMPLE_DEVICE_ID'));
+        (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of('SAMPLE_DEVICE_ID'));
 
         mockSharedPreferences.getString = jest.fn(() => {
         });
-        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(Observable.of('{"state":"STATE","district":"DISTRICT"}'));
+        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of('{"state":"STATE","district":"DISTRICT"}'));
 
         mockApiService.fetch = jest.fn(() => {
         });
-        (mockApiService.fetch as jest.Mock).mockReturnValue(Observable.of({}));
+        (mockApiService.fetch as jest.Mock).mockReturnValue(of({}));
 
         // act
         deviceRegisterHandler.handle(request).subscribe(() => {
@@ -76,27 +76,27 @@ describe('DeviceRegisterHandler', () => {
         // arrange
         mockDeviceInfo.getDeviceSpec = jest.fn(() => {
         });
-        (mockDeviceInfo.getDeviceSpec as jest.Mock).mockReturnValue(Observable.of({}));
+        (mockDeviceInfo.getDeviceSpec as jest.Mock).mockReturnValue(of({}));
 
         mockFrameworkService.getActiveChannelId = jest.fn(() => {
         });
-        (mockFrameworkService.getActiveChannelId as jest.Mock).mockReturnValue(Observable.of(''));
+        (mockFrameworkService.getActiveChannelId as jest.Mock).mockReturnValue(of(''));
 
         mockAppInfo.getFirstAccessTimestamp = jest.fn(() => {
         });
-        (mockAppInfo.getFirstAccessTimestamp as jest.Mock).mockReturnValue(Observable.of(''));
+        (mockAppInfo.getFirstAccessTimestamp as jest.Mock).mockReturnValue(of(''));
 
         mockDeviceInfo.getDeviceID = jest.fn(() => {
         });
-        (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(Observable.of('SAMPLE_DEVICE_ID'));
+        (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of('SAMPLE_DEVICE_ID'));
 
         mockSharedPreferences.getString = jest.fn(() => {
         });
-        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(Observable.of('{"state":"STATE","district":"DISTRICT"}'));
+        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of('{"state":"STATE","district":"DISTRICT"}'));
 
         mockApiService.fetch = jest.fn(() => {
         });
-        (mockApiService.fetch as jest.Mock).mockReturnValue(Observable.of({}));
+        (mockApiService.fetch as jest.Mock).mockReturnValue(of({}));
 
         // act
         deviceRegisterHandler.handle().subscribe(() => {

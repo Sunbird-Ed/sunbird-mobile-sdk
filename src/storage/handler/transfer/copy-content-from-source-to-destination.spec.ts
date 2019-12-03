@@ -5,6 +5,7 @@ import { ContentEntry } from '../../../content/db/schema';
 import { SunbirdError } from '../../../sunbird-error';
 import { CancellationError } from '../../errors/cancellation-error';
 import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 declare const buildconfigreader;
 
@@ -89,7 +90,7 @@ describe('CopyContentFromSourceToDestination', () => {
             existingContentAction: ExistingContentAction.KEEP_HIGER_VERSION,
             duplicateContents: dupContents
         };
-        mockEventBusService.emit = jest.fn(() => Observable.of({}));
+        mockEventBusService.emit = jest.fn(() => of({}));
         // const error = t.throws(() => {
         //     throwError();
         //   }, TypeError);

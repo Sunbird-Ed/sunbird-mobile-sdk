@@ -15,8 +15,9 @@ import {Observable} from 'rxjs';
 import {TelemetryErrorRequest} from '../../telemetry';
 import {ErrorStack} from '../def/error-stack';
 import {ErrorStackSyncHandler} from '../handlers/error-stack-sync-handler';
+import { of } from 'rxjs';
 
-jest.mock('../handlers/error-sync-handler');
+jest.mock('../handlers/error-stack-sync-handler');
 
 describe('ErrorLoggerServiceImpl', () => {
     let errorLoggerService: ErrorLoggerService;
@@ -58,7 +59,7 @@ describe('ErrorLoggerServiceImpl', () => {
 
     it('should fetch currentTime from sharedPreferences', (done) => {
         // arrange
-        mockSharedPreferences.getString = jest.fn(() => Observable.of(Date.now() + ''));
+        mockSharedPreferences.getString = jest.fn(() => of(Date.now() + ''));
         // act
         errorLoggerService.onInit().subscribe(() => {
             // assert
@@ -69,8 +70,8 @@ describe('ErrorLoggerServiceImpl', () => {
 
     it('should store currentTime if not available', (done) => {
         // arrange
-        mockSharedPreferences.getString = jest.fn(() => Observable.of(undefined));
-        mockSharedPreferences.putString = jest.fn(() => Observable.of(undefined));
+        mockSharedPreferences.getString = jest.fn(() => of(undefined));
+        mockSharedPreferences.putString = jest.fn(() => of(undefined));
 
         // act
         errorLoggerService.onInit().subscribe(() => {
@@ -95,14 +96,14 @@ describe('ErrorLoggerServiceImpl', () => {
             log: telemetryRequest.stacktrace
         };
         mockAppInfo.getVersionName = jest.fn(() => 'sample_app_version');
-        (mockDbService.insert) = jest.fn(() => Observable.of(undefined));
-        mockDbService.execute = jest.fn(() => Observable.of([1]));
-        mockSystemSettingsService.getSystemSettings = jest.fn(() => Observable.of<SystemSettings>({
+        (mockDbService.insert) = jest.fn(() => of(undefined));
+        mockDbService.execute = jest.fn(() => of([1]));
+        mockSystemSettingsService.getSystemSettings = jest.fn(() => of<SystemSettings>({
             id: 'errorLogSyncSettings',
             field: 'sample_field',
             value: JSON.stringify({frequency: 1, bandWidth: 2})
         }));
-        mockSharedPreferences.getString = jest.fn(() => Observable.of('error_log_last_synced_time_stamp'));
+        mockSharedPreferences.getString = jest.fn(() => of('error_log_last_synced_time_stamp'));
         // act
         errorLoggerService.logError(telemetryRequest).subscribe(() => {
             // assert
