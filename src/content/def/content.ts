@@ -42,6 +42,7 @@ export interface ContentData {
     copyright: string;
     copyrightYear: string;
     license: string;
+    licenseDetails: { description: string, name: string, url: string };
     expires: string;
     downloadUrl: string;
     variants: { [key: string]: any };

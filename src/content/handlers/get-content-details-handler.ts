@@ -157,6 +157,9 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 .withHost(this.contentServiceConfig.host)
                 .withType(HttpRequestType.GET)
                 .withPath(this.contentServiceConfig.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + '/' + request.contentId)
+                .withParameters({
+                    licenseDetails : 'name,url,description'
+                })
                 .withApiToken(true)
                 .build()
         ).pipe(
@@ -165,7 +168,6 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
             })
         );
     }
-
 
     fetchAndDecorate(request: ContentDetailRequest): Observable<Content> {
         return this.fetchFromServer(request).pipe(
