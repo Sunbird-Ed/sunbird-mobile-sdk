@@ -64,7 +64,8 @@ global.buildconfigreader = {
     rm: () => {},
     copyDirectory: () => {},
     getFreeUsableSpace: () => {},
-    canWrite: () => {}
+    canWrite: () => {},
+    getBuildConfigValue: () => {}
 };
 
 global.customtabs = {
