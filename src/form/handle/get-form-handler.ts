@@ -20,7 +20,13 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     }
 
     private static getIdForRequest(request: FormRequest): string {
-        return request.type + '_' + request.subType + '_' + request.action;
+        let id = request.type + '_' + request.subType + '_' + request.action;
+
+        if (request.rootOrgId) {
+            id += ('_' + request.rootOrgId);
+        }
+
+        return id;
     }
 
     handle(request: FormRequest): Observable<{ [key: string]: {} }> {
