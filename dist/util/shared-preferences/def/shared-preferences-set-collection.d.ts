@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import * as Collections from 'typescript-collections';
+import Set from 'typescript-collections/dist/lib/Set';
 export interface SharedPreferencesSetCollection<T> {
     addAll(items: T[]): Observable<void>;
     add(item: T): Observable<void>;
@@ -7,6 +7,6 @@ export interface SharedPreferencesSetCollection<T> {
     clear(): Observable<void>;
     contains(item: T): Observable<boolean>;
     asList(): Observable<T[]>;
-    asSet(): Observable<Collections.Set<T>>;
+    asSet(): Observable<Set<T>>;
     asListChanges(): Observable<T[]>;
 }
