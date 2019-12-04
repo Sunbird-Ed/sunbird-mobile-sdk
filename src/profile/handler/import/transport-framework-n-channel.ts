@@ -34,7 +34,7 @@ export class TransportFrameworkNChannel {
                 await this.dbService.insert({
                     table: KeyValueStoreEntry.TABLE_NAME,
                     modelJson: keyValueStoreEntryInExternalDb
-                });
+                }).toPromise();
             }
         });
 

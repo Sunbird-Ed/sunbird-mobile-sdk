@@ -3,7 +3,7 @@ import {BehaviorSubject, defer, from, iif, interval, Observable, of, zip} from '
 import {SdkServiceOnInitDelegate} from '../../../sdk-service-on-init-delegate';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
 import {SharedPreferences} from '../../shared-preferences';
-import * as Collections from 'typescript-collections';
+import Set from 'typescript-collections/dist/lib/Set';
 import * as downloadManagerInstance from 'cordova-plugin-android-downloadmanager';
 import {DownloadCompleteDelegate} from '../def/download-complete-delegate';
 import {DownloadKeys} from '../../../preference-keys';
@@ -178,7 +178,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     private switchToNextDownloadRequest(): Observable<undefined> {
         return this.sharedPreferencesSetCollection.asSet()
             .pipe(
-                mergeMap((downloadListAsSet: Collections.Set<DownloadRequest>) => {
+                mergeMap((downloadListAsSet: Set<DownloadRequest>) => {
                     if (!downloadListAsSet.size()) {
                         return of(undefined).pipe(
                             tap(() => this.currentDownloadRequest$.next(undefined))
