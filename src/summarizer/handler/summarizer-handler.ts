@@ -7,7 +7,7 @@ import {
     QuestionSummary,
     ReportDetailPerUser,
     UserReportSummary
-} from '../def/response';
+} from '..';
 import {NumberUtil} from '../../util/number-util';
 import {CorrelationData, SunbirdTelemetry} from '../../telemetry';
 import Telemetry = SunbirdTelemetry.Telemetry;
@@ -50,10 +50,10 @@ export class SummarizerHandler {
     public static mapDBEntriesToLearnerAssesmentSummary(assesmentsInDb: LearnerSummaryEntry.SchemaMap[],
                                                         cache: Map<string, ContentCache>): LearnerAssessmentSummary[] {
         return assesmentsInDb
-            .filter((assesment: LearnerSummaryEntry.SchemaMap) => {
-                const contentCache: ContentCache | undefined = cache.get(assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID]);
-                return !!contentCache;
-            })
+            // .filter((assesment: LearnerSummaryEntry.SchemaMap) => {
+            //     const contentCache: ContentCache | undefined = cache.get(assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID]);
+            //     return !!contentCache;
+            // })
             .map((assesment: LearnerSummaryEntry.SchemaMap) => {
                 const contentCache: ContentCache | undefined = cache.get(assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID]);
                 return {
@@ -66,7 +66,7 @@ export class SummarizerHandler {
                     totalMaxScore: NumberUtil.toFixed(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_MAX_SCORE]),
                     totalScore: NumberUtil.toFixed(assesment[LearnerSummaryEntry.COLUMN_NAME_TOTAL_SCORE]),
                     totalQuestionsScore: contentCache ? contentCache!.totalScore : 0,
-                    name: contentCache ? contentCache!.name : '',
+                    name: contentCache ? contentCache!.name : assesment[LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID],
                 };
             });
     }
