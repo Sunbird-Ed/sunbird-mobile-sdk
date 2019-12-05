@@ -2,7 +2,6 @@ import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request
 import {OAuthSession} from '..';
 import {AuthKeys} from '../../preference-keys';
 import {NoActiveSessionError} from '../../profile';
-import {AuthEndPoints} from '../def/auth-end-points';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AuthTokenRefreshErrorEvent, ErrorEventType, EventNamespace, EventsBusService} from '../../events-bus';
 import {AuthTokenRefreshError} from '../errors/auth-token-refresh-error';
@@ -79,30 +78,7 @@ export class AuthUtil {
     }
 
     public async endSession(): Promise<void> {
-        return new Promise<void>(((resolve, reject) => {
-            const launchUrl = this.apiConfig.host +
-                this.apiConfig.user_authentication.authUrl + AuthEndPoints.LOGOUT + '?redirect_uri=' +
-                this.apiConfig.host + '/oauth2callback';
-
-            const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', 'zoom=no');
-
-
-            inAppBrowserRef.addEventListener('loadstart', async (event) => {
-                if ((<string>event.url).indexOf('/oauth2callback') > -1) {
-                    await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '').toPromise();
-
-                    inAppBrowserRef.removeEventListener('exit', () => {
-                    });
-                    inAppBrowserRef.close();
-
-                    resolve();
-                }
-            });
-
-            inAppBrowserRef.addEventListener('exit', () => {
-                reject();
-            });
-        }));
+        await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '').toPromise();
     }
 
     public async getSessionData(): Promise<OAuthSession | undefined> {
