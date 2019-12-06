@@ -1,12 +1,12 @@
 import { ImportContentContext } from '../..';
-import { SharedPreferences } from './../../../util/shared-preferences';
+import { SharedPreferences } from '../../../util/shared-preferences';
 import { Response } from '../../../api';
 import { FileService } from '../../../util/file/def/file-service';
 import { DbService } from '../../../db';
 import { GetContentDetailsHandler } from '../get-content-details-handler';
 import { ZipService } from '../../../util/zip/def/zip-service';
 import { AppConfig } from '../../../api/config/app-config';
-import { DeviceInfo } from '../../../util/device/def/device-info';
+import { DeviceInfo } from '../../../util/device';
 import { EventsBusService } from '../../../events-bus';
 export declare class ExtractPayloads {
     private fileService;

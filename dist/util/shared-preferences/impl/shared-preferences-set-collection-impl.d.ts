@@ -1,7 +1,7 @@
 import { SharedPreferencesSetCollection } from '../def/shared-preferences-set-collection';
 import { SharedPreferences } from '..';
 import { Observable } from 'rxjs';
-import * as Collections from 'typescript-collections';
+import Set from 'typescript-collections/dist/lib/Set';
 export declare class SharedPreferencesSetCollectionImpl<T> implements SharedPreferencesSetCollection<T> {
     private sharedPreferences;
     private key;
@@ -14,6 +14,6 @@ export declare class SharedPreferencesSetCollectionImpl<T> implements SharedPref
     remove(item: T): Observable<boolean>;
     contains(item: T): Observable<boolean>;
     asList(): Observable<T[]>;
-    asSet(): Observable<Collections.Set<T>>;
+    asSet(): Observable<Set<T>>;
     asListChanges(): Observable<T[]>;
 }
