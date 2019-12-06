@@ -52,6 +52,7 @@ export class TelemetryAutoSyncUtil {
             subType: InteractSubType.NETWORK_SPEED,
             env: 'sdk',
             pageId: 'sdk',
+            id: 'sdk',
             valueMap
         }).mapTo(undefined).toPromise();
     }
