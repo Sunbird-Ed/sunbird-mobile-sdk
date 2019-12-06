@@ -21,6 +21,9 @@ interface Cordova {
             post: (url: string, data: any, headers: { [key: string]: string },
                    successCallback: (response: HttpResponse) => void,
                    errorCallback: (response: HttpResponse) => void) => void;
+            setServerTrustMode: (mode: string,
+                    successCallback: () => void,
+                    errorCallback: (e: any | undefined) => void) => void;
         }
     };
 }
