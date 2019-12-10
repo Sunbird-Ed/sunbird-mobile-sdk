@@ -1,7 +1,7 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {FormRequest, FormServiceConfig} from '..';
 import {Observable} from 'rxjs';
-import {CachedItemStore} from '../../key-value-store';
+import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
 
@@ -23,6 +23,10 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     }
 
     handle(request: FormRequest): Observable<{ [key: string]: {} }> {
+        if (request.from && request.from === CachedItemRequestSourceFrom.SERVER) {
+            return this.fetchFormServer(request).map(res => res['form']);
+        }
+
         return this.cachedItemStore.getCached(
             GetFormHandler.getIdForRequest(request),
             this.FORM_LOCAL_KEY,

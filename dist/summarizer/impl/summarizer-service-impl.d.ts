@@ -3,13 +3,13 @@ import { Observable } from 'rxjs';
 import { DbService } from '../../db';
 import { SunbirdTelemetry } from '../../telemetry';
 import { EventsBusService } from '../../events-bus';
-import { EventObserver } from '../../events-bus/def/event-observer';
 import { ContentService } from '../../content';
 import { TelemetryEvent } from '../../telemetry/def/telemetry-event';
-import Telemetry = SunbirdTelemetry.Telemetry;
 import { CourseService } from '../../course';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { ProfileService } from '../../profile';
+import { EventObserver } from '../../events-bus/def/event-observer';
+import Telemetry = SunbirdTelemetry.Telemetry;
 export declare class SummarizerServiceImpl implements SummarizerService, EventObserver<TelemetryEvent> {
     private dbService;
     private contenService;

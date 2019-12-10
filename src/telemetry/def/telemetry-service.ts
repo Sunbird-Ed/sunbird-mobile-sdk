@@ -15,6 +15,7 @@ import {
     TelemetryStartRequest
 } from './requests';
 import {TelemetryExportResponse} from './response';
+import {Context} from './telemetry-model';
 
 export interface TelemetryService {
     saveTelemetry(request: string): Observable<boolean>;
@@ -48,4 +49,6 @@ export interface TelemetryService {
     sync(ignoreSyncThreshold?: boolean): Observable<TelemetrySyncStat>;
 
     resetDeviceRegisterTTL(): Observable<undefined>;
+
+    buildContext(): Observable<Context>;
 }

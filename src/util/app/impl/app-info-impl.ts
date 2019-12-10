@@ -1,14 +1,20 @@
 import {SdkConfig} from '../../../sdk-config';
-import { AppInfo } from '../def/app-info';
-import { injectable, inject } from 'inversify';
-import { InjectionTokens } from '../../../injection-tokens';
+import {AppInfo} from '..';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../../injection-tokens';
+import {SharedPreferences} from '../../shared-preferences';
+import {AppInfoKeys} from '../../../preference-keys';
+import {Observable} from 'rxjs';
 
 @injectable()
 export class AppInfoImpl implements AppInfo {
 
     private versionName: string;
 
-    constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig) {
+    constructor(
+        @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences
+    ) {
         if (sdkConfig.apiConfig.debugMode) {
             this.versionName = 'sunbird-debug';
         }
@@ -19,6 +25,7 @@ export class AppInfoImpl implements AppInfo {
     }
 
     public async init(): Promise<void> {
+        await this.setFirstAccessTimestamp();
         if (this.sdkConfig.apiConfig.debugMode) {
             return await undefined;
         }
@@ -30,6 +37,7 @@ export class AppInfoImpl implements AppInfo {
                 return;
             });
     }
+
     /** @internal */
     getBuildConfigValue(packageName, property): Promise<string> {
         return new Promise<string>((resolve, reject) => {
@@ -47,4 +55,18 @@ export class AppInfoImpl implements AppInfo {
         });
     }
 
+    /** @internal */
+    getFirstAccessTimestamp(): Observable<string> {
+        return this.sharedPreferences.getString(AppInfoKeys.KEY_FIRST_ACCESS_TIMESTAMP)
+            .map((ts) => ts!);
+    }
+
+    private async setFirstAccessTimestamp(): Promise<boolean> {
+        const timestamp = await this.sharedPreferences.getString(AppInfoKeys.KEY_FIRST_ACCESS_TIMESTAMP).toPromise();
+        if (!timestamp) {
+            await this.sharedPreferences.putString(AppInfoKeys.KEY_FIRST_ACCESS_TIMESTAMP, Date.now() + '').toPromise();
+            return true;
+        }
+        return false;
+    }
 }

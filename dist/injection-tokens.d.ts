@@ -34,4 +34,7 @@ export declare const InjectionTokens: {
     ERROR_LOGGER_SERVICE: symbol;
     NETWORKINFO_SERVICE: symbol;
     SEARCH_HISTORY_SERVICE: symbol;
+    CODEPUSH_EXPERIMENT_SERVICE: symbol;
+    FAQ_SERVICE: symbol;
+    DEVICE_REGISTER_SERVICE: symbol;
 };

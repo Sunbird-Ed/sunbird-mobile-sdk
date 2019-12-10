@@ -59,6 +59,7 @@ export enum InteractType {
 }
 
 export enum InteractSubType {
+    NETWORK_SPEED = 'network-speed',
     SUBTYPE_SPINE = 'spine',
     ONLINE = 'online',
     FULL = 'full',

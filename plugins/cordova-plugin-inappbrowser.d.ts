@@ -3,6 +3,8 @@ interface InAppBrowserSession {
 
     removeEventListener(eventname: 'loadstart' | 'loadstop' | 'loaderror' | 'exit' | 'beforeload' | 'message', callback: (event) => void);
 
+    executeScript(body: any);
+
     close();
 
     show();

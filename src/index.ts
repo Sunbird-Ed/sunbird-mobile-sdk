@@ -1,4 +1,7 @@
+import 'rxjs-compat';
+
 export * from './db';
+export * from './device-register';
 export * from './api';
 export * from './telemetry';
 export * from './auth';
@@ -18,6 +21,8 @@ export * from './key-value-store';
 export * from './storage';
 export * from './notification';
 export * from './util/error-stack';
+export * from './codepush-experiment';
+export * from './faq';
 // utils
 export * from './util/shared-preferences';
 export * from './util/download';
@@ -25,3 +30,5 @@ export * from './util/device';
 export * from './player';
 export * from './util/app';
 export * from './util/search-history';
+export * from './util/network';
+

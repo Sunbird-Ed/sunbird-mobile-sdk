@@ -25,10 +25,15 @@ import { NotificationService } from './notification';
 import { ErrorLoggerService } from './util/error-stack';
 import { NetworkInfoService } from './util/network';
 import { SearchHistoryService } from './util/search-history';
+import { CodePushExperimentService } from './codepush-experiment';
+import { FaqService } from './faq';
+import { DeviceRegisterConfig, DeviceRegisterService } from './device-register';
 export declare class SunbirdSdk {
     private _container;
     private static _instance?;
     static readonly instance: SunbirdSdk;
+    private _isInitialised;
+    readonly isInitialised: boolean;
     readonly sdkConfig: SdkConfig;
     readonly appInfo: AppInfo;
     readonly pageAssembleService: PageAssembleService;
@@ -57,8 +62,12 @@ export declare class SunbirdSdk {
     readonly errorLoggerService: ErrorLoggerService;
     readonly networkInfoService: NetworkInfoService;
     readonly searchHistoryService: SearchHistoryService;
+    readonly codePushExperimentService: CodePushExperimentService;
+    readonly faqService: FaqService;
+    readonly deviceRegisterService: DeviceRegisterService;
     init(sdkConfig: SdkConfig): Promise<void>;
     updateTelemetryConfig(update: Partial<TelemetryConfig>): void;
+    updateDeviceRegisterConfig(update: Partial<DeviceRegisterConfig>): void;
     updateContentServiceConfig(update: Partial<ContentServiceConfig>): void;
     updatePageServiceConfig(update: Partial<PageServiceConfig>): void;
     private preInit;

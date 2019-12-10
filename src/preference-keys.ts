@@ -1,3 +1,7 @@
+export namespace AppInfoKeys {
+    export const KEY_FIRST_ACCESS_TIMESTAMP = 'first_access_timestamp';
+}
+
 export namespace ApiKeys {
     export const KEY_API_TOKEN = 'api_bearer_token';
 }
@@ -42,4 +46,14 @@ export namespace ErrorLogKeys {
 
 export namespace CodePush {
     export const DEPLOYMENT_KEY = 'deployment_key';
+}
+
+export namespace CodePushExperiment {
+    export const DEFAULT_DEPLOYMENT_KEY = 'default_deployment_key';
+    export const EXPERIMENT_KEY = 'emperiment_key';
+    export const EXPERIMENT_APP_VERSION = 'emperiment_app_version';
+}
+
+export namespace DeviceRegister {
+    export const DEVICE_LOCATION = 'device_location';
 }

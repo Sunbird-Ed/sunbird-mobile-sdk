@@ -1,4 +1,4 @@
-import { ContentData, ContentSearchCriteria, ContentSearchFilter, ContentSearchResult, ContentServiceConfig, ContentSortCriteria, FilterValue, SearchResponse } from '..';
+import { ContentData, ContentImport, ContentSearchCriteria, ContentSearchFilter, ContentSearchResult, ContentServiceConfig, ContentSortCriteria, FilterValue, SearchResponse } from '..';
 import { AppConfig } from '../../api/config/app-config';
 import { SearchFilter, SearchRequest } from '../def/search-request';
 import { TelemetryService } from '../../telemetry';
@@ -29,6 +29,6 @@ export declare class SearchContentHandler {
     getFilterValuesWithAppliedFilter(facetValues: FilterValue[], appliedFilter: string[]): FilterValue[];
     mapSearchResponse(previousContentCriteria: ContentSearchCriteria, searchResponse: SearchResponse, searchRequest: SearchRequest): ContentSearchResult;
     getContentSearchFilter(contentIds: string[], status: string[], fields?: (keyof ContentData)[]): SearchRequest;
-    getDownloadUrl(contentData: ContentData): Promise<string>;
-    buildContentLoadingEvent(subtype: string, identifier: string): Promise<boolean>;
+    getDownloadUrl(contentData: ContentData, contentImport?: ContentImport): Promise<string>;
+    buildContentLoadingEvent(subtype: string, contentImport: ContentImport, contentType: string, contentVersion: string): Promise<boolean>;
 }

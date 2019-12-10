@@ -4,7 +4,6 @@ import { ApiService } from '../../api';
 import { ProfileService } from '../../profile';
 import { DbService } from '../../db';
 import { FileService } from '../../util/file/def/file-service';
-import { DeviceInfo } from '../../util/device/def/device-info';
 import { ZipService } from '../../util/zip/def/zip-service';
 import { TelemetryService } from '../../telemetry';
 import { DownloadService } from '../../util/download';
@@ -14,6 +13,7 @@ import { SharedPreferences } from '../../util/shared-preferences';
 import { CachedItemStore } from '../../key-value-store';
 import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
 import { SdkConfig } from '../../sdk-config';
+import { DeviceInfo } from '../../util/device';
 export declare class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
     private sdkConfig;
     private apiService;
@@ -50,8 +50,8 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     getDownloadState(): Promise<any>;
     importContent(contentImportRequest: ContentImportRequest): Observable<ContentImportResponse[]>;
     importEcar(ecarImportRequest: EcarImportRequest): Observable<ContentImportResponse[]>;
-    nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
-    prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string): Observable<Content>;
+    nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string, shouldConvertBasePath?: boolean): Observable<Content>;
+    prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string, shouldConvertBasePath?: boolean): Observable<Content>;
     getRelevantContent(request: RelevantContentRequest): Observable<RelevantContentResponsePlayer>;
     subscribeForImportStatus(contentId: string): Observable<any>;
     searchContent(contentSearchCriteria: ContentSearchCriteria, request?: {

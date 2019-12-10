@@ -16,8 +16,8 @@ import Telemetry = SunbirdTelemetry.Telemetry;
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {Content, ContentDetailRequest, ContentEventType, ContentMarkerRequest, ContentService, MarkerType, MimeType} from '../../content';
 import {ContentAccess, ContentAccessStatus, ProfileService} from '../../profile';
-import {GetEnrolledCourseHandler} from '../../course/handlers/get-enrolled-course-handler';
 import {ArrayUtil} from '../../util/array-util';
+import {DbService} from '../../db';
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -26,12 +26,15 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     private currentContentID?: string = undefined;
     private courseContext = {};
 
-    constructor(private courseService: CourseService,
-                private sharedPreference: SharedPreferences,
-                private summarizerService: SummarizerService,
-                private eventBusService: EventsBusService,
-                private contentService: ContentService,
-                private profileService: ProfileService) {
+    constructor(
+        private courseService: CourseService,
+        private sharedPreference: SharedPreferences,
+        private summarizerService: SummarizerService,
+        private eventBusService: EventsBusService,
+        private contentService: ContentService,
+        private profileService: ProfileService,
+        private dbService: DbService
+    ) {
     }
 
     private static checkPData(pdata: ProducerData): boolean {
@@ -91,7 +94,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                                 status: 2,
                                 progress: 100
                             };
-                            return this.validEndEvent(event).mergeMap((isValid: boolean) => {
+                            return this.validEndEvent(event, courseContext).mergeMap((isValid: boolean) => {
                                 if (isValid) {
                                     return this.courseService.updateContentState(updateContentStateRequest)
                                         .do(() => {
@@ -122,7 +125,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         });
     }
 
-    private validEndEvent(event: Telemetry): Observable<boolean> {
+    private validEndEvent(event: Telemetry, courseContext?: any): Observable<boolean> {
         const uid = event.actor.id;
         const identifier = event.object.id;
         const request: ContentDetailRequest = {
@@ -133,6 +136,10 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
             const contentMimeType = content.mimeType;
             // const validSummary = (summaryList: Array<any>) => (percentage: number) => _find(summaryList, (requiredProgress =>
             //     summary => summary && summary.progress >= requiredProgress)(percentage));
+            if (content.contentType.toLowerCase() === 'selfassess' && courseContext && this.courseService.hasCapturedAssessmentEvent({courseContext})) {
+                return false;
+            }
+
             if (this.findValidProgress(playerSummary, 20) &&
                 ArrayUtil.contains([MimeType.YOUTUBE, MimeType.VIDEO, MimeType.WEBM], contentMimeType)) {
                 return true;
@@ -166,6 +173,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
 
     handle(event: SunbirdTelemetry.Telemetry): Observable<undefined> {
         if (event.eid === 'START' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
+            this.courseService.resetCapturedAssessmentEvents();
             return this.processOEStart(event)
                 .do(async () => {
                     await this.summarizerService.saveLearnerAssessmentDetails(event)
@@ -184,6 +192,15 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
             return this.getCourseContext().mapTo(undefined);
         } else if (event.eid === 'ASSESS' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
             return this.processOEAssess(event)
+                .do(async () => {
+                    const context = await this.getCourseContext().toPromise();
+                    if (
+                        event.context.cdata.find((c) => c.type === 'AttemptId')
+                        && context.userId && context.courseId && context.batchId
+                    ) {
+                        await this.courseService.captureAssessmentEvent({event, courseContext: context});
+                    }
+                })
                 .do(async () => {
                     await this.summarizerService.saveLearnerAssessmentDetails(event)
                         .mapTo(undefined)
@@ -254,16 +271,9 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         });
     }
 
-    private getStatus(contentStateList: ContentState[], contentId): number {
-        if (!contentStateList || !contentStateList.length) {
-            return 0;
-        }
-        contentStateList.forEach((contentState: ContentState) => {
-            if (contentState.contentId === contentId) {
-                return contentState.status;
-            }
-        });
-        return 0;
+    private getStatus(contentStateList: ContentState[] = [], contentId): number {
+        const content = contentStateList.find(c => c.contentId === contentId);
+        return (content && content.status) || 0;
     }
 
 

@@ -11,8 +11,9 @@ import {TelemetryLogger} from '../../../telemetry/util/telemetry-logger';
 import {InteractSubType, InteractType, ObjectType} from '../../../telemetry';
 import {SharedPreferencesSetCollection} from '../../shared-preferences/def/shared-preferences-set-collection';
 import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
-import { injectable, inject } from 'inversify';
-import { InjectionTokens } from '../../../injection-tokens';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../../injection-tokens';
+import * as percentile from 'percentile';
 
 @injectable()
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
@@ -24,7 +25,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     private sharedPreferencesSetCollection: SharedPreferencesSetCollection<DownloadRequest>;
 
     constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
-        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
+                @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
         window['downloadManager'] = downloadManagerInstance;
 
         this.sharedPreferencesSetCollection = new SharedPreferencesSetCollectionImpl(
@@ -42,7 +43,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'ContentDetail',
             id: 'ContentDetail',
             objId: downloadRequest.identifier,
-            objType: ObjectType.CONTENT,
+            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['contentType'] ?
+                downloadRequest['contentMeta']['contentType'] : 'Content',
+            objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
+                downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
         }).mapTo(undefined).toPromise();
     }
@@ -55,7 +59,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'ContentDetail',
             id: 'ContentDetail',
             objId: downloadRequest.identifier,
-            objType: ObjectType.CONTENT,
+            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['contentType'] ?
+                downloadRequest['contentMeta']['contentType'] : 'Content',
+            objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
+                downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
         }).mapTo(undefined).toPromise();
     }
@@ -68,7 +75,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'ContentDetail',
             id: 'ContentDetail',
             objId: downloadRequest.identifier,
-            objType: ObjectType.CONTENT,
+            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['contentType'] ?
+                downloadRequest['contentMeta']['contentType'] : 'Content',
+            objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
+                downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
         }).mapTo(undefined).toPromise();
     }
@@ -265,6 +275,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                             downloadId: downloadRequest.downloadId,
                             identifier: downloadRequest.identifier,
                             progress: -1,
+                            bytesDownloaded: 0,
+                            totalSizeInBytes: 0,
                             status: DownloadStatus.STATUS_FAILED
                         }
                     } as DownloadProgress);
@@ -283,6 +295,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         downloadId: downloadRequest.downloadId,
                         identifier: downloadRequest.identifier,
                         progress: Math.round(entry.totalSizeBytes >= 0 ? (entry.bytesDownloadedSoFar / entry.totalSizeBytes) * 100 : -1),
+                        bytesDownloaded: entry.bytesDownloadedSoFar,
+                        totalSizeInBytes: entry.totalSizeBytes,
                         status: entry.status
                     }
                 } as DownloadProgress);
@@ -298,6 +312,14 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     return Observable.of(undefined);
                 }
 
+                this.eventsBusService.emit({
+                    namespace: EventNamespace.DOWNLOADS,
+                    event: {
+                        type: DownloadEventType.START,
+                        payload: undefined
+                    }
+                });
+
                 return Observable.interval(1000)
                     .mergeMap(() => {
                         return this.getDownloadProgress(currentDownloadRequest);
@@ -309,7 +331,21 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         return Observable.zip(
                             this.handleDownloadCompletion(downloadProgress!),
                             this.emitProgressInEventBus(downloadProgress!)
-                        );
+                        ).mapTo(downloadProgress);
+                    })
+                    .do((downloadProgress) => {
+                        if (
+                            downloadProgress.payload.status === DownloadStatus.STATUS_FAILED ||
+                            downloadProgress.payload.status === DownloadStatus.STATUS_SUCCESSFUL
+                        ) {
+                            this.eventsBusService.emit({
+                                namespace: EventNamespace.DOWNLOADS,
+                                event: {
+                                    type: DownloadEventType.END,
+                                    payload: undefined
+                                }
+                            });
+                        }
                     })
                     .mapTo(undefined);
             });

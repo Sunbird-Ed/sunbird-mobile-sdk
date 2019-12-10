@@ -1,4 +1,4 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request, ApiConfig} from '../../api';
+import {ApiConfig, ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {InteractSubType, InteractType, TelemetrySyncStat} from '..';
 import {Observable} from 'rxjs';
 import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
@@ -6,23 +6,17 @@ import {StringToGzippedString} from '../impl/string-to-gzipped-string';
 import {TelemetryEntriesToStringPreprocessor} from '../impl/telemetry-entries-to-string-preprocessor';
 import {KeyValueStore} from '../../key-value-store';
 import {SdkConfig} from '../../sdk-config';
-import {DeviceInfo, DeviceSpec} from '../../util/device';
+import {DeviceInfo} from '../../util/device';
 import {DbService, InsertQuery} from '../../db';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {UniqueId} from '../../db/util/unique-id';
 import moment from 'moment';
-import {FrameworkService} from '../../framework';
 import {TelemetryLogger} from '../util/telemetry-logger';
-import COLUMN_NAME_MSG_ID = TelemetryProcessedEntry.COLUMN_NAME_MSG_ID;
-import COLUMN_NAME_NUMBER_OF_EVENTS = TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS;
-import COLUMN_NAME_PRIORITY = TelemetryEntry.COLUMN_NAME_PRIORITY;
-import COLUMN_NAME_DATA = TelemetryProcessedEntry.COLUMN_NAME_DATA;
-import COLUMN_NAME_EVENT = TelemetryEntry.COLUMN_NAME_EVENT;
-import { TelemetryConfig } from '../config/telemetry-config';
-import { SharedPreferences } from '../../util/shared-preferences';
-import { CodePush } from '../../preference-keys';
-
-// import * as pako from 'pako';
+import {TelemetryConfig} from '../config/telemetry-config';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {CodePush} from '../../preference-keys';
+import {AppInfo} from '../../util/app';
+import {DeviceRegisterService} from '../../device-register';
 
 interface ProcessedEventsMeta {
     processedEvents?: string;
@@ -30,15 +24,12 @@ interface ProcessedEventsMeta {
     messageId?: string;
 }
 
-interface DeviceRegisterResponse {
-    ts: string;
-}
-
 export class TelemetrySyncHandler implements ApiRequestHandler<boolean, TelemetrySyncStat> {
+
     public static readonly TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY = 'telemetry_log_min_allowed_offset_key';
+
     private static readonly LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY = 'last_synced_device_register_attempt_time_stamp';
     private static readonly LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY = 'last_synced_device_register_is_successful';
-    private static readonly DEVICE_REGISTER_ENDPOINT = '/register';
     private static readonly TELEMETRY_ENDPOINT = '/telemetry';
     private static readonly REGISTER_API_SUCCESS_TTL = 24 * 60 * 60 * 1000;
     private static readonly REGISTER_API_FAILURE_TTL = 60 * 60 * 1000;
@@ -47,13 +38,16 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
     private readonly telemetryConfig: TelemetryConfig;
     private readonly apiConfig: ApiConfig;
 
-    constructor(private dbService: DbService,
-                private sdkConfig: SdkConfig,
-                private deviceInfo: DeviceInfo,
-                private frameworkService: FrameworkService,
-                private sharedPreferences: SharedPreferences,
-                private keyValueStore?: KeyValueStore,
-                private apiService?: ApiService) {
+    constructor(
+        private dbService: DbService,
+        private sdkConfig: SdkConfig,
+        private deviceInfo: DeviceInfo,
+        private sharedPreferences: SharedPreferences,
+        private appInfoService: AppInfo,
+        private deviceRegisterService: DeviceRegisterService,
+        private keyValueStore?: KeyValueStore,
+        private apiService?: ApiService
+    ) {
         this.preprocessors = [
             new TelemetryEntriesToStringPreprocessor(),
             new StringToGzippedString()
@@ -110,17 +104,25 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
             });
     }
 
+    public processEventsBatch(): Observable<number> {
+        return this.fetchEvents()
+            .mergeMap((events) =>
+                this.processEvents(events)
+                    .mergeMap((processedEventsMeta) =>
+                        this.persistProcessedEvents(processedEventsMeta, processedEventsMeta.processedEventsSize)
+                            .mergeMap(() => this.deleteEvents(events))
+                            .mapTo(events.length)
+                    )
+            );
+    }
+
     private registerDevice(): Observable<undefined> {
         return Observable.zip(
             this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_ATTEMPT_TIME_STAMP_KEY),
             this.keyValueStore!.getValue(TelemetrySyncHandler.LAST_SYNCED_DEVICE_REGISTER_IS_SUCCESSFUL_KEY),
-            this.deviceInfo.getDeviceSpec(),
-            this.frameworkService.getActiveChannelId()
-        ).mergeMap((results) => {
+        ).mergeMap((results: any) => {
             const lastSyncDeviceRegisterAttemptTimestamp = results[0];
             const lastSyncDeviceRegisterIsSuccessful = results[1];
-            const deviceSpec: DeviceSpec = results[2];
-            const activeChannelId: string = results[3];
 
             if (lastSyncDeviceRegisterAttemptTimestamp && lastSyncDeviceRegisterIsSuccessful) {
                 const offset = lastSyncDeviceRegisterIsSuccessful === 'false' ?
@@ -131,32 +133,16 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
                 }
             }
 
-            const apiRequest: Request = new Request.Builder()
-                .withType(HttpRequestType.POST)
-                .withHost(this.telemetryConfig!.deviceRegisterHost)
-                .withPath(this.telemetryConfig!.deviceRegisterApiPath +
-                    TelemetrySyncHandler.DEVICE_REGISTER_ENDPOINT + '/' + this.deviceInfo!.getDeviceID())
-                .withApiToken(true)
-                .withBody({
-                    request: {
-                        dspec: deviceSpec,
-                        channel: activeChannelId,
-                        fcmToken: this.telemetryConfig.fcmToken,
-                        producer: this.apiConfig.api_authentication.producerId
-                    }
-                })
-                .build();
-
-            return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
+            return this.deviceRegisterService.registerDevice()
                 .do(async (res) => {
-                    const actions = res.body['result'].actions;
+                    const actions = res.result.actions;
                     actions.forEach(element => {
                         if (element.type === 'experiment' && element.key) {
                             this.sharedPreferences.putString(CodePush.DEPLOYMENT_KEY,
                                 element.data.key).toPromise();
                         }
                     });
-                    const serverTime = new Date(res.body.ts).getTime();
+                    const serverTime = new Date(res.ts).getTime();
                     const now = Date.now();
                     const currentOffset = serverTime - now;
                     const allowedOffset =
@@ -199,18 +185,6 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
         });
     }
 
-    public processEventsBatch(): Observable<number> {
-        return this.fetchEvents()
-            .mergeMap((events) =>
-                this.processEvents(events)
-                    .mergeMap((processedEventsMeta) =>
-                        this.persistProcessedEvents(processedEventsMeta, processedEventsMeta.processedEventsSize)
-                            .mergeMap(() => this.deleteEvents(events))
-                            .mapTo(events.length)
-                    )
-            );
-    }
-
     private hasTelemetryThresholdCrossed(): Observable<boolean> {
         return this.dbService.execute(`
             SELECT count(*) as COUNT FROM ${TelemetryEntry.TABLE_NAME}`
@@ -248,7 +222,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
                 id: 'ekstep.telemetry',
                 ver: '1.0',
                 ts: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ss[Z]'),
-                events: events.map((e) => JSON.parse(e[COLUMN_NAME_EVENT])),
+                events: events.map((e) => JSON.parse(e[TelemetryEntry.COLUMN_NAME_EVENT])),
                 params: {
                     did: this.deviceInfo.getDeviceID(),
                     msgid: messageId,
@@ -269,10 +243,10 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
         const insertQuery: InsertQuery = {
             table: TelemetryProcessedEntry.TABLE_NAME,
             modelJson: {
-                [COLUMN_NAME_MSG_ID]: messageId,
-                [COLUMN_NAME_NUMBER_OF_EVENTS]: eventsCount,
-                [COLUMN_NAME_PRIORITY]: 1,
-                [COLUMN_NAME_DATA]: processedEvents
+                [TelemetryProcessedEntry.COLUMN_NAME_MSG_ID]: messageId,
+                [TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS]: eventsCount,
+                [TelemetryEntry.COLUMN_NAME_PRIORITY]: 1,
+                [TelemetryProcessedEntry.COLUMN_NAME_DATA]: processedEvents
             }
         };
 
@@ -327,18 +301,17 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
             return Observable.of(undefined);
         }
 
-        const gzippedCharData = processedEventsBatchEntry[COLUMN_NAME_DATA].split('').map((c) => {
+        const gzippedCharData = processedEventsBatchEntry[TelemetryProcessedEntry.COLUMN_NAME_DATA].split('').map((c) => {
             return c.charCodeAt(0);
         });
         const body = new Uint8Array(gzippedCharData);
 
-        // const body = JSON.parse(pako.ungzip(processedEventsBatchEntry[COLUMN_NAME_DATA], {to: 'string'}));
+        // const body = JSON.parse(pako.ungzip(processedEventsBatchEntry[TelemetryProcessedEntry.COLUMN_NAME_DATA], {to: 'string'}));
 
         const apiRequest: Request = new Request.Builder()
             .withHost(this.telemetryConfig.host!)
             .withType(HttpRequestType.POST)
-            .withPath(this.telemetryConfig.telemetryApiPath +
-                TelemetrySyncHandler.TELEMETRY_ENDPOINT)
+            .withPath(this.telemetryConfig.apiPath + TelemetrySyncHandler.TELEMETRY_ENDPOINT)
             .withBody(body)
             .withApiToken(true)
             .build();
@@ -361,9 +334,9 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
                 }
             })
             .map(() => ({
-                syncedEventCount: processedEventsBatchEntry[COLUMN_NAME_NUMBER_OF_EVENTS],
+                syncedEventCount: processedEventsBatchEntry[TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS],
                 syncTime: Date.now(),
-                syncedFileSize: new TextEncoder().encode(processedEventsBatchEntry[COLUMN_NAME_DATA]).length
+                syncedFileSize: new TextEncoder().encode(processedEventsBatchEntry[TelemetryProcessedEntry.COLUMN_NAME_DATA]).length
             }));
     }
 

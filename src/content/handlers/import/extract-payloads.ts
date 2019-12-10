@@ -1,4 +1,6 @@
 import {ContentEventType, FileName, ImportContentContext} from '../..';
+import {SharedPreferences} from './../../../util/shared-preferences';
+import {UpdateSizeOnDevice} from './update-size-on-device';
 import {Response} from '../../../api';
 import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
@@ -11,7 +13,7 @@ import {AppConfig} from '../../../api/config/app-config';
 import {FileUtil} from '../../../util/file/util/file-util';
 import {DeviceInfo} from '../../../util/device/def/device-info';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
-import moment from 'moment';
+import * as moment from 'moment';
 import {ArrayUtil} from '../../../util/array-util';
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 
@@ -23,7 +25,8 @@ export class ExtractPayloads {
                 private dbService: DbService,
                 private deviceInfo: DeviceInfo,
                 private getContentDetailsHandler: GetContentDetailsHandler,
-                private eventsBusService: EventsBusService) {
+                private eventsBusService: EventsBusService,
+                private sharedPreferences: SharedPreferences) {
     }
 
     public async execute(importContext: ImportContentContext): Promise<Response> {
@@ -31,6 +34,8 @@ export class ExtractPayloads {
         importContext.identifiers = [];
         const insertNewContentModels: ContentEntry.SchemaMap[] = [];
         const updateNewContentModels: ContentEntry.SchemaMap[] = [];
+        const commonContentModelsMap: Map<string, ContentEntry.SchemaMap> = new Map<string, ContentEntry.SchemaMap>();
+        const payloadDestinationPathMap: Map<string, string | undefined> = new Map();
         let rootContentPath;
 
         // this count is for maintaining how many contents are imported so far
@@ -39,21 +44,26 @@ export class ExtractPayloads {
         this.postImportProgressEvent(currentCount, importContext.items!.length);
         const contentIds: string[] = [];
         const nonUnitContentIds: string[] = [];
+        const appIcons: string[] = [];
         for (const e of importContext.items!) {
-            const item = e as any;
-            const identifier = item.identifier;
-            const visibility = ContentUtil.readVisibility(item);
-            if (ContentUtil.isNotUnit(item.mimeType, visibility)) {
+            const element = e as any;
+            const identifier = element.identifier;
+            const visibility = ContentUtil.readVisibility(element);
+            const appIcon = element.appIcon;
+            if (ContentUtil.isNotUnit(element.mimeType, visibility)) {
                 nonUnitContentIds.push(identifier);
+                if (appIcon && !appIcon.startsWith('https:')) {
+                    appIcons.push(identifier + '/' + appIcon.substring(0, appIcon.lastIndexOf('/')));
+                }
             }
             contentIds.push(identifier);
         }
-
         // await this.fileService.createDir(ContentUtil.getContentRootDir(importContext.destinationFolder), false);
         // Create all the directories for content.
         const createdDirectories = await this.createDirectories(ContentUtil.getContentRootDir(importContext.destinationFolder),
             nonUnitContentIds);
-
+        // create subdirectories for the contents which has appIcons
+        const createSubDirectories = await this.createDirectories(ContentUtil.getContentRootDir(importContext.destinationFolder), appIcons);
         const query = ArrayUtil.joinPreservingQuotes(contentIds);
         const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
 
@@ -61,7 +71,6 @@ export class ExtractPayloads {
             map[obj.identifier] = obj;
             return map;
         }, {});
-
         for (const e of importContext.items!) {
             let item = e as any;
             const identifier = item.identifier;
@@ -99,7 +108,6 @@ export class ExtractPayloads {
             if (visibility === Visibility.DEFAULT.valueOf()) {
                 rootNodeIdentifier = identifier;
             }
-
             if (ContentUtil.isNotUnit(mimeType, visibility)) {
                 if (createdDirectories[identifier] && createdDirectories[identifier].path) {
                     payloadDestination = createdDirectories[identifier].path;
@@ -119,7 +127,6 @@ export class ExtractPayloads {
                 }
             } else {
                 doesContentExist = false;
-
                 if (ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
                     // let isUnzippingSuccessful = false;
                     if (artifactUrl) {
@@ -158,13 +165,12 @@ export class ExtractPayloads {
                 if (ContentUtil.isNotUnit(mimeType, visibility)) {
                     try {
                         if (!appIcon.startsWith('https:')) {
-                            await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination!);
+                            this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination!, true);
                         }
                     } catch (e) {
                     }
                 }
             }
-
             const basePath = this.getBasePath(payloadDestination, doesContentExist, existingContentPath);
             if (visibility === Visibility.DEFAULT.valueOf()) {
                 rootContentPath = basePath;
@@ -181,14 +187,14 @@ export class ExtractPayloads {
             // contentState = this.getContentState(existingContentModel, contentState);
             ContentUtil.addOrUpdateViralityMetadata(item, this.deviceInfo.getDeviceID().toString());
 
-            let sizeOnDevice = 0;
+            const sizeOnDevice = 0;
             if (ContentUtil.isNotUnit(mimeType, visibility)) {
-                try {
-                    sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
-                } catch (e) {
-                }
+                payloadDestinationPathMap.set(identifier, payloadDestination);
+                // try {
+                //     sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
+                // } catch (e) {
+                // }
             }
-
             const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
                 JSON.stringify(item), mimeType, contentType, visibility, basePath,
                 referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade);
@@ -200,13 +206,64 @@ export class ExtractPayloads {
                     || isUnzippingSuccessful    // If unzip is success it means artifact is available.
                     || MimeType.COLLECTION.valueOf() === mimeType) {
                     updateNewContentModels.push(newContentModel);
+                } else {
+                    newContentModel[ContentEntry.COLUMN_NAME_CONTENT_STATE] = this.getContentState(existingContentModel, contentState);
                 }
             }
 
+            commonContentModelsMap.set(identifier, newContentModel);
+
             // increase the current count
             currentCount++;
-            this.postImportProgressEvent(currentCount, importContext.items!.length);
+            if (currentCount % 20 === 0 || currentCount === (importContext.items!.length)) {
+                this.postImportProgressEvent(currentCount, importContext.items!.length);
+            }
         }
+        // Update/create contents in DB with size_on_device as 0 initially
+        this.updateContentDB(insertNewContentModels, updateNewContentModels);
+        setTimeout(() => {
+            // Update the contents in DB with actual size
+            this.updateContentFileSizeInDB(importContext, commonContentModelsMap, payloadDestinationPathMap, result);
+        }, 5000);
+
+        if (rootContentPath) {
+            await this.fileService.copyFile(importContext.tmpLocation!,
+                FileName.MANIFEST.valueOf(),
+                rootContentPath,
+                FileName.MANIFEST.valueOf());
+        }
+
+        response.body = importContext;
+        return Promise.resolve(response);
+    }
+
+    async updateContentFileSizeInDB(importContext: ImportContentContext, commonContentModelsMap, payloadDestinationPathMap, result) {
+        const updateNewContentModels: ContentEntry.SchemaMap[] = [];
+        for (const e of importContext.items!) {
+            const item = e as any;
+            const identifier = item.identifier;
+            const mimeType = commonContentModelsMap.get(identifier).mimeType;
+            const visibility = commonContentModelsMap.get(identifier).visibility;
+            const payloadDestination = payloadDestinationPathMap.get(identifier);
+            let sizeOnDevice = 0;
+            const existingContentModel = result[identifier];
+            if (ContentUtil.isNotUnit(mimeType, visibility)) {
+                try {
+                    sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
+                    commonContentModelsMap.get(identifier).size_on_device = sizeOnDevice;
+                    if (!existingContentModel) {
+                        updateNewContentModels.push(commonContentModelsMap.get(identifier));
+                    } else {
+                        updateNewContentModels.push(commonContentModelsMap.get(identifier));
+                    }
+                } catch (e) {
+                }
+            }
+        }
+        this.updateContentDB([], updateNewContentModels, true);
+    }
+
+    async updateContentDB(insertNewContentModels, updateNewContentModels, updateSize?: boolean) {
 
         if (insertNewContentModels.length || updateNewContentModels.length) {
             this.dbService.beginTransaction();
@@ -231,31 +288,25 @@ export class ExtractPayloads {
             }
             this.dbService.endTransaction(true);
         }
-
-        if (rootContentPath) {
-            await this.fileService.copyFile(importContext.tmpLocation!,
-                FileName.MANIFEST.valueOf(),
-                rootContentPath,
-                FileName.MANIFEST.valueOf());
+        if (updateSize) {
+            new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute();
         }
-
-        response.body = importContext;
-        return Promise.resolve(response);
     }
 
-    async copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string) {
+    async copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string, useSubDirectories?: boolean) {
         try {
             if (asset) {
                 // const iconSrc = tempLocationPath.concat(asset);
                 // const iconDestination = payloadDestinationPath.concat(asset);
                 const folderContainingFile = asset.substring(0, asset.lastIndexOf('/'));
                 // TODO: Can optimize folder creation
-                await this.fileService.createDir(payloadDestinationPath.concat(folderContainingFile), false);
+                if (!useSubDirectories) {
+                    await this.fileService.createDir(payloadDestinationPath.concat(folderContainingFile), false);
+                }
                 // If source icon is not available then copy assets is failing and throwing exception.
                 await this.fileService.copyFile(tempLocationPath.concat(folderContainingFile), FileUtil.getFileName(asset),
                     payloadDestinationPath.concat(folderContainingFile), FileUtil.getFileName(asset));
             }
-
         } catch (e) {
             console.error('Cannot Copy Asset');
             throw e;

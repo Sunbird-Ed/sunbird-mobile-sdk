@@ -67,9 +67,6 @@ export declare class FileServiceImpl implements FileService {
     exists(path: string): Promise<Entry>;
     getTempLocation(destinationPath: string): Promise<DirectoryEntry>;
     getFreeDiskSpace(): Promise<number>;
-    private readEntries;
-    private readFile;
-    private resolveDirectoryUrl;
     /**
      * Resolves a local file system URL
      * @param fileUrl {string} file system url
@@ -77,6 +74,12 @@ export declare class FileServiceImpl implements FileService {
      */
     resolveLocalFilesystemUrl(fileUrl: string): Promise<Entry>;
     getMetaData(path: string | Entry): Promise<Metadata>;
+    getExternalApplicationStorageDirectory(): string;
+    getDirectorySize(path: string): Promise<number>;
+    size(entry: Entry): Promise<number>;
+    private readEntries;
+    private readFile;
+    private resolveDirectoryUrl;
     private remove;
     private copy;
     private getDirectory;
@@ -93,7 +96,4 @@ export declare class FileServiceImpl implements FileService {
      */
     private writeFileEntry;
     private write;
-    getExternalApplicationStorageDirectory(): string;
-    getDirectorySize(path: string): Promise<number>;
-    size(entry: Entry): Promise<number>;
 }

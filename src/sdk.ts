@@ -68,6 +68,10 @@ import {SearchHistoryMigration} from './db/migrations/search-history-migration';
 import {SearchHistoryService} from './util/search-history';
 import {SearchHistoryServiceImpl} from './util/search-history/impl/search-history-service-impl';
 import {RecentlyViewedMigration} from './db/migrations/recently-viewed-migration';
+import {CourseAssessmentMigration} from './db/migrations/course-assessment-migration';
+import { CodePushExperimentService, CodePUshExperimentServiceImpl } from './codepush-experiment';
+import {FaqService, FaqServiceImpl} from './faq';
+import {DeviceRegisterConfig, DeviceRegisterService, DeviceRegisterServiceImpl} from './device-register';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -80,6 +84,12 @@ export class SunbirdSdk {
         }
 
         return SunbirdSdk._instance;
+    }
+
+    private _isInitialised: boolean = false;
+
+    get isInitialised(): boolean {
+        return this._isInitialised;
     }
 
     get sdkConfig(): SdkConfig {
@@ -194,12 +204,24 @@ export class SunbirdSdk {
         return this._container.get<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE);
     }
 
+    get codePushExperimentService(): CodePushExperimentService {
+        return this._container.get<CodePushExperimentService>(InjectionTokens.CODEPUSH_EXPERIMENT_SERVICE);
+    }
+
+    get faqService(): FaqService {
+        return this._container.get<FaqService>(InjectionTokens.FAQ_SERVICE);
+    }
+
+    get deviceRegisterService(): DeviceRegisterService {
+        return this._container.get<DeviceRegisterService>(InjectionTokens.DEVICE_REGISTER_SERVICE);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(24);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(25);
 
         this._container.bind<Migration[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
             new ProfileSyllabusMigration(),
@@ -209,7 +231,8 @@ export class SunbirdSdk {
             new OfflineSearchTextbookMigration(),
             new ErrorStackMigration(),
             new SearchHistoryMigration(),
-            new RecentlyViewedMigration()
+            new RecentlyViewedMigration(),
+            new CourseAssessmentMigration()
         ]);
 
         if (sdkConfig.sharedPreferencesConfig.debugMode) {
@@ -291,6 +314,14 @@ export class SunbirdSdk {
 
         this._container.bind<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE).to(SearchHistoryServiceImpl).inSingletonScope();
 
+        this._container.bind<CodePushExperimentService>(InjectionTokens.CODEPUSH_EXPERIMENT_SERVICE).to(CodePUshExperimentServiceImpl)
+            .inSingletonScope();
+
+        this._container.bind<DeviceRegisterService>(InjectionTokens.DEVICE_REGISTER_SERVICE).to(DeviceRegisterServiceImpl)
+            .inSingletonScope();
+
+        this._container.bind<FaqService>(InjectionTokens.FAQ_SERVICE).to(FaqServiceImpl).inSingletonScope();
+
         this.apiService.setDefaultApiAuthenticators([
             new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)
         ]);
@@ -303,6 +334,8 @@ export class SunbirdSdk {
         await this.appInfo.init();
         await this.preInit().toPromise();
 
+        this._isInitialised = true;
+
         this.postInit().subscribe();
     }
 
@@ -310,6 +343,14 @@ export class SunbirdSdk {
         for (const key in update) {
             if (update.hasOwnProperty(key)) {
                 this.sdkConfig.telemetryConfig[key] = update[key];
+            }
+        }
+    }
+
+    public updateDeviceRegisterConfig(update: Partial<DeviceRegisterConfig>) {
+        for (const key in update) {
+            if (update.hasOwnProperty(key)) {
+                this.sdkConfig.deviceRegisterConfig[key] = update[key];
             }
         }
     }

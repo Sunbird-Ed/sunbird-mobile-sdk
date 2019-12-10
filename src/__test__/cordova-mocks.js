@@ -28,11 +28,47 @@ global.cordova = {
         applicationDirectory: '/path'
     },
     InAppBrowser: {
-        open: () => {},
+        open: () => ({
+            addEventListener: () => {},
+        }),
     }
+};
+
+global.plugins = {
+    SharedPreferences: {
+        getInstance: () => {
+        }
+    }
+};
+
+global.JJzip = {
+    unzip: () => {},
+    zip: () => {}
 };
 
 global.supportfile = {
     shareSunbirdConfigurations: () => {
     }
-}
+};
+
+global.buildconfigreader = {
+    getMetaData: () => {
+        
+    },
+    copyFile: () => {
+
+    },
+    createDirectories: () => {
+        
+    },
+    rm: () => {},
+    copyDirectory: () => {},
+    getFreeUsableSpace: () => {},
+    canWrite: () => {}
+};
+
+global.customtabs = {
+    isAvailable: () => {},
+    launch: () => {},
+    launchInBrowser: () => {}
+};

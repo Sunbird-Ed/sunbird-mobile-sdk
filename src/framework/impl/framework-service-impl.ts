@@ -46,6 +46,11 @@ export class FrameworkServiceImpl implements FrameworkService {
             });
     }
 
+    getDefaultChannelId(): Observable<string> {
+        return this.systemSettingsService.getSystemSettings({id: this.sdkConfig.frameworkServiceConfig.systemSettingsDefaultChannelIdKey})
+            .map((r) => r.value);
+    }
+
     getDefaultChannelDetails(): Observable<Channel> {
         return this.systemSettingsService.getSystemSettings({id: this.sdkConfig.frameworkServiceConfig.systemSettingsDefaultChannelIdKey})
             .map((r) => r.value)
