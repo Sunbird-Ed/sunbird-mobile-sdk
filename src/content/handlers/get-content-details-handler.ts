@@ -114,14 +114,15 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                             });
                         }
 
-                        if (sendStreamUrlEvent && serverContentData.streamingUrl) {
+                        if (serverContentData) {
                             this.eventsBusService.emit({
                                 namespace: EventNamespace.CONTENT,
                                 event: {
-                                    type: ContentEventType.STREAMING_URL_AVAILABLE,
+                                    type: ContentEventType.SERVER_CONTENT_DATA,
                                     payload: {
                                         contentId: serverContentData.identifier,
-                                        streamingUrl: serverContentData.streamingUrl
+                                        streamingUrl: serverContentData.streamingUrl,
+                                        licenseDetails: serverContentData.licenseDetails
                                     }
                                 }
                             });
