@@ -56,6 +56,7 @@ export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
             subType: InteractSubType.NETWORK_SPEED,
             env: 'sdk',
             pageId: 'sdk',
+            id: 'sdk',
             valueMap
         }).pipe(
             mapTo(undefined)
