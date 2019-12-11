@@ -68,10 +68,10 @@ import {SearchHistoryService} from './util/search-history';
 import {SearchHistoryServiceImpl} from './util/search-history/impl/search-history-service-impl';
 import {RecentlyViewedMigration} from './db/migrations/recently-viewed-migration';
 import {CourseAssessmentMigration} from './db/migrations/course-assessment-migration';
-import { CodePushExperimentService, CodePUshExperimentServiceImpl } from './codepush-experiment';
+import {CodePushExperimentService, CodePUshExperimentServiceImpl} from './codepush-experiment';
 import {FaqService, FaqServiceImpl} from './faq';
 import {DeviceRegisterConfig, DeviceRegisterService, DeviceRegisterServiceImpl} from './device-register';
-import {combineLatest, Observable} from 'rxjs';
+import {combineLatest} from 'rxjs';
 import {concatMap} from 'rxjs/operators';
 
 export class SunbirdSdk {
@@ -390,7 +390,8 @@ export class SunbirdSdk {
             this.eventsBusService.onInit(),
             this.downloadService.onInit(),
             this.contentService.onInit(),
-            this.storageService.onInit()
+            this.storageService.onInit(),
+            this.telemetryService.onInit()
         ]);
     }
 }
