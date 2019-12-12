@@ -108,6 +108,10 @@ export class ContentMapper {
                 if (!localData.size) {
                     localData.size = serverData.size;
                 }
+
+                if (!localData.licenseDetails) {
+                    localData.licenseDetails = serverData.licenseDetails;
+                }
             }
         }
 

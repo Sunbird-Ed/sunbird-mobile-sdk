@@ -57,3 +57,8 @@ export namespace CodePushExperiment {
 export namespace DeviceRegister {
     export const DEVICE_LOCATION = 'device_location';
 }
+
+export namespace TelemetryKeys {
+    export const KEY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
+    export const KEY_AUTO_SYNC_MODE = 'telemetry_auto_sync_mode';
+}

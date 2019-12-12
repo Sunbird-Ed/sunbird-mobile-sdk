@@ -1,10 +1,13 @@
 import { TelemetryStat } from './telemetry-stat';
 import { TelemetrySyncStat } from './telemetry-sync-stat';
 import { Observable } from 'rxjs';
-import { TelemetryAuditRequest, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryInterruptRequest, TelemetryLogRequest, TelemetryShareRequest, TelemetryStartRequest } from './requests';
+import { TelemetryAuditRequest, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryInterruptRequest, TelemetryLogRequest, TelemetryShareRequest, TelemetryStartRequest, TelemetrySyncRequest } from './requests';
 import { TelemetryExportResponse } from './response';
 import { Context } from './telemetry-model';
-export interface TelemetryService {
+import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
+import { TelemetryAutoSyncService } from '..';
+export interface TelemetryService extends SdkServiceOnInitDelegate {
+    autoSync: TelemetryAutoSyncService;
     saveTelemetry(request: string): Observable<boolean>;
     audit(request: TelemetryAuditRequest): Observable<boolean>;
     start(request: TelemetryStartRequest): Observable<boolean>;
@@ -19,7 +22,8 @@ export interface TelemetryService {
     importTelemetry(telemetryImportRequest: TelemetryImportRequest): Observable<boolean>;
     exportTelemetry(telemetryExportRequest: TelemetryExportRequest): Observable<TelemetryExportResponse>;
     getTelemetryStat(): Observable<TelemetryStat>;
-    sync(ignoreSyncThreshold?: boolean): Observable<TelemetrySyncStat>;
+    sync(telemetrySyncRequest?: TelemetrySyncRequest): Observable<TelemetrySyncStat>;
+    lastSyncedTimestamp(): Observable<number | undefined>;
     resetDeviceRegisterTTL(): Observable<undefined>;
     buildContext(): Observable<Context>;
 }

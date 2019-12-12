@@ -9,15 +9,21 @@ import {
     TelemetryFeedbackRequest,
     TelemetryImportRequest,
     TelemetryImpressionRequest,
-    TelemetryInteractRequest, TelemetryInterruptRequest,
+    TelemetryInteractRequest,
+    TelemetryInterruptRequest,
     TelemetryLogRequest,
     TelemetryShareRequest,
-    TelemetryStartRequest
+    TelemetryStartRequest,
+    TelemetrySyncRequest
 } from './requests';
 import {TelemetryExportResponse} from './response';
 import {Context} from './telemetry-model';
+import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
+import {TelemetryAutoSyncService} from '..';
 
-export interface TelemetryService {
+export interface TelemetryService extends SdkServiceOnInitDelegate {
+    autoSync: TelemetryAutoSyncService;
+    
     saveTelemetry(request: string): Observable<boolean>;
 
     audit(request: TelemetryAuditRequest): Observable<boolean>;
@@ -46,7 +52,9 @@ export interface TelemetryService {
 
     getTelemetryStat(): Observable<TelemetryStat>;
 
-    sync(ignoreSyncThreshold?: boolean): Observable<TelemetrySyncStat>;
+    sync(telemetrySyncRequest?: TelemetrySyncRequest): Observable<TelemetrySyncStat>;
+
+    lastSyncedTimestamp(): Observable<number | undefined>;
 
     resetDeviceRegisterTTL(): Observable<undefined>;
 

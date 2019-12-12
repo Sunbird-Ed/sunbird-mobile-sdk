@@ -20,6 +20,7 @@ import {
     TelemetryShareRequest,
     TelemetryStartRequest,
     TelemetryStat,
+    TelemetrySyncRequest,
     TelemetrySyncStat
 } from '..';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
@@ -52,12 +53,26 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {AppInfo} from '../../util/app';
 import {DeviceRegisterService} from '../../device-register';
 import {expand, map, mapTo, mergeMap, take, tap} from 'rxjs/operators';
-import {Observable, of, zip, from, defer, EMPTY} from 'rxjs';
+import {BehaviorSubject, defer, EMPTY, from, Observable, of, zip} from 'rxjs';
+import {TelemetryKeys} from '../../preference-keys';
+import {TelemetryAutoSyncServiceImpl} from '../util/telemetry-auto-sync-service-impl';
 
 @injectable()
 export class TelemetryServiceImpl implements TelemetryService {
-    private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
+    private _lastSyncedTimestamp$: BehaviorSubject<number | undefined>;
+    private telemetryAutoSyncService?: TelemetryAutoSyncServiceImpl;
     private telemetryConfig: TelemetryConfig;
+
+    get autoSync() {
+        if (!this.telemetryAutoSyncService) {
+            this.telemetryAutoSyncService = new TelemetryAutoSyncServiceImpl(
+                this,
+                this.sharedPreferences
+            );
+        }
+
+        return this.telemetryAutoSyncService;
+    }
 
     constructor(
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
@@ -78,6 +93,22 @@ export class TelemetryServiceImpl implements TelemetryService {
         @inject(InjectionTokens.DEVICE_REGISTER_SERVICE) private deviceRegisterService: DeviceRegisterService,
     ) {
         this.telemetryConfig = this.sdkConfig.telemetryConfig;
+        this._lastSyncedTimestamp$ = new BehaviorSubject<number | undefined>(undefined);
+    }
+
+    onInit(): Observable<undefined> {
+        return this.sharedPreferences.getString(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP).pipe(
+            tap((v) => {
+                if (v) {
+                    try {
+                        this._lastSyncedTimestamp$.next(parseInt(v, 10));
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            }),
+            mapTo(undefined)
+        );
     }
 
     saveTelemetry(request: string): Observable<boolean> {
@@ -233,7 +264,7 @@ export class TelemetryServiceImpl implements TelemetryService {
         return zip(
             this.dbService.execute(telemetryCountQuery),
             this.dbService.execute(processedTelemetryCountQuery),
-            this.keyValueStore.getValue(TelemetryServiceImpl.KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP)
+            this.keyValueStore.getValue(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP)
         ).pipe(
             map((results) => {
                 const telemetryCount: number = results[0][0]['TELEMETRY_COUNT'];
@@ -261,17 +292,17 @@ export class TelemetryServiceImpl implements TelemetryService {
         ).resetDeviceRegisterTTL();
     }
 
-    sync(ignoreSyncThreshold: boolean = false): Observable<TelemetrySyncStat> {
+    sync(telemetrySyncRequest: TelemetrySyncRequest = { ignoreSyncThreshold: false, ignoreAutoSyncMode: false }): Observable<TelemetrySyncStat> {
         return this.networkInfoService.networkStatus$.pipe(
             take(1),
             mergeMap((networkStatus) => {
                 if (networkStatus === NetworkStatus.ONLINE) {
-                    return of(true);
+                    telemetrySyncRequest.ignoreSyncThreshold = true;
                 }
 
-                return of(ignoreSyncThreshold);
+                return of(telemetrySyncRequest);
             }),
-            mergeMap((shouldIgnoreSyncThreshold) => {
+            mergeMap((request) => {
                 return new TelemetrySyncHandler(
                     this.dbService,
                     this.sdkConfig,
@@ -281,17 +312,21 @@ export class TelemetryServiceImpl implements TelemetryService {
                     this.deviceRegisterService,
                     this.keyValueStore,
                     this.apiService
-                ).handle(shouldIgnoreSyncThreshold);
-            }),
-            mergeMap((telemetrySyncStat) =>
-                this.keyValueStore.setValue(
-                    TelemetryServiceImpl.KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP,
-                    telemetrySyncStat.syncTime + ''
-                ).pipe(
-                    mapTo(telemetrySyncStat)
-                )
-            )
+                ).handle(request).pipe(
+                    tap((syncStat) => {
+                        if (!syncStat.error && syncStat.syncedEventCount) {
+                            const now = Date.now();
+                            this.sharedPreferences.putString(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP, now + '').toPromise();
+                            this._lastSyncedTimestamp$.next(now);
+                        }
+                    })
+                );
+            })
         );
+    }
+
+    lastSyncedTimestamp(): Observable<number | undefined> {
+        return this._lastSyncedTimestamp$.asObservable();
     }
 
     buildContext(): Observable<Context> {

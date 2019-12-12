@@ -1,5 +1,5 @@
 import {ApiConfig, ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {InteractSubType, InteractType, TelemetrySyncStat} from '..';
+import {InteractSubType, InteractType, TelemetryAutoSyncModes, TelemetrySyncRequest, TelemetrySyncStat} from '..';
 import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
 import {StringToGzippedString} from '../impl/string-to-gzipped-string';
 import {TelemetryEntriesToStringPreprocessor} from '../impl/telemetry-entries-to-string-preprocessor';
@@ -13,10 +13,10 @@ import dayjs from 'dayjs';
 import {TelemetryLogger} from '../util/telemetry-logger';
 import {TelemetryConfig} from '../config/telemetry-config';
 import {SharedPreferences} from '../../util/shared-preferences';
-import {CodePush} from '../../preference-keys';
+import {CodePush, TelemetryKeys} from '../../preference-keys';
 import {AppInfo} from '../../util/app';
 import {DeviceRegisterService} from '../../device-register';
-import {Observable, of, zip, EMPTY} from 'rxjs';
+import {EMPTY, iif, Observable, of, zip} from 'rxjs';
 import {catchError, expand, map, mapTo, mergeMap, reduce, tap} from 'rxjs/operators';
 
 interface ProcessedEventsMeta {
@@ -25,7 +25,7 @@ interface ProcessedEventsMeta {
     messageId?: string;
 }
 
-export class TelemetrySyncHandler implements ApiRequestHandler<boolean, TelemetrySyncStat> {
+export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequest, TelemetrySyncStat> {
 
     public static readonly TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY = 'telemetry_log_min_allowed_offset_key';
 
@@ -66,7 +66,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
         );
     }
 
-    handle(ignoreSyncThreshold: boolean): Observable<TelemetrySyncStat> {
+    handle({ ignoreSyncThreshold, ignoreAutoSyncMode }: TelemetrySyncRequest): Observable<TelemetrySyncStat> {
         return this.registerDevice().pipe(
             catchError(() => {
                 ignoreSyncThreshold = true;
@@ -81,15 +81,16 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
                                     processedEventsCount ? this.processEventsBatch() : EMPTY
                                 ),
                                 reduce(() => undefined, undefined),
-                                mergeMap(() => this.handleProcessedEventsBatch()),
+                                mergeMap(() => this.handleProcessedEventsBatch(ignoreAutoSyncMode)),
                                 expand((syncStat: TelemetrySyncStat) =>
-                                    syncStat.syncedEventCount ? this.handleProcessedEventsBatch() : EMPTY
+                                    syncStat.syncedEventCount ? this.handleProcessedEventsBatch(ignoreAutoSyncMode) : EMPTY
                                 ),
-                                reduce((acc: TelemetrySyncStat, currentStat: TelemetrySyncStat) => {
+                                reduce<TelemetrySyncStat, TelemetrySyncStat>((acc: TelemetrySyncStat, currentStat: TelemetrySyncStat) => {
                                     return ({
                                         syncedEventCount: acc.syncedEventCount + currentStat.syncedEventCount,
                                         syncTime: Date.now(),
-                                        syncedFileSize: acc.syncedFileSize + currentStat.syncedFileSize
+                                        syncedFileSize: acc.syncedFileSize + currentStat.syncedFileSize,
+                                        error: (currentStat.error ? currentStat.error : acc.error)
                                     });
                                 }, {
                                     syncedEventCount: 0,
@@ -284,28 +285,56 @@ export class TelemetrySyncHandler implements ApiRequestHandler<boolean, Telemetr
         `);
     }
 
-    private handleProcessedEventsBatch(): Observable<TelemetrySyncStat> {
-        return this.fetchProcessedEventsBatch().pipe(
-            mergeMap(processedEventsBatchEntry =>
-                this.syncProcessedEvent(processedEventsBatchEntry).pipe(
-                    mergeMap((syncStat?: TelemetrySyncStat) =>
-                        this.deleteProcessedEvent(processedEventsBatchEntry).pipe(
-                            mapTo(syncStat || {
-                                syncedEventCount: 0,
-                                syncTime: Date.now(),
-                                syncedFileSize: 0
-                            })
-                        )
-                    ),
-                    catchError(() => {
-                        return of({
-                            syncedEventCount: 0,
-                            syncTime: Date.now(),
-                            syncedFileSize: 0
-                        });
-                    })
-                )
+    private handleProcessedEventsBatch(ignoreAutoSyncMode?: boolean): Observable<TelemetrySyncStat> {
+        return iif(
+            () => !!ignoreAutoSyncMode,
+            of(undefined),
+            this.sharedPreferences.getString(TelemetryKeys.KEY_AUTO_SYNC_MODE).pipe(
+                catchError(() => {
+                    return of('');
+                }),
+                mergeMap((mode) => {
+                    switch (mode) {
+                        case TelemetryAutoSyncModes.OFF:
+                            throw new Error('AUTO_SYNC_MODE: ' + TelemetryAutoSyncModes.OFF);
+                        case TelemetryAutoSyncModes.OVER_WIFI:
+                            if (navigator.connection.type === Connection.WIFI) {
+                                return of(undefined);
+                            } else {
+                                throw new Error('AUTO_SYNC_MODE: ' + TelemetryAutoSyncModes.OVER_WIFI);
+                            }
+                        case TelemetryAutoSyncModes.ALWAYS_ON:
+                        default:
+                            return of(undefined);
+                    }
+                })
             )
+        ).pipe(
+            mergeMap(() => {
+                return this.fetchProcessedEventsBatch().pipe(
+                    mergeMap(processedEventsBatchEntry => {
+                        return this.syncProcessedEvent(processedEventsBatchEntry).pipe(
+                            mergeMap((syncStat?: TelemetrySyncStat) =>
+                                this.deleteProcessedEvent(processedEventsBatchEntry).pipe(
+                                    mapTo(syncStat || {
+                                        syncedEventCount: 0,
+                                        syncTime: Date.now(),
+                                        syncedFileSize: 0
+                                    })
+                                )
+                            )
+                        );
+                    })
+                );
+            }),
+            catchError((e) => {
+                return of({
+                    syncedEventCount: 0,
+                    syncTime: Date.now(),
+                    syncedFileSize: 0,
+                    error: e
+                });
+            })
         );
     }
 

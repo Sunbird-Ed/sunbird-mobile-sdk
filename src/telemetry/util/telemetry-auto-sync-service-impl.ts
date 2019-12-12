@@ -1,9 +1,12 @@
-import {InteractSubType, InteractType, TelemetryService, TelemetrySyncStat} from '..';
+import {InteractSubType, InteractType, TelemetryAutoSyncModes, TelemetryService} from '..';
 import {TelemetryLogger} from './telemetry-logger';
-import {Observable, interval} from 'rxjs';
-import {filter, mergeMap, tap, finalize, mapTo} from 'rxjs/operators';
+import {interval, Observable, of} from 'rxjs';
+import {catchError, filter, map, mapTo, tap} from 'rxjs/operators';
+import {TelemetryAutoSyncService} from './telemetry-auto-sync-service';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {TelemetryKeys} from '../../preference-keys';
 
-export class TelemetryAutoSyncUtil {
+export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
     private shouldSync = false;
 
     private static async generateDownloadSpeedTelemetry(intervalTime: number): Promise<void> {
@@ -60,19 +63,38 @@ export class TelemetryAutoSyncUtil {
         ).toPromise();
     }
 
-    constructor(private telemetryService: TelemetryService) {
+    constructor(
+        private telemetryService: TelemetryService,
+        private sharedPreferences: SharedPreferences
+    ) {
     }
 
-    start(intervalTime: number): Observable<TelemetrySyncStat> {
+    getSyncMode(): Observable<TelemetryAutoSyncModes | undefined> {
+        return this.sharedPreferences.getString(TelemetryKeys.KEY_AUTO_SYNC_MODE).pipe(
+            map((v) => v as TelemetryAutoSyncModes)
+        );
+    }
+
+    setSyncMode(mode: TelemetryAutoSyncModes): Observable<void> {
+        return this.sharedPreferences.putString(TelemetryKeys.KEY_AUTO_SYNC_MODE, mode);
+    }
+
+    start(intervalTime: number): Observable<undefined> {
         this.shouldSync = true;
 
         return interval(intervalTime).pipe(
-            tap(() => TelemetryAutoSyncUtil.generateDownloadSpeedTelemetry(intervalTime)),
+            tap(() => TelemetryAutoSyncServiceImpl.generateDownloadSpeedTelemetry(intervalTime)),
             filter(() => this.shouldSync),
-            tap(() => this.shouldSync = false),
-            mergeMap(() => this.telemetryService.sync().pipe(
-                finalize(() => this.shouldSync = true)
-            ))
+            tap(() => this.telemetryService.sync().pipe(
+                tap((stat) => {
+                    console.log('AUTO_SYNC_INVOKED_SYNC----------------------------------------------', stat);
+                }),
+                catchError((e) => {
+                    console.error(e);
+                    return of(undefined);
+                })
+            ).toPromise()),
+            mapTo(undefined)
         );
     }
 
