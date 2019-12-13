@@ -1,12 +1,9 @@
-// definitions
 import {ApiService, ApiServiceImpl} from './api';
 import {DbService, Migration} from './db';
 import {AuthService} from './auth';
 import {TelemetryDecorator, TelemetryService} from './telemetry';
 import {SharedPreferences} from './util/shared-preferences';
-// config
 import {SdkConfig} from './sdk-config';
-// implementations
 import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
