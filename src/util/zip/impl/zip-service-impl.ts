@@ -8,9 +8,9 @@ export class ZipServiceImpl implements ZipService {
             if (successCallback) {
                 successCallback();
             }
-        }, () => {
+        }, (e) => {
             if (errorCallback) {
-                errorCallback();
+                errorCallback(e);
             }
         });
     }
@@ -20,9 +20,9 @@ export class ZipServiceImpl implements ZipService {
             if (successCallback) {
                 successCallback();
             }
-        }, () => {
+        }, (e) => {
             if (errorCallback) {
-                errorCallback();
+                errorCallback(e);
             }
         });
     }
