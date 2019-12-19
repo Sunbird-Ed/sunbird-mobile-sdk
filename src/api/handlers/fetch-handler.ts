@@ -1,16 +1,13 @@
 import {HttpClientImpl} from '../impl/http-client-impl';
 import {BaseConnection} from '../impl/base-connection';
-import {ApiConfig, HttpClient, Request, Response} from '..';
+import {HttpClient, Request, Response} from '..';
 import {Observable} from 'rxjs';
-import {HttpClientAxios} from '../impl/http-client-axios';
+import {HttpClientBrowser} from '../impl/http-client-browser';
 import {Connection} from '../def/connection';
 import {DeviceInfo} from '../../util/device';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {Authenticator} from '../def/authenticator';
 import {SdkConfig} from '../../sdk-config';
-import {InjectionTokens} from '../../injection-tokens';
-import {SharedPreferencesLocalStorage} from '../../util/shared-preferences/impl/shared-preferences-local-storage';
-import {SharedPreferencesAndroid} from '../../util/shared-preferences/impl/shared-preferences-android';
 
 export class FetchHandler {
     private baseConnection: Connection;
@@ -28,7 +25,7 @@ export class FetchHandler {
         switch (sdkConfig.platform) {
             case 'cordova': httpClient = new HttpClientImpl();
                 break;
-            case 'web': httpClient = new HttpClientAxios();
+            case 'web': httpClient = new HttpClientBrowser();
                 break;
             default: throw new Error('FATAL_ERROR: Invalid platform');
         }

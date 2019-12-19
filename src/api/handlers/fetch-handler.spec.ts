@@ -5,7 +5,7 @@ import {BaseConnection} from '../impl/base-connection';
 import {DeviceInfo} from '../../util/device';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {Authenticator} from '../def/authenticator';
-import {HttpClientAxios} from '../impl/http-client-axios';
+import {HttpClientBrowser} from '../impl/http-client-browser';
 import {HttpClientImpl} from '../impl/http-client-impl';
 
 jest.mock('../impl/base-connection');
@@ -59,7 +59,7 @@ describe('FetchHandler', () => {
 
             // assert
             expect(BaseConnection).toHaveBeenCalledWith(
-                expect.any(HttpClientAxios),
+                expect.any(HttpClientBrowser),
                 expect.anything(),
                 expect.anything(),
                 expect.anything(),
