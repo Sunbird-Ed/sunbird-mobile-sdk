@@ -1,12 +1,11 @@
-import {HttpClientImpl} from './http-client-impl';
+import {HttpClientCordova} from './http-client-cordova';
 import {HttpSerializer, NetworkError, Response, ResponseCode, HttpServerError} from '..';
-import {AxiosError, AxiosResponse} from 'axios';
 
-describe('HttpClientImpl', () => {
-  let httpClientImpl: HttpClientImpl;
+describe('HttpClientCordova', () => {
+  let httpClientImpl: HttpClientCordova;
 
   beforeAll(() => {
-    httpClientImpl = new HttpClientImpl();
+    httpClientImpl = new HttpClientCordova();
   });
 
   beforeEach(() => {

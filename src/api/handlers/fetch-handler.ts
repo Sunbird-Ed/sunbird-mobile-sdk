@@ -1,4 +1,4 @@
-import {HttpClientImpl} from '../impl/http-client-impl';
+import {HttpClientCordova} from '../impl/http-client-cordova';
 import {BaseConnection} from '../impl/base-connection';
 import {HttpClient, Request, Response} from '..';
 import {Observable} from 'rxjs';
@@ -23,7 +23,7 @@ export class FetchHandler {
         let httpClient: HttpClient;
 
         switch (sdkConfig.platform) {
-            case 'cordova': httpClient = new HttpClientImpl();
+            case 'cordova': httpClient = new HttpClientCordova();
                 break;
             case 'web': httpClient = new HttpClientBrowser();
                 break;

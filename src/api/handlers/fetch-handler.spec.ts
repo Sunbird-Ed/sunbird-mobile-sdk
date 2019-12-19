@@ -6,7 +6,7 @@ import {DeviceInfo} from '../../util/device';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {Authenticator} from '../def/authenticator';
 import {HttpClientBrowser} from '../impl/http-client-browser';
-import {HttpClientImpl} from '../impl/http-client-impl';
+import {HttpClientCordova} from '../impl/http-client-cordova';
 
 jest.mock('../impl/base-connection');
 
@@ -88,7 +88,7 @@ describe('FetchHandler', () => {
 
             // assert
             expect(BaseConnection).toHaveBeenCalledWith(
-                expect.any(HttpClientImpl),
+                expect.any(HttpClientCordova),
                 expect.anything(),
                 expect.anything(),
                 expect.anything(),
