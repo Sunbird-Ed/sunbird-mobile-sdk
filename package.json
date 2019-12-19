@@ -25,6 +25,7 @@
     "pako": "^1.0.8",
     "qs": "^6.6.0",
     "reflect-metadata": "^0.1.13",
+    "sunbird-client-data-models": "git+https://github.com/arfath-gwl/sunbird-client-data-models#v1.0.3",
     "typescript-collections": "^1.3.2",
     "uuid": "^3.3.2",
     "whatwg-fetch": "^3.0.0"
