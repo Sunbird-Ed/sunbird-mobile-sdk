@@ -1,1 +1,1 @@
-export {Channel} from 'sunbird-client-data-models/dist/channel';
+export {Channel} from 'sunbird-client-data-models';
