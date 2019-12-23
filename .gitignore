@@ -40,4 +40,5 @@ sunbird-sdk-*.tgz
 /buildConfig/secret.tar
 /src/assets/data/
 
-google-services.json
+.scannerwork
+/sonar-project.properties
