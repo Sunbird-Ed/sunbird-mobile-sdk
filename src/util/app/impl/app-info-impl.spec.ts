@@ -3,7 +3,6 @@ import { SdkConfig } from '../../../sdk-config';
 import { SharedPreferences } from '../../..';
 import { of } from 'rxjs';
 import { AppInfoKeys } from '../../../preference-keys';
-import { async } from 'rxjs/internal/scheduler/async';
 
 declare const buildconfigreader;
 
@@ -12,7 +11,6 @@ describe('AppInfoImpl', () => {
     const mockSharedPreferences: Partial<SharedPreferences> = {};
     const mockSdkConfig: Partial<SdkConfig> = {
         apiConfig: {
-            debugMode: true,
             host: 'SAMPLE_HOST',
             user_authentication: {
                 redirectUrl: 'SAMPLE_REDIRECT_URL',
@@ -79,7 +77,6 @@ describe('AppInfoImpl', () => {
         mockSharedPreferences.putString = jest.fn(() => of(undefined));
         const mockSdkConfigApi: Partial<SdkConfig> = {
             apiConfig: {
-                debugMode: false,
                 host: 'SAMPLE_HOST',
                 user_authentication: {
                     redirectUrl: 'SAMPLE_REDIRECT_URL',

@@ -7,6 +7,7 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {Authenticator} from '../def/authenticator';
 import {HttpClientBrowser} from '../impl/http-client-browser';
 import {HttpClientCordova} from '../impl/http-client-cordova';
+import {SdkConfig} from '../../sdk-config';
 
 jest.mock('../impl/base-connection');
 
@@ -16,7 +17,10 @@ describe('FetchHandler', () => {
         .withPath('/')
         .withType(HttpRequestType.GET)
         .build();
-    const mockApiConfig: Partial<ApiConfig> = {};
+    const mockSdkConfig: Partial<SdkConfig> = {
+        platform: 'cordova',
+        apiConfig: {} as Partial<ApiConfig> as ApiConfig
+    };
     const mockDeviceInfo: Partial<DeviceInfo> = {};
     const mockSharedPreferences: Partial<SharedPreferences> = {};
     const mockDefaultApiAuthenticators: Authenticator[] = [];
@@ -25,7 +29,7 @@ describe('FetchHandler', () => {
     beforeAll(() => {
         fetchHandler = new FetchHandler(
             mockRequest as Request,
-            mockApiConfig as ApiConfig,
+            mockSdkConfig as SdkConfig,
             mockDeviceInfo as DeviceInfo,
             mockSharedPreferences as SharedPreferences,
             mockDefaultApiAuthenticators,
@@ -39,9 +43,8 @@ describe('FetchHandler', () => {
     });
 
     describe('constructor', () => {
-        it('should construct baseConnection with axios client for DebugMode true', () => {
+        it('should construct baseConnection with axios client for platform web', () => {
             // arrange
-            const mockApiConfigWithApiDebugMode: Partial<ApiConfig> = {debugMode: true};
             const mockBaseConnection: Partial<BaseConnection> = {
                 invoke: jest.fn(() => of(new Response()))
             };
@@ -50,7 +53,7 @@ describe('FetchHandler', () => {
             });
             fetchHandler = new FetchHandler(
                 mockRequest as Request,
-                mockApiConfigWithApiDebugMode as ApiConfig,
+                mockSdkConfig as SdkConfig,
                 mockDeviceInfo as DeviceInfo,
                 mockSharedPreferences as SharedPreferences,
                 mockDefaultApiAuthenticators,
@@ -68,9 +71,8 @@ describe('FetchHandler', () => {
             );
         });
 
-        it('should construct baseConnection with Cordova client for DebugMode false', () => {
+        it('should construct baseConnection with Cordova client for platform cordova', () => {
             // arrange
-            const mockApiConfigWithApiDebugMode: Partial<ApiConfig> = {debugMode: false};
             const mockBaseConnection: Partial<BaseConnection> = {
                 invoke: jest.fn(() => of(new Response()))
             };
@@ -79,7 +81,7 @@ describe('FetchHandler', () => {
             });
             fetchHandler = new FetchHandler(
                 mockRequest as Request,
-                mockApiConfigWithApiDebugMode as ApiConfig,
+                mockSdkConfig as SdkConfig,
                 mockDeviceInfo as DeviceInfo,
                 mockSharedPreferences as SharedPreferences,
                 mockDefaultApiAuthenticators,
@@ -108,7 +110,7 @@ describe('FetchHandler', () => {
         });
         fetchHandler = new FetchHandler(
             mockRequest as Request,
-            mockApiConfig as ApiConfig,
+            mockSdkConfig as SdkConfig,
             mockDeviceInfo as DeviceInfo,
             mockSharedPreferences as SharedPreferences,
             mockDefaultApiAuthenticators,
