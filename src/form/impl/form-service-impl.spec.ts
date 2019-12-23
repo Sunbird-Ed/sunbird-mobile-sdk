@@ -50,7 +50,7 @@ describe('FormServiceImpl', () => {
             subType: 'sample_subType',
             action: 'sample_action',
             rootOrgId: 'sample_rootOrgId',
-            frameWork: 'sample_framework'
+            framework: 'sample_framework'
         };
         // @ts-ignore
         (GetFormHandler as jest.Mock<GetFormHandler>).mockImplementation(

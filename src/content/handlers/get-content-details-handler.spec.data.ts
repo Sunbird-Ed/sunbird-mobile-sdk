@@ -64,5 +64,6 @@ export const mockContentData: ContentData = {
     copyright: '',
     license: '',
     expires: '',
-    copyrightYear: ''
+    copyrightYear: '',
+    licenseDetails: {name: 'CCBY', description: 'This is sample license', url: ' ' }
 };
