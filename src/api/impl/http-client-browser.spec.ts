@@ -11,7 +11,7 @@ describe('HttpClientBrowser', () => {
 
     beforeEach(() => {
         httpClientBrowser.setSerializer(HttpSerializer.JSON);
-        jest.resetAllMocks();
+        jest.clearAllMocks();
     });
 
     it('should be able to create an instance', () => {
