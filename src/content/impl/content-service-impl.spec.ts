@@ -498,8 +498,9 @@ describe('ContentServiceImpl', () => {
             done();
         });
     });
-    it('should export content for delete content', (done) => {
+    it('should export content for delete content', () => {
         // arrange
+        contentService = container.get(InjectionTokens.CONTENT_SERVICE);
         const request: ContentExportRequest = {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             contentIds: ['SAMPLE_CONTENT_ID_1', 'SAMPLE_CONTENT_ID_2']
@@ -531,7 +532,6 @@ describe('ContentServiceImpl', () => {
                 populateItems: jest.fn(() => [{'key': 'do_id'}])
             };
         });
-        // contentService = container.get(InjectionTokens.CONTENT_SERVICE);
         mockFileService.listDir = jest.fn(() => Promise.resolve([{
             name: 'ENTRY_NAME'
         }]));
@@ -541,16 +541,14 @@ describe('ContentServiceImpl', () => {
         }]));
         mockDeviceInfo.getAvailableInternalMemorySize = jest.fn(() => {});
         (mockDeviceInfo.getAvailableInternalMemorySize as jest.Mock).mockReturnValue(throwError(undefined));
-        contentService = container.get(InjectionTokens.CONTENT_SERVICE);
         // act
         contentService.exportContent(request).subscribe(null, (e) => {
-            expect(e.errorMesg).toBe('EXPORT_FAILED_WRITE_MANIFEST');
-            expect(mockFileService.getTempLocation).toBeCalled();
-            expect(mockFileService.listDir).toHaveBeenCalled();
-            expect(mockDbService.execute).not.toHaveBeenCalledWith(expect.any(String));
-            expect(mockDeviceInfo.getAvailableInternalMemorySize).toHaveBeenCalled();
-           // expect(cleanTempSession.execute).toHaveBeenCalled();
-            done();
+                expect(e.errorMesg).toBe('EXPORT_FAILED_WRITE_MANIFEST');
+                expect(mockFileService.getTempLocation).toBeCalled();
+                expect(mockFileService.listDir).toHaveBeenCalled();
+                expect(mockDbService.execute).not.toHaveBeenCalledWith(expect.any(String));
+                expect(mockDeviceInfo.getAvailableInternalMemorySize).toHaveBeenCalled();
+               // expect(cleanTempSession.execute).toHaveBeenCalled();
         });
     });
     it('should be find child content', (done) => {
