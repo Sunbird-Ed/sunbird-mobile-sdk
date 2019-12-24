@@ -1,6 +1,5 @@
 import { SummaryTelemetryEventHandler } from './summary-telemetry-event-handler';
-import { CourseService, SharedPreferences, EventsBusService,
-     ContentService, ProfileService, DbService, EventNamespace, ContentEventType } from '../..';
+import { CourseService, SharedPreferences, EventsBusService, ContentService, ProfileService, DbService } from '../..';
 import { SummarizerService } from '..';
 import { telemetry } from './summary-telemetry-event-handler.spec.data';
 import { of } from 'rxjs';
@@ -70,27 +69,20 @@ describe('SummaryTelemetryEventHandler', () => {
         mockCourseService.getContentState = jest.fn(() => { });
         (mockCourseService.getContentState as jest.Mock).mockReturnValue(of({}));
         mockContentService.getContentDetails = jest.fn(() => { });
-        (mockContentService.getContentDetails as jest.Mock).mockReturnValue(of({
-            name: 'CONTENT_NAME', sections: {}, contentType: 'SELFASSESS'
-        }));
+        (mockContentService.getContentDetails as jest.Mock).mockReturnValue(of({ name: 'CONTENT_NAME', contentType: 'course', sections: {} }));
         telemetry.edata.summary = [{ progress: 100 }];
         mockEventBusService.emit = jest.fn(() => { });
         (mockEventBusService.emit as jest.Mock).mockReturnValue(of());
         mockSharedPreference.putString = jest.fn(() => { });
-        mockCourseService.hasCapturedAssessmentEvent = jest.fn(() => true);
         // act
         const data = (mockSharedPreference.putString as jest.Mock).mockReturnValue(of('SAMPLE_RESULT'));
         // act
         summaryTelemetryEventHandler.updateContentState(telemetry).subscribe(() => {
             // assert
-            expect(mockSharedPreference.getString).toHaveBeenCalledWith(ContentKeys.COURSE_CONTEXT);
-            expect(mockCourseService.getContentState).toHaveBeenCalledWith({
-                batchId: 'batch_id',
-                 'contentIds': ['836e43c400f286df82f489e7ea90fe26be64fdc6'],
-                  'courseIds': ['course_Id'],
-                   'userId': 'user_id'
-            });
+            expect(mockSharedPreference.getString).toHaveBeenCalled();
+            expect(mockCourseService.getContentState).toHaveBeenCalled();
             expect(mockContentService.getContentDetails).toHaveBeenCalled();
+            expect(mockEventBusService.emit).toHaveBeenCalled();
             expect(mockSharedPreference.putString).toHaveBeenCalled();
             done();
         });
