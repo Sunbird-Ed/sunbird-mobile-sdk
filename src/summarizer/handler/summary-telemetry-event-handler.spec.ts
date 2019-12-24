@@ -68,7 +68,7 @@ describe('SummaryTelemetryEventHandler', () => {
         mockCourseService.getContentState = jest.fn(() => { });
         (mockCourseService.getContentState as jest.Mock).mockReturnValue(of({}));
         mockContentService.getContentDetails = jest.fn(() => { });
-        (mockContentService.getContentDetails as jest.Mock).mockReturnValue(of({ name: 'CONTENT_NAME', sections: {} }));
+        (mockContentService.getContentDetails as jest.Mock).mockReturnValue(of({ name: 'CONTENT_NAME', contentType: 'course', sections: {} }));
         telemetry.edata.summary = [{ progress: 100 }];
         mockEventBusService.emit = jest.fn(() => { });
         (mockEventBusService.emit as jest.Mock).mockReturnValue(of());
