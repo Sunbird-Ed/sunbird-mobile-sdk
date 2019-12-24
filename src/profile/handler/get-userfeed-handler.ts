@@ -25,8 +25,6 @@ export class GetUserFeedHandler implements ApiRequestHandler<undefined, UserFeed
     }
 
     fetchFromServer(uid): Observable<UserFeed[]> {
-        console.log('URLPATH', this.profileServiceConfig.profileApiPath + GetUserFeedHandler.GET_USER_FEED
-        + '/' + uid);
         return this.apiService.fetch<{result: { response: { userFeed: UserFeed[]} }}>(
             new Request.Builder()
                 .withHost(this.apiConfig.host)

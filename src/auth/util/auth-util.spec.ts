@@ -129,50 +129,6 @@ describe('AuthUtil', () => {
   });
 
   describe('endSession()', () => {
-    it('should open InAppBrowser with appropriate launch URL', (done) => {
-      // arrange
-      const mockApConfig: ApiConfig = {
-        host: 'SAMPLE_HOST',
-        user_authentication: {
-          authUrl: 'SAMPLE_AUTH_URL'
-        }
-      } as Partial<ApiConfig> as ApiConfig;
-      const mockApiService: ApiService = instance(MockApiService);
-      const mockSharedPreferences: SharedPreferences = instance(MockSharedPreferences);
-      const mockEventsBusService: EventsBusService = instance(MockEventsBusService);
-
-      spyOn(window['cordova'].InAppBrowser, 'open').and.returnValue(
-        {
-          addEventListener: (event: string, cb) => {
-            if (event === 'exit') {
-              setTimeout(() => {
-                cb();
-              });
-            }
-          }
-        }
-      );
-
-      const authUtil = new AuthUtil(
-        mockApConfig,
-        mockApiService,
-        mockSharedPreferences,
-        mockEventsBusService
-      );
-
-      authUtil.endSession().catch(() => {
-        expect(window['cordova'].InAppBrowser.open).toHaveBeenCalledWith(
-          mockApConfig.host +
-          mockApConfig.user_authentication.authUrl + AuthEndPoints.LOGOUT + '?redirect_uri=' +
-          mockApConfig.host + '/oauth2callback',
-          expect.anything(),
-          expect.anything()
-        );
-
-        done();
-      });
-    });
-
     it('should reject if InAppBrowser closed without expected callback', (done) => {
       // arrange
       const mockApConfig: ApiConfig = {

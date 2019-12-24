@@ -2,7 +2,7 @@ import {ApiService} from '../../../../api';
 import {EventsBusService} from '../../../../events-bus';
 import {mockSdkConfig} from '../../../../page/impl/page-assemble-service-impl.spec.data';
 import {WebviewLoginSessionProvider} from './webview-login-session-provider';
-import {loginConfig, loginConfigForStateError, mergeConfig} from './webview-login-session-provider.data.spec';
+import {loginConfig, loginConfigForStateError, mergeConfig} from './webview-login-session-provider.spec.data';
 import {WebviewRunner} from '../def/webview-runner';
 import {OAuthSession, SignInError} from '../../..';
 
