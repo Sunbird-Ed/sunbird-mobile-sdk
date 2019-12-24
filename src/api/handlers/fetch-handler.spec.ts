@@ -18,7 +18,7 @@ describe('FetchHandler', () => {
         .withType(HttpRequestType.GET)
         .build();
     const mockSdkConfig: Partial<SdkConfig> = {
-        platform: 'cordova',
+        platform: 'web',
         apiConfig: {} as Partial<ApiConfig> as ApiConfig
     };
     const mockDeviceInfo: Partial<DeviceInfo> = {};
@@ -73,6 +73,7 @@ describe('FetchHandler', () => {
 
         it('should construct baseConnection with Cordova client for platform cordova', () => {
             // arrange
+            mockSdkConfig.platform = 'cordova';
             const mockBaseConnection: Partial<BaseConnection> = {
                 invoke: jest.fn(() => of(new Response()))
             };
@@ -100,8 +101,10 @@ describe('FetchHandler', () => {
         });
     });
 
+
     it('should delegate to baseConnection.invoke() on doFetch()', (done) => {
         // arrange
+        mockSdkConfig.platform = 'cordova';
         const mockBaseConnection: Partial<BaseConnection> = {
             invoke: jest.fn(() => of(new Response()))
         };
