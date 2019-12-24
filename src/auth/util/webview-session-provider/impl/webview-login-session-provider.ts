@@ -1,4 +1,4 @@
-import {OAuthSession} from '../../..';
+import {OAuthSession, SignInError} from '../../..';
 import {WebviewSessionProviderConfig} from '../def/webview-session-provider-config';
 import {WebviewRunner} from '../def/webview-runner';
 import {WebviewRunnerImpl} from './webview-runner-impl';
@@ -48,6 +48,20 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
                         case 'google': acc.push(
                             this.buildGoogleSessionProvider(dsl, forCase)
                         ); break;
+
+                        case 'state-error': acc.push(dsl.capture({
+                            host: forCase.when.host,
+                            path: forCase.when.path,
+                            params: forCase.when.params
+                        }).then(() => {
+                            return dsl.closeWebview().then(() => {
+                                return dsl.resolveCaptured('error_message').catch(() => {
+                                    throw new SignInError('Server Error');
+                                }).then((param) => {
+                                    throw new SignInError(param);
+                                });
+                            });
+                        })); break;
 
                         case 'migrate': acc.push(dsl.capture({
                             host: forCase.when.host,
