@@ -11,7 +11,7 @@ describe('HttpClientBrowser', () => {
 
     beforeEach(() => {
         httpClientBrowser.setSerializer(HttpSerializer.JSON);
-        jest.clearAllMocks();
+        jest.restoreAllMocks();
     });
 
     it('should be able to create an instance', () => {
@@ -45,7 +45,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({})
         };
 
-        spyOn(window, 'fetch').and.returnValue(Promise.resolve(mockResponse));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse));
 
         // act
         httpClientBrowser.get('http://sample.com/', '/', {}, {})
@@ -67,7 +67,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({})
         };
 
-        spyOn(window, 'fetch').and.returnValue(Promise.resolve(mockResponse));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse));
 
         // act
         httpClientBrowser.post('http://sample.com/', '/', {}, {})
@@ -90,7 +90,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({})
         };
 
-        spyOn(window, 'fetch').and.returnValue(Promise.resolve(mockResponse));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse));
 
         // act
         httpClientBrowser.setSerializer(HttpSerializer.URLENCODED);
@@ -114,7 +114,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({})
         };
 
-        spyOn(window, 'fetch').and.returnValue(Promise.resolve(mockResponse));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse));
 
         // act
         httpClientBrowser.patch('http://sample.com/', '/', {}, {test: 'body'})
@@ -137,7 +137,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({})
         };
 
-        spyOn(window, 'fetch').and.returnValue(Promise.resolve(mockResponse));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse));
 
         // act
         httpClientBrowser.setSerializer(HttpSerializer.URLENCODED);
@@ -159,7 +159,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve('{corrupted_data}')
         };
 
-        spyOn(window, 'fetch').and.returnValue(Promise.resolve(mockError));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockError));
 
         // act
         httpClientBrowser.get('http://sample.com/', '/', {}, {})
@@ -174,7 +174,7 @@ describe('HttpClientBrowser', () => {
 
     it('should handle unexpected errors', (done) => {
         // arrange
-        spyOn(window, 'fetch').and.returnValue(Promise.reject(new Error('Uncaught Error')));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.reject(new Error('Uncaught Error')));
 
         // act
         httpClientBrowser.get('http://sample.com/', '/', {}, {})
@@ -193,7 +193,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({test: 'response'})
         };
 
-        spyOn(window, 'fetch').and.returnValue(Promise.resolve(mockError));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockError));
 
         // act
         httpClientBrowser.get('http://sample.com/', '/', {}, {})
@@ -206,14 +206,15 @@ describe('HttpClientBrowser', () => {
             });
     });
 
-    it('should handle any response resolving SunbirdApiResponse for response body with ErrorCode of type HTTP_UNAUTHORISED, HTTP_FORBIDDEN', (done) => {
+    it('should handle any response resolving SunbirdApiResponse for response body' +
+        'with ErrorCode of type HTTP_UNAUTHORISED, HTTP_FORBIDDEN', (done) => {
         // arrange
         const mockError: Partial<Response> = {
             status: ResponseCode.HTTP_UNAUTHORISED,
             json: () => Promise.resolve({'test': 'response'})
         };
 
-        spyOn(window, 'fetch').and.returnValue(Promise.resolve(mockError));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockError));
 
         // act
         httpClientBrowser.get('http://sample.com/', '/', {}, {})
