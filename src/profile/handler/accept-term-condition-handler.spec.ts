@@ -1,9 +1,7 @@
-import { AcceptTermsConditionRequest } from './../def/accept-terms-condition-request';
-import { AcceptTermConditionHandler } from './accept-term-condition-handler';
-import { ApiService, ProfileServiceConfig } from '../..';
-import { mockProfileServiceConfig } from './accept-term-condition-handler.spec.data';
-import { Observable } from 'rxjs';
-import { of } from 'rxjs';
+import {AcceptTermConditionHandler} from './accept-term-condition-handler';
+import {AcceptTermsConditionRequest, ApiService, ProfileServiceConfig} from '../..';
+import {mockProfileServiceConfig} from './accept-term-condition-handler.spec.data';
+import {of} from 'rxjs';
 
 describe('GetDeviceProfileHandler', () => {
     let acceptTermConditionHandler: AcceptTermConditionHandler;
@@ -30,14 +28,15 @@ describe('GetDeviceProfileHandler', () => {
         const request: AcceptTermsConditionRequest = {
             version: ''
         };
-        mockApiService.fetch = jest.fn(() => { });
+        mockApiService.fetch = jest.fn(() => {
+        });
         (mockApiService.fetch as jest.Mock).mockReturnValue(of({
-            body: {
-                 result: {
-                     response: 'SUCCESS'
-                 }
+                body: {
+                    result: {
+                        response: 'SUCCESS'
+                    }
+                }
             }
-        }
         ));
         // act
         acceptTermConditionHandler.handle(request).subscribe((v) => {
@@ -52,14 +51,15 @@ describe('GetDeviceProfileHandler', () => {
         const request: AcceptTermsConditionRequest = {
             version: ''
         };
-        mockApiService.fetch = jest.fn(() => { });
+        mockApiService.fetch = jest.fn(() => {
+        });
         (mockApiService.fetch as jest.Mock).mockReturnValue(of({
-            body: {
-                 result: {
-                     response: 'SUCC'
-                 }
+                body: {
+                    result: {
+                        response: 'SUCC'
+                    }
+                }
             }
-        }
         ));
         // act
         acceptTermConditionHandler.handle(request).subscribe((v) => {

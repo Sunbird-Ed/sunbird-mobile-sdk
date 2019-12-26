@@ -1,17 +1,19 @@
 import {GenerateExportShareTelemetry} from './generate-export-share-telemetry';
-import { ContentEntry } from '../../db/schema';
-import { ExportContentContext } from '../..';
-import { TelemetryService } from '../../../telemetry';
-import { of } from 'rxjs';
+import {ContentEntry} from '../../db/schema';
+import {ExportContentContext} from '../..';
+import {TelemetryService} from '../../../telemetry';
+import {of} from 'rxjs';
+
 describe('GenerateExportShareTelemetry', () => {
     let generateExportShareTelemetry: GenerateExportShareTelemetry;
     const mockTelemetryService: Partial<TelemetryService> = {
-        share: jest.fn(() => {})
+        share: jest.fn(() => {
+        })
     };
 
     beforeAll(() => {
         generateExportShareTelemetry = new GenerateExportShareTelemetry(
-         mockTelemetryService as TelemetryService
+            mockTelemetryService as TelemetryService
         );
     });
 
@@ -40,7 +42,7 @@ describe('GenerateExportShareTelemetry', () => {
             tmpLocationPath: 'SAMPLE_TEMP_PATH',
             contentModelsToExport: contentEntrySchema,
             items: [{'size': 'sample'}],
-            metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
+            metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'},
 
         };
         (mockTelemetryService.share as jest.Mock).mockReturnValue(of(false));
@@ -62,12 +64,12 @@ describe('GenerateExportShareTelemetry', () => {
             content_state: 2,
         }];
         const request: ExportContentContext = {
-           // ecarFilePath: 'ECAR_FILE_PATH',
+            // ecarFilePath: 'ECAR_FILE_PATH',
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             tmpLocationPath: 'SAMPLE_TEMP_PATH',
             contentModelsToExport: contentEntrySchema,
             items: [{'size': 'sample'}],
-            metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
+            metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'},
 
         };
         (mockTelemetryService.share as jest.Mock).mockReturnValue(of(1));

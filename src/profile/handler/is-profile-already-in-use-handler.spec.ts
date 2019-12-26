@@ -1,12 +1,7 @@
-import { IsProfileAlreadyInUseHandler } from './is-profile-already-in-use-handler';
-import { ApiService } from '../..';
-import { Observable } from 'rxjs';
-import { of } from 'rxjs';
-import { mockSdkConfigWithSampleApiConfig } from '../../device-register/handler/device-register-handler.spec.data';
-import { SdkConfig } from '../../sdk-config';
-import { mockProfileServiceConfig } from './accept-term-condition-handler.spec.data';
-import { ProfileServiceConfig } from '../config/profile-service-config';
-import {ProfileExistsResponse} from '../def/profile-exists-response';
+import {IsProfileAlreadyInUseHandler} from './is-profile-already-in-use-handler';
+import {ApiService, ProfileServiceConfig} from '../..';
+import {of} from 'rxjs';
+import {mockProfileServiceConfig} from './accept-term-condition-handler.spec.data';
 
 describe('GenerateOTPHandler', () => {
     let isProfileAlreadyInUseHandler: IsProfileAlreadyInUseHandler;
@@ -30,29 +25,29 @@ describe('GenerateOTPHandler', () => {
 
 
     it('should get the data from GenerateOTPHandler', (done) => {
-      // arrange
-      mockApiService.fetch = jest.fn(() => { });
-      (mockApiService.fetch as jest.Mock).mockReturnValue(of({
-          body: {
-              result: {
-                ProfileExistsResponse : {
+        // arrange
+        mockApiService.fetch = jest.fn(() => {
+        });
+        (mockApiService.fetch as jest.Mock).mockReturnValue(of({
+                body: {
+                    result: {
+                        ProfileExistsResponse: {}
+                    }
                 }
-              }
-          }
-      }
-      ));
+            }
+        ));
 
-      const request =  {
-        'key': 'SOME_KEY',
-        'type': 'SOME_TYPE'
-    };
+        const request = {
+            'key': 'SOME_KEY',
+            'type': 'SOME_TYPE'
+        };
 
-       // act
-       isProfileAlreadyInUseHandler.handle(request).subscribe((response) => {
-        // assert
-        expect(mockApiService.fetch).toHaveBeenCalled();
-        done();
-    });
+        // act
+        isProfileAlreadyInUseHandler.handle(request).subscribe((response) => {
+            // assert
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            done();
+        });
     });
 
 });

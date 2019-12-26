@@ -1,12 +1,18 @@
-import { ContentServiceConfig } from '../config/content-config';
-import { SearchContentHandler } from './search-content-handler';
-import { TelemetryService, ContentSortCriteria } from '../..';
-import { AppConfig } from '../../api/config/app-config';
-import { SortOrder, ContentSearchCriteria, ContentSearchFilter, FilterValue, ContentImport } from '../def/requests';
-import { SearchFilter } from '../def/search-request';
-import { SearchType } from '../util/content-constants';
-import { of } from 'rxjs';
-import { identifier } from '@babel/types';
+import {SearchContentHandler} from './search-content-handler';
+import {
+    ContentImport,
+    ContentSearchCriteria,
+    ContentSearchFilter,
+    ContentServiceConfig,
+    ContentSortCriteria,
+    FilterValue,
+    SearchType,
+    SortOrder,
+    TelemetryService
+} from '../..';
+import {AppConfig} from '../../api/config/app-config';
+import {SearchFilter} from '../def/search-request';
+import {of} from 'rxjs';
 
 describe('SearchContentHandler', () => {
     let searchContentHandler: SearchContentHandler;
@@ -161,7 +167,7 @@ describe('SearchContentHandler', () => {
             name: 'SAMPLE_CONTENT',
             values: valueRequest
         }];
-        const appliedFilterMap: SearchFilter = { contentType: ['SAMPLE_CONTENT_TYPE'] };
+        const appliedFilterMap: SearchFilter = {contentType: ['SAMPLE_CONTENT_TYPE']};
         // act
         searchContentHandler.createFilterCriteria(previouscriteria, facets, appliedFilterMap);
         // assert

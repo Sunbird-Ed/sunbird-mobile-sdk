@@ -1,12 +1,10 @@
-import { ChildContentsHandler } from './get-child-contents-handler';
-import { DbService } from '../../db';
-import { GetContentDetailsHandler } from './get-content-details-handler';
-import { ContentEntry } from '../db/schema';
-import { ContentMapper } from '../util/content-mapper';
-import { Observable } from 'rxjs';
-import { HierarchyInfo } from '../def/content';
-import { ChildContent } from '..';
-import { of } from 'rxjs';
+import {ChildContentsHandler} from './get-child-contents-handler';
+import {DbService} from '../../db';
+import {GetContentDetailsHandler} from './get-content-details-handler';
+import {ContentEntry} from '../db/schema';
+import {ContentMapper} from '../util/content-mapper';
+import {of} from 'rxjs';
+import {ChildContent, HierarchyInfo} from '..';
 
 describe('ChildContentsHandler', () => {
     let childContentHandler: ChildContentsHandler;
@@ -116,10 +114,10 @@ describe('ChildContentsHandler', () => {
             identifier: 'SAMPLE_IDENTIFIER_1',
             contentType: 'SAMPLE_CONTENT_TYPE_1'
         },
-        {
-            identifier: 'SAMPLE_IDENTIFIER_2',
-            contentType: 'SAMPLE_CONTENT_TYPE_2'
-        }];
+            {
+                identifier: 'SAMPLE_IDENTIFIER_2',
+                contentType: 'SAMPLE_CONTENT_TYPE_2'
+            }];
         const identifier = 'IDENTIFIER';
         mockGetContentDetailsHandler.fetchFromDB = jest.fn(() => of([]));
         // act
@@ -135,13 +133,13 @@ describe('ChildContentsHandler', () => {
             identifier: 'SAMPLE_IDENTIFIER_1',
             contentType: 'SAMPLE_CONTENT_TYPE_1'
         },
-        {
-            identifier: 'SAMPLE_IDENTIFIER_2',
-            contentType: 'SAMPLE_CONTENT_TYPE_2'
-        }];
+            {
+                identifier: 'SAMPLE_IDENTIFIER_2',
+                contentType: 'SAMPLE_CONTENT_TYPE_2'
+            }];
         const currentIdentifier = 'SAMPLE_CURRENT_IDENTIFIER';
         const contentKeyList = ['SAMPLE_IDENTIFIER_1', 'SAMPLE_IDENTIFIER_2',
-        'SAMPLE_IDENTIFIER_1/SAMPLE_IDENTIFIER_2/SAMPLE_CURRENT_IDENTIFIER'];
+            'SAMPLE_IDENTIFIER_1/SAMPLE_IDENTIFIER_2/SAMPLE_CURRENT_IDENTIFIER'];
         // act
         childContentHandler.getNextContentIdentifier(request, currentIdentifier, contentKeyList);
         // assert
@@ -154,13 +152,13 @@ describe('ChildContentsHandler', () => {
             identifier: 'SAMPLE_IDENTIFIER_1',
             contentType: 'SAMPLE_CONTENT_TYPE_1'
         },
-        {
-            identifier: 'SAMPLE_IDENTIFIER_2',
-            contentType: 'SAMPLE_CONTENT_TYPE_2'
-        }];
+            {
+                identifier: 'SAMPLE_IDENTIFIER_2',
+                contentType: 'SAMPLE_CONTENT_TYPE_2'
+            }];
         const currentIdentifier = 'SAMPLE_CURRENT_IDENTIFIER';
         const contentKeyList = ['SAMPLE_IDENTIFIER_1', 'SAMPLE_IDENTIFIER_2',
-        'SAMPLE_IDENTIFIER_1/SAMPLE_IDENTIFIER_2/SAMPLE_CURRENT_IDENTIFIER'];
+            'SAMPLE_IDENTIFIER_1/SAMPLE_IDENTIFIER_2/SAMPLE_CURRENT_IDENTIFIER'];
         // act
         childContentHandler.getPreviousContentIdentifier(request, currentIdentifier, contentKeyList);
         // assert

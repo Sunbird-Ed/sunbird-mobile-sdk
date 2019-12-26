@@ -1,10 +1,10 @@
-import { ImportNExportHandler } from './import-n-export-handler';
-import { DeviceInfo } from '../../util/device';
-import { DbService } from '../../db';
-import { ContentEntry } from '../db/schema';
-import { of } from 'rxjs';
-import { FileService } from '../../util/file/def/file-service';
-import { ArrayUtil } from '../../util/array-util';
+import {ImportNExportHandler} from './import-n-export-handler';
+import {DeviceInfo} from '../../util/device';
+import {DbService} from '../../db';
+import {ContentEntry} from '../db/schema';
+import {of} from 'rxjs';
+import {FileService} from '../../util/file/def/file-service';
+import {ArrayUtil} from '../../util/array-util';
 
 
 describe('ImportNExportHandler', () => {
@@ -64,7 +64,8 @@ describe('ImportNExportHandler', () => {
     it('should fetch all children from manifest.json file', async (done) => {
         // arrange
         const request = ['content_id_1', 'content_id_2'];
-        mockDbService.execute = jest.fn(() => { });
+        mockDbService.execute = jest.fn(() => {
+        });
         (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
@@ -74,7 +75,8 @@ describe('ImportNExportHandler', () => {
             content_type: 'CONTENT_TYPE',
             path: 'sample_path'
         }]));
-        mockFileService.readAsText = jest.fn(() => { });
+        mockFileService.readAsText = jest.fn(() => {
+        });
         const readAsText = (mockFileService.readAsText as jest.Mock)
             .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
         readAsText().then((value) => {

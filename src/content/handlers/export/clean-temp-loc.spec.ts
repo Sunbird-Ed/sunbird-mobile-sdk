@@ -1,9 +1,9 @@
-import { CleanTempLoc } from './clean-temp-loc';
-import { FileService } from '../../../util/file/def/file-service';
-import { ExportContentContext } from '../..';
-import { ContentEntry } from '../../db/schema';
-import { of } from 'rxjs';
-import { FileUtil } from '../../../util/file/util/file-util';
+import {CleanTempLoc} from './clean-temp-loc';
+import {FileService} from '../../../util/file/def/file-service';
+import {ExportContentContext} from '../..';
+import {ContentEntry} from '../../db/schema';
+import {of} from 'rxjs';
+import {FileUtil} from '../../../util/file/util/file-util';
 
 jest.mock('../../../util/file/util/file-util');
 declare const diretory;
@@ -11,11 +11,14 @@ declare const diretory;
 describe('CleanTempLoc', () => {
     let cleanTempLoc: CleanTempLoc;
     const mockFileService: Partial<FileService> = {
-        listDir: jest.fn(() => { }),
-        getMetaData: jest.fn(() => { })
+        listDir: jest.fn(() => {
+        }),
+        getMetaData: jest.fn(() => {
+        })
     };
     const mockFileUtil: FileUtil = {
-        getFileExtension: jest.fn(() => { }),
+        getFileExtension: jest.fn(() => {
+        }),
     };
 
     beforeAll(() => {
@@ -45,7 +48,7 @@ describe('CleanTempLoc', () => {
         const exportContext: ExportContentContext = {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             contentModelsToExport: request,
-            metadata: { ['SAMPLE_KEY']: 'META_DATA' },
+            metadata: {['SAMPLE_KEY']: 'META_DATA'},
         };
         (mockFileService.listDir as jest.Mock).mockReturnValue(['1', '2']);
         // act
@@ -69,7 +72,7 @@ describe('CleanTempLoc', () => {
         const exportContext: ExportContentContext = {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             contentModelsToExport: request,
-            metadata: { ['SAMPLE_KEY']: 'META_DATA' },
+            metadata: {['SAMPLE_KEY']: 'META_DATA'},
         };
         (mockFileService.listDir as jest.Mock).mockReturnValue(of([{name: 'one'}]));
 
@@ -81,13 +84,13 @@ describe('CleanTempLoc', () => {
         //         }, 0);
         //     }
         // );
-       // console.log(directory[0].remove());
+        // console.log(directory[0].remove());
         (FileUtil.getFileExtension as jest.Mock).mockReturnValue('ecar');
         (mockFileService.getMetaData as jest.Mock).mockResolvedValue({modificationTime: 'July 20, 69 00:20:18'});
         await cleanTempLoc.execute(exportContext).then(() => {
             // assert
             done();
         });
-       // await expect(arr[0].remove()).resolves.toEqual('1');
+        // await expect(arr[0].remove()).resolves.toEqual('1');
     });
 });

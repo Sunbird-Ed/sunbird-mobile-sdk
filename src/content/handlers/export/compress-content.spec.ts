@@ -1,16 +1,14 @@
-import { CompressContent } from './compress-content';
-import { ZipService } from '../../../util/zip/def/zip-service';
-import { ExportContentContext } from '../..';
-import { ContentEntry } from '../../db/schema';
-import { observable, Observable } from 'rxjs';
-import { ZipServiceImpl } from '../../../util/zip/impl/zip-service-impl';
-import { zip } from 'rxjs/operators';
+import {CompressContent} from './compress-content';
+import {ZipService} from '../../../util/zip/def/zip-service';
+import {ExportContentContext} from '../..';
+import {ContentEntry} from '../../db/schema';
 
 declare const ZipService;
 describe('CompressContent', () => {
     let compressContent: CompressContent;
     const mockZipService: Partial<ZipService> = {
-        zip: jest.fn(() => {})
+        zip: jest.fn(() => {
+        })
     };
 
     beforeAll(() => {
@@ -21,7 +19,7 @@ describe('CompressContent', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-     //   jest.setTimeout(5000);
+        //   jest.setTimeout(5000);
     });
 
     it('should be create a instance of zip unZip', () => {
@@ -41,7 +39,7 @@ describe('CompressContent', () => {
         const exportContentContext: ExportContentContext = {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             contentModelsToExport: request,
-            metadata: { 'SAMPLE_KEY': 'KEY_VALUE' }
+            metadata: {'SAMPLE_KEY': 'KEY_VALUE'}
         };
         // act
         await compressContent.execute(exportContentContext).then(() => {
@@ -73,7 +71,7 @@ describe('CompressContent', () => {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             tmpLocationPath: 'SAMPLE_TMP_LOCATION_PATH',
             contentModelsToExport: request,
-            metadata: { 'SAMPLE_KEY': 'KEY_VALUE' }
+            metadata: {'SAMPLE_KEY': 'KEY_VALUE'}
         };
         // act
         await compressContent.execute(exportContentContext).then(() => {

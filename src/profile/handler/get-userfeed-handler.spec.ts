@@ -1,11 +1,8 @@
-import { UserFeed } from './../def/user-feed-response';
-import { GetUserFeedHandler } from './get-userfeed-handler';
-import { ApiService } from '../..';
-import { Observable } from 'rxjs';
-import { of } from 'rxjs';
-import { mockSdkConfigWithSampleApiConfig } from '../../device-register/handler/device-register-handler.spec.data';
-import { SdkConfig } from '../../sdk-config';
-import { mockProfileServiceConfig } from './accept-term-condition-handler.spec.data';
+import {GetUserFeedHandler} from './get-userfeed-handler';
+import {ApiService} from '../..';
+import {of} from 'rxjs';
+import {mockSdkConfigWithSampleApiConfig} from '../../device-register/handler/device-register-handler.spec.data';
+import {SdkConfig} from '../../sdk-config';
 
 
 describe('GetUserFeedHandler', () => {
@@ -31,27 +28,26 @@ describe('GetUserFeedHandler', () => {
 
 
     it('should get the data from getUserFeedHandler', (done) => {
-      // arrange
-      mockApiService.fetch = jest.fn(() => { });
-      (mockApiService.fetch as jest.Mock).mockReturnValue(of({
-          body: {
-              result: {
-                  response: {
-                    UserFeed: {
-
+        // arrange
+        mockApiService.fetch = jest.fn(() => {
+        });
+        (mockApiService.fetch as jest.Mock).mockReturnValue(of({
+                body: {
+                    result: {
+                        response: {
+                            UserFeed: {}
+                        }
                     }
-                  }
-              }
-          }
-      }
-      ));
+                }
+            }
+        ));
 
-       // act
-       getUserFeedHandler.handle('12334').subscribe(() => {
-        // assert
-        expect(mockApiService.fetch).toHaveBeenCalled();
-        done();
-    });
+        // act
+        getUserFeedHandler.handle('12334').subscribe(() => {
+            // assert
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            done();
+        });
     });
 
 });
