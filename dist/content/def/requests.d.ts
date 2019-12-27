@@ -64,6 +64,7 @@ export interface EcarImportRequest {
     identifier?: string;
 }
 export interface ContentImportRequest {
+    withPriority?: number;
     contentImportArray: ContentImport[];
     contentStatusArray: string[];
     fields?: (keyof ContentData)[];

@@ -20,6 +20,7 @@
       "es2015"
     ],
     "types": [
+      "node-fetch",
       "reflect-metadata",
       "jest",
       "websql"

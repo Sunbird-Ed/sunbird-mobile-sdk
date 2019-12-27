@@ -1,14 +1,13 @@
 import {CreateTempLoc} from './create-temp-loc';
-import { FileService } from '../../../util/file/def/file-service';
-import { ContentEntry } from '../../db/schema';
-import { ExportContentContext } from '../..';
-import { Observable } from 'rxjs';
-import { concat } from 'rxjs/operators';
+import {FileService} from '../../../util/file/def/file-service';
+import {ContentEntry} from '../../db/schema';
+import {ExportContentContext} from '../..';
 
 describe('CreateTempLoc', () => {
     let createTempLoc: CreateTempLoc;
     const mockFileService: Partial<FileService> = {
-        createDir: jest.fn(() => {})
+        createDir: jest.fn(() => {
+        })
     };
 
     beforeAll(() => {
@@ -41,7 +40,7 @@ describe('CreateTempLoc', () => {
             tmpLocationPath: 'SAMPLE_TEMP_PATH',
             contentModelsToExport: contentEntrySchema,
             items: ['artifactUrl'],
-            metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
+            metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'},
 
         };
         (mockFileService.createDir as jest.Mock).mockResolvedValue('SAMPLE_TEMP_PATHuuui4d');
@@ -68,7 +67,7 @@ describe('CreateTempLoc', () => {
             tmpLocationPath: 'SAMPLE_TEMP_PATH',
             contentModelsToExport: contentEntrySchema,
             items: ['artifactUrl'],
-            metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
+            metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'},
 
         };
         (mockFileService.createDir as jest.Mock).mockRejectedValue([]);

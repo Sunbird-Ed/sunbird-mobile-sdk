@@ -1,7 +1,1 @@
-export interface Faq {
-    faqs: Faqs[];
-}
-export interface Faqs {
-    topic: string;
-    description: string;
-}
+export { Faq, Faqs } from 'sunbird-client-data-models';

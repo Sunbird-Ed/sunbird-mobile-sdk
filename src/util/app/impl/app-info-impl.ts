@@ -16,7 +16,7 @@ export class AppInfoImpl implements AppInfo {
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences
     ) {
-        if (sdkConfig.apiConfig.debugMode) {
+        if (sdkConfig.platform !== 'cordova') {
             this.versionName = 'sunbird-debug';
         }
     }
@@ -27,8 +27,8 @@ export class AppInfoImpl implements AppInfo {
 
     public async init(): Promise<void> {
         await this.setFirstAccessTimestamp();
-        if (this.sdkConfig.apiConfig.debugMode) {
-            return await undefined;
+        if (this.sdkConfig.platform !== 'cordova') {
+            return undefined;
         }
         const packageName = this.sdkConfig.appConfig.buildConfigPackage ? this.sdkConfig.appConfig.buildConfigPackage : 'org.sunbird.app';
         return this.getBuildConfigValue(packageName, 'VERSION_NAME')

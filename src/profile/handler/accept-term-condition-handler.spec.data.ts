@@ -1,4 +1,4 @@
-import {ProfileServiceConfig} from '../..';
+import {ProfileServiceConfig} from '..';
 
 export const mockProfileServiceConfig: Partial<ProfileServiceConfig> = {
     profileApiPath: '',

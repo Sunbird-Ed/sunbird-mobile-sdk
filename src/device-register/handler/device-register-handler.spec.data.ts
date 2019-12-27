@@ -2,7 +2,6 @@ import {SdkConfig} from '../../sdk-config';
 
 export const mockSdkConfigWithSampleApiConfig: Partial<SdkConfig> = {
     apiConfig: {
-        debugMode: false,
         host: 'SAMPLE_HOST',
         user_authentication: {
             redirectUrl: 'SAMPLE_REDIRECT_URL',
@@ -27,5 +26,13 @@ export const mockSdkConfigWithSampleApiConfig: Partial<SdkConfig> = {
         apiPath: '',
         deviceProfileApiPath: '',
         fcmToken: 'SAMPLE_FCM_TOKEN'
+    },
+    profileServiceConfig: {
+            profileApiPath: '',
+            profileApiPath_V2: '',
+            tenantApiPath: '',
+            otpApiPath: '',
+            searchLocationApiPath: '',
+            locationDirPath: ''
     }
 };

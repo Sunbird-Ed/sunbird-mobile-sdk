@@ -1,6 +1,5 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {GenerateOtpRequest} from '..';
-import {ProfileServiceConfig} from '..';
+import {GenerateOtpRequest, ProfileServiceConfig} from '..';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
@@ -17,12 +16,7 @@ export class GenerateOtpHandler implements ApiRequestHandler<GenerateOtpRequest,
             .withPath(this.otpServiceConfig.otpApiPath + this.GET_GENERATE_OTP_ENDPOINT)
             .withApiToken(true)
             .withSessionToken(true)
-            .withBody({
-                request: {
-                    key: request.key,
-                    type: request.type
-                }
-            })
+            .withBody({request: request})
             .build();
 
         return this.apiService.fetch <{ result: { response: string } }>(apiRequest).pipe(

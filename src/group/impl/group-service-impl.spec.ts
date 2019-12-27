@@ -3,23 +3,17 @@ import {
     GetAllGroupRequest,
     Group,
     GroupService,
-    GroupSession,
-    NoActiveGroupSessionError,
-    NoGroupFoundError,
     ProfilesToGroupRequest
 } from '..';
-import {GroupMapper} from '../util/group-mapper';
-import {UniqueId} from '../../db/util/unique-id';
-import {ProfileService, ProfileSession} from '../../profile';
+import {ProfileService} from '../../profile';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {GroupKeys} from '../../preference-keys';
-import {Actor, AuditState, ObjectType, TelemetryAuditRequest, TelemetryService} from '../../telemetry';
-import {ObjectUtil} from '../../util/object-util';
-import {Container, inject, injectable} from 'inversify';
+import {TelemetryService} from '../../telemetry';
+import {Container} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import { GroupServiceImpl } from './group-service-impl';
 import { instance, mock } from 'ts-mockito';
-import { of } from 'rxjs/observable/of';
+import { of } from 'rxjs';
 
 describe('GroupServiceImpl', () => {
 
