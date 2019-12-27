@@ -11,6 +11,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage --collectCoverageFrom=src/**/*.{ts,tsx}",
     "test:ci": "jest --ci --w 2 --collectCoverage=true --coverageReporters=lcov",
+    "test:ci-json": "jest --ci --w 2 --collectCoverage=true --coverageReporters=json",
     "build:prod": "rm -rf dist && NODE_ENV=production webpack --verbose true --progress true --cache false --output-file index.js",
     "build:analyze": "webpack --verbose true --progress true --cache false --profile --json > stats.json && webpack-bundle-analyzer ./stats.json",
     "build:dev": "rm -rf tmp && mkdir tmp && cp ./package-dev.json ./tmp/package.json && tsc -w --outDir ./tmp"
@@ -102,7 +103,8 @@
       "^.+\\.(ts)$": "ts-jest"
     },
     "coverageReporters": [
-      "text"
+      "text",
+      "json"
     ],
     "transformIgnorePatterns": []
   }

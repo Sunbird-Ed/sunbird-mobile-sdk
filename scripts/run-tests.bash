@@ -11,14 +11,25 @@ cd "${0%/*}/.."
 # let's fake failing test for now 
 echo "Running tests"
 echo "............................" 
-npm run test:ci
+npm run test:ci-json
 if [[ "$?" == 0 ]]; then
-echo "Success!" && exit 0
-else
-echo "Failed!" && exit 1
+input="${0%/*}/../coverage/lcov-report/index.html"
+while IFS= read -r line
+do
+   if [[ "$line" == *"strong"* ]]; then
+    COVERAGE_NUMBER=$(echo $line | tr -dc '[0-9][0-9].[0-9][0-9]')
+    INT_COVERAGE_NUMBER=${COVERAGE_NUMBER/\.*}
+    ACTUAL_COVERAGE=$((INT_COVERAGE_NUMBER + 0))
+        if [[ $ACTUAL_COVERAGE -gt 65 ]]; then
+            echo "You have Coverage Above Prescribed Threshold"
+            echo $ACTUAL_COVERAGE+"%"
+            echo "Success!" && exit 0
+        fi
+    fi
+done < "$input"
 fi
-
-
+echo "Please fix your test cases before commiting"
+echo "Failed!" && exit 1
 # example of commands for different languages
 # eslint .         # JS code quality check
 # npm test         # JS unit tests
