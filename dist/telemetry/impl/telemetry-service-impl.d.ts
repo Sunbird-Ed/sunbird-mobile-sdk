@@ -16,6 +16,7 @@ import { AppInfo } from '../../util/app';
 import { DeviceRegisterService } from '../../device-register';
 import { Observable } from 'rxjs';
 import { TelemetryAutoSyncServiceImpl } from '../util/telemetry-auto-sync-service-impl';
+import { CourseService } from '../../course';
 export declare class TelemetryServiceImpl implements TelemetryService {
     private dbService;
     private decorator;
@@ -33,11 +34,12 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     private sharedPreferences;
     private appInfoService;
     private deviceRegisterService;
+    private courseService;
     private _lastSyncedTimestamp$;
     private telemetryAutoSyncService?;
     private telemetryConfig;
     readonly autoSync: TelemetryAutoSyncServiceImpl;
-    constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, sdkConfig: SdkConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService, frameworkService: FrameworkService, networkInfoService: NetworkInfoService, errorLoggerService: ErrorLoggerService, sharedPreferences: SharedPreferences, appInfoService: AppInfo, deviceRegisterService: DeviceRegisterService);
+    constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, sdkConfig: SdkConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService, frameworkService: FrameworkService, networkInfoService: NetworkInfoService, errorLoggerService: ErrorLoggerService, sharedPreferences: SharedPreferences, appInfoService: AppInfo, deviceRegisterService: DeviceRegisterService, courseService: CourseService);
     onInit(): Observable<undefined>;
     saveTelemetry(request: string): Observable<boolean>;
     audit({ env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData }: TelemetryAuditRequest): Observable<boolean>;
