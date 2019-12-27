@@ -383,7 +383,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                     filename: contentId.concat('.', FileExtension.CONTENT),
                                     correlationData: contentImport.correlationData,
                                     rollUp: contentImport.rollUp,
-                                    contentMeta: contentData
+                                    contentMeta: contentData,
+                                    withPriority: contentImportRequest.withPriority
                                 };
                                 downloadRequestList.push(downloadRequest);
                             }

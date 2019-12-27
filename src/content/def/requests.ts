@@ -74,6 +74,7 @@ export interface EcarImportRequest {
 }
 
 export interface ContentImportRequest {
+    withPriority?: number;
     contentImportArray: ContentImport[];
     contentStatusArray: string[];
     fields?: (keyof ContentData)[];

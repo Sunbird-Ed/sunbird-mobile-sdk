@@ -185,7 +185,14 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         );
                     }
 
-                    const anyDownloadRequest = downloadListAsSet.toArray().shift() as DownloadRequest;
+                    const anyDownloadRequest = downloadListAsSet.toArray()
+                        .sort((first, second) => {
+                            const firstPriority = first.withPriority || 0;
+                            const secondPriority = second.withPriority || 0;
+
+                            return secondPriority - firstPriority;
+                        })
+                        .shift() as DownloadRequest;
 
                     return new Observable<string>((observer) => {
                         downloadManager.enqueue({
@@ -282,8 +289,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     if (downloadProgress.payload.status === DownloadStatus.STATUS_SUCCESSFUL) {
                         return iif(
                             () => !!this.downloadCompleteDelegate,
-                            defer(async () => {
-                                await DownloadServiceImpl.generateDownloadCompleteTelemetry(currentDownloadRequest!);
+                            defer(() => {
+                                DownloadServiceImpl.generateDownloadCompleteTelemetry(currentDownloadRequest!);
                                 this.downloadCompleteDelegate!.onDownloadCompletion(currentDownloadRequest!).toPromise();
                             }),
                             defer(() => of(undefined))
