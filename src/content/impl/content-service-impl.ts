@@ -325,16 +325,18 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
                 // const childIdentifiers = await childContentHandler.getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
                 console.log('childIdentifiers', childIdentifiers);
-
-                const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
+                if (childIdentifiers) {
+                    const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
                                 WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER}
                                 IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)})`;
 
-                const childContents = await this.dbService.execute(query).toPromise();
-                // console.log('childContents', childContents);
-                childContents.forEach(element => {
-                    childContentsMap.set(element.identifier, element);
-                });
+                    const childContents = await this.dbService.execute(query).toPromise();
+                    // console.log('childContents', childContents);
+                    childContents.forEach(element => {
+                        childContentsMap.set(element.identifier, element);
+                    });
+                }
+
                 return childContentHandler.fetchChildrenOfContent(
                     rows[0],
                     childContentsMap,
