@@ -36,7 +36,7 @@ import {
     RelevantContentResponsePlayer,
     SearchResponse
 } from '..';
-import {Observable, of, from, zip, defer, combineLatest} from 'rxjs';
+import {combineLatest, defer, from, Observable, of, zip} from 'rxjs';
 import {ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
@@ -91,8 +91,8 @@ import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
-import { GetContentHeirarchyHandler } from './../handlers/get-content-heirarchy-handler';
-import { mapTo, mergeMap, map, catchError, take } from 'rxjs/operators';
+import {GetContentHeirarchyHandler} from './../handlers/get-content-heirarchy-handler';
+import {catchError, map, mapTo, mergeMap, take} from 'rxjs/operators';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -384,7 +384,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                     correlationData: contentImport.correlationData,
                                     rollUp: contentImport.rollUp,
                                     contentMeta: contentData,
-                                    withPriority: contentImportRequest.withPriority
+                                    withPriority: contentImportRequest.withPriority || (contentData.mimeType === MimeType.COLLECTION.valueOf() ? 1 : 0)
                                 };
                                 downloadRequestList.push(downloadRequest);
                             }
@@ -560,10 +560,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             mergeMap((frameworkId?: string) => {
                 return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig, frameworkId!,
                     contentSearchCriteria.languageCode).handle(searchRequest).pipe(
-                        map((searchResponse: SearchResponse) => {
-                            return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
-                        })
-                    );
+                    map((searchResponse: SearchResponse) => {
+                        return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
+                    })
+                );
             })
         );
     }
@@ -682,12 +682,12 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             mergeMap(() =>
                 // TODO
                 // @ts-ignore
-                this.downloadService.cancel({ identifier: request.identifier! }, false)
+                this.downloadService.cancel({identifier: request.identifier!}, false)
             ),
             catchError(() =>
                 // TODO
                 // @ts-ignore
-                this.downloadService.cancel({ identifier: request.identifier! }, false)
+                this.downloadService.cancel({identifier: request.identifier!}, false)
             ),
             mapTo(undefined)
         );
@@ -778,7 +778,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         return {
                             contents: contentsGroupedBySubject[sub],
                             name: sub.charAt(0).toUpperCase() + sub.slice(1),
-                            display: { name: { en: sub } } // TODO : need to handle localization
+                            display: {name: {en: sub}} // TODO : need to handle localization
                         };
                     })
                 };
@@ -795,7 +795,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     return of(undefined);
                 }
 
-                return this.deleteContent({ contentDeleteList: [currentRequest] }).pipe(
+                return this.deleteContent({contentDeleteList: [currentRequest]}).pipe(
                     mergeMap(() => this.contentDeleteRequestSet.remove(currentRequest)),
                     mapTo(undefined)
                 );
