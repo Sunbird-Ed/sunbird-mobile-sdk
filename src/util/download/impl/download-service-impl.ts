@@ -13,7 +13,7 @@ import {SharedPreferencesSetCollection} from '../../shared-preferences/def/share
 import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
-import {catchError, concatMapTo, distinctUntilChanged, mapTo, mergeMap, switchMap, take, tap} from 'rxjs/operators';
+import {catchError, concatMapTo, distinctUntilChanged, mapTo, mergeMap, switchMap, take, tap, map} from 'rxjs/operators';
 
 @injectable()
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
@@ -172,7 +172,15 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     }
 
     getActiveDownloadRequests(): Observable<DownloadRequest[]> {
-        return this.sharedPreferencesSetCollection.asListChanges();
+        return this.sharedPreferencesSetCollection.asListChanges().pipe(
+            map((list) => {
+                return list.sort((first, second) => {
+                    const firstPriority = first.withPriority || 0;
+                    const secondPriority = second.withPriority || 0;
+                    return secondPriority - firstPriority;
+                });
+            })
+        );
     }
 
     private switchToNextDownloadRequest(): Observable<undefined> {
