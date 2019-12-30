@@ -178,7 +178,7 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                 jest.useRealTimers();
 
                 setTimeout(() => {
-                    expect(mockCourseService.syncAssessmentEvents).toHaveBeenCalled();
+                    expect(mockCourseService.syncAssessmentEvents).toHaveBeenCalledWith(expect.objectContaining({ persistedOnly: true }));
                     expect(mockUpdateContentState).toHaveBeenCalled();
                     done();
                 });

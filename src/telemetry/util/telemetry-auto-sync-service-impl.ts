@@ -129,7 +129,7 @@ export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
         }
 
         await zip(
-            this.courseService.syncAssessmentEvents(),
+            this.courseService.syncAssessmentEvents({ persistedOnly: true }),
             new ContentStatesSyncHandler(
                 new UpdateContentStateApiHandler(this.apiService, this.sdkConfig.courseServiceConfig),
                 this.dbService, this.sharedPreferences, this.keyValueStore
