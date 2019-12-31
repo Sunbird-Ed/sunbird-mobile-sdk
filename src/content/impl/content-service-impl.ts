@@ -93,6 +93,7 @@ import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
 import {GetContentHeirarchyHandler} from './../handlers/get-content-heirarchy-handler';
 import {catchError, map, mapTo, mergeMap, take} from 'rxjs/operators';
+import { CopyToDestination } from '../handlers/export/copy-to-destination';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -291,6 +292,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         return new CopyAsset(this.fileService).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
                         return new EcarBundle(this.fileService, this.zipService).execute(exportResponse.body);
+                    }).then((exportResponse: Response) => {
+                        return new CopyToDestination().copyFile(exportResponse, contentExportRequest.destinationFolder);
                     }).then((exportResponse: Response) => {
                         return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
