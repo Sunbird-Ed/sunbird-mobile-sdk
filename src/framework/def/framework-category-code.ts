@@ -1,1 +1,1 @@
-export {FrameworkCategoryCode, FrameworkCategoryCodesGroup} from 'sunbird-client-data-models';
+export {FrameworkCategoryCode, FrameworkCategoryCodesGroup} from '@project-sunbird/client-services';
