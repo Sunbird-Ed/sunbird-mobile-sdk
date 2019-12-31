@@ -1,1 +1,1 @@
-export {PageAssemble, PageSections} from 'sunbird-client-data-models';
+export {PageAssemble, PageSections} from '@project-sunbird/client-services';
