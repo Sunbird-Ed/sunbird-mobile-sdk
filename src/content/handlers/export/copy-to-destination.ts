@@ -1,13 +1,20 @@
 import { Response } from '../../../api';
 import {FileUtil} from '../../../util/file/util/file-util';
+import { ContentExportRequest } from '../..';
 
 export class CopyToDestination {
 
     constructor() {
     }
 
-    public async execute(exportResponse: Response, destinationFolder): Promise<Response> {
+    public async execute(exportResponse: Response, contentExportRequest: ContentExportRequest): Promise<Response> {
         return new Promise<Response>((resolve, reject) => {
+            let destinationFolder;
+            if (contentExportRequest.saveLocally) {
+                destinationFolder = contentExportRequest.destinationFolder;
+            } else {
+                destinationFolder = cordova.file.externalCacheDirectory;
+            }
             buildconfigreader.copyFile(FileUtil.getDirecory(exportResponse.body.ecarFilePath), destinationFolder,
                 FileUtil.getFileName(exportResponse.body.ecarFilePath),
                 () => {
