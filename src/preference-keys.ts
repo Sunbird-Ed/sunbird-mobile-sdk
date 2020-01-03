@@ -50,12 +50,12 @@ export namespace CodePush {
 
 export namespace CodePushExperiment {
     export const DEFAULT_DEPLOYMENT_KEY = 'default_deployment_key';
-    export const EXPERIMENT_KEY = 'emperiment_key';
+    export const EXPERIMENT_KEY = 'experiment_key';
     export const EXPERIMENT_APP_VERSION = 'emperiment_app_version';
 }
 
 export namespace DeviceRegister {
-    export const DEVICE_LOCATION = 'device_location';
+    export const DEVICE_LOCATION = 'device_location_new';
 }
 
 export namespace TelemetryKeys {
