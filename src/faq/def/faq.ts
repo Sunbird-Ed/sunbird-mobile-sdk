@@ -1,1 +1,1 @@
-export {Faq, Faqs} from 'sunbird-client-data-models';
+export {Faq, Faqs} from '@project-sunbird/client-services';

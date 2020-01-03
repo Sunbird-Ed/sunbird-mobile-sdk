@@ -1,1 +1,1 @@
-export {Batch} from 'sunbird-client-data-models';
+export {Batch} from '@project-sunbird/client-services';
