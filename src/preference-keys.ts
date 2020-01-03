@@ -55,7 +55,7 @@ export namespace CodePushExperiment {
 }
 
 export namespace DeviceRegister {
-    export const DEVICE_LOCATION = 'device_location';
+    export const DEVICE_LOCATION = 'device_location_new';
 }
 
 export namespace TelemetryKeys {
