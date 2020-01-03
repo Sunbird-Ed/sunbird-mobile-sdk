@@ -1,1 +1,1 @@
-export { User as ServerProfile, RootOrg } from 'sunbird-client-data-models';
+export { User as ServerProfile, RootOrg } from '@project-sunbird/client-services';

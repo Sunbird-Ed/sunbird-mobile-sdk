@@ -1,1 +1,1 @@
-export { Framework, FrameworkCategory, CategoryTerm, CategoryAssociation } from 'sunbird-client-data-models';
+export { Framework, FrameworkCategory, CategoryTerm, CategoryAssociation } from '@project-sunbird/client-services';

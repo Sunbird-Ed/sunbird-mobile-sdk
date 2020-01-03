@@ -1,5 +1,5 @@
-import { Content as ContentData } from 'sunbird-client-data-models';
-export { Content as ContentData, LicenseDetails, AltMsg as ComingSoonMsg, OriginData } from 'sunbird-client-data-models';
+import { Content as ContentData } from '@project-sunbird/client-services';
+export { Content as ContentData, LicenseDetails, AltMsg as ComingSoonMsg, OriginData } from '@project-sunbird/client-services';
 import { Rollup } from '../../telemetry';
 import { ContentAccess } from '../../profile';
 import { ContentMarker } from './response';
