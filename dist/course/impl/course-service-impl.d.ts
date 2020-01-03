@@ -44,7 +44,9 @@ export declare class CourseServiceImpl implements CourseService {
         event: any;
         courseContext: any;
     }): void;
-    syncAssessmentEvents(): Observable<undefined>;
+    syncAssessmentEvents(options?: {
+        persistedOnly: boolean;
+    }): Observable<undefined>;
     resetCapturedAssessmentEvents(): void;
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 }
