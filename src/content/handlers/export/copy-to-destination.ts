@@ -6,7 +6,7 @@ export class CopyToDestination {
     constructor() {
     }
 
-    public async copyFile(exportResponse: Response, destinationFolder): Promise<Response> {
+    public async execute(exportResponse: Response, destinationFolder): Promise<Response> {
         return new Promise<Response>((resolve, reject) => {
             buildconfigreader.copyFile(FileUtil.getDirecory(exportResponse.body.ecarFilePath), destinationFolder,
                 FileUtil.getFileName(exportResponse.body.ecarFilePath),

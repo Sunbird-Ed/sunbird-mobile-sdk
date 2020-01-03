@@ -293,7 +293,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     }).then((exportResponse: Response) => {
                         return new EcarBundle(this.fileService, this.zipService).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
-                        return new CopyToDestination().copyFile(exportResponse, contentExportRequest.destinationFolder);
+                        return new CopyToDestination().execute(exportResponse, contentExportRequest.destinationFolder);
                     }).then((exportResponse: Response) => {
                         return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
