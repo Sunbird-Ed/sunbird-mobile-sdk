@@ -1,11 +1,27 @@
 import { DownloadServiceImpl } from './download-service-impl';
 import { SharedPreferences, EventsBusService, DownloadRequest, DownloadCancelRequest } from '../../..';
 import { of, BehaviorSubject, Subject } from 'rxjs';
+import { take, sample } from 'rxjs/operators';
+import { SharedPreferencesSetCollectionImpl } from '../../shared-preferences/impl/shared-preferences-set-collection-impl';
+import { SharedPreferencesSetCollection } from '../../shared-preferences/def/shared-preferences-set-collection';
+
+const mockSharedPreferencesSetCollection =
+    {
+        identifier: 'SAMPLE_ID',
+        downloadUrl: 'http://sample-url/',
+        mimeType: 'SAMPLE_MIME_TYPE',
+        destinationFolder: 'DESTINATION_FOLDER',
+        filename: 'ASSESSMENT'
+    } as Partial<SharedPreferencesSetCollection<DownloadRequest>> as SharedPreferencesSetCollection<DownloadRequest>;
+jest.mock('', () => {
+    return mockSharedPreferencesSetCollection;
+});
 
 describe('DownloadServiceImpl', () => {
     let downloadServiceImpl: DownloadServiceImpl;
     const mockEventsBusService: Partial<EventsBusService> = {};
-    const mockSharedPreferences: Partial<SharedPreferences> = {};
+    const mockSharedPreferences: Partial<SharedPreferences> = {
+    };
 
     beforeAll(() => {
         downloadServiceImpl = new DownloadServiceImpl(
@@ -14,8 +30,20 @@ describe('DownloadServiceImpl', () => {
         );
     });
 
+    const downloadRequestSet = new Set();
+   
+
+    mockSharedPreferencesSetCollection.asSet = jest.fn(() => of(downloadRequestSet.add({
+        identifier: 'SAMPLE_ID',
+        downloadUrl: 'http://sample-url/',
+        mimeType: 'SAMPLE_MIME_TYPE',
+        destinationFolder: 'DESTINATION_FOLDER',
+        filename: 'ASSESSMENT'
+    })));
+
     beforeEach(() => {
         jest.clearAllMocks();
+     //   (SharedPreferencesSetCollectionImpl as any as jest.Mock<SharedPreferencesSetCollectionImpl<DownloadRequest>>).mockClear();
     });
 
 
@@ -70,17 +98,37 @@ describe('DownloadServiceImpl', () => {
             destinationFolder: 'DESTINATION_FOLDER',
             filename: 'ASSESSMENT'
         };
-        const subject = new BehaviorSubject(downloadRequest);
+        const subject$ = new BehaviorSubject(downloadRequest);
         // expect(subject).toBeInstanceOf(downloadRequest);
         const request: DownloadCancelRequest = {
             identifier: 'SAMPLE_ID'
         };
+        const currentDownloadRequest: DownloadRequest = {
+            identifier: 'SAMPLE_ID',
+            downloadUrl: 'http://sample-url/',
+            mimeType: 'SAMPLE_MIME_TYPE',
+            destinationFolder: 'DESTINATION_FOLDER',
+            filename: 'ASSESSMENT'
+        };
         const generateTelemetry = true;
-       // spyOn(downloadServiceImpl, 'cancel').and.returnValue(of({}));
+        mockSharedPreferences.getString = jest.fn(() => of(undefined));
         // act
         downloadServiceImpl.cancel(request, generateTelemetry).subscribe((res) => {
             // assert
+            console.log('//////', res)
+            subject$.pipe(take(1))
+                .subscribe(
+                    result => expect(result).toBe(subject$)
+                );
             done();
         });
     });
+
+    it('', () => {
+        // arrange
+        // act
+        //  downloadServiceImpl.cancelAll();
+        // assert
+    });
 });
+
