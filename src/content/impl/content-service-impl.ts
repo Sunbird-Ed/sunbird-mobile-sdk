@@ -93,6 +93,8 @@ import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
 import {GetContentHeirarchyHandler} from './../handlers/get-content-heirarchy-handler';
 import {catchError, map, mapTo, mergeMap, take} from 'rxjs/operators';
+import { CopyToDestination } from '../handlers/export/copy-to-destination';
+import { DeleteTempDir } from './../handlers/export/deletete-temp-dir';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -276,9 +278,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             contentModelsToExport: contentsInDb,
                             tmpLocationPath: tempLocationPath.nativeURL
                         };
-                        return new CleanTempLoc(this.fileService).execute(exportContentContext);
-                    }).then((exportResponse: Response) => {
-                        return new CreateTempLoc(this.fileService).execute(exportResponse.body);
+                    //     return new CleanTempLoc(this.fileService).execute(exportContentContext);
+                    // }).then((exportResponse: Response) => {
+                        return new CreateTempLoc(this.fileService).execute(exportContentContext);
                     }).then((exportResponse: Response) => {
                         return new CreateContentExportManifest(this.dbService, exportHandler).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
@@ -292,9 +294,16 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     }).then((exportResponse: Response) => {
                         return new EcarBundle(this.fileService, this.zipService).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
-                        return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
+                        return new CopyToDestination().execute(exportResponse, contentExportRequest);
+                    // }).then((exportResponse: Response) => {
+                    //     return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
-                        return new GenerateExportShareTelemetry(this.telemetryService).execute(exportResponse.body);
+                        return new DeleteTempDir().execute(exportResponse.body);
+                    }).then((exportResponse: Response) => {
+                        const fileName = ContentUtil.getExportedFileName(contentsInDb);
+                        return new GenerateExportShareTelemetry(
+                            this.telemetryService).execute(exportResponse.body, fileName, contentExportRequest
+                        );
                     }).then((exportResponse: Response<ContentExportResponse>) => {
                         return exportResponse.body;
                     });
