@@ -79,6 +79,7 @@ export interface ContentImport {
 export interface ContentExportRequest {
     destinationFolder: string;
     contentIds: string[];
+    saveLocally?: boolean;
 }
 export interface ContentMarkerRequest {
     contentId: string;
