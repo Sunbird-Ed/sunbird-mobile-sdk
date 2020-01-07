@@ -10,6 +10,7 @@ import {ApiService} from '../../api';
 import {FrameworkService} from '../../framework';
 import {GetDeviceProfileHandler} from '../handler/get-device-profile-handler';
 import {SharedPreferences} from '../../util/shared-preferences';
+import {ProfileService} from '../../profile';
 
 @injectable()
 export class DeviceRegisterServiceImpl implements DeviceRegisterService {
@@ -21,12 +22,13 @@ export class DeviceRegisterServiceImpl implements DeviceRegisterService {
         @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
         @inject(InjectionTokens.APP_INFO) private appInfoService: AppInfo,
         @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
+        @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
     ) {
     }
 
     registerDevice(request?: DeviceRegisterRequest): Observable<DeviceRegisterResponse> {
         return new DeviceRegisterHandler(this.sdkConfig, this.deviceInfo, this.sharedPreferences, this.frameworkService,
-            this.appInfoService, this.apiService)
+            this.appInfoService, this.apiService, this.profileService)
             .handle(request);
     }
 

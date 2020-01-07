@@ -8,6 +8,13 @@ import {FrameworkService} from '../../framework';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {DeviceRegister} from '../../preference-keys';
 import {map, mergeMap} from 'rxjs/operators';
+import {LocationSearchCriteria, ProfileService} from '../../profile';
+import {LocationSearchResult} from '../../profile/def/location-search-result';
+
+enum Location {
+    TYPE_STATE = 'state',
+    TYPE_DISTRICT = 'district'
+}
 
 export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRequest, DeviceRegisterResponse> {
 
@@ -22,7 +29,8 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
         private sharedPreferences: SharedPreferences,
         private frameworkService: FrameworkService,
         private appInfoService: AppInfo,
-        private apiService: ApiService
+        private apiService: ApiService,
+        private profileService: ProfileService
     ) {
         this.deviceRegisterConfig = this.sdkConfig.deviceRegisterConfig;
         this.apiConfig = this.sdkConfig.apiConfig;
@@ -40,30 +48,35 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
             this.sharedPreferences.getString(DeviceRegister.DEVICE_LOCATION)
         )
             .pipe(
-                mergeMap((results: any) => {
+                mergeMap(async (results: any) => {
                     const deviceSpec: DeviceSpec = results[0];
                     const activeChannelId: string = results[1];
                     const firstAccessTimestamp = results[2];
                     const deviceLocation = results[3];
 
-                    if (request) {
-                        request.dspec = deviceSpec;
-                        request.channel = activeChannelId;
-                        request.fcmToken = this.deviceRegisterConfig.fcmToken!;
-                        request.producer = this.apiConfig.api_authentication.producerId;
-                        request.first_access = Number(firstAccessTimestamp);
-                    } else {
-                        request = {
-                            dspec: deviceSpec,
-                            channel: activeChannelId,
-                            fcmToken: this.deviceRegisterConfig.fcmToken!,
-                            producer: this.apiConfig.api_authentication.producerId,
-                            first_access: Number(firstAccessTimestamp)
-                        };
-                    }
+                    request = {
+                        ...(request || {}),
+                        dspec: deviceSpec,
+                        channel: activeChannelId,
+                        fcmToken: this.deviceRegisterConfig.fcmToken!,
+                        producer: this.apiConfig.api_authentication.producerId,
+                        first_access: Number(firstAccessTimestamp)
+                    };
 
                     if (!request.userDeclaredLocation && deviceLocation) {
                         request.userDeclaredLocation = JSON.parse(deviceLocation);
+                    }
+
+                    if (request.userDeclaredLocation) {
+                        try {
+                            if (!(await this.validateLocation(request))) {
+                                this.sharedPreferences.putString(DeviceRegister.DEVICE_LOCATION, '').toPromise();
+                                delete request.userDeclaredLocation;
+                            }
+                        } catch (e) {
+                            console.error(e);
+                            delete request.userDeclaredLocation;
+                        }
                     }
 
                     const apiRequest: Request = new Request.Builder()
@@ -80,9 +93,44 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
                             map((res) => {
                                 return res.body;
                             })
-                        );
+                        )
+                        .toPromise();
                 })
             );
     }
 
+    private async validateLocation(request: DeviceRegisterRequest): Promise<boolean> {
+        if (
+            !request.userDeclaredLocation ||
+            !request.userDeclaredLocation.state ||
+            !request.userDeclaredLocation.district
+        ) {
+            return false;
+        }
+
+        const fetchStatesRequest: LocationSearchCriteria = {
+            filters: {
+                type: Location.TYPE_STATE
+            }
+        };
+
+        const stateList: LocationSearchResult[] = await this.profileService.searchLocation(fetchStatesRequest).toPromise();
+        const state = stateList.find((s) => s.name === request.userDeclaredLocation!.state);
+
+        if (!state) {
+            return false;
+        }
+
+        const fetchDistrictRequest: LocationSearchCriteria = {
+            filters: {
+                type: Location.TYPE_DISTRICT,
+                parentId: state.id
+            }
+        };
+
+        const districtList: LocationSearchResult[] = await this.profileService.searchLocation(fetchDistrictRequest).toPromise();
+        const district = districtList.find((d) => d.name === request.userDeclaredLocation!.district);
+
+        return !!district;
+    }
 }
