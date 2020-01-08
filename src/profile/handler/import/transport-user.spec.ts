@@ -1,13 +1,13 @@
-import { TransportFrameworkNChannel } from './transport-framework-n-channel';
+import { TransportUser } from './transport-user';
 import { DbService, ImportTelemetryContext } from '../../..';
 import { of } from 'rxjs';
 
-describe('TransportFrameworkNChannel', () => {
-    let transportFrameworkNChannel: TransportFrameworkNChannel;
+describe('TransportUser', () => {
+    let transportUser: TransportUser;
     const mockDbService: Partial<DbService> = {};
 
     beforeAll(() => {
-        transportFrameworkNChannel = new TransportFrameworkNChannel(
+        transportUser = new TransportUser(
             mockDbService as DbService
         );
     });
@@ -16,11 +16,11 @@ describe('TransportFrameworkNChannel', () => {
         jest.clearAllMocks();
     });
 
-    it('should be create a instace of transportFrameworkNChannel', () => {
-        expect(transportFrameworkNChannel).toBeTruthy();
+    it('should be create a instance of TransportGroupProfile', () => {
+        expect(transportUser).toBeTruthy();
     });
 
-    it('should save NoSqlEntry To Db', (done) => {
+    it('should saved user profile in Db', (done) => {
         // arrange
         const request: ImportTelemetryContext = {
             sourceDBFilePath: 'src/db/path',
@@ -38,7 +38,7 @@ describe('TransportFrameworkNChannel', () => {
         });
         mockDbService.insert = jest.fn(() => of(1));
         // act
-        transportFrameworkNChannel.execute(request).then(() => {
+        transportUser.execute(request).then(() => {
             // assert
             expect(mockDbService.read).toHaveBeenCalled();
             expect(mockDbService.insert).toHaveBeenCalled();
