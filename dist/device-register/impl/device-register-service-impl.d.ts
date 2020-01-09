@@ -13,6 +13,8 @@ export declare class DeviceRegisterServiceImpl implements DeviceRegisterService 
     private frameworkService;
     private appInfoService;
     private apiService;
+    private readonly deviceRegisterHandler;
+    private readonly getDeviceProfileHandler;
     constructor(sdkConfig: SdkConfig, deviceInfo: DeviceInfo, sharedPreferences: SharedPreferences, frameworkService: FrameworkService, appInfoService: AppInfo, apiService: ApiService);
     registerDevice(request?: DeviceRegisterRequest): Observable<DeviceRegisterResponse>;
     getDeviceProfile(): Observable<DeviceProfileResponse>;
