@@ -39,7 +39,7 @@ export declare namespace CodePush {
 }
 export declare namespace CodePushExperiment {
     const DEFAULT_DEPLOYMENT_KEY = "default_deployment_key";
-    const EXPERIMENT_KEY = "emperiment_key";
+    const EXPERIMENT_KEY = "experiment_key";
     const EXPERIMENT_APP_VERSION = "emperiment_app_version";
 }
 export declare namespace DeviceRegister {
