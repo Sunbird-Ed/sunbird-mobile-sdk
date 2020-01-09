@@ -81,10 +81,10 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
                                 delete request.userDeclaredLocation;
                             }
                         }
+                    }
 
-                        if (request.userDeclaredLocation) {
-                            delete request.userDeclaredLocation.declaredOffline;
-                        }
+                    if (request.userDeclaredLocation) {
+                        delete request.userDeclaredLocation.declaredOffline;
                     }
 
                     const apiRequest: Request = new Request.Builder()
