@@ -1,13 +1,15 @@
 import {OAuthSession, SignInError} from '../../..';
-import {WebviewSessionProviderConfig} from '../def/webview-session-provider-config';
+import {WebviewSessionProviderConfig} from '../../..';
 import {WebviewRunner} from '../def/webview-runner';
 import {WebviewRunnerImpl} from './webview-runner-impl';
 import {SunbirdSdk} from '../../../../sdk';
 import {WebviewAutoMergeSessionProvider} from './webview-auto-merge-session-provider';
 import {WebviewBaseSessionProvider} from './webview-base-session-provider';
+import {TelemetryService} from '../../../../telemetry';
 
 export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
     private readonly webviewRunner: WebviewRunner;
+    private readonly telemetryService: TelemetryService;
 
     constructor(
         private loginConfig: WebviewSessionProviderConfig,
@@ -20,11 +22,19 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
             SunbirdSdk.instance.eventsBusService
         );
 
+        this.telemetryService = SunbirdSdk.instance.telemetryService;
         this.webviewRunner = webviewRunner || new WebviewRunnerImpl();
     }
 
     public async provide(): Promise<OAuthSession> {
         const dsl = this.webviewRunner;
+
+        const telemetryContext = await this.telemetryService.buildContext().toPromise();
+
+        this.loginConfig.target.params.push({
+           key: 'pdata',
+           value: JSON.stringify(telemetryContext.pdata)
+        });
 
         return dsl.launchWebview({
             host: this.loginConfig.target.host,

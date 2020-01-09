@@ -5,9 +5,11 @@ import {SunbirdSdk} from '../../../../sdk';
 import {WebviewRunnerImpl} from './webview-runner-impl';
 import {OAuthSession} from '../../..';
 import {InterruptError} from '../../..';
+import {TelemetryService} from '../../../../telemetry';
 
 export class WebviewManualMergeSessionProvider extends WebviewBaseSessionProvider {
     private readonly webviewRunner: WebviewRunner;
+    private readonly telemetryService: TelemetryService;
 
     constructor(
         private manualMergeConfig: WebviewSessionProviderConfig,
@@ -19,11 +21,19 @@ export class WebviewManualMergeSessionProvider extends WebviewBaseSessionProvide
             SunbirdSdk.instance.eventsBusService
         );
 
+        this.telemetryService = SunbirdSdk.instance.telemetryService;
         this.webviewRunner = webviewRunner || new WebviewRunnerImpl();
     }
 
     public async provide(): Promise<OAuthSession> {
         const dsl = this.webviewRunner;
+
+        const telemetryContext = await this.telemetryService.buildContext().toPromise();
+
+        this.manualMergeConfig.target.params.push({
+            key: 'pdata',
+            value: JSON.stringify(telemetryContext.pdata)
+        });
 
         return dsl.launchWebview({
             host: this.manualMergeConfig.target.host,
