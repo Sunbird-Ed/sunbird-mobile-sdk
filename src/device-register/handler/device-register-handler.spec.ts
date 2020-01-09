@@ -323,7 +323,7 @@ describe('DeviceRegisterHandler', () => {
                     // act
                     deviceRegisterHandler.handle(request).subscribe(() => {
                         // assert
-                        expect(mockSharedPreferences.putString).toHaveBeenCalledWith('device_location', '');
+                        expect(mockSharedPreferences.putString).toHaveBeenCalledWith('device_location_new', '');
                         done();
                     });
                 });
