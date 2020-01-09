@@ -22,4 +22,5 @@ export * from './def/tenant-info-request';
 export * from './def/merge-server-profiles-request';
 export * from './def/user-feed-response';
 export * from './def/user-migrate-request';
+export * from './def/location-search-result';
 
