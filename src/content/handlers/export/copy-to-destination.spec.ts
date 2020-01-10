@@ -39,11 +39,15 @@ describe('CopyToDestination', () => {
             metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'},
             ecarFilePath: 'sampledir/samplefile'
         };
+        const contentExportRequest = {
+            destinationFolder: 'dest-folder',
+            contentIds: ['']
+        };
         const response: Response = new Response();
 
         response.body = exportContext;
         // act
-        await copyToDestination.execute(response, 'SAMPLE_DESTINATION_FOLDER').then((result) => {
+        await copyToDestination.execute(response, contentExportRequest).then((result) => {
             // assert
             expect(result).toEqual(response);
             done();
@@ -70,11 +74,15 @@ describe('CopyToDestination', () => {
             metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'},
             ecarFilePath: 'sampledir/samplefile'
         };
+        const contentExportRequest = {
+            destinationFolder: 'dest-folder',
+            contentIds: ['']
+        };
         const response: Response = new Response();
 
         response.body = exportContext;
         // act
-        await copyToDestination.execute(response, 'SAMPLE_DESTINATION_FOLDER').catch((result) => {
+        await copyToDestination.execute(response, contentExportRequest).catch((result) => {
             // assert
             done();
         });

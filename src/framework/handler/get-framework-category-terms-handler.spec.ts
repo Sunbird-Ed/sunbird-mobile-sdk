@@ -87,6 +87,8 @@ describe('GetFrameworkCategoryTermsHandler', () => {
             requiredCategories: [],
             currentCategoryCode: 'SOME_CATEGORY_CODE',
             language: 'SOME_LANGUAGE',
+            prevCategoryCode: 'SOME_CATEGORY_CODE',
+            selectedTermsCodes: ['code']
         };
         const response: Channel = {
             identifier: 'sample-id',
@@ -131,12 +133,126 @@ describe('GetFrameworkCategoryTermsHandler', () => {
                 }
             ]
         };
+        const frameworkResponse: Framework = {
+            name: 'sample-name',
+            identifier: 'sample-id',
+            categories: [{
+                identifier: 'sample-id',
+                code: 'SOME_CATEGORY_CODE',
+                name: 'sample-name',
+                description: 'des',
+                index: 1,
+                status: '2',
+                terms: [{
+                    identifier: 'sample-id',
+                    code: 'code',
+                    name: 'name',
+                    index: 1,
+                    category: 'sam',
+                    status: '2',
+                }]
+            }]
+        };
         mockframeworkUtilService.getActiveChannel = jest.fn(() => of(response));
+        mockframeworkService.getFrameworkDetails = jest.fn(() => of(frameworkResponse));
         // act
           getFrameworkCategoryTermsHandler.handle(request).subscribe( () => {
                // assert
                expect(mockframeworkUtilService.getActiveChannel).toHaveBeenCalled();
+               expect(mockframeworkUtilService.getActiveChannel).toHaveBeenCalled();
              done();
-        }, () => {});
+        });
+    });
+
+    it('Should return CategoriesTermsSet for else part on getCategoryAssociationTerms', (done) => {
+        // arrange
+        const request: GetFrameworkCategoryTermsRequest = {
+            requiredCategories: [FrameworkCategoryCode.BOARD, FrameworkCategoryCode.MEDIUM],
+            currentCategoryCode: 'SOME_CATEGORY_CODE',
+            language: 'SOME_LANGUAGE',
+            prevCategoryCode: 'SOME_CATEGORY_CODE',
+            selectedTermsCodes: ['code', 'code']
+        };
+        const response: Channel = {
+            identifier: 'sample-id',
+            code: 'SOME_CATEGORY_CODE',
+            consumerId: 'consumer-id',
+            channel: 'sample-channel',
+            description: 'sample-des',
+            createdOn: 'creator',
+            versionKey: 'sample-ver-key',
+            appId: 'sample-app-id',
+            name: 'sample-name',
+            lastUpdatedOn: 'updated-on: 20202/01/01',
+            defaultFramework: 'deft-frm',
+            status: '2',
+            frameworks: [
+                {
+                    name: 'sample-name',
+                    identifier: 'sample-id',
+                    categories: [{
+                        identifier: 'sample-id',
+                        code: 'SOME_CATEGORY_CODE',
+                        name: 'sample-name',
+                        description: 'des',
+                        index: 1,
+                        status: '2',
+                        terms: [{
+                            identifier: 'sample-id',
+                            code: 'code',
+                            name: 'name',
+                            index: 1,
+                            category: 'sam',
+                            status: '2',
+                            associations: [{
+                                identifier: 'sample-id',
+                                code: 'SOME_CATEGORY_CODE',
+                                name: 'sample-name',
+                                category: 'des',
+                                status: '2',
+                            }]
+                        }]
+                    }]
+                }
+            ]
+        };
+        const frameworkResponse: Framework = {
+            name: 'sample-name',
+            identifier: 'sample-id',
+            categories: [{
+                identifier: 'sample-id',
+                code: 'SOME_CATEGORY_CODE',
+                name: 'sample-name',
+                description: 'des',
+                index: 1,
+                status: '2',
+                terms: [{
+                    identifier: 'sample-id',
+                    code: 'code',
+                    name: 'name',
+                    index: 1,
+                    category: 'sam',
+                    status: '2',
+                    associations: [{
+                        identifier: 'sample-id',
+                        code: 'SOME_CATEGORY_CODE',
+                        name: 'sample-name',
+                        category: 'des',
+                        status: '2',
+                    }]
+                }]
+            }]
+        };
+        mockframeworkUtilService.getActiveChannel = jest.fn(() => of(response));
+        mockframeworkService.getFrameworkDetails = jest.fn(() => of(frameworkResponse));
+        mockSharedPreferences.putString = jest.fn(() => of(undefined));
+        // act
+          getFrameworkCategoryTermsHandler.handle(request).subscribe( () => {
+               // assert
+               expect(mockframeworkUtilService.getActiveChannel).toHaveBeenCalled();
+               expect(mockframeworkUtilService.getActiveChannel).toHaveBeenCalled();
+               expect(mockSharedPreferences.putString).toHaveBeenCalled();
+             done();
+        });
     });
 });
