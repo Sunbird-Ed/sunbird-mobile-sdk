@@ -4,24 +4,36 @@ import {WebviewSessionProviderConfig} from '../../..';
 import {WebviewBaseSessionProvider} from './webview-base-session-provider';
 import {SunbirdSdk} from '../../../../sdk';
 import {HttpRequestType, Request} from '../../../../api';
-import {EventNamespace, EventsBusService} from '../../../../events-bus';
+import {EventNamespace} from '../../../../events-bus';
 import { mapTo } from 'rxjs/operators';
+import {TelemetryService} from '../../../../telemetry';
 
 export class WebviewAutoMergeSessionProvider extends WebviewBaseSessionProvider {
+    private readonly telemetryService: TelemetryService;
+
     constructor(
         private autoMergeConfig: WebviewSessionProviderConfig,
         private webviewRunner: WebviewRunner,
-        private captured: {[key: string]: string}
+        private captured: { [key: string]: string }
     ) {
         super(
             SunbirdSdk.instance.sdkConfig.apiConfig,
             SunbirdSdk.instance.apiService,
             SunbirdSdk.instance.eventsBusService
         );
+
+        this.telemetryService = SunbirdSdk.instance.telemetryService;
     }
 
     public async provide(): Promise<OAuthSession> {
         const dsl = this.webviewRunner;
+
+        const telemetryContext = await this.telemetryService.buildContext().toPromise();
+
+        this.autoMergeConfig.target.params.push({
+            key: 'pdata',
+            value: JSON.stringify(telemetryContext.pdata)
+        });
 
         Object.keys(this.captured).forEach(p => {
             this.autoMergeConfig.target.params.push({
@@ -41,22 +53,28 @@ export class WebviewAutoMergeSessionProvider extends WebviewBaseSessionProvider 
             return dsl.any<OAuthSession>(
                 ...this.autoMergeConfig.return.reduce<Promise<OAuthSession>[]>((acc, forCase) => {
                     switch (forCase.type) {
-                        case 'password': acc.push(
-                            this.buildPasswordSessionProvider(dsl, forCase).then((session) =>
-                                    this.performAutoMerge({ payload: this.captured['payload'], session  })
+                        case 'password':
+                            acc.push(
+                                this.buildPasswordSessionProvider(dsl, forCase).then((session) =>
+                                    this.performAutoMerge({payload: this.captured['payload'], session})
                                 )
-                        ); break;
+                            );
+                            break;
 
-                        case 'state': acc.push(
-                            this.buildStateSessionProvider(dsl, forCase)
-                        ); break;
+                        case 'state':
+                            acc.push(
+                                this.buildStateSessionProvider(dsl, forCase)
+                            );
+                            break;
 
-                        case 'google': acc.push(
-                            this.buildGoogleSessionProvider(dsl, forCase)
-                                .then((session) =>
-                                    this.performAutoMerge({ payload: this.captured['payload'], session  })
-                                )
-                        ); break;
+                        case 'google':
+                            acc.push(
+                                this.buildGoogleSessionProvider(dsl, forCase)
+                                    .then((session) =>
+                                        this.performAutoMerge({payload: this.captured['payload'], session})
+                                    )
+                            );
+                            break;
                     }
 
                     return acc;
@@ -65,7 +83,7 @@ export class WebviewAutoMergeSessionProvider extends WebviewBaseSessionProvider 
         });
     }
 
-    private performAutoMerge({ payload, session }: { payload: string, session: OAuthSession }): Promise<OAuthSession> {
+    private performAutoMerge({payload, session}: { payload: string, session: OAuthSession }): Promise<OAuthSession> {
         const apiRequest = new Request.Builder()
             .withType(HttpRequestType.GET)
             .withPath(this.apiConfig.user_authentication.autoMergeApiPath)

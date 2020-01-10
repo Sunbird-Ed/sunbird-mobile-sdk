@@ -5,22 +5,26 @@ import {WebviewLoginSessionProvider} from './webview-login-session-provider';
 import {loginConfig, loginConfigForStateError, mergeConfig} from './webview-login-session-provider.spec.data';
 import {WebviewRunner} from '../def/webview-runner';
 import {OAuthSession, SignInError} from '../../..';
+import {of} from 'rxjs';
+import {TelemetryService} from '../../../../telemetry';
+import {SunbirdSdk} from '../../../../sdk';
 
 const mockApiService: Partial<ApiService> = {};
 const mockEventsBusService: Partial<EventsBusService> = {};
 const mockWebviewRunner: Partial<WebviewRunner> = {};
+const mockTelemetryService: Partial<TelemetryService> = {
+    buildContext: () => of({
+        pdata: {'id': 'staging.diksha.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'}
+    })
+} as any;
 
-jest.mock('../../../../sdk', () => {
-    return {
-        SunbirdSdk: {
-            instance: {
-                sdkConfig: mockSdkConfig,
-                apiService: mockApiService,
-                eventsBusService: mockEventsBusService
-            }
-        }
-    };
-});
+const mockSunbirdSdk: Partial<SunbirdSdk> = {
+    sdkConfig: mockSdkConfig,
+    apiService: mockApiService,
+    eventsBusService: mockEventsBusService,
+    telemetryService: mockTelemetryService
+} as any;
+SunbirdSdk['_instance'] = mockSunbirdSdk as SunbirdSdk;
 
 describe('WebviewLoginSessionProvider', () => {
     let webviewLoginSessionProvider: WebviewLoginSessionProvider;
@@ -44,10 +48,14 @@ describe('WebviewLoginSessionProvider', () => {
     it('should delegate launch to webviewRunner on provide()', (done) => {
         // arrange
         mockWebviewRunner.launchWebview = jest.fn(() => Promise.resolve());
-        mockWebviewRunner.capture = jest.fn(() => new Promise(() => {}));
-        mockWebviewRunner.closeWebview = jest.fn(() => new Promise(() => {}));
-        mockWebviewRunner.success = jest.fn(() => new Promise(() => {}));
-        mockWebviewRunner.resolveCaptured = jest.fn(() => new Promise(() => {}));
+        mockWebviewRunner.capture = jest.fn(() => new Promise(() => {
+        }));
+        mockWebviewRunner.closeWebview = jest.fn(() => new Promise(() => {
+        }));
+        mockWebviewRunner.success = jest.fn(() => new Promise(() => {
+        }));
+        mockWebviewRunner.resolveCaptured = jest.fn(() => new Promise(() => {
+        }));
         mockWebviewRunner.any = jest.fn(() => Promise.resolve<OAuthSession>({
             access_token: 'SOME_ACCESS_TOKEN',
             refresh_token: 'SOME_REFRESH_TOKEN',
@@ -109,6 +117,42 @@ describe('WebviewLoginSessionProvider', () => {
             expect(error instanceof SignInError).toBeTruthy();
             expect(error instanceof SignInError && error.message).toEqual('Server Error');
             expect(mockWebviewRunner.resolveCaptured).toHaveBeenCalledWith('error_message');
+            done();
+        });
+    });
+
+    it('should attach pdata as query param when launching webview', (done) => {
+        const loginConfigWithNoReturn = {...loginConfig};
+        loginConfigWithNoReturn.return = [];
+
+        webviewLoginSessionProvider = new WebviewLoginSessionProvider(
+            loginConfigWithNoReturn,
+            mergeConfig,
+            mockWebviewRunner as WebviewRunner
+        );
+
+        const mockSession = {
+            access_token: 'SOME_ACCESS_TOKEN',
+            refresh_token: 'SOME_REFRESH_TOKEN',
+            userToken: 'SOME_USER_TOKEN'
+        };
+        const mockPdata = {'id': 'staging.diksha.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'};
+        mockTelemetryService.buildContext = jest.fn(() => {
+            return of({
+                pdata: mockPdata
+            });
+        });
+        mockWebviewRunner.launchWebview = jest.fn(() => Promise.resolve());
+        mockWebviewRunner.any = jest.fn(() => Promise.resolve(mockSession));
+
+        webviewLoginSessionProvider.provide().then(() => {
+            expect(mockWebviewRunner.launchWebview).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    params: expect.objectContaining({
+                        pdata: JSON.stringify(mockPdata)
+                    })
+                })
+            );
             done();
         });
     });
