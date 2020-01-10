@@ -24,10 +24,10 @@ export class DeviceRegisterServiceImpl implements DeviceRegisterService {
         @inject(InjectionTokens.APP_INFO) private appInfoService: AppInfo,
         @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
     ) {
+        this.getDeviceProfileHandler = new GetDeviceProfileHandler(this.sdkConfig, this.deviceInfo, this.apiService);
+
         this.deviceRegisterHandler = new DeviceRegisterHandler(this.sdkConfig, this.deviceInfo, this.sharedPreferences, this.frameworkService,
             this.appInfoService, this.apiService, this.getDeviceProfileHandler);
-
-        this.getDeviceProfileHandler = new GetDeviceProfileHandler(this.sdkConfig, this.deviceInfo, this.apiService);
     }
 
     registerDevice(request?: DeviceRegisterRequest): Observable<DeviceRegisterResponse> {
