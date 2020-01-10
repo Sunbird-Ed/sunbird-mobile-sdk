@@ -51,7 +51,7 @@ describe('CopyToDestination', () => {
             // assert
             expect(result).toEqual(response);
             done();
-        }).catch((e) => );
+        });
     });
 
     it('should be copied a file by invoked exicute() for error MEssage', async (done) => {
