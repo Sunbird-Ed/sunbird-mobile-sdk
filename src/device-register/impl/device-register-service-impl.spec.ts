@@ -1,9 +1,9 @@
-import {Container, inject} from 'inversify';
+import { Container, inject } from 'inversify';
 import { DeviceRegisterServiceImpl, DeviceRegisterService } from '..';
 import { InjectionTokens } from '../../injection-tokens';
-import {SdkConfig, DeviceInfo, FrameworkService, AppInfo, ApiService, SharedPreferences} from '../..';
-import {DeviceRegisterHandler} from '../handler/device-register-handler';
-import {GetDeviceProfileHandler} from '../handler/get-device-profile-handler';
+import { SdkConfig, DeviceInfo, FrameworkService, AppInfo, ApiService, SharedPreferences } from '../..';
+import { DeviceRegisterHandler } from '../handler/device-register-handler';
+import { GetDeviceProfileHandler } from '../handler/get-device-profile-handler';
 import { of } from 'rxjs';
 
 jest.mock('../handler/device-register-handler');
@@ -41,7 +41,7 @@ describe('DeviceRegisterServiceImpl', () => {
         expect(deviceRegisterServiceImpl).toBeTruthy();
     });
 
-    it('should decoupled device register Api for telemetry sync by invoked registerDevice()', (done) => {
+    it('should decoupled device register Api for telemetry sync by invoked registerDevice()', () => {
         // arrange
         const handleResponse = jest.fn(() => of(''));
         (DeviceRegisterHandler as any as jest.Mock<DeviceRegisterHandler>).mockImplementation(() => {
@@ -50,14 +50,14 @@ describe('DeviceRegisterServiceImpl', () => {
             };
         });
         // act
-        deviceRegisterServiceImpl.registerDevice().subscribe(() => {
-             // assert
-             expect(handleResponse).toBeCalled();
-            done();
-        });
+        deviceRegisterServiceImpl.registerDevice();
+        // assert
+        setTimeout(() => {
+            expect(handleResponse).toBeCalled();
+        }, 0);
     });
 
-    it('should get device profile by invoked getDeviceProfile()', (done) => {
+    it('should get device profile by invoked getDeviceProfile()', () => {
         // arrange
         const profileHandlerData = jest.fn(() => of(''));
         (GetDeviceProfileHandler as any as jest.Mock<GetDeviceProfileHandler>).mockImplementation(() => {
@@ -66,10 +66,10 @@ describe('DeviceRegisterServiceImpl', () => {
             };
         });
         // act
-        deviceRegisterServiceImpl.getDeviceProfile().subscribe(() => {
-             // assert
-             expect(profileHandlerData).toHaveBeenCalled();
-            done();
-        });
+        deviceRegisterServiceImpl.getDeviceProfile();
+        // assert
+        setTimeout(() => {
+            expect(profileHandlerData).toHaveBeenCalled();
+        }, 0);
     });
 });
