@@ -31,7 +31,7 @@ export class AppInfoImpl implements AppInfo {
             return undefined;
         }
         const packageName = this.sdkConfig.appConfig.buildConfigPackage ? this.sdkConfig.appConfig.buildConfigPackage : 'org.sunbird.app';
-        return this.getBuildConfigValue(packageName, 'VERSION_NAME')
+        return this.getBuildConfigValue(packageName, 'REAL_VERSION_NAME')
             .then((versionName) => {
                 this.versionName = versionName;
                 console.log('version name', this.versionName);
