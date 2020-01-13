@@ -1,7 +1,9 @@
 import { CopyToDestination } from './copy-to-destination';
 import {FileService} from '../../../util/file/def/file-service';
 import {ContentEntry} from '../../db/schema';
-import {Response} from '../../../api'
+import {Response} from '../../../api';
+
+declare const buildconfigreader;
 
 describe('CopyToDestination', () => {
     let copyToDestination: CopyToDestination;
@@ -19,7 +21,7 @@ describe('CopyToDestination', () => {
         expect(copyToDestination).toBeTruthy();
     });
 
-    it('should be copied a file by invoked exicute() for error MEssage', async (done) => {
+    it('should be copied a file by invoked exicute() for error MEssage', (done) => {
         // arrange
         const contentEntrySchema: ContentEntry.SchemaMap[] = [{
             identifier: 'IDENTIFIER',
@@ -41,20 +43,31 @@ describe('CopyToDestination', () => {
         };
         const contentExportRequest = {
             destinationFolder: 'dest-folder',
-            contentIds: ['']
+            contentIds: [''],
+            saveLocally: true
         };
         const response: Response = new Response();
+        copyToDestination = new CopyToDestination();
 
         response.body = exportContext;
+        spyOn(buildconfigreader, 'copyFile').and.callFake((a, b, c, d, e) => {
+            setTimeout(() => {
+                setTimeout(() => {
+                    d();
+                }, 0);
+            });
+        });
         // act
-        await copyToDestination.execute(response, contentExportRequest).then((result) => {
+        copyToDestination.execute(response, contentExportRequest).then((result) => {
             // assert
-            expect(result).toEqual(response);
+            expect(contentExportRequest.saveLocally).toBeTruthy();
             done();
+        }).catch((e) => {
+           console.error(e);
         });
     });
 
-    it('should be copied a file by invoked exicute() for error MEssage', async (done) => {
+    it('should be copied a file by invoked exicute() for error MEssage', (done) => {
         // arrange
         const contentEntrySchema: ContentEntry.SchemaMap[] = [{
             identifier: 'IDENTIFIER',
@@ -76,14 +89,24 @@ describe('CopyToDestination', () => {
         };
         const contentExportRequest = {
             destinationFolder: 'dest-folder',
-            contentIds: ['']
+            contentIds: [''],
+            saveLocally: false
         };
         const response: Response = new Response();
+        copyToDestination = new CopyToDestination();
 
         response.body = exportContext;
+        spyOn(buildconfigreader, 'copyFile').and.callFake((a, b, c, d, e) => {
+            setTimeout(() => {
+                setTimeout(() => {
+                    e();
+                }, 0);
+            });
+        });
         // act
-        await copyToDestination.execute(response, contentExportRequest).catch((result) => {
+        copyToDestination.execute(response, contentExportRequest).then((result) => {
             // assert
+            expect(contentExportRequest.saveLocally).toBeFalsy();
             done();
         });
     });

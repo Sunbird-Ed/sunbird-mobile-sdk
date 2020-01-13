@@ -41,7 +41,7 @@ describe('DeviceRegisterServiceImpl', () => {
         expect(deviceRegisterServiceImpl).toBeTruthy();
     });
 
-    it('should decoupled device register Api for telemetry sync by invoked registerDevice()', () => {
+    it('should decoupled device register Api for telemetry sync by invoked registerDevice()', (done) => {
         // arrange
         const handleResponse = jest.fn(() => of(''));
         (DeviceRegisterHandler as any as jest.Mock<DeviceRegisterHandler>).mockImplementation(() => {
@@ -49,15 +49,15 @@ describe('DeviceRegisterServiceImpl', () => {
                 handle: handleResponse,
             };
         });
+        deviceRegisterServiceImpl = container.get(InjectionTokens.DEVICE_REGISTER_SERVICE);
         // act
-        deviceRegisterServiceImpl.registerDevice();
-        // assert
-        setTimeout(() => {
+        deviceRegisterServiceImpl.registerDevice().subscribe(() => {
             expect(handleResponse).toBeCalled();
-        }, 0);
+            done();
+        });
     });
 
-    it('should get device profile by invoked getDeviceProfile()', () => {
+    it('should get device profile by invoked getDeviceProfile()', (done) => {
         // arrange
         const profileHandlerData = jest.fn(() => of(''));
         (GetDeviceProfileHandler as any as jest.Mock<GetDeviceProfileHandler>).mockImplementation(() => {
@@ -65,11 +65,11 @@ describe('DeviceRegisterServiceImpl', () => {
                 handle: profileHandlerData,
             };
         });
+        deviceRegisterServiceImpl = container.get(InjectionTokens.DEVICE_REGISTER_SERVICE);
         // act
-        deviceRegisterServiceImpl.getDeviceProfile();
-        // assert
-        setTimeout(() => {
+        deviceRegisterServiceImpl.getDeviceProfile().subscribe(() => {
             expect(profileHandlerData).toHaveBeenCalled();
-        }, 0);
+            done();
+        });
     });
 });
