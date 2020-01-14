@@ -1,5 +1,5 @@
 import { LearnerAssessmentsEntry, LearnerSummaryEntry } from '../../profile/db/schema';
-import { ContentCache, LearnerAssessmentDetails, LearnerAssessmentSummary, LearnerContentSummaryDetails, QuestionSummary, ReportDetailPerUser, UserReportSummary } from '../def/response';
+import { ContentCache, LearnerAssessmentDetails, LearnerAssessmentSummary, LearnerContentSummaryDetails, QuestionSummary, ReportDetailPerUser, UserReportSummary } from '..';
 import { SunbirdTelemetry } from '../../telemetry';
 import Telemetry = SunbirdTelemetry.Telemetry;
 export declare class SummarizerHandler {

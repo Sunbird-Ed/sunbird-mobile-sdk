@@ -1,6 +1,5 @@
 import { ApiRequestHandler, ApiService } from '../../api';
-import { TelemetrySyncStat } from '..';
-import { Observable } from 'rxjs';
+import { TelemetrySyncRequest, TelemetrySyncStat } from '..';
 import { KeyValueStore } from '../../key-value-store';
 import { SdkConfig } from '../../sdk-config';
 import { DeviceInfo } from '../../util/device';
@@ -8,7 +7,8 @@ import { DbService } from '../../db';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { AppInfo } from '../../util/app';
 import { DeviceRegisterService } from '../../device-register';
-export declare class TelemetrySyncHandler implements ApiRequestHandler<boolean, TelemetrySyncStat> {
+import { Observable } from 'rxjs';
+export declare class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequest, TelemetrySyncStat> {
     private dbService;
     private sdkConfig;
     private deviceInfo;
@@ -28,7 +28,7 @@ export declare class TelemetrySyncHandler implements ApiRequestHandler<boolean, 
     private readonly apiConfig;
     constructor(dbService: DbService, sdkConfig: SdkConfig, deviceInfo: DeviceInfo, sharedPreferences: SharedPreferences, appInfoService: AppInfo, deviceRegisterService: DeviceRegisterService, keyValueStore?: KeyValueStore | undefined, apiService?: ApiService | undefined);
     resetDeviceRegisterTTL(): Observable<undefined>;
-    handle(ignoreSyncThreshold: boolean): Observable<TelemetrySyncStat>;
+    handle({ ignoreSyncThreshold, ignoreAutoSyncMode }: TelemetrySyncRequest): Observable<TelemetrySyncStat>;
     processEventsBatch(): Observable<number>;
     private registerDevice;
     private hasTelemetryThresholdCrossed;

@@ -1,0 +1,31 @@
+import { DbService } from '../../db';
+import { Observable } from 'rxjs';
+import { ErrorLoggerService } from '..';
+import { SystemSettingsService } from '../../system-settings';
+import { AppInfo } from '../../util/app';
+import { ApiService } from '../../api';
+import { SdkConfig } from '../../sdk-config';
+import { TelemetryErrorRequest } from '../../telemetry';
+import { NetworkInfoService } from '../../util/network';
+import { DeviceInfo } from '../../util/device';
+import { SharedPreferences } from '../../util/shared-preferences';
+export declare class ErrorLoggerServiceImpl implements ErrorLoggerService {
+    private systemSettingsService;
+    private dbService;
+    private appInfo;
+    private apiService;
+    private sdkConfig;
+    private errorLoggerService;
+    private deviceInfo;
+    private sharedPreferences;
+    private static ERROR_LOG_SYNC_SETTINGS;
+    private readonly errorLoggerConfig;
+    private readonly errorStackSyncHandler;
+    private readonly errorStackSyncRequestDecorator;
+    constructor(systemSettingsService: SystemSettingsService, dbService: DbService, appInfo: AppInfo, apiService: ApiService, sdkConfig: SdkConfig, errorLoggerService: NetworkInfoService, deviceInfo: DeviceInfo, sharedPreferences: SharedPreferences);
+    onInit(): Observable<undefined>;
+    logError(request: TelemetryErrorRequest): Observable<undefined>;
+    private hasErrorLogSyncFrequencyCrossed;
+    private getErrorCount;
+    private getErrorLogSyncSettings;
+}

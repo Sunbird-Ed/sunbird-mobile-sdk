@@ -1,12 +1,14 @@
 import {ApiConfig, ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {DeviceRegisterConfig, DeviceRegisterRequest, DeviceRegisterResponse} from '..';
-import {Observable} from 'rxjs';
+import {DeviceRegisterConfig, DeviceRegisterRequest, DeviceRegisterResponse, UserDeclaredLocation} from '..';
+import {Observable, zip} from 'rxjs';
 import {DeviceInfo, DeviceSpec} from '../../util/device';
 import {AppInfo} from '../../util/app';
 import {SdkConfig} from '../../sdk-config';
 import {FrameworkService} from '../../framework';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {DeviceRegister} from '../../preference-keys';
+import {map, mergeMap, tap} from 'rxjs/operators';
+import {GetDeviceProfileHandler} from './get-device-profile-handler';
 
 export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRequest, DeviceRegisterResponse> {
 
@@ -21,7 +23,8 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
         private sharedPreferences: SharedPreferences,
         private frameworkService: FrameworkService,
         private appInfoService: AppInfo,
-        private apiService: ApiService
+        private apiService: ApiService,
+        private getDeviceProfileHandler: GetDeviceProfileHandler
     ) {
         this.deviceRegisterConfig = this.sdkConfig.deviceRegisterConfig;
         this.apiConfig = this.sdkConfig.apiConfig;
@@ -32,51 +35,84 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
     }
 
     private registerDevice(request?: DeviceRegisterRequest): Observable<DeviceRegisterResponse> {
-        return Observable.zip(
+        return zip(
             this.deviceInfo.getDeviceSpec(),
             this.frameworkService.getActiveChannelId(),
             this.appInfoService.getFirstAccessTimestamp(),
             this.sharedPreferences.getString(DeviceRegister.DEVICE_LOCATION)
-        ).mergeMap((results: any) => {
-            const deviceSpec: DeviceSpec = results[0];
-            const activeChannelId: string = results[1];
-            const firstAccessTimestamp = results[2];
-            const deviceLocation = results[3];
+        )
+            .pipe(
+                mergeMap(async (results: any) => {
+                    const deviceSpec: DeviceSpec = results[0];
+                    const activeChannelId: string = results[1];
+                    const firstAccessTimestamp = results[2];
+                    const deviceLocation: string | undefined = results[3];
 
-            if (request) {
-                request.dspec = deviceSpec;
-                request.channel = activeChannelId;
-                request.fcmToken = this.deviceRegisterConfig.fcmToken!;
-                request.producer = this.apiConfig.api_authentication.producerId;
-                request.first_access = Number(firstAccessTimestamp);
-            } else {
-                request = {
-                    dspec: deviceSpec,
-                    channel: activeChannelId,
-                    fcmToken: this.deviceRegisterConfig.fcmToken!,
-                    producer: this.apiConfig.api_authentication.producerId,
-                    first_access: Number(firstAccessTimestamp)
-                };
-            }
+                    request = {
+                        ...(request || {}),
+                        dspec: deviceSpec,
+                        channel: activeChannelId,
+                        fcmToken: this.deviceRegisterConfig.fcmToken!,
+                        producer: this.apiConfig.api_authentication.producerId,
+                        first_access: Number(firstAccessTimestamp)
+                    };
 
-            if (!request.userDeclaredLocation && deviceLocation) {
-                request.userDeclaredLocation = JSON.parse(deviceLocation);
-            }
+                    if (!request.userDeclaredLocation && deviceLocation) {
+                        request.userDeclaredLocation = JSON.parse(deviceLocation) as UserDeclaredLocation;
 
-            const apiRequest: Request = new Request.Builder()
-                .withType(HttpRequestType.POST)
-                .withHost(this.deviceRegisterConfig!.host)
-                .withPath(this.deviceRegisterConfig!.apiPath + DeviceRegisterHandler.DEVICE_REGISTER_ENDPOINT
-                    + '/' + this.deviceInfo!.getDeviceID())
-                .withApiToken(true)
-                .withBody({request: request})
-                .build();
+                        if (!request.userDeclaredLocation.declaredOffline) {
+                            try {
+                                const deviceProfile = await this.getDeviceProfileHandler.handle().toPromise();
 
-            return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
-                .map((res) => {
-                    return res.body;
-                });
-        });
+                                if (
+                                    !deviceProfile.userDeclaredLocation ||
+                                    !deviceProfile.userDeclaredLocation.state ||
+                                    !deviceProfile.userDeclaredLocation.district
+                                ) {
+                                    delete request.userDeclaredLocation;
+
+                                    this.sharedPreferences.putString(
+                                        DeviceRegister.DEVICE_LOCATION,
+                                        ''
+                                    ).toPromise();
+                                }
+                            } catch (e) {
+                                console.error(e);
+                                delete request.userDeclaredLocation;
+                            }
+                        }
+                    }
+
+                    if (request.userDeclaredLocation) {
+                        delete request.userDeclaredLocation.declaredOffline;
+                    }
+
+                    const apiRequest: Request = new Request.Builder()
+                        .withType(HttpRequestType.POST)
+                        .withHost(this.deviceRegisterConfig!.host)
+                        .withPath(this.deviceRegisterConfig!.apiPath + DeviceRegisterHandler.DEVICE_REGISTER_ENDPOINT
+                            + '/' + this.deviceInfo!.getDeviceID())
+                        .withApiToken(true)
+                        .withBody({request: request})
+                        .build();
+
+                    return this.apiService!.fetch<DeviceRegisterResponse>(apiRequest)
+                        .pipe(
+                            map((res) => {
+                                return res.body;
+                            }),
+                            tap(() => {
+                                if (request!.userDeclaredLocation) {
+                                    this.sharedPreferences.putString(
+                                        DeviceRegister.DEVICE_LOCATION,
+                                        JSON.stringify(request!.userDeclaredLocation)
+                                    ).toPromise();
+                                }
+                            })
+                        )
+                        .toPromise();
+                })
+            );
     }
 
 }

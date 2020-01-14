@@ -1,4 +1,3 @@
-import {Observable} from 'rxjs';
 import {DbService} from '../../../db';
 import {Manifest, MoveContentResponse, MoveContentStatus, TransferContentContext} from '../transfer-content-handler';
 import {ContentUtil} from '../../../content/util/content-util';
@@ -8,6 +7,8 @@ import {DuplicateContentError} from '../../errors/duplicate-content-error';
 import {FileName} from '../../../content';
 import COLUMN_NAME_IDENTIFIER = ContentEntry.COLUMN_NAME_IDENTIFIER;
 import COLUMN_NAME_LOCAL_DATA = ContentEntry.COLUMN_NAME_LOCAL_DATA;
+import {defer, Observable} from 'rxjs';
+import {mapTo} from 'rxjs/operators';
 
 interface MoveContentResponses {
     moveContentDiffPkgList: MoveContentResponse[];
@@ -20,7 +21,7 @@ export class DuplicateContentCheck {
     }
 
     execute(context: TransferContentContext): Observable<TransferContentContext> {
-        return Observable.defer(async () => {
+        return defer(async () => {
             const contentEntries = await this.getContentsInDb(context.contentIds!);
             let duplicateContentsInDb: ContentEntry.SchemaMap[] = [];
             if (context.validContentIdsInDestination && context.validContentIdsInDestination.length) {
@@ -34,7 +35,9 @@ export class DuplicateContentCheck {
             if (context.duplicateContents.length && !context.shouldMergeInDestination) {
                 throw new DuplicateContentError('context.shouldMergeInDestination is false');
             }
-        }).mapTo(context);
+        }).pipe(
+            mapTo(context)
+        );
     }
 
     private async getContentsInDb(contentIds: string[]): Promise<ContentEntry.SchemaMap[]> {

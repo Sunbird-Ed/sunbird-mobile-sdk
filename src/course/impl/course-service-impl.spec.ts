@@ -18,7 +18,7 @@ import {KeyValueStore} from '../../key-value-store';
 import {DbService} from '../../db';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AuthService} from '../../auth';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 import {AppInfo} from '../../util/app';
 import {OfflineContentStateHandler} from '../handlers/offline-content-state-handler';
 import {ContentStatesSyncHandler} from '../handlers/content-states-sync-handler';
@@ -87,7 +87,7 @@ describe('CourseServiceImpl', () => {
         const request: CourseBatchDetailsRequest = {
             batchId: 'SAMPLE_BATCH_ID'
         };
-        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+        spyOn(mockApiService, 'fetch').and.returnValue(of({
             body: {
                 result: {
                     response: 'SAMPLE_RESPONSE'
@@ -106,8 +106,8 @@ describe('CourseServiceImpl', () => {
         // arrange
         (OfflineContentStateHandler as jest.Mock<OfflineContentStateHandler>).mockImplementation(() => {
             return {
-                manipulateEnrolledCoursesResponseLocally: jest.fn(() => Observable.of(true)),
-                manipulateGetContentStateResponseLocally: jest.fn(() => Observable.of(true))
+                manipulateEnrolledCoursesResponseLocally: jest.fn(() => of(true)),
+                manipulateGetContentStateResponseLocally: jest.fn(() => of(true))
             };
         });
         const updateContentStateRequest: UpdateContentStateRequest = {
@@ -116,7 +116,7 @@ describe('CourseServiceImpl', () => {
             contentId: 'SAMPLE_CONTENT_ID',
             batchId: 'SAMPLE_BATCH_ID'
         };
-        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+        spyOn(mockApiService, 'fetch').and.returnValue(of({
             body: {
                 result: 'SAMPLE_RESULT'
             }
@@ -137,9 +137,9 @@ describe('CourseServiceImpl', () => {
             contentId: 'SAMPLE_CONTENT_ID',
             batchId: 'SAMPLE_BATCH_ID'
         };
-        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({response: {body: {result: 'FAILED'}}}));
-        spyOn(mockKeyValueStore, 'getValue').and.returnValue(Observable.of('MOCK_KEY_VALUE'));
-        spyOn(mockKeyValueStore, 'setValue').and.returnValue(Observable.of('MOCK_VALUE'));
+        spyOn(mockApiService, 'fetch').and.returnValue(of({response: {body: {result: 'FAILED'}}}));
+        spyOn(mockKeyValueStore, 'getValue').and.returnValue(of('MOCK_KEY_VALUE'));
+        spyOn(mockKeyValueStore, 'setValue').and.returnValue(of('MOCK_VALUE'));
         // act
         courseService.updateContentState(updateContentStateRequest).subscribe(() => {
             done();
@@ -161,15 +161,15 @@ describe('CourseServiceImpl', () => {
             fields: ['SAMPLE_FIELDS']
         };
 
-        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+        spyOn(mockApiService, 'fetch').and.returnValue(of({
             body: {
                 result: {
                     response: 'SAMPLE_RESPONSE'
                 }
             }
         }));
-        spyOn(mockAuthService, 'getSession').and.returnValue(Observable.of(['SAMPLE_SESSION']));
-        spyOn(mockProfileService, 'getServerProfiles').and.returnValue(Observable.of(['SAMPLE_PROFILE']));
+        spyOn(mockAuthService, 'getSession').and.returnValue(of(['SAMPLE_SESSION']));
+        spyOn(mockProfileService, 'getServerProfiles').and.returnValue(of(['SAMPLE_PROFILE']));
         // act
         courseService.getCourseBatches(request).subscribe(() => {
             // assert
@@ -186,8 +186,8 @@ describe('CourseServiceImpl', () => {
             courseId: 'SAMPLE_COURSE_ID',
             batchId: 'BATCH_ID'
         };
-        spyOn(courseService, 'getEnrolledCourses').and.returnValues(Observable.of(['SAMPLE']));
-        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+        spyOn(courseService, 'getEnrolledCourses').and.returnValues(of(['SAMPLE']));
+        spyOn(mockApiService, 'fetch').and.returnValue(of({
             body: {
                 result: {
                     response: 'SAMPLE_RESPONSE'
@@ -210,20 +210,20 @@ describe('CourseServiceImpl', () => {
                 userId: 'SAMPLE_USER_ID',
                 returnFreshCourses: true
             };
-            spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+            spyOn(mockApiService, 'fetch').and.returnValue(of({
                 body: {
                     result: {
                         response: 'SAMPLE_RESPONSE'
                     }
                 }
             }));
-            spyOn(mockKeyValueStore, 'getValue').and.returnValue(Observable.of('MOCK_VALUE'));
+            spyOn(mockKeyValueStore, 'getValue').and.returnValue(of('MOCK_VALUE'));
             (ContentStatesSyncHandler as jest.Mock<ContentStatesSyncHandler>).mockImplementation(() => {
                 return {
-                    updateContentState: jest.fn(() => Observable.of(true))
+                    updateContentState: jest.fn(() => of(true))
                 };
             });
-            mockDbService.execute = jest.fn(() => Observable.of([]));
+            mockDbService.execute = jest.fn(() => of([]));
             JSON.parse = jest.fn().mockImplementationOnce(() => {
                 return request.userId;
             });
@@ -245,8 +245,8 @@ describe('CourseServiceImpl', () => {
             courseId: 'SAMPLE_COURSE_ID',
             batchId: 'SAMPLE_BATCH_ID'
         };
-        spyOn(sharePreferencesMock, 'putString').and.returnValue(Observable.of({key: 'MOCK_COURSE_CONTEXT', value: 'MOCK_VALUE'}));
-        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+        spyOn(sharePreferencesMock, 'putString').and.returnValue(of({key: 'MOCK_COURSE_CONTEXT', value: 'MOCK_VALUE'}));
+        spyOn(mockApiService, 'fetch').and.returnValue(of({
             body: {
                 result: {
                     response: 'SUCCESS'
@@ -274,10 +274,10 @@ describe('CourseServiceImpl', () => {
         };
         (OfflineContentStateHandler as jest.Mock<OfflineContentStateHandler>).mockImplementation(() => {
             return {
-                getLocalContentStateResponse: jest.fn(() => Observable.of('MOCK_RESPONSE'))
+                getLocalContentStateResponse: jest.fn(() => of('MOCK_RESPONSE'))
             };
         });
-        spyOn(mockApiService, 'fetch').and.returnValue(Observable.of({
+        spyOn(mockApiService, 'fetch').and.returnValue(of({
             body: {
                 result: {
                     response: 'SUCCESS'
@@ -285,8 +285,8 @@ describe('CourseServiceImpl', () => {
             }
         }));
 
-        spyOn(mockKeyValueStore, 'getValue').and.returnValue(Observable.of(undefined));
-        spyOn(mockKeyValueStore, 'setValue').and.returnValue(Observable.of('MOCK_RESPONSE'));
+        spyOn(mockKeyValueStore, 'getValue').and.returnValue(of(undefined));
+        spyOn(mockKeyValueStore, 'setValue').and.returnValue(of('MOCK_RESPONSE'));
         // act
         courseService.getContentState(request).subscribe(() => {
             // assert

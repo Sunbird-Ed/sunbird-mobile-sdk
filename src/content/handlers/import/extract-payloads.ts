@@ -1,8 +1,8 @@
 import {ContentEventType, FileName, ImportContentContext} from '../..';
-import {SharedPreferences} from './../../../util/shared-preferences';
+import {SharedPreferences} from '../../../util/shared-preferences';
 import {UpdateSizeOnDevice} from './update-size-on-device';
 import {Response} from '../../../api';
-import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../../util/content-constants';
+import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../..';
 import {FileService} from '../../../util/file/def/file-service';
 import {DbService} from '../../../db';
 import {ContentUtil} from '../../util/content-util';
@@ -11,9 +11,9 @@ import {ContentEntry} from '../../db/schema';
 import {ZipService} from '../../../util/zip/def/zip-service';
 import {AppConfig} from '../../../api/config/app-config';
 import {FileUtil} from '../../../util/file/util/file-util';
-import {DeviceInfo} from '../../../util/device/def/device-info';
+import {DeviceInfo} from '../../../util/device';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
-import * as moment from 'moment';
+import * as dayjs from 'dayjs';
 import {ArrayUtil} from '../../../util/array-util';
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 
@@ -409,7 +409,7 @@ export class ExtractPayloads {
             [ContentEntry.COLUMN_NAME_VISIBILITY]: visibility,
             [ContentEntry.COLUMN_NAME_AUDIENCE]: audience,
             [ContentEntry.COLUMN_NAME_PRAGMA]: pragma,
-            [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: moment(Date.now()).format('YYYY-MM-DDTHH:mm:ssZ'),
+            [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: dayjs(Date.now()).format(),
             [ContentEntry.COLUMN_NAME_BOARD]: ContentUtil.getContentAttribute(board),
             [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
             [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)

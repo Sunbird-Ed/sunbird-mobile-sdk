@@ -45,6 +45,7 @@ describe('CreateContentImportManifest', () => {
         });
         // act
         await createContentImportManifest.execute(request).catch(() => {
+            
             done();
         });
         // assert

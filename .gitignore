@@ -12,6 +12,7 @@ log.txt
 .vscode/
 npm-debug.log*
 package-lock.json
+stats.json
 
 .idea/
 .sourcemaps/
@@ -39,4 +40,5 @@ sunbird-sdk-*.tgz
 /buildConfig/secret.tar
 /src/assets/data/
 
-google-services.json
+.scannerwork
+/sonar-project.properties

@@ -5,5 +5,5 @@ export interface FormRequest extends CachedItemRequest {
     subType: string;
     action: string;
     rootOrgId?: string;
-    frameWork?: string;
+    framework?: string;
 }

@@ -5,7 +5,7 @@ import { AppConfig } from '../../../api/config/app-config';
 import { DbService, DeviceInfo, EventsBusService, SharedPreferences,
      ContentImportResponse, ContentImportStatus, ImportContentContext } from '../../..';
 import { GetContentDetailsHandler } from '../get-content-details-handler';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import { ContentUtil } from '../../util/content-util';
 import { ContentEntry } from '../../db/schema';
 import { doesNotReject } from 'assert';
@@ -89,8 +89,8 @@ describe('ExtractPayloads', () => {
             items: ['item_1', 'item_2', 'item_3'],
             existedContentIdentifiers: {'identifier' : true}
         };
-        (mockEventsBusService.emit as jest.Mock).mockReturnValue(Observable.of());
-        (mockGetContentDetailsHandler.fetchFromDBForAll as jest.Mock).mockReturnValue(Observable.of([{
+        (mockEventsBusService.emit as jest.Mock).mockReturnValue(of());
+        (mockGetContentDetailsHandler.fetchFromDBForAll as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
@@ -101,9 +101,9 @@ describe('ExtractPayloads', () => {
             contentMetadata: 'CONTENT_METADATA'
         }]));
         mockFileService.createDir = jest.fn(() => { });
-        (mockFileService.createDir as jest.Mock).mockReturnValue(Observable.of(''));
+        (mockFileService.createDir as jest.Mock).mockReturnValue(of(''));
         mockDeviceInfo.getDeviceID = jest.fn(() => { });
-        (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(Observable.of(''));
+        (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of(''));
         spyOn(ContentUtil, 'addOrUpdateViralityMetadata').and.stub();
         // act
         await extractPayloads.execute(request).then(() => {
@@ -171,10 +171,10 @@ describe('ExtractPayloads', () => {
             content_type: 'CONTENT_TYPE',
             content_state: 2,
         }];
-        mockDbService.beginTransaction = jest.fn(() => Observable.of());
-        mockDbService.insert = jest.fn(() => Observable.of());
-        mockDbService.update = jest.fn(() => Observable.of());
-        mockDbService.endTransaction = jest.fn(() => Observable.of());
+        mockDbService.beginTransaction = jest.fn(() => of());
+        mockDbService.insert = jest.fn(() => of());
+        mockDbService.update = jest.fn(() => of());
+        mockDbService.endTransaction = jest.fn(() => of());
         // act
         await extractPayloads.updateContentDB(insertNewContentModels, updateNewContentModels).then(() => {
             done();
@@ -188,7 +188,7 @@ describe('ExtractPayloads', () => {
         const asset = 'SAMPLE_ASSET';
         const payloadDestinationPath = 'SAMPLE_PAYLOAD_DESTINATION_PATH';
         // const useSubDirectories?: boolean
-        mockFileService.copyFile = jest.fn(() => Observable.of());
+        mockFileService.copyFile = jest.fn(() => of());
         // act
         extractPayloads.copyAssets(tempLocationPath, asset, payloadDestinationPath).then(() => {
             done();
@@ -201,7 +201,7 @@ describe('ExtractPayloads', () => {
     //     const asset = 'SAMPLE_ASSET';
     //     const payloadDestinationPath = 'SAMPLE_PAYLOAD_DESTINATION_PATH';
     //     // const useSubDirectories?: boolean
-    //     mockFileService.copyFile = jest.fn(() => Observable.of());
+    //     mockFileService.copyFile = jest.fn(() => of());
     //     mockDbService.execute = jest.fn(() => {});
     //     (mockDbService.execute as jest.Mock).mockResolvedValue({});
     //     // act

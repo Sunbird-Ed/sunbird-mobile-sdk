@@ -44,7 +44,6 @@ import {ContentFeedbackServiceImpl} from './content/impl/content-feedback-servic
 import {EventsBusService} from './events-bus';
 import {EventsBusServiceImpl} from './events-bus/impl/events-bus-service-impl';
 import {SummarizerService, SummarizerServiceImpl} from './summarizer';
-import {Observable} from 'rxjs';
 import {DownloadService} from './util/download';
 import {DownloadServiceImpl} from './util/download/impl/download-service-impl';
 import {AppInfo} from './util/app';
@@ -60,8 +59,8 @@ import {StorageService} from './storage';
 import {StorageServiceImpl} from './storage/impl/storage-service-impl';
 import {NotificationService} from './notification';
 import {NotificationServiceImpl} from './notification/impl/notification-service-impl';
-import {ErrorLoggerService} from './util/error-stack';
-import {ErrorLoggerServiceImpl} from './util/error-stack/impl/error-logger-service-impl';
+import {ErrorLoggerService} from './error';
+import {ErrorLoggerServiceImpl} from './error/impl/error-logger-service-impl';
 import {NetworkInfoService} from './util/network';
 import {NetworkInfoServiceImpl} from './util/network/impl/network-info-service-impl';
 import {SearchHistoryMigration} from './db/migrations/search-history-migration';
@@ -69,9 +68,11 @@ import {SearchHistoryService} from './util/search-history';
 import {SearchHistoryServiceImpl} from './util/search-history/impl/search-history-service-impl';
 import {RecentlyViewedMigration} from './db/migrations/recently-viewed-migration';
 import {CourseAssessmentMigration} from './db/migrations/course-assessment-migration';
-import { CodePushExperimentService, CodePUshExperimentServiceImpl } from './codepush-experiment';
+import {CodePushExperimentService, CodePUshExperimentServiceImpl} from './codepush-experiment';
 import {FaqService, FaqServiceImpl} from './faq';
 import {DeviceRegisterConfig, DeviceRegisterService, DeviceRegisterServiceImpl} from './device-register';
+import {combineLatest} from 'rxjs';
+import {concatMap} from 'rxjs/operators';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -376,19 +377,21 @@ export class SunbirdSdk {
     }
 
     private preInit() {
-        return this.frameworkService.preInit()
-            .concatMap(() => this.profileService.preInit());
+        return this.frameworkService.preInit().pipe(
+            concatMap(() => this.profileService.preInit())
+        );
     }
 
     private postInit() {
-        return Observable.combineLatest(
+        return combineLatest([
             this.apiService.onInit(),
             this.summarizerService.onInit(),
             this.errorLoggerService.onInit(),
             this.eventsBusService.onInit(),
             this.downloadService.onInit(),
             this.contentService.onInit(),
-            this.storageService.onInit()
-        );
+            this.storageService.onInit(),
+            this.telemetryService.onInit()
+        ]);
     }
 }

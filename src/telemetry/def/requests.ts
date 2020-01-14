@@ -143,4 +143,9 @@ export interface TelemetryImportRequest {
     sourceFilePath: string;
 }
 
+export interface TelemetrySyncRequest {
+    ignoreSyncThreshold?: boolean;
+    ignoreAutoSyncMode?: boolean;
+}
+
 

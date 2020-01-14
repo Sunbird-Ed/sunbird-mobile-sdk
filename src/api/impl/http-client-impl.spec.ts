@@ -1,5 +1,5 @@
 import {HttpClientImpl} from './http-client-impl';
-import {HttpSerializer, NetworkError, Response, ResponseCode, ServerError} from '..';
+import {HttpSerializer, NetworkError, Response, ResponseCode, HttpServerError} from '..';
 import {AxiosError, AxiosResponse} from 'axios';
 
 describe('HttpClientImpl', () => {
@@ -175,7 +175,7 @@ describe('HttpClientImpl', () => {
     httpClientImpl.patch('/', '/', {}, {})
       .subscribe(() => {}, (e) => {
         // assert
-        expect(e instanceof ServerError).toBeTruthy();
+        expect(e instanceof HttpServerError).toBeFalsy();
         done();
       });
   });

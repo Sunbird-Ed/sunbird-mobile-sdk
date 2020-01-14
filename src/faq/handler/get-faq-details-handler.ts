@@ -1,10 +1,11 @@
-import { GetFaqRequest } from './../def/get-faq-request';
-import { CachedItemStore } from '../../key-value-store';
-import { Path } from '../../util/file/util/path';
-import { FileService } from '../../util/file/def/file-service';
-import { ApiService, HttpRequestType, Request } from '../../api';
-import { Observable } from 'rxjs';
-import { FaqServiceConfig, Faq } from '..';
+import {GetFaqRequest} from './../def/get-faq-request';
+import {CachedItemStore} from '../../key-value-store';
+import {Path} from '../../util/file/util/path';
+import {FileService} from '../../util/file/def/file-service';
+import {ApiService, HttpRequestType, Request} from '../../api';
+import {from, Observable} from 'rxjs';
+import {Faq, FaqServiceConfig} from '..';
+import {map} from 'rxjs/operators';
 
 
 export class GetFaqDetailsHandler {
@@ -28,30 +29,34 @@ export class GetFaqDetailsHandler {
         );
     }
 
-    private fetchFromServer(request: GetFaqRequest): Observable <Faq> {
-    const apiRequest: Request = new Request.Builder()
-        .withType(HttpRequestType.GET)
-        .withHost(request.faqUrl)
-        .withPath( '/faq-' + request.language + '.json')
-        .withApiToken(false)
-        .build();
+    private fetchFromServer(request: GetFaqRequest): Observable<Faq> {
+        const apiRequest: Request = new Request.Builder()
+            .withType(HttpRequestType.GET)
+            .withHost(request.faqUrl)
+            .withPath('/faq-' + request.language + '.json')
+            .withApiToken(false)
+            .build();
 
-    return this.apiService.fetch(apiRequest)
-        .map((response) => {
-            const resp = JSON.parse(response.body.trim());
-            return resp;
-        });
+        return this.apiService.fetch(apiRequest)
+            .pipe(
+                map((response) => {
+                    const resp = JSON.parse(response.body.trim());
+                    return resp;
+                })
+            );
     }
 
-    private fetchFromFile(language: string): Observable <Faq> {
+    private fetchFromFile(language: string): Observable<Faq> {
         const dir = Path.ASSETS_PATH + this.faqServiceConfig.faqConfigDirPath;
         const file = this.FAQ_FILE_KEY_PREFIX + language + '.json';
 
-        return Observable.fromPromise(this.fileservice.readFileFromAssets(dir.concat('/', file)))
-        .map((filecontent: string) => {
-            const result = JSON.parse(filecontent);
-            return result;
-        });
+        return from(this.fileservice.readFileFromAssets(dir.concat('/', file)))
+            .pipe(
+                map((filecontent: string) => {
+                    const result = JSON.parse(filecontent);
+                    return result;
+                })
+            );
     }
 
 

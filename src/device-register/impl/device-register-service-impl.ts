@@ -13,6 +13,8 @@ import {SharedPreferences} from '../../util/shared-preferences';
 
 @injectable()
 export class DeviceRegisterServiceImpl implements DeviceRegisterService {
+    private readonly deviceRegisterHandler: DeviceRegisterHandler;
+    private readonly getDeviceProfileHandler: GetDeviceProfileHandler;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -22,16 +24,19 @@ export class DeviceRegisterServiceImpl implements DeviceRegisterService {
         @inject(InjectionTokens.APP_INFO) private appInfoService: AppInfo,
         @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
     ) {
+        this.getDeviceProfileHandler = new GetDeviceProfileHandler(this.sdkConfig, this.deviceInfo, this.apiService);
+
+        this.deviceRegisterHandler = new DeviceRegisterHandler(this.sdkConfig, this.deviceInfo, this.sharedPreferences, this.frameworkService,
+            this.appInfoService, this.apiService, this.getDeviceProfileHandler);
     }
 
     registerDevice(request?: DeviceRegisterRequest): Observable<DeviceRegisterResponse> {
-        return new DeviceRegisterHandler(this.sdkConfig, this.deviceInfo, this.sharedPreferences, this.frameworkService,
-            this.appInfoService, this.apiService)
+        return this.deviceRegisterHandler
             .handle(request);
     }
 
     getDeviceProfile(): Observable<DeviceProfileResponse> {
-        return new GetDeviceProfileHandler(this.sdkConfig, this.deviceInfo, this.apiService)
+        return this.getDeviceProfileHandler
             .handle();
     }
 

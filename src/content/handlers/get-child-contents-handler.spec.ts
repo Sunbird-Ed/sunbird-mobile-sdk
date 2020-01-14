@@ -6,6 +6,7 @@ import { ContentMapper } from '../util/content-mapper';
 import { Observable } from 'rxjs';
 import { HierarchyInfo } from '../def/content';
 import { ChildContent } from '..';
+import { of } from 'rxjs';
 
 describe('ChildContentsHandler', () => {
     let childContentHandler: ChildContentsHandler;
@@ -48,9 +49,9 @@ describe('ChildContentsHandler', () => {
         };
         const childContentsMap = new Map();
         childContentsMap.set('IDENTIFIER', 'd0_id');
-        ContentMapper.mapContentDBEntryToContent = jest.fn(() => Observable.of([]));
+        ContentMapper.mapContentDBEntryToContent = jest.fn(() => of([]));
         const data = JSON.parse(request[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
-        mockDbService.execute = jest.fn(() => Observable.of([]));
+        mockDbService.execute = jest.fn(() => of([]));
         // act
         await childContentHandler.fetchChildrenOfContent(request, childContentsMap, currentLevel, level).then(() => {
             // assert
@@ -73,8 +74,8 @@ describe('ChildContentsHandler', () => {
     //     };
     //     const currentLevel = -1;
     //     const level = 2;
-    //     ContentMapper.mapContentDBEntryToContent = jest.fn(() => Observable.of([]));
-    //     mockDbService.execute = jest.fn(() => Observable.of([]));
+    //     ContentMapper.mapContentDBEntryToContent = jest.fn(() => of([]));
+    //     mockDbService.execute = jest.fn(() => of([]));
     //     const data = JSON.parse(request[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
     //     console.log(data.children[0].ALL);
     //     // JSON.parse = jest.fn().mockImplementationOnce(() => {
@@ -89,7 +90,7 @@ describe('ChildContentsHandler', () => {
     //     // assert
     // });
 
-    it('should parent child relation', () => {
+    it('should parent child relation', (done) => {
         // arrange
         const request: ContentEntry.SchemaMap = {
             identifier: 'IDENTIFIER',
@@ -104,6 +105,7 @@ describe('ChildContentsHandler', () => {
         // act
         childContentHandler.getContentsKeyList(request).then(() => {
             expect(key).toEqual('IDENTIFIER');
+            done();
         });
         // assert
     });
@@ -119,7 +121,7 @@ describe('ChildContentsHandler', () => {
             contentType: 'SAMPLE_CONTENT_TYPE_2'
         }];
         const identifier = 'IDENTIFIER';
-        mockGetContentDetailsHandler.fetchFromDB = jest.fn(() => Observable.of([]));
+        mockGetContentDetailsHandler.fetchFromDB = jest.fn(() => of([]));
         // act
         await childContentHandler.getContentFromDB(request, identifier).then(() => {
             done();
@@ -127,7 +129,7 @@ describe('ChildContentsHandler', () => {
         // assert
     });
 
-    it('should fetch next content', () => {
+    it('should fetch next content', (done) => {
         // arrange
         const request: HierarchyInfo[] = [{
             identifier: 'SAMPLE_IDENTIFIER_1',
@@ -143,9 +145,10 @@ describe('ChildContentsHandler', () => {
         // act
         childContentHandler.getNextContentIdentifier(request, currentIdentifier, contentKeyList);
         // assert
+        done();
     });
 
-    it('should fetch previous content', () => {
+    it('should fetch previous content', (done) => {
         // arrange
         const request: HierarchyInfo[] = [{
             identifier: 'SAMPLE_IDENTIFIER_1',
@@ -161,5 +164,6 @@ describe('ChildContentsHandler', () => {
         // act
         childContentHandler.getPreviousContentIdentifier(request, currentIdentifier, contentKeyList);
         // assert
+        done();
     });
 });

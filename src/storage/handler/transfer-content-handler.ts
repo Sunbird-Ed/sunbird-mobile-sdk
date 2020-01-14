@@ -7,7 +7,6 @@ import {
     TransferContentsRequest
 } from '..';
 import {Content} from '../../content';
-import {Observable} from 'rxjs';
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {DeviceMemoryCheck} from './transfer/device-memory-check';
 import {ValidateDestinationContent} from './transfer/validate-destination-content';
@@ -26,6 +25,8 @@ import {DeleteSourceFolder} from './transfer/delete-source-folder';
 import {CancellationError} from '../errors/cancellation-error';
 import {DuplicateContentError} from '../errors/duplicate-content-error';
 import {LowMemoryError} from '../errors/low-memory-error';
+import {defer, Observable, throwError} from 'rxjs';
+import {catchError, mapTo, mergeMap, tap} from 'rxjs/operators';
 
 export enum MoveContentStatus {
     SAME_VERSION_IN_BOTH = 'SAME_VERSION_IN_BOTH',
@@ -75,8 +76,7 @@ export class TransferContentHandler {
     }
 
     transfer({contentIds, existingContentAction, deleteDestination, destinationFolder, shouldMergeInDestination, sourceFolder}:
-                 TransferContentsRequest):
-        Observable<undefined> {
+                 TransferContentsRequest): Observable<undefined> {
         this.context.hasTransferCancelled = false;
         this.context.shouldMergeInDestination = shouldMergeInDestination;
         this.context.contentIds = contentIds;
@@ -85,63 +85,78 @@ export class TransferContentHandler {
         this.context.destinationFolder = destinationFolder;
         this.context.sourceFolder = sourceFolder;
 
-        return new ValidateDestinationFolder(this.fileService).execute(this.context).mergeMap((transferContext: TransferContentContext) => {
-            return new DeleteDestinationFolder().execute(transferContext);
-        }).mergeMap((transferContext: TransferContentContext) => {
-            return new DeviceMemoryCheck(this.dbService).execute(transferContext);
-        }).mergeMap((transferContext: TransferContentContext) => {
-            return new ValidateDestinationContent(this.fileService, this.sdkConfig.appConfig).execute(transferContext);
-        }).mergeMap((transferContext: TransferContentContext) => {
-            return new DuplicateContentCheck(this.dbService, this.fileService).execute(transferContext);
-        }).mergeMap((transferContext: TransferContentContext) => {
-            return new CopyContentFromSourceToDestination(this.eventsBusService).execute(transferContext);
-        }).mergeMap((transferContext: TransferContentContext) => {
-            return new DeleteSourceFolder(this.eventsBusService).execute(transferContext);
-        }).mergeMap((transferContext: TransferContentContext) => {
-            return new UpdateSourceContentPathInDb(this.dbService).execute(transferContext);
-        }).mergeMap((transferContext: TransferContentContext) => {
-            return new StoreDestinationContentInDb(this.sdkConfig.appConfig,
-                this.fileService, this.dbService, this.deviceInfo).execute(transferContext);
-        }).do(() => {
-            this.eventsBusService.emit({
-                namespace: EventNamespace.STORAGE,
-                event: {
-                    type: StorageEventType.TRANSFER_COMPLETED
-                } as StorageTransferCompleted
-            });
-        }).mapTo(undefined).catch((e) => {
-            if (e instanceof CancellationError) {
+        return new ValidateDestinationFolder(this.fileService).execute(this.context).pipe(
+            mergeMap((transferContext: TransferContentContext) => {
+                return new DeleteDestinationFolder().execute(transferContext);
+            }),
+            mergeMap((transferContext: TransferContentContext) => {
+                return new DeviceMemoryCheck(this.dbService).execute(transferContext);
+            }),
+            mergeMap((transferContext: TransferContentContext) => {
+                return new ValidateDestinationContent(this.fileService, this.sdkConfig.appConfig).execute(transferContext);
+            }),
+            mergeMap((transferContext: TransferContentContext) => {
+                return new DuplicateContentCheck(this.dbService, this.fileService).execute(transferContext);
+            }),
+            mergeMap((transferContext: TransferContentContext) => {
+                return new CopyContentFromSourceToDestination(this.eventsBusService).execute(transferContext);
+            }),
+            mergeMap((transferContext: TransferContentContext) => {
+                return new DeleteSourceFolder(this.eventsBusService).execute(transferContext);
+            }),
+            mergeMap((transferContext: TransferContentContext) => {
+                return new UpdateSourceContentPathInDb(this.dbService).execute(transferContext);
+            }),
+            mergeMap((transferContext: TransferContentContext) => {
+                return new StoreDestinationContentInDb(this.sdkConfig.appConfig,
+                    this.fileService, this.dbService, this.deviceInfo).execute(transferContext);
+            })
+        ).pipe(
+            tap(() => {
                 this.eventsBusService.emit({
                     namespace: EventNamespace.STORAGE,
                     event: {
-                        type: StorageEventType.TRANSFER_REVERT_COMPLETED
-                    } as StorageTransferRevertCompleted
+                        type: StorageEventType.TRANSFER_COMPLETED
+                    } as StorageTransferCompleted
                 });
-            } else if (e instanceof DuplicateContentError) {
-                this.eventsBusService.emit({
-                    namespace: EventNamespace.STORAGE,
-                    event: {
-                        type: StorageEventType.TRANSFER_FAILED_DUPLICATE_CONTENT
-                    } as StorageTransferFailedDuplicateContent
-                });
-            } else if (e instanceof LowMemoryError) {
-                this.eventsBusService.emit({
-                    namespace: EventNamespace.STORAGE,
-                    event: {
-                        type: StorageEventType.TRANSFER_FAILED_LOW_MEMORY
-                    } as StorageTransferFailedLowMemory
-                });
-            }
+            }),
+            mapTo(undefined),
+            catchError((e) => {
+                if (e instanceof CancellationError) {
+                    this.eventsBusService.emit({
+                        namespace: EventNamespace.STORAGE,
+                        event: {
+                            type: StorageEventType.TRANSFER_REVERT_COMPLETED
+                        } as StorageTransferRevertCompleted
+                    });
+                } else if (e instanceof DuplicateContentError) {
+                    this.eventsBusService.emit({
+                        namespace: EventNamespace.STORAGE,
+                        event: {
+                            type: StorageEventType.TRANSFER_FAILED_DUPLICATE_CONTENT
+                        } as StorageTransferFailedDuplicateContent
+                    });
+                } else if (e instanceof LowMemoryError) {
+                    this.eventsBusService.emit({
+                        namespace: EventNamespace.STORAGE,
+                        event: {
+                            type: StorageEventType.TRANSFER_FAILED_LOW_MEMORY
+                        } as StorageTransferFailedLowMemory
+                    });
+                }
 
-            console.error('Error', e);
+                console.error('Error', e);
 
-            return Observable.throw(e);
-        });
+                return throwError(e);
+            })
+        );
     }
 
     cancel(): Observable<undefined> {
-        return Observable.defer(async () => {
+        return defer(async () => {
             this.context.hasTransferCancelled = true;
-        }).mapTo(undefined);
+        }).pipe(
+            mapTo(undefined)
+        );
     }
 }

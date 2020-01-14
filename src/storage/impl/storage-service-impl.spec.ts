@@ -6,7 +6,7 @@ import { instance, mock } from 'ts-mockito';
 import { DbService } from '../../db';
 import { FileService } from '../../util/file/def/file-service';
 import { SdkConfig } from '../../sdk-config';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('StorageServiceImpl', () => {
     let storageServiceImpl: StorageServiceImpl;
@@ -42,7 +42,7 @@ describe('StorageServiceImpl', () => {
     it('should get available storage volume', () => {
         // arrange
         mockDeviceInfo.getStorageVolumes = jest.fn(() => {});
-        (mockDeviceInfo.getStorageVolumes as jest.Mock).mockReturnValue(Observable.of([]));
+        (mockDeviceInfo.getStorageVolumes as jest.Mock).mockReturnValue(of([]));
         spyOn(storageServiceImpl, 'getStorageDestination').and.returnValue([]);
         // act
         storageServiceImpl.onInit();

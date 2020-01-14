@@ -1,14 +1,13 @@
 import {TransferContentContext} from '../transfer-content-handler';
-import {Observable} from 'rxjs';
-import {ContentUtil} from '../../../content/util/content-util';
 import {FileService} from '../../../util/file/def/file-service';
+import {defer, Observable} from 'rxjs';
 
 export class ValidateDestinationFolder {
     constructor(private fileService: FileService) {
     }
 
     execute(context: TransferContentContext): Observable<TransferContentContext> {
-        return Observable.defer(async () => {
+        return defer(async () => {
             context.destinationFolder = await this.validate(context.destinationFolder!).then((destination: string) => {
                 return this.createDirectory(destination);
             });

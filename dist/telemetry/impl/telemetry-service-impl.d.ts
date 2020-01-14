@@ -1,6 +1,5 @@
 import { DbService } from '../../db';
-import { Context, TelemetryAuditRequest, TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryExportResponse, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryInterruptRequest, TelemetryLogRequest, TelemetryService, TelemetryShareRequest, TelemetryStartRequest, TelemetryStat, TelemetrySyncStat } from '..';
-import { Observable } from 'rxjs';
+import { Context, TelemetryAuditRequest, TelemetryDecorator, TelemetryEndRequest, TelemetryErrorRequest, TelemetryExportRequest, TelemetryExportResponse, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryInterruptRequest, TelemetryLogRequest, TelemetryService, TelemetryShareRequest, TelemetryStartRequest, TelemetryStat, TelemetrySyncRequest, TelemetrySyncStat } from '..';
 import { ProfileService } from '../../profile';
 import { GroupService } from '../../group';
 import { KeyValueStore } from '../../key-value-store';
@@ -11,10 +10,12 @@ import { FileService } from '../../util/file/def/file-service';
 import { FrameworkService } from '../../framework';
 import { NetworkInfoService } from '../../util/network';
 import { SdkConfig } from '../../sdk-config';
-import { ErrorLoggerService } from '../../util/error-stack';
+import { ErrorLoggerService } from '../../error';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { AppInfo } from '../../util/app';
 import { DeviceRegisterService } from '../../device-register';
+import { Observable } from 'rxjs';
+import { TelemetryAutoSyncServiceImpl } from '../util/telemetry-auto-sync-service-impl';
 export declare class TelemetryServiceImpl implements TelemetryService {
     private dbService;
     private decorator;
@@ -32,9 +33,12 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     private sharedPreferences;
     private appInfoService;
     private deviceRegisterService;
-    private static readonly KEY_TELEMETRY_LAST_SYNCED_TIME_STAMP;
+    private _lastSyncedTimestamp$;
+    private telemetryAutoSyncService?;
     private telemetryConfig;
+    readonly autoSync: TelemetryAutoSyncServiceImpl;
     constructor(dbService: DbService, decorator: TelemetryDecorator, profileService: ProfileService, groupService: GroupService, keyValueStore: KeyValueStore, apiService: ApiService, sdkConfig: SdkConfig, deviceInfo: DeviceInfo, eventsBusService: EventsBusService, fileService: FileService, frameworkService: FrameworkService, networkInfoService: NetworkInfoService, errorLoggerService: ErrorLoggerService, sharedPreferences: SharedPreferences, appInfoService: AppInfo, deviceRegisterService: DeviceRegisterService);
+    onInit(): Observable<undefined>;
     saveTelemetry(request: string): Observable<boolean>;
     audit({ env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData }: TelemetryAuditRequest): Observable<boolean>;
     end({ type, mode, duration, pageId, summaryList, env, objId, objType, objVer, rollup, correlationData }: TelemetryEndRequest): Observable<boolean>;
@@ -50,7 +54,8 @@ export declare class TelemetryServiceImpl implements TelemetryService {
     exportTelemetry(telemetryExportRequest: TelemetryExportRequest): Observable<TelemetryExportResponse>;
     getTelemetryStat(): Observable<TelemetryStat>;
     resetDeviceRegisterTTL(): Observable<undefined>;
-    sync(ignoreSyncThreshold?: boolean): Observable<TelemetrySyncStat>;
+    sync(telemetrySyncRequest?: TelemetrySyncRequest): Observable<TelemetrySyncStat>;
+    lastSyncedTimestamp(): Observable<number | undefined>;
     buildContext(): Observable<Context>;
     private decorateAndPersist;
 }

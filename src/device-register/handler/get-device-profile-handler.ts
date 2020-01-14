@@ -3,6 +3,7 @@ import {DeviceProfileResponse, DeviceRegisterConfig} from '..';
 import {Observable} from 'rxjs';
 import {DeviceInfo} from '../../util/device';
 import {SdkConfig} from '../../sdk-config';
+import {map} from 'rxjs/operators';
 
 export class GetDeviceProfileHandler implements ApiRequestHandler<undefined, DeviceProfileResponse> {
 
@@ -33,9 +34,11 @@ export class GetDeviceProfileHandler implements ApiRequestHandler<undefined, Dev
                     + '/' + this.deviceInfo.getDeviceID())
                 .withApiToken(true)
                 .build()
-        ).map((response) => {
-            return response.body.result;
-        });
+        ).pipe(
+            map((response) => {
+                return response.body.result;
+            })
+        );
     }
 
 }

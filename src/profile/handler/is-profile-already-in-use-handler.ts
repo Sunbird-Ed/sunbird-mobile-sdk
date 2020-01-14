@@ -3,6 +3,7 @@ import {IsProfileAlreadyInUseRequest} from '..';
 import {ProfileExistsResponse} from '../def/profile-exists-response';
 import {ProfileServiceConfig} from '..';
 import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 export class IsProfileAlreadyInUseHandler implements ApiRequestHandler<IsProfileAlreadyInUseRequest, ProfileExistsResponse> {
     private readonly GET_PROFILE_ALREADY_IN_USE_ENDPOINT = '/get';
@@ -20,9 +21,11 @@ export class IsProfileAlreadyInUseHandler implements ApiRequestHandler<IsProfile
             .withSessionToken(true)
             .build();
 
-        return this.apiService.fetch<{ result: ProfileExistsResponse }>(apiRequest).map((success) => {
-            return success.body.result;
-        });
+        return this.apiService.fetch<{ result: ProfileExistsResponse }>(apiRequest).pipe(
+            map((success) => {
+                return success.body.result;
+            })
+        );
     }
 
 }

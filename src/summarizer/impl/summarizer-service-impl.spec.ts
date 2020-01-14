@@ -16,8 +16,7 @@ import { SunbirdTelemetry } from '../../telemetry';
 import Telemetry = SunbirdTelemetry.Telemetry;
 import { Actor, Context, TelemetryObject, ProducerData } from '../../telemetry/def/telemetry-model';
 import { TelemetryAuditRequest, TelemetryService } from '../../telemetry';
-import { TelemetryEventType, TelemetryEvent } from '../../telemetry/def/telemetry-event';
-import { LearnerSummaryEntry } from '../../profile/db/schema';
+import { of } from 'rxjs';
 
 describe('SummarizerServiceImpl', () => {
     let summarizerService: SummarizerService;
@@ -40,7 +39,7 @@ describe('SummarizerServiceImpl', () => {
     };
     const mockTelemetryService: Partial<TelemetryService> = {
         audit(request: TelemetryAuditRequest): Observable<boolean> {
-            return Observable.of(true);
+            return of(true);
         }
     };
 
@@ -67,7 +66,7 @@ describe('SummarizerServiceImpl', () => {
 
     it('should register self as eventBus observer onInit()', () => {
         // arrange
-        (eventsBusServiceMock.registerObserver as jest.Mock).mockReturnValue(Observable.of(''));
+        (eventsBusServiceMock.registerObserver as jest.Mock).mockReturnValue(of(''));
         // act
         summarizerService.onInit()
             .subscribe(() => {
@@ -89,7 +88,7 @@ describe('SummarizerServiceImpl', () => {
             contentId: 'SAMPLE_CONTENT_ID',
             hierarchyData: 'SAMPLE_HIERARCHY_DATA'
         };
-        dbServiceMock.execute = jest.fn(() => Observable.of([]));
+        dbServiceMock.execute = jest.fn(() => of([]));
 
         // act
         summarizerService.getDetailsPerQuestion(request).subscribe(() => {
@@ -108,7 +107,7 @@ describe('SummarizerServiceImpl', () => {
             contentId: 'SAMPLE_CONTENT_ID',
             hierarchyData: 'SAMPLE_HIERARCHY_DATA'
         };
-        dbServiceMock.execute = jest.fn(() => Observable.of([]));
+        dbServiceMock.execute = jest.fn(() => of([]));
         // act
         summarizerService.getLearnerAssessmentDetails(request).subscribe(() => {
             // assert
@@ -126,7 +125,7 @@ describe('SummarizerServiceImpl', () => {
             contentId: 'SAMPLE_CONTENT_ID',
             hierarchyData: 'SAMPLE_HIERARCHY_DATA'
         };
-        dbServiceMock.execute = jest.fn(() => Observable.of([]));
+        dbServiceMock.execute = jest.fn(() => of([]));
         // act
         summarizerService.getReportByQuestions(request).subscribe(() => {
             // assert
@@ -144,7 +143,7 @@ describe('SummarizerServiceImpl', () => {
             contentId: 'SAMPLE_CONTENT_ID',
             hierarchyData: 'SAMPLE_HIERARCHY_DATA'
         };
-        dbServiceMock.execute = jest.fn(() => Observable.of([]));
+        dbServiceMock.execute = jest.fn(() => of([]));
         // act
         summarizerService.getReportsByUser(request).subscribe(() => {
             // assert
@@ -162,8 +161,8 @@ describe('SummarizerServiceImpl', () => {
             contentId: 'SAMPLE_CONTENT_ID',
             hierarchyData: 'SAMPLE_HIERARCHY_DATA'
         };
-        dbServiceMock.execute = jest.fn(() => Observable.of([]));
-        spyOn(summarizerService, 'getContentCache').and.returnValue(Observable.of(('SAMPLE_UID')));
+        dbServiceMock.execute = jest.fn(() => of([]));
+        spyOn(summarizerService, 'getContentCache').and.returnValue(of(('SAMPLE_UID')));
         // act
         summarizerService.getSummary(request).subscribe(() => {
             // assert
@@ -175,7 +174,7 @@ describe('SummarizerServiceImpl', () => {
     it('get content for assessment', () => {
         // arrange
         const uids = ['SAMPLE_UID_1', 'SAMPLE_UID_2'];
-        contentServiceMock.getContents = jest.fn(() => Observable.of([]));
+        contentServiceMock.getContents = jest.fn(() => of([]));
         // act
         summarizerService.getContentCache(uids).subscribe(() => {
             // assert
@@ -187,8 +186,8 @@ describe('SummarizerServiceImpl', () => {
         // arrange
         const uids = 'SAMPLE_UID';
         const contentId = 'SAMPLE_CONTENT_ID';
-        dbServiceMock.read = jest.fn(() => Observable.of([]));
-        dbServiceMock.delete = jest.fn(() => Observable.of(undefined));
+        dbServiceMock.read = jest.fn(() => of([]));
+        dbServiceMock.delete = jest.fn(() => of(undefined));
         // act
         summarizerService.deletePreviousAssessmentDetails(uids, contentId).subscribe(() => {
             // assert

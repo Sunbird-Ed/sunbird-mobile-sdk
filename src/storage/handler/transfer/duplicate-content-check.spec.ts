@@ -4,7 +4,7 @@ import { FileService } from '../../../util/file/def/file-service';
 import { ContentEntry } from '../../../content/db/schema';
 import { MoveContentResponse, MoveContentStatus, TransferContentContext } from '../transfer-content-handler';
 import {DuplicateContentError} from '../../errors/duplicate-content-error';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 describe('DuplicateContentCheck', () => {
     let duplicateContentCheck: DuplicateContentCheck;
@@ -54,7 +54,7 @@ describe('DuplicateContentCheck', () => {
             validContentIdsInDestination: ['SAMPLE_CONTENT_1', 'SAMPLE_CONTENT_2']
         };
         mockDbService.execute = jest.fn(() => {});
-        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of([{
+        (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
             local_data: '{"childNodes": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
@@ -99,7 +99,7 @@ describe('DuplicateContentCheck', () => {
             validContentIdsInDestination: ['SAMPLE_CONTENT_1', 'SAMPLE_CONTENT_2']
         };
         mockDbService.execute = jest.fn(() => {});
-        (mockDbService.execute as jest.Mock).mockReturnValue(Observable.of([{
+        (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'LOCAL_DATA',
             local_data: '{"childNodes": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',

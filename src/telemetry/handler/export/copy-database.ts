@@ -1,8 +1,5 @@
-import {FileService} from '../../../util/file/def/file-service';
-import {DeviceInfo} from '../../../util/device/def/device-info';
 import {ExportTelemetryContext} from '../..';
 import {Response} from '../../../api';
-import {ErrorCode} from '../../../content';
 import {DbService} from '../../../db';
 
 export class CopyDatabase {
