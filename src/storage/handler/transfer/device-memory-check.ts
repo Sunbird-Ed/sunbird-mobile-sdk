@@ -31,7 +31,7 @@ export class DeviceMemoryCheck {
 
     private async getFreeUsableSpace(directory: string): Promise<number> {
         return new Promise<number>((resolve, reject) => {
-            buildconfigreader.getFreeUsableSpace(directory, (space) => {
+            sbutility.getFreeUsableSpace(directory, (space) => {
                 resolve(Number(space));
             }, (e) => {
                 reject(e);

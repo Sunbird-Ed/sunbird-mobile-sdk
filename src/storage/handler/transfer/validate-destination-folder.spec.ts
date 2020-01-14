@@ -4,7 +4,7 @@ import { ContentEntry } from '../../../content/db/schema';
 import { MoveContentResponse, MoveContentStatus, TransferContentContext } from '../transfer-content-handler';
 import { ExistingContentAction } from '../..';
 
-declare const buildconfigreader;
+declare const sbutility;
 
 describe('ValidateDestinationFolder', () => {
     let validateDestinationFolder: ValidateDestinationFolder;
@@ -26,7 +26,7 @@ describe('ValidateDestinationFolder', () => {
 
     it('should create a directory and write ', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'canWrite').and.callFake((a, b, c) => {
+        spyOn(sbutility, 'canWrite').and.callFake((a, b, c) => {
             setTimeout(() => {
                 b();
                 c();
@@ -74,7 +74,7 @@ describe('ValidateDestinationFolder', () => {
 
     it('should create a directory and write ', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'canWrite').and.callFake((a, b, c) => {
+        spyOn(sbutility, 'canWrite').and.callFake((a, b, c) => {
             setTimeout(() => {
                 b();
                 c();

@@ -43,7 +43,7 @@ export class AppInfoImpl implements AppInfo {
     getBuildConfigValue(packageName, property): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             try {
-                buildconfigreader.getBuildConfigValue(packageName, property, (entry: string) => {
+                sbutility.getBuildConfigValue(packageName, property, (entry: string) => {
                     resolve(entry);
                 }, err => {
                     console.error(err);

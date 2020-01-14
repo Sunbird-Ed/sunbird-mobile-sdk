@@ -4,7 +4,7 @@ import { SharedPreferences } from '../../..';
 import { of } from 'rxjs';
 import { AppInfoKeys } from '../../../preference-keys';
 
-declare const buildconfigreader;
+declare const sbutility;
 
 describe('AppInfoImpl', () => {
     let appInfoImpl: AppInfoImpl;
@@ -107,7 +107,7 @@ describe('AppInfoImpl', () => {
             mockSdkConfigApi as SdkConfig,
             mockSharedPreferences as SharedPreferences
         );
-        spyOn(buildconfigreader, 'getBuildConfigValue').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'getBuildConfigValue').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                 c('2.6.0'),
                 d('buildConfig_error');

@@ -38,7 +38,7 @@ export class ValidateDestinationFolder {
 
     private async canWrite(directory: string): Promise<undefined> {
         return new Promise<undefined>((resolve, reject) => {
-            buildconfigreader.canWrite(directory, () => {
+            sbutility.canWrite(directory, () => {
                 resolve();
             }, (e) => {
                 reject(e);

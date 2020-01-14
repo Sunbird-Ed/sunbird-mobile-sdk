@@ -8,7 +8,7 @@ import {of} from 'rxjs';
 import {ArrayUtil} from '../../util/array-util';
 
 jest.mock('../util/content-util');
-declare const buildconfigreader;
+declare const sbutility;
 
 describe('DeleteContentHandler', () => {
     let deleteContentHandler: DeleteContentHandler;
@@ -36,7 +36,7 @@ describe('DeleteContentHandler', () => {
 
     it('should be deleted all children', async (done) => {
         // arrange
-        spyOn(buildconfigreader, 'getMetaData').and.callFake((mapList, cb) => {
+        spyOn(sbutility, 'getMetaData').and.callFake((mapList, cb) => {
             setTimeout(() => {
                 cb({
                     'IDENTIFIER': {
@@ -82,14 +82,14 @@ describe('DeleteContentHandler', () => {
         // act
         await deleteContentHandler.deleteAllChildren(request, isChildContent).then(() => {
             // assert
-            expect(buildconfigreader.getMetaData).toHaveBeenCalled();
+            expect(sbutility.getMetaData).toHaveBeenCalled();
             done();
         });
     });
 
     it('should ', async (done) => {
         // arrange
-        spyOn(buildconfigreader, 'getMetaData').and.callFake((mapList, cb) => {
+        spyOn(sbutility, 'getMetaData').and.callFake((mapList, cb) => {
             setTimeout(() => {
                 cb({
                     'IDENTIFIER': {
@@ -128,7 +128,7 @@ describe('DeleteContentHandler', () => {
 
     // fit('should delete child content only', async(done) => {
     //     // arrange
-    //     spyOn(buildconfigreader, 'getMetaData').and.callFake((mapList, cb) => {
+    //     spyOn(sbutility, 'getMetaData').and.callFake((mapList, cb) => {
     //         setTimeout(() => {
     //             cb({
     //                 'IDENTIFIER': {

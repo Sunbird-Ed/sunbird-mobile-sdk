@@ -167,7 +167,7 @@ export class DeleteContentHandler {
     private rm(directoryPath, directoryToBeSkipped): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
             try {
-                buildconfigreader.rm(directoryPath, directoryToBeSkipped, (status: boolean) => {
+                sbutility.rm(directoryPath, directoryToBeSkipped, (status: boolean) => {
                     resolve(status);
                 }, (err: boolean) => {
                     console.error(err);
@@ -183,7 +183,7 @@ export class DeleteContentHandler {
     // TODO: move this method to file-service
     private async getMetaData(fileMapList: any[]) {
         return new Promise((resolve, reject) => {
-            buildconfigreader.getMetaData(fileMapList,
+            sbutility.getMetaData(fileMapList,
                 (entry) => {
                     resolve(entry);
                 }, err => {

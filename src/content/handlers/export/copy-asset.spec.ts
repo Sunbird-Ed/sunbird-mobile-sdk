@@ -3,7 +3,7 @@ import {FileService} from '../../../util/file/def/file-service';
 import {ContentEntry} from '../../db/schema';
 import {ExportContentContext} from '../..';
 
-declare const buildconfigreader;
+declare const sbutility;
 
 describe('CopyAsset', () => {
     let copyAsset: CopyAsset;
@@ -48,7 +48,7 @@ describe('CopyAsset', () => {
 
     it('should be copied a file by invoked exicute()', async (done) => {
         // arrange
-        spyOn(buildconfigreader, 'copyFile').and.callFake((mapList, cb) => {
+        spyOn(sbutility, 'copyFile').and.callFake((mapList, cb) => {
             setTimeout(() => {
                 cb({
                     'IDENTIFIER': {
