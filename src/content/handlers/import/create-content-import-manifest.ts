@@ -84,7 +84,7 @@ export class CreateContentImportManifest {
     // TODO: move this method to file-service
     private async writeFile(fileMapList: any[]) {
         return new Promise((resolve, reject) => {
-            buildconfigreader.writeFile(fileMapList,
+            sbutility.writeFile(fileMapList,
                 (entry) => {
                     resolve();
                 }, err => {

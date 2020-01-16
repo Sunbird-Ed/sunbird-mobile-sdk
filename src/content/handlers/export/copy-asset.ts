@@ -52,7 +52,7 @@ export class CopyAsset {
 
     private async copyFile(sourcePath: string, destinationPath: string, fileName: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            buildconfigreader.copyFile(sourcePath, destinationPath, fileName,
+            sbutility.copyFile(sourcePath, destinationPath, fileName,
                 () => {
                     resolve();
                 }, err => {

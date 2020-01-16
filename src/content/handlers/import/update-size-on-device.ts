@@ -92,7 +92,7 @@ export class UpdateSizeOnDevice {
 
     private async getMetaData(fileMapList: any[]) {
         return new Promise((resolve, reject) => {
-            buildconfigreader.getMetaData(fileMapList,
+            sbutility.getMetaData(fileMapList,
                 (entry) => {
                     resolve(entry);
                 }, err => {

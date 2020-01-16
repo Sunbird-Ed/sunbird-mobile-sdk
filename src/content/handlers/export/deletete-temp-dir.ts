@@ -10,7 +10,7 @@ export class DeleteTempDir {
         const response: Response = new Response();
         return new Promise<Response>((resolve, reject) => {
             const tmpDirPath = exportContext.destinationFolder!.concat('tmp/');
-            buildconfigreader.rm(tmpDirPath, '', () => {
+            sbutility.rm(tmpDirPath, '', () => {
                 response.body = exportContext;
                 resolve(response);
             }, (e) => {

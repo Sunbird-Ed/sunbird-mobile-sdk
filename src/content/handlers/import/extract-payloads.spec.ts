@@ -10,7 +10,7 @@ import { ContentUtil } from '../../util/content-util';
 import { ContentEntry } from '../../db/schema';
 import { doesNotReject } from 'assert';
 
-declare const buildconfigreader;
+declare const sbutility;
 
 describe('ExtractPayloads', () => {
     let extractPayloads: ExtractPayloads;
@@ -50,7 +50,7 @@ describe('ExtractPayloads', () => {
 
     it('should count how many contents are imported', async (done) => {
         // arrange
-        spyOn(buildconfigreader, 'createDirectories').and.callFake((a, b, c) => {
+        spyOn(sbutility, 'createDirectories').and.callFake((a, b, c) => {
             setTimeout(() => {
                 c({
                     identifier: 'IDENTIFIER',

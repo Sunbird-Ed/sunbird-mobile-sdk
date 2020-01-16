@@ -7,7 +7,7 @@ import { CancellationError } from '../../errors/cancellation-error';
 import { Observable } from 'rxjs';
 import { of } from 'rxjs';
 
-declare const buildconfigreader;
+declare const sbutility;
 
 describe('CopyContentFromSourceToDestination', () => {
     let copyContentFromSourceToDestination: CopyContentFromSourceToDestination;
@@ -29,7 +29,7 @@ describe('CopyContentFromSourceToDestination', () => {
 
     it('should handle storage transfer', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'rm').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'rm').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                 c(),
                 d();
@@ -60,7 +60,7 @@ describe('CopyContentFromSourceToDestination', () => {
 
     it('should handle storage transfer', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'copyDirectory').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'copyDirectory').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                c();
                d();

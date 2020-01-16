@@ -75,7 +75,7 @@ export class FileServiceImpl implements FileService {
     readFileFromAssets(fileName: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             try {
-                buildconfigreader.readFromAssets(fileName, (entry: string) => {
+                sbutility.readFromAssets(fileName, (entry: string) => {
                     resolve(entry);
                 }, err => {
                     reject(err);

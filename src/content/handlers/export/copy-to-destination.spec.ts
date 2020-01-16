@@ -3,7 +3,7 @@ import {FileService} from '../../../util/file/def/file-service';
 import {ContentEntry} from '../../db/schema';
 import {Response} from '../../../api';
 
-declare const buildconfigreader;
+declare const sbutility;
 
 describe('CopyToDestination', () => {
     let copyToDestination: CopyToDestination;
@@ -50,7 +50,7 @@ describe('CopyToDestination', () => {
         copyToDestination = new CopyToDestination();
 
         response.body = exportContext;
-        spyOn(buildconfigreader, 'copyFile').and.callFake((a, b, c, d, e) => {
+        spyOn(sbutility, 'copyFile').and.callFake((a, b, c, d, e) => {
             setTimeout(() => {
                 setTimeout(() => {
                     d();
@@ -96,7 +96,7 @@ describe('CopyToDestination', () => {
         copyToDestination = new CopyToDestination();
 
         response.body = exportContext;
-        spyOn(buildconfigreader, 'copyFile').and.callFake((a, b, c, d, e) => {
+        spyOn(sbutility, 'copyFile').and.callFake((a, b, c, d, e) => {
             setTimeout(() => {
                 setTimeout(() => {
                     e();

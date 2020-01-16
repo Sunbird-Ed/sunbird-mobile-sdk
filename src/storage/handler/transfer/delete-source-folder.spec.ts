@@ -3,7 +3,7 @@ import { EventsBusService, ExistingContentAction } from '../../..';
 import { ContentEntry } from '../../../content/db/schema';
 import { MoveContentResponse, MoveContentStatus, TransferContentContext } from '../transfer-content-handler';
 
-declare const buildconfigreader;
+declare const sbutility;
 
 describe('DeleteSourceFolder', () => {
     let deleteSourceFolder: DeleteSourceFolder;
@@ -25,13 +25,13 @@ describe('DeleteSourceFolder', () => {
 
     it('should update storage management for does not exist existing content', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'copyDirectory').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'copyDirectory').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                c();
                d();
             }, 0);
         });
-        spyOn(buildconfigreader, 'rm').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'rm').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                 c(),
                 d();
@@ -69,13 +69,13 @@ describe('DeleteSourceFolder', () => {
 
     it('should update storage management ', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'copyDirectory').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'copyDirectory').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                c();
                d();
             }, 0);
         });
-        spyOn(buildconfigreader, 'rm').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'rm').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                 c(),
                 d();
@@ -112,13 +112,13 @@ describe('DeleteSourceFolder', () => {
     });
     it('should delete source folder for same version', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'copyDirectory').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'copyDirectory').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                c();
                d();
             }, 0);
         });
-        spyOn(buildconfigreader, 'rm').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'rm').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                 c(),
                 d();
@@ -156,13 +156,13 @@ describe('DeleteSourceFolder', () => {
 
     it('should delete source folder for switch case higher version', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'copyDirectory').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'copyDirectory').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                c();
                d();
             }, 0);
         });
-        spyOn(buildconfigreader, 'rm').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'rm').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                 c(),
                 d();
@@ -199,13 +199,13 @@ describe('DeleteSourceFolder', () => {
     });
     it('should delete source folder for switch case lower version', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'copyDirectory').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'copyDirectory').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                c();
                d();
             }, 0);
         });
-        spyOn(buildconfigreader, 'rm').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'rm').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                 c(),
                 d();
@@ -243,13 +243,13 @@ describe('DeleteSourceFolder', () => {
 
     it('should delete source folder for switch case lower version', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'copyDirectory').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'copyDirectory').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                c();
                d();
             }, 0);
         });
-        spyOn(buildconfigreader, 'rm').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'rm').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                 c(),
                 d();
