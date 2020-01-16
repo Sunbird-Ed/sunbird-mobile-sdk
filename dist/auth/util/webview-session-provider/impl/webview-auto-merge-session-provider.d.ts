@@ -6,6 +6,7 @@ export declare class WebviewAutoMergeSessionProvider extends WebviewBaseSessionP
     private autoMergeConfig;
     private webviewRunner;
     private captured;
+    private readonly telemetryService;
     constructor(autoMergeConfig: WebviewSessionProviderConfig, webviewRunner: WebviewRunner, captured: {
         [key: string]: string;
     });
