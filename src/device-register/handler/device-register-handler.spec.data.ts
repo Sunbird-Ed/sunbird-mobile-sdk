@@ -22,9 +22,7 @@ export const mockSdkConfigWithSampleApiConfig: Partial<SdkConfig> = {
         }
     },
     deviceRegisterConfig: {
-        host: '',
-        apiPath: '',
-        deviceProfileApiPath: '',
+        apiPath: 'some/path',
         fcmToken: 'SAMPLE_FCM_TOKEN'
     },
     profileServiceConfig: {
