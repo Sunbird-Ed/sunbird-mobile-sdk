@@ -1,12 +1,18 @@
 global.cordova = {
     plugin: {
         http: {
-            setDataSerializer: () => {},
-            setHeader: () => {},
-            get: () => {},
-            post: () => {},
-            put: () => {},
-            patch: () => {},
+            setDataSerializer: () => {
+            },
+            setHeader: () => {
+            },
+            get: () => {
+            },
+            post: () => {
+            },
+            put: () => {
+            },
+            patch: () => {
+            },
         }
     },
     plugins: {
@@ -29,7 +35,8 @@ global.cordova = {
     },
     InAppBrowser: {
         open: () => ({
-            addEventListener: () => {},
+            addEventListener: () => {
+            },
         }),
     }
 };
@@ -42,8 +49,10 @@ global.plugins = {
 };
 
 global.JJzip = {
-    unzip: () => {},
-    zip: () => {}
+    unzip: () => {
+    },
+    zip: () => {
+    }
 };
 
 global.supportfile = {
@@ -51,25 +60,31 @@ global.supportfile = {
     }
 };
 
-global.buildconfigreader = {
+global.sbutility = {
     getMetaData: () => {
-        
     },
     copyFile: () => {
 
     },
     createDirectories: () => {
-        
     },
-    rm: () => {},
-    copyDirectory: () => {},
-    getFreeUsableSpace: () => {},
-    canWrite: () => {},
-    getBuildConfigValue: () => {}
+    rm: () => {
+    },
+    copyDirectory: () => {
+    },
+    getFreeUsableSpace: () => {
+    },
+    canWrite: () => {
+    },
+    getBuildConfigValue: () => {
+    }
 };
 
 global.customtabs = {
-    isAvailable: () => {},
-    launch: () => {},
-    launchInBrowser: () => {}
+    isAvailable: () => {
+    },
+    launch: () => {
+    },
+    launchInBrowser: () => {
+    }
 };
