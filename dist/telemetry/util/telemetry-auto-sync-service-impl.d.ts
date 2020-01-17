@@ -17,6 +17,7 @@ export declare class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncSe
     private apiService;
     private dbService;
     private keyValueStore;
+    private static DOWNLOAD_SPEED_TELEMETRY_SYNC_INTERVAL;
     private shouldSync;
     private static generateDownloadSpeedTelemetry;
     constructor(telemetryService: TelemetryService, sharedPreferences: SharedPreferences, profileService: ProfileService, courseService: CourseService, sdkConfig: SdkConfig, apiService: ApiService, dbService: DbService, keyValueStore: KeyValueStore);

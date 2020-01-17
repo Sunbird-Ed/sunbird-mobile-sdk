@@ -116,6 +116,7 @@ export class ValidateEcar {
                 && !ContentUtil.isDuplicateCheckRequired(isDraftContent, item.pkgVersion) // Check if its draft and pkgVersion is 0.
                 && ContentUtil.isImportFileExist(existingContentModel, item) // Check whether the file is already imported or not.
             ) {
+                importContext.rootIdentifier = identifier;
                 this.skipContent(importContext, identifier, visibility, ContentImportStatus.ALREADY_EXIST);
                 continue;
             }

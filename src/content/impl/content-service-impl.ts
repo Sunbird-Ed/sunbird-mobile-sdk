@@ -772,7 +772,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             }
                         });
                     } else {
-                        const sub = contentData.subject.toLowerCase().trim();
+                        const sub = contentData.subject ? contentData.subject.toLowerCase().trim() : '';
                         if (acc[sub]) {
                             (acc[sub] as Array<ContentData>).push(contentData);
                         } else {

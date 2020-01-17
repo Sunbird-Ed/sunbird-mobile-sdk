@@ -15,6 +15,7 @@ import {DbService} from '../../db';
 import {KeyValueStore} from '../../key-value-store';
 
 export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
+    private static DOWNLOAD_SPEED_TELEMETRY_SYNC_INTERVAL = 60 * 1000;
     private shouldSync = false;
 
     private static async generateDownloadSpeedTelemetry(intervalTime: number): Promise<void> {
@@ -97,7 +98,13 @@ export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
         this.shouldSync = true;
 
         return interval(intervalTime).pipe(
-            tap(() => TelemetryAutoSyncServiceImpl.generateDownloadSpeedTelemetry(intervalTime)),
+            tap((iteration: number) => {
+                const timeCovered = iteration * intervalTime;
+
+                if (timeCovered % TelemetryAutoSyncServiceImpl.DOWNLOAD_SPEED_TELEMETRY_SYNC_INTERVAL === 0) {
+                    TelemetryAutoSyncServiceImpl.generateDownloadSpeedTelemetry(intervalTime);
+                }
+            }),
             tap(async () => await this.syncAllCourseProgressAndAssessmentEvents()),
             filter(() => this.shouldSync),
             tap(() => this.telemetryService.sync().pipe(
