@@ -133,6 +133,84 @@ describe('TelemetryAutoSyncServiceImpl', () => {
             advanceTimersByTime(61000);
         });
 
+        describe('should generateDownloadSpeedTelemetry every 1 minute', () => {
+            it('for start(30000) it should be invoked every 2 iteration', (done) => {
+                // arrange
+                window['downloadManager'] = {
+                    fetchSpeedLog: jest.fn(() => {
+                        return {};
+                    })
+                };
+
+                mockTelemetryService.sync = jest.fn(() => {
+                    return of({
+                        syncedEventCount: 0,
+                        syncTime: Date.now(),
+                        syncedFileSize: 0
+                    });
+                });
+
+                mockProfileService.getActiveSessionProfile = jest.fn(() => {
+                    return of({
+                        uid: 'SAMPLE_UID',
+                        handle: 'SAMPLE_HANDLE',
+                        source: ProfileSource.LOCAL
+                    });
+                });
+
+                // act
+                telemetryAutoSyncService.start(30000).pipe(
+                    take(4),
+                ).subscribe(() => {}, (e) => {
+                    console.error(e);
+                    fail(e);
+                }, () => {
+                    expect(window['downloadManager'].fetchSpeedLog).toHaveBeenCalledTimes(2);
+                    done();
+                });
+
+                advanceTimersByTime((30000 * 4) + 500);
+            });
+
+            it('for start(10000) it should be invoked every 6 iteration', (done) => {
+                // arrange
+                window['downloadManager'] = {
+                    fetchSpeedLog: jest.fn(() => {
+                        return {};
+                    })
+                };
+
+                mockTelemetryService.sync = jest.fn(() => {
+                    return of({
+                        syncedEventCount: 0,
+                        syncTime: Date.now(),
+                        syncedFileSize: 0
+                    });
+                });
+
+                mockProfileService.getActiveSessionProfile = jest.fn(() => {
+                    return of({
+                        uid: 'SAMPLE_UID',
+                        handle: 'SAMPLE_HANDLE',
+                        source: ProfileSource.LOCAL
+                    });
+                });
+
+                // act
+                telemetryAutoSyncService.start(10000).pipe(
+                    take(18),
+                ).subscribe(() => {}, (e) => {
+                    console.error(e);
+                    fail(e);
+                }, () => {
+                    expect(window['downloadManager'].fetchSpeedLog).toHaveBeenCalledTimes(3);
+                    done();
+                });
+
+                advanceTimersByTime((10000 * 18) + 500);
+            });
+        });
+
         it('should attempt Course progress and Assessment sync if online user', (done) => {
             // arrange
             window['downloadManager'] = {

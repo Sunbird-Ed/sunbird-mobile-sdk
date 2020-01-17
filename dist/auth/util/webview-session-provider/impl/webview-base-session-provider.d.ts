@@ -1,6 +1,7 @@
-import { OAuthSession, SessionProvider } from '../../..';
 import { ApiConfig, ApiService } from '../../../../api';
 import { EventsBusService } from '../../../../events-bus';
+import { SessionProvider } from '../../../def/session-provider';
+import { OAuthSession } from '../../../def/o-auth-session';
 export declare abstract class WebviewBaseSessionProvider implements SessionProvider {
     protected apiConfig: ApiConfig;
     protected apiService: ApiService;
