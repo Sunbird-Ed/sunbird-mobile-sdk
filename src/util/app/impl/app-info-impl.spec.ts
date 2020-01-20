@@ -39,6 +39,7 @@ describe('AppInfoImpl', () => {
     };
 
     beforeAll(() => {
+        window['cordova'] = { getAppVersion: { getAppName: (cb) => cb('SOME_APP_NAME')} };
         appInfoImpl = new AppInfoImpl(
             mockSdkConfig as SdkConfig,
             mockSharedPreferences as SharedPreferences

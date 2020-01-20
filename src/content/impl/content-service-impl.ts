@@ -95,6 +95,7 @@ import {GetContentHeirarchyHandler} from './../handlers/get-content-heirarchy-ha
 import {catchError, map, mapTo, mergeMap, take} from 'rxjs/operators';
 import { CopyToDestination } from '../handlers/export/copy-to-destination';
 import { DeleteTempDir } from './../handlers/export/deletete-temp-dir';
+import {AppInfo} from '../../util/app';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -121,7 +122,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         @inject(InjectionTokens.DOWNLOAD_SERVICE) private downloadService: DownloadService,
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
-        @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore) {
+        @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
+        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo
+    ) {
 
         this.contentServiceConfig = this.sdkConfig.contentServiceConfig;
         this.appConfig = this.sdkConfig.appConfig;
@@ -269,7 +272,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return this.fileService.getTempLocation(contentExportRequest.destinationFolder)
                     .then((tempLocationPath: DirectoryEntry) => {
                         const metaData: { [key: string]: any } = {};
-                        const fileName = ContentUtil.getExportedFileName(contentsInDb);
+                        const fileName = ContentUtil.getExportedFileName(contentsInDb, this.appInfo.getAppName());
                         metaData['content_count'] = contentsInDb.length;
                         const exportContentContext: ExportContentContext = {
                             metadata: metaData,
@@ -300,7 +303,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     }).then((exportResponse: Response) => {
                         return new DeleteTempDir().execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
-                        const fileName = ContentUtil.getExportedFileName(contentsInDb);
+                        const fileName = ContentUtil.getExportedFileName(contentsInDb, this.appInfo.getAppName());
                         return new GenerateExportShareTelemetry(
                             this.telemetryService).execute(exportResponse.body, fileName, contentExportRequest
                         );
