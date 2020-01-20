@@ -14,6 +14,7 @@ import { CachedItemStore } from '../../key-value-store';
 import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
 import { SdkConfig } from '../../sdk-config';
 import { DeviceInfo } from '../../util/device';
+import { AppInfo } from '../../util/app';
 export declare class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
     private sdkConfig;
     private apiService;
@@ -28,6 +29,7 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     private sharedPreferences;
     private eventsBusService;
     private cachedItemStore;
+    private appInfo;
     private static readonly KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL;
     private static readonly KEY_CONTENT_DELETE_REQUEST_LIST;
     private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY;
@@ -36,7 +38,7 @@ export declare class ContentServiceImpl implements ContentService, DownloadCompl
     private readonly contentServiceConfig;
     private readonly appConfig;
     private contentDeleteRequestSet;
-    constructor(sdkConfig: SdkConfig, apiService: ApiService, dbService: DbService, profileService: ProfileService, fileService: FileService, zipService: ZipService, deviceInfo: DeviceInfo, telemetryService: TelemetryService, contentFeedbackService: ContentFeedbackService, downloadService: DownloadService, sharedPreferences: SharedPreferences, eventsBusService: EventsBusService, cachedItemStore: CachedItemStore);
+    constructor(sdkConfig: SdkConfig, apiService: ApiService, dbService: DbService, profileService: ProfileService, fileService: FileService, zipService: ZipService, deviceInfo: DeviceInfo, telemetryService: TelemetryService, contentFeedbackService: ContentFeedbackService, downloadService: DownloadService, sharedPreferences: SharedPreferences, eventsBusService: EventsBusService, cachedItemStore: CachedItemStore, appInfo: AppInfo);
     private static getIdForDb;
     onInit(): Observable<undefined>;
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
