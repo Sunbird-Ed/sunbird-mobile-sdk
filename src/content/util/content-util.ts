@@ -335,7 +335,7 @@ export class ContentUtil {
         });
     }
 
-    public static getExportedFileName(contentsInDb: ContentEntry.SchemaMap[]) {
+    public static getExportedFileName(contentsInDb: ContentEntry.SchemaMap[], appName: string) {
         let fileName = 'blank.ecar';
         let firstContent: ContentEntry.SchemaMap;
         let rootContents = 0;
@@ -363,7 +363,7 @@ export class ContentUtil {
             }
 
             const pkgVersion = localData.pkgVersion;
-            fileName = `${name}-v${pkgVersion}${appendName}.ecar`;
+            fileName = `${appName.toLowerCase()}_${name}-v${pkgVersion}${appendName}.ecar`;
         }
 
         return fileName;

@@ -11,6 +11,7 @@ import {map} from 'rxjs/operators';
 export class AppInfoImpl implements AppInfo {
 
     private versionName: string;
+    private appName: string;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -19,10 +20,15 @@ export class AppInfoImpl implements AppInfo {
         if (sdkConfig.platform !== 'cordova') {
             this.versionName = 'sunbird-debug';
         }
+        cordova.getAppVersion.getAppName((appName) => this.appName = appName);
     }
 
     getVersionName(): string {
         return this.versionName;
+    }
+
+    getAppName(): string {
+        return this.appName;
     }
 
     public async init(): Promise<void> {
