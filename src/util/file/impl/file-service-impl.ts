@@ -158,10 +158,8 @@ export class FileServiceImpl implements FileService {
      * Removes a file from a desired location.
      *
      * @param {string} path  Base FileSystem. Please refer to the iOS and Android filesystem above
-     * @param {string} fileName Name of file to remove
      * @returns {Promise<RemoveResult>} Returns a Promise that resolves to a RemoveResult or rejects with an error.
      */
-
     removeFile(path: string): Promise<RemoveResult> {
         const parentDir = FileUtil.getParentDir(path);
         const fileName = FileUtil.getFileName(path).replace('/', '');
@@ -234,7 +232,6 @@ export class FileServiceImpl implements FileService {
      * Removes all files and the directory from a desired location.
      *
      * @param {string} path Base FileSystem. Please refer to the iOS and Android filesystem above
-     * @param {string} dirName Name of directory
      * @returns {Promise<RemoveResult>} Returns a Promise that resolves with a RemoveResult or rejects with an error.
      */
     removeRecursively(path: string): Promise<RemoveResult> {
@@ -304,7 +301,6 @@ export class FileServiceImpl implements FileService {
                 });
             });
     }
-
 
     exists(path: string): Promise<Entry> {
         return this.resolveLocalFilesystemUrl(path);
