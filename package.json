@@ -1,8 +1,8 @@
 {
-  "name": "sunbird-sdk",
+  "name": "@project-sunbird/sunbird-sdk",
   "version": "2.7.11",
   "description": "Heart of the sunbird mobile app.",
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
     "preversion": "rm -rf dist",
     "version": "npm run build:prod && git add -A dist && git commit -m \"RELEASE\"",
@@ -12,7 +12,7 @@
     "test:coverage": "jest --coverage --collectCoverageFrom=src/**/*.{ts,tsx}",
     "test:ci": "jest --ci --w 2 --collectCoverage=true --coverageReporters=lcov",
     "test:ci-json": "jest --ci --w 2 --collectCoverage=true --coverageReporters=json",
-    "build:prod": "rm -rf dist && NODE_ENV=production webpack --verbose true --progress true --cache false --output-file index.js",
+    "build:prod": "rm -rf dist && NODE_ENV=production webpack --verbose true --progress true --cache false --output-file index.js && cp ./package.json ./LICENSE ./README.md ./dist",
     "build:analyze": "webpack --verbose true --progress true --cache false --profile --json > stats.json && webpack-bundle-analyzer ./stats.json",
     "build:dev": "rm -rf tmp && mkdir tmp && cp ./package-dev.json ./tmp/package.json && tsc -w --outDir ./tmp"
   },
