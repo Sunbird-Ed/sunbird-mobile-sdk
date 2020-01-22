@@ -21,9 +21,6 @@ jobs:
           key: node_modules_cache_{{ checksum "package-lock.json" }}
           paths:
             - node_modules
-      - run:
-          name: Run Tests
-          command: npm run test:ci
       - store_artifacts:
           path: coverage
       - run:
@@ -38,7 +35,9 @@ jobs:
             if [ -z $CIRCLE_PR_NUMBER ]; then
               npm run build:prod && npm pack
               npm set //registry.npmjs.org/:_ authToken=$NPM_TOKEN
-              npm publish project-sunbird-sunbird-sdk-*     
+              npm publish project-sunbird-sunbird-sdk-*
             else
               npm run build:prod && npm pack
+              npm set //registry.npmjs.org/:_ authToken=$NPM_TOKEN
+              npm publish project-sunbird-sunbird-sdk-*
             fi
