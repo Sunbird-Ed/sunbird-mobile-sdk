@@ -216,6 +216,10 @@ export class SunbirdSdk {
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
+        if (this._container) {
+            console.log('test');
+        }
+
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
         this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(25);
