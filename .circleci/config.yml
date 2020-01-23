@@ -31,12 +31,6 @@ jobs:
       - run:
           name: Publish to NPM
           command: |
-            if [ -z $CIRCLE_PR_NUMBER ]; then
-              npm run build:prod && npm pack ./dist
-              npm set //registry.npmjs.org/:_ authToken=$NPM_TOKEN
-              npm publish project-sunbird-sunbird-sdk-*
-            else
               npm run build:prod && npm pack
               npm set //registry.npmjs.org/:_ authToken=$NPM_TOKEN
               npm publish project-sunbird-sunbird-sdk-*
-            fi
