@@ -31,9 +31,6 @@ jobs:
       - run:
           name: Publish to NPM
           command: |
-      - run:
-          name: Publish to NPM
-          command: |
             if [ -z $CIRCLE_PR_NUMBER ]; then
               npm run build:prod && npm pack ./dist
               echo "//registry.npmjs.org/:_authToken=$TOKEN" > ~/.npmrc
