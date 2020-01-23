@@ -7,7 +7,9 @@ jobs:
       - checkout
       - run:
           name: Check current version of node
-          command: node -v
+          command: |
+             node -v
+             npm set //registry.npmjs.org/:_ authToken=$NPM_TOKEN
       - restore_cache:
           keys:
             - node_modules_cache_{{ checksum "package-lock.json" }}
