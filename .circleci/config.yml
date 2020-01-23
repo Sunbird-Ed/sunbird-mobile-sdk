@@ -30,4 +30,14 @@ jobs:
           command: sudo npm install -g sonarqube-scanner
       - run:
           name: Publish to NPM
-          command: bash script.sh
+          command: |
+                   - run:
+          name: Publish to NPM
+          command: |
+            if [ -z $CIRCLE_PR_NUMBER ]; then
+              npm run build:prod && npm pack ./dist
+              echo "//registry.npmjs.org/:_authToken=$TOKEN" > ~/.npmrc
+              npm publish project-sunbird-sunbird-sdk-*
+            else
+              npm run build:prod && npm pack
+            fi
