@@ -31,7 +31,7 @@ jobs:
       - run:
           name: Publish to NPM
           command: |
-                   - run:
+      - run:
           name: Publish to NPM
           command: |
             if [ -z $CIRCLE_PR_NUMBER ]; then
