@@ -18,7 +18,7 @@ import {ContentAccess, ContentAccessStatus, ProfileService} from '../../profile'
 import {ArrayUtil} from '../../util/array-util';
 import {DbService} from '../../db';
 import {Observable, of} from 'rxjs';
-import {map, mapTo, mergeMap, tap} from 'rxjs/operators';
+import {map, mapTo, mergeMap, tap, delay} from 'rxjs/operators';
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -142,6 +142,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
             contentId: identifier
         };
         return this.contentService.getContentDetails(request).pipe(
+            delay(2000),
             map((content: Content) => {
                 const playerSummary: Array<any> = event.edata['summary'];
                 const contentMimeType = content.mimeType;
