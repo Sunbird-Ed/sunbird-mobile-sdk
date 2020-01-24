@@ -19,7 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@project-sunbird/client-services": "git+https://github.com/Sunbird-Ed/sunbird-client-services.git#release-2.7.0",
+    "@project-sunbird/client-services": "git+https://github.com/Sunbird-Ed/sunbird-client-services.git#2.7.0",
     "crypto-js": "^3.1.9-1",
     "dayjs": "^1.8.17",
     "inversify": "^5.0.1",
