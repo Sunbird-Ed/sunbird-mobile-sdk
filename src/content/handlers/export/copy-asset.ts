@@ -19,11 +19,19 @@ export class CopyAsset {
                 const contentInDb = element as ContentEntry.SchemaMap;
                 const contentData = exportContentContext.items![i];
                 const appIcon = contentData['appIcon'];
-                if (appIcon) {
-                    try {
-                        await this.copyFile(contentInDb[ContentEntry.COLUMN_NAME_PATH]!, exportContentContext.tmpLocationPath!, appIcon);
-                    } catch (e) {
-                        console.error(e);
+                const setPreviewUrl = contentData['itemSetPreviewUrl'];
+
+                for (const item of [appIcon, setPreviewUrl]) {
+                    if (item && !item.startsWith('https:')) {
+                        try {
+                            await this.copyFile(
+                                contentInDb[ContentEntry.COLUMN_NAME_PATH]!,
+                                exportContentContext.tmpLocationPath!,
+                                item
+                            );
+                        } catch (e) {
+                            console.error(e);
+                        }
                     }
                 }
 

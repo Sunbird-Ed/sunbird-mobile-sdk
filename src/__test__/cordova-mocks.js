@@ -38,6 +38,9 @@ global.cordova = {
             addEventListener: () => {
             },
         }),
+    },
+    getAppVersion: {
+        getAppName: () => {}
     }
 };
 
@@ -78,6 +81,23 @@ global.sbutility = {
     },
     getBuildConfigValue: () => {
     }
+};
+
+global.sbutility = {
+    getMetaData: () => {
+
+    },
+    copyFile: () => {
+
+    },
+    createDirectories: () => {
+
+    },
+    rm: () => {},
+    copyDirectory: () => {},
+    getFreeUsableSpace: () => {},
+    canWrite: () => {},
+    getBuildConfigValue: () => {}
 };
 
 global.customtabs = {

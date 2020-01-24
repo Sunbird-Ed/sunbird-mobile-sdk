@@ -101,28 +101,10 @@ export class ImportNExportHandler {
                 childContents.forEach(element => {
                     childIdentifiers.push(element.identifier);
                 });
-                contentModelToExport = await this.findAllContentsWithIdentifiers(childIdentifiers);
+                contentModelToExport = await this.findAllContentsWithIdentifiers(childIdentifiers, true);
             }).catch((err) => {
                 console.log('fileRead error', err);
             });
-        // contentsInDb.forEach((contentInDb) => {
-        //     queue.add(contentInDb);
-        // });
-        // let node: ContentEntry.SchemaMap;
-        // while (!queue.isEmpty()) {
-        //     node = queue.dequeue()!;
-        //     if (ContentUtil.hasChildren(node[ContentEntry.COLUMN_NAME_LOCAL_DATA])) {
-        //         const childContentsIdentifiers: string[] = ContentUtil.getChildContentsIdentifiers(node[COLUMN_NAME_LOCAL_DATA]);
-        //         const contentModelListInDB: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(
-        //             childContentsIdentifiers);
-        //         if (contentModelListInDB && contentModelListInDB.length > 0) {
-        //             contentModelListInDB.forEach((contentModelInDb) => {
-        //                 queue.add(contentModelInDb);
-        //             });
-        //         }
-        //     }
-        //     contentModelToExport.push(node);
-        // }
         return Promise.resolve(ContentUtil.deDupe(contentModelToExport, 'identifier'));
     }
 
@@ -141,10 +123,19 @@ export class ImportNExportHandler {
         return manifest;
     }
 
-    private findAllContentsWithIdentifiers(identifiers: string[]): Promise<ContentEntry.SchemaMap[]> {
+    private findAllContentsWithIdentifiers(identifiers: string[], sort?): Promise<ContentEntry.SchemaMap[]> {
+        let orderByString = '';
+        if (sort) {
+            if (identifiers.length) {
+                orderByString = identifiers.reduce((acc, identifier, index) => {
+                    return acc + ` WHEN '${identifier}' THEN ${index}`;
+                }, ` ORDER BY CASE ${COLUMN_NAME_IDENTIFIER}`) + ' END';
+            }
+        }
+
         const identifiersStr = ArrayUtil.joinPreservingQuotes(identifiers);
         const filter = ` where ${COLUMN_NAME_IDENTIFIER} in (${identifiersStr}) AND ${COLUMN_NAME_REF_COUNT} > 0`;
-        const query = `select * from ${ContentEntry.TABLE_NAME} ${filter}`;
+        const query = `select * from ${ContentEntry.TABLE_NAME} ${filter} ${orderByString}`;
         return this.dbService!.execute(query).toPromise();
     }
 }
