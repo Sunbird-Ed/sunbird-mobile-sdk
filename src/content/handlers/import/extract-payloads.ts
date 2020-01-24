@@ -90,6 +90,7 @@ export class ExtractPayloads {
             const pkgVersion = item.pkgVersion;
             const artifactUrl = item.artifactUrl;
             const appIcon = item.appIcon;
+            const itemSetPreviewUrl = item.itemSetPreviewUrl;
             const board = item.board;
             const medium = item.medium;
             const grade = item.gradeLevel;
@@ -169,6 +170,13 @@ export class ExtractPayloads {
                         }
                     } catch (e) {
                     }
+                }
+
+                try {
+                    if (!itemSetPreviewUrl.startsWith('https:')) {
+                        this.copyAssets(importContext.tmpLocation!, itemSetPreviewUrl, payloadDestination!, false);
+                    }
+                } catch (e) {
                 }
             }
             const basePath = this.getBasePath(payloadDestination, doesContentExist, existingContentPath);
