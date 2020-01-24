@@ -1,26 +1,23 @@
 import {
-    ContentData, ContentImport,
+    ContentData,
+    ContentImport,
     ContentSearchCriteria,
     ContentSearchFilter,
     ContentSearchResult,
     ContentServiceConfig,
     ContentSortCriteria,
     FilterValue,
+    MimeType,
     SearchResponse,
     SearchType,
     SortOrder
 } from '..';
 import {AppConfig} from '../../api/config/app-config';
-import {MimeType} from '../util/content-constants';
 import {SearchFilter, SearchRequest} from '../def/search-request';
 import {InteractType, TelemetryInteractRequest, TelemetryService} from '../../telemetry';
 import {NumberUtil} from '../../util/number-util';
 
 export class SearchContentHandler {
-
-    public static readonly AUDIENCE_LEARNER = ['learner'];
-    public static readonly AUDIENCE_INSTRUCTOR = ['instructor'];
-    private readonly SEARCH_ENDPOINT = '/api/search';
 
     constructor(private appConfig: AppConfig,
                 private contentServiceConfig: ContentServiceConfig,
@@ -44,7 +41,7 @@ export class SearchContentHandler {
 
                 const criteria: ContentSortCriteria = {
                     sortAttribute: key,
-                    sortOrder: this.getSortOrder(String(sortBy[key]))
+                    sortOrder: this.getSortOrder(sortBy[key])
                 };
                 sortCriteria.push(criteria);
             });
@@ -78,30 +75,6 @@ export class SearchContentHandler {
         }
 
         return contentSearchCriteria;
-    }
-
-    private getSortOrder(order): SortOrder {
-        let sortOrder: SortOrder;
-        if (order === 'asc') {
-            sortOrder = SortOrder.ASC;
-        } else if (order === 'desc') {
-            sortOrder = SortOrder.DESC;
-        } else {
-            sortOrder = SortOrder.DESC;
-        }
-        return sortOrder;
-    }
-
-    private getSearchType(type): SearchType {
-        let searchType: SearchType;
-        if (type === 'search') {
-            searchType = SearchType.SEARCH;
-        } else if (type === 'filter') {
-            searchType = SearchType.FILTER;
-        } else {
-            searchType = SearchType.SEARCH;
-        }
-        return searchType;
     }
 
     getSearchContentRequest(criteria: ContentSearchCriteria): SearchRequest {
@@ -239,44 +212,6 @@ export class SearchContentHandler {
         return contentSearchCriteria;
     }
 
-    private getSortedFilterValuesWithAppliedFilters(facetValues: FilterValue[], appliedFilters: string[]): FilterValue[] {
-        facetValues.forEach((facetValue) => {
-            let applied = false;
-            if (appliedFilters) {
-                appliedFilters.forEach((appliedFilter) => {
-                    if (appliedFilter && facetValue.name && facetValue.name === appliedFilter.toLowerCase()) {
-                        applied = true;
-                    }
-                });
-            }
-            facetValue.apply = applied;
-            facetValue.count = NumberUtil.parseInt(facetValue.count);
-        });
-        return facetValues;
-    }
-
-    private mapFilterValues(filtersMap: SearchFilter, contentSearchCriteria: ContentSearchCriteria): ContentSearchFilter[] {
-        const contentSearchFilters: ContentSearchFilter[] = [];
-        const impliedFiltersMap: { [key: string]: any }[] = [];
-        Object.keys(filtersMap).forEach(key => {
-            const values = filtersMap[key];
-            if (Array.isArray(values) && values.length) {
-                const filterValues: FilterValue[] = [];
-                values.forEach((value) => {
-                    const filterValue: FilterValue = {name: value, apply: true};
-                    filterValues.push(filterValue);
-                });
-                contentSearchFilters.push({name: key, values: filterValues});
-            } else if (values) {
-                const filterMap: { [key: string]: any } = {};
-                filterMap[key] = values;
-                impliedFiltersMap.push(filterMap);
-            }
-        });
-        contentSearchCriteria.impliedFiltersMap = impliedFiltersMap;
-        return contentSearchFilters;
-    }
-
     addFilterValue(facets: ContentSearchFilter[], filters) {
         if (facets && facets.length > 0) {
             facets.forEach(facet => {
@@ -326,26 +261,26 @@ export class SearchContentHandler {
         };
     }
 
-    public async getDownloadUrl(contentData: ContentData, contentImport?: ContentImport ): Promise<string> {
-        let downladUrl;
+    public async getDownloadUrl(contentData: ContentData, contentImport?: ContentImport): Promise<string> {
+        let downloadUrl;
         if (contentData.mimeType === MimeType.COLLECTION.valueOf()) {
             const variants = contentData.variants;
             if (variants && variants['online']) {
                 const spineData = variants['online'];
-                downladUrl = spineData && spineData['ecarUrl'];
+                downloadUrl = spineData && spineData['ecarUrl'];
                 await this.buildContentLoadingEvent('online', contentImport!, contentData.contentType, contentData.pkgVersion);
             } else if (variants && variants['spine']) {
                 const spineData = variants['spine'];
-                downladUrl = spineData && spineData['ecarUrl'];
+                downloadUrl = spineData && spineData['ecarUrl'];
                 await this.buildContentLoadingEvent('spine', contentImport!, contentData.contentType, contentData.pkgVersion);
             }
         }
 
-        if (!downladUrl) {
-            downladUrl = contentData.downloadUrl!.trim();
+        if (!downloadUrl) {
+            downloadUrl = contentData.downloadUrl!.trim();
             await this.buildContentLoadingEvent('full', contentImport!, contentData.contentType, contentData.pkgVersion);
         }
-        return downladUrl;
+        return downloadUrl;
     }
 
     buildContentLoadingEvent(subtype: string, contentImport: ContentImport, contentType: string, contentVersion: string): Promise<boolean> {
@@ -360,6 +295,68 @@ export class SearchContentHandler {
         telemetryInteractRequest.rollup = contentImport.rollUp;
         telemetryInteractRequest.correlationData = contentImport.correlationData;
         return this.telemetryService.interact(telemetryInteractRequest).toPromise();
+    }
+
+    private getSortOrder(order): SortOrder {
+        let sortOrder: SortOrder;
+        if (order === SortOrder.ASC) {
+            sortOrder = SortOrder.ASC;
+        } else if (order === 'desc') {
+            sortOrder = SortOrder.DESC;
+        } else {
+            sortOrder = SortOrder.DESC;
+        }
+        return sortOrder;
+    }
+
+    private getSearchType(type): SearchType {
+        let searchType: SearchType;
+        if (type === 'search') {
+            searchType = SearchType.SEARCH;
+        } else if (type === 'filter') {
+            searchType = SearchType.FILTER;
+        } else {
+            searchType = SearchType.SEARCH;
+        }
+        return searchType;
+    }
+
+    private getSortedFilterValuesWithAppliedFilters(facetValues: FilterValue[], appliedFilters: string[]): FilterValue[] {
+        facetValues.forEach((facetValue) => {
+            let applied = false;
+            if (appliedFilters) {
+                appliedFilters.forEach((appliedFilter) => {
+                    if (appliedFilter && facetValue.name && facetValue.name === appliedFilter.toLowerCase()) {
+                        applied = true;
+                    }
+                });
+            }
+            facetValue.apply = applied;
+            facetValue.count = NumberUtil.parseInt(facetValue.count);
+        });
+        return facetValues;
+    }
+
+    private mapFilterValues(filtersMap: SearchFilter, contentSearchCriteria: ContentSearchCriteria): ContentSearchFilter[] {
+        const contentSearchFilters: ContentSearchFilter[] = [];
+        const impliedFiltersMap: { [key: string]: any }[] = [];
+        Object.keys(filtersMap).forEach(key => {
+            const values = filtersMap[key];
+            if (Array.isArray(values) && values.length) {
+                const filterValues: FilterValue[] = [];
+                values.forEach((value) => {
+                    const filterValue: FilterValue = {name: value, apply: true};
+                    filterValues.push(filterValue);
+                });
+                contentSearchFilters.push({name: key, values: filterValues});
+            } else if (values) {
+                const filterMap: { [key: string]: any } = {};
+                filterMap[key] = values;
+                impliedFiltersMap.push(filterMap);
+            }
+        });
+        contentSearchCriteria.impliedFiltersMap = impliedFiltersMap;
+        return contentSearchFilters;
     }
 
 }
