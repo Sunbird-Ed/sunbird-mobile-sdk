@@ -126,10 +126,12 @@ export class DeleteContentHandler {
                 const localData = contentInDb[ContentEntry.COLUMN_NAME_LOCAL_DATA];
                 const localContentData: ContentData = localData && JSON.parse(localData);
                 let appIcon = '';
+                let itemSetPreviewUrl = '';
                 if (localData) {
-                    appIcon = localContentData.appIcon;
+                    appIcon = localContentData.appIcon ? FileUtil.getFileName(localContentData.appIcon) : '';
+                    itemSetPreviewUrl = localContentData.itemSetPreviewUrl ? FileUtil.getFileName(localContentData.itemSetPreviewUrl) : '';
                 }
-                this.rm(ContentUtil.getBasePath(path), appIcon ? FileUtil.getFileName(appIcon) : '');
+                this.rm(ContentUtil.getBasePath(path), [appIcon, itemSetPreviewUrl].join(':'));
             }
             contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY] = visibility;
             contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT] = ContentUtil.addOrUpdateRefCount(refCount);

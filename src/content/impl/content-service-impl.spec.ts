@@ -8,7 +8,7 @@ import { SdkConfig } from '../../sdk-config';
 import { ApiService, Request } from '../../api';
 import {
     ProfileService, ContentDelete, ContentDetailRequest, ContentDeleteRequest,
-    ContentMarkerRequest, Content, HttpRequestType, ContentData
+    ContentMarkerRequest, Content, HttpRequestType, ContentData, AppInfo
 } from '../..';
 import { FileService } from '../../util/file/def/file-service';
 import { ZipService } from '../../util/zip/def/zip-service';
@@ -90,6 +90,9 @@ describe('ContentServiceImpl', () => {
     const mockCachedItemStore: Partial<CachedItemStore> = {
         getCached: jest.fn(() => { })
     };
+    const mockAppInfo: Partial<AppInfo> = {
+        getAppName: () => 'MOCK_APP_NAME'
+    };
 
     beforeAll(() => {
         container.bind<ContentService>(InjectionTokens.CONTENT_SERVICE).to(ContentServiceImpl).inTransientScope();
@@ -107,6 +110,7 @@ describe('ContentServiceImpl', () => {
         container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).toConstantValue(mockSharedPreferences as SharedPreferences);
         container.bind<EventsBusService>(InjectionTokens.EVENTS_BUS_SERVICE).toConstantValue(mockEventsBusService as EventsBusService);
         container.bind<CachedItemStore>(InjectionTokens.CACHED_ITEM_STORE).toConstantValue(mockCachedItemStore as CachedItemStore);
+        container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
 
         contentService = container.get(InjectionTokens.CONTENT_SERVICE);
     });
