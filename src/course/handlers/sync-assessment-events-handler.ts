@@ -66,7 +66,7 @@ export class SyncAssessmentEventsHandler {
                         const context = JSON.parse(key);
                         this.capturedAssessmentEvents[key]!.forEach((event) => {
                             if (context.batchStatus !== 2) {
-                                this.persistAssessEvent(event, context);
+                                this.persistAssessEvent(event, context).toPromise();
                             }
                         });
                     });
@@ -193,7 +193,7 @@ export class SyncAssessmentEventsHandler {
                 return this.invokeSyncApi(assessmentTelemetrySyncRequest);
             }),
             tap(async () =>
-                await this.dbService.execute(`DELETE FROM ${CourseAssessmentEntry.TABLE_NAME}`)
+                await this.dbService.execute(`DELETE FROM ${CourseAssessmentEntry.TABLE_NAME}`).toPromise()
             ),
             mapTo(undefined)
         ).toPromise();
