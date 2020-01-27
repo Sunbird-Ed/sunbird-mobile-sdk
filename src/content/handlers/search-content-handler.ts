@@ -41,7 +41,7 @@ export class SearchContentHandler {
 
                 const criteria: ContentSortCriteria = {
                     sortAttribute: key,
-                    sortOrder: this.getSortOrder(sortBy[key])
+                    sortOrder: this.getSortOrder(String(sortBy[key]))
                 };
                 sortCriteria.push(criteria);
             });
@@ -299,7 +299,7 @@ export class SearchContentHandler {
 
     private getSortOrder(order): SortOrder {
         let sortOrder: SortOrder;
-        if (order === SortOrder.ASC) {
+        if (order === 'asc') {
             sortOrder = SortOrder.ASC;
         } else if (order === 'desc') {
             sortOrder = SortOrder.DESC;

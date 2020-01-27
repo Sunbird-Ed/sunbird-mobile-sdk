@@ -51,7 +51,8 @@ describe('SearchContentHandler', () => {
                     key2: 'desc'
                 },
                 filters: 'filters',
-                facets: 'facets'
+                facets: 'facets',
+                searchType: SearchType.FILTER
             }
         };
         const sortCriteria: ContentSortCriteria[] = [];
