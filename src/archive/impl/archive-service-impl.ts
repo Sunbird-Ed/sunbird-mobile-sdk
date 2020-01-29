@@ -1,5 +1,12 @@
-import {ArchiveExportProgress, ArchiveExportRequest, ArchiveObjectType, ArchivePackageProgress, ArchiveService} from '..';
-import {combineLatest, from, Observable, concat, defer, throwError} from 'rxjs';
+import {
+    ArchiveExportProgress,
+    ArchiveExportRequest, ArchiveImportProgress,
+    ArchiveImportRequest,
+    ArchiveObjectType,
+    ArchiveObjectExportProgress,
+    ArchiveService, ArchiveObjectImportProgress,
+} from '..';
+import {combineLatest, from, Observable, concat, defer, throwError, of} from 'rxjs';
 import {concatMap, map, mapTo, tap} from 'rxjs/operators';
 import {UniqueId} from '../../db/util/unique-id';
 import {FileService} from '../../util/file/def/file-service';
@@ -9,7 +16,10 @@ import {InjectionTokens} from '../../injection-tokens';
 import {inject, injectable} from 'inversify';
 import {ProducerData, TelemetryService} from '../../telemetry';
 import {ZipService} from '../../util/zip/def/zip-service';
-import {InvalidRequestError} from '../export/error/invalid-request-error';
+import {InvalidRequestError} from '..';
+import {TelemetryImportDelegate} from '../import/impl/telemetry-import-delegate';
+import {InvalidArchiveError} from '../import/error/invalid-archive-error';
+import {TelemetryArchivePackageMeta} from '../export/def/telemetry-archive-package-meta';
 
 interface ArchiveManifest {
     id: string;
@@ -41,13 +51,22 @@ export class ArchiveServiceImpl implements ArchiveService {
     ) {
     }
 
-    private static reduceObjectProgressToArchivePackageProgress(
-        results: { type: ArchiveObjectType, progress: ArchivePackageProgress }[]
-    ): Map<ArchiveObjectType, ArchivePackageProgress> {
+    private static reduceObjectProgressToArchiveObjectExportProgress(
+        results: { type: ArchiveObjectType, progress: ArchiveObjectExportProgress }[]
+    ): Map<ArchiveObjectType, ArchiveObjectExportProgress> {
         return results.reduce((acc, {type, progress}) => {
             acc.set(type, progress);
             return acc;
-        }, new Map<ArchiveObjectType, ArchivePackageProgress>());
+        }, new Map<ArchiveObjectType, ArchiveObjectExportProgress>());
+    }
+
+    private static reduceObjectProgressToArchiveObjectImportProgress(
+        results: { type: ArchiveObjectType, progress: ArchiveObjectImportProgress }[],
+    ): Map<ArchiveObjectType, ArchiveObjectImportProgress> {
+        return results.reduce((acc, {type, progress}) => {
+            acc.set(type, progress);
+            return acc;
+        }, new Map<ArchiveObjectType, ArchiveObjectImportProgress>());
     }
 
     export(exportRequest: ArchiveExportRequest): Observable<ArchiveExportProgress> {
@@ -62,7 +81,7 @@ export class ArchiveServiceImpl implements ArchiveService {
             from(this.fileService.createDir(workspacePath, false)).pipe(
                 concatMap(() => {
                     return combineLatest(
-                        exportRequest.objects.map<Observable<{ type: ArchiveObjectType, progress: ArchivePackageProgress }>>(object => {
+                        exportRequest.objects.map<Observable<{ type: ArchiveObjectType, progress: ArchiveObjectExportProgress }>>(object => {
                             switch (object.type) {
                                 case ArchiveObjectType.CONTENT:
                                     // TODO
@@ -81,10 +100,10 @@ export class ArchiveServiceImpl implements ArchiveService {
                         })
                     );
                 }),
-                map((results: { type: ArchiveObjectType, progress: ArchivePackageProgress }[]) => {
+                map((results: { type: ArchiveObjectType, progress: ArchiveObjectExportProgress }[]) => {
                     return {
                         task: 'BUILDING',
-                        progress: ArchiveServiceImpl.reduceObjectProgressToArchivePackageProgress(results)
+                        progress: ArchiveServiceImpl.reduceObjectProgressToArchiveObjectExportProgress(results)
                     };
                 }),
                 tap((results) => lastResult = results)
@@ -144,6 +163,118 @@ export class ArchiveServiceImpl implements ArchiveService {
             mapTo({
                 progress,
                 task: 'BUILDING_MANIFEST'
+            })
+        );
+    }
+
+    import(importRequest: ArchiveImportRequest): Observable<ArchiveImportProgress> {
+        const workspacePath = `${cordova.file.externalCacheDirectory}${UniqueId.generateUniqueId()}`;
+
+        if (!importRequest.objects.length) {
+            return throwError(new InvalidRequestError('No archive objects to export'));
+        }
+
+        let lastResult: ArchiveImportProgress = {
+            task: '',
+            progress: new Map<ArchiveObjectType, ArchiveObjectImportProgress>(),
+            filePath: importRequest.filePath
+        };
+
+        return concat(
+            defer(() => this.extractZipArchive(lastResult, workspacePath)),
+            defer(() => this.readManifestFile(lastResult, workspacePath, importRequest.objects.map(o => o.type))),
+            from(this.fileService.createDir(workspacePath, false)).pipe(
+                concatMap(() => {
+                    return combineLatest(
+                        importRequest.objects.map<Observable<{ type: ArchiveObjectType, progress: ArchiveObjectImportProgress }>>(object => {
+                            switch (object.type) {
+                                case ArchiveObjectType.CONTENT:
+                                    // TODO
+                                    throw new Error('To be implemented');
+                                case ArchiveObjectType.PROFILE:
+                                    // TODO
+                                    throw new Error('To be implemented');
+                                case ArchiveObjectType.TELEMETRY:
+                                    return new TelemetryImportDelegate(
+                                        this.dbService,
+                                        this.fileService
+                                    ).import({
+                                        filePath: importRequest.filePath
+                                    }, {
+                                        workspacePath,
+                                        items: lastResult.progress
+                                            .get(ArchiveObjectType.TELEMETRY)!.pending as TelemetryArchivePackageMeta[]
+                                    }).pipe(
+                                        map((progress) => ({ type: ArchiveObjectType.TELEMETRY, progress: progress }))
+                                    );
+                            }
+                        })
+                    );
+                }),
+                map((results: { type: ArchiveObjectType, progress: ArchiveObjectImportProgress }[]) => {
+                    return {
+                        task: 'IMPORTING',
+                        progress: ArchiveServiceImpl.reduceObjectProgressToArchiveObjectImportProgress(results)
+                    };
+                }),
+                tap((results) => lastResult = results)
+            ),
+            of({
+                ...lastResult,
+                task: 'COMPLETE',
+            })
+        );
+    }
+
+    private extractZipArchive(progress: ArchiveImportProgress, workspacePath: string): Observable<ArchiveImportProgress> {
+        return new Observable((observer) => {
+            this.zipService.unzip(progress.filePath!, { target: workspacePath }, () => {
+                observer.next();
+                observer.complete();
+            }, (e) => {
+                observer.error(e);
+            });
+        }).pipe(
+            mapTo({
+                ...progress,
+                task: 'EXTRACTING',
+            })
+        );
+    }
+
+    private readManifestFile(
+        importProgress: ArchiveImportProgress,
+        workspacePath: string,
+        objectTypes: ArchiveObjectType[]
+    ): Observable<ArchiveImportProgress> {
+        return from(this.fileService.readAsText(workspacePath, 'manifest.json')).pipe(
+            map((content) => {
+                try {
+                    return JSON.parse(content);
+                } catch (e) {
+                    throw new InvalidArchiveError('Invalid manfiest.json');
+                }
+            }),
+            map((manifest: ArchiveManifest) => {
+                return {
+                    ...importProgress,
+                    progress: (() => {
+                        objectTypes.forEach((type) => {
+                            const items = manifest.archive.items.filter((i) => i.objectType === type);
+
+                            if (!items.length) {
+                                throw new InvalidArchiveError('Nothing to import');
+                            }
+
+                            importProgress.progress.set(type, {
+                                task: 'INITIALISING',
+                                pending: items
+                            });
+                        });
+                        return importProgress.progress;
+                    })(),
+                    task: 'VALIDATING'
+                };
             })
         );
     }

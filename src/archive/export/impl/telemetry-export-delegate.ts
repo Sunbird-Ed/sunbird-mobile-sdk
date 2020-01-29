@@ -1,5 +1,5 @@
 import {ArchiveExportDelegate} from '..';
-import {ArchiveExportRequest, ArchiveObjectType, ArchivePackageContext, ArchivePackageProgress} from '../..';
+import {ArchiveExportRequest, ArchiveObjectType, ArchivePackageExportContext, ArchiveObjectExportProgress} from '../..';
 import {DbService} from '../../../db';
 import {FileService} from '../../../util/file/def/file-service';
 import {TelemetryProcessedEntry} from '../../../telemetry/db/schema';
@@ -17,10 +17,10 @@ export class TelemetryExportDelegate implements ArchiveExportDelegate {
     ) {
     }
 
-    export(request: Pick<ArchiveExportRequest, 'filePath'>, context: ArchivePackageContext): Observable<ArchivePackageProgress<TelemetryArchivePackageMeta>> {
+    export(request: Pick<ArchiveExportRequest, 'filePath'>, context: ArchivePackageExportContext): Observable<ArchiveObjectExportProgress<TelemetryArchivePackageMeta>> {
         return new Observable((observer) => {
             (async () => {
-                let archivePackageProgress: ArchivePackageProgress<TelemetryArchivePackageMeta> = {
+                let archivePackageProgress: ArchiveObjectExportProgress<TelemetryArchivePackageMeta> = {
                     task: '',
                     completed: [],
                 };
@@ -114,7 +114,7 @@ export class TelemetryExportDelegate implements ArchiveExportDelegate {
         }
     }
 
-    private async prepare(context: ArchivePackageContext) {
+    private async prepare(context: ArchivePackageExportContext) {
         this.workspaceSubPath = `${context.workspacePath}`;
     }
 

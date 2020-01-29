@@ -1,6 +1,6 @@
 import {Observable} from 'rxjs';
-import {ArchiveExportRequest, ArchivePackageContext, ArchivePackageProgress} from '../..';
+import {ArchiveExportRequest, ArchivePackageExportContext, ArchiveObjectExportProgress} from '../..';
 
 export interface ArchiveExportDelegate {
-    export(request: Exclude<ArchiveExportRequest, 'objectTypes'>, context: ArchivePackageContext): Observable<ArchivePackageProgress>;
+    export(request: Pick<ArchiveExportRequest, 'filePath'>, context: ArchivePackageExportContext): Observable<ArchiveObjectExportProgress>;
 }

@@ -5,7 +5,7 @@ import {ObjectNotFoundError} from '../error/object-not-found-error';
 import {TelemetryProcessedEntry} from '../../../telemetry/db/schema';
 import {of} from 'rxjs';
 import {reduce} from 'rxjs/operators';
-import {ArchivePackageProgress} from '../..';
+import {ArchiveObjectExportProgress} from '../..';
 
 describe('TelemetryExportDelegate', () => {
     let telemetryExportDelegate: TelemetryExportDelegate;
@@ -77,7 +77,7 @@ describe('TelemetryExportDelegate', () => {
                     workspacePath: 'some_temp_path'
                 }
             ).pipe(
-                reduce((acc: ArchivePackageProgress<any>[], v) => { acc.push(v); return acc; }, [])
+                reduce((acc: ArchiveObjectExportProgress<any>[], v) => { acc.push(v); return acc; }, [])
             ).subscribe((progress) => {
                 expect(progress.length).toEqual(6);
                 expect(mockFileService.writeFile).nthCalledWith(
@@ -131,7 +131,7 @@ describe('TelemetryExportDelegate', () => {
                     workspacePath: 'some_temp_path'
                 }
             ).pipe(
-                reduce((acc: ArchivePackageProgress<any>[], v) => { acc.push(v); return acc; }, [])
+                reduce((acc: ArchiveObjectExportProgress<any>[], v) => { acc.push(v); return acc; }, [])
             ).subscribe((progress) => {
                 expect(progress).toEqual(expect.arrayContaining([
                     expect.objectContaining({
