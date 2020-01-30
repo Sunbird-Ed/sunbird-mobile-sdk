@@ -78,7 +78,7 @@ export class ArchiveServiceImpl implements ArchiveService {
         }
 
         return concat(
-            from(this.fileService.createDir(workspacePath, false)).pipe(
+            defer(() => from(this.fileService.createDir(workspacePath, false))).pipe(
                 concatMap(() => {
                     return combineLatest(
                         exportRequest.objects.map<Observable<{ type: ArchiveObjectType, progress: ArchiveObjectExportProgress }>>(object => {
@@ -181,48 +181,50 @@ export class ArchiveServiceImpl implements ArchiveService {
         };
 
         return concat(
-            defer(() => this.extractZipArchive(lastResult, workspacePath)),
-            defer(() => this.readManifestFile(lastResult, workspacePath, importRequest.objects.map(o => o.type))),
-            from(this.fileService.createDir(workspacePath, false)).pipe(
-                concatMap(() => {
-                    return combineLatest(
-                        importRequest.objects.map<Observable<{ type: ArchiveObjectType, progress: ArchiveObjectImportProgress }>>(object => {
-                            switch (object.type) {
-                                case ArchiveObjectType.CONTENT:
-                                    // TODO
-                                    throw new Error('To be implemented');
-                                case ArchiveObjectType.PROFILE:
-                                    // TODO
-                                    throw new Error('To be implemented');
-                                case ArchiveObjectType.TELEMETRY:
-                                    return new TelemetryImportDelegate(
-                                        this.dbService,
-                                        this.fileService
-                                    ).import({
-                                        filePath: importRequest.filePath
-                                    }, {
-                                        workspacePath,
-                                        items: lastResult.progress
-                                            .get(ArchiveObjectType.TELEMETRY)!.pending as TelemetryArchivePackageMeta[]
-                                    }).pipe(
-                                        map((progress) => ({ type: ArchiveObjectType.TELEMETRY, progress: progress }))
-                                    );
-                            }
-                        })
-                    );
-                }),
-                map((results: { type: ArchiveObjectType, progress: ArchiveObjectImportProgress }[]) => {
-                    return {
-                        task: 'IMPORTING',
-                        progress: ArchiveServiceImpl.reduceObjectProgressToArchiveObjectImportProgress(results)
-                    };
-                }),
-                tap((results) => lastResult = results)
+            defer(() => from(this.fileService.createDir(workspacePath, false))).pipe(
+                concatMap(() => this.extractZipArchive(lastResult, workspacePath))
             ),
+            defer(() => this.readManifestFile(lastResult, workspacePath, importRequest.objects.map(o => o.type))),
+            defer(() => {
+                return combineLatest(
+                    importRequest.objects.map<Observable<{ type: ArchiveObjectType, progress: ArchiveObjectImportProgress }>>(object => {
+                        switch (object.type) {
+                            case ArchiveObjectType.CONTENT:
+                                // TODO
+                                throw new Error('To be implemented');
+                            case ArchiveObjectType.PROFILE:
+                                // TODO
+                                throw new Error('To be implemented');
+                            case ArchiveObjectType.TELEMETRY:
+                                return new TelemetryImportDelegate(
+                                    this.dbService,
+                                    this.fileService
+                                ).import({
+                                    filePath: importRequest.filePath
+                                }, {
+                                    workspacePath,
+                                    items: lastResult.progress
+                                        .get(ArchiveObjectType.TELEMETRY)!.pending as TelemetryArchivePackageMeta[]
+                                }).pipe(
+                                    map((progress) => ({ type: ArchiveObjectType.TELEMETRY, progress: progress }))
+                                );
+                        }
+                    })
+                ).pipe(
+                    map((results: { type: ArchiveObjectType, progress: ArchiveObjectImportProgress }[]) => {
+                        return {
+                            task: 'IMPORTING',
+                            progress: ArchiveServiceImpl.reduceObjectProgressToArchiveObjectImportProgress(results)
+                        };
+                    }),
+                )
+            }),
             of({
                 ...lastResult,
                 task: 'COMPLETE',
             })
+        ).pipe(
+            tap((results) => lastResult = results)
         );
     }
 
