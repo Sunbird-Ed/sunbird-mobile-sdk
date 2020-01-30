@@ -20,6 +20,7 @@ import {InvalidRequestError} from '..';
 import {TelemetryImportDelegate} from '../import/impl/telemetry-import-delegate';
 import {InvalidArchiveError} from '../import/error/invalid-archive-error';
 import {TelemetryArchivePackageMeta} from '../export/def/telemetry-archive-package-meta';
+import {FileUtil} from '../../util/file/util/file-util';
 
 interface ArchiveManifest {
     id: string;
@@ -229,13 +230,23 @@ export class ArchiveServiceImpl implements ArchiveService {
     }
 
     private extractZipArchive(progress: ArchiveImportProgress, workspacePath: string): Observable<ArchiveImportProgress> {
+        const filePath = progress.filePath!;
         return new Observable((observer) => {
-            this.zipService.unzip(progress.filePath!, { target: workspacePath }, () => {
-                observer.next();
-                observer.complete();
-            }, (e) => {
-                observer.error(e);
-            });
+            this.fileService.copyFile(
+                FileUtil.getDirecory(filePath),
+                FileUtil.getFileName(filePath),
+                `${workspacePath}/`,
+                FileUtil.getFileName(filePath)
+            ).then(() => {
+                this.zipService.unzip(
+                    `${workspacePath}/${FileUtil.getFileName(filePath)}`,
+                    { target: workspacePath + '/' },
+                    () => {
+                        observer.next();
+                        observer.complete();
+                    }, observer.error
+                );
+            }, observer.error);
         }).pipe(
             mapTo({
                 ...progress,

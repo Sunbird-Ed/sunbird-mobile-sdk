@@ -183,6 +183,7 @@ describe('ArchiveServiceImpl', () => {
         it('should initiate with a temporary working directory in cache', (done) => {
             // arrange
             mockFileService.createDir = jest.fn(() => of(undefined));
+            mockFileService.copyFile = jest.fn(() => Promise.resolve());
             mockZipService.unzip = jest.fn((_, __, cb) => { cb(); });
             mockFileService.readAsText = jest.fn(() => of(JSON.stringify({
                 id: 'some_id',
@@ -238,6 +239,7 @@ describe('ArchiveServiceImpl', () => {
         it('should return progress sequentially till completion', (done) => {
             // arrange
             mockFileService.createDir = jest.fn(() => of(undefined));
+            mockFileService.copyFile = jest.fn(() => Promise.resolve());
             mockZipService.unzip = jest.fn((_, __, cb) => { cb(); });
             mockFileService.readAsText = jest.fn(() => of(JSON.stringify({
                 id: 'some_id',
