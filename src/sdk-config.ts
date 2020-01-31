@@ -16,6 +16,7 @@ import {EventsBusConfig} from './events-bus/config/events-bus-config';
 import {ErrorLoggerConfig} from './error/config/error-logger-config';
 import {FaqServiceConfig} from './faq';
 import {DeviceRegisterConfig} from './device-register';
+import {ContentRatingServiceConfig} from './content-rating';
 
 export interface SdkConfig {
     platform: 'cordova' | 'web';
@@ -24,6 +25,7 @@ export interface SdkConfig {
     deviceRegisterConfig: DeviceRegisterConfig;
     fileConfig: FileConfig;
     contentServiceConfig: ContentServiceConfig;
+    contentRatingServiceConfig: ContentRatingServiceConfig;
     courseServiceConfig: CourseServiceConfig;
     formServiceConfig: FormServiceConfig;
     frameworkServiceConfig: FrameworkServiceConfig;
