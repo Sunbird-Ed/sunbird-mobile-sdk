@@ -69,6 +69,8 @@ import {FaqService, FaqServiceImpl} from './faq';
 import {DeviceRegisterConfig, DeviceRegisterService, DeviceRegisterServiceImpl} from './device-register';
 import {combineLatest} from 'rxjs';
 import {concatMap} from 'rxjs/operators';
+import {ArchiveService} from './archive';
+import {ArchiveServiceImpl} from './archive/impl/archive-service-impl';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -213,6 +215,10 @@ export class SunbirdSdk {
         return this._container.get<DeviceRegisterService>(InjectionTokens.DEVICE_REGISTER_SERVICE);
     }
 
+    get archiveService(): ArchiveService {
+        return this._container.get<ArchiveService>(InjectionTokens.ARCHIVE_SERVICE);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
@@ -313,6 +319,8 @@ export class SunbirdSdk {
             .inSingletonScope();
 
         this._container.bind<FaqService>(InjectionTokens.FAQ_SERVICE).to(FaqServiceImpl).inSingletonScope();
+
+        this._container.bind<ArchiveService>(InjectionTokens.ARCHIVE_SERVICE).to(ArchiveServiceImpl).inSingletonScope();
 
         this.apiService.setDefaultApiAuthenticators([
             new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)
