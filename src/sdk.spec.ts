@@ -113,6 +113,9 @@ const mockSdkConfig: SdkConfig = {
     },
     faqServiceConfig: {
         faqConfigDirPath: '/data/faq'
+    },
+    contentRatingServiceConfig: {
+        contentRatingConfigDirPath: '/data/content-rating'
     }
 };
 
