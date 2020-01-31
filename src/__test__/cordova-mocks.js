@@ -31,7 +31,8 @@ global.cordova = {
         }
     },
     file: {
-        applicationDirectory: '/path'
+        applicationDirectory: '/path',
+        externalCacheDirectory: "file:///some_external_cache_root/some_path/"
     },
     InAppBrowser: {
         open: () => ({

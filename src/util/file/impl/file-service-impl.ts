@@ -72,6 +72,10 @@ export class FileServiceImpl implements FileService {
         return this.readFile<string>(path, filePath, 'Text');
     }
 
+    readAsBinaryString(path: string, filePath: string): Promise<string> {
+        return this.readFile<string>(path, filePath, 'BinaryString');
+    }
+
     readFileFromAssets(fileName: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             try {

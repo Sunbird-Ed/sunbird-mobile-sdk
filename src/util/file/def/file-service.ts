@@ -5,6 +5,8 @@ export interface FileService {
 
     readAsText(path: string, file: string): Promise<string>;
 
+    readAsBinaryString(path: string, file: string): Promise<string>;
+
     readFileFromAssets(fileName: string): Promise<string>;
 
     writeFile(path: string, fileName: string, text: string, options: IWriteOptions): Promise<string>;
