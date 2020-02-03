@@ -232,21 +232,25 @@ export class ArchiveServiceImpl implements ArchiveService {
     private extractZipArchive(progress: ArchiveImportProgress, workspacePath: string): Observable<ArchiveImportProgress> {
         const filePath = progress.filePath!;
         return new Observable((observer) => {
-            this.fileService.copyFile(
+            sbutility.copyFile(
                 FileUtil.getDirecory(filePath),
-                FileUtil.getFileName(filePath),
                 `${workspacePath}/`,
-                FileUtil.getFileName(filePath)
-            ).then(() => {
-                this.zipService.unzip(
-                    `${workspacePath}/${FileUtil.getFileName(filePath)}`,
-                    { target: workspacePath + '/' },
-                    () => {
-                        observer.next();
-                        observer.complete();
-                    }, observer.error
-                );
-            }, observer.error);
+                FileUtil.getFileName(filePath),
+                () => {
+                    this.zipService.unzip(
+                        `${workspacePath}/${FileUtil.getFileName(filePath)}`,
+                        { target: workspacePath + '/' },
+                        () => {
+                            observer.next();
+                            observer.complete();
+                        }, (e) => observer.error(e)
+                    );
+                },
+                (e) => {
+                    console.error(e);
+                    observer.error(e);
+                }
+            );
         }).pipe(
             mapTo({
                 ...progress,
