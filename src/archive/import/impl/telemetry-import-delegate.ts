@@ -91,7 +91,7 @@ export class TelemetryImportDelegate implements ArchiveImportDelegate {
                     [TelemetryEntry.COLUMN_NAME_PRIORITY]: 1,
                     [TelemetryProcessedEntry.COLUMN_NAME_DATA]: content
                 }
-            });
+            }).toPromise();
         });
     }
 }
