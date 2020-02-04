@@ -28,6 +28,8 @@ import { SearchHistoryService } from './util/search-history';
 import { CodePushExperimentService } from './codepush-experiment';
 import { FaqService } from './faq';
 import { DeviceRegisterConfig, DeviceRegisterService } from './device-register';
+import { ContentRatingService } from './content-rating';
+import { ArchiveService } from './archive';
 export declare class SunbirdSdk {
     private _container;
     private static _instance?;
@@ -65,6 +67,8 @@ export declare class SunbirdSdk {
     readonly codePushExperimentService: CodePushExperimentService;
     readonly faqService: FaqService;
     readonly deviceRegisterService: DeviceRegisterService;
+    readonly contentRatingService: ContentRatingService;
+    readonly archiveService: ArchiveService;
     init(sdkConfig: SdkConfig): Promise<void>;
     updateTelemetryConfig(update: Partial<TelemetryConfig>): void;
     updateDeviceRegisterConfig(update: Partial<DeviceRegisterConfig>): void;
