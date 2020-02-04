@@ -1,6 +1,7 @@
 import { DirectoryEntry, Entry, FileEntry, Flags, IWriteOptions, Metadata, RemoveResult } from '../index';
 export interface FileService {
     readAsText(path: string, file: string): Promise<string>;
+    readAsBinaryString(path: string, file: string): Promise<string>;
     readFileFromAssets(fileName: string): Promise<string>;
     writeFile(path: string, fileName: string, text: string, options: IWriteOptions): Promise<string>;
     createFile(path: string, fileName: string, replace: boolean): Promise<FileEntry>;

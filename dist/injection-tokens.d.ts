@@ -37,4 +37,6 @@ export declare const InjectionTokens: {
     CODEPUSH_EXPERIMENT_SERVICE: symbol;
     FAQ_SERVICE: symbol;
     DEVICE_REGISTER_SERVICE: symbol;
+    CONTENT_RATING_SERVICE: symbol;
+    ARCHIVE_SERVICE: symbol;
 };
