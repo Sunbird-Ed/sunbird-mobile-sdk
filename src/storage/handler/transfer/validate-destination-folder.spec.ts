@@ -57,7 +57,7 @@ describe('ValidateDestinationFolder', () => {
             duplicateContents: dupContents,
             validContentIdsInDestination: ['SAMPLE_CONTENT_1', 'SAMPLE_CONTENT_2'],
         };
-        mockFileService.exists = jest.fn(() => {});
+        mockFileService.exists = jest.fn().mockImplementation(() => {});
         (mockFileService.exists as jest.Mock).mockResolvedValue({
             isFile: true,
             isDirectory: true,
@@ -105,7 +105,7 @@ describe('ValidateDestinationFolder', () => {
             duplicateContents: dupContents,
             validContentIdsInDestination: ['SAMPLE_CONTENT_1', 'SAMPLE_CONTENT_2'],
         };
-        mockFileService.exists = jest.fn(() => {});
+        mockFileService.exists = jest.fn().mockImplementation(() => {});
         (mockFileService.exists as jest.Mock).mockRejectedValue({
             isFile: true,
             isDirectory: true,
@@ -113,7 +113,7 @@ describe('ValidateDestinationFolder', () => {
             fullPath: 'SAMPLE_FULL_PATH',
             nativeURL: ''
         });
-        mockFileService.createDir = jest.fn(() => {});
+        mockFileService.createDir = jest.fn().mockImplementation(() => {});
         (mockFileService.createDir as jest.Mock).mockResolvedValue({
             isFile: true,
             isDirectory: true,

@@ -6,7 +6,7 @@ import { ExportContentContext } from '../..';
 describe('DeleteTempEcar', () => {
     let deleteTempEcar: DeleteTempEcar;
     const mockFileService: Partial<FileService> = {
-        removeRecursively: jest.fn(() => {})
+        removeRecursively: jest.fn().mockImplementation(() => {})
     };
 
     beforeAll(() => {

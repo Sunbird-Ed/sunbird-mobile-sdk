@@ -26,10 +26,10 @@ describe('TransportAssesments', () => {
             sourceDBFilePath: 'src/db/path',
             metadata: { 'index': 1 }
         };
-        mockDbService.read = jest.fn(() => of([{uid: 'sample-uid'}]));
-        mockDbService.execute = jest.fn(() => of({}));
-        mockDbService.insert = jest.fn(() => of(2));
-        mockDbService.update = jest.fn(() => of(2));
+        mockDbService.read = jest.fn().mockImplementation(() => of([{uid: 'sample-uid'}]));
+        mockDbService.execute = jest.fn().mockImplementation(() => of({}));
+        mockDbService.insert = jest.fn().mockImplementation(() => of(2));
+        mockDbService.update = jest.fn().mockImplementation(() => of(2));
         // act
         transportAssesments.execute(request).then(() => {
             // assert

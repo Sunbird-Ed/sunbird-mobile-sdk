@@ -46,10 +46,10 @@ describe('FetchHandler', () => {
         it('should construct baseConnection with axios client for platform web', () => {
             // arrange
             const mockBaseConnection: Partial<BaseConnection> = {
-                invoke: jest.fn(() => of(new Response()))
+                invoke: jest.fn().mockImplementation(() => of(new Response()))
             };
             (BaseConnection as jest.Mock<BaseConnection>).mockImplementation(() => {
-                return mockBaseConnection;
+                return mockBaseConnection as Partial<BaseConnection> as BaseConnection;
             });
             fetchHandler = new FetchHandler(
                 mockRequest as Request,
@@ -75,10 +75,10 @@ describe('FetchHandler', () => {
             // arrange
             mockSdkConfig.platform = 'cordova';
             const mockBaseConnection: Partial<BaseConnection> = {
-                invoke: jest.fn(() => of(new Response()))
+                invoke: jest.fn().mockImplementation(() => of(new Response()))
             };
             (BaseConnection as jest.Mock<BaseConnection>).mockImplementation(() => {
-                return mockBaseConnection;
+                return mockBaseConnection as Partial<BaseConnection> as BaseConnection;
             });
             fetchHandler = new FetchHandler(
                 mockRequest as Request,
@@ -106,10 +106,10 @@ describe('FetchHandler', () => {
         // arrange
         mockSdkConfig.platform = 'cordova';
         const mockBaseConnection: Partial<BaseConnection> = {
-            invoke: jest.fn(() => of(new Response()))
+            invoke: jest.fn().mockImplementation(() => of(new Response()))
         };
         (BaseConnection as jest.Mock<BaseConnection>).mockImplementation(() => {
-            return mockBaseConnection;
+            return mockBaseConnection as Partial<BaseConnection> as BaseConnection;
         });
         fetchHandler = new FetchHandler(
             mockRequest as Request,

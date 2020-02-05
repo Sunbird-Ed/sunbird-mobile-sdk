@@ -49,9 +49,9 @@ describe('GetFrameworkDetailsHandler', () => {
 
         const GET_FRAMEWORK_DETAILS_ENDPOINT = '/read';
 
-        mockApiService.fetch =  jest.fn(() => of({ body: {result: framework}}));
-        mockCacheItemStore.getCached = jest.fn((a, b, c, d, e) => d());
-        mockFileService.readFileFromAssets = jest.fn(() => []);
+        mockApiService.fetch =  jest.fn().mockImplementation(() => of({ body: {result: framework}}));
+        mockCacheItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e) => d());
+        mockFileService.readFileFromAssets = jest.fn().mockImplementation(() => []);
         spyOn(mockApiService, 'fetch').and.returnValue(of({
             body: {
                 result: {
@@ -81,9 +81,9 @@ describe('GetFrameworkDetailsHandler', () => {
 
         const GET_FRAMEWORK_DETAILS_ENDPOINT = '/read';
 
-        mockApiService.fetch =  jest.fn(() => of(''));
-        mockCacheItemStore.getCached = jest.fn((a, b, c, d, e) => e());
-        mockFileService.readFileFromAssets =  jest.fn(() => []);
+        mockApiService.fetch =  jest.fn().mockImplementation(() => of(''));
+        mockCacheItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e) => e());
+        mockFileService.readFileFromAssets =  jest.fn().mockImplementation(() => []);
         // act
         getFrameworkDetailsHandler.handle(request).subscribe(() => {
              // assert

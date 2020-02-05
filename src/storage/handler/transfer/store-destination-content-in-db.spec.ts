@@ -57,22 +57,22 @@ describe('StoreDestinationContentInDb', () => {
             duplicateContents: dupContents,
             validContentIdsInDestination: ['SAMPLE_CONTENT_1', 'SAMPLE_CONTENT_2'],
         };
-        mockFileService.readAsText = jest.fn(() => {});
+        mockFileService.readAsText = jest.fn().mockImplementation(() => {});
         const readAsText = (mockFileService.readAsText as jest.Mock)
         .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
         readAsText().then((value) => {
             return value;
         });
-        mockDbService.read = jest.fn(() => {});
+        mockDbService.read = jest.fn().mockImplementation(() => {});
         (mockDbService.read as jest.Mock).mockReturnValue(of([]));
-        mockFileService.getDirectorySize = jest.fn(() => {});
+        mockFileService.getDirectorySize = jest.fn().mockImplementation(() => {});
         (mockFileService.getDirectorySize as jest.Mock).mockResolvedValue(1);
-        mockDeviceInfo.getDeviceID = jest.fn(() => {});
+        mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => {});
         (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue('');
-        mockDbService.beginTransaction = jest.fn(() => {});
-        mockDbService.insert = jest.fn(() => {});
+        mockDbService.beginTransaction = jest.fn().mockImplementation(() => {});
+        mockDbService.insert = jest.fn().mockImplementation(() => {});
         (mockDbService.insert as jest.Mock).mockReturnValue(of(1));
-        mockDbService.endTransaction = jest.fn(() => {});
+        mockDbService.endTransaction = jest.fn().mockImplementation(() => {});
         // act
         storeDestinationContentInDb.execute(request).subscribe(() => {
             done();
@@ -107,22 +107,22 @@ describe('StoreDestinationContentInDb', () => {
             duplicateContents: dupContents,
             validContentIdsInDestination: ['SAMPLE_CONTENT_1', 'SAMPLE_CONTENT_2'],
         };
-        mockFileService.readAsText = jest.fn(() => {});
+        mockFileService.readAsText = jest.fn().mockImplementation(() => {});
         const readAsText = (mockFileService.readAsText as jest.Mock)
         .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
         readAsText().then((value) => {
             return value;
         });
-        mockDbService.read = jest.fn(() => {});
+        mockDbService.read = jest.fn().mockImplementation(() => {});
         (mockDbService.read as jest.Mock).mockReturnValue(of([]));
-        mockFileService.getDirectorySize = jest.fn(() => {});
+        mockFileService.getDirectorySize = jest.fn().mockImplementation(() => {});
         (mockFileService.getDirectorySize as jest.Mock).mockResolvedValue(1);
-        mockDeviceInfo.getDeviceID = jest.fn(() => {});
+        mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => {});
         (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue('');
-        mockDbService.beginTransaction = jest.fn(() => {});
-        mockDbService.insert = jest.fn(() => {});
+        mockDbService.beginTransaction = jest.fn().mockImplementation(() => {});
+        mockDbService.insert = jest.fn().mockImplementation(() => {});
         (mockDbService.insert as jest.Mock).mockReturnValue(of(1));
-        mockDbService.endTransaction = jest.fn(() => {});
+        mockDbService.endTransaction = jest.fn().mockImplementation(() => {});
         // act
         storeDestinationContentInDb.execute(request).subscribe(() => {
             done();
@@ -157,22 +157,22 @@ describe('StoreDestinationContentInDb', () => {
             duplicateContents: dupContents,
             validContentIdsInDestination: ['SAMPLE_CONTENT_1', 'SAMPLE_CONTENT_2'],
         };
-        mockFileService.readAsText = jest.fn(() => {});
+        mockFileService.readAsText = jest.fn().mockImplementation(() => {});
         const readAsText = (mockFileService.readAsText as jest.Mock)
         .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
         readAsText().then((value) => {
             return value;
         });
-        mockDbService.read = jest.fn(() => {});
+        mockDbService.read = jest.fn().mockImplementation(() => {});
         (mockDbService.read as jest.Mock).mockReturnValue(of([]));
-        mockFileService.getDirectorySize = jest.fn(() => {});
+        mockFileService.getDirectorySize = jest.fn().mockImplementation(() => {});
         (mockFileService.getDirectorySize as jest.Mock).mockResolvedValue(1);
-        mockDeviceInfo.getDeviceID = jest.fn(() => {});
+        mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => {});
         (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue('');
-        mockDbService.beginTransaction = jest.fn(() => {});
-        mockDbService.insert = jest.fn(() => {});
+        mockDbService.beginTransaction = jest.fn().mockImplementation(() => {});
+        mockDbService.insert = jest.fn().mockImplementation(() => {});
         (mockDbService.insert as jest.Mock).mockReturnValue(of(1));
-        mockDbService.endTransaction = jest.fn(() => {});
+        mockDbService.endTransaction = jest.fn().mockImplementation(() => {});
         // act
         storeDestinationContentInDb.execute(request).subscribe(() => {
             done();

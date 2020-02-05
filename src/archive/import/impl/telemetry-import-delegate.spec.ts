@@ -47,8 +47,8 @@ describe('TelemetryImportDelegate', () => {
         });
 
         it('should import telemetry for every batch emitting progress', (done) => {
-            mockFileService.readAsBinaryString = jest.fn(() => Promise.resolve('SOME_DATA'));
-            mockDbService.insert = jest.fn(() => of(1));
+            mockFileService.readAsBinaryString = jest.fn().mockImplementation(() => Promise.resolve('SOME_DATA'));
+            mockDbService.insert = jest.fn().mockImplementation(() => of(1));
             // act
             telemetryImportDelegate.import({
                 filePath: 'some_base_path'

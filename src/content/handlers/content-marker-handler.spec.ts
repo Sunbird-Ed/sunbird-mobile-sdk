@@ -24,7 +24,7 @@ describe('ContentMarkerHandler', () => {
         // arrange
         const identifier = 'SAMPLE_IDENTIFIER';
         const uid = 'SAMPLE_UID';
-        mockDbService.execute = jest.fn(() => of([]));
+        mockDbService.execute = jest.fn().mockImplementation(() => of([]));
         // act
         contentMarkerHandler.getContentMarker(identifier, uid).subscribe(() => {
             // assert

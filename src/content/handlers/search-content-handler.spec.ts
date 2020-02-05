@@ -227,7 +227,7 @@ describe('SearchContentHandler', () => {
             contentId: 'd0'
         };
 
-        mockTelemetryService.interact = jest.fn(() => of([]));
+        mockTelemetryService.interact = jest.fn().mockImplementation(() => of([]));
         // act
         searchContentHandler.buildContentLoadingEvent(subType, contentImport, '', '');
         // assert

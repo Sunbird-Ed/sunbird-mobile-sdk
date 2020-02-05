@@ -12,7 +12,7 @@ describe('GenerateProfileExportTelemetry', () => {
     let generateProfileExportTelemetry: GenerateProfileExportTelemetry;
     const mockDbService: Partial<DbService> = {};
     const mockTelemetryService: Partial<TelemetryService> = {
-        share: jest.fn(() => of(undefined))
+        share: jest.fn().mockImplementation(() => of(undefined))
     };
     (TelemetryLogger as any)['log'] = mockTelemetryService;
 
@@ -36,7 +36,7 @@ describe('GenerateProfileExportTelemetry', () => {
             sourceDBFilePath: 'src/db/path',
             metadata: { 'index': 1 }
         };
-        mockDbService.read = jest.fn(() => of([{
+        mockDbService.read = jest.fn().mockImplementation(() => of([{
             imported_id: 'sample-imported_id',
             device_id: 'sample-device_id',
             count: 'no-of-count'

@@ -34,11 +34,11 @@ describe('GetServerProfileDetailsHandler', () => {
             from: 'server',
             requiredFields: []
         };
-        mockCachedItemStore.getCached = jest.fn((a, b, c, d) => d());
-        mockApiService.fetch = jest.fn(() => of({body: {result: {response: {
+        mockCachedItemStore.getCached = jest.fn().mockImplementation((a, b, c, d) => d());
+        mockApiService.fetch = jest.fn().mockImplementation(() => of({body: {result: {response: {
             userId: 'U-001'
         }}}}));
-        mockKeyValueStore.setValue = jest.fn(() => of(true));
+        mockKeyValueStore.setValue = jest.fn().mockImplementation(() => of(true));
         // act
         getServerProfileDetailsHandler.handle(serverProfileDetailsRequest).subscribe(() => {
             // assert
@@ -55,11 +55,11 @@ describe('GetServerProfileDetailsHandler', () => {
             from: 'server',
             requiredFields: []
         };
-        mockCachedItemStore.getCached = jest.fn(() => of({
+        mockCachedItemStore.getCached = jest.fn().mockImplementation(() => of({
             userId: 'U-001',
             from: 'cache'
         }));
-        mockApiService.fetch = jest.fn(() => of({}));
+        mockApiService.fetch = jest.fn().mockImplementation(() => of({}));
         // act
         getServerProfileDetailsHandler.handle(serverProfileDetailsRequest).subscribe(() => {
             // assert
@@ -75,8 +75,8 @@ describe('GetServerProfileDetailsHandler', () => {
             userId: 'U-001',
             requiredFields: []
         };
-        mockCachedItemStore.getCached = jest.fn((a, b, c, d) => d());
-        mockApiService.fetch = jest.fn(() => of({body: {result: {response: {
+        mockCachedItemStore.getCached = jest.fn().mockImplementation((a, b, c, d) => d());
+        mockApiService.fetch = jest.fn().mockImplementation(() => of({body: {result: {response: {
             userId: 'U-001'
         }}}}));
         // act

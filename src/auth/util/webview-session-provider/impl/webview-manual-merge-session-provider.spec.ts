@@ -47,13 +47,13 @@ describe('WebviewManualMergeSessionProvider', () => {
                 userToken: 'SOME_USER_TOKEN'
             };
             const mockPdata = {'id': 'staging.diksha.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'};
-            mockTelemetryService.buildContext = jest.fn(() => {
+            mockTelemetryService.buildContext = jest.fn().mockImplementation(() => {
                 return of({
                     pdata: mockPdata
                 });
             });
-            mockWebviewRunner.launchWebview = jest.fn(() => Promise.resolve());
-            mockWebviewRunner.any = jest.fn(() => Promise.resolve(mockSession));
+            mockWebviewRunner.launchWebview = jest.fn().mockImplementation(() => Promise.resolve());
+            mockWebviewRunner.any = jest.fn().mockImplementation(() => Promise.resolve(mockSession));
             mockManualMergeConfig.return = [];
 
             webviewManualMergeSessionProvider.provide().then(() => {

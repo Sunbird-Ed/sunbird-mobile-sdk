@@ -36,9 +36,9 @@ describe('StorageHandler', () => {
         const identifier = 'SAMPLE_IDENTIFIER';
         const storageFolder = 'STORAGE_FOLDER_PATH';
         const keepLowerVersion = true;
-        mockFileService.readAsText = jest.fn(() => {});
+        mockFileService.readAsText = jest.fn().mockImplementation(() => {});
         (mockFileService.readAsText as jest.Mock).mockResolvedValue('{"ver": "1.0", "archive": {"items": ["item_1"]}}');
-        mockDbService.read = jest.fn(() => {});
+        mockDbService.read = jest.fn().mockImplementation(() => {});
         (mockDbService.read as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
@@ -50,13 +50,13 @@ describe('StorageHandler', () => {
             visibility: 'Default'
         }]));
         spyOn(ContentUtil, 'doesContentExist').and.returnValue(true);
-        mockFileService.getDirectorySize = jest.fn(() => {});
+        mockFileService.getDirectorySize = jest.fn().mockImplementation(() => {});
         (mockFileService.getDirectorySize as jest.Mock).mockReturnValue(256);
-        mockDeviceInfo.getDeviceID = jest.fn(() => {});
+        mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => {});
         (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of(''));
-        mockDbService.beginTransaction = jest.fn(() => of());
-        mockDbService.update = jest.fn(() => of());
-        mockDbService.endTransaction = jest.fn(() => {});
+        mockDbService.beginTransaction = jest.fn().mockImplementation(() => of());
+        mockDbService.update = jest.fn().mockImplementation(() => of());
+        mockDbService.endTransaction = jest.fn().mockImplementation(() => {});
         // act
         await storageHandler.addDestinationContentInDb(identifier, storageFolder, keepLowerVersion).then(() => {
              // assert
@@ -67,7 +67,7 @@ describe('StorageHandler', () => {
     it('should delete a content from DB', async(done) => {
         // arrange
         const deletedIdentifiers = ['SAMPALE_1', 'SAMPLE_2'];
-        mockDbService.execute = jest.fn(() => {});
+        mockDbService.execute = jest.fn().mockImplementation(() => {});
         (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
@@ -78,10 +78,10 @@ describe('StorageHandler', () => {
             content_state: 2,
             visibility: 'Default'
         }]));
-        mockDbService.beginTransaction = jest.fn(() => {});
-        mockDbService.update = jest.fn(() => {});
+        mockDbService.beginTransaction = jest.fn().mockImplementation(() => {});
+        mockDbService.update = jest.fn().mockImplementation(() => {});
         (mockDbService.update as jest.Mock).mockReturnValue(of({}));
-        mockDbService.endTransaction = jest.fn(() => {});
+        mockDbService.endTransaction = jest.fn().mockImplementation(() => {});
         // act
         await storageHandler.deleteContentsFromDb(deletedIdentifiers).then(() => {
              // assert

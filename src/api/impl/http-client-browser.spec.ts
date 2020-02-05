@@ -45,7 +45,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({})
         };
 
-        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse as Response));
 
         // act
         httpClientBrowser.get('http://sample.com/', '/', {}, {})
@@ -67,7 +67,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({})
         };
 
-        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse as Response));
 
         // act
         httpClientBrowser.post('http://sample.com/', '/', {}, {})
@@ -90,7 +90,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({})
         };
 
-        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse as Response));
 
         // act
         httpClientBrowser.setSerializer(HttpSerializer.URLENCODED);
@@ -114,7 +114,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({})
         };
 
-        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse as Response));
 
         // act
         httpClientBrowser.patch('http://sample.com/', '/', {}, {test: 'body'})
@@ -137,7 +137,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({})
         };
 
-        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockResponse as Response));
 
         // act
         httpClientBrowser.setSerializer(HttpSerializer.URLENCODED);
@@ -159,7 +159,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve('{corrupted_data}')
         };
 
-        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockError));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockError as Response));
 
         // act
         httpClientBrowser.get('http://sample.com/', '/', {}, {})
@@ -193,7 +193,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({test: 'response'})
         };
 
-        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockError));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockError as Response));
 
         // act
         httpClientBrowser.get('http://sample.com/', '/', {}, {})
@@ -214,7 +214,7 @@ describe('HttpClientBrowser', () => {
             json: () => Promise.resolve({'test': 'response'})
         };
 
-        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockError));
+        jest.spyOn(window, 'fetch').mockReturnValue(Promise.resolve(mockError as Response));
 
         // act
         httpClientBrowser.get('http://sample.com/', '/', {}, {})

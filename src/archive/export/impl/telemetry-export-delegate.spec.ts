@@ -25,7 +25,7 @@ describe('TelemetryExportDelegate', () => {
 
     describe('export()', () => {
         it('should throw ObjectNotFound if no telemetry to export', (done) => {
-            mockDbService.execute = jest.fn(() => of([{ COUNT: 0 }]));
+            mockDbService.execute = jest.fn().mockImplementation(() => of([{ COUNT: 0 }]));
 
             telemetryExportDelegate.export({
                     filePath: 'some_path'
@@ -43,8 +43,8 @@ describe('TelemetryExportDelegate', () => {
         });
 
         it('should write file for every batch emitting progress for each', (done) => {
-            mockFileService.createDir = jest.fn(() => of(undefined));
-            mockDbService.execute = jest.fn(() => of([{ COUNT: 2 }]));
+            mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
+            mockDbService.execute = jest.fn().mockImplementation(() => of([{ COUNT: 2 }]));
             const telemetryEntries = [
                 {
                     [TelemetryProcessedEntry.COLUMN_NAME_MSG_ID]: 'some_msg_id_1',
@@ -55,7 +55,7 @@ describe('TelemetryExportDelegate', () => {
                     [TelemetryProcessedEntry.COLUMN_NAME_DATA]: 'some_data_2'
                 }
             ];
-            mockDbService.read = jest.fn((request) => {
+            mockDbService.read = jest.fn().mockImplementation((request) => {
                 if (request.columns && request.columns.length) {
                     return of([
                         {
@@ -69,7 +69,7 @@ describe('TelemetryExportDelegate', () => {
 
                 return of([telemetryEntries.pop()]);
             });
-            mockFileService.writeFile = jest.fn(() => Promise.resolve());
+            mockFileService.writeFile = jest.fn().mockImplementation(() => Promise.resolve());
 
             telemetryExportDelegate.export({
                     filePath: 'some_path'
@@ -101,15 +101,15 @@ describe('TelemetryExportDelegate', () => {
         });
 
         it('should skip write file for batch possibly synced from another process', (done) => {
-            mockFileService.createDir = jest.fn(() => of(undefined));
-            mockDbService.execute = jest.fn(() => of([{ COUNT: 2 }]));
+            mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
+            mockDbService.execute = jest.fn().mockImplementation(() => of([{ COUNT: 2 }]));
             const telemetryEntries = [
                 {
                     [TelemetryProcessedEntry.COLUMN_NAME_MSG_ID]: 'some_msg_id_1',
                     [TelemetryProcessedEntry.COLUMN_NAME_DATA]: 'some_data_1'
                 }
             ];
-            mockDbService.read = jest.fn((request) => {
+            mockDbService.read = jest.fn().mockImplementation((request) => {
                 if (request.columns && request.columns.length) {
                     return of([
                         {
@@ -123,7 +123,7 @@ describe('TelemetryExportDelegate', () => {
 
                 return of([telemetryEntries.pop()]);
             });
-            mockFileService.writeFile = jest.fn(() => Promise.resolve());
+            mockFileService.writeFile = jest.fn().mockImplementation(() => Promise.resolve());
 
             telemetryExportDelegate.export({
                     filePath: 'some_path'

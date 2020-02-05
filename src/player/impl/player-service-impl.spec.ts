@@ -19,19 +19,19 @@ describe('PlayerServiceImpl', () => {
     const container = new Container();
 
     const mockDeviceInfoService: Partial<DeviceInfo> = {
-        getDeviceID: jest.fn(() => {})
+        getDeviceID: jest.fn().mockImplementation(() => {})
     };
     const mockProfileService: Partial<ProfileService> = {
-        getActiveSessionProfile: jest.fn(() => {})
+        getActiveSessionProfile: jest.fn().mockImplementation(() => {})
     };
     const mockGroupService: Partial<GroupService> = {};
 
     const mockFrameWorkService: Partial<FrameworkService> = {
-        getActiveChannelId: jest.fn(() => {
+        getActiveChannelId: jest.fn().mockImplementation(() => {
         })
     };
     const mockAppInfo: Partial<AppInfo> = {
-        getVersionName: jest.fn(() => {})
+        getVersionName: jest.fn().mockImplementation(() => {})
     };
 
     beforeAll(() => {
@@ -64,11 +64,11 @@ describe('PlayerServiceImpl', () => {
         } as Partial<Content> as Content;
 
         const mockProfileSession: ProfileSession = new ProfileSession('SAMPLE_UID');
-        mockProfileService.getActiveProfileSession = jest.fn(() => of(mockProfileSession));
+        mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of(mockProfileSession));
         (mockProfileService.getActiveSessionProfile as jest.Mock).mockReturnValue(of('MOCK_PROFILE'));
 
         const mockGroupSession: GroupSession = new GroupSession('MOCK_GID');
-        mockGroupService.getActiveGroupSession = jest.fn(() => of(mockGroupSession));
+        mockGroupService.getActiveGroupSession = jest.fn().mockImplementation(() => of(mockGroupSession));
 
         (mockFrameWorkService.getActiveChannelId as jest.Mock).mockReturnValue(of('MOCK_CHANNEL_ID'));
         (mockDeviceInfoService.getDeviceID as jest.Mock).mockReturnValue('SAMPLE_DEVICE_ID');

@@ -46,19 +46,19 @@ describe('DeviceRegisterHandler', () => {
                     }
                 };
 
-                mockDeviceInfo.getDeviceSpec = jest.fn(() => of({}));
+                mockDeviceInfo.getDeviceSpec = jest.fn().mockImplementation(() => of({}));
 
-                mockFrameworkService.getActiveChannelId = jest.fn(() => of('CHANNEL_ID'));
+                mockFrameworkService.getActiveChannelId = jest.fn().mockImplementation(() => of('CHANNEL_ID'));
 
-                mockAppInfo.getFirstAccessTimestamp = jest.fn(() => of('0000'));
+                mockAppInfo.getFirstAccessTimestamp = jest.fn().mockImplementation(() => of('0000'));
 
-                mockDeviceInfo.getDeviceID = jest.fn(() => of('SAMPLE_DEVICE_ID'));
+                mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of('SAMPLE_DEVICE_ID'));
 
-                mockSharedPreferences.getString = jest.fn(() => of(''));
+                mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(''));
 
-                mockSharedPreferences.putString = jest.fn(() => of(undefined));
+                mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
 
-                mockApiService.fetch = jest.fn(() => of({}));
+                mockApiService.fetch = jest.fn().mockImplementation(() => of({}));
 
                 // act
                 deviceRegisterHandler.handle(request).subscribe(() => {
@@ -89,23 +89,23 @@ describe('DeviceRegisterHandler', () => {
                     fcmToken: 'SAMPLE_FCM_TOKEN'
                 };
 
-                mockDeviceInfo.getDeviceSpec = jest.fn(() => of({}));
+                mockDeviceInfo.getDeviceSpec = jest.fn().mockImplementation(() => of({}));
 
-                mockFrameworkService.getActiveChannelId = jest.fn(() => of('CHANNEL_ID'));
+                mockFrameworkService.getActiveChannelId = jest.fn().mockImplementation(() => of('CHANNEL_ID'));
 
-                mockAppInfo.getFirstAccessTimestamp = jest.fn(() => of('0000'));
+                mockAppInfo.getFirstAccessTimestamp = jest.fn().mockImplementation(() => of('0000'));
 
-                mockDeviceInfo.getDeviceID = jest.fn(() => of('SAMPLE_DEVICE_ID'));
+                mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of('SAMPLE_DEVICE_ID'));
 
-                mockSharedPreferences.getString = jest.fn(() => of(JSON.stringify({
+                mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify({
                     state: 'STATE',
                     district: 'DISTRICT',
                     declaredOffline: true
                 })));
 
-                mockSharedPreferences.putString = jest.fn(() => of(undefined));
+                mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
 
-                mockApiService.fetch = jest.fn(() => of({}));
+                mockApiService.fetch = jest.fn().mockImplementation(() => of({}));
 
                 // act
                 deviceRegisterHandler.handle(request).subscribe(() => {
@@ -132,19 +132,19 @@ describe('DeviceRegisterHandler', () => {
                     fcmToken: 'SAMPLE_FCM_TOKEN'
                 };
 
-                mockDeviceInfo.getDeviceSpec = jest.fn(() => of({}));
+                mockDeviceInfo.getDeviceSpec = jest.fn().mockImplementation(() => of({}));
 
-                mockFrameworkService.getActiveChannelId = jest.fn(() => of('CHANNEL_ID'));
+                mockFrameworkService.getActiveChannelId = jest.fn().mockImplementation(() => of('CHANNEL_ID'));
 
-                mockAppInfo.getFirstAccessTimestamp = jest.fn(() => of('0000'));
+                mockAppInfo.getFirstAccessTimestamp = jest.fn().mockImplementation(() => of('0000'));
 
-                mockDeviceInfo.getDeviceID = jest.fn(() => of('SAMPLE_DEVICE_ID'));
+                mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of('SAMPLE_DEVICE_ID'));
 
-                mockSharedPreferences.getString = jest.fn(() => of(''));
+                mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(''));
 
-                mockSharedPreferences.putString = jest.fn(() => of(undefined));
+                mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
 
-                mockApiService.fetch = jest.fn(() => of({}));
+                mockApiService.fetch = jest.fn().mockImplementation(() => of({}));
 
                 // act
                 deviceRegisterHandler.handle(request).subscribe(() => {
@@ -166,19 +166,19 @@ describe('DeviceRegisterHandler', () => {
         describe('when request is not passed', () => {
             it('should create request with deviceSpec, activeChannelId, firstAccessTimestamp, deviceId', (done) => {
                 // arrange
-                mockDeviceInfo.getDeviceSpec = jest.fn(() => of({}));
+                mockDeviceInfo.getDeviceSpec = jest.fn().mockImplementation(() => of({}));
 
-                mockFrameworkService.getActiveChannelId = jest.fn(() => of('CHANNEL_ID'));
+                mockFrameworkService.getActiveChannelId = jest.fn().mockImplementation(() => of('CHANNEL_ID'));
 
-                mockAppInfo.getFirstAccessTimestamp = jest.fn(() => of('0000'));
+                mockAppInfo.getFirstAccessTimestamp = jest.fn().mockImplementation(() => of('0000'));
 
-                mockDeviceInfo.getDeviceID = jest.fn(() => of('SAMPLE_DEVICE_ID'));
+                mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of('SAMPLE_DEVICE_ID'));
 
-                mockSharedPreferences.getString = jest.fn(() => of(''));
+                mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(''));
 
-                mockSharedPreferences.putString = jest.fn(() => of(undefined));
+                mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
 
-                mockApiService.fetch = jest.fn(() => of({}));
+                mockApiService.fetch = jest.fn().mockImplementation(() => of({}));
 
                 // act
                 deviceRegisterHandler.handle().subscribe(() => {
@@ -211,25 +211,25 @@ describe('DeviceRegisterHandler', () => {
                     fcmToken: 'SAMPLE_FCM_TOKEN',
                 };
 
-                mockDeviceInfo.getDeviceSpec = jest.fn(() => of({}));
+                mockDeviceInfo.getDeviceSpec = jest.fn().mockImplementation(() => of({}));
 
-                mockFrameworkService.getActiveChannelId = jest.fn(() => of('CHANNEL_ID'));
+                mockFrameworkService.getActiveChannelId = jest.fn().mockImplementation(() => of('CHANNEL_ID'));
 
-                mockAppInfo.getFirstAccessTimestamp = jest.fn(() => of('0000'));
+                mockAppInfo.getFirstAccessTimestamp = jest.fn().mockImplementation(() => of('0000'));
 
-                mockDeviceInfo.getDeviceID = jest.fn(() => of('SAMPLE_DEVICE_ID'));
+                mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of('SAMPLE_DEVICE_ID'));
 
-                mockSharedPreferences.getString = jest.fn(() => of(JSON.stringify({
+                mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify({
                     state: 'STATE',
                     district: 'DISTRICT',
                     declaredOffline: false
                 })));
 
-                mockSharedPreferences.putString = jest.fn(() => of(undefined));
+                mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
 
-                mockApiService.fetch = jest.fn(() => of({}));
+                mockApiService.fetch = jest.fn().mockImplementation(() => of({}));
 
-                mockGetDeviceProfileHandler.handle = jest.fn(() => of({
+                mockGetDeviceProfileHandler.handle = jest.fn().mockImplementation(() => of({
                     userDeclaredLocation: {
                         state: 'STATE',
                         district: 'DISTRICT',
@@ -261,24 +261,24 @@ describe('DeviceRegisterHandler', () => {
                         fcmToken: 'SAMPLE_FCM_TOKEN',
                     };
 
-                    mockDeviceInfo.getDeviceSpec = jest.fn(() => of({}));
+                    mockDeviceInfo.getDeviceSpec = jest.fn().mockImplementation(() => of({}));
 
-                    mockFrameworkService.getActiveChannelId = jest.fn(() => of('CHANNEL_ID'));
+                    mockFrameworkService.getActiveChannelId = jest.fn().mockImplementation(() => of('CHANNEL_ID'));
 
-                    mockAppInfo.getFirstAccessTimestamp = jest.fn(() => of('0000'));
+                    mockAppInfo.getFirstAccessTimestamp = jest.fn().mockImplementation(() => of('0000'));
 
-                    mockDeviceInfo.getDeviceID = jest.fn(() => of('SAMPLE_DEVICE_ID'));
+                    mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of('SAMPLE_DEVICE_ID'));
 
-                    mockSharedPreferences.getString = jest.fn(() => of(JSON.stringify({
+                    mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify({
                         state: 'STATE',
                         district: 'DISTRICT'
                     })));
 
-                    mockSharedPreferences.putString = jest.fn(() => of(undefined));
+                    mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
 
-                    mockApiService.fetch = jest.fn(() => of({}));
+                    mockApiService.fetch = jest.fn().mockImplementation(() => of({}));
 
-                    mockGetDeviceProfileHandler.handle = jest.fn(() => of({
+                    mockGetDeviceProfileHandler.handle = jest.fn().mockImplementation(() => of({
                         userDeclaredLocation: {
                             state: 'STATE',
                             district: 'DISTRICT'
@@ -299,24 +299,24 @@ describe('DeviceRegisterHandler', () => {
                         fcmToken: 'SAMPLE_FCM_TOKEN',
                     };
 
-                    mockDeviceInfo.getDeviceSpec = jest.fn(() => of({}));
+                    mockDeviceInfo.getDeviceSpec = jest.fn().mockImplementation(() => of({}));
 
-                    mockFrameworkService.getActiveChannelId = jest.fn(() => of('CHANNEL_ID'));
+                    mockFrameworkService.getActiveChannelId = jest.fn().mockImplementation(() => of('CHANNEL_ID'));
 
-                    mockAppInfo.getFirstAccessTimestamp = jest.fn(() => of('0000'));
+                    mockAppInfo.getFirstAccessTimestamp = jest.fn().mockImplementation(() => of('0000'));
 
-                    mockDeviceInfo.getDeviceID = jest.fn(() => of('SAMPLE_DEVICE_ID'));
+                    mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of('SAMPLE_DEVICE_ID'));
 
-                    mockSharedPreferences.getString = jest.fn(() => of(JSON.stringify({
+                    mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify({
                         state: 'STATE',
                         district: 'DISTRICT'
                     })));
 
-                    mockSharedPreferences.putString = jest.fn(() => of(undefined));
+                    mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
 
-                    mockApiService.fetch = jest.fn(() => of({}));
+                    mockApiService.fetch = jest.fn().mockImplementation(() => of({}));
 
-                    mockGetDeviceProfileHandler.handle = jest.fn(() => of({
+                    mockGetDeviceProfileHandler.handle = jest.fn().mockImplementation(() => of({
                         userDeclaredLocation: {}
                     }));
 
@@ -334,24 +334,24 @@ describe('DeviceRegisterHandler', () => {
                         fcmToken: 'SAMPLE_FCM_TOKEN',
                     };
 
-                    mockDeviceInfo.getDeviceSpec = jest.fn(() => of({}));
+                    mockDeviceInfo.getDeviceSpec = jest.fn().mockImplementation(() => of({}));
 
-                    mockFrameworkService.getActiveChannelId = jest.fn(() => of('CHANNEL_ID'));
+                    mockFrameworkService.getActiveChannelId = jest.fn().mockImplementation(() => of('CHANNEL_ID'));
 
-                    mockAppInfo.getFirstAccessTimestamp = jest.fn(() => of('0000'));
+                    mockAppInfo.getFirstAccessTimestamp = jest.fn().mockImplementation(() => of('0000'));
 
-                    mockDeviceInfo.getDeviceID = jest.fn(() => of('SAMPLE_DEVICE_ID'));
+                    mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of('SAMPLE_DEVICE_ID'));
 
-                    mockSharedPreferences.getString = jest.fn(() => of(JSON.stringify({
+                    mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify({
                         state: 'STATE',
                         district: 'DISTRICT'
                     })));
 
-                    mockSharedPreferences.putString = jest.fn(() => of(undefined));
+                    mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
 
-                    mockApiService.fetch = jest.fn(() => of({}));
+                    mockApiService.fetch = jest.fn().mockImplementation(() => of({}));
 
-                    mockGetDeviceProfileHandler.handle = jest.fn(() => throwError('SOME_ERROR'));
+                    mockGetDeviceProfileHandler.handle = jest.fn().mockImplementation(() => throwError('SOME_ERROR'));
 
                     // act
                     deviceRegisterHandler.handle(request).subscribe(() => {
@@ -378,25 +378,25 @@ describe('DeviceRegisterHandler', () => {
                         fcmToken: 'SAMPLE_FCM_TOKEN',
                     };
 
-                    mockDeviceInfo.getDeviceSpec = jest.fn(() => of({}));
+                    mockDeviceInfo.getDeviceSpec = jest.fn().mockImplementation(() => of({}));
 
-                    mockFrameworkService.getActiveChannelId = jest.fn(() => of('CHANNEL_ID'));
+                    mockFrameworkService.getActiveChannelId = jest.fn().mockImplementation(() => of('CHANNEL_ID'));
 
-                    mockAppInfo.getFirstAccessTimestamp = jest.fn(() => of('0000'));
+                    mockAppInfo.getFirstAccessTimestamp = jest.fn().mockImplementation(() => of('0000'));
 
-                    mockDeviceInfo.getDeviceID = jest.fn(() => of('SAMPLE_DEVICE_ID'));
+                    mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of('SAMPLE_DEVICE_ID'));
 
-                    mockSharedPreferences.getString = jest.fn(() => of(JSON.stringify({
+                    mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify({
                         state: 'STATE',
                         district: 'DISTRICT',
                         declaredOffline: true
                     })));
 
-                    mockSharedPreferences.putString = jest.fn(() => of(undefined));
+                    mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
 
-                    mockApiService.fetch = jest.fn(() => of({}));
+                    mockApiService.fetch = jest.fn().mockImplementation(() => of({}));
 
-                    mockGetDeviceProfileHandler.handle = jest.fn();
+                    mockGetDeviceProfileHandler.handle = jest.fn().mockImplementation();
 
                     // act
                     deviceRegisterHandler.handle(request).subscribe(() => {

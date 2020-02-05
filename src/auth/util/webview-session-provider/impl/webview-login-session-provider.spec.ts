@@ -47,16 +47,16 @@ describe('WebviewLoginSessionProvider', () => {
 
     it('should delegate launch to webviewRunner on provide()', (done) => {
         // arrange
-        mockWebviewRunner.launchWebview = jest.fn(() => Promise.resolve());
-        mockWebviewRunner.capture = jest.fn(() => new Promise(() => {
+        mockWebviewRunner.launchWebview = jest.fn().mockImplementation(() => Promise.resolve());
+        mockWebviewRunner.capture = jest.fn().mockImplementation(() => new Promise(() => {
         }));
-        mockWebviewRunner.closeWebview = jest.fn(() => new Promise(() => {
+        mockWebviewRunner.closeWebview = jest.fn().mockImplementation(() => new Promise(() => {
         }));
-        mockWebviewRunner.success = jest.fn(() => new Promise(() => {
+        mockWebviewRunner.success = jest.fn().mockImplementation(() => new Promise(() => {
         }));
-        mockWebviewRunner.resolveCaptured = jest.fn(() => new Promise(() => {
+        mockWebviewRunner.resolveCaptured = jest.fn().mockImplementation(() => new Promise(() => {
         }));
-        mockWebviewRunner.any = jest.fn(() => Promise.resolve<OAuthSession>({
+        mockWebviewRunner.any = jest.fn().mockImplementation(() => Promise.resolve<OAuthSession>({
             access_token: 'SOME_ACCESS_TOKEN',
             refresh_token: 'SOME_REFRESH_TOKEN',
             userToken: 'SOME_USER_TOKEN'
@@ -79,11 +79,11 @@ describe('WebviewLoginSessionProvider', () => {
         );
 
         // arrange
-        mockWebviewRunner.launchWebview = jest.fn(() => Promise.resolve());
-        mockWebviewRunner.capture = jest.fn(() => Promise.resolve());
-        mockWebviewRunner.closeWebview = jest.fn(() => Promise.resolve());
-        mockWebviewRunner.resolveCaptured = jest.fn(() => Promise.resolve('SOME_ERROR_MESSAGE'));
-        mockWebviewRunner.any = jest.fn((...params) => Promise.race(params));
+        mockWebviewRunner.launchWebview = jest.fn().mockImplementation(() => Promise.resolve());
+        mockWebviewRunner.capture = jest.fn().mockImplementation(() => Promise.resolve());
+        mockWebviewRunner.closeWebview = jest.fn().mockImplementation(() => Promise.resolve());
+        mockWebviewRunner.resolveCaptured = jest.fn().mockImplementation(() => Promise.resolve('SOME_ERROR_MESSAGE'));
+        mockWebviewRunner.any = jest.fn().mockImplementation((params) => Promise.race([params]));
 
         // act
         webviewLoginSessionProvider.provide().catch((error) => {
@@ -104,11 +104,11 @@ describe('WebviewLoginSessionProvider', () => {
         );
 
         // arrange
-        mockWebviewRunner.launchWebview = jest.fn(() => Promise.resolve());
-        mockWebviewRunner.capture = jest.fn(() => Promise.resolve());
-        mockWebviewRunner.closeWebview = jest.fn(() => Promise.resolve());
-        mockWebviewRunner.resolveCaptured = jest.fn(() => Promise.reject());
-        mockWebviewRunner.any = jest.fn((...params) => Promise.race(params));
+        mockWebviewRunner.launchWebview = jest.fn().mockImplementation(() => Promise.resolve());
+        mockWebviewRunner.capture = jest.fn().mockImplementation(() => Promise.resolve());
+        mockWebviewRunner.closeWebview = jest.fn().mockImplementation(() => Promise.resolve());
+        mockWebviewRunner.resolveCaptured = jest.fn().mockImplementation(() => Promise.reject());
+        mockWebviewRunner.any = jest.fn().mockImplementation((params) => Promise.race([params]));
 
         // act
         webviewLoginSessionProvider.provide().catch((error) => {
@@ -137,13 +137,13 @@ describe('WebviewLoginSessionProvider', () => {
             userToken: 'SOME_USER_TOKEN'
         };
         const mockPdata = {'id': 'staging.diksha.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'};
-        mockTelemetryService.buildContext = jest.fn(() => {
+        mockTelemetryService.buildContext = jest.fn().mockImplementation(() => {
             return of({
                 pdata: mockPdata
             });
         });
-        mockWebviewRunner.launchWebview = jest.fn(() => Promise.resolve());
-        mockWebviewRunner.any = jest.fn(() => Promise.resolve(mockSession));
+        mockWebviewRunner.launchWebview = jest.fn().mockImplementation(() => Promise.resolve());
+        mockWebviewRunner.any = jest.fn().mockImplementation(() => Promise.resolve(mockSession));
 
         webviewLoginSessionProvider.provide().then(() => {
             expect(mockWebviewRunner.launchWebview).toHaveBeenCalledWith(

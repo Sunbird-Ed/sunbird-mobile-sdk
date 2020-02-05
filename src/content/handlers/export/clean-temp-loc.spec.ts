@@ -11,13 +11,13 @@ declare const diretory;
 describe('CleanTempLoc', () => {
     let cleanTempLoc: CleanTempLoc;
     const mockFileService: Partial<FileService> = {
-        listDir: jest.fn(() => {
+        listDir: jest.fn().mockImplementation(() => {
         }),
-        getMetaData: jest.fn(() => {
+        getMetaData: jest.fn().mockImplementation(() => {
         })
     };
     const mockFileUtil: FileUtil = {
-        getFileExtension: jest.fn(() => {
+        getFileExtension: jest.fn().mockImplementation(() => {
         }),
     };
 

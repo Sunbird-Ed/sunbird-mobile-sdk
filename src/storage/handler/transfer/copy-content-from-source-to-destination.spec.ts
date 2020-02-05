@@ -90,7 +90,7 @@ describe('CopyContentFromSourceToDestination', () => {
             existingContentAction: ExistingContentAction.KEEP_HIGER_VERSION,
             duplicateContents: dupContents
         };
-        mockEventBusService.emit = jest.fn(() => of({}));
+        mockEventBusService.emit = jest.fn().mockImplementation(() => of({}));
         // const error = t.throws(() => {
         //     throwError();
         //   }, TypeError);

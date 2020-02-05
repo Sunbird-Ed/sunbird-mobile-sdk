@@ -36,7 +36,7 @@ describe('FrameworkUtilServiceImpl', () => {
 
     it('should return active channel and channel details', (done) => {
         // arrange
-        mockFrameworkService.getActiveChannelId = jest.fn(() => of('{"channelId": "sample-channel-id"}'));
+        mockFrameworkService.getActiveChannelId = jest.fn().mockImplementation(() => of('{"channelId": "sample-channel-id"}'));
         const response: Channel = {
             identifier: 'sample-id',
             code: 'sample-code',
@@ -80,7 +80,7 @@ describe('FrameworkUtilServiceImpl', () => {
                 }
             ]
         };
-        mockFrameworkService.getChannelDetails = jest.fn(() => of(response));
+        mockFrameworkService.getChannelDetails = jest.fn().mockImplementation(() => of(response));
         // act
         frameworkUtilServiceImpl.getActiveChannel().subscribe(() => {
             // assert
@@ -107,8 +107,8 @@ describe('FrameworkUtilServiceImpl', () => {
                 name: 'sample-name',
                 identifier: 'sample-id'
             };
-            mockProfileService.getActiveSessionProfile = jest.fn(() => of({ serverProfile: serverData }));
-            mockFrameworkService.getFrameworkDetails = jest.fn(() => of(response));
+            mockProfileService.getActiveSessionProfile = jest.fn().mockImplementation(() => of({ serverProfile: serverData }));
+            mockFrameworkService.getFrameworkDetails = jest.fn().mockImplementation(() => of(response));
             // act
             frameworkUtilServiceImpl.getActiveChannelSuggestedFrameworkList(request).subscribe(() => {
                 // assert
@@ -133,9 +133,9 @@ describe('FrameworkUtilServiceImpl', () => {
                 name: 'sample-name',
                 identifier: 'sample-id'
             };
-            mockFrameworkService.getChannelDetails = jest.fn(() => of({}));
-            mockProfileService.getActiveSessionProfile = jest.fn(() => of({ serverProfile: serverData }));
-            mockFrameworkService.getFrameworkDetails = jest.fn(() => of(response));
+            mockFrameworkService.getChannelDetails = jest.fn().mockImplementation(() => of({}));
+            mockProfileService.getActiveSessionProfile = jest.fn().mockImplementation(() => of({ serverProfile: serverData }));
+            mockFrameworkService.getFrameworkDetails = jest.fn().mockImplementation(() => of(response));
             // act
             frameworkUtilServiceImpl.getActiveChannelSuggestedFrameworkList(request).subscribe(() => {
                 // assert
@@ -157,8 +157,8 @@ describe('FrameworkUtilServiceImpl', () => {
         const response = [{ code: 'sample-code', identifier: 'sample-id' }];
         (GetFrameworkCategoryTermsHandler as jest.Mock<GetFrameworkCategoryTermsHandler>).mockImplementation(() => {
             return {
-                handle: jest.fn(() => of(response))
-            };
+                handle: jest.fn().mockImplementation(() => of(response))
+            } as Partial<GetFrameworkCategoryTermsHandler> as GetFrameworkCategoryTermsHandler;
         });
         // act
         frameworkUtilServiceImpl.getFrameworkCategoryTerms(request).subscribe((e) => {

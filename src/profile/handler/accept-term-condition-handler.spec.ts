@@ -28,7 +28,7 @@ describe('GetDeviceProfileHandler', () => {
         const request: AcceptTermsConditionRequest = {
             version: ''
         };
-        mockApiService.fetch = jest.fn(() => {
+        mockApiService.fetch = jest.fn().mockImplementation(() => {
         });
         (mockApiService.fetch as jest.Mock).mockReturnValue(of({
                 body: {
@@ -51,7 +51,7 @@ describe('GetDeviceProfileHandler', () => {
         const request: AcceptTermsConditionRequest = {
             version: ''
         };
-        mockApiService.fetch = jest.fn(() => {
+        mockApiService.fetch = jest.fn().mockImplementation(() => {
         });
         (mockApiService.fetch as jest.Mock).mockReturnValue(of({
                 body: {

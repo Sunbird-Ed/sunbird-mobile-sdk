@@ -38,8 +38,8 @@ describe('FaqServiceImpl', () => {
         };
         (GetFaqDetailsHandler as jest.Mock<GetFaqDetailsHandler>).mockImplementation(() => {
             return {
-                handle: jest.fn(() => of({}))
-            };
+                handle: jest.fn().mockImplementation(() => of({}))
+            } as Partial<GetFaqDetailsHandler> as GetFaqDetailsHandler;
         });
         // act
         faqServiceImpl.getFaqDetails(request).subscribe(() => {

@@ -40,7 +40,7 @@ describe('ArchiveServiceImpl', () => {
     describe('export()', () => {
         it('should throw InvalidRequestError if no objects to export in request', (done) => {
             // arrange
-            mockFileService.createDir = jest.fn(() => of(undefined));
+            mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
 
             // act
             archiveService.export({
@@ -56,7 +56,7 @@ describe('ArchiveServiceImpl', () => {
 
         it('should initiate with a temporary working directory in cache', (done) => {
             // arrange
-            mockFileService.createDir = jest.fn(() => of(undefined));
+            mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
 
             (TelemetryExportDelegate as jest.Mock<TelemetryExportDelegate>).mockImplementation(() => {
                 return {
@@ -68,7 +68,7 @@ describe('ArchiveServiceImpl', () => {
                             }
                         ]);
                     }
-                };
+                } as Partial<TelemetryExportDelegate> as TelemetryExportDelegate;
             });
 
             // act
@@ -82,7 +82,7 @@ describe('ArchiveServiceImpl', () => {
             ).subscribe(() => {
                 // assert
                 expect(mockFileService.createDir).toHaveBeenCalledWith(
-                    expect.stringMatching(`${global['cordova'].file.externalCacheDirectory}`),
+                    expect.stringMatching(`${cordova.file.externalCacheDirectory}`),
                     false
                 );
 
@@ -92,16 +92,16 @@ describe('ArchiveServiceImpl', () => {
 
         it('should return progress sequentially till completion', (done) => {
             // arrange
-            mockFileService.createDir = jest.fn(() => of(undefined));
-            mockFileService.writeFile = jest.fn(() => Promise.resolve());
-            mockTelemetryService.buildContext = jest.fn(() => of({
+            mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
+            mockFileService.writeFile = jest.fn().mockImplementation(() => Promise.resolve());
+            mockTelemetryService.buildContext = jest.fn().mockImplementation(() => of({
                 pdata: new ProducerData()
             }));
-            mockZipService.zip = jest.fn((_, __, ___, ____, cb) => { cb(); });
+            mockZipService.zip = jest.fn().mockImplementation((_, __, ___, ____, cb) => { cb(); });
 
             (TelemetryExportDelegate as jest.Mock<TelemetryExportDelegate>).mockImplementation(() => {
                 return {
-                    export: () => {
+                    export: (_, __) => {
                         return from([
                             {
                                 task: 'VALIDATING',
@@ -144,7 +144,7 @@ describe('ArchiveServiceImpl', () => {
                             }
                         ]);
                     }
-                };
+                } as Partial<TelemetryExportDelegate> as TelemetryExportDelegate;
             });
 
             // act
@@ -182,10 +182,10 @@ describe('ArchiveServiceImpl', () => {
 
         it('should initiate with a temporary working directory in cache', (done) => {
             // arrange
-            global['sbutility'].copyFile = jest.fn((_, __, ___, cb) => { cb(); });
-            mockFileService.createDir = jest.fn(() => of(undefined));
-            mockZipService.unzip = jest.fn((_, __, cb) => { cb(); });
-            mockFileService.readAsText = jest.fn(() => of(JSON.stringify({
+            sbutility.copyFile = jest.fn().mockImplementation((_, __, ___, cb) => { cb(); });
+            mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
+            mockZipService.unzip = jest.fn().mockImplementation((_, __, cb) => { cb(); });
+            mockFileService.readAsText = jest.fn().mockImplementation(() => of(JSON.stringify({
                 id: 'some_id',
                 ver: 'some_version',
                 ts: (new Date()).toISOString(),
@@ -208,11 +208,11 @@ describe('ArchiveServiceImpl', () => {
                         return from([
                             {
                                 task: 'VALIDATING',
-                                completed: []
+                                pending: []
                             }
                         ]);
                     }
-                };
+                } as Partial<TelemetryImportDelegate> as TelemetryImportDelegate;
             });
 
             // act
@@ -228,7 +228,7 @@ describe('ArchiveServiceImpl', () => {
             }, () => {
                 // assert
                 expect(mockFileService.createDir).toHaveBeenCalledWith(
-                    expect.stringMatching(`${global['cordova'].file.externalCacheDirectory}`),
+                    expect.stringMatching(`${cordova.file.externalCacheDirectory}`),
                     false
                 );
 
@@ -238,10 +238,10 @@ describe('ArchiveServiceImpl', () => {
 
         it('should return progress sequentially till completion', (done) => {
             // arrange
-            global['sbutility'].copyFile = jest.fn((_, __, ___, cb) => { cb(); });
-            mockFileService.createDir = jest.fn(() => of(undefined));
-            mockZipService.unzip = jest.fn((_, __, cb) => { cb(); });
-            mockFileService.readAsText = jest.fn(() => of(JSON.stringify({
+            sbutility.copyFile = jest.fn().mockImplementation((_, __, ___, cb) => { cb(); });
+            mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
+            mockZipService.unzip = jest.fn().mockImplementation((_, __, cb) => { cb(); });
+            mockFileService.readAsText = jest.fn().mockImplementation(() => of(JSON.stringify({
                 id: 'some_id',
                 ver: 'some_version',
                 ts: (new Date()).toISOString(),
@@ -291,7 +291,7 @@ describe('ArchiveServiceImpl', () => {
                             }
                         ]);
                     }
-                };
+                } as Partial<TelemetryImportDelegate> as TelemetryImportDelegate;
             });
 
             // act

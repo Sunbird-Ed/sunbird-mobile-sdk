@@ -7,11 +7,11 @@ import {ZipService} from '../../../util/zip/def/zip-service';
 describe('EcarBundle', () => {
     let ecarBundle: EcarBundle;
     const mockFileService: Partial<FileService> = {
-        getMetaData: jest.fn(() => {
+        getMetaData: jest.fn().mockImplementation(() => {
         })
     };
     const mockZipService: Partial<ZipService> = {
-        zip: jest.fn(() => {
+        zip: jest.fn().mockImplementation(() => {
         })
     };
 

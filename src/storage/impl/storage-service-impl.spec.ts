@@ -12,7 +12,7 @@ import { StorageHandler } from '../handler/storage-handler';
 import { GetModifiedContentHandler } from '../handler/scan/get-modified-content-handler';
 import { PerformActoinOnContentHandler } from '../handler/scan/perform-actoin-on-content-handler';
 import { TransferContentHandler } from '../handler/transfer-content-handler';
-import { StorageService } from '../def/storage-service';
+import { StorageService } from '..';
 
 jest.mock('../handler/storage-handler');
 jest.mock('../handler/scan/get-modified-content-handler');
@@ -56,20 +56,20 @@ describe('StorageServiceImpl', () => {
 
     it('should get available storage volume', (done) => {
         // arrange
-        mockDeviceInfo.getStorageVolumes = jest.fn(() => ({ name: 's-name' }));
+        mockDeviceInfo.getStorageVolumes = jest.fn().mockImplementation(() => ({ name: 's-name' }));
         (mockDeviceInfo.getStorageVolumes as jest.Mock).mockReturnValue(of([]));
-        jest.spyOn(storageServiceImpl, 'getStorageDestination').mockResolvedValue(StorageDestination.EXTERNAL_STORAGE);
-        mockDbService.execute = jest.fn(() => of({ name: 's-name' }));
-        mockSharedPreferences.putString = jest.fn(() => of('undefined'));
+        jest.spyOn(storageServiceImpl, 'getStorageDestination').mockReturnValue(of(StorageDestination.EXTERNAL_STORAGE));
+        mockDbService.execute = jest.fn().mockImplementation(() => of({ name: 's-name' }));
+        mockSharedPreferences.putString = jest.fn().mockImplementation(() => of('undefined'));
         (GetModifiedContentHandler as any as jest.Mock<GetModifiedContentHandler>).mockImplementation(() => {
             return {
-                execute: jest.fn(() => of({ name: 's-name' })),
-            };
+                execute: jest.fn().mockImplementation(() => of({ name: 's-name' })),
+            } as Partial<GetModifiedContentHandler> as GetModifiedContentHandler;
         });
         (PerformActoinOnContentHandler as any as jest.Mock<PerformActoinOnContentHandler>).mockImplementation(() => {
             return {
-                exexute: jest.fn(() => of({ currentStoragePath: 's-name' })),
-            };
+                exexute: jest.fn().mockImplementation(() => of({ currentStoragePath: 's-name' })),
+            } as Partial<PerformActoinOnContentHandler> as PerformActoinOnContentHandler;
         });
         // act
         storageServiceImpl.onInit().subscribe(() => {
@@ -87,8 +87,8 @@ describe('StorageServiceImpl', () => {
         // arrange
         (TransferContentHandler as any as jest.Mock<TransferContentHandler>).mockImplementation(() => {
             return {
-                cancel: jest.fn(() => of(undefined)),
-            };
+                cancel: jest.fn().mockImplementation(() => of(undefined)),
+            } as Partial<TransferContentHandler> as TransferContentHandler;
         });
         // act
         storageServiceImpl.cancelTransfer();
@@ -99,7 +99,7 @@ describe('StorageServiceImpl', () => {
 
     it('should return storage location', (done) => {
         // arrange
-        mockSharedPreferences.getString = jest.fn(() => of('storage-size'));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('storage-size'));
         // act
         storageServiceImpl.getStorageDestination().subscribe(() => {
             // assert
@@ -145,8 +145,8 @@ describe('StorageServiceImpl', () => {
         // arrange
         (TransferContentHandler as any as jest.Mock<TransferContentHandler>).mockImplementation(() => {
             return {
-                transfer: jest.fn(() => of(undefined)),
-            };
+                transfer: jest.fn().mockImplementation(() => of(undefined)),
+            } as Partial<TransferContentHandler> as TransferContentHandler;
         });
 
         const storageService = container.get<StorageService>(InjectionTokens.STORAGE_SERVICE);
@@ -157,8 +157,8 @@ describe('StorageServiceImpl', () => {
             destinationFolder: 'd-folder',
             deleteDestination: true
         };
-        jest.spyOn(storageService, 'getStorageDestinationDirectoryPath').mockResolvedValue('getStorageDestinationDirectoryPath');
-        jest.spyOn(storageService, 'getStorageDestination').mockResolvedValue(StorageDestination.EXTERNAL_STORAGE);
+        jest.spyOn(storageService, 'getStorageDestinationDirectoryPath').mockReturnValue('getStorageDestinationDirectoryPath');
+        jest.spyOn(storageService, 'getStorageDestination').mockReturnValue(of(StorageDestination.EXTERNAL_STORAGE));
 
         // act
         storageService.transferContents(request).subscribe((e) => {

@@ -3,6 +3,18 @@ import {SdkConfig} from './sdk-config';
 import {of} from 'rxjs';
 import {Container} from 'inversify';
 import {InjectionTokens} from './injection-tokens';
+import {TelemetryService} from './telemetry';
+import {StorageService} from './storage';
+import {ContentService} from './content';
+import {DownloadService} from './util/download';
+import {EventsBusService} from './events-bus';
+import {ErrorLoggerService} from './error';
+import {SummarizerService} from './summarizer';
+import {ApiService} from './api';
+import {ProfileService} from './profile';
+import {FrameworkService} from './framework';
+import {AppInfo} from './util/app';
+import {DbService} from './db';
 
 const mockSdkConfig: SdkConfig = {
     platform: 'cordova',
@@ -132,76 +144,76 @@ describe('sdk', () => {
 
             jest.spyOn(sdkInstance, 'dbService', 'get').mockImplementation( () => {
                return {
-                   init: jest.fn(() => Promise.resolve())
-               };
+                   init: jest.fn().mockImplementation(() => Promise.resolve())
+               } as Partial<DbService> as DbService;
             });
 
             jest.spyOn(sdkInstance, 'appInfo', 'get').mockImplementation( () => {
                 return {
-                    init: jest.fn(() => Promise.resolve())
-                };
+                    init: jest.fn().mockImplementation(() => Promise.resolve())
+                } as Partial<AppInfo> as AppInfo;
             });
 
             jest.spyOn(sdkInstance, 'frameworkService', 'get').mockImplementation( () => {
                 return {
-                    preInit: jest.fn(() => of(undefined))
-                };
+                    preInit: jest.fn().mockImplementation(() => of(undefined))
+                } as Partial<FrameworkService> as FrameworkService;
             });
 
             jest.spyOn(sdkInstance, 'profileService', 'get').mockImplementation( () => {
                 return {
-                    preInit: jest.fn(() => of(undefined))
-                };
+                    preInit: jest.fn().mockImplementation(() => of(undefined))
+                } as Partial<ProfileService> as ProfileService;
             });
 
             jest.spyOn(sdkInstance, 'apiService', 'get').mockImplementation(() => {
                 return {
-                    setDefaultApiAuthenticators: jest.fn(() => {}),
-                    setDefaultSessionAuthenticators: jest.fn(() => {}),
-                    onInit: jest.fn(() => of(undefined))
-                };
+                    setDefaultApiAuthenticators: jest.fn().mockImplementation(() => {}),
+                    setDefaultSessionAuthenticators: jest.fn().mockImplementation(() => {}),
+                    onInit: jest.fn().mockImplementation(() => of(undefined))
+                } as Partial<ApiService> as ApiService;
             });
 
             jest.spyOn(sdkInstance, 'summarizerService', 'get').mockImplementation(() => {
                 return {
-                    onInit: jest.fn(() => of(undefined))
-                };
+                    onInit: jest.fn().mockImplementation(() => of(undefined))
+                } as Partial<SummarizerService> as SummarizerService;
             });
 
             jest.spyOn(sdkInstance, 'errorLoggerService', 'get').mockImplementation(() => {
                 return {
-                    onInit: jest.fn(() => of(undefined))
-                };
+                    onInit: jest.fn().mockImplementation(() => of(undefined))
+                } as Partial<ErrorLoggerService> as ErrorLoggerService;
             });
 
             jest.spyOn(sdkInstance, 'eventsBusService', 'get').mockImplementation(() => {
                 return {
-                    onInit: jest.fn(() => of(undefined))
-                };
+                    onInit: jest.fn().mockImplementation(() => of(undefined))
+                } as Partial<EventsBusService> as EventsBusService;
             });
 
             jest.spyOn(sdkInstance, 'downloadService', 'get').mockImplementation(() => {
                 return {
-                    onInit: jest.fn(() => of(undefined))
-                };
+                    onInit: jest.fn().mockImplementation(() => of(undefined))
+                } as Partial<DownloadService> as DownloadService;
             });
 
             jest.spyOn(sdkInstance, 'contentService', 'get').mockImplementation(() => {
                 return {
-                    onInit: jest.fn(() => of(undefined))
-                };
+                    onInit: jest.fn().mockImplementation(() => of(undefined))
+                } as Partial<ContentService> as ContentService;
             });
 
             jest.spyOn(sdkInstance, 'storageService', 'get').mockImplementation(() => {
                 return {
-                    onInit: jest.fn(() => of(undefined))
-                };
+                    onInit: jest.fn().mockImplementation(() => of(undefined))
+                } as Partial<StorageService> as StorageService;
             });
 
             jest.spyOn(sdkInstance, 'telemetryService', 'get').mockImplementation(() => {
                 return {
-                    onInit: jest.fn(() => of(undefined))
-                };
+                    onInit: jest.fn().mockImplementation(() => of(undefined))
+                } as Partial<TelemetryService> as TelemetryService;
             });
 
             sdkInstance.init(mockSdkConfig).then(() => {

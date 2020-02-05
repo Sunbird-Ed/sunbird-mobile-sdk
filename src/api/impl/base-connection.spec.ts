@@ -46,7 +46,7 @@ describe('BaseConnection', () => {
 
   it('should invoke httpClient.get on invoke() with GET request', (done) => {
     // arrange
-    mockHttpClient.get = jest.fn((baseUrl: string, path: string, headers: any, parameters: any) => {
+    mockHttpClient.get = jest.fn().mockImplementation((baseUrl: string, path: string, headers: any, parameters: any) => {
       const res = new Response();
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.body = {};
@@ -69,7 +69,7 @@ describe('BaseConnection', () => {
 
   it('should invoke httpClient.post on invoke() with POST request', (done) => {
     // arrange
-    mockHttpClient.post = jest.fn((baseUrl: string, path: string, headers: any, parameters: any) => {
+    mockHttpClient.post = jest.fn().mockImplementation((baseUrl: string, path: string, headers: any, parameters: any) => {
       const res = new Response();
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.body = {};
@@ -92,7 +92,7 @@ describe('BaseConnection', () => {
 
   it('should invoke httpClient.patch on invoke() with PATCH request', (done) => {
     // arrange
-    mockHttpClient.patch = jest.fn((baseUrl: string, path: string, headers: any, parameters: any) => {
+    mockHttpClient.patch = jest.fn().mockImplementation((baseUrl: string, path: string, headers: any, parameters: any) => {
       const res = new Response();
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.body = {};
@@ -130,7 +130,7 @@ describe('BaseConnection', () => {
       defaultSessionAuthenticators
     );
 
-    mockHttpClient.patch = jest.fn((baseUrl: string, path: string, headers: any, parameters: any) => {
+    mockHttpClient.patch = jest.fn().mockImplementation((baseUrl: string, path: string, headers: any, parameters: any) => {
       const res = new Response();
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.responseCode = ResponseCode.HTTP_SUCCESS;
@@ -174,7 +174,7 @@ describe('BaseConnection', () => {
       defaultSessionAuthenticators
     );
 
-    mockHttpClient.patch = jest.fn((baseUrl: string, path: string, headers: any, parameters: any) => {
+    mockHttpClient.patch = jest.fn().mockImplementation((baseUrl: string, path: string, headers: any, parameters: any) => {
       const res = new Response();
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.responseCode = ResponseCode.HTTP_SUCCESS;
@@ -201,14 +201,14 @@ describe('BaseConnection', () => {
 
   it('should set appropriate serializer when request.withSerializer', (done) => {
     // arrange
-    mockHttpClient.patch = jest.fn((baseUrl: string, path: string, headers: any, parameters: any) => {
+    mockHttpClient.patch = jest.fn().mockImplementation((baseUrl: string, path: string, headers: any, parameters: any) => {
       const res = new Response();
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.body = {};
       return of(res);
     });
-    mockHttpClient.setSerializer = jest.fn((serializer) => serializer);
+    mockHttpClient.setSerializer = jest.fn().mockImplementation((serializer) => serializer);
 
     const req = new Request.Builder()
       .withPath('/')
@@ -231,18 +231,18 @@ describe('BaseConnection', () => {
   it('should resolve with xhr if request.body is of type Uint8Array and request.type is POST', (done) => {
     // arrange
     const mockXHR = {
-      open: jest.fn(),
-      send: jest.fn(() => { mockXHR['onreadystatechange']() }),
+      open: jest.fn().mockImplementation(),
+      send: jest.fn().mockImplementation(() => { mockXHR['onreadystatechange']() }),
       readyState: 4,
       status: 200,
-      setRequestHeader: jest.fn(),
+      setRequestHeader: jest.fn().mockImplementation(),
       responseText: '{}',
     };
-    window['XMLHttpRequest'] = jest.fn().mockImplementation(() => {
+    window['XMLHttpRequest'] = jest.fn().mockImplementation().mockImplementation(() => {
       return mockXHR
     });
 
-    mockHttpClient.post = jest.fn((baseUrl: string, path: string, headers: any, parameters: any) => {
+    mockHttpClient.post = jest.fn().mockImplementation((baseUrl: string, path: string, headers: any, parameters: any) => {
       const res = new Response();
       res.responseCode = ResponseCode.HTTP_SUCCESS;
       res.body = {};
@@ -267,14 +267,14 @@ describe('BaseConnection', () => {
   it('should reject with xhr if request.body is of type Uint8Array and request.type is POST', (done) => {
     // arrange
     const mockXHR = {
-      open: jest.fn(),
-      send: jest.fn(() => { mockXHR['onreadystatechange']() }),
+      open: jest.fn().mockImplementation(),
+      send: jest.fn().mockImplementation(() => { mockXHR['onreadystatechange']() }),
       readyState: 4,
       status: ResponseCode.HTTP_BAD_REQUEST,
-      setRequestHeader: jest.fn(),
+      setRequestHeader: jest.fn().mockImplementation(),
       responseText: '{}',
     };
-    window['XMLHttpRequest'] = jest.fn().mockImplementation(() => {
+    window['XMLHttpRequest'] = jest.fn().mockImplementation().mockImplementation(() => {
       return mockXHR
     });
 

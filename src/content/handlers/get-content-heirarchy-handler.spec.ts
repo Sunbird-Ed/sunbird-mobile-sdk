@@ -28,7 +28,7 @@ describe('GetContentHeirarchyHandler', () => {
         const request: ContentDetailRequest = {
             contentId: 'do_123'
         };
-        mockApiService.fetch = jest.fn(() => of({
+        mockApiService.fetch = jest.fn().mockImplementation(() => of({
             body: {
                 result: {
                     content: {

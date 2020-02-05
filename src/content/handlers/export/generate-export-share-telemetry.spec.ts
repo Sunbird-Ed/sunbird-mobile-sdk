@@ -7,7 +7,7 @@ import { of } from 'rxjs';
 describe('GenerateExportShareTelemetry', () => {
     let generateExportShareTelemetry: GenerateExportShareTelemetry;
     const mockTelemetryService: Partial<TelemetryService> = {
-        share: jest.fn(() => {
+        share: jest.fn().mockImplementation(() => {
         })
     };
 

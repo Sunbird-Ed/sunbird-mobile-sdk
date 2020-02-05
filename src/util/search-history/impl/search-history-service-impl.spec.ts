@@ -30,9 +30,9 @@ describe('SearchHistoryServiceImpl', () => {
     it('should add entry to db for current profile on addEntry()', (done) => {
         // arrange
         const mockSession: ProfileSession = new ProfileSession('SAMPLE_UID');
-        profileServiceMock.getActiveProfileSession = jest.fn(() => of(mockSession));
-        dbServiceMock.insert = jest.fn(() => of(undefined));
-        dbServiceMock.execute = jest.fn(() => of(undefined));
+        profileServiceMock.getActiveProfileSession = jest.fn().mockImplementation(() => of(mockSession));
+        dbServiceMock.insert = jest.fn().mockImplementation(() => of(undefined));
+        dbServiceMock.execute = jest.fn().mockImplementation(() => of(undefined));
 
         // act
         searchHistoryService.addEntry({query: 'SAMPLE_QUERY', namespace: 'SAMPLE_NAMESPACE'})
@@ -54,8 +54,8 @@ describe('SearchHistoryServiceImpl', () => {
     it('should return entries for current Profile on getEntries()', (done) => {
         // arrange
         const mockSession: ProfileSession = new ProfileSession('SAMPLE_UID');
-        profileServiceMock.getActiveProfileSession = jest.fn(() => of(mockSession));
-        dbServiceMock.execute = jest.fn(() => of(<SearchHistoryEntry.SchemaMap[]>[
+        profileServiceMock.getActiveProfileSession = jest.fn().mockImplementation(() => of(mockSession));
+        dbServiceMock.execute = jest.fn().mockImplementation(() => of(<SearchHistoryEntry.SchemaMap[]>[
             {
                 [SearchHistoryEntry._ID]: '1',
                 [SearchHistoryEntry.COLUMN_NAME_USER_ID]: 'SAMPLE_UID',

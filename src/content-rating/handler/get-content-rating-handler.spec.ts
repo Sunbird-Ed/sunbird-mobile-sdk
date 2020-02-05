@@ -34,13 +34,13 @@ describe('GetContentRatingOptionsHandler', () => {
     //         language: 'english',
     //         ContentRatingUrl: ''
     //     };
-    //     mockCachedItemStore.getCached = jest.fn((a, b, c, d, e) => d());
-    //     const data = mockApiService.fetch =  jest.fn(() => of({
+    //     mockCachedItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e) => d());
+    //     const data = mockApiService.fetch =  jest.fn().mockImplementation(() => of({
     //         body: {
     //             result: {
     //                 response: 'SAMPLE_RESPONSE'
     //             },
-    //             trim: jest.fn(() => '{"name": "s-name"}')
+    //             trim: jest.fn().mockImplementation(() => '{"name": "s-name"}')
     //         }
     //     }));
 
@@ -58,8 +58,8 @@ describe('GetContentRatingOptionsHandler', () => {
             language: 'english',
             ContentRatingUrl: ''
         };
-        mockCachedItemStore.getCached = jest.fn((a, b, c, d) => d());
-        mockFileservice.readFileFromAssets = jest.fn(() => Promise.resolve('{"uid": "sample-uid"}'));
+        mockCachedItemStore.getCached = jest.fn().mockImplementation((a, b, c, d) => d());
+        mockFileservice.readFileFromAssets = jest.fn().mockImplementation(() => Promise.resolve('{"uid": "sample-uid"}'));
         // act
         getContentRatingOptionsHandler.handle(request).subscribe(() => {
             // assert

@@ -40,7 +40,7 @@ describe('ImportNExportHandler', () => {
             content_type: 'CONTENT_TYPE',
             path: 'sample_path'
         }];
-        mockDeviceInfo.getDeviceID = jest.fn(() => of([]));
+        mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of([]));
         // act
         importNExportHandler.populateItems(request);
         // assert
@@ -53,7 +53,7 @@ describe('ImportNExportHandler', () => {
         const request = [{
             'key': 'Sample_key'
         }];
-        mockDeviceInfo.getDeviceID = jest.fn(() => of([]));
+        mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of([]));
         // act
         importNExportHandler.populateItemList(request);
         // assert
@@ -64,7 +64,7 @@ describe('ImportNExportHandler', () => {
     it('should fetch all children from manifest.json file', async (done) => {
         // arrange
         const request = ['content_id_1', 'content_id_2'];
-        mockDbService.execute = jest.fn(() => {
+        mockDbService.execute = jest.fn().mockImplementation(() => {
         });
         (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
@@ -75,14 +75,14 @@ describe('ImportNExportHandler', () => {
             content_type: 'CONTENT_TYPE',
             path: 'sample_path'
         }]));
-        mockFileService.readAsText = jest.fn(() => {
+        mockFileService.readAsText = jest.fn().mockImplementation(() => {
         });
         const readAsText = (mockFileService.readAsText as jest.Mock)
             .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
         readAsText().then((value) => {
             return value;
         });
-        ArrayUtil.joinPreservingQuotes = jest.fn(() => of([]));
+        ArrayUtil.joinPreservingQuotes = jest.fn().mockImplementation(() => of([]));
         // act
         await importNExportHandler.getContentExportDBModelToExport(request).then((res) => {
             // assert
@@ -97,7 +97,7 @@ describe('ImportNExportHandler', () => {
     it('should initialize mainfest', (done) => {
         // arrange
         const request = [1, 2, 3];
-        const now = jest.fn(() => 'April 11, 2019');
+        const now = jest.fn().mockImplementation(() => 'April 11, 2019');
         // act
         const data = importNExportHandler.generateManifestForArchive(request);
         // assert
