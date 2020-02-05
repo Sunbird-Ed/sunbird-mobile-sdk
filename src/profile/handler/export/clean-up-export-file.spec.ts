@@ -36,11 +36,11 @@ describe('CleanupExportedFile', () => {
             destinationDBFilePath: 'dest/db/file/path',
             size: '32MB'
         };
-        mockDbService.execute = jest.fn(() => of([{ tableName: 'sample-table', name: 'db' }]));
-        mockDbService.read = jest.fn(() => of([{}]));
-        mockDbService.insert = jest.fn(() => of(2));
-        mockFileService.getMetaData = jest.fn(() => Promise.resolve({ size: 4 }));
-        mockFileService.removeFile = jest.fn(() => Promise.resolve({ success: true }));
+        mockDbService.execute = jest.fn().mockImplementation(() => of([{ tableName: 'sample-table', name: 'db' }]));
+        mockDbService.read = jest.fn().mockImplementation(() => of([{}]));
+        mockDbService.insert = jest.fn().mockImplementation(() => of(2));
+        mockFileService.getMetaData = jest.fn().mockImplementation(() => Promise.resolve({ size: 4 }));
+        mockFileService.removeFile = jest.fn().mockImplementation(() => Promise.resolve({ success: true }));
         // act
         cleanupExportedFile.execute(request).then(() => {
             expect(mockDbService.execute).toHaveBeenCalled();
@@ -64,11 +64,11 @@ describe('CleanupExportedFile', () => {
             destinationDBFilePath: '',
             size: '32MB'
         };
-        mockDbService.execute = jest.fn(() => of([{ tableName: 'sample-table', name: 'db' }]));
-        mockDbService.read = jest.fn(() => of([{}]));
-        mockDbService.insert = jest.fn(() => of(2));
-        mockFileService.getMetaData = jest.fn(() => Promise.resolve({ size: 4 }));
-        mockFileService.removeFile = jest.fn(() => Promise.reject({ errorMesg: '' }));
+        mockDbService.execute = jest.fn().mockImplementation(() => of([{ tableName: 'sample-table', name: 'db' }]));
+        mockDbService.read = jest.fn().mockImplementation(() => of([{}]));
+        mockDbService.insert = jest.fn().mockImplementation(() => of(2));
+        mockFileService.getMetaData = jest.fn().mockImplementation(() => Promise.resolve({ size: 4 }));
+        mockFileService.removeFile = jest.fn().mockImplementation(() => Promise.reject({ errorMesg: '' }));
         // act
         cleanupExportedFile.execute(request).catch((e) => {
             expect(mockDbService.execute).toHaveBeenCalled();

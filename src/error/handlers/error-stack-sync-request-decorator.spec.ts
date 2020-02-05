@@ -35,14 +35,14 @@ describe('ErrorStackSyncRequestDecorator', () => {
             id: 'p-id',
             ver: '2.7.0',
             pid: 'sample-pid',
-            ProducerData: jest.fn((a, b, c) => c)
+            ProducerData: jest.fn().mockImplementation((a, b, c) => c)
         };
         const request = {
             pdata: pData,
         };
-        mockAppInfo.getVersionName = jest.fn(() => of('2.7.0'));
-        mockDeviceInfo.getDeviceID = jest.fn(() => of('devices'));
-        mockDeviceInfo.getDeviceSpec = jest.fn(() => of({}));
+        mockAppInfo.getVersionName = jest.fn().mockImplementation(() => of('2.7.0'));
+        mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of('devices'));
+        mockDeviceInfo.getDeviceSpec = jest.fn().mockImplementation(() => of({}));
         // act
         errorStackSyncRequestDecorator.decorate(request).subscribe(() => {
             // assert

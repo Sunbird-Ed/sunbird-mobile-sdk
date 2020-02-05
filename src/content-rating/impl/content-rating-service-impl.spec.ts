@@ -38,8 +38,8 @@ describe('FaqServiceImpl', () => {
         };
         (GetContentRatingOptionsHandler as jest.Mock<GetContentRatingOptionsHandler>).mockImplementation(() => {
             return {
-                handle: jest.fn(() => of({}))
-            };
+                handle: jest.fn().mockImplementation(() => of({}))
+            } as Partial<GetContentRatingOptionsHandler> as GetContentRatingOptionsHandler;
         });
         // act
         contentRatingServiceImpl.getContentRatingOptions(request).subscribe(() => {

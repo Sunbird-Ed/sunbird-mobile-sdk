@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 describe('ExtractEcar', () => {
     let extractEcar: ExtractEcar;
     const mockFileService: Partial<FileService> = {
-        createDir: jest.fn(() => {})
+        createDir: jest.fn().mockImplementation(() => {})
     };
     const mockZipService: Partial<ZipService> = {};
 
@@ -39,7 +39,7 @@ describe('ExtractEcar', () => {
             contentImportResponseList: contentImportResponse,
             contentIdsToDelete: new Set(['1', '2'])
         };
-        mockFileService.getMetaData = jest.fn(() => {});
+        mockFileService.getMetaData = jest.fn().mockImplementation(() => {});
         (mockFileService.getMetaData as jest.Mock).mockRejectedValue([]);
         // act
         extractEcar.execute(request).catch(() => {
@@ -62,7 +62,7 @@ describe('ExtractEcar', () => {
             contentImportResponseList: contentImportResponse,
             contentIdsToDelete: new Set(['1', '2']),
         };
-        mockFileService.getMetaData = jest.fn(() => {});
+        mockFileService.getMetaData = jest.fn().mockImplementation(() => {});
     (mockFileService.getMetaData as jest.Mock).mockResolvedValue({modificationTime: 'July 20, 69 00:20:18', size: 16});
         (mockFileService.createDir as jest.Mock).mockResolvedValue('');
         // act

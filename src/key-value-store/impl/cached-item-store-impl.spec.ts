@@ -33,18 +33,18 @@ describe('CachedItemStoreImpl', () => {
         const id = 'SAMPLE_ID';
         const noSqlkey = 'NOSQL_KEY';
         const timeToLiveKey = 'SAMPLE_TIME_TO_LIVE_KEY';
-        const initial = jest.fn(() => timer(0, 5000));
-        const fromServer = jest.fn(() => of({}));
-        mockSharedPreferences.getString = jest.fn(() => {});
+        const initial = jest.fn().mockImplementation(() => timer(0, 5000));
+        const fromServer = jest.fn().mockImplementation(() => of({}));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => {});
         (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of(''));
-        mockSharedPreferences.putString = jest.fn(() => of(undefined));
+        mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
       //  (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(undefined));
-        mockKeyValueStore.setValue = jest.fn(() => {});
+        mockKeyValueStore.setValue = jest.fn().mockImplementation(() => {});
         (mockKeyValueStore.setValue as jest.Mock).mockReturnValue(of(''));
         // act
         cachedItemStoreImpl.getCached(id, noSqlkey, timeToLiveKey, fromServer, initial).subscribe(() => {
            // expect(mockSharedPreferences.getString).toBeCalledWith(timeToLiveKey);
-           // expect(mockSharedPreferences.putString).toHaveBeenCalledWith(noSqlkey, jest.fn(undefined));
+           // expect(mockSharedPreferences.putString).toHaveBeenCalledWith(noSqlkey, jest.fn().mockImplementation(undefined));
          done();
         });
         // assert
@@ -55,13 +55,13 @@ describe('CachedItemStoreImpl', () => {
         const id = 'SAMPLE_ID';
         const noSqlkey = 'NOSQL_KEY';
         const timeToLiveKey = 'SAMPLE_TIME_TO_LIVE_KEY';
-        const initial = jest.fn(() => '');
-        const fromServer = jest.fn(() => {item: { } });
-        mockSharedPreferences.getString = jest.fn(() => {});
+        const initial = jest.fn().mockImplementation(() => '');
+        const fromServer = jest.fn().mockImplementation(() => {item: { } });
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => {});
         (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of(''));
-        mockSharedPreferences.putString = jest.fn(() => {});
+        mockSharedPreferences.putString = jest.fn().mockImplementation(() => {});
         (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of({}));
-        mockKeyValueStore.setValue = jest.fn(() => {});
+        mockKeyValueStore.setValue = jest.fn().mockImplementation(() => {});
         (mockKeyValueStore.setValue as jest.Mock).mockReturnValue(of(''));
         // act
         cachedItemStoreImpl.getCached(id, noSqlkey, timeToLiveKey, fromServer, undefined).toPromise().catch(() => {

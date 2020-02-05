@@ -13,7 +13,7 @@
     "test:ci": "jest --ci --w 2 --collectCoverage=true --coverageReporters=lcov",
     "test:ci-json": "jest --ci --w 2 --collectCoverage=true --coverageReporters=json",
     "build:prod": "rm -rf dist && NODE_ENV=production webpack --verbose true --progress true --cache false --output-file index.js && cp ./package.json ./LICENSE ./README.md ./dist",
-    "build:analyze": "webpack --verbose true --progress true --cache false --profile --json > stats.json && webpack-bundle-analyzer ./stats.json",
+    "build:analyze": "webpack --verbose true --progress true --cache false --profile --json > stats.json && npx webpack-bundle-analyzer ./stats.json",
     "build:dev": "rm -rf tmp && mkdir tmp && cp ./package-dev.json ./tmp/package.json && tsc -w --outDir ./tmp"
   },
   "author": "",
@@ -44,30 +44,31 @@
     "sb-cordova-plugin-utility": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-utility.git"
   },
   "devDependencies": {
-    "@types/jest": "^23.3.9",
+    "@types/jest": "^25.1.1",
     "@types/node-fetch": "^2.5.4",
     "@types/pako": "^1.0.1",
     "@types/websql": "0.0.27",
     "cordova-plugin-advanced-http": "^2.0.2",
     "cordova-plugin-android-downloadmanager": "^0.5.0",
     "cordova-plugin-file": "^6.0.1",
-    "jest": "^24.8.0",
+    "jest": "^25.1.0",
     "rxjs": "^6.5.3",
-    "ts-jest": "^24.0.2",
+    "ts-jest": "^25.2.0",
     "ts-loader": "^5.3.2",
     "ts-mockito": "^2.4.2",
-    "ts-node": ">=3.2.0 <8",
     "tsickle": "^0.27.2",
     "tslib": "^1.9.0",
     "tslint": "^5.12.0",
     "typescript": "2.9.1",
-    "uglifyjs-webpack-plugin": "^2.1.1",
     "webpack": "^4.28.3",
-    "webpack-bundle-analyzer": "^3.6.0",
-    "webpack-cli": "^3.1.2",
-    "webpack-rxjs-externals": "^2.0.0"
+    "webpack-cli": "^3.1.2"
   },
   "jest": {
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "tsconfig.spec.json"
+      }
+    },
     "browser": false,
     "rootDir": "./",
     "roots": [

@@ -37,8 +37,8 @@ describe('SessionAuthenticator', () => {
                 'content_type': 'application/text'
             })
             .build();
-            const data = mockSharedPreferences.getString = jest.fn(() => of('application/text'));
-            JSON.parse = jest.fn().mockImplementationOnce(() => {
+            const data = mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('application/text'));
+            JSON.parse = jest.fn().mockImplementation().mockImplementationOnce(() => {
                 return data;
               });
             // act
@@ -105,8 +105,8 @@ describe('SessionAuthenticator', () => {
                 'content_type': 'application/text'
             })
             .build();
-            mockAuthService.refreshSession = jest.fn(() => of({}));
-            mockApiService.fetch = jest.fn(() => of({}));
+            mockAuthService.refreshSession = jest.fn().mockImplementation(() => of({}));
+            mockApiService.fetch = jest.fn().mockImplementation(() => of({}));
             // act
             sessionAuthenticator.interceptResponse(request, res).subscribe(() => {
                 // assert

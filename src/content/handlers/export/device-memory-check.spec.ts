@@ -6,7 +6,7 @@ import {ExportContentContext} from '../..';
 describe('DeviceMemoryCheck', () => {
     let deviceMemoryCheck: DeviceMemoryCheck;
     const mockFileService: Partial<FileService> = {
-        getFreeDiskSpace: jest.fn(() => {
+        getFreeDiskSpace: jest.fn().mockImplementation(() => {
         })
     };
 

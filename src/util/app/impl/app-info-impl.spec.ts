@@ -63,7 +63,7 @@ describe('AppInfoImpl', () => {
 
     it('should get setFirstAccessTimestamp for debugmode is true', async(done) => {
         // arrange
-        mockSharedPreferences.getString = jest.fn(() => of('first_access_timestamp'));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('first_access_timestamp'));
         // act
         await appInfoImpl.init().then(() => {
         // assert
@@ -74,8 +74,8 @@ describe('AppInfoImpl', () => {
 
     it('should get setFirstAccessTimestamp if debugMode is false', async(done) => {
         // arrange
-        mockSharedPreferences.getString = jest.fn(() => of(undefined));
-        mockSharedPreferences.putString = jest.fn(() => of(undefined));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(undefined));
+        mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
         const mockSdkConfigApi: Partial<SdkConfig> = {
             apiConfig: {
                 host: 'SAMPLE_HOST',
@@ -125,7 +125,7 @@ describe('AppInfoImpl', () => {
 
     it('should get FirstAccessTimestamp', (done) => {
         // arrange
-        mockSharedPreferences.getString = jest.fn(() => of('first_access_timestamp'));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('first_access_timestamp'));
         // act
         appInfoImpl.getFirstAccessTimestamp().subscribe(() => {
             // assert

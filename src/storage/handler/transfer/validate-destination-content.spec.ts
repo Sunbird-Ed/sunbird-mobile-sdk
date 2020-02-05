@@ -53,7 +53,7 @@ describe('ValidateDestinationContent', () => {
             duplicateContents: dupContents,
             validContentIdsInDestination: ['SAMPLE_CONTENT_1', 'SAMPLE_CONTENT_2']
         };
-        mockFileService.listDir = jest.fn(() => { });
+        mockFileService.listDir = jest.fn().mockImplementation(() => { });
         (mockFileService.listDir as jest.Mock).mockResolvedValue(([
             {
                 isFile: true,
@@ -69,7 +69,7 @@ describe('ValidateDestinationContent', () => {
                 nativeURL: ''
             }
         ]));
-        mockFileService.readAsText = jest.fn(() => {});
+        mockFileService.readAsText = jest.fn().mockImplementation(() => {});
         const readAsText = (mockFileService.readAsText as jest.Mock)
         .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
         readAsText().then((value) => {

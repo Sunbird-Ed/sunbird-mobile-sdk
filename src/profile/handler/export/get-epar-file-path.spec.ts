@@ -5,7 +5,7 @@ import { ExportProfileContext } from '../../def/export-profile-context';
 describe('GetEparFilePath', () => {
     let getEparFilePath: GetEparFilePath;
     const mockFileService: Partial<FileService> = {};
-    Date.now = jest.fn(() => 1487076708000);
+    Date.now = jest.fn().mockImplementation(() => 1487076708000);
 
     beforeAll(() => {
         getEparFilePath = new GetEparFilePath(
@@ -30,8 +30,8 @@ describe('GetEparFilePath', () => {
             destinationDBFilePath: 'dest/db/file/path',
             size: '32MB'
         };
-        mockFileService.createDir = jest.fn(() => Promise.resolve({}));
-        mockFileService.createFile = jest.fn(() => Promise.resolve({}));
+        mockFileService.createDir = jest.fn().mockImplementation(() => Promise.resolve({}));
+        mockFileService.createFile = jest.fn().mockImplementation(() => Promise.resolve({}));
         // act
         getEparFilePath.execute(request).then(() => {
             // assert

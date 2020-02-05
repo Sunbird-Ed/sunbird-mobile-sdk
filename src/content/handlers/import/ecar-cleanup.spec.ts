@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 describe('EcarCleanup', () => {
     let ecarCleanup: EcarCleanup;
     const mockFileService: Partial<FileService> = {
-        removeRecursively: jest.fn(() => {})
+        removeRecursively: jest.fn().mockImplementation(() => {})
     };
 
     beforeAll(() => {

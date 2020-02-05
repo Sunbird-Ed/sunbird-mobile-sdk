@@ -29,7 +29,7 @@ describe('UpdateSizeOnDevice', () => {
 
     it('should be update all root content', () => {
         // arrange
-        mockDbService.execute = jest.fn(() => {});
+        mockDbService.execute = jest.fn().mockImplementation(() => {});
         const rootContentsInDb: ContentEntry.SchemaMap[] = [{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
@@ -50,7 +50,7 @@ describe('UpdateSizeOnDevice', () => {
 
     it('should be update all root content', () => {
         // arrange
-        mockDbService.execute = jest.fn(() => {});
+        mockDbService.execute = jest.fn().mockImplementation(() => {});
         const rootContentsInDb: ContentEntry.SchemaMap[] = [{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',

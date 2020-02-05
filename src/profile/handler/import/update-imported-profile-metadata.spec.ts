@@ -26,14 +26,14 @@ describe('TransportUser', () => {
             sourceDBFilePath: 'src/db/path',
             metadata: { 'index': 1 }
         };
-        mockDbService.read = jest.fn(() => {
+        mockDbService.read = jest.fn().mockImplementation(() => {
             return of([{
                 imported_id: 'sample-imported_id',
                 device_id: 'sample-device_id',
                 count: 'count-1'
             }]);
         });
-        mockDbService.update = jest.fn(() => of(1));
+        mockDbService.update = jest.fn().mockImplementation(() => of(1));
         // act
         updateImportedProfileMetadata.execute(request).then(() => {
             // assert
@@ -49,8 +49,8 @@ describe('TransportUser', () => {
             sourceDBFilePath: 'src/db/path',
             metadata: { 'index': 1 }
         };
-        mockDbService.read = jest.fn(() => of({}));
-        mockDbService.insert = jest.fn(() => of(1));
+        mockDbService.read = jest.fn().mockImplementation(() => of({}));
+        mockDbService.insert = jest.fn().mockImplementation(() => of(1));
         // act
         updateImportedProfileMetadata.execute(request).then(() => {
             // assert

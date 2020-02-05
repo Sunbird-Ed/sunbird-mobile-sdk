@@ -20,13 +20,13 @@ describe('ApiServiceImpl', () => {
 
     const container = new Container();
     const mockDeviceInfoService: Partial<DeviceInfo> = {
-        getDeviceID: jest.fn(() => {
+        getDeviceID: jest.fn().mockImplementation(() => {
         }),
     };
     const mockSharedPreferences: Partial<SharedPreferences> = {
-        getString: jest.fn(() => {
+        getString: jest.fn().mockImplementation(() => {
         }),
-        putString: jest.fn(() => {
+        putString: jest.fn().mockImplementation(() => {
         }),
     };
     const mockEventsBusService: Partial<EventsBusService> = {};
@@ -115,8 +115,8 @@ describe('ApiServiceImpl', () => {
         // arrange
         (FetchHandler as jest.Mock<FetchHandler>).mockImplementation(() => {
             return {
-                doFetch: jest.fn(() => of(new Response()))
-            };
+                doFetch: jest.fn().mockImplementation(() => of(new Response()))
+            } as Partial<FetchHandler> as FetchHandler;
         });
 
         // act

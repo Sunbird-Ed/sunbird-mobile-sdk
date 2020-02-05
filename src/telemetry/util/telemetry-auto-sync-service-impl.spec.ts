@@ -51,7 +51,7 @@ describe('TelemetryAutoSyncServiceImpl', () => {
     describe('getSyncMode()', () => {
         it('should default to undefined if no sync mode set', (done) => {
             // arrange
-            mockSharedPreferences.getString = jest.fn(() => of(undefined));
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(undefined));
 
             // act
             telemetryAutoSyncService.getSyncMode().subscribe((mode) => {
@@ -64,7 +64,7 @@ describe('TelemetryAutoSyncServiceImpl', () => {
 
         it('should resolve to mode if sync mode is set', (done) => {
             // arrange
-            mockSharedPreferences.getString = jest.fn(() => of(TelemetryAutoSyncModes.ALWAYS_ON));
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(TelemetryAutoSyncModes.ALWAYS_ON));
 
             // act
             telemetryAutoSyncService.getSyncMode().subscribe((mode) => {
@@ -79,7 +79,7 @@ describe('TelemetryAutoSyncServiceImpl', () => {
     describe('setSyncMode()', () => {
         it('should be able to set sync mode', (done) => {
             // arrange
-            mockSharedPreferences.putString = jest.fn(() => of(undefined));
+            mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
 
             // act
             telemetryAutoSyncService.setSyncMode(TelemetryAutoSyncModes.OVER_WIFI).subscribe(() => {
@@ -98,12 +98,12 @@ describe('TelemetryAutoSyncServiceImpl', () => {
         it('should be able to start telemetry sync', (done) => {
             // arrange
             window['downloadManager'] = {
-                fetchSpeedLog: jest.fn(() => {
+                fetchSpeedLog: jest.fn().mockImplementation(() => {
                     return {};
                 })
             };
 
-            mockTelemetryService.sync = jest.fn(() => {
+            mockTelemetryService.sync = jest.fn().mockImplementation(() => {
                 return of({
                     syncedEventCount: 0,
                     syncTime: Date.now(),
@@ -111,7 +111,7 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                 });
             });
 
-            mockProfileService.getActiveSessionProfile = jest.fn(() => {
+            mockProfileService.getActiveSessionProfile = jest.fn().mockImplementation(() => {
                 return of({
                     uid: 'SAMPLE_UID',
                     handle: 'SAMPLE_HANDLE',
@@ -137,12 +137,12 @@ describe('TelemetryAutoSyncServiceImpl', () => {
             it('for start(30000) it should be invoked every 2 iteration', (done) => {
                 // arrange
                 window['downloadManager'] = {
-                    fetchSpeedLog: jest.fn(() => {
+                    fetchSpeedLog: jest.fn().mockImplementation(() => {
                         return {};
                     })
                 };
 
-                mockTelemetryService.sync = jest.fn(() => {
+                mockTelemetryService.sync = jest.fn().mockImplementation(() => {
                     return of({
                         syncedEventCount: 0,
                         syncTime: Date.now(),
@@ -150,7 +150,7 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                     });
                 });
 
-                mockProfileService.getActiveSessionProfile = jest.fn(() => {
+                mockProfileService.getActiveSessionProfile = jest.fn().mockImplementation(() => {
                     return of({
                         uid: 'SAMPLE_UID',
                         handle: 'SAMPLE_HANDLE',
@@ -175,12 +175,12 @@ describe('TelemetryAutoSyncServiceImpl', () => {
             it('for start(10000) it should be invoked every 6 iteration', (done) => {
                 // arrange
                 window['downloadManager'] = {
-                    fetchSpeedLog: jest.fn(() => {
+                    fetchSpeedLog: jest.fn().mockImplementation(() => {
                         return {};
                     })
                 };
 
-                mockTelemetryService.sync = jest.fn(() => {
+                mockTelemetryService.sync = jest.fn().mockImplementation(() => {
                     return of({
                         syncedEventCount: 0,
                         syncTime: Date.now(),
@@ -188,7 +188,7 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                     });
                 });
 
-                mockProfileService.getActiveSessionProfile = jest.fn(() => {
+                mockProfileService.getActiveSessionProfile = jest.fn().mockImplementation(() => {
                     return of({
                         uid: 'SAMPLE_UID',
                         handle: 'SAMPLE_HANDLE',
@@ -214,12 +214,12 @@ describe('TelemetryAutoSyncServiceImpl', () => {
         it('should attempt Course progress and Assessment sync if online user', (done) => {
             // arrange
             window['downloadManager'] = {
-                fetchSpeedLog: jest.fn(() => {
+                fetchSpeedLog: jest.fn().mockImplementation(() => {
                     return {};
                 })
             };
 
-            mockTelemetryService.sync = jest.fn(() => {
+            mockTelemetryService.sync = jest.fn().mockImplementation(() => {
                 return of({
                     syncedEventCount: 0,
                     syncTime: Date.now(),
@@ -227,7 +227,7 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                 });
             });
 
-            mockProfileService.getActiveSessionProfile = jest.fn(() => {
+            mockProfileService.getActiveSessionProfile = jest.fn().mockImplementation(() => {
                 return of({
                     uid: 'SAMPLE_UID',
                     handle: 'SAMPLE_HANDLE',
@@ -235,9 +235,9 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                 });
             });
 
-            mockCourseService.syncAssessmentEvents = jest.fn(() => of(undefined));
+            mockCourseService.syncAssessmentEvents = jest.fn().mockImplementation(() => of(undefined));
 
-            const mockUpdateContentState = jest.fn(() => of(undefined));
+            const mockUpdateContentState = jest.fn().mockImplementation(() => of(undefined));
             (ContentStatesSyncHandler as any).mockImplementation(() => {
                 return {
                     updateContentState: mockUpdateContentState
@@ -274,12 +274,12 @@ describe('TelemetryAutoSyncServiceImpl', () => {
         it('should be able to start telemetry sync', (done) => {
             // arrange
             window['downloadManager'] = {
-                fetchSpeedLog: jest.fn(() => {
+                fetchSpeedLog: jest.fn().mockImplementation(() => {
                     return {};
                 })
             };
 
-            mockTelemetryService.sync = jest.fn(() => {
+            mockTelemetryService.sync = jest.fn().mockImplementation(() => {
                 return of({
                     syncedEventCount: 0,
                     syncTime: Date.now(),
@@ -287,7 +287,7 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                 });
             });
 
-            mockProfileService.getActiveSessionProfile = jest.fn(() => {
+            mockProfileService.getActiveSessionProfile = jest.fn().mockImplementation(() => {
                 return of({
                     uid: 'SAMPLE_UID',
                     handle: 'SAMPLE_HANDLE',

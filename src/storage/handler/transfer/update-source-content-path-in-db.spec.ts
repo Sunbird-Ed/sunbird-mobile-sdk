@@ -6,9 +6,9 @@ import { MoveContentResponse, MoveContentStatus, TransferContentContext } from '
 describe('UpdateSourceContentPathInDb', () => {
     let updateSourceContentPathInDb: UpdateSourceContentPathInDb;
     const mockDbService: Partial<DbService> = {
-        beginTransaction: jest.fn(() => {}),
-        update: jest.fn(() => {}),
-        endTransaction: jest.fn(() => {})
+        beginTransaction: jest.fn().mockImplementation(() => {}),
+        update: jest.fn().mockImplementation(() => {}),
+        endTransaction: jest.fn().mockImplementation(() => {})
     };
 
     beforeAll(() => {

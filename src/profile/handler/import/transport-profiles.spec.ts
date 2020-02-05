@@ -26,7 +26,7 @@ describe('TransportProfiles', () => {
             sourceDBFilePath: 'src/db/path',
             metadata: { 'index': 1 }
         };
-        mockDbService.read = jest.fn((req) => {
+        mockDbService.read = jest.fn().mockImplementation((req) => {
             if (req.useExternalDb) {
                 return of([{
                     uid: 'sample-uid',
@@ -36,7 +36,7 @@ describe('TransportProfiles', () => {
 
             return of({});
         });
-        mockDbService.insert = jest.fn(() => of(1));
+        mockDbService.insert = jest.fn().mockImplementation(() => of(1));
         // act
         transportProfiles.execute(request).then(() => {
             // assert
@@ -52,7 +52,7 @@ describe('TransportProfiles', () => {
             sourceDBFilePath: 'src/db/path',
             metadata: { 'index': 1 }
         };
-        mockDbService.read = jest.fn((req) => {
+        mockDbService.read = jest.fn().mockImplementation((req) => {
             if (req.useExternalDb) {
                 return of([{
                     uid: 'sample-uid',

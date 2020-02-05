@@ -47,7 +47,7 @@ describe('TelemetrySyncHandler', () => {
             // arrange
             const response = new Response();
             response.responseCode = ResponseCode.HTTP_BAD_REQUEST;
-            mockApiService.fetch = jest.fn(() => throwError(new HttpClientError('some_error', response)));
+            mockApiService.fetch = jest.fn().mockImplementation(() => throwError(new HttpClientError('some_error', response)));
 
             // act
             telemetrySyncHandler['syncProcessedEvent']({

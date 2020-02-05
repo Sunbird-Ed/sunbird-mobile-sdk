@@ -35,10 +35,10 @@ describe('CreateMetaData', () => {
             destinationDBFilePath: 'dest/db/file/path',
             size: '32MB'
         };
-        mockDeviceInfo.getDeviceID = jest.fn(() => 'device-id');
-        mockDbService.open = jest.fn(() => Promise.resolve(undefined));
-        mockDbService.execute = jest.fn(() => of({}));
-        mockDbService.insert = jest.fn(() => of(1));
+        mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => 'device-id');
+        mockDbService.open = jest.fn().mockImplementation(() => Promise.resolve(undefined));
+        mockDbService.execute = jest.fn().mockImplementation(() => of({}));
+        mockDbService.insert = jest.fn().mockImplementation(() => of(1));
         // act
         createMetaData.execute(request).then(() => {
             // assert
@@ -62,10 +62,10 @@ describe('CreateMetaData', () => {
             destinationDBFilePath: 'dest/db/file/path',
             size: '32MB'
         };
-        mockDeviceInfo.getDeviceID = jest.fn(() => 'device-id');
-        mockDbService.open = jest.fn(() => Promise.reject(undefined));
-        mockDbService.execute = jest.fn(() => of({}));
-        mockDbService.insert = jest.fn(() => of(1));
+        mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => 'device-id');
+        mockDbService.open = jest.fn().mockImplementation(() => Promise.reject(undefined));
+        mockDbService.execute = jest.fn().mockImplementation(() => of({}));
+        mockDbService.insert = jest.fn().mockImplementation(() => of(1));
         // act
         createMetaData.execute(request).catch((e) => {
             // assert

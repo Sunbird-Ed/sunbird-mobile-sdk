@@ -7,7 +7,7 @@ declare const ZipService;
 describe('CompressContent', () => {
     let compressContent: CompressContent;
     const mockZipService: Partial<ZipService> = {
-        zip: jest.fn(() => {
+        zip: jest.fn().mockImplementation(() => {
         })
     };
 

@@ -30,7 +30,7 @@ describe('SyncAssessmentEventsHandler', () => {
     it('should sync capture assessment events', (done) => {
         // arrange
         const capturedAssessmentEvents = {};
-        mockDbService.insert = jest.fn(() => of(1));
+        mockDbService.insert = jest.fn().mockImplementation(() => of(1));
         // act
         syncAssessmentEventsHandler.handle(capturedAssessmentEvents).subscribe((e) => {
             // assert
@@ -54,7 +54,7 @@ describe('SyncAssessmentEventsHandler', () => {
                 )
             ]
         };
-        mockDbService.insert = jest.fn(() => of(1));
+        mockDbService.insert = jest.fn().mockImplementation(() => of(1));
         // act
         syncAssessmentEventsHandler.handle(capturedAssessmentEvents).subscribe((e) => {
             // assert

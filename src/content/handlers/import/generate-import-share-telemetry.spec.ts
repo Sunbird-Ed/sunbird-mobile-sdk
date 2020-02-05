@@ -5,7 +5,7 @@ import { of } from 'rxjs';
 describe('GenerateImportShareTelemetry', () => {
     let generateImportShareTelemetry: GenerateImportShareTelemetry;
     const mockTelemetryService: Partial<TelemetryService> = {
-        share: jest.fn(() => {})
+        share: jest.fn().mockImplementation(() => {})
     };
 
     beforeAll(() => {

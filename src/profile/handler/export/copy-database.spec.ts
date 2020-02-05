@@ -30,7 +30,7 @@ describe('CopyDatabase', () => {
             destinationDBFilePath: 'dest/db/file/path',
             size: '32MB'
         };
-        mockDbService.copyDatabase = jest.fn(() => of({}));
+        mockDbService.copyDatabase = jest.fn().mockImplementation(() => of({}));
         // act
         copyDatabase.execute(request);
         // assert
