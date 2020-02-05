@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "typeRoots": [
+      "./node_modules/@types",
+      "src/__test__"
+    ],
+    "types": [
+      "jest"
+    ]
+  },
+  "include": [
+    "./plugins/*.d.ts",
+    "./src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/**/__tests__/*.ts",
+    "dist",
+    "tmp"
+  ]
+}
