@@ -40,8 +40,7 @@ export class GetFaqDetailsHandler {
         return this.apiService.fetch(apiRequest)
             .pipe(
                 map((response) => {
-                    const resp = JSON.parse(response.body.trim());
-                    return resp;
+                    return response.body;
                 })
             );
     }
