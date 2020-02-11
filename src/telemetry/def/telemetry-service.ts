@@ -5,7 +5,6 @@ import {
     TelemetryAuditRequest,
     TelemetryEndRequest,
     TelemetryErrorRequest,
-    TelemetryExportRequest,
     TelemetryFeedbackRequest,
     TelemetryImportRequest,
     TelemetryImpressionRequest,
@@ -16,7 +15,6 @@ import {
     TelemetryStartRequest,
     TelemetrySyncRequest
 } from './requests';
-import {TelemetryExportResponse} from './response';
 import {Context} from './telemetry-model';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {TelemetryAutoSyncService} from '..';
@@ -47,8 +45,6 @@ export interface TelemetryService extends SdkServiceOnInitDelegate {
     interrupt(request: TelemetryInterruptRequest): Observable<boolean>;
 
     importTelemetry(telemetryImportRequest: TelemetryImportRequest): Observable<boolean>;
-
-    exportTelemetry(telemetryExportRequest: TelemetryExportRequest): Observable<TelemetryExportResponse>;
 
     getTelemetryStat(): Observable<TelemetryStat>;
 
