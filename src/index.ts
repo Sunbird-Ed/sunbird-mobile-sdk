@@ -23,7 +23,6 @@ export * from './notification';
 export * from './error';
 export * from './codepush-experiment';
 export * from './faq';
-export * from './content-rating';
 export * from './archive';
 // utils
 export * from './util/shared-preferences';

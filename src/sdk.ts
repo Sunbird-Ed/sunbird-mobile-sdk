@@ -67,7 +67,6 @@ import {CourseAssessmentMigration} from './db/migrations/course-assessment-migra
 import {CodePushExperimentService, CodePUshExperimentServiceImpl} from './codepush-experiment';
 import {FaqService, FaqServiceImpl} from './faq';
 import {DeviceRegisterConfig, DeviceRegisterService, DeviceRegisterServiceImpl} from './device-register';
-import {ContentRatingService, ContentRatingServiceImpl} from './content-rating';
 import {combineLatest} from 'rxjs';
 import {concatMap} from 'rxjs/operators';
 import {ArchiveService} from './archive';
@@ -216,10 +215,6 @@ export class SunbirdSdk {
         return this._container.get<DeviceRegisterService>(InjectionTokens.DEVICE_REGISTER_SERVICE);
     }
 
-    get contentRatingService(): ContentRatingService {
-        return this._container.get<ContentRatingService>(InjectionTokens.CONTENT_RATING_SERVICE);
-    }
-
     get archiveService(): ArchiveService {
         return this._container.get<ArchiveService>(InjectionTokens.ARCHIVE_SERVICE);
     }
@@ -324,8 +319,6 @@ export class SunbirdSdk {
             .inSingletonScope();
 
         this._container.bind<FaqService>(InjectionTokens.FAQ_SERVICE).to(FaqServiceImpl).inSingletonScope();
-
-        this._container.bind<ContentRatingService>(InjectionTokens.CONTENT_RATING_SERVICE).to(ContentRatingServiceImpl).inSingletonScope();
 
         this._container.bind<ArchiveService>(InjectionTokens.ARCHIVE_SERVICE).to(ArchiveServiceImpl).inSingletonScope();
 
