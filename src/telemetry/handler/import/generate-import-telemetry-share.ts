@@ -1,5 +1,4 @@
 import {
-    ExportTelemetryContext,
     ImportTelemetryContext,
     Item,
     ShareDirection,
