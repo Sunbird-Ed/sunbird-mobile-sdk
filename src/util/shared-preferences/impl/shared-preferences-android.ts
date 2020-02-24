@@ -19,16 +19,16 @@ export class SharedPreferencesAndroid implements SharedPreferences {
             return this.putString(key, value).pipe(
                 mapTo(value)
             );
-        }
-
-        return new Observable((observer) => {
-            this.sharedPreferences.getString(key, '', (v) => {
-                observer.next(v);
-                observer.complete();
-            }, (e) => {
-                observer.error(e);
+        } else {
+            return new Observable((observer) => {
+                this.sharedPreferences.getString(key, '', (v) => {
+                    observer.next(v);
+                    observer.complete();
+                }, (e) => {
+                    observer.error(e);
+                });
             });
-        });
+        }
     }
 
     public putString(key: string, value: string): Observable<undefined> {
@@ -62,15 +62,15 @@ export class SharedPreferencesAndroid implements SharedPreferences {
             return this.putBoolean(key, value === 'true').pipe(
                 mapTo(value === 'true')
             );
-        }
-
-        return new Observable((observer) => {
-            this.sharedPreferences.getBoolean(key, false, (v) => {
-                observer.next(v);
-                observer.complete();
-            }, (e) => {
-                observer.error(e);
+        } else {
+            return new Observable((observer) => {
+                this.sharedPreferences.getBoolean(key, false, (v) => {
+                    observer.next(v);
+                    observer.complete();
+                }, (e) => {
+                    observer.error(e);
+                });
             });
-        });
+        }
     }
 }
