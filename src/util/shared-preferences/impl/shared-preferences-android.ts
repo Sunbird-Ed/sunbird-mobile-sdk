@@ -1,6 +1,7 @@
 import {SharedPreferences} from '..';
 import {Observable} from 'rxjs';
 import {injectable} from 'inversify';
+import {mapTo} from 'rxjs/operators';
 
 @injectable()
 export class SharedPreferencesAndroid implements SharedPreferences {
@@ -10,14 +11,24 @@ export class SharedPreferencesAndroid implements SharedPreferences {
     private sharedPreferences = plugins.SharedPreferences.getInstance(SharedPreferencesAndroid.sharedPreferncesName);
 
     public getString(key: string): Observable<string | undefined> {
-        return new Observable((observer) => {
-            this.sharedPreferences.getString(key, '', (value) => {
-                observer.next(value);
-                observer.complete();
-            }, (e) => {
-                observer.error(e);
+        const value = localStorage.getItem(key);
+
+        if (value) {
+            localStorage.removeItem(key);
+
+            return this.putString(key, value).pipe(
+                mapTo(value)
+            );
+        } else {
+            return new Observable((observer) => {
+                this.sharedPreferences.getString(key, '', (v) => {
+                    observer.next(v);
+                    observer.complete();
+                }, (e) => {
+                    observer.error(e);
+                });
             });
-        });
+        }
     }
 
     public putString(key: string, value: string): Observable<undefined> {
@@ -43,13 +54,23 @@ export class SharedPreferencesAndroid implements SharedPreferences {
     }
 
     public getBoolean(key: string): Observable<boolean> {
-        return new Observable((observer) => {
-            this.sharedPreferences.getBoolean(key, false, (value) => {
-                observer.next(value);
-                observer.complete();
-            }, (e) => {
-                observer.error(e);
+        const value = localStorage.getItem(key);
+
+        if (value) {
+            localStorage.removeItem(key);
+
+            return this.putBoolean(key, value === 'true').pipe(
+                mapTo(value === 'true')
+            );
+        } else {
+            return new Observable((observer) => {
+                this.sharedPreferences.getBoolean(key, false, (v) => {
+                    observer.next(v);
+                    observer.complete();
+                }, (e) => {
+                    observer.error(e);
+                });
             });
-        });
+        }
     }
 }
