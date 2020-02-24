@@ -1,6 +1,7 @@
 import {SharedPreferences} from '..';
 import {Observable} from 'rxjs';
 import {injectable} from 'inversify';
+import {mapTo} from 'rxjs/operators';
 
 @injectable()
 export class SharedPreferencesAndroid implements SharedPreferences {
@@ -10,6 +11,16 @@ export class SharedPreferencesAndroid implements SharedPreferences {
     private sharedPreferences = plugins.SharedPreferences.getInstance(SharedPreferencesAndroid.sharedPreferncesName);
 
     public getString(key: string): Observable<string | undefined> {
+        const value = localStorage.getItem(key);
+
+        if (value) {
+            localStorage.setItem(key, '');
+
+            return this.putString(key, value).pipe(
+                mapTo(value)
+            );
+        }
+
         return new Observable((observer) => {
             this.sharedPreferences.getString(key, '', (value) => {
                 observer.next(value);
@@ -43,6 +54,16 @@ export class SharedPreferencesAndroid implements SharedPreferences {
     }
 
     public getBoolean(key: string): Observable<boolean> {
+        const value = localStorage.getItem(key);
+
+        if (value) {
+            localStorage.setItem(key, '');
+
+            return this.putBoolean(key, value === 'true').pipe(
+                mapTo(value === 'true')
+            );
+        }
+
         return new Observable((observer) => {
             this.sharedPreferences.getBoolean(key, false, (value) => {
                 observer.next(value);
