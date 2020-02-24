@@ -240,10 +240,10 @@ export class SunbirdSdk {
 
         switch (sdkConfig.platform) {
             case 'cordova': this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
-                .to(SharedPreferencesLocalStorage).inSingletonScope();
+                .to(SharedPreferencesAndroid).inSingletonScope();
                 break;
             case 'web': this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
-                .to(SharedPreferencesAndroid).inSingletonScope();
+                .to(SharedPreferencesLocalStorage).inSingletonScope();
                 break;
             default: throw new Error('FATAL_ERROR: Invalid platform');
         }
