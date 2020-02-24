@@ -14,7 +14,7 @@ export class SharedPreferencesAndroid implements SharedPreferences {
         const value = localStorage.getItem(key);
 
         if (value) {
-            localStorage.setItem(key, '');
+            localStorage.removeItem(key);
 
             return this.putString(key, value).pipe(
                 mapTo(value)
@@ -57,7 +57,7 @@ export class SharedPreferencesAndroid implements SharedPreferences {
         const value = localStorage.getItem(key);
 
         if (value) {
-            localStorage.setItem(key, '');
+            localStorage.removeItem(key);
 
             return this.putBoolean(key, value === 'true').pipe(
                 mapTo(value === 'true')
