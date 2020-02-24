@@ -1,5 +1,5 @@
 {
-  "name": "sunbird-sdk",
+  "name": "@project-sunbird/sunbird-sdk",
   "version": "0.0.0",
   "main": "index.js",
   "dependencies": {
