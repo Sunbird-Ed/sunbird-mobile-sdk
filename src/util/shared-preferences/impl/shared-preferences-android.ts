@@ -22,8 +22,8 @@ export class SharedPreferencesAndroid implements SharedPreferences {
         }
 
         return new Observable((observer) => {
-            this.sharedPreferences.getString(key, '', (value) => {
-                observer.next(value);
+            this.sharedPreferences.getString(key, '', (v) => {
+                observer.next(v);
                 observer.complete();
             }, (e) => {
                 observer.error(e);
@@ -65,8 +65,8 @@ export class SharedPreferencesAndroid implements SharedPreferences {
         }
 
         return new Observable((observer) => {
-            this.sharedPreferences.getBoolean(key, false, (value) => {
-                observer.next(value);
+            this.sharedPreferences.getBoolean(key, false, (v) => {
+                observer.next(v);
                 observer.complete();
             }, (e) => {
                 observer.error(e);
