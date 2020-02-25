@@ -83,11 +83,13 @@ export class TelemetryEndRequest {
 
 export class TelemetryFeedbackRequest {
     env: string;
-    rating: number;
+    rating?: number;
     comments: string;
     objId: string;
     objType: string;
     objVer: string;
+    commentid?: string;
+    commenttxt?: string;
 }
 
 
