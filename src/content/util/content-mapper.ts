@@ -97,8 +97,8 @@ export class ContentMapper {
                     localData.previewUrl = serverData.previewUrl;
                 }
 
-                if (!localData.me_totalRatings) {
-                    localData.me_totalRatings = serverData.me_totalRatings;
+                if (!localData.me_totalRatingsCount) {
+                    localData.me_totalRatingsCount = serverData.me_totalRatingsCount;
                 }
 
                 if (!localData.me_averageRating) {

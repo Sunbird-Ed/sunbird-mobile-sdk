@@ -81,7 +81,7 @@ describe('ContentMapper', () => {
                         lastUpdatedOn: '12/02/20202',
                         licenseDetails: undefined,
                         me_averageRating: undefined,
-                        me_totalRatings: undefined,
+                        me_totalRatingsCount: undefined,
                         mimeType: 'sample-mime-type',
                         previewUrl: undefined,
                         size: undefined,
@@ -110,7 +110,7 @@ describe('ContentMapper', () => {
                 manifest_version: 'sample-manifest-version',
                 content_type: 'sample-content-type',
                 epoch_timestamp: 5,
-                data: '{"size":"10KB","me_averageRating":"3","me_totalRatings": "4star", "streamingUrl": "url", "previewUrl": "p-url", "licenseDetails": "license"}',
+                data: '{"size":"10KB","me_averageRating":"3","me_totalRatingsCount": 4, "streamingUrl": "url", "previewUrl": "p-url", "licenseDetails": "license"}',
                 content_state: State.ARTIFACT_AVAILABLE,
                 lastUpdatedOn: '20/02/2020'
             };
@@ -123,7 +123,7 @@ describe('ContentMapper', () => {
                     contentData: {
                         licenseDetails: 'license',
                         me_averageRating: '3',
-                        me_totalRatings: '4star',
+                        me_totalRatingsCount: 4,
                         previewUrl: 'p-url',
                         size: '10KB',
                         streamingUrl: 'url'
