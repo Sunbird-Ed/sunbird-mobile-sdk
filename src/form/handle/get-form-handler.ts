@@ -67,7 +67,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
         return from(this.fileService.readFileFromAssets(dir.concat('/', file))).pipe(
             map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
-                return (result.result.form);
+                return (result.result);
             })
         );
     }
