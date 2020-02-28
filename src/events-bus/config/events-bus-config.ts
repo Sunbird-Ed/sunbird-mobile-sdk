@@ -1,3 +1,3 @@
 export interface EventsBusConfig {
-    debugMode: true;
+    debugMode: boolean;
 }

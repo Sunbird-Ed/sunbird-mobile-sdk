@@ -1,22 +1,24 @@
 import {EcarBundle} from './ecar-bundle';
-import { FileService } from '../../../util/file/def/file-service';
-import { ContentEntry } from '../../db/schema';
-import { ExportContentContext } from '../..';
-import { ZipService } from '../../../util/zip/def/zip-service';
-import { async } from 'rxjs/internal/scheduler/async';
+import {FileService} from '../../../util/file/def/file-service';
+import {ContentEntry} from '../../db/schema';
+import {ExportContentContext} from '../..';
+import {ZipService} from '../../../util/zip/def/zip-service';
+
 describe('EcarBundle', () => {
     let ecarBundle: EcarBundle;
     const mockFileService: Partial<FileService> = {
-        getMetaData: jest.fn(() => {})
+        getMetaData: jest.fn(() => {
+        })
     };
     const mockZipService: Partial<ZipService> = {
-        zip: jest.fn(() => {})
+        zip: jest.fn(() => {
+        })
     };
 
     beforeAll(() => {
         ecarBundle = new EcarBundle(
-         mockFileService as FileService,
-         mockZipService as ZipService
+            mockFileService as FileService,
+            mockZipService as ZipService
         );
     });
 
@@ -28,7 +30,7 @@ describe('EcarBundle', () => {
         expect(ecarBundle).toBeTruthy();
     });
 
-    it('should be zip file', async(done) => {
+    it('should be zip file', async (done) => {
         // arrange
         spyOn(mockZipService, 'zip').and.callFake(
             (a, b, c, d, e, f) => {
@@ -52,7 +54,7 @@ describe('EcarBundle', () => {
             tmpLocationPath: 'SAMPLE_TEMP_PATH',
             contentModelsToExport: contentEntrySchema,
             items: [{'size': 'sample'}],
-            metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
+            metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'},
 
         };
         (mockFileService.getMetaData as jest.Mock).mockResolvedValue('');

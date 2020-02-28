@@ -323,7 +323,7 @@ describe('DeviceRegisterHandler', () => {
                     // act
                     deviceRegisterHandler.handle(request).subscribe(() => {
                         // assert
-                        expect(mockSharedPreferences.putString).toHaveBeenCalledWith('device_location', '');
+                        expect(mockSharedPreferences.putString).toHaveBeenCalledWith('device_location_new', '');
                         done();
                     });
                 });
@@ -356,7 +356,7 @@ describe('DeviceRegisterHandler', () => {
                     // act
                     deviceRegisterHandler.handle(request).subscribe(() => {
                         // assert
-                        expect(mockSharedPreferences.putString).not.toHaveBeenCalledWith('device_location', '');
+                        expect(mockSharedPreferences.putString).not.toHaveBeenCalledWith('device_location_new', '');
                         expect(mockApiService.fetch).toHaveBeenCalledWith(
                             expect.objectContaining({
                                 _body: expect.objectContaining({

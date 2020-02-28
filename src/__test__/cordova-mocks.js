@@ -31,6 +31,9 @@ global.cordova = {
         open: () => ({
             addEventListener: () => {},
         }),
+    },
+    getAppVersion: {
+        getAppName: () => {}
     }
 };
 
@@ -60,6 +63,23 @@ global.buildconfigreader = {
     },
     createDirectories: () => {
         
+    },
+    rm: () => {},
+    copyDirectory: () => {},
+    getFreeUsableSpace: () => {},
+    canWrite: () => {},
+    getBuildConfigValue: () => {}
+};
+
+global.sbutility = {
+    getMetaData: () => {
+
+    },
+    copyFile: () => {
+
+    },
+    createDirectories: () => {
+
     },
     rm: () => {},
     copyDirectory: () => {},

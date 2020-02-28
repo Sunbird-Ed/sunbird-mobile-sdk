@@ -25,6 +25,8 @@ export class SharedPreferencesLocalStorage implements SharedPreferences {
     }
 
     public getBoolean(key: string): Observable<boolean> {
-        return defer(() => of(Boolean(localStorage.getItem(key))));
+        return defer(() => of(
+            localStorage.getItem(key) === 'true'
+        ));
     }
 }

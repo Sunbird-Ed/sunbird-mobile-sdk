@@ -1,7 +1,9 @@
-import {OAuthSession, SessionProvider, SignInError} from '../../..';
 import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../../../api';
 import * as qs from 'qs';
 import {EventsBusService} from '../../../../events-bus';
+import {SessionProvider} from '../../../def/session-provider';
+import {OAuthSession} from '../../../def/o-auth-session';
+import {SignInError} from '../../../errors/sign-in-error';
 
 export abstract class WebviewBaseSessionProvider implements SessionProvider {
     private static parseUserTokenFromAccessToken(accessToken: string) {

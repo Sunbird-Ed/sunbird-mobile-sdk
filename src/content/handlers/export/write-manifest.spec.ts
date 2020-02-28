@@ -1,22 +1,25 @@
 import {WriteManifest} from './write-manifest';
-import { FileService } from '../../../util/file/def/file-service';
-import { ContentEntry } from '../../db/schema';
-import { ExportContentContext } from '../..';
-import { DeviceInfo } from '../../..';
-import { of } from 'rxjs';
+import {FileService} from '../../../util/file/def/file-service';
+import {ContentEntry} from '../../db/schema';
+import {ExportContentContext} from '../..';
+import {DeviceInfo} from '../../..';
+import {of} from 'rxjs';
+
 describe('writeManifest', () => {
     let writeManifest: WriteManifest;
     const mockFileService: Partial<FileService> = {
-        writeFile: jest.fn(() => {})
+        writeFile: jest.fn(() => {
+        })
     };
     const mockDeviceInfo: Partial<DeviceInfo> = {
-        getAvailableInternalMemorySize: jest.fn(() => {})
+        getAvailableInternalMemorySize: jest.fn(() => {
+        })
     };
 
     beforeAll(() => {
         writeManifest = new WriteManifest(
-         mockFileService as FileService,
-         mockDeviceInfo as DeviceInfo
+            mockFileService as FileService,
+            mockDeviceInfo as DeviceInfo
         );
     });
 
@@ -45,15 +48,15 @@ describe('writeManifest', () => {
             tmpLocationPath: 'SAMPLE_TEMP_PATH',
             contentModelsToExport: contentEntrySchema,
             items: [{'size': 'sample'}],
-            metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
+            metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'},
 
         };
         const async1 = (mockDeviceInfo.getAvailableInternalMemorySize as jest.Mock).mockReturnValue(of('1024'));
         const async2 = (mockDeviceInfo.getAvailableInternalMemorySize as jest.Mock).mockReturnValue(of('102'));
         // act
-         writeManifest.execute(request).then(() => {
-             expect(async1).toHaveBeenCalledWith('1024');
-             expect(async2).toHaveBeenLastCalledWith('102');
+        writeManifest.execute(request).then(() => {
+            expect(async1).toHaveBeenCalledWith('1024');
+            expect(async2).toHaveBeenLastCalledWith('102');
         });
         // assert
     });
@@ -75,14 +78,14 @@ describe('writeManifest', () => {
             tmpLocationPath: 'SAMPLE_TEMP_PATH',
             contentModelsToExport: contentEntrySchema,
             items: [{'size': 'sample'}],
-            metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
+            metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'},
 
         };
         const async1 = (mockDeviceInfo.getAvailableInternalMemorySize as jest.Mock).mockReturnValue(of('-23'));
         (mockFileService.writeFile as jest.Mock).mockReturnValue(of('111'));
         // act
-         writeManifest.execute(request).then(() => {
-             expect(async1).toHaveBeenCalledWith('-23');
+        writeManifest.execute(request).then(() => {
+            expect(async1).toHaveBeenCalledWith('-23');
         });
         // assert
     });

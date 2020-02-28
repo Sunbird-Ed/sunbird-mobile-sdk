@@ -1,13 +1,11 @@
-import { DeleteContentHandler } from './delete-content-handler';
-import { DbService } from '../../db';
-import { FileService } from '../../util/file/def/file-service';
-import { SharedPreferences } from '../..';
-import { ContentEntry } from '../db/schema';
-import { ContentUtil } from '../util/content-util';
-// import {buildconfigreader} from '../../../plugins/cordova-plugin-buildconfig-reader';
-import { Observable } from 'rxjs';
-import { ArrayUtil } from '../../util/array-util';
-import { of } from 'rxjs';
+import {DeleteContentHandler} from './delete-content-handler';
+import {DbService} from '../../db';
+import {FileService} from '../../util/file/def/file-service';
+import {SharedPreferences} from '../..';
+import {ContentEntry} from '../db/schema';
+import {ContentUtil} from '../util/content-util';
+import {of} from 'rxjs';
+import {ArrayUtil} from '../../util/array-util';
 
 jest.mock('../util/content-util');
 declare const buildconfigreader;
@@ -57,7 +55,8 @@ describe('DeleteContentHandler', () => {
             content_type: 'CONTENT_TYPE',
             path: 'Sample_path'
         };
-        mockDbService.execute = jest.fn(() => { });
+        mockDbService.execute = jest.fn(() => {
+        });
         (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
@@ -69,9 +68,11 @@ describe('DeleteContentHandler', () => {
         }]));
         mockDbService.beginTransaction = jest.fn(() => of({}));
         mockDbService.update = jest.fn(() => of({}));
-        mockDbService.endTransaction = jest.fn(() => { });
+        mockDbService.endTransaction = jest.fn(() => {
+        });
         const isChildContent = true;
-        mockFileService.readAsText = jest.fn(() => { });
+        mockFileService.readAsText = jest.fn(() => {
+        });
         const readAsText = (mockFileService.readAsText as jest.Mock)
             .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
         readAsText().then((value) => {
@@ -105,7 +106,8 @@ describe('DeleteContentHandler', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE'
         };
-        mockFileService.readAsText = jest.fn(() => { });
+        mockFileService.readAsText = jest.fn(() => {
+        });
         const readAsText = (mockFileService.readAsText as jest.Mock)
             .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
         readAsText().then((value) => {

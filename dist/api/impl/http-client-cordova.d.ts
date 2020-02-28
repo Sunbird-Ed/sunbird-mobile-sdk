@@ -1,6 +1,6 @@
 import { HttpClient, HttpSerializer, Response } from '..';
 import { Observable } from 'rxjs';
-export declare class HttpClientImpl implements HttpClient {
+export declare class HttpClientCordova implements HttpClient {
     private http;
     constructor();
     setSerializer(httpSerializer: HttpSerializer): void;

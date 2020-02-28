@@ -56,6 +56,7 @@ import {expand, map, mapTo, mergeMap, take, tap} from 'rxjs/operators';
 import {BehaviorSubject, defer, EMPTY, from, Observable, of, zip} from 'rxjs';
 import {TelemetryKeys} from '../../preference-keys';
 import {TelemetryAutoSyncServiceImpl} from '../util/telemetry-auto-sync-service-impl';
+import {CourseService} from '../../course';
 
 @injectable()
 export class TelemetryServiceImpl implements TelemetryService {
@@ -67,7 +68,13 @@ export class TelemetryServiceImpl implements TelemetryService {
         if (!this.telemetryAutoSyncService) {
             this.telemetryAutoSyncService = new TelemetryAutoSyncServiceImpl(
                 this,
-                this.sharedPreferences
+                this.sharedPreferences,
+                this.profileService,
+                this.courseService,
+                this.sdkConfig,
+                this.apiService,
+                this.dbService,
+                this.keyValueStore
             );
         }
 
@@ -91,6 +98,7 @@ export class TelemetryServiceImpl implements TelemetryService {
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.APP_INFO) private appInfoService: AppInfo,
         @inject(InjectionTokens.DEVICE_REGISTER_SERVICE) private deviceRegisterService: DeviceRegisterService,
+        @inject(InjectionTokens.COURSE_SERVICE) private courseService: CourseService,
     ) {
         this.telemetryConfig = this.sdkConfig.telemetryConfig;
         this._lastSyncedTimestamp$ = new BehaviorSubject<number | undefined>(undefined);

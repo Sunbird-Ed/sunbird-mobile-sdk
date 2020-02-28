@@ -3,7 +3,7 @@ import {Channel, ChannelDetailsRequest, FrameworkService, OrganizationSearchCrit
 import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
 import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
 import {FileService} from '../../util/file/def/file-service';
-import {of} from 'rxjs';
+import {of, throwError} from 'rxjs';
 import {Organization} from '../def/Organization';
 import {ApiService, HttpRequestType, Request, HttpClient} from '../../api';
 import {SharedPreferences} from '../../util/shared-preferences';
@@ -42,7 +42,7 @@ describe('FrameworkServiceImpl', () => {
     const mockSystemSettingsService:   Partial<SystemSettingsService> = {};
     const mockgetChannelDetailHandler: Partial<GetChannelDetailsHandler> = {};
     beforeAll(() => {
-        container.bind<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE).to(FrameworkServiceImpl);
+        container.bind<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE).to(FrameworkServiceImpl).inSingletonScope();
         container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(container);
         container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(mockSdkConfig as SdkConfig);
         container.bind<FileService>(InjectionTokens.FILE_SERVICE).toConstantValue(mockFileService as FileService);
@@ -61,6 +61,30 @@ describe('FrameworkServiceImpl', () => {
     it('should return an instance of FrameworkService from container', () => {
         expect(frameworkService).toBeTruthy();
     });
+
+    it('should return getActiveChannelId using framework Service', (done) => {
+        // arrange
+         mockSharedPreferences.getString = jest.fn(() => of('NO_ACTIVE_CHANNEL_FOUND_ERROR'));
+         // act
+         frameworkService.getActiveChannelId().subscribe((channelId: string) => {
+              // assert
+             expect(channelId).toBe('NO_ACTIVE_CHANNEL_FOUND_ERROR');
+             expect(mockSharedPreferences.getString).toHaveBeenCalled();
+              done();
+         });
+     });
+
+     it('should throw error when getActiveChannelId() if no active channel set', () => {
+        // arrange
+         mockSharedPreferences.getString = jest.fn(() => of(undefined));
+         // act
+         frameworkService.getActiveChannelId().subscribe((channelId: string) => {}, (e) => {
+            expect(mockSharedPreferences.getString).toHaveBeenCalled();
+             expect(e instanceof NoActiveChannelFoundError).toBeTruthy();
+             // done();
+         });
+     });
+
     it('should return preInit Using FrameworkService', (done) => {
         // arrange
          frameworkService.getActiveChannelId = jest.fn(() => of('SOME_CHANNEL_ID'));
@@ -72,16 +96,15 @@ describe('FrameworkServiceImpl', () => {
          });
     });
 
-    it('should execute preInit Catch Error Using FrameworkService', () => {
+    it('should execute preInit Catch Error Using FrameworkService', (done) => {
         // arrange
          const channelId = '1233';
-         frameworkService.getActiveChannelId = jest.fn(() => of(''));
-        // act
-         frameworkService.preInit().subscribe(() => {}, (e) => {
+       frameworkService.getActiveChannelId = jest.fn(() => throwError('NO_ACTIVE_CHANNEL_FOUND_ERROR'));
+        // acty
+         frameworkService.preInit().subscribe(() => {},  (e) => {
              // assert
              expect(frameworkService.getActiveChannelId).toHaveBeenCalled();
-             expect(e instanceof NoActiveSessionError).toBeTruthy();
-             expect(frameworkService.setActiveChannelId).toHaveBeenCalled();
+             done();
          });
     });
 
@@ -104,30 +127,7 @@ describe('FrameworkServiceImpl', () => {
          });
     });
 
-    it('should return getActiveChannelId using framework Service', () => {
-       // arrange
-        mockSharedPreferences.getString = jest.fn(() => of(FrameworkKeys.KEY_ACTIVE_CHANNEL_ID));
-        // act
-        frameworkService.getActiveChannelId().subscribe((channelId: string) => {
-             // assert
-            expect(channelId).toBe(FrameworkKeys.KEY_ACTIVE_CHANNEL_ID);
-            expect(mockSharedPreferences.getString).toHaveBeenCalled();
-            // done();
-        });
-    });
-
-    it('should throw error when getActiveChannelId() if no active channel set', () => {
-        // arrange
-         mockSharedPreferences.getString = jest.fn(() => of({}));
-         // act
-         frameworkService.getActiveChannelId().subscribe((channelId: string) => {}, (e) => {
-            expect(mockSharedPreferences.getString).toHaveBeenCalled();
-             expect(e instanceof NoActiveChannelFoundError).toBeTruthy();
-             // done();
-         });
-     });
-
-    it('should return setActiveChannelId Using FrameworkService', () => {
+    it('should return setActiveChannelId Using FrameworkService', (done) => {
         // arrange
         const  channelId = '12345';
         mockSharedPreferences.putString = jest.fn(() => of([]));
@@ -136,11 +136,12 @@ describe('FrameworkServiceImpl', () => {
          frameworkService.setActiveChannelId(channelId).subscribe(() => {
              // assert
              expect(mockSharedPreferences.putString).toHaveBeenCalledWith(FrameworkKeys.KEY_ACTIVE_CHANNEL_ID, channelId);
+             done();
          });
     });
 
 
-    it('should get ChannelDetails with ChannelDetailsRequest', () => {
+    it('should get ChannelDetails with ChannelDetailsRequest', (done) => {
 
         // arrange
         const request: ChannelDetailsRequest = {
@@ -160,11 +161,11 @@ describe('FrameworkServiceImpl', () => {
         frameworkService.getChannelDetails(request).subscribe((channel: Channel) => {
             // assert
             expect(channel.identifier).toBe('SOME_IDENTIFIER');
-           // done();
+            done();
         });
     });
 
-    it('should searchOrganisation using frameworkService', () => {
+    it('should searchOrganisation using frameworkService', (done) => {
         // arrange
        const request: OrganizationSearchCriteria<any> = {
             filters: {
@@ -176,7 +177,40 @@ describe('FrameworkServiceImpl', () => {
         // act
         frameworkService.searchOrganization(request).subscribe(() => {
             expect(mockApiService.fetch).toHaveBeenCalled();
+            done();
         });
         // assert
     });
+
+    it('should return active channelId', () => {
+        expect(frameworkService.activeChannelId).toBe('12345');
+    });
+
+    it('should return system setting information', (done) => {
+        // arrange
+        mockSystemSettingsService.getSystemSettings = jest.fn(() => of({
+            id: 'sample-id',
+            field: 'sample-field',
+            value: 'sample-value'
+        }));
+        // act
+        frameworkService.getDefaultChannelId().subscribe(() => {
+            // assert
+            expect(mockSystemSettingsService.getSystemSettings).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should return channel details using getChannelDetailsHandler', (done) => {
+        // arrange
+        const request: ChannelDetailsRequest = {
+            channelId: 'sample-channel-id'
+        };
+        frameworkService.getChannelDetails(request).subscribe((chennal: Channel) => {
+            // assert
+            expect(chennal.identifier).toBe('SOME_IDENTIFIER');
+            done();
+        });
+    });
+
 });

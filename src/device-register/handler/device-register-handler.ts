@@ -89,7 +89,6 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
 
                     const apiRequest: Request = new Request.Builder()
                         .withType(HttpRequestType.POST)
-                        .withHost(this.deviceRegisterConfig!.host)
                         .withPath(this.deviceRegisterConfig!.apiPath + DeviceRegisterHandler.DEVICE_REGISTER_ENDPOINT
                             + '/' + this.deviceInfo!.getDeviceID())
                         .withApiToken(true)

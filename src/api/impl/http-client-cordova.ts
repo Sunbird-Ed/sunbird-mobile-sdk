@@ -7,7 +7,7 @@ interface CordovaHttpClientResponse {
     status: number;
 }
 
-export class HttpClientImpl implements HttpClient {
+export class HttpClientCordova implements HttpClient {
 
     private http = cordova.plugin.http;
 

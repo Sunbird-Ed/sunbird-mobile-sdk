@@ -1,16 +1,18 @@
 import {DeviceMemoryCheck} from './device-memory-check';
-import { FileService } from '../../../util/file/def/file-service';
-import { ContentEntry } from '../../db/schema';
-import { ExportContentContext } from '../..';
+import {FileService} from '../../../util/file/def/file-service';
+import {ContentEntry} from '../../db/schema';
+import {ExportContentContext} from '../..';
+
 describe('DeviceMemoryCheck', () => {
     let deviceMemoryCheck: DeviceMemoryCheck;
     const mockFileService: Partial<FileService> = {
-        getFreeDiskSpace: jest.fn(() => {})
+        getFreeDiskSpace: jest.fn(() => {
+        })
     };
 
     beforeAll(() => {
         deviceMemoryCheck = new DeviceMemoryCheck(
-         mockFileService as FileService
+            mockFileService as FileService
         );
     });
 
@@ -38,12 +40,13 @@ describe('DeviceMemoryCheck', () => {
             tmpLocationPath: 'SAMPLE_TEMP_PATH',
             contentModelsToExport: contentEntrySchema,
             items: [{'size': 'sample'}],
-            metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
+            metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'},
 
         };
         (mockFileService.getFreeDiskSpace as jest.Mock).mockResolvedValue(1);
         // act
-        deviceMemoryCheck.execute(request).then(() => {});
+        deviceMemoryCheck.execute(request).then(() => {
+        });
         // assert
     });
 
@@ -63,13 +66,14 @@ describe('DeviceMemoryCheck', () => {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             tmpLocationPath: 'SAMPLE_TEMP_PATH',
             contentModelsToExport: contentEntrySchema,
-           // items: ['artifactUrl'],
-            metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
+            // items: ['artifactUrl'],
+            metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'},
 
         };
         (mockFileService.getFreeDiskSpace as jest.Mock).mockResolvedValue(1);
         // act
-        deviceMemoryCheck.execute(request).then(() => {});
+        deviceMemoryCheck.execute(request).then(() => {
+        });
         // assert
     });
 });

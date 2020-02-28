@@ -53,7 +53,7 @@ export class ApiServiceImpl implements ApiService {
     public fetch<T = any>(request: Request): Observable<Response<T>> {
         return new FetchHandler(
             request,
-            this.apiConfig,
+            this.sdkConfig,
             this.deviceInfo,
             this.sharedPreferences,
             this.defaultApiAuthenticators,

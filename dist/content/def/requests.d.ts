@@ -64,6 +64,7 @@ export interface EcarImportRequest {
     identifier?: string;
 }
 export interface ContentImportRequest {
+    withPriority?: number;
     contentImportArray: ContentImport[];
     contentStatusArray: string[];
     fields?: (keyof ContentData)[];
@@ -78,6 +79,7 @@ export interface ContentImport {
 export interface ContentExportRequest {
     destinationFolder: string;
     contentIds: string[];
+    saveLocally?: boolean;
 }
 export interface ContentMarkerRequest {
     contentId: string;

@@ -1,6 +1,5 @@
 import { ApiRequestHandler, ApiService } from '../../api';
-import { GenerateOtpRequest } from '..';
-import { ProfileServiceConfig } from '..';
+import { GenerateOtpRequest, ProfileServiceConfig } from '..';
 import { Observable } from 'rxjs';
 export declare class GenerateOtpHandler implements ApiRequestHandler<GenerateOtpRequest, boolean> {
     private apiService;

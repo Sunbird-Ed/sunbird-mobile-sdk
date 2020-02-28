@@ -1,12 +1,9 @@
-// definitions
 import {ApiService, ApiServiceImpl} from './api';
 import {DbService, Migration} from './db';
 import {AuthService} from './auth';
 import {TelemetryDecorator, TelemetryService} from './telemetry';
 import {SharedPreferences} from './util/shared-preferences';
-// config
 import {SdkConfig} from './sdk-config';
-// implementations
 import {DbCordovaService} from './db/impl/db-cordova-service';
 import {TelemetryDecoratorImpl} from './telemetry/impl/decorator-impl';
 import {TelemetryServiceImpl} from './telemetry/impl/telemetry-service-impl';
@@ -34,7 +31,6 @@ import {ErrorStackMigration} from './db/migrations/error-stack-migration';
 import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
 import {GroupService} from './group';
 import {GroupServiceImpl} from './group/impl/group-service-impl';
-import {DebugPromptFileService} from './util/file/impl/debug-prompt-file-service';
 import {SystemSettingsService, SystemSettingsServiceImpl} from './system-settings';
 import {ZipService} from './util/zip/def/zip-service';
 import {DeviceInfo} from './util/device';
@@ -236,24 +232,19 @@ export class SunbirdSdk {
             new CourseAssessmentMigration()
         ]);
 
-        if (sdkConfig.sharedPreferencesConfig.debugMode) {
-            this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
+        switch (sdkConfig.platform) {
+            case 'cordova': this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
+                .to(SharedPreferencesAndroid).inSingletonScope();
+                break;
+            case 'web': this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
                 .to(SharedPreferencesLocalStorage).inSingletonScope();
-        } else {
-            this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).to(SharedPreferencesAndroid).inSingletonScope();
+                break;
+            default: throw new Error('FATAL_ERROR: Invalid platform');
         }
 
-        if (sdkConfig.dbConfig.debugMode) {
-            this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbCordovaService).inSingletonScope();
-        } else {
-            this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbCordovaService).inSingletonScope();
-        }
+        this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbCordovaService).inSingletonScope();
 
-        if (sdkConfig.fileConfig.debugMode) {
-            this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(DebugPromptFileService).inSingletonScope();
-        } else {
-            this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(FileServiceImpl).inSingletonScope();
-        }
+        this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(FileServiceImpl).inSingletonScope();
 
         this._container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(sdkConfig);
 

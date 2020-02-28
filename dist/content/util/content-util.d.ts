@@ -58,7 +58,7 @@ export declare class ContentUtil {
     static isOnlineContent(contentData: any): boolean;
     static addOrUpdateDialcodeMapping(jsonStr: string, identifier: string, rootNodeIdentifier: string): string;
     static deDupe<T>(array: T[], property: any): T[];
-    static getExportedFileName(contentsInDb: ContentEntry.SchemaMap[]): string;
+    static getExportedFileName(contentsInDb: ContentEntry.SchemaMap[], appName: string): string;
     static readOriginFromContentMap(item: any): string;
     static readTransferCountFromContentMap(item: any): number;
     static readSizeFromContentMap(item: any): string;
