@@ -1,7 +1,7 @@
-import { CopyAsset } from './copy-asset';
-import { FileService } from '../../../util/file/def/file-service';
-import { ContentEntry } from '../../db/schema';
-import { ExportContentContext } from '../..';
+import {CopyAsset} from './copy-asset';
+import {FileService} from '../../../util/file/def/file-service';
+import {ContentEntry} from '../../db/schema';
+import {ExportContentContext} from '../..';
 
 declare const buildconfigreader;
 
@@ -23,7 +23,7 @@ describe('CopyAsset', () => {
         expect(copyAsset).toBeTruthy();
     });
 
-    it('should be copied a file by invoked exicute() for error MEssage', async(done) => {
+    it('should be copied a file by invoked exicute() for error MEssage', async (done) => {
         // arrange
         const contentEntrySchema: ContentEntry.SchemaMap[] = [{
             identifier: 'IDENTIFIER',
@@ -37,7 +37,7 @@ describe('CopyAsset', () => {
         const request: ExportContentContext = {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             contentModelsToExport: contentEntrySchema,
-            metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' }
+            metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'}
         };
         // act
         await copyAsset.execute(request).catch(() => {
@@ -46,7 +46,7 @@ describe('CopyAsset', () => {
         // assert
     });
 
-    it('should be copied a file by invoked exicute()', async(done) => {
+    it('should be copied a file by invoked exicute()', async (done) => {
         // arrange
         spyOn(buildconfigreader, 'copyFile').and.callFake((mapList, cb) => {
             setTimeout(() => {
@@ -70,7 +70,7 @@ describe('CopyAsset', () => {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             contentModelsToExport: contentEntrySchema,
             items: ['artifactUrl'],
-            metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
+            metadata: {'SAMPLE_KEY': 'SAMPLE_META_DATA'},
 
         };
         // act

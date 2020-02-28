@@ -1,17 +1,19 @@
-import {GenerateExportShareTelemetry} from './generate-export-share-telemetry';
+import { GenerateExportShareTelemetry } from './generate-export-share-telemetry';
 import { ContentEntry } from '../../db/schema';
-import { ExportContentContext } from '../..';
+import { ExportContentContext, ContentExportRequest } from '../..';
 import { TelemetryService } from '../../../telemetry';
 import { of } from 'rxjs';
+
 describe('GenerateExportShareTelemetry', () => {
     let generateExportShareTelemetry: GenerateExportShareTelemetry;
     const mockTelemetryService: Partial<TelemetryService> = {
-        share: jest.fn(() => {})
+        share: jest.fn(() => {
+        })
     };
 
     beforeAll(() => {
         generateExportShareTelemetry = new GenerateExportShareTelemetry(
-         mockTelemetryService as TelemetryService
+            mockTelemetryService as TelemetryService
         );
     });
 
@@ -23,7 +25,7 @@ describe('GenerateExportShareTelemetry', () => {
         expect(generateExportShareTelemetry).toBeTruthy();
     });
 
-    it('should share telemetry event', () => {
+    it('should share telemetry event', (done) => {
         // arrange
         const contentEntrySchema: ContentEntry.SchemaMap[] = [{
             identifier: 'IDENTIFIER',
@@ -39,15 +41,23 @@ describe('GenerateExportShareTelemetry', () => {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             tmpLocationPath: 'SAMPLE_TEMP_PATH',
             contentModelsToExport: contentEntrySchema,
-            items: [{'size': 'sample'}],
+            items: [{ 'size': 'sample' }],
             metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
 
         };
+        const data: ContentExportRequest = {
+            destinationFolder: 'dest-folder',
+            contentIds: ['id'],
+            saveLocally: true
+        };
+        const fileName = 'sample-file-name';
         (mockTelemetryService.share as jest.Mock).mockReturnValue(of(false));
         // act
-        generateExportShareTelemetry.execute(request).then(() => {
+        generateExportShareTelemetry.execute(request, fileName, data).then(() => {
+            // assert
+            expect(mockTelemetryService.share).toHaveBeenCalled();
+            done();
         });
-        // assert
     });
 
     it('should share telemetry event for error part', (done) => {
@@ -62,19 +72,26 @@ describe('GenerateExportShareTelemetry', () => {
             content_state: 2,
         }];
         const request: ExportContentContext = {
-           // ecarFilePath: 'ECAR_FILE_PATH',
+            // ecarFilePath: 'ECAR_FILE_PATH',
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             tmpLocationPath: 'SAMPLE_TEMP_PATH',
             contentModelsToExport: contentEntrySchema,
-            items: [{'size': 'sample'}],
+            items: [{ 'size': 'sample' }],
             metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
 
         };
+        const data: ContentExportRequest = {
+            destinationFolder: 'dest-folder',
+            contentIds: ['id'],
+            saveLocally: true
+        };
+        const fileName = 'sample-file-name';
         (mockTelemetryService.share as jest.Mock).mockReturnValue(of(1));
         // act
-        generateExportShareTelemetry.execute(request).then(() => {
+        generateExportShareTelemetry.execute(request, fileName, data).then(() => {
+             // assert
+             expect(mockTelemetryService.share).toHaveBeenCalled();
             done();
         });
-        // assert
     });
 });

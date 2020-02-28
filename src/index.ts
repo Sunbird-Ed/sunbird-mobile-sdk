@@ -1,4 +1,4 @@
-import 'rxjs-compat';
+import 'whatwg-fetch';
 
 export * from './db';
 export * from './device-register';

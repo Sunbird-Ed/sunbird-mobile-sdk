@@ -1,12 +1,21 @@
 import {InteractSubType, InteractType, TelemetryAutoSyncModes, TelemetryService} from '..';
 import {TelemetryLogger} from './telemetry-logger';
-import {interval, Observable, of} from 'rxjs';
+import {interval, Observable, of, zip} from 'rxjs';
 import {catchError, filter, map, mapTo, tap} from 'rxjs/operators';
 import {TelemetryAutoSyncService} from './telemetry-auto-sync-service';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {TelemetryKeys} from '../../preference-keys';
+import {CourseService} from '../../course';
+import {ProfileService, ProfileSource} from '../../profile';
+import {UpdateContentStateApiHandler} from '../../course/handlers/update-content-state-api-handler';
+import {ContentStatesSyncHandler} from '../../course/handlers/content-states-sync-handler';
+import {SdkConfig} from '../../sdk-config';
+import {ApiService} from '../../api';
+import {DbService} from '../../db';
+import {KeyValueStore} from '../../key-value-store';
 
 export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
+    private static DOWNLOAD_SPEED_TELEMETRY_SYNC_INTERVAL = 60 * 1000;
     private shouldSync = false;
 
     private static async generateDownloadSpeedTelemetry(intervalTime: number): Promise<void> {
@@ -30,7 +39,7 @@ export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
             '2560': '2048-2560',
             '3072': '2560-3072',
             '3584': '3072-3584',
-            '4096' : '3584-above'
+            '4096': '3584-above'
         };
 
         if (!Object.keys(downloadSpeedLog.distributionInKBPS).length) {
@@ -65,7 +74,13 @@ export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
 
     constructor(
         private telemetryService: TelemetryService,
-        private sharedPreferences: SharedPreferences
+        private sharedPreferences: SharedPreferences,
+        private profileService: ProfileService,
+        private courseService: CourseService,
+        private sdkConfig: SdkConfig,
+        private apiService: ApiService,
+        private dbService: DbService,
+        private keyValueStore: KeyValueStore
     ) {
     }
 
@@ -83,7 +98,14 @@ export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
         this.shouldSync = true;
 
         return interval(intervalTime).pipe(
-            tap(() => TelemetryAutoSyncServiceImpl.generateDownloadSpeedTelemetry(intervalTime)),
+            tap((iteration: number) => {
+                const timeCovered = iteration * intervalTime;
+
+                if (timeCovered % TelemetryAutoSyncServiceImpl.DOWNLOAD_SPEED_TELEMETRY_SYNC_INTERVAL === 0) {
+                    TelemetryAutoSyncServiceImpl.generateDownloadSpeedTelemetry(intervalTime);
+                }
+            }),
+            tap(async () => await this.syncAllCourseProgressAndAssessmentEvents()),
             filter(() => this.shouldSync),
             tap(() => this.telemetryService.sync().pipe(
                 tap((stat) => {
@@ -104,5 +126,21 @@ export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
 
     continue(): void {
         this.shouldSync = true;
+    }
+
+    private async syncAllCourseProgressAndAssessmentEvents() {
+        const profile = await this.profileService.getActiveSessionProfile({requiredFields: []}).toPromise();
+
+        if (profile.source !== ProfileSource.SERVER) {
+            return;
+        }
+
+        await zip(
+            this.courseService.syncAssessmentEvents({ persistedOnly: true }),
+            new ContentStatesSyncHandler(
+                new UpdateContentStateApiHandler(this.apiService, this.sdkConfig.courseServiceConfig),
+                this.dbService, this.sharedPreferences, this.keyValueStore
+            ).updateContentState()
+        ).toPromise();
     }
 }

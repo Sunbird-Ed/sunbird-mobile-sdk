@@ -1,9 +1,9 @@
-import {Container, inject} from 'inversify';
+import { Container, inject } from 'inversify';
 import { DeviceRegisterServiceImpl, DeviceRegisterService } from '..';
 import { InjectionTokens } from '../../injection-tokens';
-import {SdkConfig, DeviceInfo, FrameworkService, AppInfo, ApiService, SharedPreferences} from '../..';
-import {DeviceRegisterHandler} from '../handler/device-register-handler';
-import {GetDeviceProfileHandler} from '../handler/get-device-profile-handler';
+import { SdkConfig, DeviceInfo, FrameworkService, AppInfo, ApiService, SharedPreferences } from '../..';
+import { DeviceRegisterHandler } from '../handler/device-register-handler';
+import { GetDeviceProfileHandler } from '../handler/get-device-profile-handler';
 import { of } from 'rxjs';
 
 jest.mock('../handler/device-register-handler');
@@ -49,10 +49,10 @@ describe('DeviceRegisterServiceImpl', () => {
                 handle: handleResponse,
             };
         });
+        deviceRegisterServiceImpl = container.get(InjectionTokens.DEVICE_REGISTER_SERVICE);
         // act
         deviceRegisterServiceImpl.registerDevice().subscribe(() => {
-             // assert
-             expect(handleResponse).toBeCalled();
+            expect(handleResponse).toBeCalled();
             done();
         });
     });
@@ -65,10 +65,10 @@ describe('DeviceRegisterServiceImpl', () => {
                 handle: profileHandlerData,
             };
         });
+        deviceRegisterServiceImpl = container.get(InjectionTokens.DEVICE_REGISTER_SERVICE);
         // act
         deviceRegisterServiceImpl.getDeviceProfile().subscribe(() => {
-             // assert
-             expect(profileHandlerData).toHaveBeenCalled();
+            expect(profileHandlerData).toHaveBeenCalled();
             done();
         });
     });

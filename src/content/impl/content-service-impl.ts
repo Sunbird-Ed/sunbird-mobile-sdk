@@ -36,7 +36,7 @@ import {
     RelevantContentResponsePlayer,
     SearchResponse
 } from '..';
-import {Observable, of, from, zip, defer, combineLatest} from 'rxjs';
+import {combineLatest, defer, from, Observable, of, zip} from 'rxjs';
 import {ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
@@ -91,8 +91,11 @@ import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
-import { GetContentHeirarchyHandler } from './../handlers/get-content-heirarchy-handler';
-import { mapTo, mergeMap, map, catchError, take } from 'rxjs/operators';
+import {GetContentHeirarchyHandler} from './../handlers/get-content-heirarchy-handler';
+import {catchError, map, mapTo, mergeMap, take} from 'rxjs/operators';
+import { CopyToDestination } from '../handlers/export/copy-to-destination';
+import { DeleteTempDir } from './../handlers/export/deletete-temp-dir';
+import {AppInfo} from '../../util/app';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -119,7 +122,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         @inject(InjectionTokens.DOWNLOAD_SERVICE) private downloadService: DownloadService,
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
-        @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore) {
+        @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
+        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo
+    ) {
 
         this.contentServiceConfig = this.sdkConfig.contentServiceConfig;
         this.appConfig = this.sdkConfig.appConfig;
@@ -267,7 +272,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return this.fileService.getTempLocation(contentExportRequest.destinationFolder)
                     .then((tempLocationPath: DirectoryEntry) => {
                         const metaData: { [key: string]: any } = {};
-                        const fileName = ContentUtil.getExportedFileName(contentsInDb);
+                        const fileName = ContentUtil.getExportedFileName(contentsInDb, this.appInfo.getAppName());
                         metaData['content_count'] = contentsInDb.length;
                         const exportContentContext: ExportContentContext = {
                             metadata: metaData,
@@ -276,9 +281,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             contentModelsToExport: contentsInDb,
                             tmpLocationPath: tempLocationPath.nativeURL
                         };
-                        return new CleanTempLoc(this.fileService).execute(exportContentContext);
-                    }).then((exportResponse: Response) => {
-                        return new CreateTempLoc(this.fileService).execute(exportResponse.body);
+                    //     return new CleanTempLoc(this.fileService).execute(exportContentContext);
+                    // }).then((exportResponse: Response) => {
+                        return new CreateTempLoc(this.fileService).execute(exportContentContext);
                     }).then((exportResponse: Response) => {
                         return new CreateContentExportManifest(this.dbService, exportHandler).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
@@ -292,9 +297,16 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     }).then((exportResponse: Response) => {
                         return new EcarBundle(this.fileService, this.zipService).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
-                        return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
+                        return new CopyToDestination().execute(exportResponse, contentExportRequest);
+                    // }).then((exportResponse: Response) => {
+                    //     return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
-                        return new GenerateExportShareTelemetry(this.telemetryService).execute(exportResponse.body);
+                        return new DeleteTempDir().execute(exportResponse.body);
+                    }).then((exportResponse: Response) => {
+                        const fileName = ContentUtil.getExportedFileName(contentsInDb, this.appInfo.getAppName());
+                        return new GenerateExportShareTelemetry(
+                            this.telemetryService).execute(exportResponse.body, fileName, contentExportRequest
+                        );
                     }).then((exportResponse: Response<ContentExportResponse>) => {
                         return exportResponse.body;
                     });
@@ -325,16 +337,18 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
                 // const childIdentifiers = await childContentHandler.getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
                 console.log('childIdentifiers', childIdentifiers);
-
-                const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
+                if (childIdentifiers) {
+                    const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
                                 WHERE ${ContentEntry.COLUMN_NAME_IDENTIFIER}
                                 IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)})`;
 
-                const childContents = await this.dbService.execute(query).toPromise();
-                // console.log('childContents', childContents);
-                childContents.forEach(element => {
-                    childContentsMap.set(element.identifier, element);
-                });
+                    const childContents = await this.dbService.execute(query).toPromise();
+                    // console.log('childContents', childContents);
+                    childContents.forEach(element => {
+                        childContentsMap.set(element.identifier, element);
+                    });
+                }
+
                 return childContentHandler.fetchChildrenOfContent(
                     rows[0],
                     childContentsMap,
@@ -383,7 +397,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                     filename: contentId.concat('.', FileExtension.CONTENT),
                                     correlationData: contentImport.correlationData,
                                     rollUp: contentImport.rollUp,
-                                    contentMeta: contentData
+                                    contentMeta: contentData,
+                                    withPriority: contentImportRequest.withPriority || (contentData.mimeType === MimeType.COLLECTION.valueOf() ? 1 : 0)
                                 };
                                 downloadRequestList.push(downloadRequest);
                             }
@@ -559,10 +574,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             mergeMap((frameworkId?: string) => {
                 return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig, frameworkId!,
                     contentSearchCriteria.languageCode).handle(searchRequest).pipe(
-                        map((searchResponse: SearchResponse) => {
-                            return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
-                        })
-                    );
+                    map((searchResponse: SearchResponse) => {
+                        return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
+                    })
+                );
             })
         );
     }
@@ -681,12 +696,12 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             mergeMap(() =>
                 // TODO
                 // @ts-ignore
-                this.downloadService.cancel({ identifier: request.identifier! }, false)
+                this.downloadService.cancel({identifier: request.identifier!}, false)
             ),
             catchError(() =>
                 // TODO
                 // @ts-ignore
-                this.downloadService.cancel({ identifier: request.identifier! }, false)
+                this.downloadService.cancel({identifier: request.identifier!}, false)
             ),
             mapTo(undefined)
         );
@@ -760,7 +775,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             }
                         });
                     } else {
-                        const sub = contentData.subject.toLowerCase().trim();
+                        const sub = contentData.subject ? contentData.subject.toLowerCase().trim() : '';
                         if (acc[sub]) {
                             (acc[sub] as Array<ContentData>).push(contentData);
                         } else {
@@ -777,7 +792,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         return {
                             contents: contentsGroupedBySubject[sub],
                             name: sub.charAt(0).toUpperCase() + sub.slice(1),
-                            display: { name: { en: sub } } // TODO : need to handle localization
+                            display: {name: {en: sub}} // TODO : need to handle localization
                         };
                     })
                 };
@@ -794,7 +809,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     return of(undefined);
                 }
 
-                return this.deleteContent({ contentDeleteList: [currentRequest] }).pipe(
+                return this.deleteContent({contentDeleteList: [currentRequest]}).pipe(
                     mergeMap(() => this.contentDeleteRequestSet.remove(currentRequest)),
                     mapTo(undefined)
                 );

@@ -1,13 +1,17 @@
-import { GetContentDetailsHandler } from './get-content-details-handler';
+import {GetContentDetailsHandler} from './get-content-details-handler';
 import {
-    ContentFeedbackService, ProfileService, ApiService, ContentServiceConfig, DbService,
-    EventsBusService, ContentDetailRequest, ContentData, ContentDecorateRequest
+    ApiService, Content,
+    ContentDecorateRequest,
+    ContentDetailRequest,
+    ContentFeedbackService,
+    ContentServiceConfig,
+    DbService,
+    EventsBusService,
+    ProfileService
 } from '../..';
-import { of } from 'rxjs';
-import { ContentMapper } from '../util/content-mapper';
-import { Content, OriginData } from '../def/content';
-import { mockContentData } from './get-content-details-handler.spec.data';
-import { ContentEntry } from '../db/schema';
+import {of} from 'rxjs';
+import {ContentMapper} from '../util/content-mapper';
+import {mockContentData} from './get-content-details-handler.spec.data';
 
 
 describe('GetContentDetailsHandler', () => {
@@ -82,7 +86,8 @@ describe('GetContentDetailsHandler', () => {
             }
         }));
         spyOn(getContentDetailsHandler, 'fetchFromDB').and.returnValue(of([]));
-        ContentMapper.mapContentDBEntryToContent = jest.fn(() => { });
+        ContentMapper.mapContentDBEntryToContent = jest.fn(() => {
+        });
         (ContentMapper.mapContentDBEntryToContent as jest.Mock).mockReturnValue((req_data.content));
         JSON.parse = jest.fn().mockImplementationOnce(() => {
             return req_data.content;
@@ -129,11 +134,14 @@ describe('GetContentDetailsHandler', () => {
             attachContentAccess: true,
             attachContentMarker: true
         };
-        mockProfileService.getActiveProfileSession = jest.fn(() => { });
+        mockProfileService.getActiveProfileSession = jest.fn(() => {
+        });
         (mockProfileService.getActiveProfileSession as jest.Mock).mockReturnValue(of([]));
-        mockContentFeedbackService.getFeedback = jest.fn(() => { });
+        mockContentFeedbackService.getFeedback = jest.fn(() => {
+        });
         (mockContentFeedbackService.getFeedback as jest.Mock).mockReturnValue(of([]));
-        mockProfileService.getAllContentAccess = jest.fn(() => { });
+        mockProfileService.getAllContentAccess = jest.fn(() => {
+        });
         (mockProfileService.getAllContentAccess as jest.Mock).mockReturnValue(of([]));
         mockDbService.execute = jest.fn(() => of([]));
         // act

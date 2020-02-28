@@ -5,7 +5,7 @@ import {
     CourseBatchesRequest,
     CourseService,
     EnrollCourseRequest,
-    FetchEnrolledCourseRequest, GetContentStateRequest,
+    GetContentStateRequest,
     UnenrollCourseRequest,
     UpdateContentStateRequest
 } from '..';
@@ -22,9 +22,13 @@ import {of} from 'rxjs';
 import {AppInfo} from '../../util/app';
 import {OfflineContentStateHandler} from '../handlers/offline-content-state-handler';
 import {ContentStatesSyncHandler} from '../handlers/content-states-sync-handler';
+import {SyncAssessmentEventsHandler} from '../handlers/sync-assessment-events-handler';
+import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
 
 jest.mock('../handlers/offline-content-state-handler');
 jest.mock('../handlers/content-states-sync-handler');
+jest.mock('../handlers/sync-assessment-events-handler');
+jest.mock('../handlers/get-enrolled-course-handler');
 
 describe('CourseServiceImpl', () => {
     let courseService: CourseService;
@@ -57,6 +61,9 @@ describe('CourseServiceImpl', () => {
         })
     };
     const mockAppInfo: Partial<AppInfo> = {};
+    const mockSyncAssessmentEventsHandler = {
+        handle: jest.fn(() => of(undefined))
+    };
 
     beforeAll(() => {
         container.bind<CourseService>(InjectionTokens.COURSE_SERVICE).to(CourseServiceImpl);
@@ -69,6 +76,10 @@ describe('CourseServiceImpl', () => {
         container.bind<AuthService>(InjectionTokens.AUTH_SERVICE).toConstantValue(mockAuthService as AuthService);
         container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
 
+        (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockImplementation(() => {
+            return mockSyncAssessmentEventsHandler;
+        });
+
         courseService = container.get<CourseService>(InjectionTokens.COURSE_SERVICE);
     });
 
@@ -76,6 +87,7 @@ describe('CourseServiceImpl', () => {
         jest.clearAllMocks();
         (OfflineContentStateHandler as jest.Mock<OfflineContentStateHandler>).mockClear();
         (ContentStatesSyncHandler as jest.Mock<ContentStatesSyncHandler>).mockClear();
+        (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockClear();
     });
 
     it('should return instance from container', () => {
@@ -203,36 +215,29 @@ describe('CourseServiceImpl', () => {
         // assert
     });
 
-    describe('should call enrol courses and call refreshCourses', () => {
-        it('should call getEnrolledCourse with returnFresh Course true', (done) => {
+    describe('getEnrolledCourse()', () => {
+        it('should delegate to GetEnrolledCourseHandler', (done) => {
             // arrange
-            const request: FetchEnrolledCourseRequest = {
-                userId: 'SAMPLE_USER_ID',
-                returnFreshCourses: true
-            };
-            spyOn(mockApiService, 'fetch').and.returnValue(of({
-                body: {
-                    result: {
-                        response: 'SAMPLE_RESPONSE'
-                    }
-                }
-            }));
-            spyOn(mockKeyValueStore, 'getValue').and.returnValue(of('MOCK_VALUE'));
+            spyOn(courseService, 'syncAssessmentEvents').and.returnValue(of(undefined));
             (ContentStatesSyncHandler as jest.Mock<ContentStatesSyncHandler>).mockImplementation(() => {
                 return {
                     updateContentState: jest.fn(() => of(true))
                 };
             });
-            mockDbService.execute = jest.fn(() => of([]));
-            JSON.parse = jest.fn().mockImplementationOnce(() => {
-                return request.userId;
+            const mockGetEnrolledCourseHandler = {
+                handle: jest.fn(() => of([]))
+            };
+            (GetEnrolledCourseHandler as jest.Mock<GetEnrolledCourseHandler>).mockImplementation(() => {
+                return mockGetEnrolledCourseHandler;
             });
+            const request = {
+                userId: 'SAMPLE_USER_ID',
+                returnFreshCourses: true
+            };
             // act
             courseService.getEnrolledCourses(request).subscribe(() => {
                 // assert
-                expect(mockApiService.fetch).toHaveBeenCalled();
-                expect(mockDbService.execute).toHaveBeenCalled();
-                expect(mockKeyValueStore.getValue).toHaveBeenCalled();
+                expect(mockGetEnrolledCourseHandler.handle).toHaveBeenCalledWith(request);
                 done();
             });
         });
@@ -295,6 +300,38 @@ describe('CourseServiceImpl', () => {
             expect(mockKeyValueStore.getValue).toHaveBeenCalled();
             expect(mockKeyValueStore.setValue).toHaveBeenCalled();
             done();
+        });
+    });
+
+    describe('syncAssessmentEvents()', () => {
+        it('should default to persistedOnly false option', (done) => {
+            // arrange
+            courseService['capturedAssessmentEvents']['SAMPLE_KEY'] = [{}, {}, {}];
+            spyOn(courseService, 'resetCapturedAssessmentEvents').and.stub();
+
+            // act
+            courseService.syncAssessmentEvents().subscribe(() => {
+                // assert
+                expect(mockSyncAssessmentEventsHandler.handle).toHaveBeenCalledWith(
+                    expect.objectContaining({ 'SAMPLE_KEY': expect.any(Array) })
+                );
+                expect(courseService.resetCapturedAssessmentEvents).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it('should not sync captured assessment when persistedOnly option is true', (done) => {
+            // arrange
+            courseService['capturedAssessmentEvents']['SAMPLE_KEY'] = [{}, {}, {}];
+            spyOn(courseService, 'resetCapturedAssessmentEvents').and.stub();
+
+            // act
+            courseService.syncAssessmentEvents({ persistedOnly: true }).subscribe(() => {
+                // assert
+                expect(mockSyncAssessmentEventsHandler.handle).toHaveBeenCalledWith(expect.objectContaining({}));
+                expect(courseService.resetCapturedAssessmentEvents).not.toHaveBeenCalled();
+                done();
+            });
         });
     });
 });

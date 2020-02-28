@@ -27,6 +27,8 @@ export interface CourseService {
     }): any;
     /** @internal */
     resetCapturedAssessmentEvents(): any;
-    syncAssessmentEvents(): Observable<undefined>;
+    syncAssessmentEvents(options?: {
+        persistedOnly: boolean;
+    }): Observable<undefined>;
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 }

@@ -3,7 +3,6 @@ import { SdkConfig } from '../../../sdk-config';
 import { SharedPreferences } from '../../..';
 import { of } from 'rxjs';
 import { AppInfoKeys } from '../../../preference-keys';
-import { async } from 'rxjs/internal/scheduler/async';
 
 declare const buildconfigreader;
 
@@ -12,7 +11,6 @@ describe('AppInfoImpl', () => {
     const mockSharedPreferences: Partial<SharedPreferences> = {};
     const mockSdkConfig: Partial<SdkConfig> = {
         apiConfig: {
-            debugMode: true,
             host: 'SAMPLE_HOST',
             user_authentication: {
                 redirectUrl: 'SAMPLE_REDIRECT_URL',
@@ -41,6 +39,7 @@ describe('AppInfoImpl', () => {
     };
 
     beforeAll(() => {
+        window['cordova'] = { getAppVersion: { getAppName: (cb) => cb('SOME_APP_NAME')} };
         appInfoImpl = new AppInfoImpl(
             mockSdkConfig as SdkConfig,
             mockSharedPreferences as SharedPreferences
@@ -79,7 +78,6 @@ describe('AppInfoImpl', () => {
         mockSharedPreferences.putString = jest.fn(() => of(undefined));
         const mockSdkConfigApi: Partial<SdkConfig> = {
             apiConfig: {
-                debugMode: false,
                 host: 'SAMPLE_HOST',
                 user_authentication: {
                     redirectUrl: 'SAMPLE_REDIRECT_URL',
@@ -121,7 +119,6 @@ describe('AppInfoImpl', () => {
             // assert
             expect(mockSharedPreferences.getString).toHaveBeenCalledWith(AppInfoKeys.KEY_FIRST_ACCESS_TIMESTAMP);
             expect(mockSharedPreferences.putString).toHaveBeenCalledWith(AppInfoKeys.KEY_FIRST_ACCESS_TIMESTAMP, expect.any(String));
-              expect(buildconfigreader.getBuildConfigValue).toHaveBeenCalled();
             done();
         });
     });

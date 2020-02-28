@@ -1,9 +1,6 @@
-import { ContentMarkerHandler } from './content-marker-handler';
-import { Container } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
-import { DbService } from '../../db';
-import { Observable } from 'rxjs';
-import { of } from 'rxjs';
+import {ContentMarkerHandler} from './content-marker-handler';
+import {DbService} from '../../db';
+import {of} from 'rxjs';
 
 describe('ContentMarkerHandler', () => {
     let contentMarkerHandler: ContentMarkerHandler;

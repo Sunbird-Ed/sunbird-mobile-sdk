@@ -18,7 +18,12 @@ import {
     ServerProfileSearchCriteria,
     TenantInfoRequest,
     UpdateServerProfileInfoRequest,
-    VerifyOtpRequest
+    VerifyOtpRequest,
+    ContentAccess,
+    ContentAccessStatus,
+    ContentLearnerState,
+    ProfileExportRequest,
+    UserMigrateRequest
 } from '..';
 import {Container} from 'inversify';
 import {DeviceInfo} from '../../util/device';
@@ -31,9 +36,9 @@ import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {Channel, FrameworkService} from '../../framework';
 import {FileService} from '../../util/file/def/file-service';
 import {InjectionTokens} from '../../injection-tokens';
-import {Observable} from 'rxjs';
+import {Observable, throwError} from 'rxjs';
 import {ProfileEntry} from '../db/schema';
-import {AuthService} from '../../auth';
+import {AuthService, OAuthSession} from '../../auth';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
@@ -47,6 +52,15 @@ import {VerifyOtpHandler} from '../handler/verify-otp-handler';
 import {SearchLocationHandler} from '../handler/search-location-handler';
 import {LocationSearchResult} from '../def/location-search-result';
 import { of } from 'rxjs';
+import { ContentAccessFilterCriteria } from '../def/content-access-filter-criteria';
+import { ContentUtil } from '../../content/util/content-util';
+import { ProfileImportRequest } from '../def/profile-import-request';
+import { ValidateProfileMetadata } from '../handler/import/validate-profile-metadata';
+import { TransportProfiles } from '../handler/import/transport-profiles';
+import { TransportGroup } from '../handler/import/transport-group';
+import { UpdateImportedProfileMetadata } from '../handler/import/update-imported-profile-metadata';
+import { GetUserFeedHandler } from '../handler/get-userfeed-handler';
+import { UserMigrateHandler } from '../handler/user-migrate-handler';
 
 jest.mock('../handler/update-server-profile-info-handler');
 jest.mock('../handler/search-server-profile-handler');
@@ -57,6 +71,12 @@ jest.mock('../handler/is-profile-already-in-use-handler');
 jest.mock('../handler/generate-otp-handler');
 jest.mock('../handler/verify-otp-handler');
 jest.mock('../handler/search-location-handler');
+jest.mock('../handler/import/validate-profile-metadata');
+jest.mock('../handler/import/transport-profiles');
+jest.mock('../handler/import/transport-group');
+jest.mock('../handler/import/update-imported-profile-metadata');
+jest.mock('../handler/get-userfeed-handler');
+jest.mock('../handler/user-migrate-handler');
 
 jest.mock('../../telemetry/util/telemetry-logger',
     () => ({
@@ -64,7 +84,8 @@ jest.mock('../../telemetry/util/telemetry-logger',
             public static get log() {
                 return {
                     start: jest.fn(() => of(undefined)),
-                    end: jest.fn(() => of(undefined))
+                    end: jest.fn(() => of(undefined)),
+                    share: jest.fn(() => of(undefined))
                 };
             }
         }
@@ -775,6 +796,219 @@ describe.only('ProfileServiceImpl', () => {
                 // assert
                 expect(mockFrameworkService.setActiveChannelId).toHaveBeenCalledWith('SAMPLE_ROOT_ORG_ID');
                 expect(res).toBeTruthy();
+                done();
+            });
+        });
+    });
+
+    describe('getAllContentAccess', () => {
+        it('should return all accesssable content using content filetr criteria', (done) => {
+            // arrange
+            const request: ContentAccessFilterCriteria = {
+                contentId: 'sample-content_id',
+                uid: 'sample-uid'
+            };
+            jest.spyOn(ContentUtil, 'getUidnIdentifierFiler').mockReturnValue('where uid=sample-uid');
+            mockDbService.execute = jest.fn(() => of([{uid: 'sample-uid'}]));
+            // act
+            profileService.getAllContentAccess(request).subscribe(() => {
+                // assert
+                expect(mockDbService.execute).toHaveBeenCalledWith('SELECT * FROM content_access where uid=sample-uid');
+                done();
+            });
+        });
+    });
+
+    describe('addContentAccess', () => {
+        it('shuld find access content and update content', (done) => {
+            // arrange
+            const learnerData: ContentLearnerState = {
+                learnerState: { 'key': 'sample-key' }
+            };
+            const request: ContentAccess = {
+                status: ContentAccessStatus.PLAYED,
+                contentId: 'sample-content-id',
+                contentType: 'sample-content-type',
+                contentLearnerState: learnerData
+            };
+            jest.spyOn(profileService, 'getActiveProfileSession').mockReturnValue(of({
+                _uid: 'sample-uid',
+                _sid: 'sample-sid'
+            }));
+            mockDbService.read = jest.fn(() => of([{}]));
+            mockDbService.update = jest.fn(() => of(1));
+            // act
+            profileService.addContentAccess(request).subscribe(() => {
+                // assert
+                expect(mockDbService.read).toHaveBeenCalled();
+                expect(mockDbService.update).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it('shuld find access content and insert new content', (done) => {
+            // arrange
+            const learnerData: ContentLearnerState = {
+                learnerState: { 'key': 'sample-key' }
+            };
+            const request: ContentAccess = {
+                status: ContentAccessStatus.PLAYED,
+                contentId: 'sample-content-id',
+                contentType: 'sample-content-type',
+                contentLearnerState: learnerData
+            };
+            jest.spyOn(profileService, 'getActiveProfileSession').mockReturnValue(of({
+                _uid: 'sample-uid',
+                _sid: 'sample-sid'
+            }));
+            mockDbService.read = jest.fn(() => of([]));
+            mockDbService.insert = jest.fn(() => of(1));
+            // act
+            profileService.addContentAccess(request).subscribe(() => {
+                // assert
+                expect(mockDbService.read).toHaveBeenCalled();
+                expect(mockDbService.insert).toHaveBeenCalled();
+                done();
+            });
+        });
+    });
+
+    describe('exportProfile', () => {
+        it('should return epar file path and cleanup epar file and create a directory', (done) => {
+            // arrange
+            const request: ProfileExportRequest = {
+                userIds: ['user-1'],
+                groupIds: ['group-1'],
+                destinationFolder: 'sample-destination-folder'
+            };
+            mockFileService.createDir = jest.fn(() => Promise.resolve({}));
+            mockFileService.createFile = jest.fn(() => Promise.resolve({}));
+            mockDbService.copyDatabase = jest.fn(() => of(true));
+            mockDeviceInfo.getDeviceID = jest.fn(() => of('sample-device-id'));
+            mockDbService.open = jest.fn(() => Promise.resolve(undefined));
+            mockDbService.execute = jest.fn(() => of({}));
+            mockDbService.insert = jest.fn(() => of(1));
+            mockDbService.read = jest.fn(() => of([{uid: 'sample-uid'}]));
+            // act
+            profileService.exportProfile(request).subscribe(() => {
+                // assert
+                expect(mockFileService.createDir).toHaveBeenCalled();
+                expect(mockFileService.createFile).toHaveBeenCalled();
+                expect(mockDbService.copyDatabase).toHaveBeenCalled();
+                expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
+                expect(mockDbService.open).toHaveBeenCalled();
+                expect(mockDbService.execute).toHaveBeenCalled();
+                expect(mockDbService.insert).toHaveBeenCalled();
+                expect(mockDbService.execute).toHaveBeenCalled();
+                done();
+            });
+        });
+    });
+
+    describe('importProfile', () => {
+        it('should be valid profile metaData', (done) => {
+            // arrange
+            const request: ProfileImportRequest = {
+                sourceFilePath: 'src/file/profile'
+            };
+            const response = {
+                response: 'SAMPLE_RESPONSE',
+                failed: 'err',
+                imported: 'sample'
+            };
+            mockDbService.read = jest.fn((req) => {
+                if (req.useExternalDb) {
+                    return of([{
+                        uid: 'sample-uid',
+                        gid: 'sample-gid'
+                    }]);
+                }
+                return of([]);
+            });
+
+            (ValidateProfileMetadata as jest.Mock<ValidateProfileMetadata>).mockImplementation(() => {
+                return {
+                    execute: jest.fn(() => Promise.resolve(response))
+                };
+            });
+            (TransportProfiles as jest.Mock<TransportProfiles>).mockImplementation(() => {
+                return {
+                    execute: jest.fn(() => Promise.resolve(response))
+                };
+            });
+            (TransportGroup as jest.Mock<TransportGroup>).mockImplementation(() => {
+                return {
+                    execute: jest.fn(() => Promise.resolve(response))
+                };
+            });
+            (UpdateImportedProfileMetadata as jest.Mock<UpdateImportedProfileMetadata>).mockImplementation(() => {
+                return {
+                    execute: jest.fn(() => Promise.resolve({body: {failed: 'FAILED', imported: 'IMPORT'}}))
+                };
+            });
+            mockDbService.execute = jest.fn(() => of({body: {imported: 'sample'}}));
+            mockDbService.insert = jest.fn(() => of(1));
+            // act
+            profileService.importProfile(request).subscribe(() => {
+                // assert
+                 expect(mockDbService.read).toHaveBeenCalled();
+                expect(mockDbService.execute).toHaveBeenCalled();
+                expect(mockDbService.insert).toHaveBeenCalled();
+                done();
+            });
+        });
+    });
+
+    describe('getUserFeed', () => {
+        it('should called GetUserFeedHandler for active session', (done) => {
+            // arrange
+            const sessionData: OAuthSession = {
+                access_token: 'sample-access-token',
+                refresh_token: 'sample-refresh-token',
+                userToken: 'sample-user-token'
+            };
+            mockAuthService.getSession = jest.fn(() => of(sessionData));
+            const response = {
+                response: 'SAMPLE_RESPONSE',
+                failed: 'err',
+                imported: 'sample'
+            };
+            (GetUserFeedHandler as any as jest.Mock<GetUserFeedHandler>).mockImplementation(() => {
+                return {
+                    handle: jest.fn(() => of(response))
+                };
+            });
+            // act
+            profileService.getUserFeed().subscribe((res) => {
+                // assert
+                expect(res).toBe(response);
+                expect(mockAuthService.getSession).toHaveBeenCalled();
+                done();
+            });
+        });
+    });
+
+    describe('userMigrate', () => {
+        it('should be maigrate', (done) => {
+            // arrange
+            const request: UserMigrateRequest = {
+                userId: 'sample-user',
+                action: 'reject'
+            };
+            const response = {
+                response: 'SAMPLE_RESPONSE',
+                failed: 'err',
+                imported: 'sample'
+            };
+            (UserMigrateHandler as any as jest.Mock<UserMigrateHandler>).mockImplementation(() => {
+                return {
+                    handle: jest.fn(() => of(response))
+                };
+            });
+            // act
+            profileService.userMigrate(request).subscribe((res) => {
+                // assert
+                expect(res).toBe(response);
                 done();
             });
         });

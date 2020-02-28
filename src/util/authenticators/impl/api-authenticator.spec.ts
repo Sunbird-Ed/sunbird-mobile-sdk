@@ -9,7 +9,6 @@ import {ApiTokenHandler} from '../../../api/handlers/api-token-handler';
 describe('ApiAuthenticator', () => {
     let apiAuthenticator: ApiAuthenticator;
     const mockApiConfig: Partial<ApiConfig> = {
-        debugMode: true,
         host: 'SAMPLE_HOST',
         user_authentication: {
             redirectUrl: 'SAMPLE_REDIRECT_URL',

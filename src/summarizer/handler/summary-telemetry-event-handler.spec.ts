@@ -3,6 +3,7 @@ import { CourseService, SharedPreferences, EventsBusService, ContentService, Pro
 import { SummarizerService } from '..';
 import { telemetry } from './summary-telemetry-event-handler.spec.data';
 import { of } from 'rxjs';
+import { ContentKeys } from '../../preference-keys';
 
 describe('SummaryTelemetryEventHandler', () => {
     let summaryTelemetryEventHandler: SummaryTelemetryEventHandler;
@@ -100,10 +101,11 @@ describe('SummaryTelemetryEventHandler', () => {
         (mockCourseService.getContentState as jest.Mock).mockReturnValue(of({}));
         mockContentService.getContentDetails = jest.fn(() => { });
         (mockContentService.getContentDetails as jest.Mock).mockReturnValue(of({
-         name: 'CONTENT_NAME', sections: {},
-         contentType: 'SELFASSESS' }));
-         mockCourseService.hasCapturedAssessmentEvent = jest.fn(() => {});
-         (mockCourseService.hasCapturedAssessmentEvent as jest.Mock).mockReturnValue(true);
+            name: 'CONTENT_NAME', sections: {},
+            contentType: 'SELFASSESS'
+        }));
+        mockCourseService.hasCapturedAssessmentEvent = jest.fn(() => { });
+        (mockCourseService.hasCapturedAssessmentEvent as jest.Mock).mockReturnValue(true);
         telemetry.edata.summary = [{ progress: -2 }];
         mockEventBusService.emit = jest.fn(() => { });
         (mockEventBusService.emit as jest.Mock).mockReturnValue(of());
@@ -214,7 +216,7 @@ describe('SummaryTelemetryEventHandler', () => {
         // act
         summaryTelemetryEventHandler.handle(telemetry).subscribe(() => {
             // assert
-         //   expect(mockCourseService.updateContentState).toHaveBeenCalled();
+            //   expect(mockCourseService.updateContentState).toHaveBeenCalled();
             done();
         });
     });

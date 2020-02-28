@@ -2,7 +2,6 @@ import {SdkConfig} from '../../sdk-config';
 
 export const mockSdkConfigWithSamplePlayerConfig: Partial<SdkConfig> = {
     apiConfig: {
-        debugMode: false,
         host: 'SAMPLE_HOST',
         user_authentication: {
             redirectUrl: 'SAMPLE_REDIRECT_URL',

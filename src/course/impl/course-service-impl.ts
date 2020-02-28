@@ -358,10 +358,14 @@ export class CourseServiceImpl implements CourseService {
         this.capturedAssessmentEvents[key]!.push(event);
     }
 
-    public syncAssessmentEvents(): Observable<undefined> {
-        const capturedAssessmentEvents = this.capturedAssessmentEvents;
+    public syncAssessmentEvents(options = { persistedOnly: false }): Observable<undefined> {
+        let capturedAssessmentEvents = {};
 
-        this.resetCapturedAssessmentEvents();
+        if (!options.persistedOnly) {
+            capturedAssessmentEvents = this.capturedAssessmentEvents;
+
+            this.resetCapturedAssessmentEvents();
+        }
 
         return this.syncAssessmentEventsHandler.handle(
             capturedAssessmentEvents

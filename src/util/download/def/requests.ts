@@ -1,4 +1,5 @@
 export interface DownloadRequest {
+    withPriority?: number;
     downloadId?: string;
     identifier: string;
     downloadUrl: string;
