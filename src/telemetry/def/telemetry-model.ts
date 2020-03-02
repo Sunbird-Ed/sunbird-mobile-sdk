@@ -417,11 +417,15 @@ export namespace SunbirdTelemetry {
                     env: string,
                     objId: string = '',
                     objType: string = '',
-                    objVer: string = '') {
+                    objVer: string = '',
+                    commentid: string | undefined,
+                    commenttxt: string | undefined) {
             super(Feedback.EID);
 
             this.edata = {
                 ...(rating ? {rating: rating} : {}),
+                ...(commentid ? {commentid: commentid} : {}),
+                ...(commenttxt ? {commenttxt: commenttxt} : {}),
                 ...(comments ? {comments: comments} : {}),
             };
             this.context.env = env;

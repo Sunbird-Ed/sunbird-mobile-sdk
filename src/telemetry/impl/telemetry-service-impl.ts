@@ -175,9 +175,9 @@ export class TelemetryServiceImpl implements TelemetryService {
         return this.decorateAndPersist(share);
     }
 
-    feedback({rating, comments, env, objId, objType, objVer}: TelemetryFeedbackRequest): Observable<boolean> {
+    feedback({rating, comments, env, objId, objType, objVer, commentid, commenttxt}: TelemetryFeedbackRequest): Observable<boolean> {
         const feedback = new SunbirdTelemetry.Feedback(rating, comments, env, objId,
-            objType, objVer);
+            objType, objVer, commentid, commenttxt);
         return this.decorateAndPersist(feedback);
     }
 
