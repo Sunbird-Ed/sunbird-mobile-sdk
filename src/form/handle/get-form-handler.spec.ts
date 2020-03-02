@@ -64,9 +64,9 @@ describe('GetFormHandler', () => {
             framework: 'sample_framework'
         };
         mockCachedItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e) => e());
-        mockFileService.readFileFromAssets = jest.fn().mockImplementation((result) => of({
-            result: result.form
-        }));
+        mockFileService.readFileFromAssets = jest.fn().mockImplementation((res) => of(JSON.stringify({
+            result: {form: ''}
+        })));
         // act
         getFormHandler.handle(request).subscribe(() => {
             // assert
