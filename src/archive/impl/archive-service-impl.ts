@@ -14,13 +14,14 @@ import {TelemetryExportDelegate} from '../export/impl/telemetry-export-delegate'
 import {DbService} from '../../db';
 import {InjectionTokens} from '../../injection-tokens';
 import {inject, injectable} from 'inversify';
-import {ProducerData, TelemetryService} from '../../telemetry';
+import {ProducerData, ShareDirection, ShareType, TelemetryService, TelemetryShareRequest} from '../../telemetry';
 import {ZipService} from '../../util/zip/def/zip-service';
 import {InvalidRequestError} from '..';
 import {TelemetryImportDelegate} from '../import/impl/telemetry-import-delegate';
 import {InvalidArchiveError} from '../import/error/invalid-archive-error';
 import {TelemetryArchivePackageMeta} from '../export/def/telemetry-archive-package-meta';
 import {FileUtil} from '../../util/file/util/file-util';
+import {DeviceInfo} from '../../util/device';
 
 interface ArchiveManifest {
     id: string;
@@ -48,7 +49,8 @@ export class ArchiveServiceImpl implements ArchiveService {
         @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
         @inject(InjectionTokens.TELEMETRY_SERVICE) private telemetryService: TelemetryService,
-        @inject(InjectionTokens.ZIP_SERVICE) private zipService: ZipService
+        @inject(InjectionTokens.ZIP_SERVICE) private zipService: ZipService,
+        @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo
     ) {
     }
 
@@ -110,8 +112,47 @@ export class ArchiveServiceImpl implements ArchiveService {
                 tap((results) => lastResult = results)
             ),
             defer(() => this.generateManifestFile(lastResult!, workspacePath)),
-            defer(() => this.generateZipArchive(lastResult!, workspacePath))
+            defer(() => this.generateZipArchive(lastResult!, workspacePath)),
+            defer(() => this.generateExportTelemetries(lastResult!, workspacePath))
         );
+    }
+
+    private generateExportTelemetries(progress: ArchiveExportProgress, workspacePath: string): Observable<ArchiveExportProgress> {
+        progress.progress.forEach((v, k) => {
+           switch (k) {
+               case ArchiveObjectType.CONTENT:
+                   // TODO
+                   throw new Error('To be implemented');
+               case ArchiveObjectType.PROFILE:
+                   // TODO
+                   throw new Error('To be implemented');
+               case ArchiveObjectType.TELEMETRY: {
+                   // const items = (v as ArchiveObjectExportProgress<TelemetryPackageMeta>).completed.map((entry) => {
+                   //     return {
+                   //         type: ShareItemType.TELEMETRY,
+                   //         origin: this.deviceInfo.getDeviceID(),
+                   //         identifier: entry.mid,
+                   //         pkgVersion: 1,
+                   //         transferCount: entry.eventsCount,
+                   //         size: entry.size + ''
+                   //     };
+                   // });
+
+                   const req: TelemetryShareRequest = {
+                       dir: ShareDirection.OUT,
+                       type: ShareType.FILE,
+                       items: [],
+                       env: 'sdk'
+                   };
+
+                   this.telemetryService.share(req).toPromise();
+               }
+           }
+        });
+
+        return of({
+            ...progress,
+        });
     }
 
     private generateZipArchive(progress: ArchiveExportProgress, workspacePath: string): Observable<ArchiveExportProgress> {
@@ -186,6 +227,7 @@ export class ArchiveServiceImpl implements ArchiveService {
                 concatMap(() => this.extractZipArchive(lastResult, workspacePath))
             ),
             defer(() => this.readManifestFile(lastResult, workspacePath, importRequest.objects.map(o => o.type))),
+            defer(() => this.generateImportTelemetries(lastResult, workspacePath)),
             defer(() => {
                 return combineLatest(
                     importRequest.objects.map<Observable<{ type: ArchiveObjectType, progress: ArchiveObjectImportProgress }>>(object => {
@@ -218,7 +260,7 @@ export class ArchiveServiceImpl implements ArchiveService {
                             progress: ArchiveServiceImpl.reduceObjectProgressToArchiveObjectImportProgress(results)
                         };
                     }),
-                )
+                );
             }),
             of({
                 ...lastResult,
@@ -227,6 +269,44 @@ export class ArchiveServiceImpl implements ArchiveService {
         ).pipe(
             tap((results) => lastResult = results)
         );
+    }
+
+    private generateImportTelemetries(progress: ArchiveImportProgress, workspacePath: string): Observable<ArchiveImportProgress> {
+        progress.progress.forEach((v, k) => {
+            switch (k) {
+                case ArchiveObjectType.CONTENT:
+                    // TODO
+                    throw new Error('To be implemented');
+                case ArchiveObjectType.PROFILE:
+                    // TODO
+                    throw new Error('To be implemented');
+                case ArchiveObjectType.TELEMETRY: {
+                    // const items = (v as ArchiveObjectImportProgress<TelemetryPackageMeta>).pending.map((entry) => {
+                    //     return {
+                    //         type: ShareItemType.TELEMETRY,
+                    //         origin: this.deviceInfo.getDeviceID(),
+                    //         identifier: entry.mid,
+                    //         pkgVersion: 1,
+                    //         transferCount: entry.eventsCount,
+                    //         size: entry.size + ''
+                    //     };
+                    // });
+
+                    const req: TelemetryShareRequest = {
+                        dir: ShareDirection.IN,
+                        type: ShareType.FILE.valueOf(),
+                        items: [],
+                        env: 'sdk'
+                    };
+
+                    this.telemetryService.share(req).toPromise();
+                }
+            }
+        });
+
+        return of({
+            ...progress,
+        });
     }
 
     private extractZipArchive(progress: ArchiveImportProgress, workspacePath: string): Observable<ArchiveImportProgress> {
