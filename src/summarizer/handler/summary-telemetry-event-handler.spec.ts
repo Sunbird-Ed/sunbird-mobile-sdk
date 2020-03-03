@@ -68,6 +68,7 @@ describe('SummaryTelemetryEventHandler', () => {
             .mockReturnValue(of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id", "batchStatus": 1}'));
         mockCourseService.getContentState = jest.fn().mockImplementation(() => { });
         (mockCourseService.getContentState as jest.Mock).mockReturnValue(of({}));
+        mockCourseService.resetCapturedAssessmentEvents = jest.fn().mockImplementation(() => {});
         mockContentService.getContentDetails = jest.fn().mockImplementation(() => { });
         (mockContentService.getContentDetails as jest.Mock).mockReturnValue(of({ name: 'CONTENT_NAME', contentType: 'course', sections: {} }));
         telemetry.edata.summary = [{ progress: 100 }];
@@ -99,6 +100,7 @@ describe('SummaryTelemetryEventHandler', () => {
         // (mockProfileService.addContentAccess as jest.Mock).mockReturnValue(of(true));
         mockCourseService.getContentState = jest.fn().mockImplementation(() => { });
         (mockCourseService.getContentState as jest.Mock).mockReturnValue(of({}));
+        mockCourseService.resetCapturedAssessmentEvents = jest.fn().mockImplementation(() => {});
         mockContentService.getContentDetails = jest.fn().mockImplementation(() => { });
         (mockContentService.getContentDetails as jest.Mock).mockReturnValue(of({
             name: 'CONTENT_NAME', sections: {},

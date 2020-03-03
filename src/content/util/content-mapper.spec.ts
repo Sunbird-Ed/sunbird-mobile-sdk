@@ -72,7 +72,33 @@ describe('ContentMapper', () => {
 
             const shouldConvertBasePath = true;
             JSON.parse(contentEntry.data);
-            expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath));
+            expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath)).toEqual(
+                {
+                    basePath: '/_app_file_base-path',
+                    contentData: {
+                        content_state: 3,
+                        identifier: 'sample-id',
+                        lastUpdatedOn: '12/02/20202',
+                        licenseDetails: undefined,
+                        me_averageRating: undefined,
+                        me_totalRatingsCount: undefined,
+                        mimeType: 'sample-mime-type',
+                        previewUrl: undefined,
+                        size: undefined,
+                        streamingUrl: undefined,
+                        visibility: true
+                    },
+                    contentType: undefined,
+                    identifier: 'sample-id',
+                    isAvailableLocally: true,
+                    isUpdateAvailable: false,
+                    lastUpdatedTime: 0,
+                    lastUsedTime: 5,
+                    mimeType: 'sample-mime-type',
+                    referenceCount: 0,
+                    sizeOnDevice: 30
+                }
+            );
         });
 
         it('should map contentDBEntry to content for localData all properties', () => {
@@ -84,14 +110,35 @@ describe('ContentMapper', () => {
                 manifest_version: 'sample-manifest-version',
                 content_type: 'sample-content-type',
                 epoch_timestamp: 5,
-                data: '{"size":"10KB","me_averageRating":"3","me_totalRatings": "4star", "streamingUrl": "url", "previewUrl": "p-url", "licenseDetails": "license"}',
+                data: '{"size":"10KB","me_averageRating":"3","me_totalRatingsCount": 4, "streamingUrl": "url", "previewUrl": "p-url", "licenseDetails": "license"}',
                 content_state: State.ARTIFACT_AVAILABLE,
                 lastUpdatedOn: '20/02/2020'
             };
 
             const shouldConvertBasePath = true;
             JSON.parse(contentEntry.data);
-            expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath));
+            expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath)).toEqual(
+                {
+                    basePath: '/_app_file_',
+                    contentData: {
+                        licenseDetails: 'license',
+                        me_averageRating: '3',
+                        me_totalRatingsCount: 4,
+                        previewUrl: 'p-url',
+                        size: '10KB',
+                        streamingUrl: 'url'
+                    },
+                    contentType: undefined,
+                    identifier: undefined,
+                    isAvailableLocally: true,
+                    isUpdateAvailable: false,
+                    lastUpdatedTime: 0,
+                    lastUsedTime: 5,
+                    mimeType: undefined,
+                    referenceCount: 0,
+                    sizeOnDevice: NaN
+                }
+            );
         });
 
         it('should map contentDBEntry to content for serverData', () => {
@@ -102,11 +149,27 @@ describe('ContentMapper', () => {
                 mime_type: 'sample-mime-type',
                 manifest_version: 'sample-manifest-version',
                 content_type: 'sample-content-type',
-               local_last_updated_on: '20/02/2020'
+                local_last_updated_on: '20/02/2020'
             };
 
             const shouldConvertBasePath = true;
-            expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath));
+            expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath)).toEqual({
+                basePath: '/_app_file_',
+                contentData: {
+                    identifier: 'sample-id',
+                    lastUpdatedOn: '12/02/20202',
+                    mimeType: 'sample-mime-type'
+                },
+                contentType: 'sample-content-type',
+                identifier: 'sample-identifier',
+                isAvailableLocally: false,
+                isUpdateAvailable: false,
+                lastUpdatedTime: NaN,
+                lastUsedTime: 0,
+                mimeType: 'sample-mime-type',
+                referenceCount: 0,
+                sizeOnDevice: NaN
+            });
         });
 
         it('should map contentDBEntry to content for local data', () => {
@@ -117,12 +180,28 @@ describe('ContentMapper', () => {
                 mime_type: 'sample-mime-type',
                 manifest_version: 'sample-manifest-version',
                 content_type: 'sample-content-type',
-               local_last_updated_on: '20/02/2020',
-               data: 'sample-data'
+                local_last_updated_on: '20/02/2020',
+                data: 'sample-data'
             };
 
             const shouldConvertBasePath = true;
-            expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath));
+            expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath)).toEqual({
+                basePath: '/_app_file_',
+                contentData: {
+                    identifier: 'sample-id',
+                    lastUpdatedOn: '12/02/20202',
+                    mimeType: 'sample-mime-type'
+                },
+                contentType: undefined,
+                identifier: 'sample-id',
+                isAvailableLocally: false,
+                isUpdateAvailable: false,
+                lastUpdatedTime: NaN,
+                lastUsedTime: 0,
+                mimeType: 'sample-mime-type',
+                referenceCount: 0,
+                sizeOnDevice: 0
+            });
         });
 
         it('should map contentDBEntry to content if server and local data is not available', () => {
@@ -133,15 +212,27 @@ describe('ContentMapper', () => {
                 mime_type: 'sample-mime-type',
                 manifest_version: 'sample-manifest-version',
                 content_type: 'sample-content-type',
-               local_last_updated_on: '20/02/2020',
-               data: 'sample-data'
+                local_last_updated_on: '20/02/2020',
+                data: 'sample-data'
             };
 
             const shouldConvertBasePath = true;
             JSON.parse = jest.fn().mockImplementationOnce(() => {
                 return contentEntry.local_data;
-              });
-            expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath));
+            });
+            expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath)).toEqual({
+                basePath: '/_app_file_',
+                contentData: undefined,
+                contentType: 'sample-content-type',
+                identifier: 'sample-identifier',
+                isAvailableLocally: false,
+                isUpdateAvailable: false,
+                lastUpdatedTime: NaN,
+                lastUsedTime: 0,
+                mimeType: 'sample-mime-type',
+                referenceCount: 0,
+                sizeOnDevice: 0
+            });
         });
     });
 
@@ -153,7 +244,25 @@ describe('ContentMapper', () => {
                 mimeType: 'sample-mime-type',
             };
             const manifestVersion = 'sample-manifest-version';
-            expect(ContentMapper.mapServerResponseToContent(contentData, manifestVersion));
+            expect(ContentMapper.mapServerResponseToContent(contentData, manifestVersion)).toEqual(
+                {
+                    basePath: '',
+                    contentData: {
+                        identifier: 'sample-id',
+                        lastUpdatedOn: '12/02/20202',
+                        mimeType: 'sample-mime-type'
+                    },
+                    contentType: undefined,
+                    identifier: 'sample-id',
+                    isAvailableLocally: false,
+                    isUpdateAvailable: false,
+                    lastUpdatedTime: 0,
+                    lastUsedTime: 0,
+                    mimeType: 'sample-mime-type',
+                    referenceCount: 0,
+                    sizeOnDevice: 0
+                }
+            );
         });
     });
 });

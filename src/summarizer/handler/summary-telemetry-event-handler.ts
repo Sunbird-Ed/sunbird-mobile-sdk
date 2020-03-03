@@ -166,7 +166,8 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                     return true;
                 }
                 return false;
-            })
+            }),
+            tap(() => this.courseService.resetCapturedAssessmentEvents())
         );
     }
 
