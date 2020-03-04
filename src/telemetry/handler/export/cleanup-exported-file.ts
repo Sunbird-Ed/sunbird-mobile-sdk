@@ -25,7 +25,7 @@ export class CleanupExportedFile {
             exportContext.size = metaData.size.toString();
             return this.populateMetaData({FILE_SIZE: metaData.size});
         }).then(() => {
-            return this.fileService.removeFile(exportContext.destinationDBFilePath!.concat('-journal'));
+            return this.fileService.removeFile(exportContext.destinationDBFilePath!.concat('-journal')).catch(console.error);
         }).then(() => {
             response.body = exportContext;
             return response;
