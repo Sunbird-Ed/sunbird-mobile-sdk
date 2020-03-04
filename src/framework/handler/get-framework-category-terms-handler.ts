@@ -128,7 +128,7 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
                 );
         } else {
             return categoryAssociationsArray
-                .reduce((acc, val) => acc.concat(val))
+                .reduce((acc, val) => acc.concat(val), [])
                 .reduce((acc, val) => {
                         acc.add(val);
                         return acc;
