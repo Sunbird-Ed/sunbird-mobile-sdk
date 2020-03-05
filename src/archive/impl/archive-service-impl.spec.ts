@@ -9,6 +9,7 @@ import {TelemetryExportDelegate} from '../export/impl/telemetry-export-delegate'
 import {InvalidRequestError} from '..';
 import {reduce, take} from 'rxjs/operators';
 import {TelemetryImportDelegate} from '../import/impl/telemetry-import-delegate';
+import {DeviceInfo} from '../../util/device';
 
 jest.mock('../export/impl/telemetry-export-delegate');
 jest.mock('../import/impl/telemetry-import-delegate');
@@ -16,8 +17,13 @@ jest.mock('../import/impl/telemetry-import-delegate');
 describe('ArchiveServiceImpl', () => {
     const mockFileService: Partial<FileService> = {};
     const mockDbService: Partial<DbService> = {};
-    const mockTelemetryService: Partial<TelemetryService> = {};
+    const mockTelemetryService: Partial<TelemetryService> = {
+        share: () => of(true)
+    };
     const mockZipService: Partial<ZipService> = {};
+    const mockDeviceInfo: Partial<DeviceInfo> = {
+        getDeviceID: jest.fn(() => 'SOME_DEVICE_ID')
+    };
     let archiveService: ArchiveServiceImpl;
 
     beforeAll(() => {
@@ -25,7 +31,8 @@ describe('ArchiveServiceImpl', () => {
             mockFileService as FileService,
             mockDbService as DbService,
             mockTelemetryService as TelemetryService,
-            mockZipService as ZipService
+            mockZipService as ZipService,
+            mockDeviceInfo as DeviceInfo
         );
     });
 
@@ -157,7 +164,7 @@ describe('ArchiveServiceImpl', () => {
                 reduce((acc: ArchiveExportProgress[], v) => { acc.push(v); return acc; }, [])
             ).subscribe((values) => {
                 // assert
-                expect(values.length).toEqual(6);
+                expect(values.length).toEqual(7);
                 done();
             }, (e) => {
                 fail(e);
@@ -304,7 +311,7 @@ describe('ArchiveServiceImpl', () => {
                 reduce((acc: ArchiveImportProgress[], v) => { acc.push(v); return acc; }, [])
             ).subscribe((values) => {
                 // assert
-                expect(values.length).toEqual(5);
+                expect(values.length).toEqual(6);
                 done();
             }, (e) => {
                 fail(e);
