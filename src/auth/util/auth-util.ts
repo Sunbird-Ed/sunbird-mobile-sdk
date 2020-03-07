@@ -1,4 +1,4 @@
-import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response, ResponseCode, HttpServerError} from '../../api';
+import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response, ResponseCode, HttpClientError} from '../../api';
 import {OAuthSession} from '..';
 import {AuthKeys} from '../../preference-keys';
 import {NoActiveSessionError} from '../../profile';
@@ -36,7 +36,7 @@ export class AuthUtil {
         try {
             await this.apiService.fetch(request).toPromise()
                 .catch((e) => {
-                    if (e instanceof HttpServerError && e.response.responseCode === ResponseCode.HTTP_BAD_REQUEST) {
+                    if (e instanceof HttpClientError && e.response.responseCode === ResponseCode.HTTP_BAD_REQUEST) {
                         throw new AuthTokenRefreshError(e.message);
                     }
 
