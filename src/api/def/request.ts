@@ -15,7 +15,42 @@ export enum HttpRequestType {
     PATCH = 'PATCH'
 }
 
+export interface SerializedRequest {
+    type: HttpRequestType;
+    host: string | undefined;
+    path: string;
+    serializer: HttpSerializer;
+    withApiToken: boolean;
+    withSessionToken: boolean;
+    headers: {[key: string]: string};
+    body: {[key: string]: string} | string;
+    parameters: {[key: string]: string};
+}
+
 export class Request {
+    static JSONReviver({
+        type,
+        host,
+        path,
+        serializer,
+        withApiToken,
+        withSessionToken,
+        headers,
+        body,
+        parameters
+    }: SerializedRequest): Request {
+        return new Request.Builder()
+            .withType(type)
+            .withHost(host)
+            .withPath(path)
+            .withSerializer(serializer)
+            .withApiToken(withApiToken)
+            .withSessionToken(withSessionToken)
+            .withHeaders(headers)
+            .withBody(body)
+            .withParameters(parameters);
+    }
+
     static Builder: any = class Builder {
 
         protected request: Request;
@@ -203,5 +238,19 @@ export class Request {
 
     get host(): string | undefined {
         return this._host;
+    }
+
+    toJSON(): string {
+        return JSON.stringify({
+            type: this._type,
+            host: this._host,
+            path: this._path,
+            serializer: this._serializer,
+            withApiToken: this._withApiToken,
+            withSessionToken: this._withSessionToken,
+            headers: this._headers,
+            body: this._body,
+            parameters: this._parameters,
+        } as SerializedRequest);
     }
 }
