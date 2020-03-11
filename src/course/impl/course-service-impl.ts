@@ -76,7 +76,7 @@ export class CourseServiceImpl implements CourseService {
     public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
     public static readonly LAST_READ_CONTENTID_PREFIX = 'lastReadContentId';
 
-    private static readonly CERTIFICATE_SIGN_ENDPOINT = '/certs/download';
+    private static readonly CERTIFICATE_SIGN_ENDPOINT = '/api/certreg/v1/certs/download';
 
     private readonly courseServiceConfig: CourseServiceConfig;
     private readonly profileServiceConfig: ProfileServiceConfig;
@@ -274,7 +274,7 @@ export class CourseServiceImpl implements CourseService {
                 mergeMap(({certificate, course}) => {
                     const signCertificateRequest = new Request.Builder()
                         .withType(HttpRequestType.POST)
-                        .withPath(this.profileServiceConfig.profileApiPath + CourseServiceImpl.CERTIFICATE_SIGN_ENDPOINT)
+                        .withPath(CourseServiceImpl.CERTIFICATE_SIGN_ENDPOINT)
                         .withApiToken(true)
                         .withSessionToken(true)
                         .withBody({
