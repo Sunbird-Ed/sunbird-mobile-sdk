@@ -6,7 +6,8 @@ import {RequestBuildError} from '../errors/request-build-error';
 export enum HttpSerializer {
     JSON = 'json',
     URLENCODED = 'urlencoded',
-    UTF8 = 'utf8'
+    UTF8 = 'utf8',
+    RAW = 'raw'
 }
 
 export enum HttpRequestType {
