@@ -54,6 +54,11 @@ import { CopyToDestination } from '../handlers/export/copy-to-destination';
 import { DeleteTempDir } from '../handlers/export/deletete-temp-dir';
 import { GenerateExportShareTelemetry } from '../handlers/export/generate-export-share-telemetry';
 import { UpdateSizeOnDevice } from '../handlers/import/update-size-on-device';
+import {ExtractEcar} from '../handlers/import/extract-ecar';
+import {ValidateEcar} from '../handlers/import/validate-ecar';
+import {ExtractPayloads} from '../handlers/import/extract-payloads';
+import {CreateContentImportManifest} from '../handlers/import/create-content-import-manifest';
+
 
 
 jest.mock('../handlers/search-content-handler');
@@ -71,6 +76,11 @@ jest.mock('../handlers/export/copy-to-destination');
 jest.mock('../handlers/export/deletete-temp-dir');
 jest.mock('../handlers/export/generate-export-share-telemetry');
 jest.mock('../handlers/import/update-size-on-device');
+jest.mock('../handlers/import/generate-interact-telemetry');
+jest.mock('../handlers/import/extract-ecar');
+jest.mock('../handlers/import/validate-ecar');
+jest.mock('../handlers/import/extract-payloads');
+jest.mock('../handlers/import/create-content-import-manifest');
 
 describe('ContentServiceImpl', () => {
     let contentService: ContentService;
@@ -104,9 +114,7 @@ describe('ContentServiceImpl', () => {
         registerOnDownloadCompleteDelegate: jest.fn().mockImplementation(() => { })
     };
     const mockSharedPreferences: Partial<SharedPreferences> = {
-        getBoolean: jest.fn().mockImplementation(() => { }),
-        putString: jest.fn().mockImplementation(() => { }),
-        getString: jest.fn().mockImplementation(() => { })
+        getString: jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'))
     };
     const mockEventsBusService: Partial<EventsBusService> = {};
     const mockCachedItemStore: Partial<CachedItemStore> = {
@@ -153,6 +161,11 @@ describe('ContentServiceImpl', () => {
         (DeleteTempDir as jest.Mock<DeleteTempDir>).mockClear();
         (GenerateExportShareTelemetry as jest.Mock<GenerateExportShareTelemetry>).mockClear();
         (UpdateSizeOnDevice as jest.Mock<UpdateSizeOnDevice>).mockClear();
+        (GenerateInteractTelemetry as jest.Mock<GenerateInteractTelemetry>).mockClear();
+        (ExtractEcar as jest.Mock<ExtractEcar>).mockClear();
+        (ValidateEcar as jest.Mock<ValidateEcar>).mockClear();
+        (ExtractPayloads as jest.Mock<ExtractPayloads>).mockClear();
+        (CreateContentImportManifest as jest.Mock<CreateContentImportManifest>).mockClear();
     });
 
     it('should return an instance of ContentServiceImpl from container', () => {
@@ -162,7 +175,7 @@ describe('ContentServiceImpl', () => {
 
     it('should register as download service observe onInit()', (done) => {
         mockSharedPreferences.getBoolean = jest.fn().mockImplementation(() => of([]));
-        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of([]));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'));
         (mockDownloadService.registerOnDownloadCompleteDelegate as jest.Mock).mockReturnValue(of(''));
         (mockSharedPreferences.getBoolean as jest.Mock).mockReturnValue(of([]));
         (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of('[]'));
@@ -363,7 +376,7 @@ describe('ContentServiceImpl', () => {
             // act
             contentService.deleteContent(request).subscribe((val) => {
                 // assert
-                 expect(val[0].identifier).toBe('SAMPLE_CONTENT_ID');
+                expect(val[0].identifier).toBe('SAMPLE_CONTENT_ID');
                 done();
             });
         });
@@ -603,7 +616,7 @@ describe('ContentServiceImpl', () => {
             clear: jest.fn().mockImplementation(() => of())
         };
         contentService = container.get(InjectionTokens.CONTENT_SERVICE);
-        (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(''));
+        mockSharedPreferences.putString = jest.fn(() => of(undefined));
         // act
         contentService.clearContentDeleteQueue().subscribe(() => {
             // assert
@@ -617,7 +630,7 @@ describe('ContentServiceImpl', () => {
         const contentDeleteRequestSet: Partial<SharedPreferencesSetCollection<ContentDelete>> = {
             clear: jest.fn().mockImplementation(() => of([]))
         };
-        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of('[]'));
+        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of('[{"identifiers": "sample-id"}]'));
         // act
         contentService.getContentDeleteQueue().subscribe(() => {
             // assert
@@ -642,10 +655,10 @@ describe('ContentServiceImpl', () => {
             }
         ]));
         const mockSharedPreferencesSetCollection: Partial<SharedPreferencesSetCollection<ContentDelete>> = {
-            addAll: jest.fn().mockImplementation(() => of(undefined)),
+            addAll: jest.fn().mockImplementation(() => of([{id: 'id'}])),
         };
-        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of('[]'));
-        mockSharedPreferences.putString = jest.fn().mockImplementation(() => { });
+        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of('[{"identifiers": "sample-id"}]'));
+        mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
         (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(undefined));
         contentService = container.get(InjectionTokens.CONTENT_SERVICE);
         // act
@@ -657,30 +670,84 @@ describe('ContentServiceImpl', () => {
         });
     });
 
-    it('should import ecar file', (done) => {
-        // arrange
-        const corr = {
-            id: 'SAMPLE_ID',
-            type: 'SAMPLE_TYPE'
-        };
-        const request: EcarImportRequest = {
-            isChildContent: true,
-            destinationFolder: 'SAMPLE_DETINATION_FOLDER',
-            sourceFilePath: 'SAMPLE_SOURCE_FILE_PATH',
-            correlationData: corr[0]
-        };
-        const mockGenerateTelemetry: Partial<GenerateInteractTelemetry> = {
-            execute: jest.fn().mockImplementation(() => { })
-        };
-        //  mockFileService.exists = jest.fn().mockImplementation(() => of([]));
-        (mockFileService.exists as jest.Mock).mockResolvedValue((''));
-        (mockGenerateTelemetry.execute as jest.Mock).mockResolvedValue('');
-        (mockFileService.getTempLocation as jest.Mock).mockReturnValue(of([]));
-        // act
-        contentService.importEcar(request).subscribe(() => {
-            // assert
-            expect(mockFileService.exists).toBeCalled();
-            done();
+    describe('importEcar', () => {
+        it('should import ecar file', (done) => {
+            // arrange
+            const corr = {
+                id: 'SAMPLE_ID',
+                type: 'SAMPLE_TYPE'
+            };
+            const request: EcarImportRequest = {
+                isChildContent: true,
+                destinationFolder: 'SAMPLE_DETINATION_FOLDER',
+                sourceFilePath: 'SAMPLE_SOURCE_FILE_PATH',
+                correlationData: corr[0],
+            };
+            const response = {
+                body:
+                {
+                    metadata: { content_count: 1 },
+                    ecarFilePath: 'native_urlcontent_count',
+                    destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
+                    contentModelsToExport: [[Object]],
+                    tmpLocationPath: undefined,
+                    items: [{contentType: 'sample-content'}],
+                    manifest:
+                    {
+                        id: 'ekstep.content.archive',
+                        ver: '1.1',
+                        ts: '2020-03-10T18:02:44+05:30',
+                        archive: [Object]
+                    },
+                    FILE_SIZE: '34KB',
+                    rootIdetifier: 'sample-root-id'
+                }
+            };
+            (mockFileService.exists as jest.Mock).mockResolvedValue(response);
+            const generateInteractTelemetryData = jest.fn(() => Promise.resolve(response) as any);
+            (GenerateInteractTelemetry as jest.Mock<GenerateInteractTelemetry>).mockImplementation(() => {
+                return {
+                    execute: generateInteractTelemetryData
+                } as Partial<GenerateInteractTelemetry> as GenerateInteractTelemetry;
+            });
+            mockFileService.getTempLocation = jest.fn(() => Promise.resolve({nativeURL: 'sample-native-url'})) as any;
+            const extractEcarData = jest.fn(() => Promise.resolve(response)) as any;
+            (ExtractEcar as jest.Mock<ExtractEcar> as any).mockImplementation(() => {
+                return {
+                    execute: extractEcarData
+                } as Partial<GenerateInteractTelemetry> as GenerateInteractTelemetry;
+            });
+            const validateEcarData = jest.fn(() => Promise.resolve(response)) as any;
+            (ValidateEcar as jest.Mock<ValidateEcar> as any).mockImplementation(() => {
+                return {
+                    execute: validateEcarData
+                } as Partial<ValidateEcar> as ValidateEcar;
+            });
+            const extractPayloadsData = jest.fn(() => Promise.resolve(response)) as any;
+            (ExtractPayloads as jest.Mock<ExtractPayloads> as any).mockImplementation(() => {
+                return {
+                    execute: extractPayloadsData
+                } as Partial<ExtractPayloads> as ExtractPayloads;
+            });
+            response.body.items[0]['contenttype'] = 'content';
+            mockEventsBusService.emit = jest.fn(() => {});
+            const createContentImportManifestData = jest.fn(() => Promise.resolve(response)) as any;
+            (CreateContentImportManifest as jest.Mock<CreateContentImportManifest> as any).mockImplementation(() => {
+                return {
+                    execute: createContentImportManifestData
+                } as Partial<CreateContentImportManifest> as CreateContentImportManifest;
+            });
+            // act
+            contentService.importEcar(request).subscribe(() => {
+                // assert
+                expect(mockFileService.exists).toBeCalled();
+                expect(generateInteractTelemetryData).toHaveBeenCalled();
+                expect(mockFileService.getTempLocation).toHaveBeenCalledWith(request.destinationFolder);
+                expect(extractEcarData).toHaveBeenCalled();
+                expect(validateEcarData).toHaveBeenCalled();
+                expect(extractPayloadsData).toHaveBeenCalled();
+                done();
+            });
         });
     });
 
@@ -1164,7 +1231,7 @@ describe('ContentServiceImpl', () => {
         };
         contentService = container.get(InjectionTokens.CONTENT_SERVICE);
 
-        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of([]));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'));
         spyOn(mockApiService, 'fetch').and.returnValue(of({
             body: {
                 result: {
