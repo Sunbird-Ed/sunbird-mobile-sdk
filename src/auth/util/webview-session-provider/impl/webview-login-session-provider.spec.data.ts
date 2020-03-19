@@ -119,7 +119,7 @@ export const loginConfig: WebviewSessionProviderConfig = {
             }
         },
         {
-            "type": "password-reset-success",
+            "type": "reset",
             "when": {
                 "host": "https://staging.ntp.net.in",
                 "path": "/auth/realms/sunbird/protocol/openid-connect/auth",
@@ -255,6 +255,51 @@ export const mergeConfig: WebviewSessionProviderConfig = {
                     {
                         "key": "exit",
                         "resolveTo": "exit"
+                    }
+                ]
+            }
+        }
+    ]
+};
+
+export const loginConfigForReset: WebviewSessionProviderConfig = {
+    "context": "login",
+    "target": {
+        "host": "https://staging.ntp.net.in",
+        "path": "/auth/realms/sunbird/protocol/openid-connect/auth",
+        "params": [
+            {
+                "key": "redirect_uri",
+                "value": "https://staging.ntp.net.in/oauth2callback"
+            },
+            {
+                "key": "response_type",
+                "value": "code"
+            },
+            {
+                "key": "scope",
+                "value": "offline_access"
+            },
+            {
+                "key": "client_id",
+                "value": "android"
+            },
+            {
+                "key": "version",
+                "value": "4"
+            }
+        ]
+    },
+    "return": [
+        {
+            "type" :"reset",
+            "when": {
+                "host": "https://staging.ntp.net.in",
+                "path": "/auth/realms/sunbird/protocol/openid-connect/auth",
+                "params": [
+                    {
+                        "key": "client_id",
+                        "resolveTo": "client_id"
                     }
                 ]
             }
