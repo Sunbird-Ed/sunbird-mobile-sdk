@@ -39,6 +39,8 @@ describe('WebviewLoginSessionProvider', () => {
 
     beforeEach(() => {
         jest.resetAllMocks();
+        jest.clearAllMocks();
+        jest.restoreAllMocks();
     });
 
     it('should be able to create an instance', () => {
@@ -165,6 +167,12 @@ describe('WebviewLoginSessionProvider', () => {
         );
 
         // arrange
+        const mockPdata = {'id': 'staging.diksha.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'};
+        mockTelemetryService.buildContext = jest.fn().mockImplementation(() => {
+            return of({
+                pdata: mockPdata
+            });
+        });
         const orderStack = [() => Promise.reject(), () => Promise.resolve()];
         mockWebviewRunner.launchWebview = jest.fn().mockImplementation(() => orderStack.pop()!());
         mockWebviewRunner.capture = jest.fn().mockImplementation(() => Promise.resolve());
