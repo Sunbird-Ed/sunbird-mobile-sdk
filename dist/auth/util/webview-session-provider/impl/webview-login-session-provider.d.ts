@@ -7,6 +7,7 @@ export declare class WebviewLoginSessionProvider extends WebviewBaseSessionProvi
     private autoMergeConfig;
     private readonly webviewRunner;
     private readonly telemetryService;
+    private resetParams;
     constructor(loginConfig: WebviewSessionProviderConfig, autoMergeConfig: WebviewSessionProviderConfig, webviewRunner?: WebviewRunner);
     provide(): Promise<OAuthSession>;
 }

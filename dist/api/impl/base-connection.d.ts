@@ -17,5 +17,4 @@ export declare class BaseConnection implements Connection {
     private buildInterceptorsFromAuthenticators;
     private interceptRequest;
     private interceptResponse;
-    private handleByteArrayPost;
 }

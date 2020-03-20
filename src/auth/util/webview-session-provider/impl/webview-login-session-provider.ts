@@ -7,9 +7,13 @@ import {WebviewAutoMergeSessionProvider} from './webview-auto-merge-session-prov
 import {WebviewBaseSessionProvider} from './webview-base-session-provider';
 import {TelemetryService} from '../../../../telemetry';
 
+interface ParamMap { [key: string]: string; }
+
 export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
     private readonly webviewRunner: WebviewRunner;
     private readonly telemetryService: TelemetryService;
+
+    private resetParams: ParamMap | undefined;
 
     constructor(
         private loginConfig: WebviewSessionProviderConfig,
@@ -42,7 +46,7 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
             params: this.loginConfig.target.params.reduce((acc, p) => {
                 acc[p.key] = p.value;
                 return acc;
-            }, {})
+            }, {...this.resetParams})
         }).then(() => {
             return dsl.any<OAuthSession>(
                 ...this.loginConfig.return.reduce<Promise<OAuthSession>[]>((acc, forCase) => {
@@ -91,7 +95,7 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
                             );
                         })); break;
 
-                        case 'password-reset-success': acc.push(dsl.capture({
+                        case 'reset': acc.push(dsl.capture({
                             host: forCase.when.host,
                             path: forCase.when.path,
                             params: [
@@ -108,10 +112,14 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
                                 }
                             ]
                         }).then(() =>
-                            dsl.closeWebview().then(() =>
-                                new Promise((resolve) => setTimeout(resolve, 500))
-                                    .then(() => this.provide())
-                            )
+                            dsl.getCaptureExtras().then((extras) => {
+                                this.resetParams = extras;
+
+                                return dsl.closeWebview().then(() =>
+                                    new Promise((resolve) => setTimeout(resolve, 500))
+                                        .then(() => this.provide())
+                                );
+                            })
                         )); break;
                     }
 

@@ -81,11 +81,13 @@ export declare class TelemetryEndRequest {
 }
 export declare class TelemetryFeedbackRequest {
     env: string;
-    rating: number;
+    rating?: number;
     comments: string;
     objId: string;
     objType: string;
     objVer: string;
+    commentid?: string;
+    commenttxt?: string;
 }
 export declare class TelemetryLogRequest {
     type: LogType;
@@ -117,22 +119,11 @@ export interface Item {
     transferCount: number;
     size: string;
 }
-export interface ExportTelemetryContext {
-    destinationFolder: string;
-    destinationDBFilePath?: string;
-    metadata?: {
-        [index: string]: any;
-    };
-    size?: string;
-}
 export interface ImportTelemetryContext {
     sourceDBFilePath: string;
     metadata?: {
         [index: string]: any;
     };
-}
-export interface TelemetryExportRequest {
-    destinationFolder: string;
 }
 export interface TelemetryImportRequest {
     sourceFilePath: string;

@@ -13,4 +13,3 @@ export * from './decorators/generate-log-telemetry-decorators';
 export * from './decorators/generate-start-telemetry-decorators';
 export * from './util/telemetry-auto-sync-service';
 export * from './util/telemetry-auto-sync-modes';
-export * from './def/response';

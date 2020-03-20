@@ -164,7 +164,7 @@ export declare namespace SunbirdTelemetry {
     }
     class Feedback extends Telemetry {
         private static readonly EID;
-        constructor(rating: number | undefined, comments: string | undefined, env: string, objId?: string, objType?: string, objVer?: string);
+        constructor(rating: number | undefined, comments: string | undefined, env: string, objId: string | undefined, objType: string | undefined, objVer: string | undefined, commentid: string | undefined, commenttxt: string | undefined);
     }
     class Audit extends Telemetry {
         private static readonly EID;
