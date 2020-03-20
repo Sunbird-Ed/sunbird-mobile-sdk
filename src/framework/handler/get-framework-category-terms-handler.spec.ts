@@ -1,21 +1,13 @@
-import {ApiRequestHandler} from '../../api';
 import {
-    CategoryAssociation,
-    CategoryTerm,
     Channel,
     Framework,
-    FrameworkCategory,
     FrameworkCategoryCode,
     FrameworkService,
     FrameworkUtilService,
     GetFrameworkCategoryTermsRequest
 } from '..';
 import {of} from 'rxjs';
-import * as Collections from 'typescript-collections';
-import {FrameworkMapper} from '../util/framework-mapper';
 import {SharedPreferences} from '../../util/shared-preferences';
-import {FrameworkKeys} from '../../preference-keys';
-import { FrameworkUtilServiceImpl } from '../util/framework-util-service-impl';
 import { GetFrameworkCategoryTermsHandler } from './get-framework-category-terms-handler';
 import { instance, mock } from 'ts-mockito';
 

@@ -1,5 +1,5 @@
 import {AuthUtil} from './auth-util';
-import {ApiConfig, ApiService, Response, ResponseCode, HttpServerError} from '../../api';
+import {ApiConfig, ApiService, Response, ResponseCode, HttpClientError} from '../../api';
 import {anyString, anything, instance, objectContaining, reset, verify, when} from 'ts-mockito';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {EventNamespace, EventsBusService} from '../../events-bus';
@@ -267,7 +267,7 @@ describe('AuthUtil', () => {
       // arrange
       const mockApConfig: ApiConfig = {} as Partial<ApiConfig> as ApiConfig;
 
-      const badRequestError = new HttpServerError('', (() => {
+      const badRequestError = new HttpClientError('', (() => {
         const res = new Response();
         res.responseCode = ResponseCode.HTTP_BAD_REQUEST;
         return res;

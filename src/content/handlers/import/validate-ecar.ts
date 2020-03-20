@@ -1,6 +1,5 @@
-import {ContentData, FileName, ImportContentContext} from '../..';
+import {ContentData, ContentErrorCode, ContentImportStatus, FileName, ImportContentContext, Visibility} from '../..';
 import {Response} from '../../../api';
-import {ContentErrorCode, ContentImportStatus, Visibility} from '../../util/content-constants';
 import {FileService} from '../../../util/file/def/file-service';
 import {ContentUtil} from '../../util/content-util';
 import {AppConfig} from '../../../api/config/app-config';
@@ -70,7 +69,7 @@ export class ValidateEcar {
             const compatibilityLevel = ContentUtil.readCompatibilityLevel(item);
             if (visibility === Visibility.DEFAULT
                 && !ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
-                this.skipContent(importContext, identifier, visibility, ContentImportStatus.NOT_COMPATIBLE);
+                this.skipContent(importContext, identifier, visibility, ContentImportStatus.NOT_COMPATIBLE, items);
                 continue;
             }
 
@@ -78,7 +77,7 @@ export class ValidateEcar {
             const isDraftContent: boolean = ContentUtil.isDraftContent(status);
             // Draft content expiry .To prevent import of draft content if the expires date is lesser than from the current date.
             if (isDraftContent && ContentUtil.isExpired(item.expires)) {
-                this.skipContent(importContext, identifier, visibility, ContentImportStatus.CONTENT_EXPIRED);
+                this.skipContent(importContext, identifier, visibility, ContentImportStatus.CONTENT_EXPIRED, items);
                 continue;
             }
 
@@ -117,7 +116,7 @@ export class ValidateEcar {
                 && ContentUtil.isImportFileExist(existingContentModel, item) // Check whether the file is already imported or not.
             ) {
                 importContext.rootIdentifier = identifier;
-                this.skipContent(importContext, identifier, visibility, ContentImportStatus.ALREADY_EXIST);
+                this.skipContent(importContext, identifier, visibility, ContentImportStatus.ALREADY_EXIST, items);
                 continue;
             }
 
@@ -138,10 +137,15 @@ export class ValidateEcar {
      * Skip the content.
      */
     private skipContent(importContext: ImportContentContext, identifier: string, visibility: string,
-                        contentImportStatus: ContentImportStatus) {
-        if (visibility === Visibility.DEFAULT
-            && contentImportStatus !== ContentImportStatus.ALREADY_EXIST) {
-            importContext.contentImportResponseList!.push({identifier: identifier, status: contentImportStatus});
+                        contentImportStatus: ContentImportStatus, items) {
+        if (visibility === Visibility.DEFAULT) {
+            if (contentImportStatus === ContentImportStatus.ALREADY_EXIST) {
+                if (items && items.length === 1) {
+                    importContext.contentImportResponseList!.push({identifier: identifier, status: contentImportStatus});
+                }
+            } else {
+                importContext.contentImportResponseList!.push({identifier: identifier, status: contentImportStatus});
+            }
         }
         importContext.skippedItemsIdentifier!.push(identifier);
     }
