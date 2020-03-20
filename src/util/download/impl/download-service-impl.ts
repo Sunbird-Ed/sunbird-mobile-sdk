@@ -297,7 +297,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     if (downloadProgress.payload.status === DownloadStatus.STATUS_SUCCESSFUL) {
                         return iif(
                             () => !!this.downloadCompleteDelegate,
-                            defer(() => {
+                            defer(async () => {
                                 DownloadServiceImpl.generateDownloadCompleteTelemetry(currentDownloadRequest!);
                                 this.downloadCompleteDelegate!.onDownloadCompletion(currentDownloadRequest!).toPromise();
                             }),
