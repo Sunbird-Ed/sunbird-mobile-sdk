@@ -4,7 +4,7 @@ import { SharedPreferences } from '../../..';
 import { of } from 'rxjs';
 import { AppInfoKeys } from '../../../preference-keys';
 
-declare const buildconfigreader;
+declare const sbutility;
 
 describe('AppInfoImpl', () => {
     let appInfoImpl: AppInfoImpl;
@@ -63,7 +63,7 @@ describe('AppInfoImpl', () => {
 
     it('should get setFirstAccessTimestamp for debugmode is true', async(done) => {
         // arrange
-        mockSharedPreferences.getString = jest.fn(() => of('first_access_timestamp'));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('first_access_timestamp'));
         // act
         await appInfoImpl.init().then(() => {
         // assert
@@ -74,8 +74,8 @@ describe('AppInfoImpl', () => {
 
     it('should get setFirstAccessTimestamp if debugMode is false', async(done) => {
         // arrange
-        mockSharedPreferences.getString = jest.fn(() => of(undefined));
-        mockSharedPreferences.putString = jest.fn(() => of(undefined));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(undefined));
+        mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
         const mockSdkConfigApi: Partial<SdkConfig> = {
             apiConfig: {
                 host: 'SAMPLE_HOST',
@@ -108,7 +108,7 @@ describe('AppInfoImpl', () => {
             mockSdkConfigApi as SdkConfig,
             mockSharedPreferences as SharedPreferences
         );
-        spyOn(buildconfigreader, 'getBuildConfigValue').and.callFake((a, b, c, d) => {
+        spyOn(sbutility, 'getBuildConfigValue').and.callFake((a, b, c, d) => {
             setTimeout(() => {
                 c('2.6.0'),
                 d('buildConfig_error');
@@ -125,7 +125,7 @@ describe('AppInfoImpl', () => {
 
     it('should get FirstAccessTimestamp', (done) => {
         // arrange
-        mockSharedPreferences.getString = jest.fn(() => of('first_access_timestamp'));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('first_access_timestamp'));
         // act
         appInfoImpl.getFirstAccessTimestamp().subscribe(() => {
             // assert

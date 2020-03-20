@@ -6,7 +6,7 @@ import {ExportContentContext} from '../..';
 describe('CreateTempLoc', () => {
     let createTempLoc: CreateTempLoc;
     const mockFileService: Partial<FileService> = {
-        createDir: jest.fn(() => {
+        createDir: jest.fn().mockImplementation(() => {
         })
     };
 

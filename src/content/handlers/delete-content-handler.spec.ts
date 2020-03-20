@@ -8,7 +8,7 @@ import {of} from 'rxjs';
 import {ArrayUtil} from '../../util/array-util';
 
 jest.mock('../util/content-util');
-declare const buildconfigreader;
+declare const sbutility;
 
 describe('DeleteContentHandler', () => {
     let deleteContentHandler: DeleteContentHandler;
@@ -36,7 +36,7 @@ describe('DeleteContentHandler', () => {
 
     it('should be deleted all children', async (done) => {
         // arrange
-        spyOn(buildconfigreader, 'getMetaData').and.callFake((mapList, cb) => {
+        spyOn(sbutility, 'getMetaData').and.callFake((mapList, cb) => {
             setTimeout(() => {
                 cb({
                     'IDENTIFIER': {
@@ -55,7 +55,7 @@ describe('DeleteContentHandler', () => {
             content_type: 'CONTENT_TYPE',
             path: 'Sample_path'
         };
-        mockDbService.execute = jest.fn(() => {
+        mockDbService.execute = jest.fn().mockImplementation(() => {
         });
         (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
@@ -66,12 +66,12 @@ describe('DeleteContentHandler', () => {
             content_type: 'CONTENT_TYPE',
             path: 'sample_path'
         }]));
-        mockDbService.beginTransaction = jest.fn(() => of({}));
-        mockDbService.update = jest.fn(() => of({}));
-        mockDbService.endTransaction = jest.fn(() => {
+        mockDbService.beginTransaction = jest.fn().mockImplementation(() => of({}));
+        mockDbService.update = jest.fn().mockImplementation(() => of({}));
+        mockDbService.endTransaction = jest.fn().mockImplementation(() => {
         });
         const isChildContent = true;
-        mockFileService.readAsText = jest.fn(() => {
+        mockFileService.readAsText = jest.fn().mockImplementation(() => {
         });
         const readAsText = (mockFileService.readAsText as jest.Mock)
             .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
@@ -82,14 +82,14 @@ describe('DeleteContentHandler', () => {
         // act
         await deleteContentHandler.deleteAllChildren(request, isChildContent).then(() => {
             // assert
-            expect(buildconfigreader.getMetaData).toHaveBeenCalled();
+            expect(sbutility.getMetaData).toHaveBeenCalled();
             done();
         });
     });
 
     it('should ', async (done) => {
         // arrange
-        spyOn(buildconfigreader, 'getMetaData').and.callFake((mapList, cb) => {
+        spyOn(sbutility, 'getMetaData').and.callFake((mapList, cb) => {
             setTimeout(() => {
                 cb({
                     'IDENTIFIER': {
@@ -106,7 +106,7 @@ describe('DeleteContentHandler', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE'
         };
-        mockFileService.readAsText = jest.fn(() => {
+        mockFileService.readAsText = jest.fn().mockImplementation(() => {
         });
         const readAsText = (mockFileService.readAsText as jest.Mock)
             .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
@@ -114,9 +114,9 @@ describe('DeleteContentHandler', () => {
             return value;
         });
 
-        ContentUtil.hasChildren = jest.fn(() => of([]));
-        mockDbService.execute = jest.fn(() => of([]));
-        ArrayUtil.joinPreservingQuotes = jest.fn(() => of([]));
+        ContentUtil.hasChildren = jest.fn().mockImplementation(() => of([]));
+        mockDbService.execute = jest.fn().mockImplementation(() => of([]));
+        ArrayUtil.joinPreservingQuotes = jest.fn().mockImplementation(() => of([]));
         // act
         await deleteContentHandler.deleteAllChildren(request, true).then(() => {
             expect(mockDbService.execute).toHaveBeenCalled();
@@ -128,7 +128,7 @@ describe('DeleteContentHandler', () => {
 
     // fit('should delete child content only', async(done) => {
     //     // arrange
-    //     spyOn(buildconfigreader, 'getMetaData').and.callFake((mapList, cb) => {
+    //     spyOn(sbutility, 'getMetaData').and.callFake((mapList, cb) => {
     //         setTimeout(() => {
     //             cb({
     //                 'IDENTIFIER': {
@@ -149,7 +149,7 @@ describe('DeleteContentHandler', () => {
     //     const request = undefined;
     //  //   spyOn(deleteContentHandler, 'deleteOrUpdateContent').and.stub();
     //     const isUpdateLastModifiedTime = true;
-    //     ContentUtil.getFirstPartOfThePathNameOnLastDelimiter = jest.fn(() => of([]));
+    //     ContentUtil.getFirstPartOfThePathNameOnLastDelimiter = jest.fn().mockImplementation(() => of([]));
     //     // act
     //     await deleteContentHandler.deleteAllChildren(request_1, true).then(() => {
     //       // console.log(expect(request_1[ContentEntry.COLUMN_NAME_IDENTIFIER]).not.toEqual(''));

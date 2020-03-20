@@ -61,7 +61,7 @@ describe('ApiAuthenticator', () => {
                 'content_type': 'application/text'
             })
             .build();
-        mockSharedPreferences.getString = jest.fn(() => of('application/text'));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('application/text'));
         // act
         apiAuthenticator.interceptRequest(request).subscribe(() => {
             // assert
@@ -88,8 +88,8 @@ describe('ApiAuthenticator', () => {
         .build();
 
         (ApiTokenHandler.prototype.refreshAuthToken as jest.Mock).mockReturnValue(of('SAMPLE_REFRESH_TOKEN'));
-        mockSharedPreferences.putString = jest.fn(() => of(undefined));
-        mockApiService.fetch = jest.fn(() => of({}));
+        mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
+        mockApiService.fetch = jest.fn().mockImplementation(() => of({}));
         // act
        await apiAuthenticator.interceptResponse(request, res).subscribe(() => {
             // assert

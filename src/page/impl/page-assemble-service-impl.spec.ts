@@ -46,12 +46,12 @@ describe('PageAssembleServiceImpl', () => {
             source: 'app'
         };
 
-        const handleMethod = jest.fn(() => of(''));
+        const handleMethod = jest.fn().mockImplementation(() => of(''));
 
         (PageAssemblerHandler as any as jest.Mock<PageAssemblerHandler>).mockImplementation(() => {
             return {
                 handle: handleMethod,
-            };
+            } as Partial<PageAssemblerHandler> as PageAssemblerHandler;
         });
         // act
         pageAssembleServiceImpl.getPageAssemble(request).subscribe(() => {

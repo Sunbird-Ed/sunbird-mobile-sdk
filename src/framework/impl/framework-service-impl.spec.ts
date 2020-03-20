@@ -64,7 +64,7 @@ describe('FrameworkServiceImpl', () => {
 
     it('should return getActiveChannelId using framework Service', (done) => {
         // arrange
-         mockSharedPreferences.getString = jest.fn(() => of('NO_ACTIVE_CHANNEL_FOUND_ERROR'));
+         mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('NO_ACTIVE_CHANNEL_FOUND_ERROR'));
          // act
          frameworkService.getActiveChannelId().subscribe((channelId: string) => {
               // assert
@@ -76,7 +76,7 @@ describe('FrameworkServiceImpl', () => {
 
      it('should throw error when getActiveChannelId() if no active channel set', () => {
         // arrange
-         mockSharedPreferences.getString = jest.fn(() => of(undefined));
+         mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(undefined));
          // act
          frameworkService.getActiveChannelId().subscribe((channelId: string) => {}, (e) => {
             expect(mockSharedPreferences.getString).toHaveBeenCalled();
@@ -87,7 +87,7 @@ describe('FrameworkServiceImpl', () => {
 
     it('should return preInit Using FrameworkService', (done) => {
         // arrange
-         frameworkService.getActiveChannelId = jest.fn(() => of('SOME_CHANNEL_ID'));
+         frameworkService.getActiveChannelId = jest.fn().mockImplementation(() => of('SOME_CHANNEL_ID'));
         // act
          frameworkService.preInit().subscribe(() => {
              // assert
@@ -99,7 +99,7 @@ describe('FrameworkServiceImpl', () => {
     it('should execute preInit Catch Error Using FrameworkService', (done) => {
         // arrange
          const channelId = '1233';
-       frameworkService.getActiveChannelId = jest.fn(() => throwError('NO_ACTIVE_CHANNEL_FOUND_ERROR'));
+       frameworkService.getActiveChannelId = jest.fn().mockImplementation(() => throwError('NO_ACTIVE_CHANNEL_FOUND_ERROR'));
         // acty
          frameworkService.preInit().subscribe(() => {},  (e) => {
              // assert
@@ -110,12 +110,12 @@ describe('FrameworkServiceImpl', () => {
 
     it('should return getDefaultChannelDetails Using FrameworkService', (done) => {
         // arrange
-         mockSystemSettingsService.getSystemSettings = jest.fn(() => of<SystemSettings>({
+         mockSystemSettingsService.getSystemSettings = jest.fn().mockImplementation(() => of<SystemSettings>({
              id: 'SOME_ID',
              field: 'SOME_FIELD',
              value: 'SOME_CHANNEL_ID'
          }));
-         frameworkService.getChannelDetails = jest.fn(() => of<Partial<Channel>>({
+         frameworkService.getChannelDetails = jest.fn().mockImplementation(() => of<Partial<Channel>>({
              identifier: 'SOME_IDENTIFIER',
          }));
         // act
@@ -130,7 +130,7 @@ describe('FrameworkServiceImpl', () => {
     it('should return setActiveChannelId Using FrameworkService', (done) => {
         // arrange
         const  channelId = '12345';
-        mockSharedPreferences.putString = jest.fn(() => of([]));
+        mockSharedPreferences.putString = jest.fn().mockImplementation(() => of([]));
         (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(''));
         // act
          frameworkService.setActiveChannelId(channelId).subscribe(() => {
@@ -173,7 +173,7 @@ describe('FrameworkServiceImpl', () => {
             }
         };
 
-        mockApiService.fetch =  jest.fn(() => of({ body: {result: request}}));
+        mockApiService.fetch =  jest.fn().mockImplementation(() => of({ body: {result: request}}));
         // act
         frameworkService.searchOrganization(request).subscribe(() => {
             expect(mockApiService.fetch).toHaveBeenCalled();
@@ -188,7 +188,7 @@ describe('FrameworkServiceImpl', () => {
 
     it('should return system setting information', (done) => {
         // arrange
-        mockSystemSettingsService.getSystemSettings = jest.fn(() => of({
+        mockSystemSettingsService.getSystemSettings = jest.fn().mockImplementation(() => of({
             id: 'sample-id',
             field: 'sample-field',
             value: 'sample-value'

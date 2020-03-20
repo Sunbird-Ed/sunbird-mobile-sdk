@@ -50,9 +50,9 @@ describe('ChildContentsHandler', () => {
         };
         const childContentsMap = new Map();
         childContentsMap.set('IDENTIFIER', 'd0_id');
-        ContentMapper.mapContentDBEntryToContent = jest.fn(() => ({hierarchyInfo: {data: ''}}));
+        ContentMapper.mapContentDBEntryToContent = jest.fn().mockImplementation(() => ({hierarchyInfo: {data: ''}}));
         const data = JSON.parse(request[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
-        mockDbService.execute = jest.fn(() => of([]));
+        mockDbService.execute = jest.fn().mockImplementation(() => of([]));
         // act
         await childContentHandler.fetchChildrenOfContent(request, childContentsMap, currentLevel, level).then(() => {
             // assert
@@ -94,7 +94,7 @@ describe('ChildContentsHandler', () => {
             contentType: 'SAMPLE_CONTENT_TYPE_2'
         }];
         const identifier = 'IDENTIFIER';
-        mockGetContentDetailsHandler.fetchFromDB = jest.fn(() => of([]));
+        mockGetContentDetailsHandler.fetchFromDB = jest.fn().mockImplementation(() => of([]));
         // act
         await childContentHandler.getContentFromDB(request, identifier).then(() => {
             done();
@@ -142,7 +142,7 @@ describe('ChildContentsHandler', () => {
 
     it('should get ChildIdentifiers From Manifest', (done) => {
         // arrange
-        mockFileService.readAsText = jest.fn(() => {
+        mockFileService.readAsText = jest.fn().mockImplementation(() => {
         });
         const readAsText = (mockFileService.readAsText as jest.Mock)
             .mockResolvedValue(JSON.stringify({ archive: { items: [{ identifier: 'pass' }, { identifier: 'pass-2' }] } }));
@@ -159,7 +159,7 @@ describe('ChildContentsHandler', () => {
 
     it('should get ChildIdentifiers From Manifest for catch part', async(done) => {
         // arrange
-        mockFileService.readAsText = jest.fn(() => Promise.reject('textbook'));
+        mockFileService.readAsText = jest.fn().mockImplementation(() => Promise.reject('textbook'));
         // act
         childContentHandler.getChildIdentifiersFromManifest('textbook_unit_1').then(() => {
              // assert

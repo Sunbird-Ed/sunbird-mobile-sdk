@@ -83,11 +83,13 @@ export class TelemetryEndRequest {
 
 export class TelemetryFeedbackRequest {
     env: string;
-    rating: number;
+    rating?: number;
     comments: string;
     objId: string;
     objType: string;
     objVer: string;
+    commentid?: string;
+    commenttxt?: string;
 }
 
 
@@ -123,20 +125,9 @@ export interface Item {
     size: string;
 }
 
-export interface ExportTelemetryContext {
-    destinationFolder: string;
-    destinationDBFilePath?: string;
-    metadata?: { [index: string]: any };
-    size?: string;
-}
-
 export interface ImportTelemetryContext {
     sourceDBFilePath: string;
     metadata?: { [index: string]: any };
-}
-
-export interface TelemetryExportRequest {
-    destinationFolder: string;
 }
 
 export interface TelemetryImportRequest {

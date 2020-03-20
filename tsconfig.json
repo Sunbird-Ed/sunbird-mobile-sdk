@@ -22,7 +22,6 @@
     "types": [
       "node-fetch",
       "reflect-metadata",
-      "jest",
       "websql"
     ],
     "moduleResolution": "node"

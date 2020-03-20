@@ -39,8 +39,8 @@ describe('GetFormHandler', () => {
             rootOrgId: 'sample_rootOrgId',
             framework: 'sample_framework'
         };
-        mockCachedItemStore.getCached = jest.fn((a, b, c, d, e) => d());
-        mockApiService.fetch = jest.fn(() => of({
+        mockCachedItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e) => d());
+        mockApiService.fetch = jest.fn().mockImplementation(() => of({
             body: {
                 result: 'sample_result'
             }
@@ -63,8 +63,8 @@ describe('GetFormHandler', () => {
             rootOrgId: 'sample_rootOrgId',
             framework: 'sample_framework'
         };
-        mockCachedItemStore.getCached = jest.fn((a, b, c, d, e) => e());
-        mockFileService.readFileFromAssets = jest.fn((result) => of({
+        mockCachedItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e) => e());
+        mockFileService.readFileFromAssets = jest.fn().mockImplementation((result) => of({
             result: result.form
         }));
         // act
@@ -86,7 +86,7 @@ describe('GetFormHandler', () => {
             framework: 'sample_framework'
         };
 
-        mockApiService.fetch = jest.fn(() => of({
+        mockApiService.fetch = jest.fn().mockImplementation(() => of({
             body: {
                 result: 'sample'
             }

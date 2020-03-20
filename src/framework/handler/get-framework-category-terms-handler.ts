@@ -128,7 +128,7 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
                 );
         } else {
             return categoryAssociationsArray
-                .reduce((acc, val) => acc.concat(val))
+                .reduce((acc, val) => acc.concat(val), [])
                 .reduce((acc, val) => {
                         acc.add(val);
                         return acc;
@@ -136,7 +136,10 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
                 )
                 .toArray()
                 .map((association: CategoryAssociation) =>
-                    this.getAllCategoriesTermsSet(framework).toArray().find((term) => term.code === association.code))
+                    this.getAllCategoriesTermsSet(framework).toArray().find((term) =>
+                        term.identifier === association.identifier
+                    )
+                )
                 .reduce((acc, val) => {
                         acc.add(val!);
                         return acc;

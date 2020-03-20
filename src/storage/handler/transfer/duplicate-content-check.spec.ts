@@ -53,7 +53,7 @@ describe('DuplicateContentCheck', () => {
             duplicateContents: dupContents,
             validContentIdsInDestination: ['SAMPLE_CONTENT_1', 'SAMPLE_CONTENT_2']
         };
-        mockDbService.execute = jest.fn(() => {});
+        mockDbService.execute = jest.fn().mockImplementation(() => {});
         (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
@@ -98,7 +98,7 @@ describe('DuplicateContentCheck', () => {
             duplicateContents: dupContents,
             validContentIdsInDestination: ['SAMPLE_CONTENT_1', 'SAMPLE_CONTENT_2']
         };
-        mockDbService.execute = jest.fn(() => {});
+        mockDbService.execute = jest.fn().mockImplementation(() => {});
         (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'LOCAL_DATA',
@@ -109,7 +109,7 @@ describe('DuplicateContentCheck', () => {
             content_state: 2,
             path: 'SAMPLE_PATH'
         }]));
-        mockFileService.readAsText = jest.fn(() => {});
+        mockFileService.readAsText = jest.fn().mockImplementation(() => {});
         const readAsText = (mockFileService.readAsText as jest.Mock)
         .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
         readAsText().then((value) => {

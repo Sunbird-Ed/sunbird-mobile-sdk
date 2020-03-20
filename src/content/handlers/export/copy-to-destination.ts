@@ -15,7 +15,7 @@ export class CopyToDestination {
             } else {
                 destinationFolder = cordova.file.externalCacheDirectory;
             }
-            buildconfigreader.copyFile(FileUtil.getDirecory(exportResponse.body.ecarFilePath), destinationFolder,
+            sbutility.copyFile(FileUtil.getDirecory(exportResponse.body.ecarFilePath), destinationFolder,
                 FileUtil.getFileName(exportResponse.body.ecarFilePath),
                 () => {
                     resolve(exportResponse);

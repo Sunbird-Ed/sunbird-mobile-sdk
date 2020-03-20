@@ -428,7 +428,7 @@ export class ExtractPayloads {
     private async createDirectories(parentDirectoryPath: string,
                                     listOfFolder: string[]): Promise<{ [key: string]: { path: string | undefined } }> {
         return new Promise<{ [key: string]: { path: string | undefined } }>((resolve, reject) => {
-            buildconfigreader.createDirectories(ContentUtil.getBasePath(parentDirectoryPath), listOfFolder,
+            sbutility.createDirectories(ContentUtil.getBasePath(parentDirectoryPath), listOfFolder,
                 (entry) => {
                     resolve(entry);
                 }, err => {

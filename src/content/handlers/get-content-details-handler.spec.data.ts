@@ -58,7 +58,7 @@ export const mockContentData: ContentData = {
     resourceType: 'Learn',
     contentTypesCount: 'resource',
     publisher: '',
-    me_totalRatings: '',
+    me_totalRatingsCount: 1,
     me_averageRating: '',
     me_totalDownloads: '',
     copyright: '',

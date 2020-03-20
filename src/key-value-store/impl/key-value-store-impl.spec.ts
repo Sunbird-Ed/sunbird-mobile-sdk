@@ -23,7 +23,7 @@ describe('KeyValueStoreImpl', () => {
     it('should read the data from no_sql', (done) => {
         // arrange
         const key = 'SAMPLE_KEY';
-        mockDbService.read = jest.fn(() => of([]));
+        mockDbService.read = jest.fn().mockImplementation(() => of([]));
         // act
         keyValueStoreImpl.getValue(key).subscribe(() => {
             // assert
@@ -37,7 +37,7 @@ describe('KeyValueStoreImpl', () => {
         const key = 'SAMPLE_KEY';
         const value = 'SAMPLE_VALUE';
         spyOn(keyValueStoreImpl, 'getValue').and.returnValue(of({}));
-        mockDbService.update = jest.fn(() => of([]));
+        mockDbService.update = jest.fn().mockImplementation(() => of([]));
         // act
         keyValueStoreImpl.setValue(key, value).subscribe(() => {
             // assert
@@ -52,7 +52,7 @@ describe('KeyValueStoreImpl', () => {
         const key = 'SAMPLE_KEY';
         const value = 'SAMPLE_VALUE';
         spyOn(keyValueStoreImpl, 'getValue').and.returnValue(of(undefined));
-        mockDbService.insert = jest.fn(() => of([]));
+        mockDbService.insert = jest.fn().mockImplementation(() => of([]));
         // act
         keyValueStoreImpl.setValue(key, value).subscribe(() => {
             // assert

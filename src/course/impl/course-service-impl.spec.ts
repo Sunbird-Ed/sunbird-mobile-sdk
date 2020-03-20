@@ -36,33 +36,33 @@ describe('CourseServiceImpl', () => {
     const container = new Container();
 
     const mockApiService: Partial<ApiService> = {
-        fetch: jest.fn(() => {
+        fetch: jest.fn().mockImplementation(() => {
         })
     };
     const mockProfileService: Partial<ProfileService> = {
-        getServerProfiles: jest.fn(() => {
+        getServerProfiles: jest.fn().mockImplementation(() => {
         })
     };
     const mockKeyValueStore: Partial<KeyValueStore> = {
-        getValue: jest.fn(() => {
+        getValue: jest.fn().mockImplementation(() => {
         }),
-        setValue: jest.fn(() => {
+        setValue: jest.fn().mockImplementation(() => {
         })
     };
     const mockDbService: Partial<DbService> = {};
     const sharePreferencesMock: Partial<SharedPreferences> = {
-        putString: jest.fn(() => {
+        putString: jest.fn().mockImplementation(() => {
         }),
-        getString: jest.fn(() => {
+        getString: jest.fn().mockImplementation(() => {
         })
     };
     const mockAuthService: Partial<AuthService> = {
-        getSession: jest.fn(() => {
+        getSession: jest.fn().mockImplementation(() => {
         })
     };
     const mockAppInfo: Partial<AppInfo> = {};
     const mockSyncAssessmentEventsHandler = {
-        handle: jest.fn(() => of(undefined))
+        handle: jest.fn().mockImplementation(() => of(undefined))
     };
 
     beforeAll(() => {
@@ -77,7 +77,7 @@ describe('CourseServiceImpl', () => {
         container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
 
         (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockImplementation(() => {
-            return mockSyncAssessmentEventsHandler;
+            return mockSyncAssessmentEventsHandler as Partial<SyncAssessmentEventsHandler> as SyncAssessmentEventsHandler;
         });
 
         courseService = container.get<CourseService>(InjectionTokens.COURSE_SERVICE);
@@ -118,9 +118,9 @@ describe('CourseServiceImpl', () => {
         // arrange
         (OfflineContentStateHandler as jest.Mock<OfflineContentStateHandler>).mockImplementation(() => {
             return {
-                manipulateEnrolledCoursesResponseLocally: jest.fn(() => of(true)),
-                manipulateGetContentStateResponseLocally: jest.fn(() => of(true))
-            };
+                manipulateEnrolledCoursesResponseLocally: jest.fn().mockImplementation(() => of(true)),
+                manipulateGetContentStateResponseLocally: jest.fn().mockImplementation(() => of(true))
+            } as Partial<OfflineContentStateHandler> as OfflineContentStateHandler;
         });
         const updateContentStateRequest: UpdateContentStateRequest = {
             userId: 'SAMPLE_USER_ID',
@@ -221,14 +221,14 @@ describe('CourseServiceImpl', () => {
             spyOn(courseService, 'syncAssessmentEvents').and.returnValue(of(undefined));
             (ContentStatesSyncHandler as jest.Mock<ContentStatesSyncHandler>).mockImplementation(() => {
                 return {
-                    updateContentState: jest.fn(() => of(true))
-                };
+                    updateContentState: jest.fn().mockImplementation(() => of(true))
+                } as Partial<ContentStatesSyncHandler> as ContentStatesSyncHandler;
             });
             const mockGetEnrolledCourseHandler = {
-                handle: jest.fn(() => of([]))
+                handle: jest.fn().mockImplementation(() => of([]))
             };
             (GetEnrolledCourseHandler as jest.Mock<GetEnrolledCourseHandler>).mockImplementation(() => {
-                return mockGetEnrolledCourseHandler;
+                return mockGetEnrolledCourseHandler as Partial<GetEnrolledCourseHandler> as GetEnrolledCourseHandler;
             });
             const request = {
                 userId: 'SAMPLE_USER_ID',
@@ -279,8 +279,8 @@ describe('CourseServiceImpl', () => {
         };
         (OfflineContentStateHandler as jest.Mock<OfflineContentStateHandler>).mockImplementation(() => {
             return {
-                getLocalContentStateResponse: jest.fn(() => of('MOCK_RESPONSE'))
-            };
+                getLocalContentStateResponse: jest.fn().mockImplementation(() => of('MOCK_RESPONSE'))
+            } as Partial<OfflineContentStateHandler> as OfflineContentStateHandler;
         });
         spyOn(mockApiService, 'fetch').and.returnValue(of({
             body: {

@@ -39,8 +39,8 @@ describe('GetSystemSettingsHandler', () => {
             field: 'sample_field',
             value: 'sample_value'
         };
-        mockCachedItemStore.getCached = jest.fn((a, b, c, d, e) => d());
-        mockApiService.fetch = jest.fn(() => of({
+        mockCachedItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e) => d());
+        mockApiService.fetch = jest.fn().mockImplementation(() => of({
             body: {
                 result: {
                     response: response
@@ -60,8 +60,8 @@ describe('GetSystemSettingsHandler', () => {
         const request: GetSystemSettingsRequest = {
             id: 'sample_id'
         };
-        mockCachedItemStore.getCached = jest.fn((a, b, c, d, e) => e());
-        mockFileService.readFileFromAssets = jest.fn((result) => of({
+        mockCachedItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e) => e());
+        mockFileService.readFileFromAssets = jest.fn().mockImplementation((result) => of({
             result: result.response
         }));
         // act

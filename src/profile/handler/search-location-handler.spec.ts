@@ -38,9 +38,9 @@ describe('SearchLocationHandler', () => {
                 parentId: 'parent-01'
             }
         };
-        mockApiService.fetch =  jest.fn(() => of({ body: {result: ''}}));
-        mockCachedItemStore.getCached = jest.fn((a, b, c, d, e, f) => d());
-        mockFileService.readFileFromAssets = jest.fn(() => []);
+        mockApiService.fetch =  jest.fn().mockImplementation(() => of({ body: {result: ''}}));
+        mockCachedItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e, f) => d());
+        mockFileService.readFileFromAssets = jest.fn().mockImplementation(() => []);
         spyOn(mockApiService, 'fetch').and.returnValue(of({
             body: {
                 result: {
@@ -63,9 +63,9 @@ describe('SearchLocationHandler', () => {
                 parentId: 'parent-01'
             }
         };
-        mockApiService.fetch =  jest.fn(() => of({ body: {result: ''}}));
-        mockCachedItemStore.getCached = jest.fn((a, b, c, d, e, f) => e());
-        mockFileService.readFileFromAssets = jest.fn(() => Promise.resolve('{"result": {"response": {}}}'));
+        mockApiService.fetch =  jest.fn().mockImplementation(() => of({ body: {result: ''}}));
+        mockCachedItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e, f) => e());
+        mockFileService.readFileFromAssets = jest.fn().mockImplementation(() => Promise.resolve('{"result": {"response": {}}}'));
         // act
         searchLocationHandler.handle(request).subscribe(() => {
             expect(mockCachedItemStore.getCached).toHaveBeenCalled();

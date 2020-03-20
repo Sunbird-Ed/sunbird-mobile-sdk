@@ -27,7 +27,7 @@ describe('OfflineContentStateHandler', () => {
             batchId: 'sample-batch-id',
             courseIds: ['course-id-1'],
         };
-        mockKeyValueStore.getValue = jest.fn(() => of('{"result": {"contentList": "sample-list"}}'));
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('{"result": {"contentList": "sample-list"}}'));
         // act
         offlineContentStateHandler.getLocalContentStateResponse(request).subscribe((res) => {
             // assert
@@ -44,7 +44,7 @@ describe('OfflineContentStateHandler', () => {
             batchId: 'sample-batch-id',
             courseIds: ['course-id-1'],
         };
-        mockKeyValueStore.getValue = jest.fn(() => of('{"contentList": "sample-list"}'));
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('{"contentList": "sample-list"}'));
         // act
         offlineContentStateHandler.getLocalContentStateResponse(request).subscribe((res) => {
             // assert
@@ -61,7 +61,7 @@ describe('OfflineContentStateHandler', () => {
             batchId: 'sample-batch-id',
             courseIds: ['course-id-1'],
         };
-        mockKeyValueStore.getValue = jest.fn(() => of(undefined));
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of(undefined));
         // act
         offlineContentStateHandler.getLocalContentStateResponse(request).subscribe((res) => {
             // assert
@@ -79,9 +79,9 @@ describe('OfflineContentStateHandler', () => {
             batchId: 'sample-batch-id',
             status: 2
         };
-        mockKeyValueStore.getValue = jest.fn(() =>
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() =>
             of('{"result": {"courses": [{"courseId": "course_id", "batchId": "sample-batch-id"}]}}'));
-        mockKeyValueStore.setValue = jest.fn(() => of(true));
+        mockKeyValueStore.setValue = jest.fn().mockImplementation(() => of(true));
         // act
         offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request).subscribe(() => {
             // assert
@@ -100,7 +100,7 @@ describe('OfflineContentStateHandler', () => {
             batchId: 'sample-batch-id',
             status: 2
         };
-        mockKeyValueStore.getValue = jest.fn(() =>
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() =>
             of('{"result": {"courses": []}}'));
         // act
         offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request).subscribe(() => {
@@ -119,7 +119,7 @@ describe('OfflineContentStateHandler', () => {
             batchId: 'sample-batch-id',
             status: 2
         };
-        mockKeyValueStore.getValue = jest.fn(() =>
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() =>
             of(undefined));
         // act
         offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request).subscribe(() => {
@@ -138,7 +138,7 @@ describe('OfflineContentStateHandler', () => {
             batchId: 'sample-batch-id',
             status: 2
         };
-        mockKeyValueStore.getValue = jest.fn(() => of('{"result": {"contentList": []}}'));
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('{"result": {"contentList": []}}'));
         // act
         offlineContentStateHandler.manipulateGetContentStateResponseLocally(request).subscribe(() => {
             // assert
@@ -156,7 +156,7 @@ describe('OfflineContentStateHandler', () => {
             batchId: 'sample-batch-id',
             status: 2
         };
-        mockKeyValueStore.getValue = jest.fn(() => of('{"result": {"contentList": [{"contentId": "content_id"}]}}'));
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('{"result": {"contentList": [{"contentId": "content_id"}]}}'));
         // act
         offlineContentStateHandler.manipulateGetContentStateResponseLocally(request).subscribe(() => {
             // assert
@@ -174,7 +174,7 @@ describe('OfflineContentStateHandler', () => {
             batchId: 'sample-batch-id',
             status: 2
         };
-        mockKeyValueStore.getValue = jest.fn(() => of('{"result": {}}'));
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('{"result": {}}'));
         // act
         offlineContentStateHandler.manipulateGetContentStateResponseLocally(request).subscribe(() => {
             // assert
@@ -192,7 +192,7 @@ describe('OfflineContentStateHandler', () => {
             batchId: 'sample-batch-id',
             status: 2
         };
-        mockKeyValueStore.getValue = jest.fn(() => of(undefined));
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of(undefined));
         // act
         offlineContentStateHandler.manipulateGetContentStateResponseLocally(request).subscribe(() => {
             // assert

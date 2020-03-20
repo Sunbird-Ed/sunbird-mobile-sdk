@@ -8,13 +8,13 @@ import { of } from 'rxjs';
 describe('ValidateEcar', () => {
     let validateEcar: ValidateEcar;
     const mockFileService: Partial<FileService> = {
-        readAsText: jest.fn(() => { }),
-        removeRecursively: jest.fn(() => { })
+        readAsText: jest.fn().mockImplementation(() => { }),
+        removeRecursively: jest.fn().mockImplementation(() => { })
     };
     const mockDbService: Partial<DbService> = {};
     const mockAppConfig: Partial<AppConfig> = {};
     const mockGetContentDetailsHandler: Partial<GetContentDetailsHandler> = {
-        fetchFromDBForAll: jest.fn(() => { })
+        fetchFromDBForAll: jest.fn().mockImplementation(() => { })
     };
 
     beforeAll(() => {

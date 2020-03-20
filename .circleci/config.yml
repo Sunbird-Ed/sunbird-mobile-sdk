@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: circleci/node:chakracore-10.13.0
+      - image: circleci/node:12.13.0
     steps:
       - checkout
       - run:
@@ -32,3 +32,13 @@ jobs:
       - run:
           name: Run SonarScanner
           command: sonar-scanner
+      - run:
+          name: Publish to NPM
+          command: |
+            if [ -z $CIRCLE_PR_NUMBER ]; then
+              npm run build:prod && npm pack ./dist
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+              npm publish project-sunbird-sunbird-sdk-*
+            else
+              npm run build:prod && npm pack ./dist
+            fi

@@ -46,24 +46,36 @@ describe('SearchContentHandler', () => {
                 limit: 'Sample_limit',
                 offset: 'Sample_offset',
                 mode: 'soft',
-                sort_by: 'sort_by',
+                sort_by: {
+                    key1: 'asc',
+                    key2: 'desc'
+                },
                 filters: 'filters',
-                facets: 'facets'
+                facets: 'facets',
+                searchType: SearchType.FILTER
             }
         };
         const sortCriteria: ContentSortCriteria[] = [];
-        const criteria: ContentSortCriteria = {
-            sortAttribute: 'key',
+        const criteria1: ContentSortCriteria = {
+            sortAttribute: 'key1',
             sortOrder: SortOrder.ASC
         };
-        sortCriteria.push(criteria);
+        sortCriteria.push(criteria1);
+
+        const criteria2: ContentSortCriteria = {
+            sortAttribute: 'key2',
+            sortOrder: SortOrder.DESC
+        };
+        sortCriteria.push(criteria2);
+        // request.request.sort_by = sortCriteria;
         const filterMap: SearchFilter = {
             contentType: ['SAMPLE_CONTENT_TYPE']
         };
         // act
         searchContentHandler.getSearchCriteria(request);
         // assert
-        expect(sortCriteria[0]).toEqual(criteria);
+        expect(sortCriteria[0]).toEqual(criteria1);
+        expect(sortCriteria[1]).toEqual(criteria2);
     });
 
 
@@ -215,7 +227,7 @@ describe('SearchContentHandler', () => {
             contentId: 'd0'
         };
 
-        mockTelemetryService.interact = jest.fn(() => of([]));
+        mockTelemetryService.interact = jest.fn().mockImplementation(() => of([]));
         // act
         searchContentHandler.buildContentLoadingEvent(subType, contentImport, '', '');
         // assert

@@ -4,7 +4,7 @@ import { ContentEntry } from '../../../content/db/schema';
 import { MoveContentResponse, MoveContentStatus, TransferContentContext } from '../transfer-content-handler';
 import { ExistingContentAction } from '../..';
 
-declare const buildconfigreader;
+declare const sbutility;
 
 describe('ValidateDestinationFolder', () => {
     let validateDestinationFolder: ValidateDestinationFolder;
@@ -26,7 +26,7 @@ describe('ValidateDestinationFolder', () => {
 
     it('should create a directory and write ', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'canWrite').and.callFake((a, b, c) => {
+        spyOn(sbutility, 'canWrite').and.callFake((a, b, c) => {
             setTimeout(() => {
                 b();
                 c();
@@ -57,7 +57,7 @@ describe('ValidateDestinationFolder', () => {
             duplicateContents: dupContents,
             validContentIdsInDestination: ['SAMPLE_CONTENT_1', 'SAMPLE_CONTENT_2'],
         };
-        mockFileService.exists = jest.fn(() => {});
+        mockFileService.exists = jest.fn().mockImplementation(() => {});
         (mockFileService.exists as jest.Mock).mockResolvedValue({
             isFile: true,
             isDirectory: true,
@@ -74,7 +74,7 @@ describe('ValidateDestinationFolder', () => {
 
     it('should create a directory and write ', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'canWrite').and.callFake((a, b, c) => {
+        spyOn(sbutility, 'canWrite').and.callFake((a, b, c) => {
             setTimeout(() => {
                 b();
                 c();
@@ -105,7 +105,7 @@ describe('ValidateDestinationFolder', () => {
             duplicateContents: dupContents,
             validContentIdsInDestination: ['SAMPLE_CONTENT_1', 'SAMPLE_CONTENT_2'],
         };
-        mockFileService.exists = jest.fn(() => {});
+        mockFileService.exists = jest.fn().mockImplementation(() => {});
         (mockFileService.exists as jest.Mock).mockRejectedValue({
             isFile: true,
             isDirectory: true,
@@ -113,7 +113,7 @@ describe('ValidateDestinationFolder', () => {
             fullPath: 'SAMPLE_FULL_PATH',
             nativeURL: ''
         });
-        mockFileService.createDir = jest.fn(() => {});
+        mockFileService.createDir = jest.fn().mockImplementation(() => {});
         (mockFileService.createDir as jest.Mock).mockResolvedValue({
             isFile: true,
             isDirectory: true,

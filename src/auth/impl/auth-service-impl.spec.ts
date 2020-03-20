@@ -48,11 +48,11 @@ describe('AuthServiceImpl', () => {
     });
     const mockSessionProvider = instance(MockSessionProvider);
 
-    const startSession = jest.fn(() => Promise.resolve(undefined));
+    const startSession = jest.fn().mockImplementation(() => Promise.resolve(undefined));
     (AuthUtil as jest.Mock<AuthUtil>).mockImplementation(() => {
       return {
         startSession
-      }
+      } as Partial<AuthUtil> as AuthUtil;
     });
     const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
 
@@ -66,11 +66,11 @@ describe('AuthServiceImpl', () => {
 
   it('should delegate getSession() to AuthUtil.getSessionData()', (done) => {
     // arrange
-    const getSessionData = jest.fn(() => Promise.resolve(undefined));
+    const getSessionData = jest.fn().mockImplementation(() => Promise.resolve(undefined));
     (AuthUtil as jest.Mock<AuthUtil>).mockImplementation(() => {
       return {
         getSessionData
-      }
+      } as Partial<AuthUtil> as AuthUtil;
     });
     const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
 
@@ -84,11 +84,11 @@ describe('AuthServiceImpl', () => {
 
   it('should delegate resignSession() to AuthUtil.endSession()', (done) => {
     // arrange
-    const endSession = jest.fn(() => Promise.resolve(undefined));
+    const endSession = jest.fn().mockImplementation(() => Promise.resolve(undefined));
     (AuthUtil as jest.Mock<AuthUtil>).mockImplementation(() => {
       return {
         endSession
-      }
+      } as Partial<AuthUtil> as AuthUtil;
     });
     const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
 
@@ -102,11 +102,11 @@ describe('AuthServiceImpl', () => {
 
   it('should delegate refreshSession() to AuthUtil.refreshSession()', (done) => {
     // arrange
-    const refreshSession = jest.fn(() => Promise.resolve(undefined));
+    const refreshSession = jest.fn().mockImplementation(() => Promise.resolve(undefined));
     (AuthUtil as jest.Mock<AuthUtil>).mockImplementation(() => {
       return {
         refreshSession
-      }
+      } as Partial<AuthUtil> as AuthUtil;
     });
     const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
 

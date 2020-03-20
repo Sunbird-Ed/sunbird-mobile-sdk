@@ -8,9 +8,8 @@ import { GetContentDetailsHandler } from '../get-content-details-handler';
 import { of } from 'rxjs';
 import { ContentUtil } from '../../util/content-util';
 import { ContentEntry } from '../../db/schema';
-import { doesNotReject } from 'assert';
 
-declare const buildconfigreader;
+declare const sbutility;
 
 describe('ExtractPayloads', () => {
     let extractPayloads: ExtractPayloads;
@@ -20,10 +19,10 @@ describe('ExtractPayloads', () => {
     const mockDbService: Partial<DbService> = {};
     const mockDeviceInfo: Partial<DeviceInfo> = {};
     const mockGetContentDetailsHandler: Partial<GetContentDetailsHandler> = {
-        fetchFromDBForAll: jest.fn(() => { })
+        fetchFromDBForAll: jest.fn().mockImplementation(() => {})
     };
     const mockEventsBusService: Partial<EventsBusService> = {
-        emit: jest.fn(() => { })
+        emit: jest.fn().mockImplementation().mockImplementation(() => () => {})
     };
     const mockSharedPreferences: Partial<SharedPreferences> = {};
 
@@ -50,7 +49,7 @@ describe('ExtractPayloads', () => {
 
     it('should count how many contents are imported', async (done) => {
         // arrange
-        spyOn(buildconfigreader, 'createDirectories').and.callFake((a, b, c) => {
+        spyOn(sbutility, 'createDirectories').and.callFake((a, b, c) => {
             setTimeout(() => {
                 c({
                     identifier: 'IDENTIFIER',
@@ -100,9 +99,9 @@ describe('ExtractPayloads', () => {
             content_state: 2,
             contentMetadata: 'CONTENT_METADATA'
         }]));
-        mockFileService.createDir = jest.fn(() => { });
+        mockFileService.createDir = jest.fn().mockImplementation(() => { });
         (mockFileService.createDir as jest.Mock).mockReturnValue(of(''));
-        mockDeviceInfo.getDeviceID = jest.fn(() => { });
+        mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => { });
         (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of(''));
         spyOn(ContentUtil, 'addOrUpdateViralityMetadata').and.stub();
         // act
@@ -171,10 +170,10 @@ describe('ExtractPayloads', () => {
             content_type: 'CONTENT_TYPE',
             content_state: 2,
         }];
-        mockDbService.beginTransaction = jest.fn(() => of());
-        mockDbService.insert = jest.fn(() => of());
-        mockDbService.update = jest.fn(() => of());
-        mockDbService.endTransaction = jest.fn(() => of());
+        mockDbService.beginTransaction = jest.fn().mockImplementation(() => of());
+        mockDbService.insert = jest.fn().mockImplementation(() => of());
+        mockDbService.update = jest.fn().mockImplementation(() => of());
+        mockDbService.endTransaction = jest.fn().mockImplementation(() => of());
         // act
         await extractPayloads.updateContentDB(insertNewContentModels, updateNewContentModels).then(() => {
             done();
@@ -188,7 +187,7 @@ describe('ExtractPayloads', () => {
         const asset = 'SAMPLE_ASSET';
         const payloadDestinationPath = 'SAMPLE_PAYLOAD_DESTINATION_PATH';
         // const useSubDirectories?: boolean
-        mockFileService.copyFile = jest.fn(() => of());
+        mockFileService.copyFile = jest.fn().mockImplementation(() => of());
         // act
         extractPayloads.copyAssets(tempLocationPath, asset, payloadDestinationPath).then(() => {
             done();
@@ -201,8 +200,8 @@ describe('ExtractPayloads', () => {
     //     const asset = 'SAMPLE_ASSET';
     //     const payloadDestinationPath = 'SAMPLE_PAYLOAD_DESTINATION_PATH';
     //     // const useSubDirectories?: boolean
-    //     mockFileService.copyFile = jest.fn(() => of());
-    //     mockDbService.execute = jest.fn(() => {});
+    //     mockFileService.copyFile = jest.fn().mockImplementation(() => of());
+    //     mockDbService.execute = jest.fn().mockImplementation(() => {});
     //     (mockDbService.execute as jest.Mock).mockResolvedValue({});
     //     // act
     //     extractPayloads.copyAssets(tempLocationPath, asset, payloadDestinationPath).catch(() => {

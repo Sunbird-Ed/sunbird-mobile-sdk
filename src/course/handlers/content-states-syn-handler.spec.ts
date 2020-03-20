@@ -34,9 +34,9 @@ describe('ContentStatesSyncHandler', () => {
 
     it('should updated content state', async(done) => {
         // arrange
-        jest.spyOn(CourseUtil, 'getUpdateContentStateListRequest').mockReturnValue({userId: 's-uid', content: {}});
+        jest.spyOn(CourseUtil, 'getUpdateContentStateListRequest').mockReturnValue({userId: 's-uid', contents: []});
         const mockUpdateContentStateHandler2 = {
-            handle: jest.fn(() => of({'uid': 'suid', 'content-id': 'FAILED'}))
+            handle: jest.fn().mockImplementation(() => of({'uid': 'suid', 'content-id': 'FAILED'}))
         };
 
         contentStatesSyncHandler = new ContentStatesSyncHandler(
@@ -45,7 +45,7 @@ describe('ContentStatesSyncHandler', () => {
             mockSharedPreferences as SharedPreferences,
             mockKeyValueStore as KeyValueStore
         );
-       mockDbService.execute = jest.fn(() => of([{
+       mockDbService.execute = jest.fn().mockImplementation(() => of([{
             key: 'sample-key',
             value: '{"userId": "sampleid"}'
         }]));
@@ -55,10 +55,10 @@ describe('ContentStatesSyncHandler', () => {
             contentId: 'content-id',
             batchId: 'batch-id'
         };
-        JSON.parse = jest.fn().mockImplementationOnce(() => {
+        JSON.parse = jest.fn().mockImplementation().mockImplementationOnce(() => {
             return data;
           });
-          mockKeyValueStore.getValue = jest.fn(() => of('sample-value'));
+          mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('sample-value'));
         // act
         contentStatesSyncHandler.updateContentState().subscribe(() => {
             // assert

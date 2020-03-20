@@ -57,8 +57,8 @@ describe('GetChannelDetailHandler', () => {
             status: 'SOME_STATUS',
             frameworks : [sampleframeworks]
         };
-        mockCacheItemStore.getCached = jest.fn((a, b, c, d, e) => d());
-        mockApiService.fetch = jest.fn(() => of({ body: {result: channel}}));
+        mockCacheItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e) => d());
+        mockApiService.fetch = jest.fn().mockImplementation(() => of({ body: {result: channel}}));
         // act
        // expect(channel.frameworks[0].name).toBe('SOME_NAME');
         getChannelDetailHandler.handle(request).subscribe(() => {
@@ -92,8 +92,8 @@ describe('GetChannelDetailHandler', () => {
             status: 'SOME_STATUS',
             frameworks : [sampleframeworks]
         };
-        mockCacheItemStore.getCached = jest.fn((a, b, c, d, e) => e());
-        mockFileService.readFileFromAssets = jest.fn(() => []);
+        mockCacheItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e) => e());
+        mockFileService.readFileFromAssets = jest.fn().mockImplementation(() => []);
         // act
         getChannelDetailHandler.handle(request).subscribe(() => {
             expect(mockCacheItemStore.getCached).toHaveBeenCalled();

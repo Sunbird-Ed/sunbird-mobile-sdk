@@ -8,11 +8,11 @@ import {of} from 'rxjs';
 describe('writeManifest', () => {
     let writeManifest: WriteManifest;
     const mockFileService: Partial<FileService> = {
-        writeFile: jest.fn(() => {
+        writeFile: jest.fn().mockImplementation(() => {
         })
     };
     const mockDeviceInfo: Partial<DeviceInfo> = {
-        getAvailableInternalMemorySize: jest.fn(() => {
+        getAvailableInternalMemorySize: jest.fn().mockImplementation(() => {
         })
     };
 
