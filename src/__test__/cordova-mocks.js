@@ -81,7 +81,8 @@ global.sbutility = {
     canWrite: () => {
     },
     getBuildConfigValue: () => {
-    }
+    },
+    writeFile: () => {}
 };
 
 global.sbutility = {
