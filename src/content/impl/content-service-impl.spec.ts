@@ -1,5 +1,5 @@
 import { GetContentHeirarchyHandler } from '../handlers/get-content-heirarchy-handler';
-import { ContentService } from '..';
+import { ContentService, ContentDeleteResponse, ContentDeleteStatus } from '..';
 import { ContentServiceImpl } from './content-service-impl';
 import { Container } from 'inversify';
 import { InjectionTokens } from '../../injection-tokens';
@@ -58,6 +58,7 @@ import {ExtractEcar} from '../handlers/import/extract-ecar';
 import {ValidateEcar} from '../handlers/import/validate-ecar';
 import {ExtractPayloads} from '../handlers/import/extract-payloads';
 import {CreateContentImportManifest} from '../handlers/import/create-content-import-manifest';
+import { SharedPreferencesLocalStorage } from '../../util/shared-preferences/impl/shared-preferences-local-storage';
 
 
 
@@ -113,9 +114,9 @@ describe('ContentServiceImpl', () => {
     const mockDownloadService: Partial<DownloadService> = {
         registerOnDownloadCompleteDelegate: jest.fn().mockImplementation(() => { })
     };
-    const mockSharedPreferences: Partial<SharedPreferences> = {
-        getString: jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'))
-    };
+    // const mockSharedPreferences: Partial<SharedPreferences> = {
+    //     getString: jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'))
+    // };
     const mockEventsBusService: Partial<EventsBusService> = {};
     const mockCachedItemStore: Partial<CachedItemStore> = {
         getCached: jest.fn().mockImplementation(() => { })
@@ -123,6 +124,7 @@ describe('ContentServiceImpl', () => {
     const mockAppInfo: Partial<AppInfo> = {
         getAppName: () => 'MOCK_APP_NAME'
     };
+    const mockSharedPreferences = new SharedPreferencesLocalStorage();
 
     beforeAll(() => {
         container.bind<ContentService>(InjectionTokens.CONTENT_SERVICE).to(ContentServiceImpl).inTransientScope();
@@ -173,20 +175,58 @@ describe('ContentServiceImpl', () => {
         expect(contentService).toBeTruthy();
     });
 
-    it('should register as download service observe onInit()', (done) => {
-        mockSharedPreferences.getBoolean = jest.fn().mockImplementation(() => of([]));
-        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'));
-        (mockDownloadService.registerOnDownloadCompleteDelegate as jest.Mock).mockReturnValue(of(''));
-        (mockSharedPreferences.getBoolean as jest.Mock).mockReturnValue(of([]));
-        (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of('[]'));
-        spyOn(contentService, 'deleteContent').and.returnValue('');
-        // act
-        contentService.onInit().subscribe(() => {
-            // assert
-            expect(mockSharedPreferences.getBoolean).toHaveBeenCalled();
-            expect(mockDownloadService.registerOnDownloadCompleteDelegate).toHaveBeenCalled();
-            expect(mockSharedPreferences.getString).toHaveBeenCalled();
-            done();
+    describe('onInit', () => {
+        it('should register as download service observe onInit() for updated and current request null', (done) => {
+            mockSharedPreferences.getString = jest.fn(() => of('[]'));
+            mockSharedPreferences.getBoolean = jest.fn(() => of(true));
+            mockDownloadService.registerOnDownloadCompleteDelegate = jest.fn();
+            const deleteData: ContentDeleteResponse[] = [{
+                identifier: 'id',
+                status: ContentDeleteStatus.DELETED_SUCCESSFULLY
+            }];
+           // jest.spyOn(contentService, 'onDownloadCompletion').mockImplementation(() => of(undefined));
+            jest.spyOn(contentService, 'deleteContent').mockImplementation(() => {
+                return of(deleteData);
+            });
+            mockSharedPreferences.putString = jest.fn(() => of(undefined));
+            // act
+            contentService.onInit().subscribe((val) => {
+                // assert
+                console.log('value :', val);
+                expect(mockSharedPreferences.getBoolean).toHaveBeenCalled();
+                expect(mockDownloadService.registerOnDownloadCompleteDelegate).toHaveBeenCalled();
+                expect(mockSharedPreferences.getString).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it('should register as download service observe onInit() for not updated conetnt', (done) => {
+            mockSharedPreferences.getString = jest.fn(() => of('[]'));
+            mockSharedPreferences.getBoolean = jest.fn(() => of(false));
+            mockDownloadService.registerOnDownloadCompleteDelegate = jest.fn();
+            const deleteData: ContentDeleteResponse[] = [{
+                identifier: 'id',
+                status: ContentDeleteStatus.DELETED_SUCCESSFULLY
+            }];
+           // jest.spyOn(contentService, 'onDownloadCompletion').mockImplementation(() => of(undefined));
+           (UpdateSizeOnDevice as jest.Mock<UpdateSizeOnDevice>).mockImplementation(() => {
+            return {
+                execute: jest.fn(() => Promise.resolve({}))
+            } as any as UpdateSizeOnDevice;
+        });
+            jest.spyOn(contentService, 'deleteContent').mockImplementation(() => {
+                return of(deleteData);
+            });
+            mockSharedPreferences.putString = jest.fn(() => of(undefined));
+            // act
+            contentService.onInit().subscribe((val) => {
+                // assert
+                console.log('value :', val);
+                expect(mockSharedPreferences.getBoolean).toHaveBeenCalled();
+                expect(mockDownloadService.registerOnDownloadCompleteDelegate).toHaveBeenCalled();
+                expect(mockSharedPreferences.getString).toHaveBeenCalled();
+                done();
+            });
         });
     });
 
@@ -673,16 +713,16 @@ describe('ContentServiceImpl', () => {
     describe('importEcar', () => {
         it('should import ecar file', (done) => {
             // arrange
-            const corr = {
+            const corr = [{
                 id: 'SAMPLE_ID',
                 type: 'SAMPLE_TYPE'
-            };
+            }];
             const request: EcarImportRequest = {
                 isChildContent: true,
                 destinationFolder: 'SAMPLE_DETINATION_FOLDER',
                 sourceFilePath: 'SAMPLE_SOURCE_FILE_PATH',
                 correlationData: corr[0],
-            };
+            } as any;
             const response = {
                 body:
                 {
@@ -700,7 +740,7 @@ describe('ContentServiceImpl', () => {
                         archive: [Object]
                     },
                     FILE_SIZE: '34KB',
-                    rootIdetifier: 'sample-root-id'
+                    rootIdentifier: 'sample-root-id'
                 }
             };
             (mockFileService.exists as jest.Mock).mockResolvedValue(response);
@@ -731,6 +771,7 @@ describe('ContentServiceImpl', () => {
             });
             response.body.items[0]['contenttype'] = 'content';
             mockEventsBusService.emit = jest.fn(() => {});
+
             const createContentImportManifestData = jest.fn(() => Promise.resolve(response)) as any;
             (CreateContentImportManifest as jest.Mock<CreateContentImportManifest> as any).mockImplementation(() => {
                 return {
