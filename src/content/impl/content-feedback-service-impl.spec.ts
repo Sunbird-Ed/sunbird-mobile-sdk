@@ -12,10 +12,10 @@ describe('ContentFeedbackServiceImpl', () => {
     const container = new Container();
     const mockDbService: Partial<DbService> = {};
     const mockProfileService: Partial<ProfileService> = {
-        getActiveProfileSession: jest.fn(() => {})
+        getActiveProfileSession: jest.fn().mockImplementation(() => {})
     };
     const mockTelemetryService: Partial<TelemetryService> = {
-        feedback: jest.fn(() => {})
+        feedback: jest.fn().mockImplementation(() => {})
     };
 
     beforeAll(() => {
@@ -41,7 +41,7 @@ describe('ContentFeedbackServiceImpl', () => {
             uid: 'SAMPLE_UID',
             contentId: 'SAMPLE_CONTENT_ID'
         };
-        mockDbService.execute = jest.fn(() => of([]));
+        mockDbService.execute = jest.fn().mockImplementation(() => of([]));
         // act
          contentFeedbackService.getFeedback(request).subscribe(() => {
              // assert
@@ -61,8 +61,8 @@ describe('ContentFeedbackServiceImpl', () => {
         };
         (mockProfileService.getActiveProfileSession as jest.Mock).mockReturnValue(of([]));
         (mockTelemetryService.feedback as jest.Mock).mockReturnValue(of([]));
-        mockDbService.read = jest.fn(() => of([]));
-        mockDbService.insert = jest.fn(() => of([]));
+        mockDbService.read = jest.fn().mockImplementation(() => of([]));
+        mockDbService.insert = jest.fn().mockImplementation(() => of([]));
         // act
         contentFeedbackService.sendFeedback(request).subscribe(() => {
             // assert

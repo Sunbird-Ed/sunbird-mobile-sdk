@@ -43,11 +43,11 @@ describe('DeviceRegisterServiceImpl', () => {
 
     it('should decoupled device register Api for telemetry sync by invoked registerDevice()', (done) => {
         // arrange
-        const handleResponse = jest.fn(() => of(''));
+        const handleResponse = jest.fn().mockImplementation(() => of(''));
         (DeviceRegisterHandler as any as jest.Mock<DeviceRegisterHandler>).mockImplementation(() => {
             return {
                 handle: handleResponse,
-            };
+            } as Partial<DeviceRegisterHandler> as DeviceRegisterHandler;
         });
         deviceRegisterServiceImpl = container.get(InjectionTokens.DEVICE_REGISTER_SERVICE);
         // act
@@ -59,11 +59,11 @@ describe('DeviceRegisterServiceImpl', () => {
 
     it('should get device profile by invoked getDeviceProfile()', (done) => {
         // arrange
-        const profileHandlerData = jest.fn(() => of(''));
+        const profileHandlerData = jest.fn().mockImplementation(() => of(''));
         (GetDeviceProfileHandler as any as jest.Mock<GetDeviceProfileHandler>).mockImplementation(() => {
             return {
                 handle: profileHandlerData,
-            };
+            } as Partial<GetDeviceProfileHandler> as GetDeviceProfileHandler;
         });
         deviceRegisterServiceImpl = container.get(InjectionTokens.DEVICE_REGISTER_SERVICE);
         // act

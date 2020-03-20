@@ -27,7 +27,7 @@ describe('VerifyOtpHandler', () => {
 
     it('should get the data from VerifyOtpHandler', (done) => {
         // arrange
-        mockApiService.fetch = jest.fn(() => {
+        mockApiService.fetch = jest.fn().mockImplementation(() => {
         });
         (mockApiService.fetch as jest.Mock).mockReturnValue(of({
                 body: {

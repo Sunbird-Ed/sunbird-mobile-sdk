@@ -1,15 +1,12 @@
 import {DbService, InsertQuery} from '../../db';
 import {
     Context,
-    ExportTelemetryContext,
     ImportTelemetryContext,
     SunbirdTelemetry,
     TelemetryAuditRequest,
     TelemetryDecorator,
     TelemetryEndRequest,
     TelemetryErrorRequest,
-    TelemetryExportRequest,
-    TelemetryExportResponse,
     TelemetryFeedbackRequest,
     TelemetryImportRequest,
     TelemetryImpressionRequest,
@@ -33,11 +30,6 @@ import {TelemetryConfig} from '../config/telemetry-config';
 import {DeviceInfo} from '../../util/device';
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {FileService} from '../../util/file/def/file-service';
-import {CreateTelemetryExportFile} from '../handler/export/create-telemetry-export-file';
-import {CopyDatabase} from '../handler/export/copy-database';
-import {CreateMetaData} from '../handler/export/create-meta-data';
-import {CleanupExportedFile} from '../handler/export/cleanup-exported-file';
-import {GenerateShareTelemetry} from '../handler/export/generate-share-telemetry';
 import {ValidateTelemetryMetadata} from '../handler/import/validate-telemetry-metadata';
 import {TelemetryEventType} from '../def/telemetry-event';
 import {TransportProcessedTelemetry} from '../handler/import/transport-processed-telemetry';
@@ -183,9 +175,9 @@ export class TelemetryServiceImpl implements TelemetryService {
         return this.decorateAndPersist(share);
     }
 
-    feedback({rating, comments, env, objId, objType, objVer}: TelemetryFeedbackRequest): Observable<boolean> {
+    feedback({rating, comments, env, objId, objType, objVer, commentid, commenttxt}: TelemetryFeedbackRequest): Observable<boolean> {
         const feedback = new SunbirdTelemetry.Feedback(rating, comments, env, objId,
-            objType, objVer);
+            objType, objVer, commentid, commenttxt);
         return this.decorateAndPersist(feedback);
     }
 
@@ -224,38 +216,6 @@ export class TelemetryServiceImpl implements TelemetryService {
                 return false;
             })
         );
-    }
-
-    exportTelemetry(telemetryExportRequest: TelemetryExportRequest): Observable<TelemetryExportResponse> {
-        const exportTelemetryContext: ExportTelemetryContext = {destinationFolder: telemetryExportRequest.destinationFolder};
-        const telemetrySyncHandler: TelemetrySyncHandler = new TelemetrySyncHandler(
-            this.dbService,
-            this.sdkConfig,
-            this.deviceInfo,
-            this.sharedPreferences,
-            this.appInfoService,
-            this.deviceRegisterService
-        );
-        return from(
-            telemetrySyncHandler.processEventsBatch().pipe(
-                expand((processedEventsCount: number) =>
-                    processedEventsCount ? telemetrySyncHandler.processEventsBatch() : EMPTY
-                )
-            ).toPromise().then(() => {
-                return new CreateTelemetryExportFile(this.fileService, this.deviceInfo).execute(exportTelemetryContext);
-            }).then((exportResponse: Response) => {
-                const res: TelemetryExportResponse = {exportedFilePath: 'yep'};
-                return new CopyDatabase(this.dbService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new CreateMetaData(this.dbService, this.fileService, this.deviceInfo).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new CleanupExportedFile(this.dbService, this.fileService).execute(exportResponse.body);
-            }).then((exportResponse: Response) => {
-                return new GenerateShareTelemetry(this.dbService, this).execute(exportResponse.body);
-            }).then((exportResponse: Response<ExportTelemetryContext>) => {
-                const res: TelemetryExportResponse = {exportedFilePath: exportResponse.body.destinationDBFilePath!};
-                return res;
-            }));
     }
 
     getTelemetryStat(): Observable<TelemetryStat> {

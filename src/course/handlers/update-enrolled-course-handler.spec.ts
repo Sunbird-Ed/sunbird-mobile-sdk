@@ -37,10 +37,10 @@ describe('UpdateEnrolledCoursesHandler', () => {
         const responseData: ContentStateResponse = {
             contentList: contentState
         };
-        mockOfflineContentStateHandler.getLocalContentStateResponse = jest.fn(() => of(responseData));
-        mockKeyValueStore.getValue = jest.fn(() =>
+        mockOfflineContentStateHandler.getLocalContentStateResponse = jest.fn().mockImplementation(() => of(responseData));
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() =>
             of('{"result": {}, "courses": [{"courseId": "course-id-1", "batchId": "sample-batch-id"}]}'));
-        mockKeyValueStore.setValue = jest.fn(() => of(true));
+        mockKeyValueStore.setValue = jest.fn().mockImplementation(() => of(true));
         // act
         updateEnrolledCoursesHandler.updateEnrollCourses(request).subscribe(() => {
             // assert
@@ -64,10 +64,10 @@ describe('UpdateEnrolledCoursesHandler', () => {
         const responseData: ContentStateResponse = {
             contentList: contentState
         };
-        mockOfflineContentStateHandler.getLocalContentStateResponse = jest.fn(() => of(responseData));
-        mockKeyValueStore.getValue = jest.fn(() =>
+        mockOfflineContentStateHandler.getLocalContentStateResponse = jest.fn().mockImplementation(() => of(responseData));
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() =>
             of('{"result": {"courses": [{"courseId": "course-id-1", "batchId": "sample-batch-id"}]}}'));
-        mockKeyValueStore.setValue = jest.fn(() => of(true));
+        mockKeyValueStore.setValue = jest.fn().mockImplementation(() => of(true));
         // act
         updateEnrolledCoursesHandler.updateEnrollCourses(request).subscribe(() => {
             // assert
@@ -91,8 +91,8 @@ describe('UpdateEnrolledCoursesHandler', () => {
         const responseData: ContentStateResponse = {
             contentList: contentState
         };
-        mockOfflineContentStateHandler.getLocalContentStateResponse = jest.fn(() => of(responseData));
-        mockKeyValueStore.getValue = jest.fn(() =>
+        mockOfflineContentStateHandler.getLocalContentStateResponse = jest.fn().mockImplementation(() => of(responseData));
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() =>
             of('{"result": {"courses": []}}'));
         // act
         updateEnrolledCoursesHandler.updateEnrollCourses(request).subscribe(() => {

@@ -54,11 +54,11 @@ describe('NotificationServiceImpl', () => {
             isRead: 879000,
             actionData: sampleactionData
         };
-        mockSharedPreferences.putString = jest.fn(() => of([]));
+        mockSharedPreferences.putString = jest.fn().mockImplementation(() => of([]));
        // (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(''));
-        mockDbService.read = jest.fn(() => of([]));
-        mockDbService.update = jest.fn(() => of([]));
-        mockDbService.insert = jest.fn(() => of([]));
+        mockDbService.read = jest.fn().mockImplementation(() => of([]));
+        mockDbService.update = jest.fn().mockImplementation(() => of([]));
+        mockDbService.insert = jest.fn().mockImplementation(() => of([]));
        // (mockDbService.read as jest.Mock).mockResolvedValue(of([]));
 
         // act
@@ -73,7 +73,7 @@ describe('NotificationServiceImpl', () => {
 
     it('should call deleteNotification method on NotificationServiceImpl', () => {
         // arrange
-        mockDbService.execute = jest.fn(() => of([]));
+        mockDbService.execute = jest.fn().mockImplementation(() => of([]));
 
         // act
         notificationServiceImpl.deleteNotification().subscribe(() => {
@@ -85,7 +85,7 @@ describe('NotificationServiceImpl', () => {
         const notificationFilterCriteria:  NotificationFilterCriteria = {
             notificationStatus: NotificationStatus.ALL,
         };
-        mockDbService.read = jest.fn(() => of([]));
+        mockDbService.read = jest.fn().mockImplementation(() => of([]));
 
         // act
         notificationServiceImpl.getAllNotifications(notificationFilterCriteria).subscribe(() => {
@@ -97,7 +97,7 @@ describe('NotificationServiceImpl', () => {
         const notificationFilterCriteria:  NotificationFilterCriteria = {
             notificationStatus: NotificationStatus.UNREAD,
         };
-        mockDbService.read = jest.fn(() => of([]));
+        mockDbService.read = jest.fn().mockImplementation(() => of([]));
 
         // act
         notificationServiceImpl.getAllNotifications(notificationFilterCriteria).subscribe(() => {
@@ -109,7 +109,7 @@ describe('NotificationServiceImpl', () => {
         const notificationFilterCriteria:  NotificationFilterCriteria = {
             notificationStatus: NotificationStatus.READ,
         };
-        mockDbService.read = jest.fn(() => of([]));
+        mockDbService.read = jest.fn().mockImplementation(() => of([]));
 
         // act
         notificationServiceImpl.getAllNotifications(notificationFilterCriteria).subscribe(() => {
@@ -137,8 +137,8 @@ describe('NotificationServiceImpl', () => {
             isRead: 879000,
             actionData: sampleactionData
         };
-        mockDbService.read = jest.fn(() => of([]));
-        mockDbService.update = jest.fn(() => of([]));
+        mockDbService.read = jest.fn().mockImplementation(() => of([]));
+        mockDbService.update = jest.fn().mockImplementation(() => of([]));
 
         // act
         notificationServiceImpl.updateNotification(notification).subscribe(() => {

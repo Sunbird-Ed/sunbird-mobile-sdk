@@ -98,7 +98,7 @@ describe('WebviewRunnerImpl', () => {
         it('should close cordova webview instance if invoked after launchWebview()', (done) => {
             // arrange
             const eventTarget = new EventTarget();
-            const close = jest.fn();
+            const close = jest.fn().mockImplementation();
             eventTarget['close'] = close;
             spyOn(window['cordova']['InAppBrowser'], 'open').and.returnValue(eventTarget);
 
@@ -320,7 +320,7 @@ describe('WebviewRunnerImpl', () => {
         it('should redirect cordova webview instance if invoked after launchWebview()', (done) => {
             // arrange
             const eventTarget = new EventTarget();
-            const executeScript = jest.fn();
+            const executeScript = jest.fn().mockImplementation();
             eventTarget['executeScript'] = executeScript;
             spyOn(window['cordova']['InAppBrowser'], 'open').and.returnValue(eventTarget);
 

@@ -33,7 +33,7 @@ describe('DownloadServiceImpl', () => {
     const downloadRequestSet = new Set();
    
 
-    mockSharedPreferencesSetCollection.asSet = jest.fn(() => of(downloadRequestSet.add({
+    mockSharedPreferencesSetCollection.asSet = jest.fn().mockImplementation(() => of(downloadRequestSet.add({
         identifier: 'SAMPLE_ID',
         downloadUrl: 'http://sample-url/',
         mimeType: 'SAMPLE_MIME_TYPE',
@@ -62,7 +62,7 @@ describe('DownloadServiceImpl', () => {
 
     it('should check current download request by invoked onInit()', (done) => {
         // arrange
-        mockSharedPreferences.getString = jest.fn(() => of(undefined));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(undefined));
         // act
         downloadServiceImpl.onInit().subscribe(() => {
             // assert
@@ -80,7 +80,7 @@ describe('DownloadServiceImpl', () => {
             destinationFolder: 'DESTINATION_FOLDER',
             filename: 'ASSESSMENT'
         }];
-        mockSharedPreferences.putString = jest.fn(() => of(undefined));
+        mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
         // act
         downloadServiceImpl.download(request).subscribe(() => {
             // act
@@ -111,7 +111,7 @@ describe('DownloadServiceImpl', () => {
             filename: 'ASSESSMENT'
         };
         const generateTelemetry = true;
-        mockSharedPreferences.getString = jest.fn(() => of(undefined));
+        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(undefined));
         // act
         downloadServiceImpl.cancel(request, generateTelemetry).subscribe((res) => {
             // assert

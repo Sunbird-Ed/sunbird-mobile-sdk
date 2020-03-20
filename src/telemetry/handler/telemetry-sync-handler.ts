@@ -1,4 +1,12 @@
-import {ApiConfig, ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
+import {
+    ApiConfig,
+    ApiRequestHandler,
+    ApiService,
+    HttpClientError,
+    HttpRequestType,
+    Request,
+    ResponseCode
+} from '../../api';
 import {InteractSubType, InteractType, TelemetryAutoSyncModes, TelemetrySyncRequest, TelemetrySyncStat} from '..';
 import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
 import {StringToGzippedString} from '../impl/string-to-gzipped-string';
@@ -390,7 +398,19 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
                 syncedEventCount: processedEventsBatchEntry[TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS],
                 syncTime: Date.now(),
                 syncedFileSize: new TextEncoder().encode(processedEventsBatchEntry[TelemetryProcessedEntry.COLUMN_NAME_DATA]).length
-            }))
+            })),
+            catchError((e) => {
+                if (e instanceof HttpClientError && e.response.responseCode === ResponseCode.HTTP_BAD_REQUEST) {
+                    return of({
+                        syncedEventCount: 0,
+                        syncTime: Date.now(),
+                        syncedFileSize: 0,
+                        error: e
+                    });
+                }
+
+                throw e;
+            })
         );
     }
 

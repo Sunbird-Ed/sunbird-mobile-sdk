@@ -7,7 +7,7 @@ import {ContentStorageHandler} from '../../../content/handlers/content-storage-h
 import { CancellationError } from '../../errors/cancellation-error';
 import { LowMemoryError } from '../../errors/low-memory-error';
 
-declare const buildconfigreader;
+declare const sbutility;
 jest.mock('../../../content/handlers/content-storage-handler');
 
 describe('DeviceMemoryCheck', () => {
@@ -31,7 +31,7 @@ describe('DeviceMemoryCheck', () => {
 
     it('should check memory before file transfer operation', (done) => {
         // arrange
-        spyOn(buildconfigreader, 'getFreeUsableSpace').and.callFake((a, b, c) => {
+        spyOn(sbutility, 'getFreeUsableSpace').and.callFake((a, b, c) => {
             setTimeout(() => {
                 b();
                 c();

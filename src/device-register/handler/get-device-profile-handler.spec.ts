@@ -27,9 +27,9 @@ describe('GetDeviceProfileHandler', () => {
 
     it('should handle to get device profile details', (done) => {
         // arrange
-        mockDeviceInfo.getDeviceID = jest.fn(() => { });
+        mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => { });
         (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of('SAMPLE_DEVICE_ID'));
-        mockApiService.fetch = jest.fn(() => { });
+        mockApiService.fetch = jest.fn().mockImplementation(() => { });
         (mockApiService.fetch as jest.Mock).mockReturnValue(of({
             body: {
                 userDeclaredLocation: {

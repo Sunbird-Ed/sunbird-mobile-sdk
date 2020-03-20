@@ -1,21 +1,13 @@
-import {ApiRequestHandler} from '../../api';
 import {
-    CategoryAssociation,
-    CategoryTerm,
     Channel,
     Framework,
-    FrameworkCategory,
     FrameworkCategoryCode,
     FrameworkService,
     FrameworkUtilService,
     GetFrameworkCategoryTermsRequest
 } from '..';
 import {of} from 'rxjs';
-import * as Collections from 'typescript-collections';
-import {FrameworkMapper} from '../util/framework-mapper';
 import {SharedPreferences} from '../../util/shared-preferences';
-import {FrameworkKeys} from '../../preference-keys';
-import { FrameworkUtilServiceImpl } from '../util/framework-util-service-impl';
 import { GetFrameworkCategoryTermsHandler } from './get-framework-category-terms-handler';
 import { instance, mock } from 'ts-mockito';
 
@@ -69,8 +61,8 @@ describe('GetFrameworkCategoryTermsHandler', () => {
                 }]
             }]
         };
-         mockframeworkService.getFrameworkDetails = jest.fn(() => of(response));
-         mockSharedPreferences.putString = jest.fn(() => of(undefined));
+         mockframeworkService.getFrameworkDetails = jest.fn().mockImplementation(() => of(response));
+         mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
         // act
           getFrameworkCategoryTermsHandler.handle(request).subscribe( () => {
                // assert
@@ -153,8 +145,8 @@ describe('GetFrameworkCategoryTermsHandler', () => {
                 }]
             }]
         };
-        mockframeworkUtilService.getActiveChannel = jest.fn(() => of(response));
-        mockframeworkService.getFrameworkDetails = jest.fn(() => of(frameworkResponse));
+        mockframeworkUtilService.getActiveChannel = jest.fn().mockImplementation(() => of(response));
+        mockframeworkService.getFrameworkDetails = jest.fn().mockImplementation(() => of(frameworkResponse));
         // act
           getFrameworkCategoryTermsHandler.handle(request).subscribe( () => {
                // assert
@@ -243,9 +235,9 @@ describe('GetFrameworkCategoryTermsHandler', () => {
                 }]
             }]
         };
-        mockframeworkUtilService.getActiveChannel = jest.fn(() => of(response));
-        mockframeworkService.getFrameworkDetails = jest.fn(() => of(frameworkResponse));
-        mockSharedPreferences.putString = jest.fn(() => of(undefined));
+        mockframeworkUtilService.getActiveChannel = jest.fn().mockImplementation(() => of(response));
+        mockframeworkService.getFrameworkDetails = jest.fn().mockImplementation(() => of(frameworkResponse));
+        mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
         // act
           getFrameworkCategoryTermsHandler.handle(request).subscribe( () => {
                // assert

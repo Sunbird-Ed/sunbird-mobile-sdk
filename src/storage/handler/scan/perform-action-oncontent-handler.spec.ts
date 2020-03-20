@@ -27,8 +27,8 @@ describe('PerformActoinOnContentHandler', () => {
             newlyAddedIdentifiers: ['SAMPLE_IDENTIFIER_1', 'SAMPLE_IDENTIFIER_2'],
             deletedIdentifiers: ['delete_content_1']
         };
-        mockStorageHandler.deleteContentsFromDb = jest.fn(() => {});
-        mockStorageHandler.addDestinationContentInDb = jest.fn(() => {});
+        mockStorageHandler.deleteContentsFromDb = jest.fn().mockImplementation(() => {});
+        mockStorageHandler.addDestinationContentInDb = jest.fn().mockImplementation(() => {});
         // act
         performActoinOnContentHandler.exexute(request).subscribe(() => {
             // assert

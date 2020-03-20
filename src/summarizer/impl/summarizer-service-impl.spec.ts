@@ -24,10 +24,10 @@ describe('SummarizerServiceImpl', () => {
     const container = new Container();
     const dbServiceMock: Partial<DbService> = {};
     const contentServiceMock: Partial<ContentService> = {
-        getContents: jest.fn(() => { })
+        getContents: jest.fn().mockImplementation(() => { })
     };
     const eventsBusServiceMock: Partial<EventsBusService> = {
-        registerObserver: jest.fn(() => {
+        registerObserver: jest.fn().mockImplementation(() => {
         }),
     };
     const courseServiceMock: Partial<CourseService> = {};
@@ -35,7 +35,7 @@ describe('SummarizerServiceImpl', () => {
     };
     const profileServiceMock: Partial<ProfileService> = {};
     const mockSummarizerQueries: Partial<SummarizerQueries> = {
-        getQuetsionDetailsQuery: jest.fn(() => { })
+        getQuetsionDetailsQuery: jest.fn().mockImplementation(() => { })
     };
     const mockTelemetryService: Partial<TelemetryService> = {
         audit(request: TelemetryAuditRequest): Observable<boolean> {
@@ -88,7 +88,7 @@ describe('SummarizerServiceImpl', () => {
             contentId: 'SAMPLE_CONTENT_ID',
             hierarchyData: 'SAMPLE_HIERARCHY_DATA'
         };
-        dbServiceMock.execute = jest.fn(() => of([]));
+        dbServiceMock.execute = jest.fn().mockImplementation(() => of([]));
 
         // act
         summarizerService.getDetailsPerQuestion(request).subscribe(() => {
@@ -107,7 +107,7 @@ describe('SummarizerServiceImpl', () => {
             contentId: 'SAMPLE_CONTENT_ID',
             hierarchyData: 'SAMPLE_HIERARCHY_DATA'
         };
-        dbServiceMock.execute = jest.fn(() => of([]));
+        dbServiceMock.execute = jest.fn().mockImplementation(() => of([]));
         // act
         summarizerService.getLearnerAssessmentDetails(request).subscribe(() => {
             // assert
@@ -125,7 +125,7 @@ describe('SummarizerServiceImpl', () => {
             contentId: 'SAMPLE_CONTENT_ID',
             hierarchyData: 'SAMPLE_HIERARCHY_DATA'
         };
-        dbServiceMock.execute = jest.fn(() => of([]));
+        dbServiceMock.execute = jest.fn().mockImplementation(() => of([]));
         // act
         summarizerService.getReportByQuestions(request).subscribe(() => {
             // assert
@@ -143,7 +143,7 @@ describe('SummarizerServiceImpl', () => {
             contentId: 'SAMPLE_CONTENT_ID',
             hierarchyData: 'SAMPLE_HIERARCHY_DATA'
         };
-        dbServiceMock.execute = jest.fn(() => of([]));
+        dbServiceMock.execute = jest.fn().mockImplementation(() => of([]));
         // act
         summarizerService.getReportsByUser(request).subscribe(() => {
             // assert
@@ -161,7 +161,7 @@ describe('SummarizerServiceImpl', () => {
             contentId: 'SAMPLE_CONTENT_ID',
             hierarchyData: 'SAMPLE_HIERARCHY_DATA'
         };
-        dbServiceMock.execute = jest.fn(() => of([]));
+        dbServiceMock.execute = jest.fn().mockImplementation(() => of([]));
         spyOn(summarizerService, 'getContentCache').and.returnValue(of(('SAMPLE_UID')));
         // act
         summarizerService.getSummary(request).subscribe(() => {
@@ -174,7 +174,7 @@ describe('SummarizerServiceImpl', () => {
     it('get content for assessment', () => {
         // arrange
         const uids = ['SAMPLE_UID_1', 'SAMPLE_UID_2'];
-        contentServiceMock.getContents = jest.fn(() => of([]));
+        contentServiceMock.getContents = jest.fn().mockImplementation(() => of([]));
         // act
         summarizerService.getContentCache(uids).subscribe(() => {
             // assert
@@ -186,8 +186,8 @@ describe('SummarizerServiceImpl', () => {
         // arrange
         const uids = 'SAMPLE_UID';
         const contentId = 'SAMPLE_CONTENT_ID';
-        dbServiceMock.read = jest.fn(() => of([]));
-        dbServiceMock.delete = jest.fn(() => of(undefined));
+        dbServiceMock.read = jest.fn().mockImplementation(() => of([]));
+        dbServiceMock.delete = jest.fn().mockImplementation(() => of(undefined));
         // act
         summarizerService.deletePreviousAssessmentDetails(uids, contentId).subscribe(() => {
             // assert

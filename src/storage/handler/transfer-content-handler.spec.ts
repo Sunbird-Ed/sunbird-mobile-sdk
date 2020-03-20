@@ -60,7 +60,7 @@ describe('TransferContentHandler', () => {
         execute: (context) => {
           return of(context);
         }
-      };
+      } as any;
     };
     (ValidateDestinationFolder as jest.Mock<ValidateDestinationFolder>).mockImplementation(mockStepFactory);
     (DeleteDestinationFolder as jest.Mock<DeleteDestinationFolder>).mockImplementation(mockStepFactory);

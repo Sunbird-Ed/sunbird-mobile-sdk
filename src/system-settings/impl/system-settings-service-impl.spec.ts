@@ -55,7 +55,7 @@ describe('SystemSettingsServiceImpl', () => {
                         }
                     }
                 })
-            })
+            } as any)
         );
 
         // act

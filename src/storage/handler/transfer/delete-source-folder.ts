@@ -77,7 +77,7 @@ export class DeleteSourceFolder {
             return;
         }
         return new Promise<undefined>((resolve, reject) => {
-            buildconfigreader.rm(deletedirectory, '', () => {
+            sbutility.rm(deletedirectory, '', () => {
                 resolve();
             }, (e) => {
                 reject(e);
@@ -91,7 +91,7 @@ export class DeleteSourceFolder {
         }
 
         return new Promise<undefined>((resolve, reject) => {
-            buildconfigreader.copyDirectory(sourceDirectory, destinationDirectory, () => {
+            sbutility.copyDirectory(sourceDirectory, destinationDirectory, () => {
                 resolve();
             }, (e) => {
                 reject(e);
@@ -104,7 +104,7 @@ export class DeleteSourceFolder {
             return;
         }
         return new Promise<undefined>((resolve, reject) => {
-            buildconfigreader.renameDirectory(sourceDirectory, toDirectoryName, () => {
+            sbutility.renameDirectory(sourceDirectory, toDirectoryName, () => {
                 resolve();
             }, (e) => {
                 reject(e);

@@ -35,7 +35,7 @@ describe('ErrorStackSyncHandler', () => {
     it('should be handled process batches', (done) => {
         // arrange
         const errorSyncBandwidth = 256;
-        mockDbService.execute = jest.fn(() => of({}));
+        mockDbService.execute = jest.fn().mockImplementation(() => of({}));
         // act
         errorStackSyncHandler.handle(errorSyncBandwidth).subscribe(() => {
             // assert
@@ -47,7 +47,7 @@ describe('ErrorStackSyncHandler', () => {
     it('should be handled process batches if Off_line', (done) => {
         // arrange
         const errorSyncBandwidth = 256;
-        mockDbService.execute = jest.fn(() => of([{
+        mockDbService.execute = jest.fn().mockImplementation(() => of([{
             _id: 'sample-id',
             app_version: '2.7.0',
             page_id: 'course',
@@ -74,7 +74,7 @@ describe('ErrorStackSyncHandler', () => {
             time_stamp: 5,
             error_log: 'error'
         }];
-        mockDbService.execute = jest.fn(() => of([{
+        mockDbService.execute = jest.fn().mockImplementation(() => of([{
             _id: 'sample-id',
             app_version: '2.7.0',
             page_id: 'course',
@@ -87,7 +87,7 @@ describe('ErrorStackSyncHandler', () => {
             logs: data.map(e => ErrorStackMapper.mapErrorSatckDBEntryToErrorStack(e))
         };
         mockNetworkInfoService.networkStatus$ = of(NetworkStatus.ONLINE);
-        mockErrorStackSyncRequestDecorator.decorate = jest.fn(() => of(request));
+        mockErrorStackSyncRequestDecorator.decorate = jest.fn().mockImplementation(() => of(request));
         // act
         errorStackSyncHandler.handle(errorSyncBandwidth).subscribe(() => {
             // assert

@@ -26,8 +26,8 @@ describe('TransportUser', () => {
             sourceDBFilePath: 'src/db/path',
             metadata: { 'index': 1 }
         };
-        mockDbService.open = jest.fn(() => Promise.resolve(undefined));
-        mockDbService.read = jest.fn(() => of([{
+        mockDbService.open = jest.fn().mockImplementation(() => Promise.resolve(undefined));
+        mockDbService.read = jest.fn().mockImplementation(() => of([{
             _id: 'sample_id',
             meta_data: 'sample-meta_data',
             key: 'sample-key'
@@ -48,13 +48,13 @@ describe('TransportUser', () => {
         const request: ImportTelemetryContext = {
             sourceDBFilePath: 'src/db/path',
         };
-        mockDbService.open = jest.fn(() => Promise.resolve(
+        mockDbService.open = jest.fn().mockImplementation(() => Promise.resolve(
             [{
                 _id: 'sample_id',
                 meta_data: 'sample-meta_data',
             }]
         ));
-        mockDbService.read = jest.fn(() => of([]));
+        mockDbService.read = jest.fn().mockImplementation(() => of([]));
         // act
         validateProfileMetadata.execute(request).catch((e) => {
             // assert
@@ -71,13 +71,13 @@ describe('TransportUser', () => {
             sourceDBFilePath: 'src/db/path',
             metadata: { 'key': 's1-key', 'types': 'sample-type' }
         };
-        mockDbService.open = jest.fn(() => Promise.resolve(
+        mockDbService.open = jest.fn().mockImplementation(() => Promise.resolve(
             [{
                 _id: 'sample_id',
                 meta_data: 'sample-meta_data',
             }]
         ));
-        mockDbService.read = jest.fn(() => of([{
+        mockDbService.read = jest.fn().mockImplementation(() => of([{
             _id: 'sample-id',
             meta_data: 'sample-meta-data',
             key: 'sample-key'

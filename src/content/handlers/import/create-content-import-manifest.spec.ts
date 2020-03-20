@@ -9,7 +9,7 @@ describe('CreateContentImportManifest', () => {
     const mockDbService: Partial<DbService> = {};
     const mockDeviceInfo: Partial<DeviceInfo> = {};
     const mockFileService: Partial<FileService> = {
-        readAsText: jest.fn(() => { })
+        readAsText: jest.fn().mockImplementation(() => { })
     };
 
     beforeAll(() => {

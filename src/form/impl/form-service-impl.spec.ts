@@ -60,7 +60,7 @@ describe('FormServiceImpl', () => {
                         result: 'sample_response'
                     }
                 })
-            })
+            } as Partial<GetFormHandler> as GetFormHandler)
         );
         // act
         formService.getForm(request).subscribe(() => {

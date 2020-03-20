@@ -45,7 +45,7 @@ describe('CreateContentExportManifest', () => {
             metadata: { 'SAMPLE_KEY': 'SAMPLE_META_DATA' },
 
         };
-        mockImportNExportHandler.populateItems = jest.fn(() => of([]));
+        mockImportNExportHandler.populateItems = jest.fn().mockImplementation(() => of([]));
         // act
         createContentExportManifest.execute(request).then(() => {
         });

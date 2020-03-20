@@ -29,7 +29,7 @@ describe('GetModifiedContentHandler', () => {
         const request: ScanContentContext = {
             currentStoragePath: 'SAMPLE_CURRENT_STORAGE_PATH'
         };
-        mockDbService.execute = jest.fn(() => { });
+        mockDbService.execute = jest.fn().mockImplementation(() => { });
         (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
@@ -40,7 +40,7 @@ describe('GetModifiedContentHandler', () => {
             content_state: 2,
             visibility: 'Default'
         }]));
-        mockFileService.listDir = jest.fn(() => { });
+        mockFileService.listDir = jest.fn().mockImplementation(() => { });
         (mockFileService.listDir as jest.Mock).mockResolvedValue(([
             {
                 isFile: true,
@@ -68,7 +68,7 @@ describe('GetModifiedContentHandler', () => {
         const request: ScanContentContext = {
             currentStoragePath: 'SAMPLE_CURRENT_STORAGE_PATH'
         };
-        mockDbService.execute = jest.fn(() => { });
+        mockDbService.execute = jest.fn().mockImplementation(() => { });
         (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
@@ -79,7 +79,7 @@ describe('GetModifiedContentHandler', () => {
             content_state: 2,
             visibility: 'Default'
         }]));
-        mockFileService.listDir = jest.fn(() => { });
+        mockFileService.listDir = jest.fn().mockImplementation(() => { });
         (mockFileService.listDir as jest.Mock).mockRejectedValue(([
             {
                 isFile: true,
@@ -107,7 +107,7 @@ describe('GetModifiedContentHandler', () => {
         const request: ScanContentContext = {
             currentStoragePath: ''
         };
-        mockDbService.execute = jest.fn(() => { });
+        mockDbService.execute = jest.fn().mockImplementation(() => { });
         (mockDbService.execute as jest.Mock).mockReturnValue(of([{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
@@ -118,7 +118,7 @@ describe('GetModifiedContentHandler', () => {
             content_state: 2,
             visibility: 'Default'
         }]));
-        mockFileService.listDir = jest.fn(() => { });
+        mockFileService.listDir = jest.fn().mockImplementation(() => { });
         (mockFileService.listDir as jest.Mock).mockRejectedValue(([
             {
                 isFile: true,

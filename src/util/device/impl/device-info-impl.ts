@@ -24,7 +24,7 @@ export class DeviceInfoImpl implements DeviceInfo {
             return of(this.deviceSpec);
         }
         return new Observable((observer) => {
-            buildconfigreader.getDeviceSpec((deviceSpec: DeviceSpec) => {
+            sbutility.getDeviceSpec((deviceSpec: DeviceSpec) => {
                 this.deviceSpec = deviceSpec;
                 observer.next(deviceSpec);
                 observer.complete();
@@ -34,7 +34,7 @@ export class DeviceInfoImpl implements DeviceInfo {
 
     getAvailableInternalMemorySize(): Observable<string> {
         return new Observable((observer) => {
-            buildconfigreader.getAvailableInternalMemorySize((value) => {
+            sbutility.getAvailableInternalMemorySize((value) => {
                 observer.next(value);
                 observer.complete();
             }, (e) => {
@@ -45,7 +45,7 @@ export class DeviceInfoImpl implements DeviceInfo {
 
     getStorageVolumes(): Observable<StorageVolume[]> {
         return Observable.create((observer) => {
-            buildconfigreader.getStorageVolumes((volumes) => {
+            sbutility.getStorageVolumes((volumes) => {
                 observer.next(volumes.map((v) => {
                     if (v.isRemovable) {
                         return {

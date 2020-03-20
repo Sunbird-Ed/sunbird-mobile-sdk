@@ -1,12 +1,18 @@
 global.cordova = {
     plugin: {
         http: {
-            setDataSerializer: () => {},
-            setHeader: () => {},
-            get: () => {},
-            post: () => {},
-            put: () => {},
-            patch: () => {},
+            setDataSerializer: () => {
+            },
+            setHeader: () => {
+            },
+            get: () => {
+            },
+            post: () => {
+            },
+            put: () => {
+            },
+            patch: () => {
+            },
         }
     },
     plugins: {
@@ -25,11 +31,13 @@ global.cordova = {
         }
     },
     file: {
-        applicationDirectory: '/path'
+        applicationDirectory: '/path',
+        externalCacheDirectory: "file:///some_external_cache_root/some_path/"
     },
     InAppBrowser: {
         open: () => ({
-            addEventListener: () => {},
+            addEventListener: () => {
+            },
         }),
     },
     getAppVersion: {
@@ -45,8 +53,10 @@ global.plugins = {
 };
 
 global.JJzip = {
-    unzip: () => {},
-    zip: () => {}
+    unzip: () => {
+    },
+    zip: () => {
+    }
 };
 
 global.supportfile = {
@@ -54,21 +64,24 @@ global.supportfile = {
     }
 };
 
-global.buildconfigreader = {
+global.sbutility = {
     getMetaData: () => {
-        
     },
     copyFile: () => {
 
     },
     createDirectories: () => {
-        
     },
-    rm: () => {},
-    copyDirectory: () => {},
-    getFreeUsableSpace: () => {},
-    canWrite: () => {},
-    getBuildConfigValue: () => {}
+    rm: () => {
+    },
+    copyDirectory: () => {
+    },
+    getFreeUsableSpace: () => {
+    },
+    canWrite: () => {
+    },
+    getBuildConfigValue: () => {
+    }
 };
 
 global.sbutility = {
@@ -89,7 +102,10 @@ global.sbutility = {
 };
 
 global.customtabs = {
-    isAvailable: () => {},
-    launch: () => {},
-    launchInBrowser: () => {}
+    isAvailable: () => {
+    },
+    launch: () => {
+    },
+    launchInBrowser: () => {
+    }
 };

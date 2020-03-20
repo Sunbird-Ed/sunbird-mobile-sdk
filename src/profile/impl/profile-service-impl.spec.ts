@@ -83,9 +83,9 @@ jest.mock('../../telemetry/util/telemetry-logger',
         'TelemetryLogger': class {
             public static get log() {
                 return {
-                    start: jest.fn(() => of(undefined)),
-                    end: jest.fn(() => of(undefined)),
-                    share: jest.fn(() => of(undefined))
+                    start: jest.fn().mockImplementation(() => of(undefined)),
+                    end: jest.fn().mockImplementation(() => of(undefined)),
+                    share: jest.fn().mockImplementation(() => of(undefined))
                 };
             }
         }
@@ -142,7 +142,7 @@ describe.only('ProfileServiceImpl', () => {
     describe('preInit()', () => {
         it('should create new Session for existing Profile on preInit()', (done) => {
             // arrange
-            mockSharedPreferences.getString = jest.fn(() => {
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => {
                 const profileSession = new ProfileSession('SAMPLE_UID');
                 return of(JSON.stringify({
                     uid: profileSession.uid,
@@ -164,7 +164,7 @@ describe.only('ProfileServiceImpl', () => {
 
         it('should create new Profile and Session if no Profile exists on preInit()', (done) => {
             // arrange
-            mockSharedPreferences.getString = jest.fn(() => of(undefined));
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(undefined));
             spyOn(profileService, 'createProfile').and.returnValue(of({
                 uid: 'SAMPLE_UID'
             }) as Partial<ProfileSession>);
@@ -183,7 +183,7 @@ describe.only('ProfileServiceImpl', () => {
     describe('createProfile()', () => {
         it('should create a profile saved in db on createProfile()', (done) => {
             // arrange
-            mockDbService.insert = jest.fn(() => of(1));
+            mockDbService.insert = jest.fn().mockImplementation(() => of(1));
             const profile: Profile = {
                 uid: 'SAMPLE_UID',
                 handle: 'SAMPLE_HANDLE',
@@ -206,8 +206,8 @@ describe.only('ProfileServiceImpl', () => {
 
         it('should create a server profile saved in db only if serverProfile field is set on createProfile()', (done) => {
             // arrange
-            mockTelemetryService.audit = jest.fn(() => of(true));
-            mockDbService.insert = jest.fn(() => of(1));
+            mockTelemetryService.audit = jest.fn().mockImplementation(() => of(true));
+            mockDbService.insert = jest.fn().mockImplementation(() => of(1));
             const profile: Profile = {
                 uid: 'SAMPLE_UID',
                 handle: 'SAMPLE_HANDLE',
@@ -229,8 +229,8 @@ describe.only('ProfileServiceImpl', () => {
         it('should delete profile from db on deleteProfile()', async (done) => {
             // arrange
             expect.assertions(1);
-            mockDbService.read = jest.fn(() => of([{} as Partial<ProfileEntry.SchemaMap>]));
-            mockDbService.delete = jest.fn(() => of(undefined));
+            mockDbService.read = jest.fn().mockImplementation(() => of([{} as Partial<ProfileEntry.SchemaMap>]));
+            mockDbService.delete = jest.fn().mockImplementation(() => of(undefined));
             spyOn(profileService, 'getActiveProfileSession').and.returnValue(of(new ProfileSession('SAMPLE_UID')));
 
             // act
@@ -247,8 +247,8 @@ describe.only('ProfileServiceImpl', () => {
 
         it('should delete profile from db only if profile in db on deleteProfile()', async (done) => {
             // arrange
-            mockDbService.read = jest.fn(() => of([]));
-            mockDbService.delete = jest.fn(() => of(undefined));
+            mockDbService.read = jest.fn().mockImplementation(() => of([]));
+            mockDbService.delete = jest.fn().mockImplementation(() => of(undefined));
 
             // act
             return await profileService.deleteProfile('SAMPLE_UID').toPromise().then(
@@ -272,26 +272,24 @@ describe.only('ProfileServiceImpl', () => {
                 profileType: ProfileType.STUDENT,
                 source: ProfileSource.LOCAL
             };
-            mockDbService.read = jest.fn(() => of([{
+            mockDbService.read = jest.fn().mockImplementation(() => of([{
                 [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID',
                 [ProfileEntry.COLUMN_NAME_HANDLE]: 'SAMPLE_HANDLE',
                 [ProfileEntry.COLUMN_NAME_PROFILE_TYPE]: ProfileType.STUDENT,
                 [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.LOCAL,
             } as ProfileEntry.SchemaMap]));
-            mockDbService.update = jest.fn(() => of(undefined));
+            mockDbService.update = jest.fn().mockImplementation(() => of(undefined));
             spyOn(profileService, 'getActiveProfileSession').and.returnValue(of(new ProfileSession('SAMPLE_UID')));
 
             // act
             profileService.updateProfile(profile).subscribe(() => {
                 // assert
-                setImmediate(() => {
-                    expect(mockDbService.update).toHaveBeenCalledWith(
-                        expect.objectContaining({
-                            table: ProfileEntry.TABLE_NAME
-                        })
-                    );
-                    done();
-                });
+                expect(mockDbService.update).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        table: ProfileEntry.TABLE_NAME
+                    })
+                );
+                done();
             });
         });
 
@@ -303,8 +301,8 @@ describe.only('ProfileServiceImpl', () => {
                 profileType: ProfileType.STUDENT,
                 source: ProfileSource.LOCAL
             };
-            mockDbService.read = jest.fn(() => of(undefined));
-            mockDbService.update = jest.fn(() => of(undefined));
+            mockDbService.read = jest.fn().mockImplementation(() => of(undefined));
+            mockDbService.update = jest.fn().mockImplementation(() => of(undefined));
 
             // act
             await profileService.updateProfile(profile).toPromise().then(
@@ -326,8 +324,8 @@ describe.only('ProfileServiceImpl', () => {
             const response = {uid: 'SAMPLE_UID'} as Partial<Profile>;
             (UpdateServerProfileInfoHandler as jest.Mock<UpdateServerProfileInfoHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(response))
-                };
+                    handle: jest.fn().mockImplementation(() => of(response))
+                } as Partial<UpdateServerProfileInfoHandler> as UpdateServerProfileInfoHandler;
             });
             const request = {} as Partial<UpdateServerProfileInfoRequest>;
 
@@ -346,8 +344,8 @@ describe.only('ProfileServiceImpl', () => {
             const response: ServerProfile[] = [];
             (SearchServerProfileHandler as jest.Mock<SearchServerProfileHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(response))
-                };
+                    handle: jest.fn().mockImplementation(() => of(response))
+                } as Partial<SearchServerProfileHandler> as SearchServerProfileHandler;
             });
             const request = {} as Partial<ServerProfileSearchCriteria>;
 
@@ -373,8 +371,8 @@ describe.only('ProfileServiceImpl', () => {
 
             (TenantInfoHandler as jest.Mock<TenantInfoHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(response))
-                };
+                    handle: jest.fn().mockImplementation(() => of(response))
+                } as Partial<TenantInfoHandler> as TenantInfoHandler;
             });
 
             const request = {} as Partial<TenantInfoRequest>;
@@ -397,8 +395,8 @@ describe.only('ProfileServiceImpl', () => {
 
             (GetServerProfileDetailsHandler as jest.Mock<GetServerProfileDetailsHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(response))
-                };
+                    handle: jest.fn().mockImplementation(() => of(response))
+                } as Partial<GetServerProfileDetailsHandler> as GetServerProfileDetailsHandler;
             });
 
             const request = {} as Partial<ServerProfileDetailsRequest>;
@@ -417,8 +415,8 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             (AcceptTermConditionHandler as jest.Mock<AcceptTermConditionHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(true))
-                };
+                    handle: jest.fn().mockImplementation(() => of(true))
+                } as Partial<AcceptTermConditionHandler> as AcceptTermConditionHandler;
             });
 
             const request = {} as Partial<AcceptTermsConditionRequest>;
@@ -441,8 +439,8 @@ describe.only('ProfileServiceImpl', () => {
 
             (IsProfileAlreadyInUseHandler as jest.Mock<IsProfileAlreadyInUseHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(response))
-                };
+                    handle: jest.fn().mockImplementation(() => of(response))
+                } as Partial<IsProfileAlreadyInUseHandler> as IsProfileAlreadyInUseHandler;
             });
 
             const request = {} as Partial<IsProfileAlreadyInUseRequest>;
@@ -461,8 +459,8 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             (GenerateOtpHandler as jest.Mock<GenerateOtpHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(false))
-                };
+                    handle: jest.fn().mockImplementation(() => of(false))
+                } as Partial<GenerateOtpHandler> as GenerateOtpHandler;
             });
 
             const request = {} as Partial<GenerateOtpRequest>;
@@ -481,8 +479,8 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             (VerifyOtpHandler as jest.Mock<VerifyOtpHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(false))
-                };
+                    handle: jest.fn().mockImplementation(() => of(false))
+                } as Partial<VerifyOtpHandler> as VerifyOtpHandler;
             });
 
             const request = {} as Partial<VerifyOtpRequest>;
@@ -502,8 +500,8 @@ describe.only('ProfileServiceImpl', () => {
             const response: LocationSearchResult[] = [];
             (SearchLocationHandler as any as jest.Mock<SearchLocationHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(response))
-                };
+                    handle: jest.fn().mockImplementation(() => of(response))
+                } as Partial<SearchLocationHandler> as SearchLocationHandler;
             });
 
             const request = {} as Partial<LocationSearchCriteria>;
@@ -559,7 +557,7 @@ describe.only('ProfileServiceImpl', () => {
                     autoMergeApiPath: 'SAMPLE_AUTO_MERGE_API_PATH'
                 }
             } as any;
-            mockApiService.fetch = jest.fn(() => of(new Response()));
+            mockApiService.fetch = jest.fn().mockImplementation(() => of(new Response()));
             const request: MergeServerProfilesRequest = {
                 from: {
                     userId: 'SAMPLE_USER_ID',
@@ -597,7 +595,7 @@ describe.only('ProfileServiceImpl', () => {
         it('should resolve if profile session exists', (done) => {
             // arrange
             const response = JSON.stringify({uid: 'SAMPLE_UID'});
-            mockSharedPreferences.getString = jest.fn(() => of(response));
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(response));
 
             // act
             profileService.getActiveProfileSession().subscribe((res) => {
@@ -609,7 +607,7 @@ describe.only('ProfileServiceImpl', () => {
 
         it('should reject if profile session does not exist', (done) => {
             // arrange
-            mockSharedPreferences.getString = jest.fn(() => of(undefined));
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(undefined));
 
             // act
             profileService.getActiveProfileSession().subscribe(null, (e) => {
@@ -623,7 +621,7 @@ describe.only('ProfileServiceImpl', () => {
         it('should resolve with all profiles if no profile request filter is passed', (done) => {
             // arrange
             const response = [];
-            mockDbService.read = jest.fn(() => of(response));
+            mockDbService.read = jest.fn().mockImplementation(() => of(response));
 
             // act
             profileService.getAllProfiles().subscribe((res) => {
@@ -641,7 +639,7 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             const response = [];
             const profileRequest = {local: true} as GetAllProfileRequest;
-            mockDbService.read = jest.fn(() => of(response));
+            mockDbService.read = jest.fn().mockImplementation(() => of(response));
 
             // act
             profileService.getAllProfiles(profileRequest as GetAllProfileRequest).subscribe((res) => {
@@ -661,7 +659,7 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             const response = [];
             const profileRequest = {groupId: 'SAMPLE_GROUP_ID', local: true} as GetAllProfileRequest;
-            mockDbService.execute = jest.fn(() => of(response));
+            mockDbService.execute = jest.fn().mockImplementation(() => of(response));
 
             // act
             profileService.getAllProfiles(profileRequest as GetAllProfileRequest).subscribe((res) => {
@@ -674,7 +672,7 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             const response = [];
             const profileRequest = {groupId: 'SAMPLE_GROUP_ID'} as GetAllProfileRequest;
-            mockDbService.execute = jest.fn(() => of(response));
+            mockDbService.execute = jest.fn().mockImplementation(() => of(response));
 
             // act
             profileService.getAllProfiles(profileRequest as GetAllProfileRequest).subscribe((res) => {
@@ -688,7 +686,7 @@ describe.only('ProfileServiceImpl', () => {
         it('should reject if no profile in DB for session profile', (done) => {
             // arrange
             const request = {requiredFields: []} as Pick<ServerProfileDetailsRequest, 'requiredFields'>;
-            mockDbService.read = jest.fn(() => of([]));
+            mockDbService.read = jest.fn().mockImplementation(() => of([]));
             spyOn(profileService, 'getActiveProfileSession').and.returnValue(of({uid: 'SAMPLE_UID'}));
 
             // act
@@ -701,7 +699,7 @@ describe.only('ProfileServiceImpl', () => {
         it('should resolve if local profile in DB for session profile', (done) => {
             // arrange
             const request = {requiredFields: []} as Pick<ServerProfileDetailsRequest, 'requiredFields'>;
-            mockDbService.read = jest.fn(() => of([{
+            mockDbService.read = jest.fn().mockImplementation(() => of([{
                 [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID'
             }]));
             spyOn(profileService, 'getActiveProfileSession').and.returnValue(of({uid: 'SAMPLE_UID'}));
@@ -716,7 +714,7 @@ describe.only('ProfileServiceImpl', () => {
         it('should resolve if server profile in DB for session profile', (done) => {
             // arrange
             const request = {requiredFields: []} as Pick<ServerProfileDetailsRequest, 'requiredFields'>;
-            mockDbService.read = jest.fn(() => of([{
+            mockDbService.read = jest.fn().mockImplementation(() => of([{
                 [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID',
                 [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.SERVER
             }]));
@@ -735,7 +733,7 @@ describe.only('ProfileServiceImpl', () => {
     describe('setActiveSessionForProfile', () => {
         it('should reject if not profile in db for profile id in request', (done) => {
             // arrange
-            mockDbService.read = jest.fn(() => of([]));
+            mockDbService.read = jest.fn().mockImplementation(() => of([]));
 
             // act
             profileService.setActiveSessionForProfile('SAMPLE_UID').subscribe(null, (e) => {
@@ -752,14 +750,14 @@ describe.only('ProfileServiceImpl', () => {
                     channelId: 'SAMPLE_CHANNEL_ID'
                 }
             } as any;
-            mockDbService.read = jest.fn(() => of([
+            mockDbService.read = jest.fn().mockImplementation(() => of([
                 {
                     [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID',
                     [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.LOCAL
                 }
             ]));
-            mockFrameworkService.setActiveChannelId = jest.fn(() => of(undefined));
-            mockSharedPreferences.putString = jest.fn(() => of(undefined));
+            mockFrameworkService.setActiveChannelId = jest.fn().mockImplementation(() => of(undefined));
+            mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
 
             // act
             profileService.setActiveSessionForProfile('SAMPLE_UID').subscribe((res) => {
@@ -777,7 +775,7 @@ describe.only('ProfileServiceImpl', () => {
                     channelId: 'SAMPLE_CHANNEL_ID'
                 }
             } as any;
-            mockDbService.read = jest.fn(() => of([
+            mockDbService.read = jest.fn().mockImplementation(() => of([
                 {
                     [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID',
                     [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.SERVER
@@ -788,8 +786,8 @@ describe.only('ProfileServiceImpl', () => {
                     hashTagId: 'SAMPLE_ROOT_ORG_ID'
                 }
             }));
-            mockFrameworkService.setActiveChannelId = jest.fn(() => of(undefined));
-            mockSharedPreferences.putString = jest.fn(() => of(undefined));
+            mockFrameworkService.setActiveChannelId = jest.fn().mockImplementation(() => of(undefined));
+            mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
 
             // act
             profileService.setActiveSessionForProfile('SAMPLE_UID').subscribe((res) => {
@@ -809,7 +807,7 @@ describe.only('ProfileServiceImpl', () => {
                 uid: 'sample-uid'
             };
             jest.spyOn(ContentUtil, 'getUidnIdentifierFiler').mockReturnValue('where uid=sample-uid');
-            mockDbService.execute = jest.fn(() => of([{uid: 'sample-uid'}]));
+            mockDbService.execute = jest.fn().mockImplementation(() => of([{uid: 'sample-uid'}]));
             // act
             profileService.getAllContentAccess(request).subscribe(() => {
                 // assert
@@ -834,9 +832,9 @@ describe.only('ProfileServiceImpl', () => {
             jest.spyOn(profileService, 'getActiveProfileSession').mockReturnValue(of({
                 _uid: 'sample-uid',
                 _sid: 'sample-sid'
-            }));
-            mockDbService.read = jest.fn(() => of([{}]));
-            mockDbService.update = jest.fn(() => of(1));
+            } as Partial<ProfileSession> as ProfileSession));
+            mockDbService.read = jest.fn().mockImplementation(() => of([{}]));
+            mockDbService.update = jest.fn().mockImplementation(() => of(1));
             // act
             profileService.addContentAccess(request).subscribe(() => {
                 // assert
@@ -860,9 +858,9 @@ describe.only('ProfileServiceImpl', () => {
             jest.spyOn(profileService, 'getActiveProfileSession').mockReturnValue(of({
                 _uid: 'sample-uid',
                 _sid: 'sample-sid'
-            }));
-            mockDbService.read = jest.fn(() => of([]));
-            mockDbService.insert = jest.fn(() => of(1));
+            } as Partial<ProfileSession> as ProfileSession));
+            mockDbService.read = jest.fn().mockImplementation(() => of([]));
+            mockDbService.insert = jest.fn().mockImplementation(() => of(1));
             // act
             profileService.addContentAccess(request).subscribe(() => {
                 // assert
@@ -881,14 +879,14 @@ describe.only('ProfileServiceImpl', () => {
                 groupIds: ['group-1'],
                 destinationFolder: 'sample-destination-folder'
             };
-            mockFileService.createDir = jest.fn(() => Promise.resolve({}));
-            mockFileService.createFile = jest.fn(() => Promise.resolve({}));
-            mockDbService.copyDatabase = jest.fn(() => of(true));
-            mockDeviceInfo.getDeviceID = jest.fn(() => of('sample-device-id'));
-            mockDbService.open = jest.fn(() => Promise.resolve(undefined));
-            mockDbService.execute = jest.fn(() => of({}));
-            mockDbService.insert = jest.fn(() => of(1));
-            mockDbService.read = jest.fn(() => of([{uid: 'sample-uid'}]));
+            mockFileService.createDir = jest.fn().mockImplementation(() => Promise.resolve({}));
+            mockFileService.createFile = jest.fn().mockImplementation(() => Promise.resolve({}));
+            mockDbService.copyDatabase = jest.fn().mockImplementation(() => of(true));
+            mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of('sample-device-id'));
+            mockDbService.open = jest.fn().mockImplementation(() => Promise.resolve(undefined));
+            mockDbService.execute = jest.fn().mockImplementation(() => of({}));
+            mockDbService.insert = jest.fn().mockImplementation(() => of(1));
+            mockDbService.read = jest.fn().mockImplementation(() => of([{uid: 'sample-uid'}]));
             // act
             profileService.exportProfile(request).subscribe(() => {
                 // assert
@@ -916,7 +914,7 @@ describe.only('ProfileServiceImpl', () => {
                 failed: 'err',
                 imported: 'sample'
             };
-            mockDbService.read = jest.fn((req) => {
+            mockDbService.read = jest.fn().mockImplementation((req) => {
                 if (req.useExternalDb) {
                     return of([{
                         uid: 'sample-uid',
@@ -928,26 +926,26 @@ describe.only('ProfileServiceImpl', () => {
 
             (ValidateProfileMetadata as jest.Mock<ValidateProfileMetadata>).mockImplementation(() => {
                 return {
-                    execute: jest.fn(() => Promise.resolve(response))
-                };
+                    execute: jest.fn().mockImplementation(() => Promise.resolve(response))
+                } as Partial<ValidateProfileMetadata> as ValidateProfileMetadata;
             });
             (TransportProfiles as jest.Mock<TransportProfiles>).mockImplementation(() => {
                 return {
-                    execute: jest.fn(() => Promise.resolve(response))
-                };
+                    execute: jest.fn().mockImplementation(() => Promise.resolve(response))
+                } as Partial<TransportProfiles> as TransportProfiles;
             });
             (TransportGroup as jest.Mock<TransportGroup>).mockImplementation(() => {
                 return {
-                    execute: jest.fn(() => Promise.resolve(response))
-                };
+                    execute: jest.fn().mockImplementation(() => Promise.resolve(response))
+                } as Partial<TransportGroup> as TransportGroup;
             });
             (UpdateImportedProfileMetadata as jest.Mock<UpdateImportedProfileMetadata>).mockImplementation(() => {
                 return {
-                    execute: jest.fn(() => Promise.resolve({body: {failed: 'FAILED', imported: 'IMPORT'}}))
-                };
+                    execute: jest.fn().mockImplementation(() => Promise.resolve({body: {failed: 'FAILED', imported: 'IMPORT'}}))
+                } as Partial<UpdateImportedProfileMetadata> as UpdateImportedProfileMetadata;
             });
-            mockDbService.execute = jest.fn(() => of({body: {imported: 'sample'}}));
-            mockDbService.insert = jest.fn(() => of(1));
+            mockDbService.execute = jest.fn().mockImplementation(() => of({body: {imported: 'sample'}}));
+            mockDbService.insert = jest.fn().mockImplementation(() => of(1));
             // act
             profileService.importProfile(request).subscribe(() => {
                 // assert
@@ -967,7 +965,7 @@ describe.only('ProfileServiceImpl', () => {
                 refresh_token: 'sample-refresh-token',
                 userToken: 'sample-user-token'
             };
-            mockAuthService.getSession = jest.fn(() => of(sessionData));
+            mockAuthService.getSession = jest.fn().mockImplementation(() => of(sessionData));
             const response = {
                 response: 'SAMPLE_RESPONSE',
                 failed: 'err',
@@ -975,8 +973,8 @@ describe.only('ProfileServiceImpl', () => {
             };
             (GetUserFeedHandler as any as jest.Mock<GetUserFeedHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(response))
-                };
+                    handle: jest.fn().mockImplementation(() => of(response))
+                } as Partial<GetUserFeedHandler> as GetUserFeedHandler;
             });
             // act
             profileService.getUserFeed().subscribe((res) => {
@@ -1002,8 +1000,8 @@ describe.only('ProfileServiceImpl', () => {
             };
             (UserMigrateHandler as any as jest.Mock<UserMigrateHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(response))
-                };
+                    handle: jest.fn().mockImplementation(() => of(response))
+                } as Partial<UserMigrateHandler> as UserMigrateHandler;
             });
             // act
             profileService.userMigrate(request).subscribe((res) => {
