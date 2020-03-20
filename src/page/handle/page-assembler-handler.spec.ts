@@ -1,8 +1,16 @@
 import {PageAssemblerHandler} from './page-assembler-handler';
-import { ApiService, CachedItemStore, KeyValueStore, SharedPreferences, CachedItemRequestSourceFrom } from '../..';
-import { PageServiceConfig, PageAssembleCriteria } from '..';
-import { PageName } from '../def/requests';
-import { of } from 'rxjs';
+import {
+    ApiService,
+    AuthService,
+    CachedItemRequestSourceFrom,
+    CachedItemStore,
+    FrameworkService,
+    KeyValueStore,
+    SharedPreferences,
+    SystemSettingsService
+} from '../..';
+import {PageAssembleCriteria, PageName, PageServiceConfig} from '..';
+import {of} from 'rxjs';
 
 describe('PageAssemblerHandler', () => {
     let pageAssemblerHandler: PageAssemblerHandler;
@@ -11,6 +19,9 @@ describe('PageAssemblerHandler', () => {
     const mockCachedItemStore: Partial<CachedItemStore> = {};
     const mockKeyValueStore: Partial<KeyValueStore> = {};
     const mockSharedPreferences: Partial<SharedPreferences> = {};
+    const mockFrameworkService: Partial<FrameworkService> = {};
+    const mockAuthService: Partial<AuthService> = {};
+    const mockSystemSettingsService: Partial<SystemSettingsService> = {};
 
     beforeAll(() => {
         pageAssemblerHandler = new PageAssemblerHandler(
@@ -18,85 +29,250 @@ describe('PageAssemblerHandler', () => {
             mockPageServiceConfig as PageServiceConfig,
             mockCachedItemStore as CachedItemStore,
             mockKeyValueStore as KeyValueStore,
-            mockSharedPreferences as SharedPreferences
+            mockSharedPreferences as SharedPreferences,
+            mockFrameworkService as FrameworkService,
+            mockAuthService as AuthService,
+            mockSystemSettingsService as SystemSettingsService
         );
     });
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        // jest.resetAllMocks();
     });
 
-    it('should be create a instance of pageAssemblerHandler', () => {
+    it('should be able create an instance of PageAssemblerHandler', () => {
         expect(pageAssemblerHandler).toBeTruthy();
     });
 
-    it('should be handle QrCode Scan for Page Assembler in local', (done) => {
-        // arrange
-        const request: PageAssembleCriteria = {
-            name: PageName.DIAL_CODE,
-            source: 'app',
-        };
-        mockCachedItemStore.getCached = jest.fn().mockImplementation(() => {});
-        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(of(''));
-        // act
-        pageAssemblerHandler.handle(request).subscribe(() => {
-            expect(mockCachedItemStore.getCached).toHaveBeenCalled();
-             // assert
-            done();
+    describe('when requesting from cache', () => {
+        beforeEach(() => {
+            mockCachedItemStore.getCached = jest.fn().mockReturnValue(of({
+                name: 'SAMPLE_NAME',
+                id: 'SAMPLE_ID',
+                sections: []
+            }));
+        });
+
+        it('should handle request when not from loggedIn User', (done) => {
+            // arrange
+            const request: PageAssembleCriteria = {
+                name: PageName.COURSE,
+                source: 'app',
+            };
+            mockAuthService.getSession = jest.fn().mockReturnValue(of(undefined));
+            // act
+            pageAssemblerHandler.handle(request).subscribe(() => {
+                expect(mockCachedItemStore.getCached).toHaveBeenCalled();
+                // assert
+                done();
+            });
+        });
+
+        it('should handle request when not from Course Page', (done) => {
+            // arrange
+            const request: PageAssembleCriteria = {
+                name: PageName.DIAL_CODE,
+                source: 'app',
+            };
+            mockAuthService.getSession = jest.fn().mockReturnValue(of({
+                access_token: 'SOME_ACCESS_TOKEN',
+                refresh_token: 'SOME_REFRESH_TOKEN',
+                userToken: 'SOME_USER_TOKEN'
+            }));
+            // act
+            pageAssemblerHandler.handle(request).subscribe(() => {
+                expect(mockCachedItemStore.getCached).toHaveBeenCalled();
+                // assert
+                done();
+            });
         });
     });
 
-    it('should be handle QrCode Scan for Page Assembler in server', async(done) => {
-        // arrange
-        const request: PageAssembleCriteria = {
-            name: PageName.DIAL_CODE,
-            source: 'app',
-            from: CachedItemRequestSourceFrom.SERVER
-        };
-        mockCachedItemStore.getCached = jest.fn().mockImplementation(() => {});
-        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(of({
-            name: 'SAMPLE_NAME',
-            id: 'SAMPLE_ID',
-            sections: []
-        }));
-        mockApiService.fetch = jest.fn().mockImplementation(() => {});
-        (mockApiService.fetch as jest.Mock).mockReturnValue(of({
-            body: {
-                result: {
-                    response: 'SAMPLE_RESPONSE'
-                }
-            }
-        }));
-        mockSharedPreferences.putString = jest.fn().mockImplementation(() => {});
-        (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(''));
-        mockKeyValueStore.setValue = jest.fn().mockImplementation(() => {});
-        (mockKeyValueStore.setValue as jest.Mock).mockReturnValue(of(true));
-        // act
-        await pageAssemblerHandler.handle(request).subscribe(() => {
-             // assert
-             expect(mockSharedPreferences.putString).toHaveBeenCalled();
-             expect(mockApiService.fetch).toHaveBeenCalled();
-             expect(mockKeyValueStore.setValue).toBeTruthy();
-            done();
-        });
-    });
+    describe('when requesting from server', () => {
+        describe('when successful response', () => {
+            it('should cache response and set TTL for the same', (done) => {
+                // arrange
+                const request: PageAssembleCriteria = {
+                    name: PageName.DIAL_CODE,
+                    source: 'app',
+                    from: CachedItemRequestSourceFrom.SERVER
+                };
 
-    it('should be handle QrCode Scan for Page Assembler from local', async(done) => {
-        // arrange
-        const request: PageAssembleCriteria = {
-            name: PageName.DIAL_CODE,
-            source: 'app',
-            from: CachedItemRequestSourceFrom.SERVER
-        };
-        mockCachedItemStore.getCached = jest.fn().mockImplementation(() => {});
-        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(of({}));
-        mockApiService.fetch = jest.fn().mockImplementation(() => {});
-        (mockApiService.fetch as jest.Mock).mockReturnValue(of({}));
-        // act
-        await pageAssemblerHandler.handle(request).subscribe(() => {
-             // assert
-             expect(mockCachedItemStore.getCached).toHaveBeenCalled();
-            done();
+                mockAuthService.getSession = jest.fn().mockReturnValue(of(undefined));
+                mockApiService.fetch = jest.fn().mockReturnValue(of({
+                    body: {
+                        result: {
+                            response: {
+                                name: 'SAMPLE_NAME',
+                                id: 'SAMPLE_ID',
+                                sections: []
+                            }
+                        }
+                    }
+                }));
+                mockSharedPreferences.putString = jest.fn().mockReturnValue(of(undefined));
+                mockKeyValueStore.setValue = jest.fn().mockReturnValue(of(true));
+
+                // act
+                pageAssemblerHandler.handle(request).subscribe(() => {
+                    setTimeout(() => {
+                        // assert
+                        expect(mockSharedPreferences.putString).toBeCalledWith(
+                            expect.stringContaining('ttl_page_assemble--'),
+                            expect.any(String)
+                        );
+
+                        expect(mockKeyValueStore.setValue).toBeCalledWith(
+                            expect.stringContaining('page_assemble--'),
+                            JSON.stringify({
+                                name: 'SAMPLE_NAME',
+                                id: 'SAMPLE_ID',
+                                sections: []
+                            })
+                        );
+
+                        done();
+                    });
+                });
+            });
+        });
+
+        describe('when guest user', () => {
+            it('should request without additional section details', (done) => {
+                // arrange
+                const request: PageAssembleCriteria = {
+                    name: PageName.DIAL_CODE,
+                    source: 'app',
+                    from: CachedItemRequestSourceFrom.SERVER
+                };
+
+                mockAuthService.getSession = jest.fn().mockReturnValue(of(undefined));
+                mockApiService.fetch = jest.fn().mockReturnValue(of({
+                    body: {
+                        result: {
+                            response: {
+                                name: 'SAMPLE_NAME',
+                                id: 'SAMPLE_ID',
+                                sections: []
+                            }
+                        }
+                    }
+                }));
+                mockSharedPreferences.putString = jest.fn().mockReturnValue(of(undefined));
+                mockKeyValueStore.setValue = jest.fn().mockReturnValue(of(true));
+
+                // act
+                pageAssemblerHandler.handle(request).subscribe(() => {
+                    expect(mockApiService.fetch).toBeCalledWith(expect.objectContaining({
+                        _body: expect.objectContaining({
+                            request: expect.not.objectContaining({
+                                sections: expect.anything()
+                            })
+                        })
+                    }));
+                    done();
+                });
+            });
+        });
+
+        describe('when logged in user and requesting for Course Page', () => {
+            it('should request without additional section details for default channel users', (done) => {
+                // arrange
+                const request: PageAssembleCriteria = {
+                    name: PageName.COURSE,
+                    source: 'app',
+                    from: CachedItemRequestSourceFrom.SERVER
+                };
+
+                mockFrameworkService.getDefaultChannelId = jest.fn().mockImplementation(() => of('SAMPLE_CHANNEL_ID'));
+                mockFrameworkService.activeChannelId = 'SAMPLE_CHANNEL_ID';
+
+                mockAuthService.getSession = jest.fn().mockReturnValue(of({
+                    access_token: 'SOME_ACCESS_TOKEN',
+                    refresh_token: 'SOME_REFRESH_TOKEN',
+                    userToken: 'SOME_USER_TOKEN'
+                }));
+
+                mockApiService.fetch = jest.fn().mockReturnValue(of({
+                    body: {
+                        result: {
+                            response: {
+                                name: 'SAMPLE_NAME',
+                                id: 'SAMPLE_ID',
+                                sections: []
+                            }
+                        }
+                    }
+                }));
+                mockSharedPreferences.putString = jest.fn().mockReturnValue(of(undefined));
+                mockKeyValueStore.setValue = jest.fn().mockReturnValue(of(true));
+
+                // act
+                pageAssemblerHandler.handle(request).subscribe(() => {
+                    expect(mockApiService.fetch).toBeCalledWith(expect.objectContaining({
+                        _body: expect.objectContaining({
+                            request: expect.not.objectContaining({
+                                sections: expect.anything()
+                            })
+                        })
+                    }));
+                    done();
+                });
+            });
+
+            it('should request with additional section details for SSO channel users', (done) => {
+                // arrange
+                const request: PageAssembleCriteria = {
+                    name: PageName.COURSE,
+                    source: 'app',
+                    from: CachedItemRequestSourceFrom.SERVER
+                };
+
+                mockFrameworkService.getDefaultChannelId = jest.fn().mockReturnValue(of('SAMPLE_CHANNEL_ID'));
+                mockFrameworkService.activeChannelId = 'SAMPLE_CHANNEL_ID_SSO';
+
+                mockSystemSettingsService.getSystemSettings = jest.fn().mockReturnValue(of({ value: 'SOME_SECTION_ID' }));
+
+                mockAuthService.getSession = jest.fn().mockReturnValue(of({
+                    access_token: 'SOME_ACCESS_TOKEN',
+                    refresh_token: 'SOME_REFRESH_TOKEN',
+                    userToken: 'SOME_USER_TOKEN'
+                }));
+
+                mockApiService.fetch = jest.fn().mockReturnValue(of({
+                    body: {
+                        result: {
+                            response: {
+                                name: 'SAMPLE_NAME',
+                                id: 'SAMPLE_ID',
+                                sections: []
+                            }
+                        }
+                    }
+                }));
+                mockSharedPreferences.putString = jest.fn().mockReturnValue(of(undefined));
+                mockKeyValueStore.setValue = jest.fn().mockReturnValue(of(true));
+
+                // act
+                pageAssemblerHandler.handle(request).subscribe(() => {
+                    expect(mockApiService.fetch).toBeCalledWith(expect.objectContaining({
+                        _body: expect.objectContaining({
+                            request: expect.objectContaining({
+                                sections: expect.objectContaining({
+                                    'SOME_SECTION_ID': expect.objectContaining({
+                                        filters: expect.objectContaining({
+                                            'batches.createdFor': expect.arrayContaining([
+                                                'SAMPLE_CHANNEL_ID_SSO'
+                                            ])
+                                        })
+                                    })
+                                })
+                            })
+                        })
+                    }));
+                    done();
+                });
+            });
         });
     });
 });
