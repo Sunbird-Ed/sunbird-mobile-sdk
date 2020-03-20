@@ -21,6 +21,13 @@ export interface PageAssembleCriteria extends CachedItemRequest {
     source?: 'app' | 'web';
     mode?: 'soft' | 'hard';
     filters?: PageAssembleFilter;
+    sections?: {
+        [sectionId: string]: {
+            filters: {
+                'batches.createdFor': string[]
+            }
+        }
+    };
 }
 
 export enum PageName {
