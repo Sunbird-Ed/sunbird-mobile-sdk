@@ -63,18 +63,16 @@ describe('ExtractPayloads', () => {
     describe('execute', () => {
         it('should count how many contents are imported', (done) => {
             // arrange
-            spyOn(sbutility, 'createDirectories').and.callFake((a, b, c) => {
-                setTimeout(() => {
-                    c({
-                        identifier: { path: 'http://' },
+            sbutility.createDirectories = jest.fn((_, __, cb) => {
+                cb({
+                    identifier: { path: 'http://' },
                         server_data: 'SERVER_DATA',
                         local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
                         mime_type: 'MIME_TYPE',
                         manifest_version: 'MAINFEST_VERSION',
                         content_type: 'CONTENT_TYPE',
                         content_state: 2,
-                    });
-                }, 0);
+                });
             });
             const existingContentModel = {
                 identifier: { path: 'http://' },
@@ -130,7 +128,6 @@ describe('ExtractPayloads', () => {
             (mockFileService.createDir as jest.Mock).mockReturnValue(of(''));
             mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => { });
             (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of('sample-device'));
-            spyOn(ContentUtil, 'addOrUpdateViralityMetadata').and.stub();
             jest.spyOn(extractPayloads, 'copyAssets').mockImplementation(() => {
                 return Promise.resolve();
             });
@@ -247,18 +244,16 @@ describe('ExtractPayloads', () => {
 
         it('should count how many contents are imported for file unzip', (done) => {
             // arrange
-            spyOn(sbutility, 'createDirectories').and.callFake((a, b, c) => {
-                setTimeout(() => {
-                    c({
-                        identifier: 'sample-id',
+            sbutility.createDirectories = jest.fn((_, __, cb) => {
+                cb({
+                    identifier: { path: 'http://' },
                         server_data: 'SERVER_DATA',
                         local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
                         mime_type: 'MIME_TYPE',
                         manifest_version: 'MAINFEST_VERSION',
                         content_type: 'CONTENT_TYPE',
                         content_state: 2,
-                    });
-                }, 0);
+                });
             });
             jest.spyOn(ContentUtil, 'readVisibility').mockReturnValue(Visibility.PARENT);
             const existingContentModel = {
@@ -314,7 +309,6 @@ describe('ExtractPayloads', () => {
             (mockFileService.createDir as jest.Mock).mockReturnValue(of(''));
             mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => { });
             (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of('sample-device'));
-            spyOn(ContentUtil, 'addOrUpdateViralityMetadata').and.stub();
             jest.spyOn(extractPayloads, 'copyAssets').mockImplementation(() => {
                 return Promise.resolve();
             });
@@ -335,18 +329,16 @@ describe('ExtractPayloads', () => {
 
         it('should count how many contents are imported for file unzip error part', (done) => {
             // arrange
-            spyOn(sbutility, 'createDirectories').and.callFake((a, b, c) => {
-                setTimeout(() => {
-                    c({
-                        identifier: 'sample-id',
+            sbutility.createDirectories = jest.fn((_, __, cb) => {
+                cb({
+                    identifier: { path: 'http://' },
                         server_data: 'SERVER_DATA',
                         local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
                         mime_type: 'MIME_TYPE',
                         manifest_version: 'MAINFEST_VERSION',
                         content_type: 'CONTENT_TYPE',
                         content_state: 2,
-                    });
-                }, 0);
+                });
             });
             jest.spyOn(ContentUtil, 'readVisibility').mockReturnValue(Visibility.PARENT);
             const existingContentModel = {
@@ -402,7 +394,6 @@ describe('ExtractPayloads', () => {
             (mockFileService.createDir as jest.Mock).mockReturnValue(of(''));
             mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => { });
             (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of('sample-device'));
-            spyOn(ContentUtil, 'addOrUpdateViralityMetadata').and.stub();
             jest.spyOn(extractPayloads, 'copyAssets').mockImplementation(() => {
                 return Promise.resolve();
             });
@@ -423,18 +414,16 @@ describe('ExtractPayloads', () => {
 
        it('should count how many contents are imported for inline', (done) => {
             // arrange
-            spyOn(sbutility, 'createDirectories').and.callFake((a, b, c) => {
-                setTimeout(() => {
-                    c({
-                        identifier: 'sample-id',
+            sbutility.createDirectories = jest.fn((_, __, cb) => {
+                cb({
+                    identifier: { path: 'http://' },
                         server_data: 'SERVER_DATA',
                         local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
                         mime_type: 'MIME_TYPE',
                         manifest_version: 'MAINFEST_VERSION',
                         content_type: 'CONTENT_TYPE',
                         content_state: 2,
-                    });
-                }, 0);
+                });
             });
             jest.spyOn(ContentUtil, 'readVisibility').mockReturnValue(Visibility.PARENT);
             const existingContentModel = {
@@ -490,7 +479,6 @@ describe('ExtractPayloads', () => {
             (mockFileService.createDir as jest.Mock).mockReturnValue(of(''));
             mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => { });
             (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of('sample-device'));
-            spyOn(ContentUtil, 'addOrUpdateViralityMetadata').and.stub();
             jest.spyOn(extractPayloads, 'copyAssets').mockImplementation(() => {
                 return Promise.resolve();
             });
@@ -509,18 +497,16 @@ describe('ExtractPayloads', () => {
 
         it('should count how many contents are imported for getContentVisibility', (done) => {
             // arrange
-            spyOn(sbutility, 'createDirectories').and.callFake((a, b, c) => {
-                setTimeout(() => {
-                    c({
-                        identifier: 'sample-id',
+            sbutility.createDirectories = jest.fn((_, __, cb) => {
+                cb({
+                    identifier: { path: 'http://' },
                         server_data: 'SERVER_DATA',
                         local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
                         mime_type: 'MIME_TYPE',
                         manifest_version: 'MAINFEST_VERSION',
                         content_type: 'CONTENT_TYPE',
                         content_state: 2,
-                    });
-                }, 0);
+                });
             });
             jest.spyOn(ContentUtil, 'readVisibility').mockReturnValue(Visibility.PARENT);
             const existingContentModel = {
@@ -576,7 +562,6 @@ describe('ExtractPayloads', () => {
             (mockFileService.createDir as jest.Mock).mockReturnValue(of(''));
             mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => { });
             (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of('sample-device'));
-            spyOn(ContentUtil, 'addOrUpdateViralityMetadata').and.stub();
             jest.spyOn(extractPayloads, 'copyAssets').mockImplementation(() => {
                 return Promise.resolve();
             });
@@ -595,18 +580,16 @@ describe('ExtractPayloads', () => {
 
         it('should count how many contents are imported for online', (done) => {
             // arrange
-            spyOn(sbutility, 'createDirectories').and.callFake((a, b, c) => {
-                setTimeout(() => {
-                    c({
-                        identifier: 'sample-id',
+            sbutility.createDirectories = jest.fn((_, __, cb) => {
+                cb({
+                    identifier: { path: 'http://' },
                         server_data: 'SERVER_DATA',
                         local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
                         mime_type: 'MIME_TYPE',
                         manifest_version: 'MAINFEST_VERSION',
                         content_type: 'CONTENT_TYPE',
                         content_state: 2,
-                    });
-                }, 0);
+                });
             });
             jest.spyOn(ContentUtil, 'readVisibility').mockReturnValue(Visibility.PARENT);
             const existingContentModel = {
@@ -662,7 +645,6 @@ describe('ExtractPayloads', () => {
             (mockFileService.createDir as jest.Mock).mockReturnValue(of(''));
             mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => { });
             (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of('sample-device'));
-            spyOn(ContentUtil, 'addOrUpdateViralityMetadata').and.stub();
             jest.spyOn(extractPayloads, 'copyAssets').mockImplementation(() => {
                 return Promise.resolve();
             });
@@ -681,18 +663,16 @@ describe('ExtractPayloads', () => {
 
         it('should count how many contents are imported for offline', (done) => {
             // arrange
-            spyOn(sbutility, 'createDirectories').and.callFake((a, b, c) => {
-                setTimeout(() => {
-                    c({
-                        identifier: 'sample-id',
+            sbutility.createDirectories = jest.fn((_, __, cb) => {
+                cb({
+                    identifier: { path: 'http://' },
                         server_data: 'SERVER_DATA',
                         local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
                         mime_type: 'MIME_TYPE',
                         manifest_version: 'MAINFEST_VERSION',
                         content_type: 'CONTENT_TYPE',
                         content_state: 2,
-                    });
-                }, 0);
+                });
             });
             jest.spyOn(ContentUtil, 'readVisibility').mockReturnValue(Visibility.DEFAULT);
             const existingContentModel = {
@@ -747,7 +727,6 @@ describe('ExtractPayloads', () => {
             mockFileService.createDir = jest.fn(() => Promise.resolve({ nativeURL: 'sample-native-url' })) as any;
             mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => { });
             (mockDeviceInfo.getDeviceID as jest.Mock).mockReturnValue(of('sample-device'));
-            spyOn(ContentUtil, 'addOrUpdateViralityMetadata').and.stub();
             jest.spyOn(extractPayloads, 'copyAssets').mockImplementation(() => {
                 return Promise.resolve();
             });
