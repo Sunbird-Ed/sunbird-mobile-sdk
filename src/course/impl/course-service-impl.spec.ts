@@ -216,7 +216,11 @@ describe('CourseServiceImpl', () => {
     });
 
     describe('getEnrolledCourse()', () => {
-        it('should delegate to GetEnrolledCourseHandler', (done) => {
+        let mockGetEnrolledCourseHandler = {
+            handle: jest.fn().mockImplementation(() => of([]))
+        };
+
+        beforeEach(() => {
             // arrange
             spyOn(courseService, 'syncAssessmentEvents').and.returnValue(of(undefined));
             (ContentStatesSyncHandler as jest.Mock<ContentStatesSyncHandler>).mockImplementation(() => {
@@ -224,12 +228,15 @@ describe('CourseServiceImpl', () => {
                     updateContentState: jest.fn().mockImplementation(() => of(true))
                 } as Partial<ContentStatesSyncHandler> as ContentStatesSyncHandler;
             });
-            const mockGetEnrolledCourseHandler = {
+            mockGetEnrolledCourseHandler = {
                 handle: jest.fn().mockImplementation(() => of([]))
             };
             (GetEnrolledCourseHandler as jest.Mock<GetEnrolledCourseHandler>).mockImplementation(() => {
                 return mockGetEnrolledCourseHandler as Partial<GetEnrolledCourseHandler> as GetEnrolledCourseHandler;
             });
+        });
+
+        it('should delegate to GetEnrolledCourseHandler', (done) => {
             const request = {
                 userId: 'SAMPLE_USER_ID',
                 returnFreshCourses: true
@@ -238,6 +245,21 @@ describe('CourseServiceImpl', () => {
             courseService.getEnrolledCourses(request).subscribe(() => {
                 // assert
                 expect(mockGetEnrolledCourseHandler.handle).toHaveBeenCalledWith(request);
+                done();
+            });
+        });
+
+        it('should sync persisted assessment events', (done) => {
+            const request = {
+                userId: 'SAMPLE_USER_ID',
+                returnFreshCourses: true
+            };
+            // act
+            courseService.getEnrolledCourses(request).subscribe(() => {
+                // assert
+                expect(courseService.syncAssessmentEvents).toHaveBeenCalledWith({
+                    persistedOnly: true
+                });
                 done();
             });
         });
