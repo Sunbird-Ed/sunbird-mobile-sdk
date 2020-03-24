@@ -87,6 +87,19 @@ export class SyncAssessmentEventsHandler {
             .withSessionToken(true)
             .build();
 
+        console.log(
+            'COURSE_ASSESSMENT_INVOKED_SYNC----------------------------------------------',
+            assessmentTelemetrySyncRequest.assessments.map((a) => ({
+                assessmentTs: a.assessmentTs,
+                userId: a.userId,
+                contentId: a.contentId,
+                courseId: a.courseId,
+                batchId: a.batchId,
+                attemptId: a.attemptId,
+                events: a.events.length
+            }))
+        );
+
         return this.apiService.fetch(apiRequest).toPromise();
     }
 
