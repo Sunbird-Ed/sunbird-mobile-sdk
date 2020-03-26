@@ -165,6 +165,9 @@ describe('ArchiveServiceImpl', () => {
             ).subscribe((values) => {
                 // assert
                 expect(values.length).toEqual(7);
+                expect(values.pop()).toEqual(expect.objectContaining({
+                    task: 'COMPLETE'
+                }));
                 done();
             }, (e) => {
                 fail(e);
