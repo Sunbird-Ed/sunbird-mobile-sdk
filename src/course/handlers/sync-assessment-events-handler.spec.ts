@@ -1,7 +1,7 @@
 import { SyncAssessmentEventsHandler } from './sync-assessment-events-handler';
 import { CourseService } from '..';
 import { SdkConfig, ApiService, DbService, SunbirdTelemetry } from '../..';
-import { of } from 'rxjs';
+import {of, throwError} from 'rxjs';
 import {CourseAssessmentEntry} from '../../summarizer/db/schema';
 
 describe('SyncAssessmentEventsHandler', () => {
@@ -95,29 +95,30 @@ describe('SyncAssessmentEventsHandler', () => {
                 done();
             });
         });
-    });
 
-    it('should sync capture assessment events for catch part', (done) => {
-        // arrange
-        const capturedAssessmentEvents = {
-            '{"batchStatus": 1,"courseId":"SOME_ID","contentId":"SOME_CONTENT"}': [
-                new SunbirdTelemetry.Start(
-                    'SOME_TYPE',
-                    undefined,
-                    undefined,
-                    undefined,
-                    undefined,
-                    undefined,
-                    'SOME_ENV'
-                )
-            ]
-        };
-        mockDbService.insert = jest.fn().mockImplementation(() => of(1));
-        // act
-        syncAssessmentEventsHandler.handle(capturedAssessmentEvents).subscribe((e) => {
-            // assert
-            expect(mockDbService.insert).toHaveBeenCalled();
-            done();
+        it('should persist captured assessment events if sync fails', (done) => {
+            // arrange
+            const capturedAssessmentEvents = {
+                '{"batchStatus": 1,"courseId":"SOME_ID","contentId":"SOME_CONTENT"}': [
+                    new SunbirdTelemetry.Start(
+                        'SOME_TYPE',
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        'SOME_ENV'
+                    )
+                ]
+            };
+            mockApiService.fetch = jest.fn().mockImplementation(() => throwError(new Error('SOME_ERROR')));
+            mockDbService.insert = jest.fn().mockImplementation(() => of(1));
+            // act
+            syncAssessmentEventsHandler.handle(capturedAssessmentEvents).subscribe((e) => {
+                // assert
+                expect(mockDbService.insert).toHaveBeenCalled();
+                done();
+            });
         });
     });
 });

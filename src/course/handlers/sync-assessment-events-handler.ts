@@ -62,7 +62,6 @@ export class SyncAssessmentEventsHandler {
                     return this.syncPersistedAssessmentEvents();
                 })
                 .catch((e) => {
-                    console.error(e);
                     Object.keys(this.capturedAssessmentEvents).forEach((key) => {
                         const context = JSON.parse(key);
                         this.capturedAssessmentEvents[key]!.forEach((event) => {
