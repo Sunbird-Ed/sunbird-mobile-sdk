@@ -46,11 +46,19 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
                 } else {
                     terms = this.getCategoryAssociationTerms(framework, request).toArray();
                 }
+                if (request.currentCategoryCode === 'gradeLevel') {
+                    const maxIndex: number = terms.reduce((acc, val) => (val.index && (val.index > acc)) ? val.index : acc, 0);
 
-                const maxIndex: number = terms.reduce((acc, val) => (val.index && (val.index > acc)) ? val.index : acc, 0);
-
-                terms.sort((i, j) => (i.index || maxIndex + 1) - (j.index || maxIndex + 1));
-
+                    terms.sort((i, j) => (i.index || maxIndex + 1) - (j.index || maxIndex + 1));
+                } else {
+                    terms.sort((i, j) => i.name.localeCompare(j.name));
+                }
+                const othersOptionIndex = terms.indexOf(terms.find(val => val.name === 'Others')!);
+                if ( othersOptionIndex >= 0 && othersOptionIndex !== terms.length) {
+                       const temp = terms[terms.length - 1];
+                       terms[terms.length - 1] = terms[othersOptionIndex];
+                       terms[othersOptionIndex] = temp;
+                }
                 return terms;
             })
         );
@@ -110,7 +118,6 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
         }
 
         const categoryTerms = framework.categories.find((category) => category.code === request.prevCategoryCode)!.terms;
-
         if (!categoryTerms) {
             return new Set<CategoryTerm>();
         }
