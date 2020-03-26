@@ -71,6 +71,7 @@ import {combineLatest} from 'rxjs';
 import {concatMap} from 'rxjs/operators';
 import {ArchiveService} from './archive';
 import {ArchiveServiceImpl} from './archive/impl/archive-service-impl';
+import {ContentDialcodeMigration} from './db/migrations/content-dialcode-migration';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -224,7 +225,7 @@ export class SunbirdSdk {
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(25);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(26);
 
         this._container.bind<Migration[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
             new ProfileSyllabusMigration(),
@@ -235,7 +236,8 @@ export class SunbirdSdk {
             new ErrorStackMigration(),
             new SearchHistoryMigration(),
             new RecentlyViewedMigration(),
-            new CourseAssessmentMigration()
+            new CourseAssessmentMigration(),
+            new ContentDialcodeMigration()
         ]);
 
         switch (sdkConfig.platform) {
