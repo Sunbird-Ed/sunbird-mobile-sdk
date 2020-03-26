@@ -89,7 +89,6 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
     }
 
     private getAllCategoriesTermsSet(framework: Framework): Set<CategoryTerm> {
-        console.log('jiii', framework);
         if (!framework.categories) {
             return new Set<CategoryTerm>();
         }
