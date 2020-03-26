@@ -73,8 +73,8 @@ export namespace ContentEntry {
             COLUMN_NAME_MEDIUM + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
             COLUMN_NAME_GRADE + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
             COLUMN_NAME_MANIFEST_VERSION + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_DIALCODES + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CHILD_NODES + DbConstants.SPACE + DbConstants.TEXT_TYPE +
+            COLUMN_NAME_DIALCODES + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CHILD_NODES + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' +
             ' )';
     };
 
