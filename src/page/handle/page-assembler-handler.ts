@@ -12,7 +12,7 @@ import {SystemSettingsService} from '../../system-settings';
 export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private static readonly SSO_COURSE_SECTION_ID = 'ssoCourseSection';
     private readonly PAGE_ASSEMBLE_LOCAL_KEY = 'page_assemble-';
-    private readonly PAGE_ASSEMBLE_ENDPOINT = '/page/assemble';
+    private readonly PAGE_ASSEMBLE_ENDPOINT = '/page/assemble?orgdetails=orgName';
     private readonly DIALCODE_ASSEMBLE_ENDPOINT = '/dial/assemble';
 
     constructor(private apiService: ApiService,
