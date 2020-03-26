@@ -130,7 +130,7 @@ export class CourseServiceImpl implements CourseService {
         const updateContentStateHandler: UpdateContentStateApiHandler =
             new UpdateContentStateApiHandler(this.apiService, this.courseServiceConfig);
         return zip(
-            this.syncAssessmentEvents(),
+            this.syncAssessmentEvents({ persistedOnly: true }),
             new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)
                 .updateContentState()
         ).pipe(

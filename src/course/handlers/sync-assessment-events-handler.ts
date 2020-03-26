@@ -61,7 +61,8 @@ export class SyncAssessmentEventsHandler {
                 .then(() => {
                     return this.syncPersistedAssessmentEvents();
                 })
-                .catch(() => {
+                .catch((e) => {
+                    console.error(e);
                     Object.keys(this.capturedAssessmentEvents).forEach((key) => {
                         const context = JSON.parse(key);
                         this.capturedAssessmentEvents[key]!.forEach((event) => {
@@ -86,6 +87,19 @@ export class SyncAssessmentEventsHandler {
             .withApiToken(true)
             .withSessionToken(true)
             .build();
+
+        console.log(
+            'COURSE_ASSESSMENT_INVOKED_SYNC----------------------------------------------',
+            assessmentTelemetrySyncRequest.assessments.map((a) => ({
+                assessmentTs: a.assessmentTs,
+                userId: a.userId,
+                contentId: a.contentId,
+                courseId: a.courseId,
+                batchId: a.batchId,
+                attemptId: a.attemptId,
+                events: a.events.length
+            }))
+        );
 
         return this.apiService.fetch(apiRequest).toPromise();
     }
