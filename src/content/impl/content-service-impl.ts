@@ -34,7 +34,8 @@ import {
     RelevantContentRequest,
     RelevantContentResponse,
     RelevantContentResponsePlayer,
-    SearchResponse
+    SearchResponse,
+    SortOrder
 } from '..';
 import {combineLatest, defer, from, Observable, of, zip} from 'rxjs';
 import {ApiService, Response} from '../../api';
@@ -52,7 +53,6 @@ import {DirectoryEntry, Entry} from '../../util/file';
 import {GetContentsHandler} from '../handlers/get-contents-handler';
 import {ContentMapper} from '../util/content-mapper';
 import {ImportNExportHandler} from '../handlers/import-n-export-handler';
-import {CleanTempLoc} from '../handlers/export/clean-temp-loc';
 import {CreateContentExportManifest} from '../handlers/export/create-content-export-manifest';
 import {WriteManifest} from '../handlers/export/write-manifest';
 import {CompressContent} from '../handlers/export/compress-content';
@@ -60,7 +60,6 @@ import {ZipService} from '../../util/zip/def/zip-service';
 import {DeviceMemoryCheck} from '../handlers/export/device-memory-check';
 import {CopyAsset} from '../handlers/export/copy-asset';
 import {EcarBundle} from '../handlers/export/ecar-bundle';
-import {DeleteTempEcar} from '../handlers/export/delete-temp-ecar';
 import {ExtractEcar} from '../handlers/import/extract-ecar';
 import {ValidateEcar} from '../handlers/import/validate-ecar';
 import {ExtractPayloads} from '../handlers/import/extract-payloads';
@@ -93,8 +92,8 @@ import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
 import {GetContentHeirarchyHandler} from './../handlers/get-content-heirarchy-handler';
 import {catchError, map, mapTo, mergeMap, take} from 'rxjs/operators';
-import { CopyToDestination } from '../handlers/export/copy-to-destination';
-import { DeleteTempDir } from './../handlers/export/deletete-temp-dir';
+import {CopyToDestination} from '../handlers/export/copy-to-destination';
+import {DeleteTempDir} from './../handlers/export/deletete-temp-dir';
 import {AppInfo} from '../../util/app';
 
 @injectable()
@@ -678,6 +677,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         );
 
         return this.searchContentAndGroupByPageSection(
+            request,
             offlineTextbookContents$.pipe(take(1)),
             onlineTextbookContents$.pipe(take(1))
         );
@@ -739,6 +739,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     private searchContentAndGroupByPageSection(
+        request: ContentSearchCriteria,
         offlineTextbookContents$: Observable<ContentData[]>,
         onlineTextbookContents$: Observable<ContentSearchResult>
     ): Observable<ContentsGroupedByPageSection> {
@@ -753,6 +754,28 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     return !localTextBooksContentDataList.find(
                         (localContentData) => localContentData.identifier === contentData.identifier);
                 });
+                if (localTextBooksContentDataList.length && request.sortCriteria && request.sortCriteria.length) {
+                    const contentDataList = request.sortCriteria.reduce<ContentData[]>((acc, sortCriteria) => {
+                        acc.sort((a, b) => {
+                            if (!a[sortCriteria.sortAttribute] || !b[sortCriteria.sortAttribute]) {
+                                return 0;
+                            }
+                            const comparison = String(a[sortCriteria.sortAttribute]).localeCompare(b[sortCriteria.sortAttribute]);
+
+                            return sortCriteria.sortOrder === SortOrder.ASC ? comparison : (comparison * -1);
+                        });
+
+                        return acc;
+                    }, [
+                        ...localTextBooksContentDataList,
+                        ...searchContentDataList,
+                    ] as ContentData[]);
+
+                    return {
+                        ...results[1],
+                        contentDataList
+                    } as ContentSearchResult;
+                }
 
                 return {
                     ...results[1],
@@ -786,16 +809,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     return acc;
                 }, {});
 
-                return {
-                    name: 'Resource',
-                    sections: Object.keys(contentsGroupedBySubject).map((sub) => {
-                        return {
-                            contents: contentsGroupedBySubject[sub],
-                            name: sub.charAt(0).toUpperCase() + sub.slice(1),
-                            display: {name: {en: sub}} // TODO : need to handle localization
-                        };
-                    })
-                };
+                return this.sortContentByName(contentsGroupedBySubject, request);
             })
         );
     }
@@ -830,6 +844,30 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return of(undefined);
             })
         );
+    }
+
+    private sortContentByName(contentsGroupedBySubject, request: ContentSearchCriteria) {
+        const sections = Object.keys(contentsGroupedBySubject).map((sub) => {
+            return {
+                contents: contentsGroupedBySubject[sub],
+                name: sub.charAt(0).toUpperCase() + sub.slice(1),
+                display: { name: { en: sub } } // TODO : need to handle localization
+            };
+        });
+
+        if (request.sortCriteria && request.sortCriteria.length) {
+            const sortCriteria = request.sortCriteria[0];
+            sections.sort((obj1, obj2) => {
+                const comparison = String(obj1[sortCriteria.sortAttribute]).localeCompare(obj2[sortCriteria.sortAttribute]);
+
+                return sortCriteria.sortOrder === SortOrder.ASC ? comparison : (comparison * -1);
+            });
+        }
+
+        return {
+            name: 'Resource',
+            sections
+        };
     }
 
 }
