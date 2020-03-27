@@ -38,11 +38,14 @@ describe('GetChannelDetailHandler', () => {
         const request: ChannelDetailsRequest = {
             channelId: 'SAMPLE_CHANNEL_ID'
         };
-        const sampleframeworks:  Framework = {
-            name: 'SOME_NAME',
+        const sampleframeworks:  Framework[] = [{
+            name: 'SOME_NAME_1',
             identifier: 'SOME_IDENTIFIER'
-        };
-        const channel: Channel = {
+        }, {
+            name: 'SOME_NAME_2',
+            identifier: 'SOME_IDENTIFIER'
+        }];
+        const channels: Channel = {
             identifier: 'SOME_IDENTIFIER',
             code: 'SOME_CODE',
             consumerId: 'SOME_CONSUMER_ID',
@@ -55,10 +58,45 @@ describe('GetChannelDetailHandler', () => {
             lastUpdatedOn: 'LAST_UPDATED',
             defaultFramework: 'SOME_DEFAULT_FRAMEWORK',
             status: 'SOME_STATUS',
-            frameworks : [sampleframeworks]
+            frameworks : sampleframeworks
         };
         mockCacheItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e) => d());
-        mockApiService.fetch = jest.fn().mockImplementation(() => of({ body: {result: channel}}));
+        mockApiService.fetch = jest.fn().mockImplementation(() => of({ body: {result: {channel: channels}}}));
+        // act
+       // expect(channel.frameworks[0].name).toBe('SOME_NAME');
+        getChannelDetailHandler.handle(request).subscribe(() => {
+            expect(mockCacheItemStore.getCached).toHaveBeenCalled();
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should return an instance of GetChannelDetailHandler', () => {
+        expect(getChannelDetailHandler).toBeTruthy();
+    });
+
+    it('should run handle function from the GetChannelDetailHandler if framework not available', async (done) => {
+        // arrange
+        const request: ChannelDetailsRequest = {
+            channelId: 'SAMPLE_CHANNEL_ID'
+        };
+        const channels: Channel = {
+            identifier: 'SOME_IDENTIFIER',
+            code: 'SOME_CODE',
+            consumerId: 'SOME_CONSUMER_ID',
+            channel: 'SOME_CHANNEL',
+            description: 'SOME_DESCRIPTION',
+            createdOn: 'SOME_CREATED_ON',
+            versionKey: 'SOME_VERSION_KEY',
+            appId: 'SOME_APP_ID',
+            name: 'SOME_NAME',
+            lastUpdatedOn: 'LAST_UPDATED',
+            defaultFramework: 'SOME_DEFAULT_FRAMEWORK',
+            status: 'SOME_STATUS',
+            frameworks : undefined
+        };
+        mockCacheItemStore.getCached = jest.fn().mockImplementation((a, b, c, d, e) => d());
+        mockApiService.fetch = jest.fn().mockImplementation(() => of({ body: {result: {channel: channels}}}));
         // act
        // expect(channel.frameworks[0].name).toBe('SOME_NAME');
         getChannelDetailHandler.handle(request).subscribe(() => {
