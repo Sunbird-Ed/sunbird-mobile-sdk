@@ -756,7 +756,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 });
                 if (localTextBooksContentDataList.length && request.sortCriteria && request.sortCriteria.length) {
                     const contentDataList = request.sortCriteria.reduce<ContentData[]>((acc, sortCriteria) => {
-                        console.log(acc);
                         acc.sort((a, b) => {
                             if (!a[sortCriteria.sortAttribute] || !b[sortCriteria.sortAttribute]) {
                                 return 0;
@@ -810,16 +809,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     return acc;
                 }, {});
 
-                return {
-                    name: 'Resource',
-                    sections: Object.keys(contentsGroupedBySubject).map((sub) => {
-                        return {
-                            contents: contentsGroupedBySubject[sub],
-                            name: sub.charAt(0).toUpperCase() + sub.slice(1),
-                            display: {name: {en: sub}} // TODO : need to handle localization
-                        };
-                    })
-                };
+                return this.sortContentByName(contentsGroupedBySubject, request);
             })
         );
     }
@@ -854,6 +844,30 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return of(undefined);
             })
         );
+    }
+
+    private sortContentByName(contentsGroupedBySubject, request: ContentSearchCriteria) {
+        const sections = Object.keys(contentsGroupedBySubject).map((sub) => {
+            return {
+                contents: contentsGroupedBySubject[sub],
+                name: sub.charAt(0).toUpperCase() + sub.slice(1),
+                display: { name: { en: sub } } // TODO : need to handle localization
+            };
+        });
+
+        if (request.sortCriteria && request.sortCriteria.length) {
+            const sortCriteria = request.sortCriteria[0];
+            sections.sort((obj1, obj2) => {
+                const comparison = String(obj1[sortCriteria.sortAttribute]).localeCompare(obj2[sortCriteria.sortAttribute]);
+
+                return sortCriteria.sortOrder === SortOrder.ASC ? comparison : (comparison * -1);
+            });
+        }
+
+        return {
+            name: 'Resource',
+            sections
+        };
     }
 
 }

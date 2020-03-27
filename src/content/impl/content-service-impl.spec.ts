@@ -663,6 +663,49 @@ describe('ContentServiceImpl', () => {
         });
     });
 
+    it('should not sort the contents if there is no name value available', (done) => {
+        // arrange
+        const c_data: ContentData = {
+            identifier: 'do_123',
+            name: 'sample-content',
+            appIcon: 'sample_icon'
+        } as any;
+        const content: Content[] = [{
+            identifier: 'sample_identifier',
+            contentData: c_data,
+            mimeType: 'sample_mimeType',
+            basePath: 'https://',
+            name: null
+        }] as any;
+        const contentSearchResult: ContentSearchResult = {
+            id: 'sample_id',
+            responseMessageId: 'sample_responseMessageId',
+            filterCriteria: {},
+            contentDataList: content
+        } as any;
+        contentService.searchContent = jest.fn(() => of());
+        const request: ContentSearchCriteria = {
+            sortCriteria: [
+                {
+                    sortAttribute: 'name',
+                    sortOrder: SortOrder.ASC,
+                }
+            ]
+        };
+        jest.spyOn(contentService, 'getContents').mockImplementation(() => of(content));
+        jest.spyOn(contentService, 'searchContent').mockImplementation(() => of(contentSearchResult));
+        mockDbService.execute = jest.fn().mockImplementation(() => of([]));
+        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(of({
+            id: 'd0_id', contentDataList: content
+        }));
+        // act
+        contentService.searchContentGroupedByPageSection(request).subscribe(() => {
+            // assert
+            expect(mockCachedItemStore.getCached).toHaveBeenCalled();
+            done();
+        });
+    });
+
     it('should offline textbook contents with online textbook contents group by section for catch part', (done) => {
         // arrange
         const request: ContentSearchCriteria = {
