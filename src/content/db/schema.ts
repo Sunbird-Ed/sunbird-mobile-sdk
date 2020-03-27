@@ -49,6 +49,8 @@ export namespace ContentEntry {
         [COLUMN_NAME_BOARD]?: string;
         [COLUMN_NAME_MEDIUM]?: string;
         [COLUMN_NAME_GRADE]?: string;
+        [COLUMN_NAME_DIALCODES]?: string;
+        [COLUMN_NAME_CHILD_NODES]?: string;
     }
 
     export const getCreateEntry: (() => string) = () => {
