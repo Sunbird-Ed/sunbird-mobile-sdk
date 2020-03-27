@@ -1,5 +1,5 @@
 import { GetContentHeirarchyHandler } from '../handlers/get-content-heirarchy-handler';
-import { ContentService, ContentDeleteResponse, ContentDeleteStatus } from '..';
+import { ContentService, ContentDeleteResponse, ContentDeleteStatus, ContentSearchResult } from '..';
 import { ContentServiceImpl } from './content-service-impl';
 import { Container } from 'inversify';
 import { InjectionTokens } from '../../injection-tokens';
@@ -26,7 +26,7 @@ import { OpenRapConfigurable } from '../../open-rap-configurable';
 import {
     MarkerType, ContentSearchCriteria, EcarImportRequest, RelevantContentRequest,
     ContentSpaceUsageSummaryRequest, ContentDownloadRequest, ContentExportRequest,
-    ContentRequest, ChildContentRequest, ContentImportRequest, ContentImport
+    ContentRequest, ChildContentRequest, ContentImportRequest, ContentImport, SortOrder
 } from '../def/requests';
 import { SharedPreferencesSetCollectionImpl } from '../../util/shared-preferences/impl/shared-preferences-set-collection-impl';
 import { GenerateInteractTelemetry } from '../handlers/import/generate-interact-telemetry';
@@ -622,14 +622,42 @@ describe('ContentServiceImpl', () => {
 
     it('should offline textbook contents with online textbook contents group by section', (done) => {
         // arrange
+        const c_data: ContentData = {
+            identifier: 'do_123',
+            name: 'sample-content',
+            appIcon: 'sample_icon'
+        } as any;
+        const content: Content[] = [{
+            identifier: 'sample_identifier',
+            contentData: c_data,
+            mimeType: 'sample_mimeType',
+            basePath: 'https://',
+            name: 'sample_name'
+        }] as any;
+        const contentSearchResult: ContentSearchResult = {
+            id: 'sample_id',
+            responseMessageId: 'sample_responseMessageId',
+            filterCriteria: {},
+            contentDataList: content
+        } as any;
+        contentService.searchContent = jest.fn(() => of());
         const request: ContentSearchCriteria = {
+            sortCriteria: [
+                {
+                    sortAttribute: 'name',
+                    sortOrder: SortOrder.ASC,
+                }
+            ]
         };
+        jest.spyOn(contentService, 'getContents').mockImplementation(() => of(content));
+        jest.spyOn(contentService, 'searchContent').mockImplementation(() => of(contentSearchResult));
         mockDbService.execute = jest.fn().mockImplementation(() => of([]));
-        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(of({ id: 'd0_id' }));
+        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(of({
+            id: 'd0_id', contentDataList: content
+        }));
         // act
-        contentService.searchContentGroupedByPageSection(request).toPromise().catch(() => {
+        contentService.searchContentGroupedByPageSection(request).subscribe(() => {
             // assert
-            expect(mockDbService.execute).toHaveBeenCalled();
             expect(mockCachedItemStore.getCached).toHaveBeenCalled();
             done();
         });
