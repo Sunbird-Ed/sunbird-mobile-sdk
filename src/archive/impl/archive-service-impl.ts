@@ -114,6 +114,8 @@ export class ArchiveServiceImpl implements ArchiveService {
             defer(() => this.generateManifestFile(lastResult!, workspacePath)),
             defer(() => this.generateZipArchive(lastResult!, workspacePath)),
             defer(() => this.generateExportTelemetries(lastResult!, workspacePath))
+        ).pipe(
+            tap((results) => lastResult = results)
         );
     }
 

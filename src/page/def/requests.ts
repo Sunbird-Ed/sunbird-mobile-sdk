@@ -13,6 +13,7 @@ export interface PageAssembleFilter {
     ageGroup?: Array<string>;
     ownership?: Array<string>;
     dialcodes?: string;
+    'batches.createdFor'?: string[];
 }
 
 
@@ -23,9 +24,7 @@ export interface PageAssembleCriteria extends CachedItemRequest {
     filters?: PageAssembleFilter;
     sections?: {
         [sectionId: string]: {
-            filters: {
-                'batches.createdFor': string[]
-            }
+            filters?: PageAssembleFilter
         }
     };
 }
