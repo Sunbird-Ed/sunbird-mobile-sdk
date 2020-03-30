@@ -160,15 +160,15 @@ export class SearchContentHandler {
         };
     }
 
-    getSortByRequest(sortCriteria: ContentSortCriteria[]): any {
-        if (!sortCriteria || !sortCriteria!.length) {
+    getSortByRequest(sortCriteria?: ContentSortCriteria[]): {[key: string]: SortOrder} {
+        if (!sortCriteria) {
             return {};
         }
-        const attribute = sortCriteria[0].sortAttribute;
-        const sortOrder: SortOrder = sortCriteria[0].sortOrder;
-        const sortByFilter = {};
-        sortByFilter[attribute] = sortOrder;
-        return sortByFilter;
+
+        return sortCriteria.reduce((acc, criteria) => {
+            acc[criteria.sortAttribute] = criteria.sortOrder;
+            return acc;
+        }, {});
     }
 
     getCompatibilityLevelFilter(): any {

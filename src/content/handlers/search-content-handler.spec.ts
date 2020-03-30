@@ -147,17 +147,29 @@ describe('SearchContentHandler', () => {
         expect(filter.length).toBeGreaterThan(0);
     });
 
-    it('should sort all Attributes to invocked getSortByRequest()', () => {
-        // arrange
-        const sortCriteria: ContentSortCriteria[] = [{
-            sortAttribute: 'key',
-            sortOrder: SortOrder.ASC
-        }];
-        // act
-        searchContentHandler.getSortByRequest(sortCriteria);
-        // assert
-        expect(sortCriteria[0].sortAttribute).toBe('key');
-        expect(sortCriteria[0].sortOrder).toBe('asc');
+    describe('getSortByRequest()', () => {
+        it('should return empty map if no criteria is provided', () => {
+            // arrange
+            const sortCriteria: ContentSortCriteria[] = [];
+            // act / assert
+            expect(searchContentHandler.getSortByRequest(sortCriteria)).toEqual({});
+        });
+
+        it('should return map of attribute:sortOrder given sortCriteria', () => {
+            // arrange
+            const sortCriteria: ContentSortCriteria[] = [{
+                sortAttribute: 'key1',
+                sortOrder: SortOrder.ASC
+            }, {
+                sortAttribute: 'key2',
+                sortOrder: SortOrder.DESC
+            }];
+            // act / assert
+            expect(searchContentHandler.getSortByRequest(sortCriteria)).toEqual({
+                key1: 'asc',
+                key2: 'desc'
+            });
+        });
     });
 
     it('should create filter by previousCriteria and return contentFilterCriteria', () => {

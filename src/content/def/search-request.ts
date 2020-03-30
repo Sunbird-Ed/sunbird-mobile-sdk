@@ -1,4 +1,4 @@
-import {ContentSortCriteria} from './requests';
+import {ContentSortCriteria, SortOrder} from './requests';
 import {ContentData} from './content';
 
 export interface SearchRequest {
@@ -10,7 +10,7 @@ export interface SearchRequest {
     mode?: string;
     exists?: string[];
     facets?: string[];
-    sort_by?: ContentSortCriteria[];
+    sort_by?: {[key: string]: SortOrder};
 }
 
 export interface SearchFilter {
