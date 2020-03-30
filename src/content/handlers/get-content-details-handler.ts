@@ -21,9 +21,9 @@ import {ContentAccess, ProfileService, ProfileSession} from '../../profile';
 import {ContentMarkerHandler} from './content-marker-handler';
 import {ContentUtil} from '../util/content-util';
 import {EventNamespace, EventsBusService} from '../../events-bus';
+import {map, mergeMap, tap} from 'rxjs/operators';
 import COLUMN_NAME_MIME_TYPE = ContentEntry.COLUMN_NAME_MIME_TYPE;
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
-import { map, mergeMap, tap } from 'rxjs/operators';
 
 export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
     private readonly GET_CONTENT_DETAILS_ENDPOINT = '/read';
@@ -64,7 +64,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
 
                 return of(ContentMapper.mapContentDBEntryToContent(contentDbEntry)).pipe(
                     mergeMap((content: Content) => {
-                        if (typeof(content.contentData.originData) === 'string') {
+                        if (typeof (content.contentData.originData) === 'string') {
                             content.contentData.originData = JSON.parse(content.contentData.originData);
                         }
                         return this.decorateContent({
@@ -160,7 +160,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 .withType(HttpRequestType.GET)
                 .withPath(this.contentServiceConfig.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + '/' + request.contentId)
                 .withParameters({
-                    licenseDetails : 'name,url,description'
+                    licenseDetails: 'name,url,description'
                 })
                 .withApiToken(true)
                 .build()
@@ -216,7 +216,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
 
     private attachContentAccess(content: Content): Observable<Content> {
         return this.profileService.getActiveProfileSession().pipe(
-            mergeMap(({ uid }: ProfileSession) => {
+            mergeMap(({uid}: ProfileSession) => {
                 return this.profileService.getAllContentAccess({
                     contentId: content.identifier,
                     uid
@@ -234,7 +234,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
 
     private attachFeedback(content: Content): Observable<Content> {
         return this.profileService.getActiveProfileSession().pipe(
-            mergeMap(({ uid }: ProfileSession) => {
+            mergeMap(({uid}: ProfileSession) => {
                 return this.contentFeedbackService.getFeedback({
                     contentId: content.identifier,
                     uid
@@ -265,4 +265,3 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
         );
     }
 }
-

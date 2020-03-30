@@ -1,6 +1,6 @@
 import {ContentAccessEntry, ContentEntry, ContentMarkerEntry} from '../db/schema';
-import {ContentUtil} from '../util/content-util';
 import {Content, ContentData} from '..';
+import {ContentUtil} from './content-util';
 
 export class ContentMapper {
     public static mapContentDataToContentDBEntry(contentData, manifestVersion: string): ContentEntry.SchemaMap {
@@ -50,7 +50,6 @@ export class ContentMapper {
             lastUsedTime: 0,
             lastUpdatedTime: 0,
         };
-
     }
 
     public static mapContentDBEntryToContent(contentEntry: ContentEntry.SchemaMap, shouldConvertBasePath?: boolean): Content {
@@ -122,7 +121,7 @@ export class ContentMapper {
         }
 
         const sizeOnDevice = Number(contentEntry[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]);
-        const size = sizeOnDevice ? sizeOnDevice : Number(serverData ? serverData.size : 0 );
+        const size = sizeOnDevice ? sizeOnDevice : Number(serverData ? serverData.size : 0);
 
         const basePath = contentEntry[ContentEntry.COLUMN_NAME_PATH]! || '';
         return {
@@ -130,7 +129,7 @@ export class ContentMapper {
             contentData: contentData,
             isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
             mimeType: mimeType,
-            basePath: !shouldConvertBasePath ? basePath :  '/_app_file_' + basePath   ,
+            basePath: !shouldConvertBasePath ? basePath : '/_app_file_' + basePath,
             contentType: contentType,
             isAvailableLocally: ContentUtil.isAvailableLocally(contentEntry[ContentEntry.COLUMN_NAME_CONTENT_STATE]!),
             referenceCount: Number(contentEntry[ContentEntry.COLUMN_NAME_REF_COUNT]) || 0,
@@ -138,7 +137,5 @@ export class ContentMapper {
             lastUsedTime: lastUsedTime || 0,
             lastUpdatedTime: contentCreationTime,
         };
-
-
     }
 }

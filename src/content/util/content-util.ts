@@ -1,12 +1,12 @@
 import {ContentData, HierarchyInfo} from '../def/content';
 import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from './content-constants';
-import {ChildContent} from '../def/response';
 import {Rollup} from '../../telemetry';
 import {AppConfig} from '../../api/config/app-config';
 import {ContentEntry} from '../db/schema';
 import {NumberUtil} from '../../util/number-util';
 import {ArrayUtil} from '../../util/array-util';
 import * as dayjs from 'dayjs';
+import {ChildContent} from '..';
 
 export class ContentUtil {
     public static defaultCompatibilityLevel = 1;
