@@ -1,8 +1,17 @@
-import {ContentEventType, FileName, ImportContentContext} from '../..';
+import {
+    ContentDisposition,
+    ContentEncoding,
+    ContentEventType,
+    ContentStatus,
+    FileName,
+    ImportContentContext,
+    MimeType,
+    State,
+    Visibility
+} from '../..';
 import {SharedPreferences} from '../../../util/shared-preferences';
 import {UpdateSizeOnDevice} from './update-size-on-device';
 import {Response} from '../../../api';
-import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from '../..';
 import {FileService} from '../../../util/file/def/file-service';
 import {DbService} from '../../../db';
 import {ContentUtil} from '../../util/content-util';
@@ -94,7 +103,8 @@ export class ExtractPayloads {
             const board = item.board;
             const medium = item.medium;
             const grade = item.gradeLevel;
-            // const dialCodes = item.dialcodes;
+            const dialcodes = item.dialcodes;
+            const childNodes = item.childNodes;
             let contentState = State.ONLY_SPINE.valueOf();
             let payloadDestination: string | undefined;
 
@@ -205,7 +215,7 @@ export class ExtractPayloads {
             }
             const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
                 JSON.stringify(item), mimeType, contentType, visibility, basePath,
-                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade);
+                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade, dialcodes, childNodes);
             if (!existingContentModel) {
                 insertNewContentModels.push(newContentModel);
             } else {
@@ -402,7 +412,9 @@ export class ExtractPayloads {
 
     private constructContentDBModel(identifier, manifestVersion, localData,
                                     mimeType, contentType, visibility, path,
-                                    refCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
+                                    refCount, contentState, audience, pragma, sizeOnDevice,
+                                    board, medium, grade,
+                                    dialcodes, childNodes): ContentEntry.SchemaMap {
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
@@ -420,7 +432,9 @@ export class ExtractPayloads {
             [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: dayjs(Date.now()).format(),
             [ContentEntry.COLUMN_NAME_BOARD]: ContentUtil.getContentAttribute(board),
             [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
-            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)
+            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade),
+            [ContentEntry.COLUMN_NAME_DIALCODES]: ContentUtil.getContentAttribute(dialcodes),
+            [ContentEntry.COLUMN_NAME_CHILD_NODES]: ContentUtil.getContentAttribute(childNodes)
         };
     }
 

@@ -90,11 +90,11 @@ import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
-import {GetContentHeirarchyHandler} from './../handlers/get-content-heirarchy-handler';
 import {catchError, map, mapTo, mergeMap, take} from 'rxjs/operators';
 import {CopyToDestination} from '../handlers/export/copy-to-destination';
-import {DeleteTempDir} from './../handlers/export/deletete-temp-dir';
 import {AppInfo} from '../../util/app';
+import {GetContentHeirarchyHandler} from '../handlers/get-content-heirarchy-handler';
+import {DeleteTempDir} from '../handlers/export/deletete-temp-dir';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -280,8 +280,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             contentModelsToExport: contentsInDb,
                             tmpLocationPath: tempLocationPath.nativeURL
                         };
-                    //     return new CleanTempLoc(this.fileService).execute(exportContentContext);
-                    // }).then((exportResponse: Response) => {
+                        //     return new CleanTempLoc(this.fileService).execute(exportContentContext);
+                        // }).then((exportResponse: Response) => {
                         return new CreateTempLoc(this.fileService).execute(exportContentContext);
                     }).then((exportResponse: Response) => {
                         return new CreateContentExportManifest(this.dbService, exportHandler).execute(exportResponse.body);
@@ -297,8 +297,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         return new EcarBundle(this.fileService, this.zipService).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
                         return new CopyToDestination().execute(exportResponse, contentExportRequest);
-                    // }).then((exportResponse: Response) => {
-                    //     return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
+                        // }).then((exportResponse: Response) => {
+                        //     return new DeleteTempEcar(this.fileService).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
                         return new DeleteTempDir().execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
@@ -334,7 +334,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 const data = JSON.parse(rows[0][ContentEntry.COLUMN_NAME_LOCAL_DATA]);
                 const childIdentifiers = data.childNodes;
 
-                // const childIdentifiers = await childContentHandler.getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
+                // const childIdentifiers = await childContentHandler
+                // .getChildIdentifiersFromManifest(rows[0][ContentEntry.COLUMN_NAME_PATH]!);
                 console.log('childIdentifiers', childIdentifiers);
                 if (childIdentifiers) {
                     const query = `SELECT * FROM ${ContentEntry.TABLE_NAME}
@@ -397,7 +398,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                     correlationData: contentImport.correlationData,
                                     rollUp: contentImport.rollUp,
                                     contentMeta: contentData,
-                                    withPriority: contentImportRequest.withPriority || (contentData.mimeType === MimeType.COLLECTION.valueOf() ? 1 : 0)
+                                    withPriority: contentImportRequest.withPriority ||
+                                        (contentData.mimeType === MimeType.COLLECTION.valueOf() ? 1 : 0)
                                 };
                                 downloadRequestList.push(downloadRequest);
                             }
@@ -626,7 +628,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         return this.dbService.delete({
                             table: ContentMarkerEntry.TABLE_NAME,
                             selection: `${ContentMarkerEntry.COLUMN_NAME_UID} = ? AND ${ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER
-                                } = ? AND ${ContentMarkerEntry.COLUMN_NAME_MARKER} = ?`,
+                            } = ? AND ${ContentMarkerEntry.COLUMN_NAME_MARKER} = ?`,
                             selectionArgs: [contentMarkerRequest.uid, contentMarkerRequest.contentId, '' + contentMarkerRequest.marker]
                         }).pipe(
                             map(v => v!)
@@ -851,7 +853,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             return {
                 contents: contentsGroupedBySubject[sub],
                 name: sub.charAt(0).toUpperCase() + sub.slice(1),
-                display: { name: { en: sub } } // TODO : need to handle localization
+                display: {name: {en: sub}} // TODO : need to handle localization
             };
         });
 
