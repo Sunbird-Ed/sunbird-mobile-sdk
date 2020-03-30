@@ -15,6 +15,8 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
     private readonly PAGE_ASSEMBLE_ENDPOINT = '/page/assemble';
     private readonly DIALCODE_ASSEMBLE_ENDPOINT = '/dial/assemble';
 
+    private ssoSectionIdMap = new Map<string, string>();
+
     constructor(private apiService: ApiService,
                 private pageApiServiceConfig: PageServiceConfig,
                 private cachedItemStore: CachedItemStore,
@@ -66,10 +68,13 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
                         request.sections = {
                             [sectionId]: {
                                 filters: {
-                                    'batches.createdFor': [activeChannelId]
+                                    'batches.createdFor': [activeChannelId],
+                                    ...request.filters
                                 }
                             }
                         };
+
+                        this.ssoSectionIdMap.set(request.name + '-' + activeChannelId, sectionId);
                     }
                 }
             }
@@ -84,6 +89,15 @@ export class PageAssemblerHandler implements ApiRequestHandler<PageAssembleCrite
                 }
 
                 return this.fetchFromCache(request);
+            }),
+            map((response) => {
+                const ssoPageSectionId = this.ssoSectionIdMap.get(request.name + '-' + this.frameworkService.activeChannelId);
+
+                if (ssoPageSectionId) {
+                    response.ssoSectionId = ssoPageSectionId;
+                }
+
+                return response;
             })
         );
     }
