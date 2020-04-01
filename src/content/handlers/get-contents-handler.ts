@@ -163,13 +163,13 @@ export class GetContentsHandler {
             { field: 'childNodes', column: ContentEntry.COLUMN_NAME_CHILD_NODES }
         ];
 
-        return fields.map(({field, column}) => {
+        return fields.reduce<string[]>((acc, {field, column}) => {
             if (request[field] && request[field].length) {
-                return this.generateLikeQuery(request[field], column);
+                acc.push(this.generateLikeQuery(request[field], column));
             }
 
-            return '';
-        }).join(` AND `);
+            return acc;
+        }, []).join(` AND `);
     }
 
     private generateLikeQuery(data: string[], coloumnName: string): string {

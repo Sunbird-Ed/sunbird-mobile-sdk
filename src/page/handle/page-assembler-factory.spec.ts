@@ -261,7 +261,7 @@ describe('PageAssemblerFactory', () => {
                 mockKeyValueStore.setValue = jest.fn().mockReturnValue(of(true));
 
                 // act
-                pageAssemblerHandler.handle(request).subscribe(() => {
+                pageAssemblerHandler.handle(request).subscribe((response) => {
                     expect(mockApiService.fetch).toBeCalledWith(expect.objectContaining({
                         _body: expect.objectContaining({
                             request: expect.objectContaining({
@@ -276,6 +276,9 @@ describe('PageAssemblerFactory', () => {
                                 })
                             })
                         })
+                    }));
+                    expect(response).toEqual(expect.objectContaining({
+                        ssoSectionId: 'SOME_SECTION_ID'
                     }));
                     done();
                 });

@@ -1,8 +1,8 @@
 import {ApiRequestHandler} from '../../../api';
 import {PageAssembleCriteria} from '../..';
-import {PageAssemble} from '../../index';
+import {PageAssemble} from '../..';
 import {defer, Observable} from 'rxjs';
-import {mergeMap} from 'rxjs/operators';
+import {map, mergeMap} from 'rxjs/operators';
 import {DefaultRequestDelegate} from './default-request-delegate';
 import {AuthService} from '../../../auth';
 import {FrameworkService} from '../../../framework';
@@ -10,6 +10,8 @@ import {SystemSettingsService} from '../../../system-settings';
 
 export class CourseRequestDelegate implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private static readonly SSO_COURSE_SECTION_ID = 'ssoCourseSection';
+
+    private ssoSectionIdMap = new Map<string, string>();
 
     constructor(
         private defaultDelegate: DefaultRequestDelegate,
@@ -52,6 +54,8 @@ export class CourseRequestDelegate implements ApiRequestHandler<PageAssembleCrit
                             }
                         }
                     };
+
+                    this.ssoSectionIdMap.set(request.name + '-' + activeChannelId, sectionId);
                 }
             }
 
@@ -59,6 +63,15 @@ export class CourseRequestDelegate implements ApiRequestHandler<PageAssembleCrit
         }).pipe(
             mergeMap((pageAssembleRequest) => {
                 return this.defaultDelegate.handle(pageAssembleRequest);
+            }),
+            map((response) => {
+                const ssoPageSectionId = this.ssoSectionIdMap.get(request.name + '-' + this.frameworkService.activeChannelId);
+
+                if (ssoPageSectionId) {
+                    response.ssoSectionId = ssoPageSectionId;
+                }
+
+                return response;
             })
         );
     }
