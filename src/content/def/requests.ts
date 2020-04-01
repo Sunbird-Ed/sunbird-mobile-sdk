@@ -37,6 +37,8 @@ export interface ContentRequest {
     board?: string[];
     medium?: string[];
     grade?: string[];
+    dialcodes?: string[];
+    childNodes?: string[];
 }
 
 export interface ContentSortCriteria {
