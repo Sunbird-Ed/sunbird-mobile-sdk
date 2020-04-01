@@ -35,20 +35,20 @@ export class FrameworkUtilServiceImpl implements FrameworkUtilService {
                 )
             ),
             mergeMap((channel: Channel) => {
-                if (channel.frameworks) {
-                    return of(channel.frameworks).pipe(
-                        map((frameworks) =>
-                            frameworks
-                                .map((f) => FrameworkMapper.prepareFrameworkCategoryAssociations(f))
-                                .map((f) => FrameworkMapper.prepareFrameworkTranslations(
-                                    f, getSuggestedFrameworksRequest.language)
-                                )
-                        )
-                    );
-                }
+                // if (channel.frameworks) {
+                //     return of(channel.frameworks).pipe(
+                //         map((frameworks) =>
+                //             frameworks
+                //                 .map((f) => FrameworkMapper.prepareFrameworkCategoryAssociations(f))
+                //                 .map((f) => FrameworkMapper.prepareFrameworkTranslations(
+                //                     f, getSuggestedFrameworksRequest.language)
+                //                 )
+                //         )
+                //     );
+                // }
 
                 return this.frameworkService.getFrameworkDetails({
-                    frameworkId: channel.defaultFramework,
+                    frameworkId: 'fw_for_health',
                     requiredCategories: getSuggestedFrameworksRequest.requiredCategories
                 }).pipe(
                     map((framework: Framework) => {
