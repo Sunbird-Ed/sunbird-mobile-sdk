@@ -14,7 +14,7 @@ import {
 import { ApiService } from '../../api';
 import { mockSdkConfig } from './page-assemble-service-impl.spec.data';
 import { PageName, PageAssembleCriteria } from '..';
-import {PageAssemblerHandler} from '../handle/page-assembler-handler';
+import {PageAssemblerFactory} from '../handle/page-assembler-factory';
 import { of } from 'rxjs';
 
 jest.mock('../handle/page-assembler-handler');
@@ -46,7 +46,7 @@ describe('PageAssembleServiceImpl', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        (PageAssemblerHandler as any as jest.Mock<PageAssemblerHandler>).mockClear();
+        (PageAssemblerFactory as any as jest.Mock<PageAssemblerFactory>).mockClear();
     });
 
     it('should be create a instance of pageAssembleServiceImpl', () => {
@@ -62,10 +62,10 @@ describe('PageAssembleServiceImpl', () => {
 
         const handleMethod = jest.fn().mockImplementation(() => of(''));
 
-        (PageAssemblerHandler as any as jest.Mock<PageAssemblerHandler>).mockImplementation(() => {
+        (PageAssemblerFactory as any as jest.Mock<PageAssemblerFactory>).mockImplementation(() => {
             return {
                 handle: handleMethod,
-            } as Partial<PageAssemblerHandler> as PageAssemblerHandler;
+            } as Partial<PageAssemblerFactory> as PageAssemblerFactory;
         });
         // act
         pageAssembleServiceImpl.getPageAssemble(request).subscribe(() => {

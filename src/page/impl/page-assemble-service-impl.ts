@@ -1,17 +1,17 @@
 import {PageAssembleCriteria, PageAssembleService, PageServiceConfig} from '..';
 import {PageAssemble} from '..';
 import {Observable} from 'rxjs';
-import {PageAssemblerHandler} from '../handle/page-assembler-handler';
+import {PageAssemblerFactory} from '../handle/page-assembler-factory';
 import {ApiService} from '../../api';
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import { SharedPreferences } from '../../util/shared-preferences';
 import { inject, injectable } from 'inversify';
 import { InjectionTokens } from '../../injection-tokens';
 import { SdkConfig } from '../../sdk-config';
-import {ProfileService} from '../../profile';
 import {FrameworkService} from '../../framework';
 import {AuthService} from '../../auth';
 import {SystemSettingsService} from '../../system-settings';
+import {ContentService} from '../../content';
 
 @injectable()
 export class PageAssembleServiceImpl implements PageAssembleService {
@@ -27,12 +27,13 @@ export class PageAssembleServiceImpl implements PageAssembleService {
         @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
         @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService,
         @inject(InjectionTokens.SYSTEM_SETTINGS_SERVICE) private systemSettingsService: SystemSettingsService,
+        @inject(InjectionTokens.CONTENT_SERVICE) private contentService: ContentService
     ) {
         this.pageAssembleServiceConfig = this.sdkConfig.pageServiceConfig;
     }
 
     getPageAssemble(criteria: PageAssembleCriteria): Observable<PageAssemble> {
-        return new PageAssemblerHandler(
+        return new PageAssemblerFactory(
             this.apiService,
             this.pageAssembleServiceConfig,
             this.cachedItemStore,
@@ -40,7 +41,8 @@ export class PageAssembleServiceImpl implements PageAssembleService {
             this.sharedPreferences,
             this.frameworkService,
             this.authService,
-            this.systemSettingsService
+            this.systemSettingsService,
+            this.contentService
         ).handle(criteria);
     }
 
