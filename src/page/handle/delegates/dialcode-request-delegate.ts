@@ -3,12 +3,15 @@ import {PageAssembleCriteria} from '../..';
 import {PageAssemble} from '../..';
 import {defer, Observable} from 'rxjs';
 import {DefaultRequestDelegate} from './default-request-delegate';
-import {ContentData, ContentService} from '../../../content';
+import {ContentData} from '../../../content';
+import {DbService} from '../../../db';
+import {ContentEntry} from '../../../content/db/schema';
+import {ContentMapper} from '../../../content/util/content-mapper';
 
 export class DialcodeRequestDelegate implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     constructor(
         private defaultDelegate: DefaultRequestDelegate,
-        private contentService: ContentService
+        private dbService: DbService
     ) {
     }
 
@@ -23,17 +26,16 @@ export class DialcodeRequestDelegate implements ApiRequestHandler<PageAssembleCr
             }
 
             if (request.filters && request.filters.dialcodes) {
-                const localContents = (await this.contentService.getContents({
-                    contentTypes: [],
-                    dialcodes: [request.filters.dialcodes]
-                }).toPromise()).map((c) => c.contentData);
+                const query = `SELECT c.* FROM content c WHERE dialcodes LIKE '%%~${request.filters.dialcodes}~%%'`;
+                const localContents = ((await this.dbService.execute(query).toPromise()) as ContentEntry.SchemaMap[])
+                    .map((e) => ContentMapper.mapContentDBEntryToContent(e).contentData);
 
                 if (pageAssemble && pageAssemble.sections[0] && localContents.length) {
                     pageAssemble = await this.mergePageAssembleWithLocalContents(
                         pageAssemble,
                         localContents
                     );
-                } else {
+                } else if (!pageAssemble && localContents.length) {
                     pageAssemble = await this.buildPageAssembleWithLocalContents(
                         localContents
                     );
@@ -126,10 +128,9 @@ export class DialcodeRequestDelegate implements ApiRequestHandler<PageAssembleCr
         }
 
         for (const content of localContents) {
-            const localCollectionsContainingContent = (await this.contentService.getContents({
-                contentTypes: [],
-                childNodes: [content.identifier]
-            }).toPromise()).map(c => c.contentData);
+            const query = `SELECT c.* FROM content c WHERE c.visibility = 'Default' AND ref_count > 0 AND child_nodes LIKE '%%~${content.identifier}~%%'`;
+            const localCollectionsContainingContent = ((await this.dbService.execute(query).toPromise()) as ContentEntry.SchemaMap[])
+                .map((e) => ContentMapper.mapContentDBEntryToContent(e).contentData);
 
             if (localCollectionsContainingContent.length) {
                 for (const localCollection of localCollectionsContainingContent) {

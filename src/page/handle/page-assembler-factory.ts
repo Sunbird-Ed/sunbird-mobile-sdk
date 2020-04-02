@@ -6,10 +6,10 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {AuthService} from '../../auth';
 import {FrameworkService} from '../../framework';
 import {SystemSettingsService} from '../../system-settings';
-import {ContentService} from '../../content';
 import {DefaultRequestDelegate} from './delegates/default-request-delegate';
 import {DialcodeRequestDelegate} from './delegates/dialcode-request-delegate';
 import {CourseRequestDelegate} from './delegates/course-request-delegate';
+import {DbService} from '../../db';
 
 export class PageAssemblerFactory implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private readonly defaultRequestDelegate: DefaultRequestDelegate;
@@ -25,7 +25,7 @@ export class PageAssemblerFactory implements ApiRequestHandler<PageAssembleCrite
         private frameworkService: FrameworkService,
         private authService: AuthService,
         private systemSettingsService: SystemSettingsService,
-        private contentService: ContentService
+        private dbService: DbService
     ) {
         this.defaultRequestDelegate = new DefaultRequestDelegate(
             apiService,
@@ -37,7 +37,7 @@ export class PageAssemblerFactory implements ApiRequestHandler<PageAssembleCrite
 
         this.dialcodeRequestDelegate = new DialcodeRequestDelegate(
             this.defaultRequestDelegate,
-            contentService
+            dbService
         );
 
         this.courseRequestDelegate = new CourseRequestDelegate(

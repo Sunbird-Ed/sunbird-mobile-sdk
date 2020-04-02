@@ -3,7 +3,7 @@ import {
     ApiService,
     AuthService,
     CachedItemRequestSourceFrom,
-    CachedItemStore, ContentRequest, ContentService,
+    CachedItemStore, DbService,
     FrameworkService,
     KeyValueStore,
     SharedPreferences,
@@ -12,6 +12,7 @@ import {
 import {PageAssembleCriteria, PageName, PageServiceConfig} from '..';
 import {of, throwError} from 'rxjs';
 import {DialcodeRequestData} from './page-assembler-factory.spec.data';
+import {ContentMapper} from '../../content/util/content-mapper';
 
 describe('PageAssemblerFactory', () => {
     let pageAssemblerHandler: PageAssemblerFactory;
@@ -23,7 +24,7 @@ describe('PageAssemblerFactory', () => {
     const mockFrameworkService: Partial<FrameworkService> = {};
     const mockAuthService: Partial<AuthService> = {};
     const mockSystemSettingsService: Partial<SystemSettingsService> = {};
-    const mockContentService: Partial<ContentService> = {};
+    const mockDbService: Partial<DbService> = {};
 
     beforeAll(() => {
         pageAssemblerHandler = new PageAssemblerFactory(
@@ -35,7 +36,7 @@ describe('PageAssemblerFactory', () => {
             mockFrameworkService as FrameworkService,
             mockAuthService as AuthService,
             mockSystemSettingsService as SystemSettingsService,
-            mockContentService as ContentService
+            mockDbService as DbService
         );
     });
 
@@ -298,7 +299,7 @@ describe('PageAssemblerFactory', () => {
                    };
 
                    mockCachedItemStore.getCached = jest.fn().mockReturnValue(throwError(new Error('some_error')));
-                   mockContentService.getContents = jest.fn().mockReturnValue(of([]));
+                   mockDbService.execute = jest.fn().mockReturnValue(of([]));
                    mockApiService.fetch = jest.fn().mockReturnValue(throwError(new Error('some_error')));
 
                    // act
@@ -326,9 +327,10 @@ describe('PageAssemblerFactory', () => {
 
                         mockCachedItemStore.getCached = jest.fn().mockReturnValue(throwError(new Error('some_error')));
                         mockApiService.fetch = jest.fn().mockReturnValue(throwError(new Error('some_error')));
-                        mockContentService.getContents = jest.fn().mockImplementation((contentRequest: ContentRequest) => {
-                            if (contentRequest.dialcodes) {
-                                return of(DialcodeRequestData.contentsWithOnlyDialcode);
+                        mockDbService.execute = jest.fn().mockImplementation((query: string) => {
+                            if (query.includes('dialcodes LIKE')) {
+                                return of(DialcodeRequestData.contentsWithOnlyDialcode
+                                    .map((c) => ContentMapper.mapContentDataToContentDBEntry(c.contentData, '')));
                             }
 
                             return of([]);
@@ -359,12 +361,14 @@ describe('PageAssemblerFactory', () => {
 
                         mockCachedItemStore.getCached = jest.fn().mockReturnValue(throwError(new Error('some_error')));
                         mockApiService.fetch = jest.fn().mockReturnValue(throwError(new Error('some_error')));
-                        mockContentService.getContents = jest.fn().mockImplementation((contentRequest: ContentRequest) => {
-                            if (contentRequest.dialcodes) {
-                                return of(DialcodeRequestData.contentsWithContentsAndCorrespondingCollection.contents);
+                        mockDbService.execute = jest.fn().mockImplementation((query: string) => {
+                            if (query.includes('dialcodes LIKE')) {
+                                return of(DialcodeRequestData.contentsWithContentsAndCorrespondingCollection.contents
+                                    .map((c) => ContentMapper.mapContentDataToContentDBEntry(c.contentData, '')));
                             }
 
-                            return of(DialcodeRequestData.contentsWithContentsAndCorrespondingCollection.collections);
+                            return of(DialcodeRequestData.contentsWithContentsAndCorrespondingCollection.collections
+                                .map((c) => ContentMapper.mapContentDataToContentDBEntry(c.contentData, '')));
                         });
 
                         // act
@@ -400,12 +404,14 @@ describe('PageAssemblerFactory', () => {
                             DialcodeRequestData.mockPageAssembleWithMissingLocalContentAndMissingCollection
                         ));
                         mockApiService.fetch = jest.fn().mockReturnValue(throwError(new Error('some_error')));
-                        mockContentService.getContents = jest.fn().mockImplementation((contentRequest: ContentRequest) => {
-                            if (contentRequest.dialcodes) {
-                                return of(DialcodeRequestData.contentsWithContentsAndCorrespondingCollection.contents);
+                        mockDbService.execute = jest.fn().mockImplementation((query: string) => {
+                            if (query.includes('dialcodes LIKE')) {
+                                return of(DialcodeRequestData.contentsWithContentsAndCorrespondingCollection.contents
+                                    .map((c) => ContentMapper.mapContentDataToContentDBEntry(c.contentData, '')));
                             }
 
-                            return of(DialcodeRequestData.contentsWithContentsAndCorrespondingCollection.collections);
+                            return of(DialcodeRequestData.contentsWithContentsAndCorrespondingCollection.collections
+                                .map((c) => ContentMapper.mapContentDataToContentDBEntry(c.contentData, '')));
                         });
 
                         // act
@@ -435,12 +441,14 @@ describe('PageAssemblerFactory', () => {
                             DialcodeRequestData.mockPageAssembleWithMissingLocalContentAndCollection
                         ));
                         mockApiService.fetch = jest.fn().mockReturnValue(throwError(new Error('some_error')));
-                        mockContentService.getContents = jest.fn().mockImplementation((contentRequest: ContentRequest) => {
-                            if (contentRequest.dialcodes) {
-                                return of(DialcodeRequestData.contentsWithContentsAndCorrespondingCollection.contents);
+                        mockDbService.execute = jest.fn().mockImplementation((query: string) => {
+                            if (query.includes('dialcodes LIKE')) {
+                                return of(DialcodeRequestData.contentsWithContentsAndCorrespondingCollection.contents
+                                    .map((c) => ContentMapper.mapContentDataToContentDBEntry(c.contentData, '')));
                             }
 
-                            return of(DialcodeRequestData.contentsWithContentsAndCorrespondingCollection.collections);
+                            return of(DialcodeRequestData.contentsWithContentsAndCorrespondingCollection.collections
+                                .map((c) => ContentMapper.mapContentDataToContentDBEntry(c.contentData, '')));
                         });
 
                         // act

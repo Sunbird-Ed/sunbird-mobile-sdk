@@ -11,7 +11,7 @@ import { SdkConfig } from '../../sdk-config';
 import {FrameworkService} from '../../framework';
 import {AuthService} from '../../auth';
 import {SystemSettingsService} from '../../system-settings';
-import {ContentService} from '../../content';
+import {DbService} from '../../db';
 
 @injectable()
 export class PageAssembleServiceImpl implements PageAssembleService {
@@ -27,7 +27,7 @@ export class PageAssembleServiceImpl implements PageAssembleService {
         @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
         @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService,
         @inject(InjectionTokens.SYSTEM_SETTINGS_SERVICE) private systemSettingsService: SystemSettingsService,
-        @inject(InjectionTokens.CONTENT_SERVICE) private contentService: ContentService
+        @inject(InjectionTokens.DB_SERVICE) private dbService: DbService
     ) {
         this.pageAssembleServiceConfig = this.sdkConfig.pageServiceConfig;
     }
@@ -42,7 +42,7 @@ export class PageAssembleServiceImpl implements PageAssembleService {
             this.frameworkService,
             this.authService,
             this.systemSettingsService,
-            this.contentService
+            this.dbService
         ).handle(criteria);
     }
 
