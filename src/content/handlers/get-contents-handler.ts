@@ -28,7 +28,7 @@ export class GetContentsHandler {
         const audienceFilter = this.getAudienceFilter(request.audience!);
         const pragmaFilter = this.getPragmaFilter(request.exclPragma!, request.pragma!);
 
-        const offlineSearchQuery = this.generateBoardMediumGradeQuery(request);
+        const offlineSearchQuery = this.generateFieldMatchQuery(request);
         if (audienceFilter) {
             filter = `${filter}  AND (${audienceFilter})`;
         }
@@ -154,26 +154,22 @@ export class GetContentsHandler {
         return orderByQuery;
     }
 
-    private generateBoardMediumGradeQuery(request: ContentRequest): string {
-        let query = '';
-        if (request.board && request.board.length) {
-            query = query.concat(this.generateLikeQuery(request.board, ContentEntry.COLUMN_NAME_BOARD));
-        }
+    private generateFieldMatchQuery(request: ContentRequest): string {
+        const fields = [
+            { field: 'board', column: ContentEntry.COLUMN_NAME_BOARD },
+            { field: 'medium', column: ContentEntry.COLUMN_NAME_MEDIUM },
+            { field: 'grade', column: ContentEntry.COLUMN_NAME_GRADE },
+            { field: 'dialcodes', column: ContentEntry.COLUMN_NAME_DIALCODES },
+            { field: 'childNodes', column: ContentEntry.COLUMN_NAME_CHILD_NODES }
+        ];
 
-        if (request.medium && request.medium.length) {
-            if (query) {
-                query = query.concat(` AND `);
+        return fields.reduce<string[]>((acc, {field, column}) => {
+            if (request[field] && request[field].length) {
+                acc.push(this.generateLikeQuery(request[field], column));
             }
-            query = query.concat(this.generateLikeQuery(request.medium, ContentEntry.COLUMN_NAME_MEDIUM));
-        }
 
-        if (request.grade && request.grade.length) {
-            if (query) {
-                query = query.concat(` AND `);
-            }
-            query = query.concat(this.generateLikeQuery(request.grade, ContentEntry.COLUMN_NAME_GRADE));
-        }
-        return query;
+            return acc;
+        }, []).join(` AND `);
     }
 
     private generateLikeQuery(data: string[], coloumnName: string): string {
