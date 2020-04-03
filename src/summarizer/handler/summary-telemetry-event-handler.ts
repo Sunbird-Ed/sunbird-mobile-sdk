@@ -148,9 +148,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                 const contentMimeType = content.mimeType;
                 // const validSummary = (summaryList: Array<any>) => (percentage: number) => _find(summaryList, (requiredProgress =>
                 //     summary => summary && summary.progress >= requiredProgress)(percentage));
-                if (
-                    content.contentType.toLowerCase() === 'selfassess' &&
-                    courseContext &&
+                if (courseContext &&
                     this.courseService.hasCapturedAssessmentEvent({courseContext})
                 ) {
                     return false;
