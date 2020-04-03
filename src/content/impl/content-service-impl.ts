@@ -562,8 +562,12 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     searchContent(contentSearchCriteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult> {
         const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
             this.contentServiceConfig, this.telemetryService);
+        const languageCode = contentSearchCriteria.languageCode;
         if (request) {
             contentSearchCriteria = searchHandler.getSearchCriteria(request);
+            if (languageCode) {
+                contentSearchCriteria.languageCode = languageCode;
+            }
         } else {
             contentSearchCriteria.limit = contentSearchCriteria.limit ? contentSearchCriteria.limit : 100;
             contentSearchCriteria.offset = contentSearchCriteria.offset ? contentSearchCriteria.offset : 0;
