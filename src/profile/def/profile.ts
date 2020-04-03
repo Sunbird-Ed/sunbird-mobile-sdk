@@ -2,7 +2,8 @@ import {ServerProfile} from './server-profile';
 
 export enum ProfileType {
     STUDENT = 'student',
-    TEACHER = 'teacher'
+    TEACHER = 'teacher',
+    OTHERS = 'others'
 }
 
 export enum ProfileSource {
