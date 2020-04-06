@@ -88,7 +88,7 @@ export class DialcodeRequestDelegate implements ApiRequestHandler<PageAssembleCr
 
         if (section.contents && section.contents.length) {
             const localContentsDiff = localContents.filter((localContent) => {
-                return !section.contents.find(
+                return !section.contents!.find(
                     responseContent => responseContent.identifier === localContent.identifier
                 );
             });
@@ -123,8 +123,8 @@ export class DialcodeRequestDelegate implements ApiRequestHandler<PageAssembleCr
         // dialcode to have utmost one section
         const section = pageAssemble.sections[0];
 
-        if (!section['collections']) {
-            section['collections'] = [];
+        if (!section.collections) {
+            section.collections = [];
         }
 
         for (const content of localContents) {
@@ -134,7 +134,7 @@ export class DialcodeRequestDelegate implements ApiRequestHandler<PageAssembleCr
 
             if (localCollectionsContainingContent.length) {
                 for (const localCollection of localCollectionsContainingContent) {
-                    const existingResponseCollection: ContentData = section['collections'].find((responseCollection) => {
+                    const existingResponseCollection: ContentData | undefined = section.collections!.find((responseCollection) => {
                         return responseCollection.identifier === localCollection.identifier;
                     });
 
@@ -143,7 +143,7 @@ export class DialcodeRequestDelegate implements ApiRequestHandler<PageAssembleCr
                             existingResponseCollection.childNodes.push(content.identifier);
                         }
                     } else {
-                        section['collections'].push({
+                        section.collections!.push({
                             ...localCollection,
                             childNodes: [content.identifier]
                         } as ContentData);
