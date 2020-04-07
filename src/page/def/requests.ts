@@ -15,8 +15,12 @@ export interface PageAssembleFilter {
     dialcodes?: string;
 }
 
+export interface SetPageAssembleChannelRequest {
+    channelId: string;
+}
 
 export interface PageAssembleCriteria extends CachedItemRequest {
+    organisationId?: string;
     name: PageName;
     source?: 'app' | 'web';
     mode?: 'soft' | 'hard';
@@ -26,5 +30,6 @@ export interface PageAssembleCriteria extends CachedItemRequest {
 export enum PageName {
     RESOURCE = 'Resource',
     COURSE = 'Course',
-    DIAL_CODE = 'DIAL Code Consumption'
+    ANONYMOUS_COURSE = 'AnonymousCourse',
+    DIAL_CODE = 'DIAL Code Consumption',
 }
