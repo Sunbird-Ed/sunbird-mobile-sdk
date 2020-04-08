@@ -39,10 +39,7 @@ describe('CourseServiceImpl', () => {
         fetch: jest.fn().mockImplementation(() => {
         })
     };
-    const mockProfileService: Partial<ProfileService> = {
-        getServerProfiles: jest.fn().mockImplementation(() => {
-        })
-    };
+    const mockProfileService: Partial<ProfileService> = {};
     const mockKeyValueStore: Partial<KeyValueStore> = {
         getValue: jest.fn().mockImplementation(() => {
         }),
@@ -332,7 +329,7 @@ describe('CourseServiceImpl', () => {
             courseService.syncAssessmentEvents().subscribe(() => {
                 // assert
                 expect(mockSyncAssessmentEventsHandler.handle).toHaveBeenCalledWith(
-                    expect.objectContaining({ 'SAMPLE_KEY': expect.any(Array) })
+                    expect.objectContaining({'SAMPLE_KEY': expect.any(Array)})
                 );
                 expect(courseService.resetCapturedAssessmentEvents).toHaveBeenCalled();
                 done();
@@ -345,7 +342,7 @@ describe('CourseServiceImpl', () => {
             spyOn(courseService, 'resetCapturedAssessmentEvents').and.stub();
 
             // act
-            courseService.syncAssessmentEvents({ persistedOnly: true }).subscribe(() => {
+            courseService.syncAssessmentEvents({persistedOnly: true}).subscribe(() => {
                 // assert
                 expect(mockSyncAssessmentEventsHandler.handle).toHaveBeenCalledWith(expect.objectContaining({}));
                 expect(courseService.resetCapturedAssessmentEvents).not.toHaveBeenCalled();

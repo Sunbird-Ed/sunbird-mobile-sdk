@@ -7,7 +7,6 @@ export * from './impl/profile-service-impl';
 export * from './config/profile-service-config';
 export * from './def/get-all-profile-request';
 export * from './def/update-server-profile-info-request';
-export * from './def/server-profile-search-criteria';
 export * from './errors/no-active-session-error';
 export * from './errors/no-profile-found-error';
 export * from './def/server-profile-details-request';
