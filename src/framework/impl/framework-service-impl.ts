@@ -1,10 +1,18 @@
 import {CachedItemStore} from '../../key-value-store';
-import {Channel, ChannelDetailsRequest, Framework, FrameworkDetailsRequest, FrameworkService, OrganizationSearchCriteria} from '..';
+import {
+    Channel,
+    ChannelDetailsRequest,
+    Framework,
+    FrameworkDetailsRequest,
+    FrameworkService,
+    OrganizationSearchCriteria,
+    OrganizationSearchResponse
+} from '..';
 import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
 import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
 import {FileService} from '../../util/file/def/file-service';
 import {Observable} from 'rxjs';
-import {Organization} from '../def/Organization';
+import {Organization} from '../def/organization';
 import {ApiService, HttpRequestType, Request} from '../../api';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';
@@ -86,7 +94,7 @@ export class FrameworkServiceImpl implements FrameworkService {
         ).handle(request);
     }
 
-    searchOrganization<T>(request: OrganizationSearchCriteria<T>): Observable<Organization<T>> {
+    searchOrganization<T extends Partial<Organization>>(request: OrganizationSearchCriteria<T>): Observable<OrganizationSearchResponse<T>> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.sdkConfig.frameworkServiceConfig.searchOrganizationApiPath + FrameworkServiceImpl.SEARCH_ORGANIZATION_ENDPOINT)
@@ -94,7 +102,7 @@ export class FrameworkServiceImpl implements FrameworkService {
             .withApiToken(true)
             .build();
 
-        return this.apiService.fetch<{ result: { response: Organization<T> } }>(apiRequest).pipe(
+        return this.apiService.fetch<{ result: { response: OrganizationSearchResponse<T> } }>(apiRequest).pipe(
             map((response) => {
                 return response.body.result.response;
             })

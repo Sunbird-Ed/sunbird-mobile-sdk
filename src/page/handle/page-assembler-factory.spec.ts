@@ -338,9 +338,9 @@ describe('PageAssemblerFactory', () => {
 
                         // act
                         pageAssemblerHandler.handle(request).subscribe((pageAssemble) => {
-                            expect(pageAssemble.sections[0]).toBeTruthy();
-                            expect(pageAssemble.sections[0].contents.length).toBe(1);
-                            expect(pageAssemble.sections[0]['collections'].length).toBe(0);
+                            expect(pageAssemble.sections[0]!).toBeTruthy();
+                            expect(pageAssemble.sections[0].contents!.length).toBe(1);
+                            expect(pageAssemble.sections[0].collections!.length).toBe(0);
 
                             done();
                         });
@@ -374,10 +374,10 @@ describe('PageAssemblerFactory', () => {
                         // act
                         pageAssemblerHandler.handle(request).subscribe((pageAssemble) => {
                             expect(pageAssemble.sections[0]).toBeTruthy();
-                            expect(pageAssemble.sections[0].contents.length).toBe(1);
-                            expect(pageAssemble.sections[0]['collections'].length).toBe(1);
-                            expect(pageAssemble.sections[0].contents[0].identifier).toBe('child_id');
-                            expect(pageAssemble.sections[0]['collections'][0].identifier).toBe('collection_id');
+                            expect(pageAssemble.sections[0].contents!.length).toBe(1);
+                            expect(pageAssemble.sections[0].collections!.length).toBe(1);
+                            expect(pageAssemble.sections[0].contents![0].identifier).toBe('child_id');
+                            expect(pageAssemble.sections[0].collections![0].identifier).toBe('collection_id');
 
                             done();
                         });
@@ -417,8 +417,8 @@ describe('PageAssemblerFactory', () => {
                         // act
                         pageAssemblerHandler.handle(request).subscribe((pageAssemble) => {
                             expect(pageAssemble.sections[0]).toBeTruthy();
-                            expect(pageAssemble.sections[0].contents.length).toBe(3);
-                            expect(pageAssemble.sections[0]['collections'].length).toBe(1);
+                            expect(pageAssemble.sections[0].contents!.length).toBe(3);
+                            expect(pageAssemble.sections[0].collections!.length).toBe(1);
 
                             done();
                         });
@@ -454,9 +454,9 @@ describe('PageAssemblerFactory', () => {
                         // act
                         pageAssemblerHandler.handle(request).subscribe((pageAssemble) => {
                             expect(pageAssemble.sections[0]).toBeTruthy();
-                            expect(pageAssemble.sections[0].contents.length).toBe(3);
-                            expect(pageAssemble.sections[0]['collections'].length).toBe(1);
-                            expect(pageAssemble.sections[0]['collections'][0].childNodes)
+                            expect(pageAssemble.sections[0].contents!.length).toBe(3);
+                            expect(pageAssemble.sections[0].collections!.length).toBe(1);
+                            expect(pageAssemble.sections[0].collections![0].childNodes)
                                 .toEqual(expect.arrayContaining(['do_31265486640564633624236']));
 
                             done();
