@@ -180,13 +180,10 @@ describe('CourseServiceImpl', () => {
                 }
             }
         }));
-        spyOn(mockAuthService, 'getSession').and.returnValue(of(['SAMPLE_SESSION']));
-        spyOn(mockProfileService, 'getServerProfiles').and.returnValue(of(['SAMPLE_PROFILE']));
         // act
         courseService.getCourseBatches(request).subscribe(() => {
             // assert
             expect(mockApiService.fetch).toHaveBeenCalled();
-            expect(mockProfileService.getServerProfiles).toHaveBeenCalled();
             done();
         });
     });
