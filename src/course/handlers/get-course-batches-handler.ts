@@ -5,7 +5,7 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 export class GetCourseBatchesHandler implements ApiRequestHandler<CourseBatchesRequest, Batch[]> {
-    private readonly GET_COURSE_BATCHES = '/batch/list?getCreator=true';
+    private readonly GET_COURSE_BATCHES = '/batch/list?creatorDetails';
 
     constructor(private apiService: ApiService,
                 private courseServiceConfig: CourseServiceConfig) {
