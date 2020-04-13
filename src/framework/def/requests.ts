@@ -12,6 +12,7 @@ export interface FrameworkDetailsRequest {
 export interface OrganizationSearchCriteria<T> {
     filters: {
         isRootOrg: boolean;
+        slug?: string;
     };
     fields?: (keyof T)[];
 }

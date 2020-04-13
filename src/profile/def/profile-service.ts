@@ -1,7 +1,6 @@
 import {Profile, ProfileSource} from './profile';
 import {Observable} from 'rxjs';
 import {TenantInfo} from './tenant-info';
-import {ServerProfileSearchCriteria} from './server-profile-search-criteria';
 import {ServerProfile} from './server-profile';
 import {UpdateServerProfileInfoRequest} from './update-server-profile-info-request';
 import {GetAllProfileRequest} from './get-all-profile-request';
@@ -23,9 +22,9 @@ import {ProfileImportResponse} from './profile-import-response';
 import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
 import {TenantInfoRequest} from './tenant-info-request';
 import {MergeServerProfilesRequest} from './merge-server-profiles-request';
-import {UserFeedResponse, UserFeed} from './user-feed-response';
-import { UserMigrateResponse } from './user-migrate-response';
-import { UserMigrateRequest } from './user-migrate-request';
+import {UserFeed} from './user-feed-response';
+import {UserMigrateResponse} from './user-migrate-response';
+import {UserMigrateRequest} from './user-migrate-request';
 
 
 export interface ProfileService extends SdkServicePreInitDelegate {
@@ -38,8 +37,6 @@ export interface ProfileService extends SdkServicePreInitDelegate {
     updateServerProfile(updateServerProfileRequest: UpdateServerProfileInfoRequest): Observable<Profile>;
 
     getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo>;
-
-    getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]>;
 
     getAllProfiles(profileRequest?: GetAllProfileRequest): Observable<Profile[]>;
 

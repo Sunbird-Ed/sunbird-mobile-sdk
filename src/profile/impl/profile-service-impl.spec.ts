@@ -1,5 +1,8 @@
 import {
     AcceptTermsConditionRequest,
+    ContentAccess,
+    ContentAccessStatus,
+    ContentLearnerState,
     GenerateOtpRequest,
     GetAllProfileRequest,
     IsProfileAlreadyInUseRequest,
@@ -8,6 +11,7 @@ import {
     NoActiveSessionError,
     NoProfileFoundError,
     Profile,
+    ProfileExportRequest,
     ProfileService,
     ProfileServiceImpl,
     ProfileSession,
@@ -15,15 +19,10 @@ import {
     ProfileType,
     ServerProfile,
     ServerProfileDetailsRequest,
-    ServerProfileSearchCriteria,
     TenantInfoRequest,
     UpdateServerProfileInfoRequest,
-    VerifyOtpRequest,
-    ContentAccess,
-    ContentAccessStatus,
-    ContentLearnerState,
-    ProfileExportRequest,
-    UserMigrateRequest
+    UserMigrateRequest,
+    VerifyOtpRequest
 } from '..';
 import {Container} from 'inversify';
 import {DeviceInfo} from '../../util/device';
@@ -36,13 +35,12 @@ import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {Channel, FrameworkService} from '../../framework';
 import {FileService} from '../../util/file/def/file-service';
 import {InjectionTokens} from '../../injection-tokens';
-import {Observable, throwError} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {ProfileEntry} from '../db/schema';
 import {AuthService, OAuthSession} from '../../auth';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
-import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
 import {AcceptTermConditionHandler} from '../handler/accept-term-condition-handler';
 import {ProfileExistsResponse} from '../def/profile-exists-response';
@@ -51,19 +49,17 @@ import {GenerateOtpHandler} from '../handler/generate-otp-handler';
 import {VerifyOtpHandler} from '../handler/verify-otp-handler';
 import {SearchLocationHandler} from '../handler/search-location-handler';
 import {LocationSearchResult} from '../def/location-search-result';
-import { of } from 'rxjs';
-import { ContentAccessFilterCriteria } from '../def/content-access-filter-criteria';
-import { ContentUtil } from '../../content/util/content-util';
-import { ProfileImportRequest } from '../def/profile-import-request';
-import { ValidateProfileMetadata } from '../handler/import/validate-profile-metadata';
-import { TransportProfiles } from '../handler/import/transport-profiles';
-import { TransportGroup } from '../handler/import/transport-group';
-import { UpdateImportedProfileMetadata } from '../handler/import/update-imported-profile-metadata';
-import { GetUserFeedHandler } from '../handler/get-userfeed-handler';
-import { UserMigrateHandler } from '../handler/user-migrate-handler';
+import {ContentAccessFilterCriteria} from '../def/content-access-filter-criteria';
+import {ContentUtil} from '../../content/util/content-util';
+import {ProfileImportRequest} from '../def/profile-import-request';
+import {ValidateProfileMetadata} from '../handler/import/validate-profile-metadata';
+import {TransportProfiles} from '../handler/import/transport-profiles';
+import {TransportGroup} from '../handler/import/transport-group';
+import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-profile-metadata';
+import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
+import {UserMigrateHandler} from '../handler/user-migrate-handler';
 
 jest.mock('../handler/update-server-profile-info-handler');
-jest.mock('../handler/search-server-profile-handler');
 jest.mock('../handler/tenant-info-handler');
 jest.mock('../handler/get-server-profile-details-handler');
 jest.mock('../handler/accept-term-condition-handler');
@@ -331,26 +327,6 @@ describe.only('ProfileServiceImpl', () => {
 
             // act
             profileService.updateServerProfile(request as UpdateServerProfileInfoRequest).subscribe((res) => {
-                // assert
-                expect(res).toBe(response);
-                done();
-            });
-        });
-    });
-
-    describe('getServerProfiles()', () => {
-        it('should delegate to SearchServerProfileHandler', (done) => {
-            // arrange
-            const response: ServerProfile[] = [];
-            (SearchServerProfileHandler as jest.Mock<SearchServerProfileHandler>).mockImplementation(() => {
-                return {
-                    handle: jest.fn().mockImplementation(() => of(response))
-                } as Partial<SearchServerProfileHandler> as SearchServerProfileHandler;
-            });
-            const request = {} as Partial<ServerProfileSearchCriteria>;
-
-            // act
-            profileService.getServerProfiles(request as ServerProfileSearchCriteria).subscribe((res) => {
                 // assert
                 expect(res).toBe(response);
                 done();
@@ -821,7 +797,7 @@ describe.only('ProfileServiceImpl', () => {
         it('shuld find access content and update content', (done) => {
             // arrange
             const learnerData: ContentLearnerState = {
-                learnerState: { 'key': 'sample-key' }
+                learnerState: {'key': 'sample-key'}
             };
             const request: ContentAccess = {
                 status: ContentAccessStatus.PLAYED,
@@ -847,7 +823,7 @@ describe.only('ProfileServiceImpl', () => {
         it('shuld find access content and insert new content', (done) => {
             // arrange
             const learnerData: ContentLearnerState = {
-                learnerState: { 'key': 'sample-key' }
+                learnerState: {'key': 'sample-key'}
             };
             const request: ContentAccess = {
                 status: ContentAccessStatus.PLAYED,
@@ -949,7 +925,7 @@ describe.only('ProfileServiceImpl', () => {
             // act
             profileService.importProfile(request).subscribe(() => {
                 // assert
-                 expect(mockDbService.read).toHaveBeenCalled();
+                expect(mockDbService.read).toHaveBeenCalled();
                 expect(mockDbService.execute).toHaveBeenCalled();
                 expect(mockDbService.insert).toHaveBeenCalled();
                 done();
