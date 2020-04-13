@@ -29,6 +29,35 @@ export class CachedItemStoreImpl implements CachedItemStore {
         return false;
     }
 
+    get<T>(
+        id: string,
+        noSqlkey: string,
+        timeToLiveKey: string,
+        fromServer: () => Observable<T>,
+        initial?: () => Observable<T>,
+        timeToLive?: number,
+        emptyCondition?: (item: T) => boolean
+    ): Observable<T> {
+        return fromServer().pipe(
+            tap((response) => {
+                this.saveItemTTL(id, timeToLiveKey).toPromise();
+
+                this.saveItemToDb(id, noSqlkey, response).toPromise();
+            }),
+            catchError(() => {
+                return this.getCached<T>(
+                    id,
+                    noSqlkey,
+                    timeToLiveKey,
+                    fromServer,
+                    initial,
+                    timeToLive,
+                    emptyCondition,
+                );
+            })
+        );
+    }
+
     public getCached<T>(
         id: string,
         noSqlkey: string,

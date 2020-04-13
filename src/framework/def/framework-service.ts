@@ -4,12 +4,13 @@ import {Observable} from 'rxjs';
 import {ChannelDetailsRequest, FrameworkDetailsRequest, OrganizationSearchCriteria} from './request-types';
 import {Organization} from './Organization';
 import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
+import {GetDefaultChannelDetailsRequest} from '..';
 
 export interface FrameworkService extends SdkServicePreInitDelegate {
     /** @internal */
     activeChannelId?: string;
 
-    getDefaultChannelDetails(): Observable<Channel>;
+    getDefaultChannelDetails(request?: GetDefaultChannelDetailsRequest): Observable<Channel>;
 
     getDefaultChannelId(): Observable<string>;
 

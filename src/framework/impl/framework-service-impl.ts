@@ -1,4 +1,4 @@
-import {CachedItemStore} from '../../key-value-store';
+import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {Channel, ChannelDetailsRequest, Framework, FrameworkDetailsRequest, FrameworkService, OrganizationSearchCriteria} from '..';
 import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
 import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
@@ -56,13 +56,16 @@ export class FrameworkServiceImpl implements FrameworkService {
         );
     }
 
-    getDefaultChannelDetails(): Observable<Channel> {
+    getDefaultChannelDetails(request = { from: CachedItemRequestSourceFrom.CACHE }): Observable<Channel> {
         return this.systemSettingsService.getSystemSettings({
             id: this.sdkConfig.frameworkServiceConfig.systemSettingsDefaultChannelIdKey
         }).pipe(
             map((r) => r.value),
             mergeMap((channelId: string) => {
-                return this.getChannelDetails({channelId: channelId});
+                return this.getChannelDetails({
+                    from: request.from,
+                    channelId: channelId
+                });
             })
         );
     }
