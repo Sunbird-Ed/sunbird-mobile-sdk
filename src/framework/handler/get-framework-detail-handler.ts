@@ -1,4 +1,4 @@
-import {CachedItemStore} from '../../key-value-store';
+import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {Path} from '../../util/file/util/path';
 import {FileService} from '../../util/file/def/file-service';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
@@ -25,7 +25,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
         return iif(
             () => !!request.frameworkId,
             defer(() => {
-                return this.cachedItemStore.getCached(
+                return this.cachedItemStore[request.from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
                     request.frameworkId!,
                     this.FRAMEWORK_LOCAL_KEY,
                     'ttl_' + this.FRAMEWORK_LOCAL_KEY,
@@ -36,6 +36,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
                 return this.frameworkService.getDefaultChannelDetails().pipe(
                     mergeMap((channel: Channel) =>
                         this.frameworkService.getFrameworkDetails({
+                            from: request.from,
                             frameworkId: channel.defaultFramework,
                             requiredCategories: request.requiredCategories
                         })
