@@ -1,10 +1,11 @@
 import {FrameworkCategoryCode} from './framework-category-code';
+import {CachedItemRequest} from '../../key-value-store';
 
-export interface ChannelDetailsRequest {
+export interface ChannelDetailsRequest extends CachedItemRequest {
     channelId: string;
 }
 
-export interface FrameworkDetailsRequest {
+export interface FrameworkDetailsRequest extends CachedItemRequest {
     frameworkId?: string;
     requiredCategories: FrameworkCategoryCode[];
 }
