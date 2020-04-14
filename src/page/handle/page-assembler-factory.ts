@@ -10,6 +10,7 @@ import {DefaultRequestDelegate} from './delegates/default-request-delegate';
 import {DialcodeRequestDelegate} from './delegates/dialcode-request-delegate';
 import {CourseRequestDelegate} from './delegates/course-request-delegate';
 import {DbService} from '../../db';
+import { ProfileService } from '../../profile';
 
 export class PageAssemblerFactory implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private readonly defaultRequestDelegate: DefaultRequestDelegate;
@@ -25,7 +26,8 @@ export class PageAssemblerFactory implements ApiRequestHandler<PageAssembleCrite
         private frameworkService: FrameworkService,
         private authService: AuthService,
         private systemSettingsService: SystemSettingsService,
-        private dbService: DbService
+        private dbService: DbService,
+        private profileService: ProfileService
     ) {
         this.defaultRequestDelegate = new DefaultRequestDelegate(
             apiService,
@@ -33,6 +35,9 @@ export class PageAssemblerFactory implements ApiRequestHandler<PageAssembleCrite
             sharedPreferences,
             cachedItemStore,
             keyValueStore,
+            authService,
+            profileService,
+            systemSettingsService
         );
 
         this.dialcodeRequestDelegate = new DialcodeRequestDelegate(

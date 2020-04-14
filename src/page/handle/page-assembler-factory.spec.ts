@@ -13,6 +13,7 @@ import {PageAssembleCriteria, PageName, PageServiceConfig} from '..';
 import {of, throwError} from 'rxjs';
 import {DialcodeRequestData} from './page-assembler-factory.spec.data';
 import {ContentMapper} from '../../content/util/content-mapper';
+import { ProfileService } from '../../profile';
 
 describe('PageAssemblerFactory', () => {
     let pageAssemblerHandler: PageAssemblerFactory;
@@ -20,11 +21,14 @@ describe('PageAssemblerFactory', () => {
     const mockPageServiceConfig: Partial<PageServiceConfig> = {};
     const mockCachedItemStore: Partial<CachedItemStore> = {};
     const mockKeyValueStore: Partial<KeyValueStore> = {};
-    const mockSharedPreferences: Partial<SharedPreferences> = {};
+    const mockSharedPreferences: Partial<SharedPreferences> = {
+        getString: jest.fn(() => of(''))
+    };
     const mockFrameworkService: Partial<FrameworkService> = {};
     const mockAuthService: Partial<AuthService> = {};
     const mockSystemSettingsService: Partial<SystemSettingsService> = {};
     const mockDbService: Partial<DbService> = {};
+    const mockProfileService: Partial<ProfileService> = {};
 
     beforeAll(() => {
         pageAssemblerHandler = new PageAssemblerFactory(
@@ -36,7 +40,8 @@ describe('PageAssemblerFactory', () => {
             mockFrameworkService as FrameworkService,
             mockAuthService as AuthService,
             mockSystemSettingsService as SystemSettingsService,
-            mockDbService as DbService
+            mockDbService as DbService,
+            mockProfileService as ProfileService
         );
     });
 
