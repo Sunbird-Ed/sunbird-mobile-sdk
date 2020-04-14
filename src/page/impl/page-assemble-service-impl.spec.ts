@@ -9,7 +9,9 @@ import {
     SharedPreferences,
     FrameworkService,
     AuthService,
-    SystemSettingsService, ContentService, DbService
+    DbService,
+    ProfileService,
+    SystemSettingsService
 } from '../..';
 import { ApiService } from '../../api';
 import { mockSdkConfig } from './page-assemble-service-impl.spec.data';
@@ -27,9 +29,10 @@ describe('PageAssembleServiceImpl', () => {
     const mockKeyValueStore: Partial<KeyValueStore> = {};
     const mockSharedPreferences: Partial<SharedPreferences> = {};
     const mockFrameworkService: Partial<FrameworkService> = {};
-    const mockAuthService: Partial<AuthService> = {};
-    const mockSystemSettingsService: Partial<SystemSettingsService> = {};
     const mockDbService: Partial<DbService> = {};
+    const mockAuthService: Partial<AuthService> = {};
+    const mockProfileService: Partial<ProfileService> = {};
+    const mockSystemSettingsService: Partial<SystemSettingsService> = {};
 
     beforeAll(() => {
         container.bind<PageAssembleService>(InjectionTokens.PAGE_ASSEMBLE_SERVICE).to(PageAssembleServiceImpl);
@@ -40,8 +43,9 @@ describe('PageAssembleServiceImpl', () => {
         container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).toConstantValue(mockSharedPreferences as SharedPreferences);
         container.bind<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE).toConstantValue(mockFrameworkService as FrameworkService);
         container.bind<AuthService>(InjectionTokens.AUTH_SERVICE).toConstantValue(mockAuthService as AuthService);
-        container.bind<SystemSettingsService>(InjectionTokens.SYSTEM_SETTINGS_SERVICE).toConstantValue(mockSystemSettingsService as SystemSettingsService);
         container.bind<DbService>(InjectionTokens.DB_SERVICE).toConstantValue(mockDbService as DbService);
+        container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).toConstantValue(mockProfileService as ProfileService);
+        container.bind<SystemSettingsService>(InjectionTokens.SYSTEM_SETTINGS_SERVICE).toConstantValue(mockSystemSettingsService as SystemSettingsService);
 
         pageAssembleServiceImpl = container.get(InjectionTokens.PAGE_ASSEMBLE_SERVICE);
     });
