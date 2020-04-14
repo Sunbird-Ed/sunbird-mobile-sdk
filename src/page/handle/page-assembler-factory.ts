@@ -10,7 +10,7 @@ import {DefaultRequestDelegate} from './delegates/default-request-delegate';
 import {DialcodeRequestDelegate} from './delegates/dialcode-request-delegate';
 import {CourseRequestDelegate} from './delegates/course-request-delegate';
 import {DbService} from '../../db';
-import { ProfileService } from 'src/profile';
+import { ProfileService } from '../../profile';
 
 export class PageAssemblerFactory implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private readonly defaultRequestDelegate: DefaultRequestDelegate;
