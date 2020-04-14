@@ -1,5 +1,13 @@
-import {DownloadCancelRequest, DownloadEventType, DownloadProgress, DownloadRequest, DownloadService, DownloadStatus} from '..';
-import {BehaviorSubject, defer, from, iif, interval, Observable, of, zip} from 'rxjs';
+import {
+    DownloadCancelRequest,
+    DownloadEventType,
+    DownloadProgress,
+    DownloadRequest,
+    DownloadService,
+    DownloadStatus,
+    TrackDownloadRequest
+} from '..';
+import {BehaviorSubject, defer, EMPTY, from, iif, interval, Observable, of, zip} from 'rxjs';
 import {SdkServiceOnInitDelegate} from '../../../sdk-service-on-init-delegate';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
 import {SharedPreferences} from '../../shared-preferences';
@@ -23,6 +31,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     private currentDownloadRequest$ = new BehaviorSubject<DownloadRequest | undefined>(undefined);
     private downloadCompleteDelegate?: DownloadCompleteDelegate;
     private sharedPreferencesSetCollection: SharedPreferencesSetCollection<DownloadRequest>;
+
+    private completedDownloadRequestsCache: DownloadRequest[] = [];
 
     constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
@@ -295,6 +305,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                 take(1),
                 mergeMap((currentDownloadRequest) => {
                     if (downloadProgress.payload.status === DownloadStatus.STATUS_SUCCESSFUL) {
+                        this.completedDownloadRequestsCache.push(currentDownloadRequest!);
+
                         return iif(
                             () => !!this.downloadCompleteDelegate,
                             defer(async () => {
@@ -413,5 +425,30 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         );
                 })
             );
+    }
+
+    trackDownloads(downloadStatRequest: TrackDownloadRequest): Observable<{ completed: DownloadRequest[]; queued: DownloadRequest[] }> {
+        if (!downloadStatRequest.groupBy.fieldPath || !downloadStatRequest.groupBy.fieldPath) {
+            return EMPTY;
+        }
+
+        return this.getActiveDownloadRequests().pipe(
+            map((queued) => {
+                const hasMatchingFieldValue = (request) => {
+                    return downloadStatRequest.groupBy.value === downloadStatRequest.groupBy.fieldPath.split('.').reduce((o, i) => {
+                        if (o && o[i]) {
+                            return o[i];
+                        }
+
+                        return undefined;
+                    }, request);
+                };
+
+                return {
+                    completed: this.completedDownloadRequestsCache.filter(hasMatchingFieldValue),
+                    queued: queued.filter(hasMatchingFieldValue)
+                };
+            })
+        );
     }
 }
