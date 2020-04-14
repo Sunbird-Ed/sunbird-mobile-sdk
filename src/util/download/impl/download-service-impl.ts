@@ -22,9 +22,10 @@ import {SharedPreferencesSetCollectionImpl} from '../../shared-preferences/impl/
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
 import {catchError, concatMapTo, distinctUntilChanged, mapTo, mergeMap, switchMap, take, tap, map} from 'rxjs/operators';
+import {ContentDeleteListener} from '../../../content/def/content-delete-listener';
 
 @injectable()
-export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
+export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate, ContentDeleteListener {
     private static readonly KEY_TO_DOWNLOAD_LIST = DownloadKeys.KEY_TO_DOWNLOAD_LIST;
     private static readonly DOWNLOAD_DIR_NAME = 'Download';
 
@@ -32,7 +33,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     private downloadCompleteDelegate?: DownloadCompleteDelegate;
     private sharedPreferencesSetCollection: SharedPreferencesSetCollection<DownloadRequest>;
 
-    private completedDownloadRequestsCache: DownloadRequest[] = [];
+    private completedDownloadRequestsCache: Set<DownloadRequest> = new Set<DownloadRequest>((r) => r.identifier);
 
     constructor(@inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences) {
@@ -305,7 +306,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                 take(1),
                 mergeMap((currentDownloadRequest) => {
                     if (downloadProgress.payload.status === DownloadStatus.STATUS_SUCCESSFUL) {
-                        this.completedDownloadRequestsCache.push(currentDownloadRequest!);
+                        this.completedDownloadRequestsCache.add(currentDownloadRequest!);
 
                         return iif(
                             () => !!this.downloadCompleteDelegate,
@@ -445,10 +446,14 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                 };
 
                 return {
-                    completed: this.completedDownloadRequestsCache.filter(hasMatchingFieldValue),
+                    completed: this.completedDownloadRequestsCache.toArray().filter(hasMatchingFieldValue),
                     queued: queued.filter(hasMatchingFieldValue)
                 };
             })
         );
+    }
+
+    onContentDelete(identifier: string) {
+        this.completedDownloadRequestsCache.remove({ identifier } as DownloadRequest);
     }
 }
