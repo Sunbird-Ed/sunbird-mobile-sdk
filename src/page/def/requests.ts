@@ -16,12 +16,15 @@ export interface PageAssembleFilter {
     'batches.createdFor'?: string[];
 }
 
-
+export interface DialAssembleProfile {
+    board: string[];
+}
 export interface PageAssembleCriteria extends CachedItemRequest {
     name: PageName;
     source?: 'app' | 'web';
     mode?: 'soft' | 'hard';
     filters?: PageAssembleFilter;
+    userProfile?: DialAssembleProfile;
     sections?: {
         [sectionId: string]: {
             filters?: PageAssembleFilter
