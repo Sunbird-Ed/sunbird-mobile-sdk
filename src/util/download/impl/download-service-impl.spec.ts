@@ -1,10 +1,11 @@
 import { DownloadServiceImpl } from './download-service-impl';
-import {EventsBusService, DownloadRequest, DownloadEventType, ContentDownloadRequest} from '../../..';
+import {EventsBusService, DownloadRequest, ContentDownloadRequest} from '../../..';
 import {SharedPreferencesLocalStorage} from '../../shared-preferences/impl/shared-preferences-local-storage';
 import {TelemetryLogger} from '../../../telemetry/util/telemetry-logger';
 import {of} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {DownloadCompleteDelegate} from '../def/download-complete-delegate';
+import Set from 'typescript-collections/dist/lib/Set';
 
 jest.mock('../../../telemetry/util/telemetry-logger');
 
@@ -522,7 +523,22 @@ describe('DownloadServiceImpl', () => {
                 filename: 'SAMPLE_FILE_NAME'
             };
 
-            downloadService['completedDownloadRequestsCache'] = [downloadRequest_4, downloadRequest_5, downloadRequest_6];
+            const downloadRequest_7: ContentDownloadRequest = {
+                contentMeta: {},
+                identifier: 'SAMPLE_ID_7',
+                downloadUrl: 'http://sample-url/',
+                mimeType: 'SAMPLE_MIME_TYPE',
+                destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
+                filename: 'SAMPLE_FILE_NAME',
+                rollUp: {
+                    l1: 'SAMPLE_PARENT_ID'
+                }
+            };
+
+            downloadService['completedDownloadRequestsCache'] = new Set();
+            [downloadRequest_4, downloadRequest_5, downloadRequest_6].forEach((r) => {
+                downloadService['completedDownloadRequestsCache'].add(r);
+            });
             await downloadService['sharedPreferencesSetCollection'].addAll([downloadRequest_1, downloadRequest_2, downloadRequest_3]).toPromise();
 
             downloadService.trackDownloads({
@@ -535,6 +551,8 @@ describe('DownloadServiceImpl', () => {
                 expect(tracking.queued).not.toEqual(expect.arrayContaining([downloadRequest_3]));
                 expect(tracking.completed).toEqual(expect.arrayContaining([downloadRequest_4]));
                 expect(tracking.completed).not.toEqual(expect.arrayContaining([downloadRequest_5]));
+                expect(tracking.completed).not.toEqual(expect.arrayContaining([downloadRequest_7]));
+                expect(tracking.completed).not.toEqual(expect.arrayContaining([downloadRequest_6]));
                 done();
             });
         });
