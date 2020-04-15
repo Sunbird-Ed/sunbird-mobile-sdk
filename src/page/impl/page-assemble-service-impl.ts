@@ -1,4 +1,4 @@
-import {PageAssembleCriteria, PageAssembleService, PageServiceConfig} from '..';
+import {PageAssembleCriteria, PageAssembleService, PageServiceConfig, SetPageAssembleChannelRequest} from '..';
 import {PageAssemble} from '..';
 import {Observable} from 'rxjs';
 import {PageAssemblerFactory} from '../handle/page-assembler-factory';
@@ -10,8 +10,10 @@ import { InjectionTokens } from '../../injection-tokens';
 import { SdkConfig } from '../../sdk-config';
 import {FrameworkService} from '../../framework';
 import {AuthService} from '../../auth';
+import {ProfileService} from '../../profile';
 import {SystemSettingsService} from '../../system-settings';
 import {DbService} from '../../db';
+import {PageAssembleKeys} from '../../preference-keys';
 
 @injectable()
 export class PageAssembleServiceImpl implements PageAssembleService {
@@ -27,9 +29,14 @@ export class PageAssembleServiceImpl implements PageAssembleService {
         @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
         @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService,
         @inject(InjectionTokens.SYSTEM_SETTINGS_SERVICE) private systemSettingsService: SystemSettingsService,
-        @inject(InjectionTokens.DB_SERVICE) private dbService: DbService
+        @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+        @inject(InjectionTokens.DB_SERVICE) private profileService: ProfileService
     ) {
         this.pageAssembleServiceConfig = this.sdkConfig.pageServiceConfig;
+    }
+
+    setPageAssembleChannel(request: SetPageAssembleChannelRequest): void {
+        this.sharedPreferences.putString(PageAssembleKeys.KEY_ORGANISATION_ID, request.channelId).toPromise();
     }
 
     getPageAssemble(criteria: PageAssembleCriteria): Observable<PageAssemble> {
@@ -42,7 +49,8 @@ export class PageAssembleServiceImpl implements PageAssembleService {
             this.frameworkService,
             this.authService,
             this.systemSettingsService,
-            this.dbService
+            this.dbService,
+            this.profileService
         ).handle(criteria);
     }
 

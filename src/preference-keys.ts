@@ -62,3 +62,7 @@ export namespace TelemetryKeys {
     export const KEY_LAST_SYNCED_TIME_STAMP = 'telemetry_last_synced_time_stamp';
     export const KEY_AUTO_SYNC_MODE = 'telemetry_auto_sync_mode';
 }
+
+export namespace PageAssembleKeys {
+    export const KEY_ORGANISATION_ID = 'page_assemble_organisation_id';
+}
