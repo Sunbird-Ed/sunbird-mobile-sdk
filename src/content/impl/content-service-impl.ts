@@ -90,7 +90,7 @@ import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
-import {catchError, map, mapTo, mergeMap, take} from 'rxjs/operators';
+import {catchError, map, mapTo, mergeMap, take, tap} from 'rxjs/operators';
 import {CopyToDestination} from '../handlers/export/copy-to-destination';
 import {AppInfo} from '../../util/app';
 import {GetContentHeirarchyHandler} from '../handlers/get-content-heirarchy-handler';
@@ -249,7 +249,11 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             }
             new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute();
             return contentDeleteResponse;
-        });
+        }).pipe(
+            tap(() => contentDeleteRequest.contentDeleteList.forEach((c) => {
+                this.downloadService.onContentDelete(c.contentId);
+            }))
+        );
     }
 
     enqueueContentDelete(contentDeleteRequest: ContentDeleteRequest): Observable<void> {

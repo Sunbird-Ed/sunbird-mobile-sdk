@@ -112,6 +112,7 @@ describe('ContentServiceImpl', () => {
     };
     const mockContentFeedback: Partial<ContentFeedbackService> = {};
     const mockDownloadService: Partial<DownloadService> = {
+        onContentDelete: jest.fn().mockImplementation(),
         registerOnDownloadCompleteDelegate: jest.fn().mockImplementation(() => { })
     };
     // const mockSharedPreferences: Partial<SharedPreferences> = {
