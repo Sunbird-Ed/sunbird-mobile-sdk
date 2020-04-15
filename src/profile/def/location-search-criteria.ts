@@ -1,4 +1,6 @@
-export interface LocationSearchCriteria {
+import {CachedItemRequest} from '../../key-value-store';
+
+export interface LocationSearchCriteria extends CachedItemRequest {
     filters: {
         query?: string;
         type: string;

@@ -1,7 +1,7 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {LocationSearchCriteria, ProfileServiceConfig} from '..';
 import {LocationSearchResult} from '../def/location-search-result';
-import {CachedItemStore} from '../../key-value-store';
+import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
 import {from, Observable} from 'rxjs';
@@ -20,18 +20,19 @@ export class SearchLocationHandler implements ApiRequestHandler<LocationSearchCr
     }
 
     handle(request: LocationSearchCriteria): Observable<LocationSearchResult[]> {
-
         let id = request.filters.type;
         if (request.filters.parentId) {
             id = id + '_' + request.filters.parentId;
         }
-        return this.cachedItemStore.getCached(
+
+        return this.cachedItemStore[request.from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
             id,
             this.LOCATION_LOCAL_KEY,
             'ttl_' + this.LOCATION_LOCAL_KEY,
             () => this.fetchFromServer(request),
             () => this.fetchFromFile(request),
-            SearchLocationHandler.LOCATION_TTL);
+            SearchLocationHandler.LOCATION_TTL
+        );
     }
 
     private fetchFromServer(request: LocationSearchCriteria): Observable<LocationSearchResult[]> {
