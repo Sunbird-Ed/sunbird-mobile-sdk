@@ -1,3 +1,6 @@
-export interface Tracking {
+import {DownloadRequest} from './requests';
 
+export interface DownloadTracking {
+    completed: DownloadRequest[];
+    queued: DownloadRequest[];
 }
