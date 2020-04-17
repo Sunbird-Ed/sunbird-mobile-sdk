@@ -3,6 +3,7 @@ import {SdkServiceOnInitDelegate} from '../../../sdk-service-on-init-delegate';
 import {DownloadCancelRequest, DownloadRequest, TrackDownloadRequest} from './requests';
 import {DownloadCompleteDelegate} from './download-complete-delegate';
 import {ContentDeleteListener} from '../../../content/def/content-delete-listener';
+import {DownloadTracking} from './response';
 
 export interface DownloadService extends SdkServiceOnInitDelegate, ContentDeleteListener {
     download(downloadRequests: DownloadRequest[]): Observable<undefined>;
@@ -15,8 +16,5 @@ export interface DownloadService extends SdkServiceOnInitDelegate, ContentDelete
 
     getActiveDownloadRequests(): Observable<DownloadRequest[]>;
 
-    trackDownloads(downloadStatRequest: TrackDownloadRequest): Observable<{
-        completed: DownloadRequest[],
-        queued: DownloadRequest[]
-    }>;
+    trackDownloads(downloadStatRequest: TrackDownloadRequest): Observable<DownloadTracking>;
 }

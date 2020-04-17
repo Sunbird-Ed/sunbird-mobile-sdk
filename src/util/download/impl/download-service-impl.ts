@@ -23,6 +23,7 @@ import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../../injection-tokens';
 import {catchError, concatMapTo, distinctUntilChanged, mapTo, mergeMap, switchMap, take, tap, map} from 'rxjs/operators';
 import {ContentDeleteListener} from '../../../content/def/content-delete-listener';
+import {DownloadTracking} from '../def/response';
 
 @injectable()
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate, ContentDeleteListener {
@@ -428,8 +429,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             );
     }
 
-    trackDownloads(downloadStatRequest: TrackDownloadRequest): Observable<{ completed: DownloadRequest[]; queued: DownloadRequest[] }> {
-        if (!downloadStatRequest.groupBy.fieldPath || !downloadStatRequest.groupBy.fieldPath) {
+    trackDownloads(downloadStatRequest: TrackDownloadRequest): Observable<DownloadTracking> {
+        if (!downloadStatRequest.groupBy.fieldPath || !downloadStatRequest.groupBy.value) {
             return EMPTY;
         }
 
@@ -446,8 +447,10 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                 };
 
                 return {
-                    completed: this.completedDownloadRequestsCache.toArray().filter(hasMatchingFieldValue),
-                    queued: queued.filter(hasMatchingFieldValue)
+                    completed:
+                        this.completedDownloadRequestsCache.size() ? this.completedDownloadRequestsCache.toArray().filter(hasMatchingFieldValue) : [],
+                    queued:
+                        queued.length ? queued.filter(hasMatchingFieldValue) : []
                 };
             })
         );
