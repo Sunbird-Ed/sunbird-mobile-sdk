@@ -30,7 +30,7 @@ export class PageAssembleServiceImpl implements PageAssembleService {
         @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService,
         @inject(InjectionTokens.SYSTEM_SETTINGS_SERVICE) private systemSettingsService: SystemSettingsService,
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
-        @inject(InjectionTokens.DB_SERVICE) private profileService: ProfileService
+        @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService
     ) {
         this.pageAssembleServiceConfig = this.sdkConfig.pageServiceConfig;
     }
