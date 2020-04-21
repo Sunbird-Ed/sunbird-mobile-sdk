@@ -228,7 +228,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return defer(async () => {
             contentDeleteRequest.contentDeleteList.forEach((contentDelete) => {
                 const ref = this.contentUpdateSizeOnDeviceTimeoutRef.get(contentDelete.contentId);
-                console.log('jiiiii', ref);
                 if (ref) {
                     clearTimeout(ref);
                     this.contentUpdateSizeOnDeviceTimeoutRef.delete(contentDelete.contentId);
