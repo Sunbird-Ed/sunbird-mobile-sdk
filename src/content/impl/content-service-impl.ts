@@ -108,6 +108,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     private contentDeleteRequestSet: SharedPreferencesSetCollection<ContentDelete>;
 
+    private contentUpdateSizeOnDeviceTimeoutRef: Map<string, NodeJS.Timeout> = new Map();
+
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
         @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
@@ -224,6 +226,14 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]> {
         return defer(async () => {
+            contentDeleteRequest.contentDeleteList.forEach((contentDelete) => {
+                const ref = this.contentUpdateSizeOnDeviceTimeoutRef.get(contentDelete.contentId);
+                console.log('jiiiii', ref);
+                if (ref) {
+                    clearTimeout(ref);
+                    this.contentUpdateSizeOnDeviceTimeoutRef.delete(contentDelete.contentId);
+                }
+            });
             const contentDeleteResponse: ContentDeleteResponse[] = [];
             const deleteContentHandler = new DeleteContentHandler(this.dbService, this.fileService, this.sharedPreferences);
 
@@ -446,7 +456,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     return new ExtractPayloads(this.fileService, this.zipService, this.appConfig,
                         this.dbService, this.deviceInfo, this.getContentDetailsHandler, this.eventsBusService, this.sharedPreferences)
                         .execute(importResponse.body);
-                }).then((importResponse: Response) => {
+                }).then(([importResponse, ref]: [Response, NodeJS.Timeout]) => {
+                    this.contentUpdateSizeOnDeviceTimeoutRef.set(importContentContext.rootIdentifier ?
+                        importContentContext.rootIdentifier : importContentContext.identifiers![0], ref);
                     this.eventsBusService.emit({
                         namespace: EventNamespace.CONTENT,
                         event: {
