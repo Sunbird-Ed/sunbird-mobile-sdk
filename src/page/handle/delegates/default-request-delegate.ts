@@ -17,13 +17,14 @@ export class DefaultRequestDelegate implements ApiRequestHandler<PageAssembleCri
     private readonly DIALCODE_ASSEMBLE_ENDPOINT = '/dial/assemble';
     private static readonly SYSTEM_SETTINGS_TENANT_COURSE_PAGE_ID = 'tenantCoursePage';
 
-     private static getIdForDb(request: PageAssembleCriteria): string {
+    private static getIdForDb(request: PageAssembleCriteria): string {
         const key =
             request.name + '-' +
             (request.organisationId || '') + '-' +
             (request.source || 'app') + '-' +
             (request.mode || '') + '-' +
-            (request.filters ? SHA1(JSON.stringify(request.filters)).toString() : '');
+            (request.filters ? SHA1(JSON.stringify(request.filters)).toString() : '') +
+        (request.sections ? SHA1(JSON.stringify(request.sections)).toString() : '');
         return key;
     }
 
