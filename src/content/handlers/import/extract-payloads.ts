@@ -38,7 +38,7 @@ export class ExtractPayloads {
                 private sharedPreferences: SharedPreferences) {
     }
 
-    public async execute(importContext: ImportContentContext): Promise<Response> {
+    public async execute(importContext: ImportContentContext): Promise<[Response, NodeJS.Timeout]> {
         const response: Response = new Response();
         importContext.identifiers = [];
         const insertNewContentModels: ContentEntry.SchemaMap[] = [];
@@ -239,7 +239,7 @@ export class ExtractPayloads {
         }
         // Update/create contents in DB with size_on_device as 0 initially
         this.updateContentDB(insertNewContentModels, updateNewContentModels);
-        setTimeout(() => {
+        const updateContentFileSizeInDBTimeOutRef = setTimeout(() => {
             // Update the contents in DB with actual size
             this.updateContentFileSizeInDB(importContext, commonContentModelsMap, payloadDestinationPathMap, result);
         }, 5000);
@@ -252,7 +252,7 @@ export class ExtractPayloads {
         }
 
         response.body = importContext;
-        return Promise.resolve(response);
+        return Promise.resolve([response, updateContentFileSizeInDBTimeOutRef] as any);
     }
 
     async updateContentFileSizeInDB(importContext: ImportContentContext, commonContentModelsMap, payloadDestinationPathMap, result) {
