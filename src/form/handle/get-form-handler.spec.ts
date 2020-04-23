@@ -85,15 +85,20 @@ describe('GetFormHandler', () => {
             rootOrgId: 'sample_rootOrgId',
             framework: 'sample_framework'
         };
+        mockCachedItemStore.getCached = jest.fn().mockImplementation(() => of({
+            body: {
+                result: 'sample'
+            }
+        }));
 
-        mockApiService.fetch = jest.fn().mockImplementation(() => of({
+        mockCachedItemStore.get = jest.fn().mockImplementation(() => of({
             body: {
                 result: 'sample'
             }
         }));
         // act
         getFormHandler.handle(request).subscribe(() => {
-            expect(mockApiService.fetch).toHaveBeenCalled();
+            expect(mockCachedItemStore.get).toHaveBeenCalled();
             done();
         });
     });
