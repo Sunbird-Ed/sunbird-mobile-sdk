@@ -49,6 +49,7 @@ import {BehaviorSubject, defer, EMPTY, from, Observable, of, zip} from 'rxjs';
 import {TelemetryKeys} from '../../preference-keys';
 import {TelemetryAutoSyncServiceImpl} from '../util/telemetry-auto-sync-service-impl';
 import {CourseService} from '../../course';
+import {NetworkQueue} from '../../api/network-queue';
 
 @injectable()
 export class TelemetryServiceImpl implements TelemetryService {
@@ -91,6 +92,7 @@ export class TelemetryServiceImpl implements TelemetryService {
         @inject(InjectionTokens.APP_INFO) private appInfoService: AppInfo,
         @inject(InjectionTokens.DEVICE_REGISTER_SERVICE) private deviceRegisterService: DeviceRegisterService,
         @inject(InjectionTokens.COURSE_SERVICE) private courseService: CourseService,
+        @inject(InjectionTokens.NETWORK_QUEUE) private networkQueue: NetworkQueue,
     ) {
         this.telemetryConfig = this.sdkConfig.telemetryConfig;
         this._lastSyncedTimestamp$ = new BehaviorSubject<number | undefined>(undefined);
@@ -256,7 +258,8 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.appInfoService,
             this.deviceRegisterService,
             this.keyValueStore,
-            this.apiService
+            this.apiService,
+            this.networkQueue
         ).resetDeviceRegisterTTL();
     }
 
@@ -279,7 +282,8 @@ export class TelemetryServiceImpl implements TelemetryService {
                     this.appInfoService,
                     this.deviceRegisterService,
                     this.keyValueStore,
-                    this.apiService
+                    this.apiService,
+                    this.networkQueue
                 ).handle(request).pipe(
                     tap((syncStat) => {
                         if (!syncStat.error && syncStat.syncedEventCount) {

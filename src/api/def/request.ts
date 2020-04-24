@@ -16,6 +16,18 @@ export enum HttpRequestType {
     PATCH = 'PATCH'
 }
 
+export interface SerializedRequest {
+    type: HttpRequestType;
+    host: string | undefined;
+    path: string;
+    serializer: HttpSerializer;
+    withApiToken: boolean;
+    withSessionToken: boolean;
+    headers: {[key: string]: string};
+    body: {[key: string]: string} | string;
+    parameters: {[key: string]: string};
+}
+
 export class Request {
     static Builder: any = class Builder {
 
@@ -204,5 +216,47 @@ export class Request {
 
     get host(): string | undefined {
         return this._host;
+    }
+
+    toJSON(): string {
+        return JSON.stringify({
+            type: this._type,
+            host: this._host,
+            path: this._path,
+            serializer: this._serializer,
+            withApiToken: this._withApiToken,
+            withSessionToken: this._withSessionToken,
+            headers: this._headers,
+            parameters: this._parameters,
+        } as SerializedRequest);
+    }
+
+    getTypeOf(object) {
+        switch (Object.prototype.toString.call(object)) {
+            case '[object Array]':
+                return 'Array';
+            case '[object Blob]':
+                return 'Blob';
+            case '[object Uint8Array]':
+                return 'Uint8Array';
+            case '[object ArrayBuffer]':
+                return 'ArrayBuffer';
+            case '[object Boolean]':
+                return 'Boolean';
+            case '[object Function]':
+                return 'Function';
+            case '[object Null]':
+                return 'Null';
+            case '[object Number]':
+                return 'Number';
+            case '[object Object]':
+                return 'Object';
+            case '[object String]':
+                return 'String';
+            case '[object Undefined]':
+                return 'Undefined';
+            default:
+                return 'Unknown';
+        }
     }
 }

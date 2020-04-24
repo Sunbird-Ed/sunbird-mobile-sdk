@@ -1,4 +1,4 @@
-import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery} from '..';
+import {DbConfig, DbService, DeleteQuery, InsertQuery, Migration, MigrationFactory, ReadQuery, UpdateQuery} from '..';
 import {InitialMigration} from '../migrations/initial-migration';
 import {QueryBuilder} from '../util/query-builder';
 import {injectable, inject} from 'inversify';
@@ -12,7 +12,7 @@ export class DbCordovaService implements DbService {
 
     constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
                 @inject(InjectionTokens.DB_VERSION) private dBVersion: number,
-                @inject(InjectionTokens.DB_MIGRATION_LIST) private appMigrationList: Migration[]
+                @inject(InjectionTokens.DB_MIGRATION_LIST) private appMigrationList: (Migration | MigrationFactory)[]
     ) {
         this.context = this.sdkConfig.dbConfig;
     }
@@ -79,7 +79,13 @@ export class DbCordovaService implements DbService {
     }
 
     private async onUpgrade(oldVersion: number, newVersion: number) {
-        for (const migration of this.appMigrationList) {
+        for (const m of this.appMigrationList) {
+            let migration: Migration;
+            if (m instanceof Migration) {
+                migration = m;
+            } else {
+                migration = m();
+            }
             if (migration.required(oldVersion, newVersion)) {
                 await migration.apply(this);
             }

@@ -1,5 +1,5 @@
 import {ApiService, ApiServiceImpl} from './api';
-import {DbService, Migration} from './db';
+import {DbService, Migration, MigrationFactory} from './db';
 import {AuthService} from './auth';
 import {TelemetryDecorator, TelemetryService} from './telemetry';
 import {SharedPreferences} from './util/shared-preferences';
@@ -71,7 +71,9 @@ import {combineLatest} from 'rxjs';
 import {concatMap} from 'rxjs/operators';
 import {ArchiveService} from './archive';
 import {ArchiveServiceImpl} from './archive/impl/archive-service-impl';
-import {ContentDialcodeMigration} from './db/migrations/content-dialcode-migration';
+import {NetworkQueueMigration} from './db/migrations/network-queue-migration';
+import {NetworkQueueImpl} from './api/network-queue/impl/network-queue-impl';
+import {NetworkQueue} from './api/network-queue';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -219,15 +221,18 @@ export class SunbirdSdk {
     get archiveService(): ArchiveService {
         return this._container.get<ArchiveService>(InjectionTokens.ARCHIVE_SERVICE);
     }
+    get networkQueueService(): NetworkQueue {
+        return this._container.get<NetworkQueue>(InjectionTokens.NETWORK_QUEUE);
+    }
 
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(26);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(27);
 
-        this._container.bind<Migration[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
+        this._container.bind<(Migration | MigrationFactory)[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
             new ProfileSyllabusMigration(),
             new GroupProfileMigration(),
             new MillisecondsToSecondsMigration(),
@@ -237,7 +242,11 @@ export class SunbirdSdk {
             new SearchHistoryMigration(),
             new RecentlyViewedMigration(),
             new CourseAssessmentMigration(),
-            new ContentDialcodeMigration()
+            () => {
+            return new NetworkQueueMigration(
+              sdkConfig.telemetryConfig, this._container.get<NetworkQueue>(InjectionTokens.NETWORK_QUEUE)
+            );
+            }
         ]);
 
         switch (sdkConfig.platform) {
@@ -323,6 +332,8 @@ export class SunbirdSdk {
         this._container.bind<FaqService>(InjectionTokens.FAQ_SERVICE).to(FaqServiceImpl).inSingletonScope();
 
         this._container.bind<ArchiveService>(InjectionTokens.ARCHIVE_SERVICE).to(ArchiveServiceImpl).inSingletonScope();
+
+        this._container.bind<NetworkQueue>(InjectionTokens.NETWORK_QUEUE).to(NetworkQueueImpl).inSingletonScope();
 
         this.apiService.setDefaultApiAuthenticators([
             new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)
