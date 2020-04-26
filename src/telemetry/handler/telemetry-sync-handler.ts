@@ -120,7 +120,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
       mergeMap((events) =>
         this.processEvents(events).pipe(
           mergeMap((processedEventsMeta) =>
-            this.persistProcessedEvents(processedEventsMeta, processedEventsMeta.processedEventsSize, isForceSynced).pipe(
+            this.persistinNetworkQueue(processedEventsMeta, processedEventsMeta.processedEventsSize, isForceSynced).pipe(
               mergeMap(() => this.deleteEvents(events)),
               mapTo(events.length)
             )
@@ -258,7 +258,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
     });
   }
 
-  private persistProcessedEvents({processedEvents, messageId}: ProcessedEventsMeta,
+  private persistinNetworkQueue({processedEvents, messageId}: ProcessedEventsMeta,
                                  eventsCount: number, isForceSynced: boolean): Observable<undefined> {
     if (!processedEvents) {
       return of(undefined);
@@ -361,10 +361,5 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
       return of(undefined);
     }
     return of(undefined);
-    // return this.dbService.delete({
-    //   table: TelemetryProcessedEntry.TABLE_NAME,
-    //   selection: `_id = ?`,
-    //   selectionArgs: [processedEventsBatchEntry[TelemetryProcessedEntry._ID]]
-    // });
   }
 }
