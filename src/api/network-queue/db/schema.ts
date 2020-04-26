@@ -11,7 +11,8 @@ export namespace NetworkQueueEntry {
    export const COLUMN_NAME_DATA = 'data';
    export const COLUMN_NAME_REQUEST = 'request';
    export const COLUMN_NAME_NUMBER_OF_ITEM = 'item_count';
-  export const COLUMN_NAME_CONFIG = 'config';
+   export const COLUMN_NAME_CONFIG = 'config';
+   export const COLUMN_NAME_TYPE = 'type';
 
    export interface SchemaMap {
      [COLUMN_NAME_MSG_ID]: string;
@@ -19,6 +20,7 @@ export namespace NetworkQueueEntry {
      [COLUMN_NAME_TIMESTAMP]: number;
      [COLUMN_NAME_REQUEST]: string;
      [COLUMN_NAME_DATA]: string;
+     [COLUMN_NAME_TYPE]: string;
      [COLUMN_NAME_NUMBER_OF_ITEM]: number;
      [COLUMN_NAME_CONFIG]: string;
    }
@@ -32,6 +34,7 @@ export namespace NetworkQueueEntry {
        COLUMN_NAME_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
        COLUMN_NAME_NUMBER_OF_ITEM + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
        COLUMN_NAME_CONFIG + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+       COLUMN_NAME_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
        COLUMN_NAME_REQUEST + DbConstants.SPACE + DbConstants.TEXT_TYPE +
        ')';
    };
@@ -49,6 +52,7 @@ export namespace NetworkQueueEntry {
          [NetworkQueueEntry.COLUMN_NAME_DATA]: networkQueueRequest.data,
          [NetworkQueueEntry.COLUMN_NAME_NUMBER_OF_ITEM]: networkQueueRequest.itemCount,
          [NetworkQueueEntry.COLUMN_NAME_CONFIG]: networkQueueRequest.config,
+         [NetworkQueueEntry.COLUMN_NAME_TYPE]: networkQueueRequest.type,
          [NetworkQueueEntry.COLUMN_NAME_REQUEST]: networkQueueRequest.networkRequest.toJSON()
        };
      }

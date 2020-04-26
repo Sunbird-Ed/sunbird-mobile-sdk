@@ -18,7 +18,8 @@ import {AppInfo} from '../../util/app';
 import {DeviceRegisterService} from '../../device-register';
 import {EMPTY, iif, Observable, of, zip} from 'rxjs';
 import {catchError, expand, map, mapTo, mergeMap, reduce, tap} from 'rxjs/operators';
-import {NetworkQueue, NetworkQueueRequest} from '../../api/network-queue';
+import {NetworkQueue, NetworkQueueRequest, NetworkQueueType} from '../../api/network-queue';
+import {NetworkRequestHandler} from '../../api/network-queue/handlers/network-request-handler';
 
 interface ProcessedEventsMeta {
   processedEvents?: string;
@@ -263,35 +264,8 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
       return of(undefined);
     }
 
-    const gzippedCharData = processedEvents.split('').map((c) => {
-      return c.charCodeAt(0);
-    });
-    const body = new Uint8Array(gzippedCharData);
-
-    const apiRequest: Request = new Request.Builder()
-      .withSerializer(HttpSerializer.RAW)
-      .withHost(this.telemetryConfig.host!)
-      .withType(HttpRequestType.POST)
-      .withPath(this.telemetryConfig.apiPath + TelemetrySyncHandler.TELEMETRY_ENDPOINT)
-      .withHeaders({
-        'Content-Type': 'application/json',
-        'Content-Encoding': 'gzip'
-      })
-      .withBody(body)
-      .withApiToken(true)
-      .build();
-
-    const networkQueueRequest: NetworkQueueRequest = {
-      msgId: messageId!,
-      data: processedEvents,
-      networkRequest: apiRequest,
-      priority: 1,
-      itemCount: eventsCount,
-      config: JSON.stringify({shouldPublishResult: isForceSynced}),
-      ts: Date.now()
-    };
-
-    return this.networkQueue!.enqueue(networkQueueRequest, true).pipe(
+    return this.networkQueue!.enqueue(new NetworkRequestHandler(this.sdkConfig).generateNetworkQueueRequest(
+      NetworkQueueType.TELEMETRY, processedEvents, messageId, eventsCount, isForceSynced), true).pipe(
       mapTo(undefined)
     );
   }

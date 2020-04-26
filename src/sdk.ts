@@ -244,7 +244,7 @@ export class SunbirdSdk {
             new CourseAssessmentMigration(),
             () => {
             return new NetworkQueueMigration(
-              sdkConfig.telemetryConfig, this._container.get<NetworkQueue>(InjectionTokens.NETWORK_QUEUE)
+              sdkConfig, this._container.get<NetworkQueue>(InjectionTokens.NETWORK_QUEUE)
             );
             }
         ]);
