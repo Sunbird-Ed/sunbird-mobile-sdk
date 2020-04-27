@@ -34,7 +34,6 @@ describe('ContentStatesSyncHandler', () => {
 
     it('should updated content state', async(done) => {
         // arrange
-        jest.spyOn(CourseUtil, 'getUpdateContentStateListRequest').mockReturnValue({userId: 's-uid', contents: []});
         const mockUpdateContentStateHandler2 = {
             handle: jest.fn().mockImplementation(() => of({'uid': 'suid', 'content-id': 'FAILED'}))
         };
