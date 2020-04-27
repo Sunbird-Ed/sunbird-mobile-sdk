@@ -144,7 +144,10 @@ describe('CourseServiceImpl', () => {
             userId: 'SAMPLE_USER_ID',
             courseId: 'SAMPLE_COURSE_ID',
             contentId: 'SAMPLE_CONTENT_ID',
-            batchId: 'SAMPLE_BATCH_ID'
+            batchId: 'SAMPLE_BATCH_ID',
+            result: 'SOME_RESULT',
+            grade: 'SOME_GRADE',
+            score: 'SOME_SCORE'
         };
         spyOn(mockApiService, 'fetch').and.returnValue(of({response: {body: {result: 'FAILED'}}}));
         spyOn(mockKeyValueStore, 'getValue').and.returnValue(of('MOCK_KEY_VALUE'));
