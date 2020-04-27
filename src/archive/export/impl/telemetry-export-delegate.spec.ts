@@ -6,6 +6,7 @@ import {TelemetryProcessedEntry} from '../../../telemetry/db/schema';
 import {of} from 'rxjs';
 import {reduce} from 'rxjs/operators';
 import {ArchiveObjectExportProgress} from '../..';
+import {NetworkQueueEntry, NetworkQueueType} from '../../../api/network-queue';
 
 describe('TelemetryExportDelegate', () => {
     let telemetryExportDelegate: TelemetryExportDelegate;
@@ -35,7 +36,7 @@ describe('TelemetryExportDelegate', () => {
             ).subscribe(() => {
             }, (e) => {
                 expect(mockDbService.execute).toHaveBeenCalledWith(
-                    `SELECT count(*) as COUNT FROM ${TelemetryProcessedEntry.TABLE_NAME}`
+                    `SELECT count(*) as COUNT FROM ${NetworkQueueEntry.TABLE_NAME} WHERE type = '${NetworkQueueType.TELEMETRY}'`
                 );
                 expect(e instanceof ObjectNotFoundError).toBeTruthy();
                 done();

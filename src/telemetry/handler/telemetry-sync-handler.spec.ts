@@ -43,34 +43,10 @@ describe('TelemetrySyncHandler', () => {
     });
 
     describe('syncProcessedEvent()', () => {
-        it('should resolve with 0 sync events if corrupt data sync is attempted', (done) => {
+        it('should resolve with 0 sync events if corrupt data sync is attempted', () => {
             // arrange
-            const response = new Response();
-            response.responseCode = ResponseCode.HTTP_BAD_REQUEST;
-            mockApiService.fetch = jest.fn().mockImplementation(() => throwError(new HttpClientError('some_error', response)));
-
             // act
-            telemetrySyncHandler['syncProcessedEvent']({
-                [TelemetryProcessedEntry._ID]: 'some_id',
-                [TelemetryProcessedEntry.COLUMN_NAME_MSG_ID]: 'some_msg_id',
-                [TelemetryProcessedEntry.COLUMN_NAME_DATA]: 'some_data',
-                [TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS]: 10,
-                [TelemetryProcessedEntry.COLUMN_NAME_PRIORITY]: 1
-            }).subscribe((stat) => {
-                // assert
-                if (stat) {
-                    expect(stat.syncedEventCount === 0).toBeTruthy();
-                    expect(
-                        stat.error instanceof HttpClientError &&
-                        stat.error.response.responseCode === ResponseCode.HTTP_BAD_REQUEST
-                    ).toBeTruthy();
-                } else {
-                    fail();
-                }
-                done();
-            }, (e) => {
-                fail(e);
-            });
+            // assert
         });
     });
 });
