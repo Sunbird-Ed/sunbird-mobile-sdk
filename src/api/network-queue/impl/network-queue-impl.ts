@@ -3,7 +3,7 @@ import {InjectionTokens} from '../../../injection-tokens';
 import {DbService} from '../../../db';
 import {NetworkQueueEntry} from '../db/schema';
 import {NetworkQueue, NetworkQueueRequest} from '../def/network-queue';
-import {ApiConfig, HttpRequestType, HttpSerializer, Request as NetworkRequest, Request} from '../..';
+import {Request as NetworkRequest, Request} from '../..';
 import {Observable} from 'rxjs';
 import {ApiKeys, AuthKeys} from '../../../preference-keys';
 import {map, mergeMap} from 'rxjs/operators';
@@ -29,12 +29,10 @@ export class NetworkQueueImpl implements NetworkQueue {
       (async () => {
         request.networkRequest = await this.interceptRequest(request.networkRequest).toPromise();
         sbsync.enqueue(body, NetworkQueueEntry.Mapper.networkQueueRequestToEntry(request), shouldSync, () => {
-            console.log('Enqueued ', 'Successfully');
             observer.next(undefined);
             observer.complete();
           },
           (err) => {
-            console.log('Enqueued ', 'Failed');
             observer.error(err);
           });
 
@@ -97,12 +95,6 @@ export class NetworkQueueImpl implements NetworkQueue {
     switch (Object.prototype.toString.call(object)) {
       case '[object Uint8Array]':
         return 'Uint8Array';
-      case '[object ArrayBuffer]':
-        return 'ArrayBuffer';
-      case '[object Boolean]':
-        return 'Boolean';
-      case '[object Undefined]':
-        return 'Undefined';
       default:
         return 'Unknown';
     }

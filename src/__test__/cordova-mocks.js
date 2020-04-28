@@ -110,3 +110,8 @@ global.customtabs = {
     launchInBrowser: () => {
     }
 };
+
+global.sbsync = {
+    enqueue: () => {
+    }
+};
