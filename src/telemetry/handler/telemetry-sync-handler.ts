@@ -1,4 +1,4 @@
-import {ApiConfig, ApiRequestHandler, ApiService, HttpClientError, HttpRequestType, HttpSerializer, Request, ResponseCode} from '../../api';
+import {ApiConfig, ApiRequestHandler, ApiService} from '../../api';
 import {InteractSubType, InteractType, TelemetryAutoSyncModes, TelemetrySyncRequest, TelemetrySyncStat} from '..';
 import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
 import {StringToGzippedString} from '../impl/string-to-gzipped-string';
@@ -6,8 +6,8 @@ import {TelemetryEntriesToStringPreprocessor} from '../impl/telemetry-entries-to
 import {KeyValueStore} from '../../key-value-store';
 import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
-import {DbService, InsertQuery} from '../../db';
-import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
+import {DbService} from '../../db';
+import {TelemetryEntry} from '../db/schema';
 import {UniqueId} from '../../db/util/unique-id';
 import dayjs from 'dayjs';
 import {TelemetryLogger} from '../util/telemetry-logger';
@@ -16,9 +16,9 @@ import {SharedPreferences} from '../../util/shared-preferences';
 import {CodePush, TelemetryKeys} from '../../preference-keys';
 import {AppInfo} from '../../util/app';
 import {DeviceRegisterService} from '../../device-register';
-import {EMPTY, iif, Observable, of, zip} from 'rxjs';
-import {catchError, expand, map, mapTo, mergeMap, reduce, tap} from 'rxjs/operators';
-import {NetworkQueue, NetworkQueueRequest, NetworkQueueType} from '../../api/network-queue';
+import {defer, Observable, of, zip} from 'rxjs';
+import {catchError, map, mapTo, mergeMap, tap} from 'rxjs/operators';
+import {NetworkQueue, NetworkQueueType} from '../../api/network-queue';
 import {NetworkRequestHandler} from '../../api/network-queue/handlers/network-request-handler';
 
 interface ProcessedEventsMeta {
@@ -79,35 +79,62 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
       mergeMap(() => {
         return this.hasTelemetryThresholdCrossed().pipe(
           mergeMap((hasTelemetryThresholdCrossed: boolean) => {
-            if (hasTelemetryThresholdCrossed || ignoreSyncThreshold) {
-              return this.processEventsBatch(isForceSynced).pipe(
-                expand((processedEventsCount: number) =>
-                  processedEventsCount ? this.processEventsBatch(isForceSynced) : EMPTY
-                ),
-                reduce(() => undefined, undefined),
-                mergeMap(() => this.handleProcessedEventsBatch(ignoreAutoSyncMode)),
-                expand((syncStat: TelemetrySyncStat) =>
-                  syncStat.syncedEventCount ? this.handleProcessedEventsBatch(ignoreAutoSyncMode) : EMPTY
-                ),
-                reduce<TelemetrySyncStat, TelemetrySyncStat>((acc: TelemetrySyncStat, currentStat: TelemetrySyncStat) => {
-                  return ({
-                    syncedEventCount: acc.syncedEventCount + currentStat.syncedEventCount,
-                    syncTime: Date.now(),
-                    syncedFileSize: acc.syncedFileSize + currentStat.syncedFileSize,
-                    error: (currentStat.error ? currentStat.error : acc.error)
-                  });
-                }, {
-                  syncedEventCount: 0,
-                  syncTime: Date.now(),
-                  syncedFileSize: 0
-                })
-              );
+            if (!hasTelemetryThresholdCrossed && !ignoreSyncThreshold) {
+              return of({
+                syncedEventCount: 0,
+                syncTime: Date.now(),
+                syncedFileSize: 0
+              });
             }
-
-            return of({
-              syncedEventCount: 0,
-              syncTime: Date.now(),
-              syncedFileSize: 0
+            return defer(async () => {
+              const mode = await this.sharedPreferences.getString(TelemetryKeys.KEY_AUTO_SYNC_MODE).toPromise();
+              switch (mode) {
+                case TelemetryAutoSyncModes.OFF:
+                  return {
+                    syncedEventCount: 0,
+                    syncTime: Date.now(),
+                    syncedFileSize: 0,
+                    error: new Error('AUTO_SYNC_MODE: ' + TelemetryAutoSyncModes.OFF)
+                  };
+                case TelemetryAutoSyncModes.OVER_WIFI:
+                  if (navigator.connection.type !== Connection.WIFI) {
+                    return {
+                      syncedEventCount: 0,
+                      syncTime: Date.now(),
+                      syncedFileSize: 0,
+                      error: new Error('AUTO_SYNC_MODE: ' + TelemetryAutoSyncModes.OVER_WIFI)
+                    };
+                  }
+                  break;
+                case TelemetryAutoSyncModes.ALWAYS_ON:
+                  break;
+                default:
+                  break;
+              }
+              let currentSyncStat: TelemetrySyncStat = {
+                syncedEventCount: 0,
+                syncTime: Date.now(),
+                syncedFileSize: 0
+              };
+              let eventCount;
+              do {
+                try {
+                  eventCount = await this.processEventsBatch(isForceSynced).toPromise();
+                  currentSyncStat = {
+                    syncedEventCount: currentSyncStat.syncedEventCount + eventCount,
+                    syncTime: Date.now(),
+                    syncedFileSize: 0
+                  };
+                } catch (e) {
+                  currentSyncStat = {
+                    syncedEventCount: currentSyncStat.syncedEventCount,
+                    syncTime: Date.now(),
+                    syncedFileSize: 0,
+                    error: e
+                  };
+                }
+              } while (eventCount && !currentSyncStat.error);
+              return currentSyncStat;
             });
           })
         );
@@ -259,7 +286,7 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
   }
 
   private persistinNetworkQueue({processedEvents, messageId}: ProcessedEventsMeta,
-                                 eventsCount: number, isForceSynced: boolean): Observable<undefined> {
+                                eventsCount: number, isForceSynced: boolean): Observable<undefined> {
     if (!processedEvents) {
       return of(undefined);
     }
@@ -279,87 +306,5 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
             DELETE FROM ${TelemetryEntry.TABLE_NAME}
             WHERE ${TelemetryEntry._ID} IN (${events.map((event) => event[TelemetryEntry._ID]).join(',')})
         `);
-  }
-
-  private handleProcessedEventsBatch(ignoreAutoSyncMode?: boolean): Observable<TelemetrySyncStat> {
-    return iif(
-      () => !!ignoreAutoSyncMode,
-      of(undefined),
-      this.sharedPreferences.getString(TelemetryKeys.KEY_AUTO_SYNC_MODE).pipe(
-        catchError(() => {
-          return of('');
-        }),
-        mergeMap((mode) => {
-          switch (mode) {
-            case TelemetryAutoSyncModes.OFF:
-              throw new Error('AUTO_SYNC_MODE: ' + TelemetryAutoSyncModes.OFF);
-            case TelemetryAutoSyncModes.OVER_WIFI:
-              if (navigator.connection.type === Connection.WIFI) {
-                return of(undefined);
-              } else {
-                throw new Error('AUTO_SYNC_MODE: ' + TelemetryAutoSyncModes.OVER_WIFI);
-              }
-            case TelemetryAutoSyncModes.ALWAYS_ON:
-            default:
-              return of(undefined);
-          }
-        })
-      )
-    ).pipe(
-      mergeMap(() => {
-        return this.fetchProcessedEventsBatch().pipe(
-          mergeMap(processedEventsBatchEntry => {
-            return this.syncProcessedEvent(processedEventsBatchEntry).pipe(
-              mergeMap((syncStat?: TelemetrySyncStat) =>
-                this.deleteProcessedEvent(processedEventsBatchEntry).pipe(
-                  mapTo(syncStat || {
-                    syncedEventCount: 0,
-                    syncTime: Date.now(),
-                    syncedFileSize: 0
-                  })
-                )
-              )
-            );
-          })
-        );
-      }),
-      catchError((e) => {
-        return of({
-          syncedEventCount: 0,
-          syncTime: Date.now(),
-          syncedFileSize: 0,
-          error: e
-        });
-      })
-    );
-  }
-
-  private fetchProcessedEventsBatch(): Observable<TelemetryProcessedEntry.SchemaMap | undefined> {
-    return this.dbService.read({
-      table: TelemetryProcessedEntry.TABLE_NAME,
-      selection: '',
-      selectionArgs: [],
-      limit: '1'
-    }).pipe(
-      map((r: TelemetryProcessedEntry.SchemaMap[]) => r && r[0])
-    );
-  }
-
-  private syncProcessedEvent(processedEventsBatchEntry?: TelemetryProcessedEntry.SchemaMap): Observable<TelemetrySyncStat | undefined> {
-    if (!processedEventsBatchEntry) {
-      return of(undefined);
-    }
-    return of({
-      syncedEventCount: processedEventsBatchEntry![TelemetryProcessedEntry.COLUMN_NAME_NUMBER_OF_EVENTS],
-      syncTime: Date.now(),
-      syncedFileSize: new TextEncoder().encode(processedEventsBatchEntry![TelemetryProcessedEntry.COLUMN_NAME_DATA]).length
-    });
-  }
-
-  private deleteProcessedEvent(processedEventsBatchEntry?: TelemetryProcessedEntry.SchemaMap): Observable<undefined> {
-    if (!processedEventsBatchEntry) {
-      return of(undefined);
-    }
-    return of(undefined);
   }
 }
