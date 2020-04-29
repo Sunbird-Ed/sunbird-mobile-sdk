@@ -1,22 +1,15 @@
-import { Container } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
-import { SummarizerServiceImpl } from './summarizer-service-impl';
-import { SummarizerService } from '..';
-import { DbService } from '../../db';
-import { ContentService } from '../../content';
-import { EventsBusService, EventNamespace } from '../../events-bus';
-import { CourseService } from '../../course';
-import { SharedPreferences } from '../../util/shared-preferences';
-import { ProfileService } from '../../profile';
-import { Observable } from 'rxjs';
-import { SummarizerQueries } from '..';
-import { SummaryRequest } from '../def/request';
-import { ContentRequest } from '../../content/def/requests';
-import { SunbirdTelemetry } from '../../telemetry';
-import Telemetry = SunbirdTelemetry.Telemetry;
-import { Actor, Context, TelemetryObject, ProducerData } from '../../telemetry/def/telemetry-model';
-import { TelemetryAuditRequest, TelemetryService } from '../../telemetry';
-import { of } from 'rxjs';
+import {Container} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
+import {SummarizerServiceImpl} from './summarizer-service-impl';
+import {SummarizerService, SummaryRequest} from '..';
+import {DbService} from '../../db';
+import {ContentService} from '../../content';
+import {EventNamespace, EventsBusService} from '../../events-bus';
+import {CourseService} from '../../course';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {ProfileService} from '../../profile';
+import {Observable, of} from 'rxjs';
+import {TelemetryAuditRequest, TelemetryService} from '../../telemetry';
 
 describe('SummarizerServiceImpl', () => {
     let summarizerService: SummarizerService;
@@ -24,19 +17,16 @@ describe('SummarizerServiceImpl', () => {
     const container = new Container();
     const dbServiceMock: Partial<DbService> = {};
     const contentServiceMock: Partial<ContentService> = {
-        getContents: jest.fn().mockImplementation(() => { })
+        getContents: jest.fn().mockImplementation(() => {
+        })
     };
     const eventsBusServiceMock: Partial<EventsBusService> = {
         registerObserver: jest.fn().mockImplementation(() => {
         }),
     };
     const courseServiceMock: Partial<CourseService> = {};
-    const sharedPreferencesMock: Partial<SharedPreferences> = {
-    };
+    const sharedPreferencesMock: Partial<SharedPreferences> = {};
     const profileServiceMock: Partial<ProfileService> = {};
-    const mockSummarizerQueries: Partial<SummarizerQueries> = {
-        getQuetsionDetailsQuery: jest.fn().mockImplementation(() => { })
-    };
     const mockTelemetryService: Partial<TelemetryService> = {
         audit(request: TelemetryAuditRequest): Observable<boolean> {
             return of(true);
@@ -162,7 +152,17 @@ describe('SummarizerServiceImpl', () => {
             hierarchyData: 'SAMPLE_HIERARCHY_DATA'
         };
         dbServiceMock.execute = jest.fn().mockImplementation(() => of([]));
-        spyOn(summarizerService, 'getContentCache').and.returnValue(of(('SAMPLE_UID')));
+        const results = [
+            {
+                identifier: 'SOME_IDENTOFIER',
+                contentData: {
+                    name: 'SOME_NAME',
+                    totalScore: 'SOME_SCORE'
+                },
+                lastUsedTime: 100
+            }
+        ];
+        contentServiceMock.getContents = jest.fn().mockImplementation(() => of(results));
         // act
         summarizerService.getSummary(request).subscribe(() => {
             // assert
@@ -171,18 +171,7 @@ describe('SummarizerServiceImpl', () => {
         });
     });
 
-    it('get content for assessment', () => {
-        // arrange
-        const uids = ['SAMPLE_UID_1', 'SAMPLE_UID_2'];
-        contentServiceMock.getContents = jest.fn().mockImplementation(() => of([]));
-        // act
-        summarizerService.getContentCache(uids).subscribe(() => {
-            // assert
-            expect(contentServiceMock.getContents).toHaveBeenCalled();
-        });
-    });
-
-    it('delete previous assessment from DB', (done) => {
+    it('should delete previous assessment from DB', (done) => {
         // arrange
         const uids = 'SAMPLE_UID';
         const contentId = 'SAMPLE_CONTENT_ID';
