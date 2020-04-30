@@ -122,4 +122,208 @@ describe('ContentUtil', () => {
             expect(ContentUtil.isExpired(expiryDate)).toEqual(false);
         });
     });
+
+    it('should checked dduplicate or not', () => {
+        const isDraftContent = true, pkgVersion = 6;
+        expect(ContentUtil.isDuplicateCheckRequired(isDraftContent, pkgVersion)).toEqual(false);
+    });
+
+    describe('isImportFileExist', () => {
+        it('should return true if pkgVersion of local data ig grater', () => {
+            const oldContentModel: ContentEntry.SchemaMap = {
+                [ContentEntry.COLUMN_NAME_IDENTIFIER]: 'do-123',
+                [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+                [ContentEntry.COLUMN_NAME_LOCAL_DATA]: '{ "name": "SOME_NAME", "pkgVersion": 6, "childNodes": {} }',
+                [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_VISIBILITY]: 'default',
+                [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
+                [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+            };
+            const contentData = { identifier: 'do-123', visibility: 'default', pkgVersion: 3 };
+
+            expect(ContentUtil.isImportFileExist(oldContentModel, contentData)).toBe(true);
+        });
+
+        it('should return false if identifier is not match', () => {
+            const oldContentModel: ContentEntry.SchemaMap = {
+                [ContentEntry.COLUMN_NAME_IDENTIFIER]: 'do-123',
+                [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+                [ContentEntry.COLUMN_NAME_LOCAL_DATA]: '{ "name": "SOME_NAME", "pkgVersion": 6, "childNodes": {} }',
+                [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_VISIBILITY]: 'defaults',
+                [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
+                [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+            };
+            const contentData = { identifier: 'do-1234', visibility: 'default', pkgVersion: 3 };
+
+            expect(ContentUtil.isImportFileExist(oldContentModel, contentData)).toBe(false);
+        });
+
+        it('should return false if oldContentModel is undefined', () => {
+            const oldContentModel = undefined;
+            const contentData = undefined;
+
+            expect(ContentUtil.isImportFileExist(oldContentModel, contentData)).toBe(false);
+        });
+    });
+
+    describe('readAudience', () => {
+        it('should return audienceList if audience type is string', () => {
+            const contentData = {
+                audience: 'sample-audience'
+            };
+
+            expect(ContentUtil.readAudience(contentData)).toBe('sample-audience');
+        });
+    });
+
+    it('should return pragmaList', () => {
+        const contentData = {
+            pragma: ['sample-params']
+        };
+
+        expect(ContentUtil.readPragma(contentData)).toBe('sample-params');
+    });
+
+    describe('doesContentExist', () => {
+        it('should return true if newPkgVersion is greter', () => {
+            const existingContentInDB: ContentEntry.SchemaMap = {
+                [ContentEntry.COLUMN_NAME_IDENTIFIER]: 'do-123',
+                [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+                [ContentEntry.COLUMN_NAME_LOCAL_DATA]: '{ "name": "SOME_NAME", "pkgVersion": 6, "childNodes": {} }',
+                [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_VISIBILITY]: 'default',
+                [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
+                [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+            };
+            const newIdentifier = 'do-123';
+            const newPkgVersion = 8;
+            const keepLowerVersion = true;
+
+            expect(ContentUtil.doesContentExist(existingContentInDB, newIdentifier, newPkgVersion, keepLowerVersion)).toBe(true);
+        });
+
+        it('should return false if newPkgVersion is lesser', () => {
+            const existingContentInDB: ContentEntry.SchemaMap = {
+                [ContentEntry.COLUMN_NAME_IDENTIFIER]: 'do-123',
+                [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+                [ContentEntry.COLUMN_NAME_LOCAL_DATA]: '{ "name": "SOME_NAME", "pkgVersion": 6, "childNodes": {} }',
+                [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_VISIBILITY]: 'default',
+                [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
+                [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+            };
+            const newIdentifier = 'do-123';
+            const newPkgVersion = 3;
+            const keepLowerVersion = true;
+
+            expect(ContentUtil.doesContentExist(existingContentInDB, newIdentifier, newPkgVersion, keepLowerVersion)).toBe(false);
+        });
+
+        it('should return false if keepLowerVersion is false', () => {
+            const existingContentInDB: ContentEntry.SchemaMap = {
+                [ContentEntry.COLUMN_NAME_IDENTIFIER]: 'do-123',
+                [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+                [ContentEntry.COLUMN_NAME_LOCAL_DATA]: '{ "name": "SOME_NAME", "pkgVersion": 6, "childNodes": {} }',
+                [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_VISIBILITY]: 'default',
+                [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
+                [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+            };
+            const newIdentifier = 'do-123';
+            const newPkgVersion = 8;
+            const keepLowerVersion = false;
+
+            expect(ContentUtil.doesContentExist(existingContentInDB, newIdentifier, newPkgVersion, keepLowerVersion)).toBe(false);
+        });
+
+        it('should return false if oldIdentifier and newIdentifier are not matched', () => {
+            const existingContentInDB: ContentEntry.SchemaMap = {
+                [ContentEntry.COLUMN_NAME_IDENTIFIER]: 'do-123',
+                [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+                [ContentEntry.COLUMN_NAME_LOCAL_DATA]: '{ "name": "SOME_NAME", "pkgVersion": 6, "childNodes": {} }',
+                [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_VISIBILITY]: 'default',
+                [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
+                [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+            };
+            const newIdentifier = 'do-1234';
+            const newPkgVersion = 3;
+            const keepLowerVersion = false;
+
+            expect(ContentUtil.doesContentExist(existingContentInDB, newIdentifier, newPkgVersion, keepLowerVersion)).toBe(false);
+        });
+    });
+
+    describe('addOrUpdateViralityMetadata', () => {
+        it('should invoked ContentUtil.transferCount', () => {
+            const localData = {
+                contentMetaData: {
+                    virality: {
+                        origin: 'sample-origin',
+                        transferCount: 1
+                    }
+                },
+                virality: {
+                    origin: 'sample-origin',
+                    transferCount: 1
+                }
+            };
+            const origin = 'sample-origin';
+
+            expect(ContentUtil.addOrUpdateViralityMetadata(localData, origin)).toBeUndefined();
+        });
+
+        it('should invoked isContentMetadataPresentWithoutViralityMetadata()', () => {
+            const localData = {
+                contentMetaData: {
+                },
+                virality: {
+                    origin: 'sample-origin',
+                    transferCount: 1
+                }
+            };
+            const origin = 'sample-origin';
+
+            expect(ContentUtil.addOrUpdateViralityMetadata(localData, origin)).toBeUndefined();
+        });
+    });
+
+    describe('addViralityMetadataIfMissing', () => {
+        it('should called for all else part', () => {
+            const localData = {
+                contentMetaData: {
+                    virality: {
+                        origin: 'sample-origin',
+                        transferCount: 1
+                    }
+                },
+                virality: {
+                    origin: 'sample-origin',
+                    transferCount: 1
+                }
+            };
+            const origin = 'sample';
+
+            expect(ContentUtil.addViralityMetadataIfMissing(localData, origin)).toBeUndefined();
+        });
+    });
+
+    it('should return true for contentDisposition', () => {
+        const contentData = {
+            contentDisposition: 'online'
+        };
+
+        expect(ContentUtil.isOnlineContent(contentData)).toEqual(true);
+    });
+
+    describe('addOrUpdateDialcodeMapping', () => {
+        it('should return dialcodeMapping', () => {
+            const jsonStr = '{ "name": "SOME_NAME", "pkgVersion": 6, "childNodes": {} }';
+            const identifier = 'do-123';
+            const rootNodeIdentifier = 'sample-root-node-identifier';
+
+            // expect(ContentUtil.addOrUpdateDialcodeMapping)
+        });
+    });
 });

@@ -378,8 +378,10 @@ export class SunbirdSdk {
     }
 
     private preInit() {
-        return this.frameworkService.preInit().pipe(
-            concatMap(() => this.profileService.preInit())
+        return this.telemetryService.preInit().pipe(
+            concatMap(() => this.frameworkService.preInit().pipe(
+                concatMap(() => this.profileService.preInit())
+            ))
         );
     }
 
