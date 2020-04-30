@@ -10,10 +10,10 @@ declare var sbutility: {
         (callbackUrl: boolean) => void, error: (error: boolean) => void) => void;
 
     copyDirectory: (sourceDirectory: string, destinationDirectory: string,
-        onSuccess: () => void, onError: (error: any) => void) => void;
+                   onSuccess: () => void, onError: (error: any) => void) => void;
 
     renameDirectory: (sourceDirectory: string, toDirectoryName: string,
-        onSuccess: () => void, onError: (error: any) => void) => void;
+                     onSuccess: () => void, onError: (error: any) => void) => void;
 
     getFreeUsableSpace: (directory: string, success:
         (callbackUrl: string) => void, error: (error: string) => void) => void;
@@ -33,7 +33,7 @@ declare var sbutility: {
     getDeviceSpec: (callback: (deviceSpec: any) => void) => void;
 
     getAvailableInternalMemorySize: (success:
-        (callbackUrl: string) => void, error: (error: string) => void) => void;
+                                         (callbackUrl: string) => void, error: (error: string) => void) => void;
 
     getStorageVolumes: (success: (storageVolume: {
         availableSize: number;
@@ -48,10 +48,11 @@ declare var sbutility: {
         (callbackUrl: string) => void, error: (error: any) => void) => void;
 
     copyFile: (sourceDirectory: string, destinationDirectory: string, fileName: string,
-        onSuccess: () => void, onError: (error: any) => void) => void;
+               onSuccess: () => void, onError: (error: any) => void) => void;
 
     getUtmInfo: (success:
         (callbackUrl: any) => void, error: (error: string) => void) => void;
+
     clearUtmInfo: (success:
         (callbackUrl: any) => void, error: (error: string) => void) => void;
 };
