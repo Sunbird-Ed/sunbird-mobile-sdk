@@ -86,6 +86,7 @@ export class DbCordovaService implements DbService {
             } else {
                 migration = m();
             }
+            console.log('Migration', migration);
             if (migration.required(oldVersion, newVersion)) {
                 await migration.apply(this);
             }
