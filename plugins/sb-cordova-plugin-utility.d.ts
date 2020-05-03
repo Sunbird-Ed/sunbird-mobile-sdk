@@ -10,10 +10,10 @@ declare var sbutility: {
         (callbackUrl: boolean) => void, error: (error: boolean) => void) => void;
 
     copyDirectory: (sourceDirectory: string, destinationDirectory: string,
-                   onSuccess: () => void, onError: (error: any) => void) => void;
+                    onSuccess: () => void, onError: (error: any) => void) => void;
 
     renameDirectory: (sourceDirectory: string, toDirectoryName: string,
-                     onSuccess: () => void, onError: (error: any) => void) => void;
+                      onSuccess: () => void, onError: (error: any) => void) => void;
 
     getFreeUsableSpace: (directory: string, success:
         (callbackUrl: string) => void, error: (error: string) => void) => void;

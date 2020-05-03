@@ -103,11 +103,12 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
 
     preInit(): Observable<undefined> {
         return defer(async () => {
-            const parameters = await this.getInitialUtmParameters();
-            if (parameters && parameters.length) {
-                this.updateUtmParameters(parameters);
-                this.clearUtmInfo();
-            }
+            this.getInitialUtmParameters().then((parameters) => {
+                if (parameters && parameters.length) {
+                    this.updateUtmParameters(parameters);
+                    this.clearUtmInfo();
+                }
+            });
             return undefined;
         });
     }
@@ -139,15 +140,15 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
     }
 
     audit({env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData}:
-                TelemetryAuditRequest): Observable<boolean> {
+              TelemetryAuditRequest): Observable<boolean> {
         const audit = new SunbirdTelemetry.Audit(env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData);
         return this.decorateAndPersist(audit);
     }
 
     end({
-           type, mode, duration, pageId, summaryList, env,
-           objId, objType, objVer, rollup, correlationData
-       }: TelemetryEndRequest): Observable<boolean> {
+            type, mode, duration, pageId, summaryList, env,
+            objId, objType, objVer, rollup, correlationData
+        }: TelemetryEndRequest): Observable<boolean> {
         const end = new SunbirdTelemetry.End(type, mode, duration, pageId, summaryList, env, objId,
             objType, objVer, rollup, correlationData);
         return this.decorateAndPersist(end);
@@ -171,7 +172,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
     interact({
                  type, subType, id, pageId, pos, env, rollup,
                  valueMap, correlationData, objId, objType, objVer
-            }: TelemetryInteractRequest): Observable<boolean> {
+             }: TelemetryInteractRequest): Observable<boolean> {
         const interact = new SunbirdTelemetry.Interact(type, subType, id, pageId, pos, valueMap, env, objId,
             objType, objVer, rollup, correlationData);
         return this.decorateAndPersist(interact);
@@ -197,9 +198,9 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
     }
 
     start({
-             type, deviceSpecification, loc, mode, duration, pageId, env,
-             objId, objType, objVer, rollup, correlationData
-         }: TelemetryStartRequest): Observable<boolean> {
+              type, deviceSpecification, loc, mode, duration, pageId, env,
+              objId, objType, objVer, rollup, correlationData
+          }: TelemetryStartRequest): Observable<boolean> {
         const start = new SunbirdTelemetry.Start(type, deviceSpecification, loc, mode, duration, pageId, env, objId,
             objType, objVer, rollup, correlationData);
         return this.decorateAndPersist(start);
@@ -368,7 +369,6 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
         return new Promise<CorrelationData[]>((resolve, reject) => {
             try {
                 sbutility.getUtmInfo((response: {val: CorrelationData[]}) => {
-                    console.log('utttttttm', response.val);
                     resolve(response.val);
                 }, err => {
                     reject(err);
