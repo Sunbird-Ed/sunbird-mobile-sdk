@@ -151,12 +151,6 @@ describe('sdk', () => {
                 } as Partial<AppInfo> as AppInfo;
             });
 
-            jest.spyOn(sdkInstance, 'telemetryService', 'get').mockImplementation( () => {
-                return {
-                    preInit: jest.fn().mockImplementation(() => of(undefined))
-                } as Partial<TelemetryService> as TelemetryService;
-            });
-
             jest.spyOn(sdkInstance, 'frameworkService', 'get').mockImplementation( () => {
                 return {
                     preInit: jest.fn().mockImplementation(() => of(undefined))
@@ -215,7 +209,8 @@ describe('sdk', () => {
 
             jest.spyOn(sdkInstance, 'telemetryService', 'get').mockImplementation(() => {
                 return {
-                    onInit: jest.fn().mockImplementation(() => of(undefined))
+                    onInit: jest.fn().mockImplementation(() => of(undefined)),
+                    preInit: jest.fn(() => of(undefined))
                 } as Partial<TelemetryService> as TelemetryService;
             });
 
