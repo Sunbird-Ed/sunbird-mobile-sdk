@@ -85,17 +85,17 @@ export class SummarizerQueries {
     }
 
     public static getUpdateSelection() {
-        const query = `${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ? AND
-                       ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = ? AND
-                       ${LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA} = ? AND
-                       ${LearnerAssessmentsEntry.COLUMN_NAME_QID} = ? `;
+        const query = `${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ? AND ` +
+                       `${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = ? AND ` +
+                       `${LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA} = ? AND ` +
+                       `${LearnerAssessmentsEntry.COLUMN_NAME_QID} = ? `;
         return query;
     }
 
     public static getLearnerSummaryReadSelection(hData: string) {
-        const query = `${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ? AND
-                       ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = ? AND
-                       ${LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA} = ? `;
+        const query = `${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ? AND ` +
+                       `${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = ? AND ` +
+                       `${LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA} = ? `;
         return query;
     }
 
