@@ -59,7 +59,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
     private _lastSyncedTimestamp$: BehaviorSubject<number | undefined>;
     private telemetryAutoSyncService?: TelemetryAutoSyncServiceImpl;
     private telemetryConfig: TelemetryConfig;
-    private utmParameters: CorrelationData[] = [];
+    private campaignParameters: CorrelationData[] = [];
 
     get autoSync() {
         if (!this.telemetryAutoSyncService) {
@@ -105,8 +105,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
         return defer(async () => {
             this.getInitialUtmParameters().then((parameters) => {
                 if (parameters && parameters.length) {
-                    this.updateUtmParameters(parameters);
-                    this.clearUtmInfo();
+                    this.updateCampaignParameters(parameters);
                 }
             });
             return undefined;
@@ -336,14 +335,11 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
                     mergeMap((offset?: string) => {
                         offset = offset || '0';
 
-                        if (telemetry.context.cdata) {
-                            telemetry.context.cdata = telemetry.context.cdata.concat(this.utmParameters || []);
-                        }
                         const insertQuery: InsertQuery = {
                             table: TelemetryEntry.TABLE_NAME,
                             modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!.uid,
                                 profileSession!.sid, groupSession && groupSession.gid, Number(offset),
-                                this.frameworkService.activeChannelId), 1)
+                                this.frameworkService.activeChannelId, this.campaignParameters), 1)
                         };
                         return this.dbService.insert(insertQuery).pipe(
                             tap(() => this.eventsBusService.emit({
@@ -361,8 +357,8 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
         );
     }
 
-    updateUtmParameters(params: CorrelationData[]) {
-        this.utmParameters = params;
+    updateCampaignParameters(params: CorrelationData[]) {
+        this.campaignParameters = params;
     }
 
     private getInitialUtmParameters(): Promise<CorrelationData[]> {
@@ -374,22 +370,6 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
                     reject(err);
                 });
             } catch (xc) {
-                reject(xc);
-            }
-        });
-    }
-
-   private clearUtmInfo(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            try {
-                sbutility.clearUtmInfo(() => {
-                    console.log('utm paramter clear');
-                    resolve();
-                }, err => {
-                    reject(err);
-                });
-            } catch (xc) {
-                console.error(xc);
                 reject(xc);
             }
         });

@@ -84,7 +84,6 @@ global.sbutility = {
     },
     writeFile: () => {},
     getUtmInfo: () => {},
-    clearUtmInfo: () => {}
 };
 
 global.sbutility = {

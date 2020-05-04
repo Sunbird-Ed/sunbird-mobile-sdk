@@ -57,5 +57,5 @@ export interface TelemetryService extends SdkServiceOnInitDelegate, SdkServicePr
 
     buildContext(): Observable<Context>;
 
-    updateUtmParameters(params: CorrelationData[]);
+    updateCampaignParameters(params: CorrelationData[]);
 }

@@ -148,27 +148,22 @@ describe('TelemetryServiceImpl', () => {
   describe('preInit()', () => {
     it('should fetch all utm parameters and clear utm parameters', (done) => {
       sbutility.getUtmInfo = jest.fn((a, b) => a({ val: [{ utmSource: 'google-play' }] }));
-      sbutility.clearUtmInfo = jest.fn((a, b) => a());
       telemetryService.preInit().subscribe(() => {
         expect(sbutility.getUtmInfo).toHaveBeenCalled();
-        expect(sbutility.clearUtmInfo).toHaveBeenCalled();
         done();
       });
     });
 
     it('should fetch all utm parameters and can not clear utm parameters', (done) => {
       sbutility.getUtmInfo = jest.fn((a, b) => a({ val: [{ utmSource: 'google-play' }] }));
-      sbutility.clearUtmInfo = jest.fn((a, b) => b());
       telemetryService.preInit().subscribe(() => {
         expect(sbutility.getUtmInfo).toHaveBeenCalled();
-        expect(sbutility.clearUtmInfo).toHaveBeenCalled();
         done();
       });
     });
 
     it('should not fetch all utm parameters if parameter is undefined', (done) => {
       sbutility.getUtmInfo = jest.fn((a, b) => a({ val: undefined}));
-      sbutility.clearUtmInfo = jest.fn((a, b) => b());
       telemetryService.preInit().subscribe(() => {
         expect(sbutility.getUtmInfo).toHaveBeenCalled();
         done();
