@@ -17,6 +17,7 @@ import {FrameworkMapper} from '../util/framework-mapper';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {FrameworkKeys} from '../../preference-keys';
 import {map, mergeMap, tap} from 'rxjs/operators';
+import {CachedItemRequestSourceFrom} from '../../key-value-store';
 
 export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFrameworkCategoryTermsRequest, CategoryTerm[]> {
 
@@ -31,7 +32,7 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
                 return this.getTranslatedFrameworkDetails(request.frameworkId, request.requiredCategories, request.language);
             }
 
-            return this.getActiveChannelTranslatedDefaultFrameworkDetails(request.requiredCategories, request.language);
+            return this.getActiveChannelTranslatedDefaultFrameworkDetails(request);
         }) as () => Observable<Framework>)().pipe(
             tap(async (framework: Framework) =>
                 await this.sharedPreferences.putString(
@@ -57,12 +58,13 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
     }
 
     private getActiveChannelTranslatedDefaultFrameworkDetails(
-        requiredCategories: FrameworkCategoryCode[],
-        language: string
+        request: GetFrameworkCategoryTermsRequest
     ): Observable<Framework> {
-        return this.frameworkUtilService.getActiveChannel().pipe(
+        return this.frameworkUtilService.getActiveChannel({ from: request.from }).pipe(
             mergeMap((channel: Channel) => {
-                return this.getTranslatedFrameworkDetails(channel.defaultFramework, requiredCategories, language);
+                return this.getTranslatedFrameworkDetails(
+                    channel.defaultFramework, request.requiredCategories, request.language, request.from
+                );
             })
         );
     }
@@ -70,9 +72,11 @@ export class GetFrameworkCategoryTermsHandler implements ApiRequestHandler<GetFr
     private getTranslatedFrameworkDetails(
         frameworkId: string,
         requiredCategories: FrameworkCategoryCode[],
-        language: string
+        language: string,
+        from?: CachedItemRequestSourceFrom,
     ): Observable<Framework> {
         return this.frameworkService.getFrameworkDetails({
+            from,
             frameworkId,
             requiredCategories
         }).pipe(

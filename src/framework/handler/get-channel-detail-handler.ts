@@ -1,9 +1,9 @@
-import {CachedItemStore} from '../../key-value-store';
+import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
 import {Channel, ChannelDetailsRequest, FrameworkServiceConfig} from '..';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {from, Observable} from 'rxjs';
+import {defer, from, iif, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 
@@ -20,7 +20,7 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
     }
 
     handle(request: ChannelDetailsRequest): Observable<Channel> {
-        return this.cachedItemStore.getCached(
+        return this.cachedItemStore[request.from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
             request.channelId,
             this.CHANNEL_LOCAL_KEY,
             'ttl_' + this.CHANNEL_LOCAL_KEY,

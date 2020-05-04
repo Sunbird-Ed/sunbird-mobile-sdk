@@ -20,4 +20,14 @@ export interface CachedItemStore {
         timeToLive?: number,
         emptyCondition?: (item: T) => boolean
     ): Observable<T>;
+
+    get<T>(
+        id: string,
+        noSqlkey: string,
+        timeToLiveKey: string,
+        fromServer: () => Observable<T>,
+        initial?: () => Observable<T>,
+        timeToLive?: number,
+        emptyCondition?: (item: T) => boolean
+    ): Observable<T>;
 }
