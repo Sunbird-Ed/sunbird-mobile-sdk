@@ -25,8 +25,9 @@ import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {EventObserver} from '../../events-bus/def/event-observer';
 import {Observable, of} from 'rxjs';
-import Telemetry = SunbirdTelemetry.Telemetry;
 import {map, mergeMap} from 'rxjs/operators';
+import {ValidationError} from '../../errors';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 @injectable()
 export class SummarizerServiceImpl implements SummarizerService, EventObserver<TelemetryEvent> {
@@ -90,12 +91,10 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
     }
 
     getSummary(request: SummaryRequest): Observable<LearnerAssessmentSummary[]> {
-        let query;
-        if (request.uids) {
-            query = SummarizerQueries.getChildProgressQuery(request.uids);
-        } else if (request.contentId) {
-            query = SummarizerQueries.getContentProgressQuery(request.contentId);
+        if (!request.uids) {
+            throw new ValidationError('uids are mandatory');
         }
+        const query = SummarizerQueries.getChildProgressQuery(request.uids);
         return this.getContentCache(request.uids).pipe(
             mergeMap((cache: Map<string, ContentCache>) => {
                 return this.dbService.execute(query).pipe(
@@ -104,10 +103,9 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
                 );
             })
         );
-
     }
 
-    getContentCache(uids: string[]): Observable<Map<string, ContentCache>> {
+    private getContentCache(uids: string[]): Observable<Map<string, ContentCache>> {
         if (this.contentMap && Object.keys(this.contentMap).length) {
             return of(this.contentMap);
         } else {
@@ -126,9 +124,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
                     return this.contentMap;
                 })
             );
-
         }
-
     }
 
     saveLearnerAssessmentDetails(event: Telemetry): Observable<boolean> {
