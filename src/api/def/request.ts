@@ -16,6 +16,18 @@ export enum HttpRequestType {
     PATCH = 'PATCH'
 }
 
+export interface SerializedRequest {
+    type: HttpRequestType;
+    host: string | undefined;
+    path: string;
+    serializer: HttpSerializer;
+    withApiToken: boolean;
+    withSessionToken: boolean;
+    headers: {[key: string]: string};
+    body: {[key: string]: string} | string;
+    parameters: {[key: string]: string};
+}
+
 export class Request {
     static Builder: any = class Builder {
 
@@ -204,5 +216,18 @@ export class Request {
 
     get host(): string | undefined {
         return this._host;
+    }
+
+    toJSON(): string {
+        return JSON.stringify({
+            type: this._type,
+            host: this._host,
+            path: this._path,
+            serializer: this._serializer,
+            withApiToken: this._withApiToken,
+            withSessionToken: this._withSessionToken,
+            headers: this._headers,
+            parameters: this._parameters,
+        } as SerializedRequest);
     }
 }

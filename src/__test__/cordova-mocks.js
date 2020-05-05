@@ -110,3 +110,29 @@ global.customtabs = {
     launchInBrowser: () => {
     }
 };
+
+global.sbsync = {
+    enqueue: () => {
+    }
+};
+
+global.db = {
+    update: () => {
+    },
+    delete: () => {
+    },
+    read: () => {
+    },
+    execute: () => {
+    },
+    insert: () => {
+    },
+    endTransaction: () => {
+    },
+    beginTransaction: () => {
+    },
+    copyDatabase: () => {
+    },
+    open: () => {
+    }
+};
