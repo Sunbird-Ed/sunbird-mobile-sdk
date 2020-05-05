@@ -26,7 +26,7 @@ export class DialcodeRequestDelegate implements ApiRequestHandler<PageAssembleCr
             }
 
             if (request.filters && request.filters.dialcodes) {
-                const query = `SELECT c.* FROM content c WHERE dialcodes LIKE '%%~${request.filters.dialcodes}~%%'`;
+                const query = `SELECT c.* FROM content c WHERE ref_count > 0 AND dialcodes LIKE '%%~${request.filters.dialcodes}~%%'`;
                 const localContents = ((await this.dbService.execute(query).toPromise()) as ContentEntry.SchemaMap[])
                     .map((e) => ContentMapper.mapContentDBEntryToContent(e).contentData);
 
