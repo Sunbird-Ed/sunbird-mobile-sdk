@@ -5,16 +5,28 @@ import {ArchiveImportProgress, ArchiveObjectExportProgress, ArchiveObjectImportP
 import {UnknownObjectError} from '../error/unknown-object-error';
 import {reduce} from 'rxjs/operators';
 import {of} from 'rxjs';
+import {NetworkQueue} from '../../../api/network-queue';
+import {SdkConfig} from '../../../sdk-config';
 
 describe('TelemetryImportDelegate', () => {
     let telemetryImportDelegate: TelemetryImportDelegate;
     const mockDbService: Partial<DbService> = {};
     const mockFileService: Partial<FileService> = {};
+    const mockNetworkQueue: Partial<NetworkQueue> = {
+        enqueue: jest.fn(() => of())
+    };
+    const mockSdkConfig: Partial<SdkConfig> = {
+        telemetryConfig: {
+            host: 'https://sunbirded.org'
+        } as any
+    };
 
     beforeAll(() => {
         telemetryImportDelegate = new TelemetryImportDelegate(
             mockDbService as DbService,
-            mockFileService as FileService
+            mockFileService as FileService,
+            mockNetworkQueue as NetworkQueue,
+            mockSdkConfig as SdkConfig
         );
     });
 

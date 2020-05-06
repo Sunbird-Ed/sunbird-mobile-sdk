@@ -24,7 +24,7 @@ export class GroupProfileMigration extends Migration {
                         row[ProfileEntry.COLUMN_NAME_SOURCE] = ProfileSource.SERVER.valueOf();
 
                     } else {
-                        row[ProfileEntry.COLUMN_NAME_SOURCE] = ProfileSource.SERVER.valueOf();
+                        row[ProfileEntry.COLUMN_NAME_SOURCE] = ProfileSource.LOCAL.valueOf();
                     }
                     await dbService.update({
                         table: ProfileEntry.TABLE_NAME,

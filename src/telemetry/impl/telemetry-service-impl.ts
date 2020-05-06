@@ -96,6 +96,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
         @inject(InjectionTokens.APP_INFO) private appInfoService: AppInfo,
         @inject(InjectionTokens.DEVICE_REGISTER_SERVICE) private deviceRegisterService: DeviceRegisterService,
         @inject(InjectionTokens.COURSE_SERVICE) private courseService: CourseService,
+        @inject(InjectionTokens.NETWORK_QUEUE) private networkQueue: NetworkQueue,
     ) {
         this.telemetryConfig = this.sdkConfig.telemetryConfig;
         this._lastSyncedTimestamp$ = new BehaviorSubject<number | undefined>(undefined);
@@ -271,7 +272,8 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
             this.appInfoService,
             this.deviceRegisterService,
             this.keyValueStore,
-            this.apiService
+            this.apiService,
+            this.networkQueue
         ).resetDeviceRegisterTTL();
     }
 
@@ -294,7 +296,8 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
                     this.appInfoService,
                     this.deviceRegisterService,
                     this.keyValueStore,
-                    this.apiService
+                    this.apiService,
+                    this.networkQueue
                 ).handle(request).pipe(
                     tap((syncStat) => {
                         if (!syncStat.error && syncStat.syncedEventCount) {

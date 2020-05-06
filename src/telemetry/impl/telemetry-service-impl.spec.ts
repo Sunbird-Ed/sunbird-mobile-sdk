@@ -48,6 +48,7 @@ describe('TelemetryServiceImpl', () => {
   const mockAppInfo: Partial<AppInfo> = {};
   const mockDeviceRegisterService: Partial<DeviceRegisterService> = {};
   const mockCourseService: Partial<CourseService> = {};
+  const mockNetworkQueue: Partial<NetworkQueue> = {};
 
 
   beforeAll(() => {
@@ -69,6 +70,7 @@ describe('TelemetryServiceImpl', () => {
     container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
     container.bind<DeviceRegisterService>(InjectionTokens.DEVICE_REGISTER_SERVICE).toConstantValue(mockDeviceRegisterService as DeviceRegisterService);
     container.bind<CourseService>(InjectionTokens.COURSE_SERVICE).toConstantValue(mockCourseService as CourseService);
+    container.bind<NetworkQueue>(InjectionTokens.NETWORK_QUEUE).toConstantValue(mockNetworkQueue as NetworkQueue);
 
     telemetryService = container.get<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE);
   });

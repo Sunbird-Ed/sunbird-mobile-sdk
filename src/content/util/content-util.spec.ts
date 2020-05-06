@@ -2,7 +2,7 @@ import {
     ContentEntry
 } from '../db/schema';
 import { ContentUtil } from './content-util';
-import { ContentData, HierarchyInfo } from '..';
+import { ContentData, HierarchyInfo, Visibility } from '..';
 
 describe('ContentUtil', () => {
     describe('getExportedFileName()', () => {
@@ -12,7 +12,40 @@ describe('ContentUtil', () => {
                 {
                     [ContentEntry.COLUMN_NAME_IDENTIFIER]: 'SOME_IDENTIFIER',
                     [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
-                    [ContentEntry.COLUMN_NAME_LOCAL_DATA]: JSON.stringify({ name: 'SOME_NAME', pkgVersion: 'SOME_VERSION' }),
+                    [ContentEntry.COLUMN_NAME_LOCAL_DATA]: JSON.stringify({
+                        name: 'SOME_NAME.......................',
+                        pkgVersion: 'SOME_VERSION' }),
+                    [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
+                    [ContentEntry.COLUMN_NAME_VISIBILITY]: Visibility.DEFAULT.valueOf(),
+                    [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
+                    [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: ''
+                },
+                {
+                    [ContentEntry.COLUMN_NAME_IDENTIFIER]: 'SOME_IDENTIFIER',
+                    [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+                    [ContentEntry.COLUMN_NAME_LOCAL_DATA]: JSON.stringify({
+                        name: 'SOME_NAME.......................',
+                        pkgVersion: 'SOME_VERSION' }),
+                    [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
+                    [ContentEntry.COLUMN_NAME_VISIBILITY]: Visibility.DEFAULT.valueOf(),
+                    [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
+                    [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: ''
+                }
+            ];
+
+            expect(ContentUtil.getExportedFileName(contents, 'MOCK_APP_NAME'))
+                .toEqual('mock_app_name_SOME_NAME.....................-vSOME_VERSION.ecar');
+        });
+
+        it('should return exported fileName for name length < 30', () => {
+            // arrange
+            const contents: ContentEntry.SchemaMap[] = [
+                {
+                    [ContentEntry.COLUMN_NAME_IDENTIFIER]: 'SOME_IDENTIFIER',
+                    [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+                    [ContentEntry.COLUMN_NAME_LOCAL_DATA]: JSON.stringify({
+                        name: 'SOME_NAME',
+                        pkgVersion: 'SOME_VERSION' }),
                     [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
                     [ContentEntry.COLUMN_NAME_VISIBILITY]: '',
                     [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
@@ -319,11 +352,27 @@ describe('ContentUtil', () => {
 
     describe('addOrUpdateDialcodeMapping', () => {
         it('should return dialcodeMapping', () => {
-            const jsonStr = '{ "name": "SOME_NAME", "pkgVersion": 6, "childNodes": {} }';
+            const jsonStr = '[{ "name": "SOME_NAME", "pkgVersion": 6, "childNodes": {}, "rootNodes": "sample-root" }]';
             const identifier = 'do-123';
             const rootNodeIdentifier = 'sample-root-node-identifier';
 
-            // expect(ContentUtil.addOrUpdateDialcodeMapping)
+            expect(ContentUtil.addOrUpdateDialcodeMapping(jsonStr, identifier, rootNodeIdentifier)).toBeTruthy();
+        });
+
+        it('should return dialcodeMapping for identifier', () => {
+            const jsonStr = '{ "name": "SOME_NAME", "pkgVersion": 6, "childNodes": {}, "identifier": "sample-id" }';
+            const identifier = 'do-123';
+            const rootNodeIdentifier = 'sample-root-node-identifier';
+
+            expect(ContentUtil.addOrUpdateDialcodeMapping(jsonStr, identifier, rootNodeIdentifier)).toBeTruthy();
+        });
+
+        it('should return rootNodeIdentifier if jsonStr is undefined', () => {
+            const jsonStr = '';
+            const identifier = 'do-123';
+            const rootNodeIdentifier = 'sample-root-node-identifier';
+
+            expect(ContentUtil.addOrUpdateDialcodeMapping(jsonStr, identifier, rootNodeIdentifier)).toBeTruthy();
         });
     });
 });

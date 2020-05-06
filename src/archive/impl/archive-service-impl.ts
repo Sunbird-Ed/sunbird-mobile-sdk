@@ -22,6 +22,8 @@ import {InvalidArchiveError} from '../import/error/invalid-archive-error';
 import {TelemetryArchivePackageMeta} from '../export/def/telemetry-archive-package-meta';
 import {FileUtil} from '../../util/file/util/file-util';
 import {DeviceInfo} from '../../util/device';
+import {NetworkQueue} from '../../api/network-queue';
+import {SdkConfig} from '../../sdk-config';
 
 interface ArchiveManifest {
     id: string;
@@ -50,7 +52,9 @@ export class ArchiveServiceImpl implements ArchiveService {
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
         @inject(InjectionTokens.TELEMETRY_SERVICE) private telemetryService: TelemetryService,
         @inject(InjectionTokens.ZIP_SERVICE) private zipService: ZipService,
-        @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo
+        @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
+        @inject(InjectionTokens.NETWORK_QUEUE) private networkQueue: NetworkQueue,
+        @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig
     ) {
     }
 
@@ -243,7 +247,9 @@ export class ArchiveServiceImpl implements ArchiveService {
                             case ArchiveObjectType.TELEMETRY:
                                 return new TelemetryImportDelegate(
                                     this.dbService,
-                                    this.fileService
+                                    this.fileService,
+                                    this.networkQueue,
+                                    this.sdkConfig
                                 ).import({
                                     filePath: importRequest.filePath
                                 }, {

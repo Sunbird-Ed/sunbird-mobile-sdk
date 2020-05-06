@@ -1,22 +1,16 @@
-import { Container } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
-import { SummarizerServiceImpl } from './summarizer-service-impl';
-import { SummarizerService } from '..';
-import { DbService } from '../../db';
-import { ContentService } from '../../content';
-import { EventsBusService, EventNamespace } from '../../events-bus';
-import { CourseService } from '../../course';
-import { SharedPreferences } from '../../util/shared-preferences';
-import { ProfileService } from '../../profile';
-import { Observable } from 'rxjs';
-import { SummarizerQueries } from '..';
-import { SummaryRequest } from '../def/request';
-import { ContentRequest } from '../../content/def/requests';
-import { SunbirdTelemetry } from '../../telemetry';
-import Telemetry = SunbirdTelemetry.Telemetry;
-import { Actor, Context, TelemetryObject, ProducerData } from '../../telemetry/def/telemetry-model';
-import { TelemetryAuditRequest, TelemetryService } from '../../telemetry';
-import { of } from 'rxjs';
+import {Container} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
+import {SummarizerServiceImpl} from './summarizer-service-impl';
+import {SummarizerService, SummaryRequest} from '..';
+import {DbService} from '../../db';
+import {ContentRequest, ContentService} from '../../content';
+import {EventNamespace, EventsBusService} from '../../events-bus';
+import {CourseService} from '../../course';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {ProfileService} from '../../profile';
+import {Observable, of} from 'rxjs';
+import {SunbirdTelemetry, TelemetryAuditRequest, TelemetryService} from '../../telemetry';
+import {LearnerSummaryEntry} from '../../profile/db/schema';
 
 describe('SummarizerServiceImpl', () => {
     let summarizerService: SummarizerService;
@@ -24,19 +18,16 @@ describe('SummarizerServiceImpl', () => {
     const container = new Container();
     const dbServiceMock: Partial<DbService> = {};
     const contentServiceMock: Partial<ContentService> = {
-        getContents: jest.fn().mockImplementation(() => { })
+        getContents: jest.fn().mockImplementation(() => {
+        })
     };
     const eventsBusServiceMock: Partial<EventsBusService> = {
         registerObserver: jest.fn().mockImplementation(() => {
         }),
     };
     const courseServiceMock: Partial<CourseService> = {};
-    const sharedPreferencesMock: Partial<SharedPreferences> = {
-    };
+    const sharedPreferencesMock: Partial<SharedPreferences> = {};
     const profileServiceMock: Partial<ProfileService> = {};
-    const mockSummarizerQueries: Partial<SummarizerQueries> = {
-        getQuetsionDetailsQuery: jest.fn().mockImplementation(() => { })
-    };
     const mockTelemetryService: Partial<TelemetryService> = {
         audit(request: TelemetryAuditRequest): Observable<boolean> {
             return of(true);
@@ -57,8 +48,11 @@ describe('SummarizerServiceImpl', () => {
     });
 
     beforeEach(() => {
+        jest.resetAllMocks();
         jest.clearAllMocks();
+        jest.restoreAllMocks();
     });
+
     it('should return an instance from container', () => {
         // assert
         expect(summarizerService).toBeTruthy();
@@ -162,27 +156,194 @@ describe('SummarizerServiceImpl', () => {
             hierarchyData: 'SAMPLE_HIERARCHY_DATA'
         };
         dbServiceMock.execute = jest.fn().mockImplementation(() => of([]));
-        spyOn(summarizerService, 'getContentCache').and.returnValue(of(('SAMPLE_UID')));
+        const results = [
+            {
+                identifier: 'SOME_IDENTOFIER',
+                contentData: {
+                    name: 'SOME_NAME',
+                    totalScore: 'SOME_SCORE'
+                },
+                lastUsedTime: 100
+            }
+        ];
+        contentServiceMock.getContents = jest.fn().mockImplementation(() => of(results));
+        const contentRequest: ContentRequest = {resourcesOnly: true, contentTypes: [], uid: request.uids};
         // act
         summarizerService.getSummary(request).subscribe(() => {
             // assert
             expect(dbServiceMock.execute).toHaveBeenCalled();
+            expect(contentServiceMock.getContents).toHaveBeenCalledWith(expect.objectContaining(contentRequest));
             done();
         });
     });
 
-    it('get content for assessment', () => {
+    it('should insert learner assessment details  in DB - saveLearnerAssessmentDetails', (done) => {
         // arrange
-        const uids = ['SAMPLE_UID_1', 'SAMPLE_UID_2'];
-        contentServiceMock.getContents = jest.fn().mockImplementation(() => of([]));
+        const mockEndEvent = new SunbirdTelemetry.Start('SOME_TYPE', undefined, 'SOME_LOC',
+            'SOME_MODE', 10, 'SOME_PAGE_ID', 'SOME_ENV', 'SOME_OBJ_ID',
+            'OBJ_TYPE', 'SOME_OBJ_VER', {}, []);
+        mockEndEvent.ets = 100;
+        mockEndEvent.actor.id = 'SOME_UID';
+        mockEndEvent.edata.item = {
+            id: 'SOME_QUESTION_ID',
+            desc: 'SOME_QUESTION_DESC',
+            title: 'SOME_QUESTION_TITLE',
+            score: '1',
+            maxscore: '2',
+            qindex: '1'
+        };
+        mockEndEvent.context.cdata = [
+            {
+                type: 'Collection',
+                id: 'SOME_CDATA_ID_1'
+            },
+            {
+                type: 'TextBook',
+                id: 'SOME_CDATA_ID_2'
+            }
+        ];
+
+        dbServiceMock.execute = jest.fn().mockImplementation(() => of([]));
+        dbServiceMock.insert = jest.fn().mockImplementation(() => of(undefined));
         // act
-        summarizerService.getContentCache(uids).subscribe(() => {
+        summarizerService.saveLearnerAssessmentDetails(mockEndEvent).subscribe(() => {
             // assert
-            expect(contentServiceMock.getContents).toHaveBeenCalled();
+            expect(dbServiceMock.insert).toHaveBeenCalledWith(expect.objectContaining({
+                    'modelJson': {
+                        'content_id': 'SOME_OBJ_ID',
+                        'correct': 0,
+                        'h_data': '',
+                        'max_score': 2,
+                        'qdesc': 'SOME_QUESTION_DESC',
+                        'qid': 'SOME_QUESTION_ID',
+                        'qindex': NaN,
+                        'qtitle': 'SOME_QUESTION_TITLE',
+                        'res': undefined,
+                        'score': NaN,
+                        'time_spent': NaN,
+                        'timestamp': 100,
+                        'uid': 'SOME_UID'
+                    }, 'table': 'learner_assessments'
+                }
+            ));
+            done();
         });
     });
 
-    it('delete previous assessment from DB', (done) => {
+    it('should update learner assessment details  in DB - saveLearnerAssessmentDetails', (done) => {
+        // arrange
+        const mockEndEvent = new SunbirdTelemetry.Start('SOME_TYPE', undefined, 'SOME_LOC',
+            'SOME_MODE', 10, 'SOME_PAGE_ID', 'SOME_ENV', 'SOME_OBJ_ID',
+            'OBJ_TYPE', 'SOME_OBJ_VER', {}, []);
+        mockEndEvent.ets = 100;
+        mockEndEvent.actor.id = 'SOME_UID';
+        mockEndEvent.edata.item = {
+            id: 'SOME_QUESTION_ID',
+            desc: 'SOME_QUESTION_DESC',
+            title: 'SOME_QUESTION_TITLE',
+            score: '1',
+            maxscore: '2',
+            qindex: '1'
+        };
+
+        const mockLearnerAssessmentsEntry = [
+            {
+                [LearnerSummaryEntry.COLUMN_NAME_SESSIONS]: 1
+            }
+        ];
+
+        dbServiceMock.execute = jest.fn().mockImplementation(() => of(mockLearnerAssessmentsEntry));
+        dbServiceMock.update = jest.fn().mockImplementation(() => of(undefined));
+        // act
+        summarizerService.saveLearnerAssessmentDetails(mockEndEvent).subscribe(() => {
+            // assert
+            expect(dbServiceMock.update).toHaveBeenCalledWith(expect.objectContaining({
+                    'modelJson': {
+                        'content_id': 'SOME_OBJ_ID',
+                        'correct': 0,
+                        'h_data': '',
+                        'max_score': 2,
+                        'qdesc': 'SOME_QUESTION_DESC',
+                        'qid': 'SOME_QUESTION_ID',
+                        'qindex': NaN,
+                        'qtitle': 'SOME_QUESTION_TITLE',
+                        'res': undefined,
+                        'score': NaN,
+                        'time_spent': NaN,
+                        'timestamp': 100,
+                        'uid': 'SOME_UID'
+                    }, 'selection': 'uid = ? AND content_id = ? AND h_data = ? AND qid = ? ',
+                    'selectionArgs': ['SOME_UID', 'SOME_OBJ_ID', '', 'SOME_QUESTION_ID'],
+                    'table': 'learner_assessments'
+                }
+            ));
+            done();
+        });
+    });
+
+    it('should insert learner content summary details in DB - saveLearnerContentSummaryDetails', (done) => {
+        // arrange
+        const mockEndEvent = new SunbirdTelemetry.End('SOME_TYPE', 'SOME_MODE', 10,
+            'SOME_PAGE_ID', ['summaryList'], 'SOME_ENV', 'SOME_OBJ_ID',
+            'OBJ_TYPE', 'SOME_OBJ_VER', {}, []);
+        mockEndEvent.ets = 100;
+        mockEndEvent.actor.id = 'SOME_UID';
+        dbServiceMock.read = jest.fn().mockImplementation(() => of([]));
+        dbServiceMock.insert = jest.fn().mockImplementation(() => of(undefined));
+        // act
+        summarizerService.saveLearnerContentSummaryDetails(mockEndEvent).subscribe(() => {
+            // assert
+            expect(dbServiceMock.insert).toHaveBeenCalledWith(expect.objectContaining({
+                    'modelJson': {
+                        'avg_ts': 10,
+                        'content_id': 'SOME_OBJ_ID',
+                        'h_data': '',
+                        'last_updated_on': 100,
+                        'sessions': 1,
+                        'total_ts': 10,
+                        'uid': 'SOME_UID'
+                    }, 'table': 'learner_content_summary'
+                }
+            ));
+            done();
+        });
+    });
+
+    it('should update learner content summary details in DB - saveLearnerContentSummaryDetails', (done) => {
+        // arrange
+        const mockEndEvent = new SunbirdTelemetry.End('SOME_TYPE', 'SOME_MODE', 10,
+            'SOME_PAGE_ID', ['summaryList'], 'SOME_ENV', 'SOME_OBJ_ID',
+            'OBJ_TYPE', 'SOME_OBJ_VER', {}, []);
+        mockEndEvent.ets = 100;
+        mockEndEvent.actor.id = 'SOME_UID';
+        const mockLearnerAssessmentsEntry = [
+            {
+                [LearnerSummaryEntry.COLUMN_NAME_SESSIONS]: 1
+            }
+        ];
+        dbServiceMock.read = jest.fn().mockImplementation(() => of(mockLearnerAssessmentsEntry));
+        dbServiceMock.update = jest.fn().mockImplementation(() => of(undefined));
+        // act
+        summarizerService.saveLearnerContentSummaryDetails(mockEndEvent).subscribe(() => {
+            // assert
+            expect(dbServiceMock.update).toHaveBeenCalledWith(expect.objectContaining({
+                    'modelJson': {
+                        'avg_ts': NaN,
+                        'content_id': 'SOME_OBJ_ID',
+                        'h_data': '',
+                        'last_updated_on': 100,
+                        'sessions': 2,
+                        'total_ts': 10,
+                        'uid': 'SOME_UID'
+                    }, 'selection': 'uid = ? AND content_id = ? AND h_data = ? ',
+                    'selectionArgs': ['SOME_UID', 'SOME_OBJ_ID', ''], 'table': 'learner_content_summary'
+                }
+            ));
+            done();
+        });
+    });
+
+    it('should not delete previous assessment from DB if not there in DB', (done) => {
         // arrange
         const uids = 'SAMPLE_UID';
         const contentId = 'SAMPLE_CONTENT_ID';
@@ -192,6 +353,36 @@ describe('SummarizerServiceImpl', () => {
         summarizerService.deletePreviousAssessmentDetails(uids, contentId).subscribe(() => {
             // assert
             expect(dbServiceMock.delete).not.toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should delete previous assessment from DB', (done) => {
+        // arrange
+        const uid = 'SAMPLE_UID';
+        const contentId = 'SAMPLE_CONTENT_ID';
+        const mockSummariesinDb = [
+            {
+                [LearnerSummaryEntry.COLUMN_NAME_CONTENT_ID]: contentId,
+                [LearnerSummaryEntry.COLUMN_NAME_UID]: uid
+            }
+        ];
+
+        dbServiceMock.read = jest.fn().mockImplementation(() => of(mockSummariesinDb));
+        dbServiceMock.delete = jest.fn().mockImplementation(() => of(undefined));
+        // act
+        summarizerService.deletePreviousAssessmentDetails(uid, contentId).subscribe(() => {
+            // assert
+            expect(dbServiceMock.delete).toHaveBeenNthCalledWith(1, expect.objectContaining({
+                'selection': 'content_id = ? AND uid = ?',
+                'selectionArgs': ['SAMPLE_CONTENT_ID', 'SAMPLE_UID'],
+                'table': 'learner_content_summary'
+            }));
+            expect(dbServiceMock.delete).toHaveBeenNthCalledWith(2, expect.objectContaining({
+                'selection': 'content_id = ? AND uid = ?',
+                'selectionArgs': ['SAMPLE_CONTENT_ID', 'SAMPLE_UID'],
+                'table': 'learner_assessments'
+            }));
             done();
         });
     });
