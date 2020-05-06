@@ -1,13 +1,13 @@
-import { ApiAuthenticator } from './api-authenticator';
-import { SharedPreferences, ApiConfig, DeviceInfo, ApiService, Request, HttpRequestType, Response, ResponseCode } from '../../..';
-import { of } from 'rxjs';
-import { ApiKeys } from '../../../preference-keys';
-import {ApiTokenHandler} from '../../../api/handlers/api-token-handler';
+import {BearerTokenRefreshInterceptor} from './bearer-token-refresh-interceptor';
+import {ApiConfig, ApiService, DeviceInfo, HttpRequestType, Request, Response, ResponseCode, SharedPreferences} from '../../../index';
+import {of} from 'rxjs';
+import {ApiKeys} from '../../../preference-keys';
+import {ApiTokenHandler} from '../../handlers/api-token-handler';
 
- jest.mock('../../../api/handlers/api-token-handler');
+jest.mock('../../../api/handlers/api-token-handler');
 
-describe('ApiAuthenticator', () => {
-    let apiAuthenticator: ApiAuthenticator;
+describe('BearerTokenRefreshInterceptor', () => {
+    let apiAuthenticator: BearerTokenRefreshInterceptor;
     const mockApiConfig: Partial<ApiConfig> = {
         host: 'SAMPLE_HOST',
         user_authentication: {
@@ -34,7 +34,7 @@ describe('ApiAuthenticator', () => {
     const mockSharedPreferences: Partial<SharedPreferences> = {};
 
     beforeAll(() => {
-        apiAuthenticator = new ApiAuthenticator(
+        apiAuthenticator = new BearerTokenRefreshInterceptor(
             mockSharedPreferences as SharedPreferences,
             mockApiConfig as ApiConfig,
             mockDeviceInfo as DeviceInfo,
@@ -49,25 +49,6 @@ describe('ApiAuthenticator', () => {
 
     it('should be create a instance of apiAuthenticator', () => {
         expect(apiAuthenticator).toBeTruthy();
-    });
-
-    it('should get request from local by invoked interceptRequest()', (done) => {
-        // arrange
-        const request = new Request.Builder()
-            .withPath('/')
-            .withType(HttpRequestType.POST)
-            .withBody(new Uint8Array([]))
-            .withHeaders({
-                'content_type': 'application/text'
-            })
-            .build();
-        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('application/text'));
-        // act
-        apiAuthenticator.interceptRequest(request).subscribe(() => {
-            // assert
-            expect(mockSharedPreferences.getString).toHaveBeenCalledWith(ApiKeys.KEY_API_TOKEN);
-            done();
-        });
     });
 
     it('should put bearerToken into local by invoked interceptResponse()', async(done) => {

@@ -49,8 +49,8 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
             .withType(HttpRequestType.GET)
             .withPath(this.profileServiceConfig.profileApiPath_V2 + this.GET_SERVER_PROFILE_DETAILS_ENDPOINT + '/' + request.userId)
             .withParameters({'fields': request.requiredFields.join(',')})
-            .withApiToken(true)
-            .withSessionToken(true)
+            .withBearerToken(true)
+            .withUserToken(true)
             .withBody(request)
             .build();
 

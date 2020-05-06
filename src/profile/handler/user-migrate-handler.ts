@@ -4,7 +4,7 @@ import {UserMigrateResponse} from '../def/user-migrate-response';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {SdkConfig} from '../../sdk-config';
-import {ProfileServiceConfig } from '../config/profile-service-config';
+import {ProfileServiceConfig} from '../config/profile-service-config';
 
 export class UserMigrateHandler implements ApiRequestHandler<UserMigrateRequest, UserMigrateResponse> {
 
@@ -28,11 +28,11 @@ export class UserMigrateHandler implements ApiRequestHandler<UserMigrateRequest,
     fetchFromServer(request): Observable<UserMigrateResponse> {
         console.log('Request', request);
         const apiRequest: Request = new Request.Builder()
-                .withHost(this.apiConfig.host)
-                .withType(HttpRequestType.POST)
-                .withPath(this.profileServiceConfig.profileApiPath + UserMigrateHandler.USER_MIGRATE)
-                .withApiToken(true)
-                .withSessionToken(true)
+            .withHost(this.apiConfig.host)
+            .withType(HttpRequestType.POST)
+            .withPath(this.profileServiceConfig.profileApiPath + UserMigrateHandler.USER_MIGRATE)
+            .withBearerToken(true)
+            .withUserToken(true)
                 .withBody({request: request})
                 .build();
 

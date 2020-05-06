@@ -1,4 +1,4 @@
-import {CachedItemStore, CachedItemRequestSourceFrom} from '../../key-value-store';
+import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {
     Channel,
     ChannelDetailsRequest,
@@ -102,7 +102,7 @@ export class FrameworkServiceImpl implements FrameworkService {
             .withType(HttpRequestType.POST)
             .withPath(this.sdkConfig.frameworkServiceConfig.searchOrganizationApiPath + FrameworkServiceImpl.SEARCH_ORGANIZATION_ENDPOINT)
             .withBody({request})
-            .withApiToken(true)
+            .withBearerToken(true)
             .build();
 
         return this.apiService.fetch<{ result: { response: OrganizationSearchResponse<T> } }>(apiRequest).pipe(

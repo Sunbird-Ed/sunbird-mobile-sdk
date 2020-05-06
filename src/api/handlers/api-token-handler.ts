@@ -1,8 +1,9 @@
-import {ApiConfig, ApiService, HttpRequestType, JWTokenType, JWTUtil, Request} from '..';
-import {Observable, from} from 'rxjs';
+import {ApiConfig, ApiService, JWTokenType, JWTUtil} from '..';
+import {from, Observable} from 'rxjs';
 import * as dayjs from 'dayjs';
 import {DeviceInfo} from '../../util/device';
-import { map } from 'rxjs/operators';
+import {map} from 'rxjs/operators';
+import {CsHttpRequestType, CsRequest} from '@project-sunbird/client-services/core/http-service/interface';
 
 export class ApiTokenHandler {
 
@@ -30,10 +31,10 @@ export class ApiTokenHandler {
         return this.config.api_authentication.producerId + '-' + this.deviceInfo.getDeviceID();
     }
 
-    private buildGetMobileDeviceConsumerSecretAPIRequest(): Request {
-        return new Request.Builder()
+    private buildGetMobileDeviceConsumerSecretAPIRequest(): CsRequest {
+        return new CsRequest.Builder()
             .withPath(`/api/api-manager/v1/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`)
-            .withType(HttpRequestType.POST)
+            .withType(CsHttpRequestType.POST)
             .withHeaders({
                 'Content-Encoding': 'gzip',
                 'Authorization': `Bearer ${this.generateMobileAppConsumerBearerToken()}`

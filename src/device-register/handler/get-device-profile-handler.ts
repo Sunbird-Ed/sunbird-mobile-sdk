@@ -31,7 +31,7 @@ export class GetDeviceProfileHandler implements ApiRequestHandler<undefined, Dev
                 .withType(HttpRequestType.GET)
                 .withPath(this.deviceRegisterConfig.apiPath + GetDeviceProfileHandler.GET_DEVICE_PROFILE_ENDPOINT
                     + '/' + this.deviceInfo.getDeviceID())
-                .withApiToken(true)
+                .withBearerToken(true)
                 .build()
         ).pipe(
             map((response) => {

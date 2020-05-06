@@ -1,5 +1,5 @@
 import {DbConstants} from '../../../db';
-import {NetworkQueueRequest} from '../def/network-queue';
+import {NetworkQueueRequest} from '..';
 
 export namespace NetworkQueueEntry {
 

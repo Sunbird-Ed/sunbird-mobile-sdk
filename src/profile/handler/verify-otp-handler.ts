@@ -1,6 +1,5 @@
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {VerifyOtpRequest} from '..';
-import {ProfileServiceConfig} from '..';
+import {ProfileServiceConfig, VerifyOtpRequest} from '..';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
@@ -15,8 +14,8 @@ export class VerifyOtpHandler implements ApiRequestHandler<VerifyOtpRequest, boo
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.optServiceConfig.otpApiPath + this.GET_VERIFY_OTP_ENDPOINT)
-            .withApiToken(true)
-            .withSessionToken(true)
+            .withBearerToken(true)
+            .withUserToken(true)
             .withBody({
                 request: {
                     key: request.key,

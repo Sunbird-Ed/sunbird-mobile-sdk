@@ -1,22 +1,21 @@
-import { SessionAuthenticator } from './session-authenticator';
-import { SharedPreferences, ApiConfig, ApiService, AuthService, Request, HttpRequestType, Response, ResponseCode } from '../../..';
-import { of } from 'rxjs';
-import { AuthKeys } from '../../../preference-keys';
+import {UserTokenRefreshInterceptor} from './user-token-refresh-interceptor';
+import {ApiConfig, ApiService, AuthService, HttpRequestType, Request, Response, ResponseCode, SharedPreferences} from '../../../index';
+import {of} from 'rxjs';
 
 describe('SessionAuthenticator', () => {
-    let sessionAuthenticator: SessionAuthenticator;
+    let sessionAuthenticator: UserTokenRefreshInterceptor;
     const mockApiConfig: Partial<ApiConfig> = {};
     const mockApiService: Partial<ApiService> = {};
     const mockAuthService: Partial<AuthService> = {};
     const mockSharedPreferences: Partial<SharedPreferences> = {};
 
-        beforeAll(() => {
-            sessionAuthenticator = new SessionAuthenticator(
-                mockSharedPreferences as SharedPreferences,
-                mockApiConfig as ApiConfig,
-                mockApiService as ApiService,
-                mockAuthService as AuthService
-            );
+    beforeAll(() => {
+        sessionAuthenticator = new UserTokenRefreshInterceptor(
+            mockSharedPreferences as SharedPreferences,
+            mockApiConfig as ApiConfig,
+            mockApiService as ApiService,
+            mockAuthService as AuthService
+        );
         });
 
         beforeEach(() => {
@@ -25,28 +24,6 @@ describe('SessionAuthenticator', () => {
 
         it('should create a instance of SessionAuthenticator', () => {
             expect(sessionAuthenticator).toBeTruthy();
-        });
-
-        it('should get auth data from local by invoked interceptRequest()', (done) => {
-            // arrange
-            const request = new Request.Builder()
-            .withPath('/')
-            .withType(HttpRequestType.POST)
-            .withBody(new Uint8Array([]))
-            .withHeaders({
-                'content_type': 'application/text'
-            })
-            .build();
-            const data = mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('application/text'));
-            JSON.parse = jest.fn().mockImplementation().mockImplementationOnce(() => {
-                return data;
-              });
-            // act
-            sessionAuthenticator.interceptRequest(request).subscribe(() => {
-                // assert
-                expect(mockSharedPreferences.getString).toHaveBeenCalledWith(AuthKeys.KEY_OAUTH_SESSION);
-                done();
-            });
         });
 
         it('should return response for responseCode is not available by invoked interceptResponse() ', (done) => {

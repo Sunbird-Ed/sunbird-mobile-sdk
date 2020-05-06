@@ -268,8 +268,8 @@ export class CourseServiceImpl implements CourseService {
                     const signCertificateRequest = new Request.Builder()
                         .withType(HttpRequestType.POST)
                         .withPath(CourseServiceImpl.CERTIFICATE_SIGN_ENDPOINT)
-                        .withApiToken(true)
-                        .withSessionToken(true)
+                        .withBearerToken(true)
+                        .withUserToken(true)
                         .withBody({
                             request:
                                 {

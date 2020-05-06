@@ -39,8 +39,8 @@ export class SearchLocationHandler implements ApiRequestHandler<LocationSearchCr
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.profileServiceConfig.searchLocationApiPath + SearchLocationHandler.GET_SEARCH_LOCATION_ENDPOINT)
-            .withApiToken(true)
-            .withSessionToken(false)
+            .withBearerToken(true)
+            .withUserToken(false)
             .withBody({request})
             .build();
 

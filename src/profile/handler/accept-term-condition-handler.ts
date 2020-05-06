@@ -14,8 +14,8 @@ export class AcceptTermConditionHandler implements ApiRequestHandler<AcceptTerms
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.acceptTermsConditionApiConfig.profileApiPath + this.GET_ACCEPT_TERM_CONDITIONS_ENDPOINT)
-            .withApiToken(true)
-            .withSessionToken(true)
+            .withBearerToken(true)
+            .withUserToken(true)
             .withBody({request})
             .build();
 
