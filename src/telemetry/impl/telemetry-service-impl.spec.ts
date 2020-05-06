@@ -20,7 +20,7 @@ import { AppInfo } from '../../util/app';
 import { DeviceRegisterService } from '../../device-register';
 import { CourseService } from '../../course';
 import { mockSdkConfigWithtelemetryServiceConfig } from './telemetry-service-impl.spec.data';
-import { anything } from 'ts-mockito';
+import { NetworkQueue } from '../../api/network-queue';
 import { TelemetryKeys } from '../../preference-keys';
 
 declare const sbutility;
