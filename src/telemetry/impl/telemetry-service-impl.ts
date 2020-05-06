@@ -49,6 +49,7 @@ import {BehaviorSubject, defer, from, Observable, of, zip} from 'rxjs';
 import {TelemetryKeys} from '../../preference-keys';
 import {TelemetryAutoSyncServiceImpl} from '../util/telemetry-auto-sync-service-impl';
 import {CourseService} from '../../course';
+import {NetworkQueue} from '../../api/network-queue';
 import {CorrelationData} from '../def/telemetry-model';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
