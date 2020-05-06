@@ -44,18 +44,23 @@ import {ErrorLoggerService} from '../../error';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AppInfo} from '../../util/app';
 import {DeviceRegisterService} from '../../device-register';
-import {expand, map, mapTo, mergeMap, take, tap} from 'rxjs/operators';
-import {BehaviorSubject, defer, EMPTY, from, Observable, of, zip} from 'rxjs';
+import {map, mergeMap, take, tap} from 'rxjs/operators';
+import {BehaviorSubject, defer, from, Observable, of, zip} from 'rxjs';
 import {TelemetryKeys} from '../../preference-keys';
 import {TelemetryAutoSyncServiceImpl} from '../util/telemetry-auto-sync-service-impl';
 import {CourseService} from '../../course';
 import {NetworkQueue} from '../../api/network-queue';
+import {CorrelationData} from '../def/telemetry-model';
+import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
+import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
+
 
 @injectable()
-export class TelemetryServiceImpl implements TelemetryService {
+export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitDelegate, SdkServicePreInitDelegate {
     private _lastSyncedTimestamp$: BehaviorSubject<number | undefined>;
     private telemetryAutoSyncService?: TelemetryAutoSyncServiceImpl;
     private telemetryConfig: TelemetryConfig;
+    private campaignParameters: CorrelationData[] = [];
 
     get autoSync() {
         if (!this.telemetryAutoSyncService) {
@@ -98,19 +103,29 @@ export class TelemetryServiceImpl implements TelemetryService {
         this._lastSyncedTimestamp$ = new BehaviorSubject<number | undefined>(undefined);
     }
 
-    onInit(): Observable<undefined> {
-        return this.sharedPreferences.getString(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP).pipe(
-            tap((v) => {
-                if (v) {
-                    try {
-                        this._lastSyncedTimestamp$.next(parseInt(v, 10));
-                    } catch (e) {
-                        console.error(e);
-                    }
+    preInit(): Observable<undefined> {
+        return defer(async () => {
+            this.getInitialUtmParameters().then((parameters) => {
+                if (parameters && parameters.length) {
+                    this.updateCampaignParameters(parameters);
                 }
-            }),
-            mapTo(undefined)
-        );
+            });
+            return undefined;
+        });
+    }
+
+    onInit(): Observable<undefined> {
+        return defer(async () => {
+            const lastSyncTimestamp = await this.sharedPreferences.getString(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP).toPromise();
+            if (lastSyncTimestamp) {
+                try {
+                    this._lastSyncedTimestamp$.next(parseInt(lastSyncTimestamp, 10));
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+            return undefined;
+        });
     }
 
     saveTelemetry(request: string): Observable<boolean> {
@@ -328,7 +343,7 @@ export class TelemetryServiceImpl implements TelemetryService {
                             table: TelemetryEntry.TABLE_NAME,
                             modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!.uid,
                                 profileSession!.sid, groupSession && groupSession.gid, Number(offset),
-                                this.frameworkService.activeChannelId), 1)
+                                this.frameworkService.activeChannelId, this.campaignParameters), 1)
                         };
                         return this.dbService.insert(insertQuery).pipe(
                             tap(() => this.eventsBusService.emit({
@@ -344,5 +359,23 @@ export class TelemetryServiceImpl implements TelemetryService {
                 );
             })
         );
+    }
+
+    updateCampaignParameters(params: CorrelationData[]) {
+        this.campaignParameters = params;
+    }
+
+    private getInitialUtmParameters(): Promise<CorrelationData[]> {
+        return new Promise<CorrelationData[]>((resolve, reject) => {
+            try {
+                sbutility.getUtmInfo((response: {val: CorrelationData[]}) => {
+                    resolve(response.val);
+                }, err => {
+                    reject(err);
+                });
+            } catch (xc) {
+                reject(xc);
+            }
+        });
     }
 }

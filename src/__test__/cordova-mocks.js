@@ -82,7 +82,8 @@ global.sbutility = {
     },
     getBuildConfigValue: () => {
     },
-    writeFile: () => {}
+    writeFile: () => {},
+    getUtmInfo: () => {},
 };
 
 global.sbutility = {

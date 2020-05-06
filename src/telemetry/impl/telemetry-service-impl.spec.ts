@@ -1,27 +1,29 @@
-import {TelemetryServiceImpl} from './telemetry-service-impl';
-import {ApiService} from '../../api';
-import {FileService} from '../../util/file/def/file-service';
-import {CachedItemStore, KeyValueStore} from '../../key-value-store';
-import {SdkConfig} from '../../sdk-config';
-import {Container, inject} from 'inversify';
-import {InjectionTokens} from '../../injection-tokens';
-import {of} from 'rxjs';
-import {TelemetryDecorator, TelemetryService} from '..';
-import {DbService} from '../../db';
-import {ProfileService} from '../../profile';
-import {GroupService} from '../../group';
-import {DeviceInfo} from '../../util/device';
-import {EventsBusService} from '../../events-bus';
-import {FrameworkService} from '../../framework';
-import {NetworkInfoService} from '../../util/network';
-import {ErrorLoggerService} from '../../error';
-import {SharedPreferences} from '../../util/shared-preferences';
-import {AppInfo} from '../../util/app';
-import {DeviceRegisterService} from '../../device-register';
-import {CourseService} from '../../course';
-import {mockSdkConfigWithtelemetryServiceConfig} from './telemetry-service-impl.spec.data';
-import {anything} from 'ts-mockito';
-import {NetworkQueue} from '../../api/network-queue';
+import { TelemetryServiceImpl } from './telemetry-service-impl';
+import { ApiService } from '../../api';
+import { FileService } from '../../util/file/def/file-service';
+import { CachedItemStore, KeyValueStore } from '../../key-value-store';
+import { SdkConfig } from '../../sdk-config';
+import { Container, inject } from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
+import { of, throwError } from 'rxjs';
+import { TelemetryDecorator, TelemetryService } from '..';
+import { DbService } from '../../db';
+import { ProfileService } from '../../profile';
+import { GroupService } from '../../group';
+import { DeviceInfo } from '../../util/device';
+import { EventsBusService } from '../../events-bus';
+import { FrameworkService } from '../../framework';
+import { NetworkInfoService } from '../../util/network';
+import { ErrorLoggerService } from '../../error';
+import { SharedPreferences } from '../../util/shared-preferences';
+import { AppInfo } from '../../util/app';
+import { DeviceRegisterService } from '../../device-register';
+import { CourseService } from '../../course';
+import { mockSdkConfigWithtelemetryServiceConfig } from './telemetry-service-impl.spec.data';
+import { NetworkQueue } from '../../api/network-queue';
+import { TelemetryKeys } from '../../preference-keys';
+
+declare const sbutility;
 
 
 describe('TelemetryServiceImpl', () => {
@@ -145,4 +147,65 @@ describe('TelemetryServiceImpl', () => {
     });
   });
 
+  describe('preInit()', () => {
+    it('should fetch all utm parameters and clear utm parameters', (done) => {
+      sbutility.getUtmInfo = jest.fn((a, b) => a({ val: [{ utmSource: 'google-play' }] }));
+      telemetryService.preInit().subscribe(() => {
+        expect(sbutility.getUtmInfo).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('should fetch all utm parameters and can not clear utm parameters', (done) => {
+      sbutility.getUtmInfo = jest.fn((a, b) => a({ val: [{ utmSource: 'google-play' }] }));
+      telemetryService.preInit().subscribe(() => {
+        expect(sbutility.getUtmInfo).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('should not fetch all utm parameters if parameter is undefined', (done) => {
+      sbutility.getUtmInfo = jest.fn((a, b) => a({ val: undefined}));
+      telemetryService.preInit().subscribe(() => {
+        expect(sbutility.getUtmInfo).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('will be getUtmInfo error par', (done) => {
+      sbutility.getUtmInfo = jest.fn((a, b) => b({error: 'errpr-part'}));
+      sbutility.clearUtmInfo = jest.fn((a, b) => a());
+      telemetryService.preInit().subscribe(() => {
+        expect(sbutility.getUtmInfo).toHaveBeenCalled();
+        done();
+      });
+    });
+  });
+
+  describe('onInit', () => {
+    it('should return lastSyncTimestamp', (done) => {
+      mockSharedPreferences.getString = jest.fn(() => of('sample-last-sync-time'));
+      telemetryService.onInit().subscribe(() => {
+        expect(mockSharedPreferences.getString).toHaveBeenCalledWith(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP);
+        done();
+      });
+    });
+
+    it('should not return lastSyncTimestamp if undefined', (done) => {
+      mockSharedPreferences.getString = jest.fn(() => of(undefined));
+      telemetryService.onInit().subscribe(() => {
+        expect(mockSharedPreferences.getString).toHaveBeenCalledWith(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP);
+        done();
+      });
+    });
+
+    it('should not return lastSyncTimestamp if undefined', (done) => {
+      mockSharedPreferences.getString = jest.fn(() => throwError({error: 'error-part'}));
+      telemetryService.onInit().toPromise().catch((e) => {
+        expect(e.error).toBe('error-part');
+        expect(mockSharedPreferences.getString).toHaveBeenCalledWith(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP);
+        done();
+      });
+    });
+  });
 });

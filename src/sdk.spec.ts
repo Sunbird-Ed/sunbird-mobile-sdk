@@ -209,7 +209,8 @@ describe('sdk', () => {
 
             jest.spyOn(sdkInstance, 'telemetryService', 'get').mockImplementation(() => {
                 return {
-                    onInit: jest.fn().mockImplementation(() => of(undefined))
+                    onInit: jest.fn().mockImplementation(() => of(undefined)),
+                    preInit: jest.fn(() => of(undefined))
                 } as Partial<TelemetryService> as TelemetryService;
             });
 
