@@ -1,14 +1,9 @@
 import {CachedItemStore} from '../../key-value-store';
-import {Path} from '../../util/file/util/path';
 import {FileService} from '../../util/file/def/file-service';
-import {ApiRequestHandler, ApiService, HttpRequestType, Request, HttpClient, HttpSerializer} from '../../api';
+import {ApiService} from '../../api';
 import {of} from 'rxjs';
 import {Channel, Framework, FrameworkDetailsRequest, FrameworkService, FrameworkServiceConfig} from '..';
-import {FrameworkMapper} from '../util/framework-mapper';
-import { Container } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
 import { GetFrameworkDetailsHandler } from './get-framework-detail-handler';
-import {FrameworkCategoryCode} from '..';
 
 describe('GetFrameworkDetailsHandler', () => {
     let getFrameworkDetailsHandler: GetFrameworkDetailsHandler;
