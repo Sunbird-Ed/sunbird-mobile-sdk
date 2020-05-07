@@ -7,7 +7,7 @@ import {
     CsRequest,
     CsResponse,
     CsResponseInterceptor
-} from '@project-sunbird/client-services/core/http-service/interface';
+} from '@project-sunbird/client-services/core/http-service';
 
 export class UserTokenRefreshInterceptor implements CsResponseInterceptor {
     constructor(

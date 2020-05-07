@@ -5,7 +5,7 @@ import {
     CsRequestInterceptor,
     CsResponse,
     CsResponseInterceptor
-} from '@project-sunbird/client-services/core/http-service/interface';
+} from '@project-sunbird/client-services/core/http-service';
 
 export interface ApiService extends SdkServiceOnInitDelegate {
     fetch<T = any>(request: CsRequest): Observable<CsResponse<T>>;

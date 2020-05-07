@@ -73,7 +73,7 @@ import {NetworkQueueMigration} from './db/migrations/network-queue-migration';
 import {NetworkQueueImpl} from './api/network-queue/impl/network-queue-impl';
 import {NetworkQueue} from './api/network-queue';
 import {CsModule} from '@project-sunbird/client-services';
-import {CsHttpService} from '@project-sunbird/client-services/core/http-service/interface';
+import {CsHttpService} from '@project-sunbird/client-services/core/http-service';
 import * as SHA1 from 'crypto-js/sha1';
 
 export class SunbirdSdk {

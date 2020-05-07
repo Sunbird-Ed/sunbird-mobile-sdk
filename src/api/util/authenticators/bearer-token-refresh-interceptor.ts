@@ -10,7 +10,7 @@ import {
     CsRequest,
     CsResponse,
     CsResponseInterceptor
-} from '@project-sunbird/client-services/core/http-service/interface';
+} from '@project-sunbird/client-services/core/http-service';
 
 export class BearerTokenRefreshInterceptor implements CsResponseInterceptor {
     private apiTokenHandler: ApiTokenHandler;

@@ -4,12 +4,12 @@ export {
     CsHttpSerializer as HttpSerializer,
     CsRequest as Request,
     CsResponse as Response,
-} from '@project-sunbird/client-services/core/http-service/interface';
+} from '@project-sunbird/client-services/core/http-service';
 export {
     CsNetworkError as NetworkError,
     CsHttpClientError as HttpClientError,
     CsHttpServerError as HttpServerError
-} from '@project-sunbird/client-services/core/http-service/errors';
+} from '@project-sunbird/client-services/core/http-service';
 
 export * from './config/api-config';
 export * from './def/api-service';

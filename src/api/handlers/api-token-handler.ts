@@ -3,7 +3,7 @@ import {from, Observable} from 'rxjs';
 import * as dayjs from 'dayjs';
 import {DeviceInfo} from '../../util/device';
 import {map} from 'rxjs/operators';
-import {CsHttpRequestType, CsRequest} from '@project-sunbird/client-services/core/http-service/interface';
+import {CsHttpRequestType, CsRequest} from '@project-sunbird/client-services/core/http-service';
 
 export class ApiTokenHandler {
 

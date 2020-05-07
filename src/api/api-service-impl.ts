@@ -17,8 +17,8 @@ import {
     CsRequestInterceptor,
     CsResponse,
     CsResponseInterceptor
-} from '@project-sunbird/client-services/core/http-service/interface';
-import {CsHttpClientError, CsHttpServerError} from '@project-sunbird/client-services/core/http-service/errors';
+} from '@project-sunbird/client-services/core/http-service';
+import {CsHttpClientError, CsHttpServerError} from '@project-sunbird/client-services/core/http-service';
 import {BearerTokenRefreshInterceptor} from './util/authenticators/bearer-token-refresh-interceptor';
 import {UserTokenRefreshInterceptor} from './util/authenticators/user-token-refresh-interceptor';
 import {AuthService} from '../auth';
