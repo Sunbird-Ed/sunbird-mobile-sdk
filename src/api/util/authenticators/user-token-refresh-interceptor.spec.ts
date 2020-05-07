@@ -11,8 +11,6 @@ describe('SessionAuthenticator', () => {
 
     beforeAll(() => {
         sessionAuthenticator = new UserTokenRefreshInterceptor(
-            mockSharedPreferences as SharedPreferences,
-            mockApiConfig as ApiConfig,
             mockApiService as ApiService,
             mockAuthService as AuthService
         );
