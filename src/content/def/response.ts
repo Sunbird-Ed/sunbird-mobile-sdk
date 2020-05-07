@@ -1,6 +1,13 @@
 import {ContentSearchCriteria, ContentSearchFilter} from './requests';
 import {Content, ContentData} from './content';
-import {ContentImportStatus} from '../util/content-constants';
+import {ContentImportStatus} from '..';
+
+export interface ContentGrouped {
+    attribute: string;
+    name: string;
+    groups?: ContentGrouped[];
+    contents?: Content[];
+}
 
 export interface ContentSearchResult {
     id: string;
@@ -9,22 +16,6 @@ export interface ContentSearchResult {
     request?: { [key: string]: any };
     contentDataList: ContentData[];
     collectionDataList?: ContentData[];
-}
-
-export interface ContentsGroupedByPageSection {
-    name: string;
-    sections: PageSection[];
-}
-
-export interface PageSection {
-    count?: number;
-    name?: string;
-    contents?: ContentData[];
-    display?: Display;
-}
-
-export interface Display {
-    name: { [key: string]: any };
 }
 
 export interface SearchResponse {

@@ -4,6 +4,7 @@ import {
     ContentDeleteRequest,
     ContentDetailRequest,
     ContentExportRequest,
+    ContentGroupingCriteria,
     ContentImportRequest,
     ContentMarkerRequest,
     ContentRequest,
@@ -19,9 +20,9 @@ import {Content, HierarchyInfo} from './content';
 import {
     ContentDeleteResponse,
     ContentExportResponse,
+    ContentGrouped,
     ContentImportResponse,
     ContentSearchResult,
-    ContentsGroupedByPageSection,
     RelevantContentResponsePlayer
 } from './response';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
@@ -40,7 +41,7 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
 
     searchContent(criteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult>;
 
-    searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection>;
+    searchAndGroupContent(request: { searchRequest: ContentSearchCriteria, groupingCriteria: ContentGroupingCriteria[] }): Observable<{ result: ContentGrouped[] }>;
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
 

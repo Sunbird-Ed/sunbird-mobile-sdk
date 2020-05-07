@@ -111,6 +111,12 @@ export enum MarkerType {
     BOOKMARKED = 2
 }
 
+export interface ContentGroupingCriteria {
+    groupAttribute: string;
+    values: string[];
+    sortCriteria?: ContentSortCriteria;
+}
+
 export interface ContentSearchCriteria {
     query?: string;
     exists?: string[];
