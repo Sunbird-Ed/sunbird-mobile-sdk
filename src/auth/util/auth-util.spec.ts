@@ -1,5 +1,5 @@
 import {AuthUtil} from './auth-util';
-import {ApiConfig, ApiService, Response, ResponseCode, HttpClientError} from '../../api';
+import {ApiConfig, ApiService, HttpClientError, Response, ResponseCode} from '../../api';
 import {anyString, anything, instance, objectContaining, reset, verify, when} from 'ts-mockito';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {EventNamespace, EventsBusService} from '../../events-bus';
@@ -7,9 +7,28 @@ import {MockApiService, MockEventsBusService, MockSharedPreferences} from '../..
 import {OAuthSession} from '..';
 import {of, throwError} from 'rxjs';
 import {AuthKeys} from '../../preference-keys';
-import {AuthEndPoints} from '../def/auth-end-points';
 import {NoActiveSessionError} from '../../profile';
 import {AuthTokenRefreshError} from '../errors/auth-token-refresh-error';
+
+jest.mock('@project-sunbird/client-services', () => {
+  return {
+    CsModule: {
+      instance: {
+        config: {
+          core: {
+            api: {
+              authentication: {
+                userToken: ''
+              }
+            }
+          }
+        },
+        updateConfig: jest.fn().mockImplementation(() => {
+        })
+      }
+    }
+  };
+});
 
 describe('AuthUtil', () => {
   beforeEach(() => {
