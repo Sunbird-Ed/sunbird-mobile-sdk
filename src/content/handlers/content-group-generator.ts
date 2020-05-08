@@ -1,4 +1,5 @@
 import {ContentData, ContentGrouped, ContentGroupingCriteria, ContentSortCriteria, SortOrder} from '..';
+import {Content} from '../../test';
 
 export class ContentGroupGenerator {
     static generate(contents: ContentData[], criteria: ContentGroupingCriteria[], contentSortCriteria?: ContentSortCriteria): ContentGrouped[] | undefined {
@@ -39,7 +40,8 @@ export class ContentGroupGenerator {
                         return newContentSlice;
                     }
                 })(),
-                groups: ContentGroupGenerator.generate(newContentSlice, criteria, contentSortCriteria)
+                groups: ContentGroupGenerator.generate(newContentSlice, criteria, contentSortCriteria),
+                meta: currentGroupCriteria.meta ? {combination: ContentGroupGenerator.generateCombinations(newContentSlice, currentGroupCriteria.meta.combination)} : undefined
             } as ContentGrouped);
 
             return acc;
@@ -52,12 +54,12 @@ export class ContentGroupGenerator {
         return groups;
     }
 
-    static filterContents(contents: ContentData[], attribute: string, acceptedValue: string): ContentData[] {
+    static filterContents(contents: Content[], attribute: string, acceptedValue: string): Content[] {
         return contents.filter((content) => {
             if (ContentGroupGenerator.isMultiValueAttribute(content, attribute)) {
-                return content[attribute].includes(acceptedValue);
+                return content[attribute].map((c) => c.toLowerCase()).includes(acceptedValue.toLowerCase());
             } else {
-                return acceptedValue === content[attribute];
+                return acceptedValue.toLowerCase() === content[attribute].toLowerCase();
             }
         });
     }
@@ -75,5 +77,31 @@ export class ContentGroupGenerator {
 
             return sortCriteria.sortOrder === SortOrder.ASC ? comparison : (comparison * -1);
         });
+    }
+
+    static generateCombinations(contents: ContentData[], combination: { of: keyof ContentData, with: keyof ContentData }): { [key: string]: { [key: string]: boolean } } {
+        return contents.reduce<{ [key: string]: { [key: string]: boolean } }>((acc, content) => {
+            const addToCombinations = (combinationOf) => {
+                if (!acc[content[combinationOf]]) {
+                    acc[content[combinationOf]] = {};
+                }
+
+                if (ContentGroupGenerator.isMultiValueAttribute(content, combination.with)) {
+                    content[combination.with].forEach((v) => {
+                        acc[content[combinationOf]][v] = true;
+                    });
+                } else {
+                    acc[content[combinationOf]][content[combination.with]] = true;
+                }
+            };
+
+            if (ContentGroupGenerator.isMultiValueAttribute(content, combination.of)) {
+                content[combination.of].forEach(addToCombinations);
+            } else {
+                addToCombinations(combination.of);
+            }
+
+            return acc;
+        }, {});
     }
 }

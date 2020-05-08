@@ -7,6 +7,13 @@ export interface ContentGrouped {
     name: string;
     groups?: ContentGrouped[];
     contents?: Content[];
+    meta?: {
+        combination: {
+            string: {
+                string: boolean;
+            }
+        }
+    };
 }
 
 export interface ContentSearchResult {

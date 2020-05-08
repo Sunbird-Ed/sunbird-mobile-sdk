@@ -115,6 +115,12 @@ export interface ContentGroupingCriteria {
     groupAttribute: string;
     values: string[];
     sortCriteria?: ContentSortCriteria;
+    meta?: {
+        combination: {
+            of: keyof ContentData,
+            with: keyof ContentData
+        }
+    };
 }
 
 export interface ContentSearchCriteria {

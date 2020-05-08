@@ -31,22 +31,12 @@ describe('ContentGroupGenerator', () => {
                     sortAttribute: 'name',
                     sortOrder: SortOrder.ASC,
                 },
-            },
-            {
-                groupAttribute: 'medium',
-                values: ['English', 'Urdu'],
-                sortCriteria: {
-                    sortAttribute: 'name',
-                    sortOrder: SortOrder.ASC,
-                },
-            },
-            {
-                groupAttribute: 'gradeLevel',
-                values: ['Class 2', 'Class 1', 'Class 4'],
-                sortCriteria: {
-                    sortAttribute: 'name',
-                    sortOrder: SortOrder.ASC,
-                },
+                meta: {
+                    combination: {
+                        of: 'medium',
+                        with: 'gradeLevel'
+                    }
+                }
             },
             {
                 groupAttribute: 'subject',
@@ -58,6 +48,11 @@ describe('ContentGroupGenerator', () => {
             },
         ];
         // assert
+        console.log(JSON.stringify(ContentGroupGenerator.generate(
+            searchResult.result.content as any,
+            groupingRequest,
+            searchRequest.sortCriteria![0]
+        )));
         expect(
             ContentGroupGenerator.generate(
                 searchResult.result.content as any,
