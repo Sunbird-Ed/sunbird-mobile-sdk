@@ -35,7 +35,7 @@ export class SearchAndGroupContentHandler {
     handle(request: { searchRequest: ContentSearchCriteria; groupingCriteria: ContentGroupingCriteria[] }): Observable<{ result: ContentGrouped[] }> {
         return defer(async () => {
             const localTextBooksContentDataList = await this.fetchOfflineContent(request.searchRequest);
-            const searchContentDataList = ((await this.fetchOnlineContent(request.searchRequest)).contentDataList as ContentData[]).filter((contentData) => {
+            const searchContentDataList = ((await this.fetchOnlineContent(request.searchRequest)).contentDataList as ContentData[] || []).filter((contentData) => {
                 return !localTextBooksContentDataList.find(
                     (localContentData) => localContentData.identifier === contentData.identifier);
             });

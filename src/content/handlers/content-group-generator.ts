@@ -1,5 +1,4 @@
 import {ContentData, ContentGrouped, ContentGroupingCriteria, ContentSortCriteria, SortOrder} from '..';
-import {Content} from '../../test';
 
 export class ContentGroupGenerator {
     static generate(contents: ContentData[], criteria: ContentGroupingCriteria[], contentSortCriteria?: ContentSortCriteria): ContentGrouped[] | undefined {
@@ -54,7 +53,7 @@ export class ContentGroupGenerator {
         return groups;
     }
 
-    static filterContents(contents: Content[], attribute: string, acceptedValue: string): Content[] {
+    static filterContents(contents: ContentData[], attribute: string, acceptedValue: string): ContentData[] {
         return contents.filter((content) => {
             if (ContentGroupGenerator.isMultiValueAttribute(content, attribute)) {
                 return content[attribute].map((c) => c.toLowerCase()).includes(acceptedValue.toLowerCase());
