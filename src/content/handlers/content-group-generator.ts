@@ -34,8 +34,12 @@ export class ContentGroupGenerator {
                 attribute: currentGroupCriteria.groupAttribute,
                 name: acceptedValue,
                 contents: (() => {
-                    if (!criteria.length && contentSortCriteria) {
-                        ContentGroupGenerator.sortItems(newContentSlice, contentSortCriteria);
+                    if (!criteria.length) {
+                        if (contentSortCriteria) {
+                            ContentGroupGenerator.sortItems(newContentSlice, contentSortCriteria);
+                            return newContentSlice;
+                        }
+
                         return newContentSlice;
                     }
                 })(),
@@ -65,7 +69,7 @@ export class ContentGroupGenerator {
 
     static isMultiValueAttribute = (content, attr) => Array.isArray(content[attr]);
 
-    static uniquelyAddValue = (list: any[], value: any) => !(list.indexOf(value) > 0) && list.push(value);
+    static uniquelyAddValue = (list: any[], value: any) => !(list.indexOf(value) >= 0) && list.push(value);
 
     static sortItems<T>(items: T[], sortCriteria: ContentSortCriteria): void {
         items.sort((a, b) => {
