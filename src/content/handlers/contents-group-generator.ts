@@ -38,6 +38,7 @@ export class ContentsGroupGenerator {
 
                     if (afterFilterLength && afterFilterLength <= beforeFilterLength) {
                         combination![attribute] = value;
+                        contents = filteredContents;
                     }
                 }
             }
