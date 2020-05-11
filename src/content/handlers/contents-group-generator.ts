@@ -23,6 +23,10 @@ export class ContentsGroupGenerator {
             combination = {};
 
             for (const attribute of Object.keys(criteria.combination)) {
+                if (!criteria.combination[attribute]) {
+                    continue;
+                }
+
                 for (const value of criteria.combination[attribute]!) {
                     if (combination![attribute]) {
                         continue;

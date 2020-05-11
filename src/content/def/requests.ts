@@ -7,7 +7,9 @@ import {DownloadRequest} from '../../util/download';
 
 export interface SearchAndGroupContentRequest {
     groupBy: keyof ContentData;
-    combination?: (keyof ContentData)[];
+    combination?: {
+        [key in keyof Content]?: string[]
+    };
     searchCriteria: ContentSearchCriteria;
 }
 

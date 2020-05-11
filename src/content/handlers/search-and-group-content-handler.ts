@@ -47,10 +47,7 @@ export class SearchAndGroupContentHandler {
                 combinedContents,
                 {
                     groupBy: request.groupBy,
-                    combination: request.combination && request.combination.reduce((acc, attribute) => {
-                        acc[attribute] = request.searchCriteria[attribute];
-                        return acc;
-                    }, {}),
+                    combination: request.combination,
                     sortCriteria: (request.searchCriteria.sortCriteria && request.searchCriteria.sortCriteria[0]) || {
                         sortAttribute: 'name',
                         sortOrder: SortOrder.ASC,
