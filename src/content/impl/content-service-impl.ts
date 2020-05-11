@@ -12,8 +12,6 @@ import {
     ContentExportRequest,
     ContentExportResponse,
     ContentFeedbackService,
-    ContentGrouped,
-    ContentGroupingCriteria,
     ContentImport,
     ContentImportRequest,
     ContentImportResponse,
@@ -24,6 +22,7 @@ import {
     ContentSearchResult,
     ContentService,
     ContentServiceConfig,
+    ContentsGroupedByPageSection,
     ContentSpaceUsageSummaryRequest,
     ContentSpaceUsageSummaryResponse,
     EcarImportRequest,
@@ -35,6 +34,7 @@ import {
     RelevantContentRequest,
     RelevantContentResponse,
     RelevantContentResponsePlayer,
+    SearchAndGroupContentRequest,
     SearchResponse,
 } from '..';
 import {combineLatest, defer, from, Observable, of} from 'rxjs';
@@ -652,7 +652,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         );
     }
 
-    searchAndGroupContent(request: { searchRequest: ContentSearchCriteria; groupingCriteria: ContentGroupingCriteria[] }): Observable<{ result: ContentGrouped[] }> {
+    searchAndGroupContent(request: SearchAndGroupContentRequest): Observable<ContentsGroupedByPageSection> {
         return this.searchAndGroupContentHandler.handle(request);
     }
 

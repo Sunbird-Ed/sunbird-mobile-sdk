@@ -5,6 +5,12 @@ import {ContentImportResponse} from './response';
 import {ContentEntry} from '../db/schema';
 import {DownloadRequest} from '../../util/download';
 
+export interface SearchAndGroupContentRequest {
+    groupBy: keyof ContentData;
+    combination?: (keyof ContentData)[];
+    searchCriteria: ContentSearchCriteria;
+}
+
 export interface ContentDecorateRequest {
     content: Content;
     attachFeedback?: boolean;
@@ -109,18 +115,6 @@ export enum MarkerType {
     NOTHING = 0,
     PREVIEWED = 1,
     BOOKMARKED = 2
-}
-
-export interface ContentGroupingCriteria {
-    groupAttribute: string;
-    values: string[];
-    sortCriteria?: ContentSortCriteria;
-    meta?: {
-        combination: {
-            of: keyof ContentData,
-            with: keyof ContentData
-        }
-    };
 }
 
 export interface ContentSearchCriteria {

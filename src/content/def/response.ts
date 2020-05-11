@@ -2,20 +2,6 @@ import {ContentSearchCriteria, ContentSearchFilter} from './requests';
 import {Content, ContentData} from './content';
 import {ContentImportStatus} from '..';
 
-export interface ContentGrouped {
-    attribute: string;
-    name: string;
-    groups?: ContentGrouped[];
-    contents?: Content[];
-    meta?: {
-        combination: {
-            string: {
-                string: boolean;
-            }
-        }
-    };
-}
-
 export interface ContentSearchResult {
     id: string;
     responseMessageId: string;
@@ -23,6 +9,25 @@ export interface ContentSearchResult {
     request?: { [key: string]: any };
     contentDataList: ContentData[];
     collectionDataList?: ContentData[];
+}
+
+export interface ContentsGroupedByPageSection {
+    name: string;
+    combination?: {
+        [key in keyof Content]?: string
+    };
+    sections: PageSection[];
+}
+
+export interface PageSection {
+    count?: number;
+    name?: string;
+    contents?: ContentData[];
+    display?: Display;
+}
+
+export interface Display {
+    name: { [key: string]: any };
 }
 
 export interface SearchResponse {

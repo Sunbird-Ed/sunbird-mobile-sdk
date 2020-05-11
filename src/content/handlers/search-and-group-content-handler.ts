@@ -1,17 +1,18 @@
 import {
     Content,
     ContentData,
-    ContentGrouped,
-    ContentGroupingCriteria,
     ContentSearchCriteria,
     ContentSearchResult,
-    ContentService
+    ContentService,
+    ContentsGroupedByPageSection,
+    SearchAndGroupContentRequest,
+    SortOrder
 } from '..';
 import {defer, Observable, of} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 import * as SHA1 from 'crypto-js/sha1';
 import {CachedItemStore} from '../../key-value-store';
-import {ContentGroupGenerator} from './content-group-generator';
+import {ContentsGroupGenerator} from './contents-group-generator';
 
 export class SearchAndGroupContentHandler {
     private static readonly SEARCH_CONTENT_GROUPED_KEY = 'search_content_grouped';
@@ -32,23 +33,30 @@ export class SearchAndGroupContentHandler {
         return SHA1(JSON.stringify(key)).toString();
     }
 
-    handle(request: { searchRequest: ContentSearchCriteria; groupingCriteria: ContentGroupingCriteria[] }): Observable<{ result: ContentGrouped[] }> {
+    handle(request: SearchAndGroupContentRequest): Observable<ContentsGroupedByPageSection> {
         return defer(async () => {
-            const localTextBooksContentDataList = await this.fetchOfflineContent(request.searchRequest);
-            const searchContentDataList = ((await this.fetchOnlineContent(request.searchRequest)).contentDataList as ContentData[] || []).filter((contentData) => {
+            const localTextBooksContentDataList = await this.fetchOfflineContent(request.searchCriteria);
+            const searchContentDataList = ((await this.fetchOnlineContent(request.searchCriteria)).contentDataList as ContentData[] || []).filter((contentData) => {
                 return !localTextBooksContentDataList.find(
                     (localContentData) => localContentData.identifier === contentData.identifier);
             });
 
             const combinedContents: ContentData[] = localTextBooksContentDataList.concat(searchContentDataList);
 
-            return {
-                result: ContentGroupGenerator.generate(
-                    combinedContents,
-                    request.groupingCriteria,
-                    request.searchRequest.sortCriteria && request.searchRequest.sortCriteria[0]
-                ) || []
-            };
+            return ContentsGroupGenerator.generate(
+                combinedContents,
+                {
+                    groupBy: request.groupBy,
+                    combination: request.combination && request.combination.reduce((acc, attribute) => {
+                        acc[attribute] = request.searchCriteria[attribute];
+                        return acc;
+                    }, {}),
+                    sortCriteria: (request.searchCriteria.sortCriteria && request.searchCriteria.sortCriteria[0]) || {
+                        sortAttribute: 'name',
+                        sortOrder: SortOrder.ASC,
+                    }
+                },
+            );
         });
     }
 

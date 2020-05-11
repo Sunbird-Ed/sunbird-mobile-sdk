@@ -1,5 +1,5 @@
 import {searchResult} from './content-group-generator.spec.data';
-import {ContentGroupGenerator} from './content-group-generator';
+import {ContentsGroupGenerator} from './contents-group-generator';
 import {ContentGroupingCriteria, ContentSearchCriteria, SearchType, SortOrder,} from '..';
 
 describe('ContentGroupGenerator', () => {
@@ -48,13 +48,13 @@ describe('ContentGroupGenerator', () => {
             },
         ];
         // assert
-        console.log(JSON.stringify(ContentGroupGenerator.generate(
+        console.log(JSON.stringify(ContentsGroupGenerator.generate(
             searchResult.result.content as any,
             groupingRequest,
             searchRequest.sortCriteria![0]
         )));
         expect(
-            ContentGroupGenerator.generate(
+            ContentsGroupGenerator.generate(
                 searchResult.result.content as any,
                 groupingRequest,
                 searchRequest.sortCriteria![0]
