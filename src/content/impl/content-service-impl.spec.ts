@@ -1,65 +1,68 @@
-import { GetContentHeirarchyHandler } from '../handlers/get-content-heirarchy-handler';
-import { ContentService, ContentDeleteResponse, ContentDeleteStatus, ContentSearchResult } from '..';
-import { ContentServiceImpl } from './content-service-impl';
-import { Container } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
-import { DbService } from '../../db';
-import { SdkConfig } from '../../sdk-config';
-import { ApiService, Request } from '../../api';
+import {GetContentHeirarchyHandler} from '../handlers/get-content-heirarchy-handler';
 import {
-    ProfileService, ContentDelete, ContentDetailRequest, ContentDeleteRequest,
-    ContentMarkerRequest, Content, HttpRequestType, ContentData, AppInfo
-} from '../..';
-import { FileService } from '../../util/file/def/file-service';
-import { ZipService } from '../../util/zip/def/zip-service';
-import { DeviceInfo } from '../../util/device';
-import { TelemetryService, CorrelationData } from '../../telemetry';
-import { ContentFeedbackService } from '../def/content-feedback-service';
-import { DownloadService } from '../../util/download';
-import { SharedPreferences } from '../../util/shared-preferences';
-import { EventsBusService } from '../../events-bus';
-import { CachedItemStore } from '../../key-value-store';
-import { throwError } from 'rxjs';
-import { SharedPreferencesSetCollection } from '../../util/shared-preferences/def/shared-preferences-set-collection';
-import { ContentServiceConfig } from '../config/content-config';
-import { OpenRapConfigurable } from '../../open-rap-configurable';
-import {
-    MarkerType, ContentSearchCriteria, EcarImportRequest, RelevantContentRequest,
-    ContentSpaceUsageSummaryRequest, ContentDownloadRequest, ContentExportRequest,
-    ContentRequest, ChildContentRequest, ContentImportRequest, ContentImport, SortOrder
-} from '../def/requests';
-import { SharedPreferencesSetCollectionImpl } from '../../util/shared-preferences/impl/shared-preferences-set-collection-impl';
-import { GenerateInteractTelemetry } from '../handlers/import/generate-interact-telemetry';
-import { HierarchyInfo } from '../def/content';
-import { CleanTempLoc } from '../handlers/export/clean-temp-loc';
-import { AppConfig } from '../../api/config/app-config';
-import { SearchContentHandler } from '../handlers/search-content-handler';
-import { ContentMapper } from '../util/content-mapper';
-import { GetContentDetailsHandler } from '../handlers/get-content-details-handler';
-import { FrameworkKeys, ContentKeys } from '../../preference-keys';
-import { ChildContentsHandler } from '../handlers/get-child-contents-handler';
-import { ImportNExportHandler } from '../handlers/import-n-export-handler';
-import { ArrayUtil } from '../../util/array-util';
-import { FileUtil } from '../../util/file/util/file-util';
-import { of, from } from 'rxjs';
-import { ContentEntry } from '../db/schema';
-import { GetContentsHandler } from '../handlers/get-contents-handler';
-import { DeleteContentHandler } from '../handlers/delete-content-handler';
-import { ContentUtil } from '../util/content-util';
-import { WriteManifest } from '../handlers/export/write-manifest';
-import { CompressContent } from '../handlers/export/compress-content';
-import { DeviceMemoryCheck } from '../handlers/export/device-memory-check';
-import { EcarBundle } from '../handlers/export/ecar-bundle';
-import { CopyToDestination } from '../handlers/export/copy-to-destination';
-import { DeleteTempDir } from '../handlers/export/deletete-temp-dir';
-import { GenerateExportShareTelemetry } from '../handlers/export/generate-export-share-telemetry';
-import { UpdateSizeOnDevice } from '../handlers/import/update-size-on-device';
+    ChildContentRequest,
+    ContentDeleteResponse,
+    ContentDeleteStatus,
+    ContentDownloadRequest,
+    ContentExportRequest,
+    ContentFeedbackService,
+    ContentImport,
+    ContentImportRequest,
+    ContentRequest,
+    ContentSearchCriteria,
+    ContentService,
+    ContentServiceConfig,
+    ContentSpaceUsageSummaryRequest,
+    EcarImportRequest,
+    HierarchyInfo,
+    MarkerType,
+    RelevantContentRequest,
+    SearchAndGroupContentRequest
+} from '..';
+import {ContentServiceImpl} from './content-service-impl';
+import {Container} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
+import {DbService} from '../../db';
+import {SdkConfig} from '../../sdk-config';
+import {ApiService} from '../../api';
+import {AppInfo, Content, ContentDelete, ContentDeleteRequest, ContentDetailRequest, ContentMarkerRequest, ProfileService} from '../..';
+import {FileService} from '../../util/file/def/file-service';
+import {ZipService} from '../../util/zip/def/zip-service';
+import {DeviceInfo} from '../../util/device';
+import {CorrelationData, TelemetryService} from '../../telemetry';
+import {DownloadService} from '../../util/download';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {EventsBusService} from '../../events-bus';
+import {CachedItemStore} from '../../key-value-store';
+import {from, of, throwError} from 'rxjs';
+import {SharedPreferencesSetCollection} from '../../util/shared-preferences/def/shared-preferences-set-collection';
+import {GenerateInteractTelemetry} from '../handlers/import/generate-interact-telemetry';
+import {CleanTempLoc} from '../handlers/export/clean-temp-loc';
+import {SearchContentHandler} from '../handlers/search-content-handler';
+import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
+import {ContentKeys} from '../../preference-keys';
+import {ChildContentsHandler} from '../handlers/get-child-contents-handler';
+import {ImportNExportHandler} from '../handlers/import-n-export-handler';
+import {ArrayUtil} from '../../util/array-util';
+import {FileUtil} from '../../util/file/util/file-util';
+import {ContentEntry} from '../db/schema';
+import {GetContentsHandler} from '../handlers/get-contents-handler';
+import {DeleteContentHandler} from '../handlers/delete-content-handler';
+import {ContentUtil} from '../util/content-util';
+import {WriteManifest} from '../handlers/export/write-manifest';
+import {CompressContent} from '../handlers/export/compress-content';
+import {DeviceMemoryCheck} from '../handlers/export/device-memory-check';
+import {EcarBundle} from '../handlers/export/ecar-bundle';
+import {CopyToDestination} from '../handlers/export/copy-to-destination';
+import {DeleteTempDir} from '../handlers/export/deletete-temp-dir';
+import {GenerateExportShareTelemetry} from '../handlers/export/generate-export-share-telemetry';
+import {UpdateSizeOnDevice} from '../handlers/import/update-size-on-device';
 import {ExtractEcar} from '../handlers/import/extract-ecar';
 import {ValidateEcar} from '../handlers/import/validate-ecar';
 import {ExtractPayloads} from '../handlers/import/extract-payloads';
 import {CreateContentImportManifest} from '../handlers/import/create-content-import-manifest';
-import { SharedPreferencesLocalStorage } from '../../util/shared-preferences/impl/shared-preferences-local-storage';
-
+import {SharedPreferencesLocalStorage} from '../../util/shared-preferences/impl/shared-preferences-local-storage';
+import {SearchAndGroupContentHandler} from '../handlers/search-and-group-content-handler';
 
 
 jest.mock('../handlers/search-content-handler');
@@ -82,6 +85,7 @@ jest.mock('../handlers/import/extract-ecar');
 jest.mock('../handlers/import/validate-ecar');
 jest.mock('../handlers/import/extract-payloads');
 jest.mock('../handlers/import/create-content-import-manifest');
+jest.mock('../handlers/search-and-group-content-handler');
 
 describe('ContentServiceImpl', () => {
     let contentService: ContentService;
@@ -617,107 +621,6 @@ describe('ContentServiceImpl', () => {
             // assert
             expect(mockDbService.insert).toHaveBeenCalled();
             expect(mockDbService.execute).toHaveBeenCalled();
-            done();
-        });
-    });
-
-    it('should offline textbook contents with online textbook contents group by section', (done) => {
-        // arrange
-        const c_data: ContentData = {
-            identifier: 'do_123',
-            name: 'sample-content',
-            appIcon: 'sample_icon'
-        } as any;
-        const content: Content[] = [{
-            identifier: 'sample_identifier',
-            contentData: c_data,
-            mimeType: 'sample_mimeType',
-            basePath: 'https://',
-            name: 'sample_name'
-        }] as any;
-        const contentSearchResult: ContentSearchResult = {
-            id: 'sample_id',
-            responseMessageId: 'sample_responseMessageId',
-            filterCriteria: {},
-            contentDataList: content
-        } as any;
-        contentService.searchContent = jest.fn(() => of());
-        const request: ContentSearchCriteria = {
-            sortCriteria: [
-                {
-                    sortAttribute: 'name',
-                    sortOrder: SortOrder.ASC,
-                }
-            ]
-        };
-        jest.spyOn(contentService, 'getContents').mockImplementation(() => of(content));
-        jest.spyOn(contentService, 'searchContent').mockImplementation(() => of(contentSearchResult));
-        mockDbService.execute = jest.fn().mockImplementation(() => of([]));
-        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(of({
-            id: 'd0_id', contentDataList: content
-        }));
-        // act
-        contentService.searchContentGroupedByPageSection(request).subscribe(() => {
-            // assert
-            expect(mockCachedItemStore.getCached).toHaveBeenCalled();
-            done();
-        });
-    });
-
-    it('should not sort the contents if there is no name value available', (done) => {
-        // arrange
-        const c_data: ContentData = {
-            identifier: 'do_123',
-            name: 'sample-content',
-            appIcon: 'sample_icon'
-        } as any;
-        const content: Content[] = [{
-            identifier: 'sample_identifier',
-            contentData: c_data,
-            mimeType: 'sample_mimeType',
-            basePath: 'https://',
-            name: null
-        }] as any;
-        const contentSearchResult: ContentSearchResult = {
-            id: 'sample_id',
-            responseMessageId: 'sample_responseMessageId',
-            filterCriteria: {},
-            contentDataList: content
-        } as any;
-        contentService.searchContent = jest.fn(() => of());
-        const request: ContentSearchCriteria = {
-            sortCriteria: [
-                {
-                    sortAttribute: 'name',
-                    sortOrder: SortOrder.ASC,
-                }
-            ]
-        };
-        jest.spyOn(contentService, 'getContents').mockImplementation(() => of(content));
-        jest.spyOn(contentService, 'searchContent').mockImplementation(() => of(contentSearchResult));
-        mockDbService.execute = jest.fn().mockImplementation(() => of([]));
-        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(of({
-            id: 'd0_id', contentDataList: content
-        }));
-        // act
-        contentService.searchContentGroupedByPageSection(request).subscribe(() => {
-            // assert
-            expect(mockCachedItemStore.getCached).toHaveBeenCalled();
-            done();
-        });
-    });
-
-    it('should offline textbook contents with online textbook contents group by section for catch part', (done) => {
-        // arrange
-        const request: ContentSearchCriteria = {
-        };
-        mockDbService.execute = jest.fn().mockImplementation(() => of([]));
-        (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(throwError({ err: 'err' }));
-        // act
-        contentService.searchContentGroupedByPageSection(request).subscribe(() => {
-            // assert
-            expect(mockDbService.execute).toHaveBeenCalled();
-            expect(mockCachedItemStore.getCached).toHaveBeenCalled();
             done();
         });
     });
@@ -1363,5 +1266,33 @@ describe('ContentServiceImpl', () => {
         });
     });
 
+    describe('searchAndGroupContent()', () => {
+        const mockSearchAndGroupContentHandler = {
+            handle: jest.fn().mockImplementation(() => of({
+                name: 'some_name',
+                sections: [],
+            }))
+        } as Partial<SearchAndGroupContentHandler> as SearchAndGroupContentHandler;
 
+        beforeAll(() => {
+            (SearchAndGroupContentHandler as any as jest.Mock<SearchAndGroupContentHandler>).mockImplementation(() => {
+                return mockSearchAndGroupContentHandler;
+            });
+            contentService = container.get(InjectionTokens.CONTENT_SERVICE);
+        });
+
+        it('should delegate to SearchAndGroupContentHandler', (done) => {
+            // arrange
+            const request: SearchAndGroupContentRequest = {
+                groupBy: 'subject',
+                searchCriteria: {}
+            };
+
+            // act
+            contentService.searchAndGroupContent(request).subscribe(() => {
+                expect(mockSearchAndGroupContentHandler.handle).toHaveBeenCalledWith(request);
+                done();
+            });
+        });
+    });
 });
