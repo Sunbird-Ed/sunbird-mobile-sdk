@@ -16,7 +16,8 @@ import {
     EcarImportRequest,
     HierarchyInfo,
     MarkerType,
-    RelevantContentRequest
+    RelevantContentRequest,
+    SearchAndGroupContentRequest
 } from '..';
 import {ContentServiceImpl} from './content-service-impl';
 import {Container} from 'inversify';
@@ -61,6 +62,7 @@ import {ValidateEcar} from '../handlers/import/validate-ecar';
 import {ExtractPayloads} from '../handlers/import/extract-payloads';
 import {CreateContentImportManifest} from '../handlers/import/create-content-import-manifest';
 import {SharedPreferencesLocalStorage} from '../../util/shared-preferences/impl/shared-preferences-local-storage';
+import {SearchAndGroupContentHandler} from '../handlers/search-and-group-content-handler';
 
 
 jest.mock('../handlers/search-content-handler');
@@ -83,6 +85,7 @@ jest.mock('../handlers/import/extract-ecar');
 jest.mock('../handlers/import/validate-ecar');
 jest.mock('../handlers/import/extract-payloads');
 jest.mock('../handlers/import/create-content-import-manifest');
+jest.mock('../handlers/search-and-group-content-handler');
 
 describe('ContentServiceImpl', () => {
     let contentService: ContentService;
@@ -1260,6 +1263,36 @@ describe('ContentServiceImpl', () => {
             expect(getSearchContentRequestData).toHaveBeenCalled();
             expect(mapSearchResponseData).toHaveBeenCalled();
             done();
+        });
+    });
+
+    describe('searchAndGroupContent()', () => {
+        const mockSearchAndGroupContentHandler = {
+            handle: jest.fn().mockImplementation(() => of({
+                name: 'some_name',
+                sections: [],
+            }))
+        } as Partial<SearchAndGroupContentHandler> as SearchAndGroupContentHandler;
+
+        beforeAll(() => {
+            (SearchAndGroupContentHandler as any as jest.Mock<SearchAndGroupContentHandler>).mockImplementation(() => {
+                return mockSearchAndGroupContentHandler;
+            });
+            contentService = container.get(InjectionTokens.CONTENT_SERVICE);
+        });
+
+        it('should delegate to SearchAndGroupContentHandler', (done) => {
+            // arrange
+            const request: SearchAndGroupContentRequest = {
+                groupBy: 'subject',
+                searchCriteria: {}
+            };
+
+            // act
+            contentService.searchAndGroupContent(request).subscribe(() => {
+                expect(mockSearchAndGroupContentHandler.handle).toHaveBeenCalledWith(request);
+                done();
+            });
         });
     });
 });
