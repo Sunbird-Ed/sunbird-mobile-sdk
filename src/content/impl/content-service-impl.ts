@@ -34,10 +34,10 @@ import {
     RelevantContentRequest,
     RelevantContentResponse,
     RelevantContentResponsePlayer,
+    SearchAndGroupContentRequest,
     SearchResponse,
-    SortOrder
 } from '..';
-import {combineLatest, defer, from, Observable, of, zip} from 'rxjs';
+import {combineLatest, defer, from, Observable, of} from 'rxjs';
 import {ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
@@ -80,7 +80,6 @@ import {GenerateExportShareTelemetry} from '../handlers/export/generate-export-s
 import {SharedPreferences} from '../../util/shared-preferences';
 import {GenerateInteractTelemetry} from '../handlers/import/generate-interact-telemetry';
 import {CachedItemStore} from '../../key-value-store';
-import * as SHA1 from 'crypto-js/sha1';
 import {ContentKeys, FrameworkKeys} from '../../preference-keys';
 import {ContentStorageHandler} from '../handlers/content-storage-handler';
 import {SharedPreferencesSetCollection} from '../../util/shared-preferences/def/shared-preferences-set-collection';
@@ -90,17 +89,17 @@ import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
-import {catchError, map, mapTo, mergeMap, take, tap} from 'rxjs/operators';
+import {catchError, map, mapTo, mergeMap, tap} from 'rxjs/operators';
 import {CopyToDestination} from '../handlers/export/copy-to-destination';
 import {AppInfo} from '../../util/app';
 import {GetContentHeirarchyHandler} from '../handlers/get-content-heirarchy-handler';
 import {DeleteTempDir} from '../handlers/export/deletete-temp-dir';
+import {SearchAndGroupContentHandler} from '../handlers/search-and-group-content-handler';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
     private static readonly KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL = ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL;
     private static readonly KEY_CONTENT_DELETE_REQUEST_LIST = ContentKeys.KEY_CONTENT_DELETE_REQUEST_LIST;
-    private readonly SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY = 'group_by_page';
     private readonly getContentDetailsHandler: GetContentDetailsHandler;
     private readonly getContentHeirarchyHandler: GetContentHeirarchyHandler;
     private readonly contentServiceConfig: ContentServiceConfig;
@@ -109,6 +108,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     private contentDeleteRequestSet: SharedPreferencesSetCollection<ContentDelete>;
 
     private contentUpdateSizeOnDeviceTimeoutRef: Map<string, NodeJS.Timeout> = new Map();
+
+    private searchAndGroupContentHandler: SearchAndGroupContentHandler;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -126,7 +127,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
         @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo
     ) {
-
+        this.searchAndGroupContentHandler = new SearchAndGroupContentHandler(
+            this,
+            this.cachedItemStore
+        );
         this.contentServiceConfig = this.sdkConfig.contentServiceConfig;
         this.appConfig = this.sdkConfig.appConfig;
         this.getContentDetailsHandler = new GetContentDetailsHandler(
@@ -140,16 +144,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             ContentServiceImpl.KEY_CONTENT_DELETE_REQUEST_LIST,
             (item) => item.contentId
         );
-    }
-
-    private static getIdForDb(request: ContentSearchCriteria): string {
-        const key = {
-            framework: request.framework || '',
-            board: request.board || '',
-            medium: request.medium || '',
-            grade: request.grade || '',
-        };
-        return SHA1(JSON.stringify(key)).toString();
     }
 
     onInit(): Observable<undefined> {
@@ -658,50 +652,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         );
     }
 
-    searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection> {
-        const offlineTextbookContents$: Observable<ContentData[]> = this.getContents({
-            contentTypes: ['TextBook'],
-            board: request.board,
-            medium: request.medium,
-            grade: request.grade
-        }).pipe(
-            map((contents: Content[]) => contents.map((content) => {
-                if (content.contentData.appIcon && !content.contentData.appIcon.startsWith('https://')) {
-                    content.contentData.appIcon = content.basePath + content.contentData.appIcon;
-                }
-                return content.contentData;
-            }))
-        );
-
-        const onlineTextbookContents$: Observable<ContentSearchResult> = this.cachedItemStore.getCached(
-            ContentServiceImpl.getIdForDb(request),
-            this.SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY,
-            'ttl_' + this.SEARCH_CONTENT_GROUPED_BY_PAGE_SECTION_KEY,
-            () => this.searchContent(request),
-            undefined,
-            undefined,
-            (contentSearchResult: ContentSearchResult) =>
-                !contentSearchResult ||
-                !contentSearchResult.contentDataList ||
-                contentSearchResult.contentDataList.length === 0
-        ).pipe(
-            catchError((e) => {
-                console.error(e);
-
-                return of({
-                    id: 'OFFLINE_RESPONSE_ID',
-                    responseMessageId: 'OFFLINE_RESPONSE_ID',
-                    filterCriteria: request,
-                    contentDataList: []
-                });
-            })
-        );
-
-        return this.searchContentAndGroupByPageSection(
-            request,
-            offlineTextbookContents$.pipe(take(1)),
-            onlineTextbookContents$.pipe(take(1))
-        );
+    searchAndGroupContent(request: SearchAndGroupContentRequest): Observable<ContentsGroupedByPageSection> {
+        return this.searchAndGroupContentHandler.handle(request);
     }
 
     onDownloadCompletion(request: ContentDownloadRequest): Observable<undefined> {
@@ -759,82 +711,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return mimeType;
     }
 
-    private searchContentAndGroupByPageSection(
-        request: ContentSearchCriteria,
-        offlineTextbookContents$: Observable<ContentData[]>,
-        onlineTextbookContents$: Observable<ContentSearchResult>
-    ): Observable<ContentsGroupedByPageSection> {
-        return zip(
-            offlineTextbookContents$,
-            onlineTextbookContents$
-        ).pipe(
-            map<any, ContentSearchResult>((results: [ContentData[], ContentSearchResult]) => {
-                const localTextBooksContentDataList = results[0];
-
-                const searchContentDataList = results[1].contentDataList.filter((contentData) => {
-                    return !localTextBooksContentDataList.find(
-                        (localContentData) => localContentData.identifier === contentData.identifier);
-                });
-                if (localTextBooksContentDataList.length && request.sortCriteria && request.sortCriteria.length) {
-                    const contentDataList = request.sortCriteria.reduce<ContentData[]>((acc, sortCriteria) => {
-                        acc.sort((a, b) => {
-                            if (!a[sortCriteria.sortAttribute] || !b[sortCriteria.sortAttribute]) {
-                                return 0;
-                            }
-                            const comparison = String(a[sortCriteria.sortAttribute]).localeCompare(b[sortCriteria.sortAttribute]);
-
-                            return sortCriteria.sortOrder === SortOrder.ASC ? comparison : (comparison * -1);
-                        });
-
-                        return acc;
-                    }, [
-                        ...localTextBooksContentDataList,
-                        ...searchContentDataList,
-                    ] as ContentData[]);
-
-                    return {
-                        ...results[1],
-                        contentDataList
-                    } as ContentSearchResult;
-                }
-
-                return {
-                    ...results[1],
-                    contentDataList: [
-                        ...localTextBooksContentDataList,
-                        ...searchContentDataList,
-                    ]
-                } as ContentSearchResult;
-            }),
-            map<ContentSearchResult, ContentsGroupedByPageSection>((result: ContentSearchResult) => {
-                const contentsGroupedBySubject = result.contentDataList.reduce<{ [key: string]: ContentData[] }>((acc, contentData) => {
-                    if (Array.isArray(contentData.subject)) {
-                        contentData.subject.forEach((sub) => {
-                            sub = sub.toLowerCase().trim();
-
-                            if (acc[sub]) {
-                                (acc[sub] as Array<ContentData>).push(contentData);
-                            } else {
-                                acc[sub] = [contentData];
-                            }
-                        });
-                    } else {
-                        const sub = contentData.subject ? contentData.subject.toLowerCase().trim() : '';
-                        if (acc[sub]) {
-                            (acc[sub] as Array<ContentData>).push(contentData);
-                        } else {
-                            acc[sub] = [contentData];
-                        }
-                    }
-
-                    return acc;
-                }, {});
-
-                return this.sortContentByName(contentsGroupedBySubject, request);
-            })
-        );
-    }
-
     private handleContentDeleteRequestSetChanges(): Observable<undefined> {
         return this.contentDeleteRequestSet.asListChanges().pipe(
             mergeMap((requests: ContentDelete[]) => {
@@ -866,29 +742,4 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             })
         );
     }
-
-    private sortContentByName(contentsGroupedBySubject, request: ContentSearchCriteria) {
-        const sections = Object.keys(contentsGroupedBySubject).map((sub) => {
-            return {
-                contents: contentsGroupedBySubject[sub],
-                name: sub.charAt(0).toUpperCase() + sub.slice(1),
-                display: {name: {en: sub}} // TODO : need to handle localization
-            };
-        });
-
-        if (request.sortCriteria && request.sortCriteria.length) {
-            const sortCriteria = request.sortCriteria[0];
-            sections.sort((obj1, obj2) => {
-                const comparison = String(obj1[sortCriteria.sortAttribute]).localeCompare(obj2[sortCriteria.sortAttribute]);
-
-                return sortCriteria.sortOrder === SortOrder.ASC ? comparison : (comparison * -1);
-            });
-        }
-
-        return {
-            name: 'Resource',
-            sections
-        };
-    }
-
 }

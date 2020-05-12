@@ -5,6 +5,14 @@ import {ContentImportResponse} from './response';
 import {ContentEntry} from '../db/schema';
 import {DownloadRequest} from '../../util/download';
 
+export interface SearchAndGroupContentRequest {
+    groupBy: keyof ContentData;
+    combination?: {
+        [key in keyof ContentData]?: string[]
+    };
+    searchCriteria: ContentSearchCriteria;
+}
+
 export interface ContentDecorateRequest {
     content: Content;
     attachFeedback?: boolean;
