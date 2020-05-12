@@ -1,6 +1,6 @@
 import {ContentSearchCriteria, ContentSearchFilter} from './requests';
 import {Content, ContentData} from './content';
-import {ContentImportStatus} from '../util/content-constants';
+import {ContentImportStatus} from '..';
 
 export interface ContentSearchResult {
     id: string;
@@ -13,6 +13,9 @@ export interface ContentSearchResult {
 
 export interface ContentsGroupedByPageSection {
     name: string;
+    combination?: {
+        [key in keyof Content]?: string
+    };
     sections: PageSection[];
 }
 
