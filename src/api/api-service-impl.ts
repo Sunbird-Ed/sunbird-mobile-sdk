@@ -75,37 +75,51 @@ export class ApiServiceImpl implements ApiService {
     }
 
     onInit(): Observable<undefined> {
+        this.sharedPreferences.addListener(ApiKeys.KEY_API_TOKEN, (value) => {
+            if (value) {
+                CsModule.instance.config.core.api.authentication.bearerToken = value;
+            } else {
+                CsModule.instance.config.core.api.authentication.bearerToken = undefined;
+            }
+
+            CsModule.instance.updateConfig(CsModule.instance.config);
+        });
+
         return this.sharedPreferences.getString(ApiKeys.KEY_API_TOKEN).pipe(
             mergeMap((apiToken) => {
                 if (!apiToken) {
                     return new ApiTokenHandler(this.apiConfig, this, this.deviceInfo).refreshAuthToken().pipe(
                         mergeMap((bearerToken) => {
-                            CsModule.instance.config.core.api.authentication.bearerToken = bearerToken;
-                            CsModule.instance.updateConfig(CsModule.instance.config);
                             return this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken);
                         }),
                         catchError(() => of(undefined))
                     );
                 }
 
+                CsModule.instance.config.core.api.authentication.bearerToken = apiToken;
+                CsModule.instance.updateConfig(CsModule.instance.config);
                 return of(undefined);
             }));
     }
 
     public fetch<T = any>(request: CsRequest): Observable<CsResponse<T>> {
         this.defaultRequestInterceptors.forEach((i) => {
-            request.requestInterceptors.push(i);
+            if (request.requestInterceptors.indexOf(i) === -1) {
+                request.requestInterceptors.push(i);
+            }
         });
 
         this.defaultResponseInterceptors.forEach((i) => {
-            request.responseInterceptors.push(i);
+            if (request.responseInterceptors.indexOf(i) === -1) {
+                request.responseInterceptors.push(i);
+            }
         });
 
-        if (request.withBearerToken) {
+        if (request.withBearerToken && request.responseInterceptors.indexOf(this.bearerTokenRefreshInterceptor) === -1) {
             request.responseInterceptors.push(this.bearerTokenRefreshInterceptor);
         }
 
-        if (request.withUserToken) {
+        if (request.withUserToken && request.responseInterceptors.indexOf(this.userTokenRefreshInterceptor) === -1) {
             request.responseInterceptors.push(this.userTokenRefreshInterceptor);
         }
 

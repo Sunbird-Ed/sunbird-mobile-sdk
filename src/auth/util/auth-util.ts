@@ -5,7 +5,6 @@ import {NoActiveSessionError} from '../../profile';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AuthTokenRefreshErrorEvent, ErrorEventType, EventNamespace, EventsBusService} from '../../events-bus';
 import {AuthTokenRefreshError} from '../errors/auth-token-refresh-error';
-import {CsModule} from '@project-sunbird/client-services';
 
 export class AuthUtil {
     constructor(
@@ -75,14 +74,10 @@ export class AuthUtil {
     }
 
     public async startSession(sessionData: OAuthSession): Promise<void> {
-        CsModule.instance.config.core.api.authentication.userToken = sessionData.userToken;
-        CsModule.instance.updateConfig(CsModule.instance.config);
         await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
     }
 
     public async endSession(): Promise<void> {
-        CsModule.instance.config.core.api.authentication.userToken = undefined;
-        CsModule.instance.updateConfig(CsModule.instance.config);
         await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '').toPromise();
     }
 

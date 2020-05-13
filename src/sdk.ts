@@ -421,6 +421,7 @@ export class SunbirdSdk {
     private postInit() {
         return combineLatest([
             this.apiService.onInit(),
+            this.authService.onInit(),
             this.summarizerService.onInit(),
             this.errorLoggerService.onInit(),
             this.eventsBusService.onInit(),
