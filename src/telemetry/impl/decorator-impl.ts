@@ -1,4 +1,4 @@
-import {Actor, Context, ProducerData, SunbirdTelemetry, TelemetryDecorator} from '..';
+import {Actor, Context, ProducerData, SunbirdTelemetry, TelemetryDecorator, CorrelationData} from '..';
 import {ApiConfig} from '../../api';
 import {DeviceInfo} from '../../util/device/def/device-info';
 import {AppInfo} from '../../util/app/def/app-info';
@@ -22,7 +22,8 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         this.apiConfig = this.sdkConfig.apiConfig;
     }
 
-    decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset: number = 0, channelId?: string): any {
+    decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset: number = 0,
+         channelId?: string, campaignParameters?: CorrelationData[]): any {
         event.ets += offset;
         if (!event.mid) {
             event.mid = UniqueId.generateUniqueId();
@@ -33,7 +34,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
             this.patchActor(event, '');
         }
 
-        this.patchContext(event, sid, channelId);
+        this.patchContext(event, sid, channelId, campaignParameters);
         // TODO Add tag patching logic
         return event;
     }
@@ -54,11 +55,11 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         }
     }
 
-    private patchContext(event: Telemetry, sid, channelId) {
+    private patchContext(event: Telemetry, sid, channelId, campaignParameters?: CorrelationData[]) {
         if (!event.context) {
             event.context = new Context();
         }
-        event.context = this.buildContext(sid, channelId, event.context);
+        event.context = this.buildContext(sid, channelId, event.context, campaignParameters);
     }
 
     private patchPData(event: Context) {
@@ -93,7 +94,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         };
     }
 
-    buildContext(sid: string, channelId: string, context: Context): Context {
+    buildContext(sid: string, channelId: string, context: Context, campaignParameters?: CorrelationData[]): Context {
         context.channel = channelId;
         this.patchPData(context);
         if (!context.env) {
@@ -108,6 +109,8 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         if (channelId !== this.apiConfig.api_authentication.channelId) {
             context.rollup = {l1: channelId};
         }
+        // patching cData
+        context.cdata = context.cdata ? context.cdata.concat(campaignParameters || []) : (campaignParameters || []);
         return context;
     }
 }
