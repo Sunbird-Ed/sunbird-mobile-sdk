@@ -1,0 +1,1 @@
+export {Group as ClassRoom} from '@project-sunbird/client-services/models/group';

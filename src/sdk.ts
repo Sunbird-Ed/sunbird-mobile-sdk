@@ -75,6 +75,7 @@ import {NetworkQueue} from './api/network-queue';
 import {CsModule} from '@project-sunbird/client-services';
 import {CsHttpService} from '@project-sunbird/client-services/core/http-service';
 import * as SHA1 from 'crypto-js/sha1';
+import {CsGroupService} from '@project-sunbird/client-services/services/group';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -348,10 +349,12 @@ export class SunbirdSdk {
                     host: sdkConfig.apiConfig.host,
                     authentication: {}
                 }
-            }
+            },
+            services: {}
         });
 
         this._container.bind<CsHttpService>(CsInjectionTokens.HTTP_SERVICE).toConstantValue(CsModule.instance.httpService);
+        this._container.bind<CsGroupService>(CsInjectionTokens.GROUP_SERVICE).toConstantValue(CsModule.instance.groupService);
 
         await this.dbService.init();
         await this.appInfo.init();
