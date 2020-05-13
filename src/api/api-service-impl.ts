@@ -12,30 +12,27 @@ import {ErrorEventType, EventNamespace, EventsBusEvent, EventsBusService, HttpCl
 import {EmitRequest} from '../events-bus/def/emit-request';
 import {catchError, mergeMap} from 'rxjs/operators';
 import {
+    CsHttpClientError,
+    CsHttpServerError,
     CsHttpService,
     CsRequest,
     CsRequestInterceptor,
     CsResponse,
     CsResponseInterceptor
 } from '@project-sunbird/client-services/core/http-service';
-import {CsHttpClientError, CsHttpServerError} from '@project-sunbird/client-services/core/http-service';
 import {BearerTokenRefreshInterceptor} from './util/authenticators/bearer-token-refresh-interceptor';
 import {UserTokenRefreshInterceptor} from './util/authenticators/user-token-refresh-interceptor';
 import {AuthService} from '../auth';
 import {CsModule} from '@project-sunbird/client-services';
-import {
-    CsRequestLoggerInterceptor,
-    CsResponseLoggerInterceptor
-} from '@project-sunbird/client-services/core/http-service/utilities/interceptors';
 
 @injectable()
 export class ApiServiceImpl implements ApiService {
 
     private defaultRequestInterceptors: CsRequestInterceptor[] = [
-        new CsRequestLoggerInterceptor()
+        // new CsRequestLoggerInterceptor()
     ];
     private defaultResponseInterceptors: CsResponseInterceptor[] = [
-        new CsResponseLoggerInterceptor()
+        // new CsResponseLoggerInterceptor()
     ];
     private apiConfig: ApiConfig;
 
