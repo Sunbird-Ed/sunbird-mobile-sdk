@@ -101,8 +101,8 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
                 'Content-Type': 'application/x-www-form-urlencoded'
             })
             .withSerializer(HttpSerializer.URLENCODED)
-            .withApiToken(false)
-            .withSessionToken(false)
+            .withBearerToken(false)
+            .withUserToken(false)
             .build();
 
         return this.apiService.fetch(apiRequest)
@@ -128,8 +128,8 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
             .withPath(`/v1/sso/create/session?id=${captured['id']}`)
-            .withSessionToken(false)
-            .withApiToken(false)
+            .withUserToken(false)
+            .withBearerToken(false)
             .build();
 
         return this.apiService.fetch(apiRequest)

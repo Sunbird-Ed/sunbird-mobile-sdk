@@ -1,11 +1,6 @@
-import { map } from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {
-    Content,
-    ContentDetailRequest,
-    ContentServiceConfig,
-    ContentData
-} from '..';
+import {Content, ContentData, ContentDetailRequest, ContentServiceConfig} from '..';
 
 export class GetContentHeirarchyHandler implements ApiRequestHandler<ContentDetailRequest, Content> {
     private readonly GET_CONTENT_HEIRARCHY_ENDPOINT = '/hierarchy';
@@ -18,7 +13,7 @@ export class GetContentHeirarchyHandler implements ApiRequestHandler<ContentDeta
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
             .withPath(this.contentServiceConfig.contentHeirarchyAPIPath + this.GET_CONTENT_HEIRARCHY_ENDPOINT + '/' + request.contentId)
-            .withApiToken(true)
+            .withBearerToken(true)
             .build();
         return this.apiService.fetch<{ result: { content: ContentData } }>(apiRequest)
             .pipe(

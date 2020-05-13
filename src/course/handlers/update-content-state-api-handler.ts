@@ -15,8 +15,8 @@ export class UpdateContentStateApiHandler implements ApiRequestHandler<UpdateCon
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.PATCH)
             .withPath(this.courseServiceConfig.apiPath + this.UPDATE_CONTENT_STATE_ENDPOINT)
-            .withApiToken(true)
-            .withSessionToken(true)
+            .withBearerToken(true)
+            .withUserToken(true)
             .withBody({request: updateContentStateAPIRequest})
             .build();
 

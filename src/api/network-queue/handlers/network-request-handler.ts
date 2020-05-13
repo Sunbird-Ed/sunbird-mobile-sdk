@@ -17,16 +17,16 @@ export class NetworkRequestHandler {
       });
       body = new Uint8Array(gzippedCharData);
       apiRequest = new Request.Builder()
-        .withSerializer(HttpSerializer.RAW)
-        .withHost(this.config.telemetryConfig.host!)
-        .withType(HttpRequestType.POST)
-        .withPath(this.config.telemetryConfig.apiPath + TelemetrySyncHandler.TELEMETRY_ENDPOINT)
-        .withHeaders({
-          'Content-Type': 'application/json',
-          'Content-Encoding': 'gzip'
-        })
-        .withBody(body)
-        .withApiToken(true)
+          .withSerializer(HttpSerializer.RAW)
+          .withHost(this.config.telemetryConfig.host!)
+          .withType(HttpRequestType.POST)
+          .withPath(this.config.telemetryConfig.apiPath + TelemetrySyncHandler.TELEMETRY_ENDPOINT)
+          .withHeaders({
+            'Content-Type': 'application/json',
+            'Content-Encoding': 'gzip'
+          })
+          .withBody(body)
+          .withBearerToken(true)
         .build();
     } else {
       body = data;

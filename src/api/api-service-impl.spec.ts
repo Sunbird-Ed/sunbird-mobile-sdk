@@ -1,141 +1,87 @@
-import {Container} from 'inversify';
-import {ApiService} from './def/api-service';
-import {InjectionTokens} from '../injection-tokens';
-import {ApiServiceImpl} from './api-service-impl';
-import {SdkConfig} from '../sdk-config';
-import {mockSdkConfigWithSampleApiConfig} from './api-service-impl.spec.data';
-import {DeviceInfo} from '../util/device';
-import {SharedPreferences} from '../util/shared-preferences';
-import {ApiKeys} from '../preference-keys';
-import {of} from 'rxjs';
-import {FetchHandler} from './handlers/fetch-handler';
-import {Response} from './def/response';
-import {HttpRequestType, Request} from './def/request';
-import { EventsBusService } from '..';
-
-jest.mock('./handlers/fetch-handler');
+import { ApiServiceImpl } from './api-service-impl';
+import { Container } from 'inversify';
+import { SdkConfig, DeviceInfo, SharedPreferences, EventsBusService, ErrorEventType } from '..';
+import { CsHttpService } from '@project-sunbird/client-services/core/http-service/interface';
+import { of, throwError } from 'rxjs';
+import {SunbirdSdk} from '../sdk';
+import { InjectionTokens } from '../injection-tokens';
+import { CsHttpServerError } from '@project-sunbird/client-services/core/http-service';
 
 describe('ApiServiceImpl', () => {
-    let apiService: ApiService;
-
-    const container = new Container();
-    const mockDeviceInfoService: Partial<DeviceInfo> = {
-        getDeviceID: jest.fn().mockImplementation(() => {
-        }),
-    };
-    const mockSharedPreferences: Partial<SharedPreferences> = {
-        getString: jest.fn().mockImplementation(() => {
-        }),
-        putString: jest.fn().mockImplementation(() => {
-        }),
-    };
+    let apiServiceImpl: ApiServiceImpl;
+    const mockContainer: Partial<Container> = {};
+    const mockDeviceInfo: Partial<DeviceInfo> = {};
     const mockEventsBusService: Partial<EventsBusService> = {};
+    const mockHttpService: Partial<CsHttpService> = {};
+    const mockSdkConfig: Partial<SdkConfig> = {};
+    const mockSharedPreferences: Partial<SharedPreferences> = {};
 
     beforeAll(() => {
-        container.bind<ApiService>(InjectionTokens.API_SERVICE).to(ApiServiceImpl);
-        container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(mockSdkConfigWithSampleApiConfig as SdkConfig);
-        container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).toConstantValue(mockDeviceInfoService as DeviceInfo);
-        container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).toConstantValue(mockSharedPreferences as SharedPreferences);
-        container.bind<EventsBusService>(InjectionTokens.EVENTS_BUS_SERVICE).toConstantValue(mockEventsBusService as EventsBusService);
-
-        apiService = container.get(InjectionTokens.API_SERVICE);
+        apiServiceImpl = new ApiServiceImpl(
+            mockContainer as Container,
+            mockSdkConfig as SdkConfig,
+            mockDeviceInfo as DeviceInfo,
+            mockSharedPreferences as SharedPreferences,
+            mockEventsBusService as EventsBusService,
+            mockHttpService as CsHttpService
+        );
     });
 
     beforeEach(() => {
         jest.clearAllMocks();
-        (FetchHandler as jest.Mock<FetchHandler>).mockClear();
     });
 
-    it('should return an instance of ApiServiceImpl from container', () => {
-        expect(apiService).toBeTruthy();
+    it('should be create a instance of apiServiceImpl', () => {
+        expect(apiServiceImpl).toBeTruthy();
     });
 
-    describe('should check for API token onInit()', () => {
-        it('should fetch new API token if not found', (done) => {
-            // arrange
-            (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of(''));
-            (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(undefined));
-            (mockDeviceInfoService.getDeviceID as jest.Mock).mockReturnValue('SAMPLE_DEVICE_ID');
+    it('bearerTokenRefreshInterceptor', () => {
+        mockContainer.get = jest.fn(() => ({apiconfig: ''})) as any;
+        expect(apiServiceImpl.bearerTokenRefreshInterceptor).toBeTruthy();
+        expect(mockContainer.get).toHaveBeenCalledWith(InjectionTokens.SHARED_PREFERENCES);
+        expect(mockContainer.get).toHaveBeenCalledWith(InjectionTokens.SDK_CONFIG);
+        expect(mockContainer.get).toHaveBeenCalledWith(InjectionTokens.DEVICE_INFO);
+        expect(mockContainer.get).toHaveBeenCalledWith(InjectionTokens.API_SERVICE);
+    });
 
-            spyOn(apiService, 'fetch').and.returnValue(of({
-                body: {
-                    result: {
-                        secret: 'SAMPLE_SECRET'
-                    }
-                }
-            }));
+    it('userTokenRefreshInterceptor', () => {
+        mockContainer.get = jest.fn(() => ({})) as any;
+        expect(apiServiceImpl.userTokenRefreshInterceptor).toBeTruthy();
+        expect(mockContainer.get).toHaveBeenCalledWith(InjectionTokens.API_SERVICE);
+        expect(mockContainer.get).toHaveBeenCalledWith(InjectionTokens.AUTH_SERVICE);
+    });
 
+    describe('fetch', () => {
+        it('should return bareartoken and user token', (done) => {
+            const request = {
+                requestInterceptors: [],
+                responseInterceptors: []
+            } as any;
+            mockHttpService.fetch = jest.fn(() => of({}))as any;
             // act
-            apiService.onInit().subscribe(() => {
-                // assert
-                expect(mockSharedPreferences.getString).toHaveBeenCalledWith(ApiKeys.KEY_API_TOKEN);
-                expect(mockSharedPreferences.putString).toHaveBeenCalledWith(
-                    ApiKeys.KEY_API_TOKEN, expect.stringMatching(/[a-z]+.[a-z]+.[a-z]+/i)
-                );
-                expect(apiService.fetch).toHaveBeenCalled();
-
+            apiServiceImpl.fetch(request).subscribe(() => {
                 done();
             });
         });
 
-        it('should do nothing if API token found', (done) => {
-            // arrange
-            (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of('SAMPLE_API_TOKEN'));
-
-            spyOn(apiService, 'fetch').and.stub();
-
+        it('should return http error for httpService', (done) => {
+            const request = {
+                requestInterceptors: [],
+                responseInterceptors: [],
+                withBearerToken: true,
+                withUserToken: true
+            } as any;
+            const response: CsHttpServerError = {
+                response: {},
+                message: ErrorEventType.HTTP_SERVER_ERROR
+            } as any;
+            mockHttpService.fetch = jest.fn(() => throwError(response));
+            mockEventsBusService.emit = jest.fn();
             // act
-            apiService.onInit().subscribe(() => {
-                // assert
-                expect(mockSharedPreferences.getString).toHaveBeenCalledWith(ApiKeys.KEY_API_TOKEN);
-                expect(apiService.fetch).not.toHaveBeenCalled();
-
+            apiServiceImpl.fetch(request).toPromise().catch((e) => {
+                expect(e.message).toBe(ErrorEventType.HTTP_SERVER_ERROR);
                 done();
             });
         });
-
-        it('should fail gracefully if fetch API token fails', (done) => {
-            // arrange
-            (mockSharedPreferences.getString as jest.Mock).mockReturnValue(of(''));
-            (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(undefined));
-            (mockDeviceInfoService.getDeviceID as jest.Mock).mockReturnValue('SAMPLE_DEVICE_ID');
-
-            spyOn(apiService, 'fetch').and.throwError('some error');
-
-            // act
-            apiService.onInit().subscribe(() => {
-                // assert
-                expect(mockSharedPreferences.getString).toHaveBeenCalledWith(ApiKeys.KEY_API_TOKEN);
-                done();
-            });
-        });
-    });
-
-    it('should delegate to FetchHandler.doFetch() on fetch()', (done) => {
-        // arrange
-        (FetchHandler as jest.Mock<FetchHandler>).mockImplementation(() => {
-            return {
-                doFetch: jest.fn().mockImplementation(() => of(new Response()))
-            } as Partial<FetchHandler> as FetchHandler;
-        });
-
-        // act
-        apiService.fetch((new Request.Builder())
-            .withPath('SAMPLE_PATH')
-            .withType(HttpRequestType.GET)
-            .build())
-            .subscribe(() => {
-                done();
-            });
-    });
-
-    it('should be able to setDefaultApiAuthenticators()', () => {
-        // act
-        apiService.setDefaultApiAuthenticators([]);
-    });
-
-    it('should be able to setDefaultSessionAuthenticators()', () => {
-        // act
-        apiService.setDefaultSessionAuthenticators([]);
     });
 });

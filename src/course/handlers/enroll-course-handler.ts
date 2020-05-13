@@ -16,8 +16,8 @@ export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseReques
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.courseServiceConfig.apiPath + this.ENROL_ENDPOINT)
-            .withApiToken(true)
-            .withSessionToken(true)
+            .withBearerToken(true)
+            .withUserToken(true)
             .withBody({request})
             .build();
 

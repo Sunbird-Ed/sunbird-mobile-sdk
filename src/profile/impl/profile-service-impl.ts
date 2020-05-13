@@ -613,7 +613,7 @@ export class ProfileServiceImpl implements ProfileService {
         const apiRequest = new Request.Builder()
             .withType(HttpRequestType.PATCH)
             .withPath(ProfileServiceImpl.MERGE_SERVER_PROFILES_PATH)
-            .withApiToken(true)
+            .withBearerToken(true)
             .withHeaders({
                 'x-source-user-token': mergeServerProfilesRequest.from.accessToken,
                 'x-authenticated-user-token': mergeServerProfilesRequest.to.accessToken

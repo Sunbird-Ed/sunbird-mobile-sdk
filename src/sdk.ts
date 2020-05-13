@@ -47,10 +47,8 @@ import {AppInfoImpl} from './util/app/impl/app-info-impl';
 import {PlayerService, PlayerServiceImpl} from './player';
 import {TelemetryConfig} from './telemetry/config/telemetry-config';
 import {OfflineSearchTextbookMigration} from './db/migrations/offline-search-textbook-migration';
-import {ApiAuthenticator} from './util/authenticators/impl/api-authenticator';
-import {SessionAuthenticator} from './util/authenticators/impl/session-authenticator';
 import {Container} from 'inversify';
-import {InjectionTokens} from './injection-tokens';
+import {CsInjectionTokens, InjectionTokens} from './injection-tokens';
 import {StorageService} from './storage';
 import {StorageServiceImpl} from './storage/impl/storage-service-impl';
 import {NotificationService} from './notification';
@@ -74,6 +72,10 @@ import {ArchiveServiceImpl} from './archive/impl/archive-service-impl';
 import {NetworkQueueMigration} from './db/migrations/network-queue-migration';
 import {NetworkQueueImpl} from './api/network-queue/impl/network-queue-impl';
 import {NetworkQueue} from './api/network-queue';
+import {CsModule} from '@project-sunbird/client-services';
+import {CsHttpService} from '@project-sunbird/client-services/core/http-service';
+import * as SHA1 from 'crypto-js/sha1';
+import {CsGroupService} from '@project-sunbird/client-services/services/group';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -335,13 +337,24 @@ export class SunbirdSdk {
 
         this._container.bind<NetworkQueue>(InjectionTokens.NETWORK_QUEUE).to(NetworkQueueImpl).inSingletonScope();
 
-        this.apiService.setDefaultApiAuthenticators([
-            new ApiAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.deviceInfo, this.apiService)
-        ]);
+        await CsModule.instance.init({
+            core: {
+                httpAdapter: 'HttpClientCordovaAdapter',
+                global: {
+                    channelId: sdkConfig.apiConfig.api_authentication.channelId,
+                    producerId: sdkConfig.apiConfig.api_authentication.producerId,
+                    deviceId: SHA1(window.device.uuid).toString()
+                },
+                api: {
+                    host: sdkConfig.apiConfig.host,
+                    authentication: {}
+                }
+            },
+            services: {}
+        });
 
-        this.apiService.setDefaultSessionAuthenticators([
-            new SessionAuthenticator(this.sharedPreferences, this.sdkConfig.apiConfig, this.apiService, this.authService)
-        ]);
+        this._container.bind<CsHttpService>(CsInjectionTokens.HTTP_SERVICE).toConstantValue(CsModule.instance.httpService);
+        this._container.bind<CsGroupService>(CsInjectionTokens.GROUP_SERVICE).toConstantValue(CsModule.instance.groupService);
 
         await this.dbService.init();
         await this.appInfo.init();

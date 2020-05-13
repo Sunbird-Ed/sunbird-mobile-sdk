@@ -1,10 +1,11 @@
-import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response, ResponseCode, HttpClientError} from '../../api';
+import {ApiConfig, ApiService, HttpClientError, HttpRequestType, HttpSerializer, JWTUtil, Request, Response, ResponseCode} from '../../api';
 import {OAuthSession} from '..';
 import {AuthKeys} from '../../preference-keys';
 import {NoActiveSessionError} from '../../profile';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AuthTokenRefreshErrorEvent, ErrorEventType, EventNamespace, EventsBusService} from '../../events-bus';
 import {AuthTokenRefreshError} from '../errors/auth-token-refresh-error';
+import {CsModule} from '@project-sunbird/client-services';
 
 export class AuthUtil {
     constructor(
@@ -26,7 +27,7 @@ export class AuthUtil {
             .withPath('/auth/v1/refresh/token')
             .withType(HttpRequestType.POST)
             .withSerializer(HttpSerializer.URLENCODED)
-            .withApiToken(true)
+            .withBearerToken(true)
             .withBody({
                 refresh_token: sessionData.refresh_token
             })
@@ -74,10 +75,14 @@ export class AuthUtil {
     }
 
     public async startSession(sessionData: OAuthSession): Promise<void> {
+        CsModule.instance.config.core.api.authentication.userToken = sessionData.userToken;
+        CsModule.instance.updateConfig(CsModule.instance.config);
         await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
     }
 
     public async endSession(): Promise<void> {
+        CsModule.instance.config.core.api.authentication.userToken = undefined;
+        CsModule.instance.updateConfig(CsModule.instance.config);
         await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '').toPromise();
     }
 

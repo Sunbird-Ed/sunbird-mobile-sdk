@@ -31,8 +31,8 @@ export class GetUserFeedHandler implements ApiRequestHandler<undefined, UserFeed
                 .withType(HttpRequestType.GET)
                 .withPath(this.profileServiceConfig.profileApiPath + GetUserFeedHandler.GET_USER_FEED
                     + '/' + uid)
-                .withApiToken(true)
-                .withSessionToken(true)
+                .withBearerToken(true)
+                .withUserToken(true)
                 .build()
         ).pipe(
             map((response) => {

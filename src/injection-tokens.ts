@@ -1,3 +1,8 @@
+export const CsInjectionTokens = {
+    HTTP_SERVICE: Symbol.for('CS_HTTP_SERVICE'),
+    GROUP_SERVICE: Symbol.for('CS_GROUP_SERVICE')
+};
+
 export const InjectionTokens = {
     CONTAINER: Symbol.for('CONTAINER'),
     DB_VERSION: Symbol.for('DB_VERSION'),

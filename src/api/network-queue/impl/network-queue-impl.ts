@@ -78,13 +78,13 @@ export class NetworkQueueImpl implements NetworkQueue {
           request.headers['Access-Control-Allow-Origin'] = '*';
           request.body = {};
           const apiRequest: Request = new Request.Builder()
-            .withSerializer(request.serializer)
-            .withHost(this.sdkConfig.apiConfig.host)
-            .withType(request.type)
-            .withPath(request.path)
-            .withHeaders(request.headers)
-            .withBody({})
-            .withApiToken(true)
+              .withSerializer(request.serializer)
+              .withHost(this.sdkConfig.apiConfig.host)
+              .withType(request.type)
+              .withPath(request.path)
+              .withHeaders(request.headers)
+              .withBody({})
+              .withBearerToken(true)
             .build();
           return apiRequest;
         })

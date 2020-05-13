@@ -83,8 +83,8 @@ export class SyncAssessmentEventsHandler {
             .withBody({
                 request: assessmentTelemetrySyncRequest
             })
-            .withApiToken(true)
-            .withSessionToken(true)
+            .withBearerToken(true)
+            .withUserToken(true)
             .build();
 
         console.log(

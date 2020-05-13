@@ -91,7 +91,7 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
                         .withType(HttpRequestType.POST)
                         .withPath(this.deviceRegisterConfig!.apiPath + DeviceRegisterHandler.DEVICE_REGISTER_ENDPOINT
                             + '/' + this.deviceInfo!.getDeviceID())
-                        .withApiToken(true)
+                        .withBearerToken(true)
                         .withBody({request: request})
                         .build();
 

@@ -1,11 +1,9 @@
 import {CachedItemStore} from '../../key-value-store';
 import {Channel, ChannelDetailsRequest, FrameworkService, OrganizationSearchCriteria, FrameworkServiceImpl} from '..';
 import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
-import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
 import {FileService} from '../../util/file/def/file-service';
 import {of, throwError} from 'rxjs';
-import {Organization} from '../def/organization';
-import {ApiService, HttpRequestType, Request, HttpClient} from '../../api';
+import {ApiService} from '../../api';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';
 import {SystemSettingsService, SystemSettings} from '../../system-settings';
@@ -13,21 +11,11 @@ import {SdkConfig} from '../../sdk-config';
 import {FrameworkKeys} from '../../preference-keys';
 import {inject, injectable, Container} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
-import { instance, mock } from 'ts-mockito';
-import { NoActiveSessionError, HttpSerializer, ResponseCode } from '../..';
-import { Content } from '../../content';
-import { FrameworkServiceConfig } from '../config/framework-service-config';
+import { HttpSerializer } from '../..';
 
 jest.mock('../handler/get-channel-detail-handler');
 
 describe('FrameworkServiceImpl', () => {
-    const mockHttpClient = {
-        setSerializer(httpSerializer: HttpSerializer) {
-        },
-        addHeaders(headers: { [p: string]: string }) {
-        }
-      } as Partial<HttpClient>;
-
     let frameworkService: FrameworkService;
     const container = new Container();
     const mockSdkConfig: Partial<SdkConfig> = {
