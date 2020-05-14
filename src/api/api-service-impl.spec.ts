@@ -1,11 +1,35 @@
-import { ApiServiceImpl } from './api-service-impl';
-import { Container } from 'inversify';
-import { SdkConfig, DeviceInfo, SharedPreferences, EventsBusService, ErrorEventType } from '..';
-import { CsHttpService } from '@project-sunbird/client-services/core/http-service/interface';
-import { of, throwError } from 'rxjs';
-import {SunbirdSdk} from '../sdk';
-import { InjectionTokens } from '../injection-tokens';
-import { CsHttpServerError } from '@project-sunbird/client-services/core/http-service';
+import {ApiServiceImpl} from './api-service-impl';
+import {Container} from 'inversify';
+import {DeviceInfo, ErrorEventType, EventsBusService, SdkConfig, SharedPreferences} from '..';
+import {CsHttpService} from '@project-sunbird/client-services/core/http-service/interface';
+import {of, throwError} from 'rxjs';
+import {InjectionTokens} from '../injection-tokens';
+import {CsHttpServerError} from '@project-sunbird/client-services/core/http-service';
+import {CsModule} from '@project-sunbird/client-services';
+import {ApiTokenHandler} from './handlers/api-token-handler';
+import {ApiKeys} from '../preference-keys';
+
+jest.mock('@project-sunbird/client-services', () => {
+    return {
+        CsModule: {
+            instance: {
+                config: {
+                    core: {
+                        api: {
+                            authentication: {
+                                userToken: ''
+                            }
+                        }
+                    }
+                },
+                updateConfig: jest.fn().mockImplementation(() => {
+                })
+            }
+        }
+    };
+});
+
+jest.mock('./handlers/api-token-handler');
 
 describe('ApiServiceImpl', () => {
     let apiServiceImpl: ApiServiceImpl;
@@ -57,7 +81,7 @@ describe('ApiServiceImpl', () => {
                 requestInterceptors: [],
                 responseInterceptors: []
             } as any;
-            mockHttpService.fetch = jest.fn(() => of({}))as any;
+            mockHttpService.fetch = jest.fn(() => of({})) as any;
             // act
             apiServiceImpl.fetch(request).subscribe(() => {
                 done();
@@ -80,6 +104,60 @@ describe('ApiServiceImpl', () => {
             // act
             apiServiceImpl.fetch(request).toPromise().catch((e) => {
                 expect(e.message).toBe(ErrorEventType.HTTP_SERVER_ERROR);
+                done();
+            });
+        });
+    });
+
+    describe('onInit', () => {
+        it('should setup sharePreference listener to update CsModule bearer token when changed', (done) => {
+            // arrange
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('some_token'));
+            mockSharedPreferences.addListener = jest.fn().mockImplementation((_, listener) => {
+                listener('some_value');
+            });
+
+            // act
+            apiServiceImpl.onInit().subscribe(() => {
+                // assert
+                expect(CsModule.instance.updateConfig).toHaveBeenCalledWith(CsModule.instance.config);
+                done();
+            });
+        });
+
+        it('should setup sharePreference listener to update CsModule bearer token when removed', (done) => {
+            // arrange
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('some_token'));
+            mockSharedPreferences.addListener = jest.fn().mockImplementation((_, listener) => {
+                listener('');
+            });
+
+            // act
+            apiServiceImpl.onInit().subscribe(() => {
+                // assert
+                expect(CsModule.instance.updateConfig).toHaveBeenCalledWith(CsModule.instance.config);
+                done();
+            });
+        });
+
+        it('should fetch bearer token if not set', (done) => {
+            // arrange
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(''));
+            mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
+            mockSharedPreferences.addListener = jest.fn().mockImplementation((_, listener) => {
+                listener('');
+            });
+            (ApiTokenHandler as any).mockImplementation(() => {
+                return {
+                    refreshAuthToken: () => {
+                        return of('some_bearer_token');
+                    }
+                };
+            });
+            // act
+            apiServiceImpl.onInit().subscribe(() => {
+                // assert
+                expect(mockSharedPreferences.putString).toHaveBeenCalledWith(ApiKeys.KEY_API_TOKEN, 'some_bearer_token');
                 done();
             });
         });

@@ -5,8 +5,9 @@ import {mapTo} from 'rxjs/operators';
 
 @injectable()
 export class SharedPreferencesAndroid implements SharedPreferences {
-
     private static readonly sharedPreferncesName = 'org.ekstep.genieservices.preference_file';
+
+    private listeners: Map<string, ((v: any) => void)[]> = new Map();
 
     private sharedPreferences = plugins.SharedPreferences.getInstance(SharedPreferencesAndroid.sharedPreferncesName);
 
@@ -34,6 +35,7 @@ export class SharedPreferencesAndroid implements SharedPreferences {
     public putString(key: string, value: string): Observable<undefined> {
         return new Observable((observer) => {
             this.sharedPreferences.putString(key, value, () => {
+                (this.listeners.get(key) || []).forEach((listener) => listener(value));
                 observer.next(undefined);
                 observer.complete();
             }, (e) => {
@@ -45,6 +47,7 @@ export class SharedPreferencesAndroid implements SharedPreferences {
     public putBoolean(key: string, value: boolean): Observable<boolean> {
         return new Observable((observer) => {
             this.sharedPreferences.putBoolean(key, value, () => {
+                (this.listeners.get(key) || []).forEach((listener) => listener(value));
                 observer.next(true);
                 observer.complete();
             }, (e) => {
@@ -72,5 +75,16 @@ export class SharedPreferencesAndroid implements SharedPreferences {
                 });
             });
         }
+    }
+
+    addListener(key: string, listener: (value: any) => void) {
+        const keyListeners: ((v: any) => void)[] = this.listeners.get(key) || [];
+        keyListeners.push(listener);
+        this.listeners.set(key, keyListeners);
+    }
+
+    removeListener(key: string, listener: (value: any) => void) {
+        const keyListeners: ((v: any) => void)[] = this.listeners.get(key) || [];
+        this.listeners.set(key, keyListeners.filter((l) => l !== listener));
     }
 }

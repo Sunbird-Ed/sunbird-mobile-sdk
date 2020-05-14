@@ -76,6 +76,8 @@ import {CsModule} from '@project-sunbird/client-services';
 import {CsHttpService} from '@project-sunbird/client-services/core/http-service';
 import * as SHA1 from 'crypto-js/sha1';
 import {CsGroupService} from '@project-sunbird/client-services/services/group';
+import {ClassRoomService} from './class-room';
+import {ClassRoomServiceImpl} from './class-room/impl/class-room-service-impl';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -223,8 +225,13 @@ export class SunbirdSdk {
     get archiveService(): ArchiveService {
         return this._container.get<ArchiveService>(InjectionTokens.ARCHIVE_SERVICE);
     }
+
     get networkQueueService(): NetworkQueue {
         return this._container.get<NetworkQueue>(InjectionTokens.NETWORK_QUEUE);
+    }
+
+    get classRoomService(): ClassRoomService {
+        return this._container.get<ClassRoomService>(InjectionTokens.CLASS_ROOM_SERVICE);
     }
 
     public async init(sdkConfig: SdkConfig) {
@@ -337,6 +344,8 @@ export class SunbirdSdk {
 
         this._container.bind<NetworkQueue>(InjectionTokens.NETWORK_QUEUE).to(NetworkQueueImpl).inSingletonScope();
 
+        this._container.bind<ClassRoomService>(InjectionTokens.CLASS_ROOM_SERVICE).to(ClassRoomServiceImpl).inSingletonScope();
+
         await CsModule.instance.init({
             core: {
                 httpAdapter: 'HttpClientCordovaAdapter',
@@ -412,6 +421,7 @@ export class SunbirdSdk {
     private postInit() {
         return combineLatest([
             this.apiService.onInit(),
+            this.authService.onInit(),
             this.summarizerService.onInit(),
             this.errorLoggerService.onInit(),
             this.eventsBusService.onInit(),

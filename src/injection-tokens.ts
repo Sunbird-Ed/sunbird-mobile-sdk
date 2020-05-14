@@ -45,5 +45,6 @@ export const InjectionTokens = {
     CONTENT_RATING_SERVICE: Symbol.for('CONTENT_RATING_SERVICE'),
     ARCHIVE_SERVICE: Symbol.for('ARCHIVE_SERVICE'),
     NETWORK_QUEUE: Symbol.for('NETWORK_QUEUE'),
+    CLASS_ROOM_SERVICE: Symbol.for('CLASS_ROOM_SERVICE')
 };
 
