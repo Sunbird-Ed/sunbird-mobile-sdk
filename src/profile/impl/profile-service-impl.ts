@@ -81,12 +81,9 @@ import {UserFeed} from '../def/user-feed-response';
 import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
 import {UserMigrateResponse} from '../def/user-migrate-response';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
-import {AddManagedProfileRequest} from '../def/add-managed-profile-request';
-import {ArrayUtil} from '../../util/array-util';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
-    private static readonly MANAGED_PROFILE_IDS_KEY_PREFIX = 'managed_profile';
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
     private static readonly MERGE_SERVER_PROFILES_PATH = '/api/user/v1/account/merge';
 
@@ -642,7 +639,7 @@ export class ProfileServiceImpl implements ProfileService {
                 const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', 'zoom=no,hidden=yes');
 
                 inAppBrowserRef.addEventListener('loadstart', async (event) => {
-                    if ((<string> event.url).indexOf('/oauth2callback') > -1) {
+                    if ((<string>event.url).indexOf('/oauth2callback') > -1) {
                         inAppBrowserRef.close();
                     }
                 });
@@ -701,64 +698,5 @@ export class ProfileServiceImpl implements ProfileService {
                 duration: Math.floor((Date.now() - profileSession.createdTime) / 1000)
             }).toPromise();
         }
-    }
-
-    addManagedProfile(request: AddManagedProfileRequest): Observable<Profile> {
-        return defer(async () => {
-            const profile = await this.getActiveSessionProfile({requiredFields: []}).toPromise();
-
-            const createdProfile = await this.createProfile({
-                uid: '',
-                profileType: ProfileType.STUDENT,
-                source: ProfileSource.LOCAL,
-                ...request
-            }).toPromise();
-
-            const response = await this.keyValueStore
-                .getValue(ProfileServiceImpl.MANAGED_PROFILE_IDS_KEY_PREFIX + profile.uid)
-                .toPromise();
-
-            if (response) {
-                let uids: string[] = [];
-                try {
-                    uids = JSON.parse(response);
-                    uids.push(createdProfile.uid);
-                } catch (e) {
-                    console.error(e);
-                } finally {
-                    await this.keyValueStore
-                        .setValue(ProfileServiceImpl.MANAGED_PROFILE_IDS_KEY_PREFIX + profile.uid, JSON.stringify(uids))
-                        .toPromise();
-                }
-            }
-
-            return profile;
-        });
-    }
-
-    getManagedProfiles(): Observable<Profile[]> {
-        return defer(async () => {
-            const profile = await this.getActiveSessionProfile({requiredFields: []}).toPromise();
-            const response = await this.keyValueStore
-                .getValue(ProfileServiceImpl.MANAGED_PROFILE_IDS_KEY_PREFIX + profile.uid)
-                .toPromise();
-
-            let uids: string[] = [];
-            try {
-                if (response) {
-                    uids = JSON.parse(response);
-                }
-            } catch (e) {
-                console.error(e);
-            }
-
-            return this.dbService.read({
-                table: ProfileEntry.TABLE_NAME,
-                selection: `${ProfileEntry.COLUMN_NAME_UID} IN (?)`,
-                selectionArgs: [ArrayUtil.joinPreservingQuotes(uids)],
-            }).toPromise().then((rows) => {
-                return rows.map((row) => ProfileDbEntryMapper.mapProfileDBEntryToProfile(row));
-            });
-        });
     }
 }
