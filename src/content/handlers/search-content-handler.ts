@@ -58,15 +58,20 @@ export class SearchContentHandler {
         };
 
         let contentTypes;
+        let courseTypes;
         let impliedFilter;
         if (request.hasOwnProperty('filters')) {
             const filterMap: SearchFilter = request['filters'] as SearchFilter;
             if (filterMap.contentType) {
                 contentTypes = filterMap.contentType;
             }
+            if (filterMap.courseType) {
+                courseTypes = filterMap.courseType;
+            }
             impliedFilter = this.mapFilterValues(filterMap, contentSearchCriteria);
             contentSearchCriteria.impliedFilters = impliedFilter;
             contentSearchCriteria.contentTypes = contentTypes;
+            contentSearchCriteria.courseTypes = courseTypes;
         }
         let facets: string[];
         if (request.hasOwnProperty('facets')) {
@@ -103,7 +108,8 @@ export class SearchContentHandler {
     private getFilterRequest(criteria: ContentSearchCriteria): SearchFilter {
         let searchFilter: SearchFilter = {
             compatibilityLevel: this.getCompatibilityLevelFilter(),
-            contentType: (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : []
+            contentType: (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : [],
+            courseType: (criteria.courseTypes && criteria.courseTypes.length > 0) ? criteria.courseTypes : [],
         };
         this.addFiltersToRequest(searchFilter, criteria.facetFilters!);
         this.addFiltersToRequest(searchFilter, criteria.impliedFilters!);
@@ -143,6 +149,7 @@ export class SearchContentHandler {
             status: criteria.contentStatusArray,
             objectType: ['Content'],
             contentType: (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : [],
+            courseType: (criteria.courseTypes && criteria.courseTypes.length > 0) ? criteria.courseTypes : [],
             ...((criteria.keywords && criteria.keywords.length) ? {keywords: criteria.keywords} : {}),
             ...((criteria.dialCodes && criteria.dialCodes.length) ? {dialcodes: criteria.dialCodes} : {}),
             ...((criteria.createdBy && criteria.createdBy.length) ? {createdBy: criteria.createdBy} : {}),

@@ -1,5 +1,4 @@
-import {ContentSortCriteria, SortOrder} from './requests';
-import {ContentData} from './content';
+import {SortOrder} from './requests';
 
 export interface SearchRequest {
     filters: SearchFilter;
@@ -19,6 +18,7 @@ export interface SearchFilter {
     status?: string[];
     objectType?: string[];
     contentType?: string[];
+    courseType?: string[];
     keywords?: string[];
     dialcodes?: string[];
     createdBy?: string[];

@@ -139,6 +139,7 @@ export interface ContentSearchCriteria {
     contentStatusArray?: string[];
     facets?: string[];
     contentTypes?: string[];
+    courseTypes?: string[];
     keywords?: string[];
     dialCodes?: string[];
     language?: string[];
