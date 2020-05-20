@@ -1,5 +1,5 @@
 export interface AddManagedProfileRequest {
-    handle: string;
+    name: string;
     board?: string[];
     medium?: string[];
     grade?: string[];

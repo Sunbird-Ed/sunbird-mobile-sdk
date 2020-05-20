@@ -82,15 +82,15 @@ import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
 import {UserMigrateResponse} from '../def/user-migrate-response';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
 import {AddManagedProfileRequest} from '../def/add-managed-profile-request';
-import {ArrayUtil} from '../../util/array-util';
+import {ManagedProfileManager} from '../handler/managed-profile-manager';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
-    private static readonly MANAGED_PROFILE_IDS_KEY_PREFIX = 'managed_profile';
     private static readonly KEY_USER_SESSION = ProfileKeys.KEY_USER_SESSION;
     private static readonly MERGE_SERVER_PROFILES_PATH = '/api/user/v1/account/merge';
 
     private readonly apiConfig: ApiConfig;
+    private managedProfileManager: ManagedProfileManager;
 
     constructor(@inject(InjectionTokens.CONTAINER) private container: Container,
                 @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -104,6 +104,13 @@ export class ProfileServiceImpl implements ProfileService {
                 @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
                 @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService) {
         this.apiConfig = this.sdkConfig.apiConfig;
+        this.managedProfileManager = new ManagedProfileManager(
+            this,
+            this.sdkConfig.profileServiceConfig,
+            this.keyValueStore,
+            this.dbService,
+            this.apiService
+        );
     }
 
     private get telemetryService(): TelemetryService {
@@ -704,61 +711,11 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     addManagedProfile(request: AddManagedProfileRequest): Observable<Profile> {
-        return defer(async () => {
-            const profile = await this.getActiveSessionProfile({requiredFields: []}).toPromise();
-
-            const createdProfile = await this.createProfile({
-                uid: '',
-                profileType: ProfileType.STUDENT,
-                source: ProfileSource.LOCAL,
-                ...request
-            }).toPromise();
-
-            const response = await this.keyValueStore
-                .getValue(ProfileServiceImpl.MANAGED_PROFILE_IDS_KEY_PREFIX + profile.uid)
-                .toPromise();
-
-            if (response) {
-                let uids: string[] = [];
-                try {
-                    uids = JSON.parse(response);
-                    uids.push(createdProfile.uid);
-                } catch (e) {
-                    console.error(e);
-                } finally {
-                    await this.keyValueStore
-                        .setValue(ProfileServiceImpl.MANAGED_PROFILE_IDS_KEY_PREFIX + profile.uid, JSON.stringify(uids))
-                        .toPromise();
-                }
-            }
-
-            return profile;
-        });
+        return this.managedProfileManager.addManagedProfile(request);
     }
 
     getManagedProfiles(): Observable<Profile[]> {
-        return defer(async () => {
-            const profile = await this.getActiveSessionProfile({requiredFields: []}).toPromise();
-            const response = await this.keyValueStore
-                .getValue(ProfileServiceImpl.MANAGED_PROFILE_IDS_KEY_PREFIX + profile.uid)
-                .toPromise();
-
-            let uids: string[] = [];
-            try {
-                if (response) {
-                    uids = JSON.parse(response);
-                }
-            } catch (e) {
-                console.error(e);
-            }
-
-            return this.dbService.read({
-                table: ProfileEntry.TABLE_NAME,
-                selection: `${ProfileEntry.COLUMN_NAME_UID} IN (?)`,
-                selectionArgs: [ArrayUtil.joinPreservingQuotes(uids)],
-            }).toPromise().then((rows) => {
-                return rows.map((row) => ProfileDbEntryMapper.mapProfileDBEntryToProfile(row));
-            });
-        });
+        return this.managedProfileManager.getManagedProfiles();
     }
 }
+
