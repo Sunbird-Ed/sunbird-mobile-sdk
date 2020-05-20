@@ -51,6 +51,7 @@ export class ManagedProfileManager {
                     board: request.board,
                     medium: request.medium,
                     grade: request.grade,
+                    serverProfile: {} as any
                 }, ProfileSource.SERVER).toPromise();
 
                 const response = await this.keyValueStore
