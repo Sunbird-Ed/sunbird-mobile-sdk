@@ -78,4 +78,6 @@ export interface ProfileService extends SdkServicePreInitDelegate {
     addManagedProfile(request: AddManagedProfileRequest): Observable<Profile>;
 
     getManagedProfiles(): Observable<Profile[]>;
+
+    switchSessionToManagedProfile(request: { uid: string }): Observable<undefined>;
 }

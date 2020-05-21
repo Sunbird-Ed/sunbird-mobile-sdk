@@ -74,7 +74,7 @@ import {TransportProfiles} from '../handler/import/transport-profiles';
 import {SdkConfig} from '../../sdk-config';
 import {Container, inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
-import {AuthService} from '../../auth';
+import {AuthService, OAuthSession, SessionProvider} from '../../auth';
 import {defer, from, iif, Observable, of, throwError, zip} from 'rxjs';
 import {catchError, finalize, map, mapTo, mergeMap, tap} from 'rxjs/operators';
 import {UserFeed} from '../def/user-feed-response';
@@ -716,6 +716,26 @@ export class ProfileServiceImpl implements ProfileService {
 
     getManagedProfiles(): Observable<Profile[]> {
         return this.managedProfileManager.getManagedProfiles();
+    }
+
+    switchSessionToManagedProfile(request: { uid: string }): Observable<undefined> {
+        return zip(
+            this.setActiveSessionForProfile(request.uid),
+            this.authService.getSession().pipe(
+                mergeMap((session) => {
+                    return this.authService.setSession(new class implements SessionProvider {
+                        async provide(): Promise<OAuthSession> {
+                            return {
+                                ...session!,
+                                userToken: request.uid
+                            };
+                        }
+                    });
+                })
+            )
+        ).pipe(
+            mapTo(undefined)
+        );
     }
 }
 
