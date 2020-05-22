@@ -24,7 +24,9 @@ describe('PageAssemblerFactory', () => {
     const mockSharedPreferences: Partial<SharedPreferences> = {
         getString: jest.fn(() => of(''))
     };
-    const mockFrameworkService: Partial<FrameworkService> = {};
+    const mockFrameworkService: Partial<FrameworkService> = {
+        getDefaultChannelId: jest.fn(() => of(''))
+    };
     const mockAuthService: Partial<AuthService> = {};
     const mockSystemSettingsService: Partial<SystemSettingsService> = {};
     const mockDbService: Partial<DbService> = {};
@@ -141,6 +143,77 @@ describe('PageAssemblerFactory', () => {
                                 })
                             );
 
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('when requesting CoursePage', () => {
+            const request: PageAssembleCriteria = {
+                name: PageName.COURSE,
+                source: 'app',
+                from: CachedItemRequestSourceFrom.SERVER
+            };
+
+            beforeAll(() => {
+                mockCachedItemStore.getCached = jest.fn().mockImplementation(() => {
+                });
+                (mockCachedItemStore.getCached as jest.Mock).mockReturnValue(of({
+                    name: 'SAMPLE_NAME',
+                    id: 'SAMPLE_ID',
+                    sections: []
+                }));
+                mockApiService.fetch = jest.fn().mockImplementation(() => {
+                });
+                (mockApiService.fetch as jest.Mock).mockReturnValue(of({
+                    body: {
+                        result: {
+                            response: 'SAMPLE_RESPONSE'
+                        }
+                    }
+                }));
+                mockSharedPreferences.putString = jest.fn().mockImplementation(() => {
+                });
+                (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(''));
+                mockKeyValueStore.setValue = jest.fn().mockImplementation(() => {
+                });
+                (mockKeyValueStore.setValue as jest.Mock).mockReturnValue(of(true));
+            });
+
+            describe('when overriddenPageAssembleChannel set', () => {
+                beforeAll(() => {
+                    mockSharedPreferences.getString = jest.fn().mockReturnValue(of('SOME_OVERRIDDEN_CHANNEL_ID'));
+                });
+
+                describe('when not ssoUser', () => {
+                    beforeAll(() => {
+                        mockAuthService.getSession = jest.fn().mockReturnValue(of({}));
+                        mockProfileService.isDefaultChannelProfile = jest.fn().mockReturnValue(of(true));
+                    });
+
+                    it('should request with pageName from systemSettings', (done) => {
+                        // arrange
+                        mockSystemSettingsService.getSystemSettings = jest.fn().mockReturnValue(of({
+                            value: JSON.stringify([
+                                {channelId: 'SOME_OVERRIDDEN_CHANNEL_ID', page: PageName.ANONYMOUS_COURSE}
+                            ])
+                        }));
+
+                        // act
+                        pageAssemblerHandler.handle(request).toPromise().then(() => {
+                            // assert
+                            expect(mockApiService.fetch).toHaveBeenCalledWith(
+                                expect.objectContaining({
+                                    _body: expect.objectContaining({
+                                        request: expect.objectContaining({
+                                            organisationId: 'SOME_OVERRIDDEN_CHANNEL_ID',
+                                            name: PageName.ANONYMOUS_COURSE
+                                        })
+                                    })
+                                })
+                            );
                             done();
                         });
                     });
