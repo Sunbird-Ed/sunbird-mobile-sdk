@@ -40,7 +40,7 @@
     "sb-cordova-plugin-customtabs": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-customtabs.git",
     "sb-cordova-plugin-db": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-db.git",
     "jjdltc-cordova-plugin-zip": "git+https://github.com/swayangjit/jjdltc-cordova-plugin-zip.git",
-    "cordova-plugin-android-downloadmanager": "^0.5.0",
+    "cordova-plugin-android-downloadmanager": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-downloadmanager.git",
     "sb-cordova-plugin-utility": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-utility.git"
   },
   "devDependencies": {
@@ -48,7 +48,7 @@
     "@types/node-fetch": "^2.5.4",
     "@types/pako": "^1.0.1",
     "@types/websql": "0.0.27",
-    "cordova-plugin-android-downloadmanager": "^0.5.0",
+    "cordova-plugin-android-downloadmanager": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-downloadmanager.git",
     "jest": "^25.1.0",
     "rxjs": "^6.5.3",
     "ts-jest": "^25.2.0",
