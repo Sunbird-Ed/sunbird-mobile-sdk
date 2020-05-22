@@ -21,7 +21,7 @@ export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
     private static async generateDownloadSpeedTelemetry(intervalTime: number): Promise<void> {
         const downloadSpeedLog: DownloadSpeedLog = await new Promise<any>((resolve, reject) => {
             if (downloadManager.fetchSpeedLog) {
-                downloadManager.fetchSpeedLog(resolve, reject);
+                downloadManager.fetchSpeedLog((_, r) => resolve(r), reject);
             } else {
                 cordova['exec'](resolve, reject, 'DownloadManagerPlugin', 'fetchSpeedLog', []);
             }
