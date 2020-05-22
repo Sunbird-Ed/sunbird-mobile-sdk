@@ -26,6 +26,7 @@ import {UserFeed} from './user-feed-response';
 import {UserMigrateResponse} from './user-migrate-response';
 import {UserMigrateRequest} from './user-migrate-request';
 import {AddManagedProfileRequest} from './add-managed-profile-request';
+import {GetManagedServerProfilesRequest} from './get-managed-server-profiles-request';
 
 
 export interface ProfileService extends SdkServicePreInitDelegate {
@@ -77,7 +78,7 @@ export interface ProfileService extends SdkServicePreInitDelegate {
 
     addManagedProfile(request: AddManagedProfileRequest): Observable<Profile>;
 
-    getManagedProfiles(): Observable<Profile[]>;
+    getManagedServerProfiles(request: GetManagedServerProfilesRequest): Observable<ServerProfile[]>;
 
     switchSessionToManagedProfile(request: { uid: string }): Observable<undefined>;
 }

@@ -83,6 +83,7 @@ import {UserMigrateResponse} from '../def/user-migrate-response';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
 import {AddManagedProfileRequest} from '../def/add-managed-profile-request';
 import {ManagedProfileManager} from '../handler/managed-profile-manager';
+import {GetManagedServerProfilesRequest} from '../def/get-managed-server-profiles-request';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -106,10 +107,10 @@ export class ProfileServiceImpl implements ProfileService {
         this.apiConfig = this.sdkConfig.apiConfig;
         this.managedProfileManager = new ManagedProfileManager(
             this,
+            this.authService,
             this.sdkConfig.profileServiceConfig,
-            this.keyValueStore,
-            this.dbService,
-            this.apiService
+            this.apiService,
+            this.cachedItemStore,
         );
     }
 
@@ -714,8 +715,8 @@ export class ProfileServiceImpl implements ProfileService {
         return this.managedProfileManager.addManagedProfile(request);
     }
 
-    getManagedProfiles(): Observable<Profile[]> {
-        return this.managedProfileManager.getManagedProfiles();
+    getManagedServerProfiles(request: GetManagedServerProfilesRequest): Observable<ServerProfile[]> {
+        return this.managedProfileManager.getManagedServerProfiles(request);
     }
 
     switchSessionToManagedProfile(request: { uid: string }): Observable<undefined> {
