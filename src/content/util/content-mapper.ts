@@ -39,6 +39,7 @@ export class ContentMapper {
         }
         return {
             identifier: contentData.identifier,
+            name: contentData.name,
             contentData: contentData,
             isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
             mimeType: contentData.mimeType,
@@ -126,6 +127,7 @@ export class ContentMapper {
         const basePath = contentEntry[ContentEntry.COLUMN_NAME_PATH]! || '';
         return {
             identifier: identifier,
+            name: contentData.name,
             contentData: contentData,
             isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
             mimeType: mimeType,
