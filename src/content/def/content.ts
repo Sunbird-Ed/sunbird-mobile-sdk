@@ -7,6 +7,7 @@ import {ContentMarker} from './response';
 
 export interface Content {
     identifier: string;
+    name: string;
     contentData: ContentData;
     mimeType: string;
     basePath: string;

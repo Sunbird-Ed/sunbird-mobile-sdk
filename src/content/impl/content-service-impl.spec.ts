@@ -599,32 +599,6 @@ describe('ContentServiceImpl', () => {
         });
     });
 
-    it('should set marker in content', (done) => {
-        // arrange
-        const markerType: MarkerType = MarkerType.BOOKMARKED;
-        const request: ContentMarkerRequest = {
-            contentId: 'SAMPLE_CONTENT_ID',
-            uid: 'SAMPLE_UID',
-            data: 'SAMPLE_DATA',
-            extraInfo: { 'key': 'SAMPLE_KEY' },
-            marker: markerType,
-            isMarked: false
-        };
-        mockDbService.execute = jest.fn().mockImplementation(() => of([]));
-        mockDbService.insert = jest.fn().mockImplementation(() => of([]));
-        mockDbService.update = jest.fn().mockImplementation(() => of([]));
-        JSON.parse = jest.fn().mockImplementation().mockImplementationOnce(() => {
-            return request.data;
-        });
-        // act
-        contentService.setContentMarker(request).subscribe(() => {
-            // assert
-            expect(mockDbService.insert).toHaveBeenCalled();
-            expect(mockDbService.execute).toHaveBeenCalled();
-            done();
-        });
-    });
-
     it('should clear content from delete queue', (done) => {
         // arrange
         const contentDeleteRequestSet: Partial<SharedPreferencesSetCollection<ContentDelete>> = {
@@ -1295,4 +1269,102 @@ describe('ContentServiceImpl', () => {
             });
         });
     });
+
+    describe('setContentMarker', () => {
+        it('should set marker in content', (done) => {
+            // arrange
+            const markerType: MarkerType = MarkerType.BOOKMARKED;
+            const request: ContentMarkerRequest = {
+                contentId: 'SAMPLE_CONTENT_ID',
+                uid: 'SAMPLE_UID',
+                data: 'SAMPLE_DATA',
+                extraInfo: { 'key': 'SAMPLE_KEY' },
+                marker: markerType,
+                isMarked: false
+            };
+            mockDbService.execute = jest.fn().mockImplementation(() => of([]));
+            mockDbService.insert = jest.fn(() => of(1));
+            JSON.parse = jest.fn().mockImplementation().mockImplementationOnce(() => {
+                return request.data;
+            });
+            // act
+            contentService.setContentMarker(request).subscribe(() => {
+                // assert
+                expect(mockDbService.insert).toHaveBeenCalled();
+                expect(mockDbService.execute).toHaveBeenCalled();
+                done();
+            });
+        });
+        it('should update db if content marker is not empty', (done) => {
+            // arrange
+            const markerType: MarkerType = MarkerType.BOOKMARKED;
+            const request: ContentMarkerRequest = {
+                contentId: 'SAMPLE_CONTENT_ID',
+                uid: 'SAMPLE_UID',
+                data: 'SAMPLE_DATA',
+                extraInfo: { 'key': 'SAMPLE_KEY' },
+                marker: markerType,
+                isMarked: true
+            };
+            const contents: ContentEntry.SchemaMap[] = [
+                {
+                    [ContentEntry.COLUMN_NAME_IDENTIFIER]: 'SOME_IDENTIFIER',
+                    [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+                    [ContentEntry.COLUMN_NAME_LOCAL_DATA]: JSON.stringify({ name: 'SOME_NAME', pkgVersion: 'SOME_VERSION' }),
+                    [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
+                    [ContentEntry.COLUMN_NAME_VISIBILITY]: '',
+                    [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
+                    [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                }
+            ];
+            mockDbService.execute = jest.fn(() => of(contents));
+            mockDbService.update = jest.fn(() => of(1));
+            JSON.parse = jest.fn().mockImplementation().mockImplementationOnce(() => {
+                return request.data;
+            });
+            // act
+            contentService.setContentMarker(request).subscribe(() => {
+                // assert
+                expect(mockDbService.execute).toHaveBeenCalled();
+                expect(mockDbService.update).toHaveBeenCalled();
+                done();
+            });
+        });
+        it('should delete db if content marker is not empty and isMarked is false', (done) => {
+            // arrange
+            const markerType: MarkerType = MarkerType.BOOKMARKED;
+            const request: ContentMarkerRequest = {
+                contentId: 'SAMPLE_CONTENT_ID',
+                uid: 'SAMPLE_UID',
+                data: 'SAMPLE_DATA',
+                extraInfo: { 'key': 'SAMPLE_KEY' },
+                marker: markerType,
+                isMarked: false
+            };
+            const contents: ContentEntry.SchemaMap[] = [
+                {
+                    [ContentEntry.COLUMN_NAME_IDENTIFIER]: 'SOME_IDENTIFIER',
+                    [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
+                    [ContentEntry.COLUMN_NAME_LOCAL_DATA]: JSON.stringify({ name: 'SOME_NAME', pkgVersion: 'SOME_VERSION' }),
+                    [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
+                    [ContentEntry.COLUMN_NAME_VISIBILITY]: '',
+                    [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
+                    [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                }
+            ];
+            mockDbService.execute = jest.fn().mockImplementation(() => of(contents));
+            mockDbService.delete = jest.fn(() => of(undefined));
+            JSON.parse = jest.fn().mockImplementation().mockImplementationOnce(() => {
+                return request.data;
+            });
+            // act
+            contentService.setContentMarker(request).subscribe(() => {
+                // assert
+                expect(mockDbService.execute).toHaveBeenCalled();
+                expect(mockDbService.delete).toHaveBeenCalled();
+                done();
+            });
+        });
+    });
+
 });
