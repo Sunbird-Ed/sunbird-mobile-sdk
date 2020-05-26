@@ -65,6 +65,7 @@ export class ManagedProfileManager {
                                 'filters': {
                                     'managedBy': managedByUid
                                 },
+                                'sort_by': {'createdDate': 'desc'},
                                 'offset': 0,
                                 'limit': 20
                             }
