@@ -264,9 +264,9 @@ describe('SearchAndGroupContentHandler', () => {
                     grade: request.searchCriteria.grade
                 }));
                 expect(mockCachedItemStore.getCached).toHaveBeenCalledWith(
-                    '68ee92df21f48a672572ab5145947ceb369bbafc',
+                    '368568fa77e1fddcc4f484d200929b55ec4feaac',
                     'search_content_grouped',
-                    expect.anything(),
+                    'ttl_search_content_grouped',
                     expect.anything(),
                     undefined,
                     undefined,
