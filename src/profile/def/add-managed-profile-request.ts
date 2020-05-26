@@ -1,7 +1,7 @@
 export interface AddManagedProfileRequest {
-    name: string;
-    board?: string[];
-    medium?: string[];
-    grade?: string[];
-    subject?: string[];
+    firstName: string;
+    lastName?: string;
+    managedBy: string;
+    framework?: any;
+    locationIds?: string[];
 }

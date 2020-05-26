@@ -1,9 +1,7 @@
 import {AddManagedProfileRequest} from '../def/add-managed-profile-request';
 import {defer, Observable} from 'rxjs';
 import {NoActiveSessionError, Profile, ProfileService, ProfileServiceConfig, ProfileSource, ProfileType, ServerProfile} from '..';
-import {CsRequest} from '@project-sunbird/client-services/core/http-service';
-import {ApiService, HttpRequestType} from '../../api';
-import {UniqueId} from '../../db/util/unique-id';
+import {ApiService, HttpRequestType, Request} from '../../api';
 import {AuthService} from '../../auth';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {GetManagedServerProfilesRequest} from '../def/get-managed-server-profiles-request';
@@ -34,10 +32,10 @@ export class ManagedProfileManager {
                 uid: uid,
                 profileType: ProfileType.STUDENT,
                 source: ProfileSource.SERVER,
-                handle: request.name,
-                board: request.board,
-                medium: request.medium,
-                grade: request.grade,
+                handle: request.firstName,
+                board: (request.framework && request.framework['board']) || [],
+                medium: (request.framework && request.framework['medium']) || [],
+                grade: (request.framework && request.framework['gradeLevel']) || [],
                 serverProfile: {} as any
             }, ProfileSource.SERVER).toPromise();
         });
@@ -51,12 +49,14 @@ export class ManagedProfileManager {
 
             const profile = await this.profileService.getActiveSessionProfile({requiredFields: []}).toPromise();
 
-            const managedByUid: string = (profile.serverProfile && profile.serverProfile['managedBy']) ? profile.serverProfile['managedBy'] : profile.uid;
+            const managedByUid: string = (profile.serverProfile && profile.serverProfile['managedBy']) ?
+                profile.serverProfile['managedBy'] :
+                profile.uid;
 
             const fetchFromServer = () => {
                 return defer(async () => {
-                    const searchManagedProfilesRequest = new CsRequest.Builder()
-                        .withType(HttpRequestType.GET)
+                    const searchManagedProfilesRequest = new Request.Builder()
+                        .withType(HttpRequestType.POST)
                         .withPath(this.profileServiceConfig.profileApiPath + '/search')
                         .withBearerToken(true)
                         .withUserToken(true)
@@ -71,7 +71,8 @@ export class ManagedProfileManager {
                         })
                         .build();
 
-                    return await this.apiService.fetch<{ result: { response: { content: ServerProfile[] } } }>(searchManagedProfilesRequest).toPromise()
+                    return await this.apiService.fetch<{ result: { response: { content: ServerProfile[] } } }>(searchManagedProfilesRequest)
+                        .toPromise()
                         .then((response) => response.body.result.response.content);
                 });
             };
@@ -92,17 +93,13 @@ export class ManagedProfileManager {
             throw new NoActiveSessionError('No active session available');
         }
 
-        const createManagedProfileRequest = new CsRequest.Builder()
+        const createManagedProfileRequest = new Request.Builder()
             .withType(HttpRequestType.POST)
-            .withPath(this.profileServiceConfig.profileApiPath + '/create')
+            .withPath(this.profileServiceConfig.profileApiPath_V4 + '/create')
             .withBearerToken(true)
             .withUserToken(true)
             .withBody({
-                request: {
-                    userName: UniqueId.generateUniqueId(), // todo userName should not be required
-                    firstName: addManagedProfileRequest.name,
-                    managedBy: currentProfile.uid
-                }
+                request: addManagedProfileRequest
             })
             .build();
 
