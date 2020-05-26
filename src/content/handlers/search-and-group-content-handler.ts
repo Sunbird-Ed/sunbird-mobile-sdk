@@ -26,6 +26,7 @@ export class SearchAndGroupContentHandler {
     private static getIdForDb(request: ContentSearchCriteria): string {
         const key = {
             framework: request.framework || '',
+            contentType: request.contentTypes || '',
             board: request.board || '',
             medium: request.medium || '',
             grade: request.grade || '',
@@ -36,10 +37,11 @@ export class SearchAndGroupContentHandler {
     handle(request: SearchAndGroupContentRequest): Observable<ContentsGroupedByPageSection> {
         return defer(async () => {
             const localTextBooksContentDataList = await this.fetchOfflineContent(request.searchCriteria);
-            const searchContentDataList = ((await this.fetchOnlineContent(request.searchCriteria)).contentDataList as ContentData[] || []).filter((contentData) => {
-                return !localTextBooksContentDataList.find(
-                    (localContentData) => localContentData.identifier === contentData.identifier);
-            });
+            const searchContentDataList = ((await this.fetchOnlineContent(request.searchCriteria)).contentDataList as ContentData[] || [])
+                .filter((contentData) => {
+                    return !localTextBooksContentDataList.find(
+                        (localContentData) => localContentData.identifier === contentData.identifier);
+                });
 
             const combinedContents: ContentData[] = localTextBooksContentDataList.concat(searchContentDataList);
 
