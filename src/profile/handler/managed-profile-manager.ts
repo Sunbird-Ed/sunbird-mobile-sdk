@@ -1,11 +1,20 @@
 import {AddManagedProfileRequest} from '../def/add-managed-profile-request';
-import {defer, Observable, Subject} from 'rxjs';
-import {NoActiveSessionError, Profile, ProfileService, ProfileServiceConfig, ProfileSource, ProfileType, ServerProfile} from '..';
+import {defer, Observable, Subject, throwError} from 'rxjs';
+import {
+    NoActiveSessionError,
+    NoProfileFoundError,
+    Profile,
+    ProfileService,
+    ProfileServiceConfig,
+    ProfileSource,
+    ProfileType,
+    ServerProfile
+} from '..';
 import {ApiService, HttpRequestType, Request} from '../../api';
-import {AuthService} from '../../auth';
+import {AuthService, OAuthSession, SessionProvider} from '../../auth';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {GetManagedServerProfilesRequest} from '../def/get-managed-server-profiles-request';
-import {mergeMap, startWith} from 'rxjs/operators';
+import {catchError, mapTo, mergeMap, startWith} from 'rxjs/operators';
 
 export class ManagedProfileManager {
     private static readonly MANGED_SERVER_PROFILES_LOCAL_KEY = 'managed_server_profiles-';
@@ -95,6 +104,50 @@ export class ManagedProfileManager {
                     ).toPromise();
                 });
             })
+        );
+    }
+
+    switchSessionToManagedProfile(request: { uid: string }): Observable<undefined> {
+        return this.profileService.setActiveSessionForProfile(request.uid).pipe(
+            catchError((e) => {
+                if (e instanceof NoProfileFoundError) {
+                    this.profileService.getServerProfilesDetails({
+                        userId: request.uid, requiredFields: []
+                    }).pipe(
+                        mergeMap((serverProfile: ServerProfile) => {
+                            this.profileService.createProfile({
+                                uid: request.uid,
+                                profileType: ProfileType.STUDENT,
+                                source: ProfileSource.SERVER,
+                                handle: serverProfile.firstName,
+                                board: (serverProfile['framework'] && serverProfile['framework']['board']) || [],
+                                medium: (serverProfile['framework'] && serverProfile['framework']['medium']) || [],
+                                grade: (serverProfile['framework'] && serverProfile['framework']['gradeLevel']) || [],
+                                serverProfile: {} as any
+                            }, ProfileSource.SERVER);
+
+                            return this.profileService.setActiveSessionForProfile(request.uid);
+                        })
+                    );
+                }
+
+                return throwError(e);
+            }),
+            mergeMap(() => {
+                return this.authService.getSession().pipe(
+                    mergeMap((session) => {
+                        return this.authService.setSession(new class implements SessionProvider {
+                            async provide(): Promise<OAuthSession> {
+                                return {
+                                    ...session!,
+                                    userToken: request.uid
+                                };
+                            }
+                        });
+                    })
+                );
+            }),
+            mapTo(undefined)
         );
     }
 
