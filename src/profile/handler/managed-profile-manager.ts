@@ -1,13 +1,15 @@
 import {AddManagedProfileRequest} from '../def/add-managed-profile-request';
-import {defer, Observable} from 'rxjs';
+import {defer, Observable, Subject} from 'rxjs';
 import {NoActiveSessionError, Profile, ProfileService, ProfileServiceConfig, ProfileSource, ProfileType, ServerProfile} from '..';
 import {ApiService, HttpRequestType, Request} from '../../api';
 import {AuthService} from '../../auth';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {GetManagedServerProfilesRequest} from '../def/get-managed-server-profiles-request';
+import {mergeMap, startWith} from 'rxjs/operators';
 
 export class ManagedProfileManager {
     private static readonly MANGED_SERVER_PROFILES_LOCAL_KEY = 'managed_server_profiles-';
+    private managedProfileAdded$ = new Subject<undefined>();
 
     constructor(
         private profileService: ProfileService,
@@ -28,6 +30,8 @@ export class ManagedProfileManager {
 
             await this.updateTnCForManagedProfile(uid);
 
+            this.managedProfileAdded$.next(undefined);
+
             return await this.profileService.createProfile({
                 uid: uid,
                 profileType: ProfileType.STUDENT,
@@ -42,49 +46,56 @@ export class ManagedProfileManager {
     }
 
     getManagedServerProfiles(request: GetManagedServerProfilesRequest): Observable<ServerProfile[]> {
-        return defer(async () => {
-            if (!(await this.isLoggedInUser())) {
-                throw new NoActiveSessionError('No active LoggedIn Session found');
-            }
-
-            const profile = await this.profileService.getActiveSessionProfile({requiredFields: []}).toPromise();
-
-            const managedByUid: string = (profile.serverProfile && profile.serverProfile['managedBy']) ?
-                profile.serverProfile['managedBy'] :
-                profile.uid;
-
-            const fetchFromServer = () => {
+        return this.managedProfileAdded$.pipe(
+            startWith(undefined),
+            mergeMap(() => {
                 return defer(async () => {
-                    const searchManagedProfilesRequest = new Request.Builder()
-                        .withType(HttpRequestType.POST)
-                        .withPath(this.profileServiceConfig.profileApiPath + '/search')
-                        .withBearerToken(true)
-                        .withUserToken(true)
-                        .withBody({
-                            'request': {
-                                'filters': {
-                                    'managedBy': managedByUid
-                                },
-                                'sort_by': {'createdDate': 'desc'},
-                                'offset': 0,
-                                'limit': 20
-                            }
-                        })
-                        .build();
+                    if (!(await this.isLoggedInUser())) {
+                        throw new NoActiveSessionError('No active LoggedIn Session found');
+                    }
 
-                    return await this.apiService.fetch<{ result: { response: { content: ServerProfile[] } } }>(searchManagedProfilesRequest)
-                        .toPromise()
-                        .then((response) => response.body.result.response.content);
+                    const profile = await this.profileService.getActiveSessionProfile({requiredFields: []})
+                        .toPromise();
+
+                    const managedByUid: string = (profile.serverProfile && profile.serverProfile['managedBy']) ?
+                        profile.serverProfile['managedBy'] :
+                        profile.uid;
+
+                    const fetchFromServer = () => {
+                        return defer(async () => {
+                            const searchManagedProfilesRequest = new Request.Builder()
+                                .withType(HttpRequestType.POST)
+                                .withPath(this.profileServiceConfig.profileApiPath + '/search')
+                                .withBearerToken(true)
+                                .withUserToken(true)
+                                .withBody({
+                                    'request': {
+                                        'filters': {
+                                            'managedBy': managedByUid
+                                        },
+                                        'sort_by': {'createdDate': 'desc'},
+                                        'offset': 0,
+                                        'limit': 20
+                                    }
+                                })
+                                .build();
+
+                            return await this.apiService
+                                .fetch<{ result: { response: { content: ServerProfile[] } } }>(searchManagedProfilesRequest)
+                                .toPromise()
+                                .then((response) => response.body.result.response.content);
+                        });
+                    };
+
+                    return this.cachedItemStore[request.from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
+                        managedByUid,
+                        ManagedProfileManager.MANGED_SERVER_PROFILES_LOCAL_KEY,
+                        'ttl_' + ManagedProfileManager.MANGED_SERVER_PROFILES_LOCAL_KEY,
+                        () => fetchFromServer(),
+                    ).toPromise();
                 });
-            };
-
-            return this.cachedItemStore[request.from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
-                managedByUid,
-                ManagedProfileManager.MANGED_SERVER_PROFILES_LOCAL_KEY,
-                'ttl_' + ManagedProfileManager.MANGED_SERVER_PROFILES_LOCAL_KEY,
-                () => fetchFromServer(),
-            ).toPromise();
-        });
+            })
+        );
     }
 
     private async createManagedProfile(addManagedProfileRequest: AddManagedProfileRequest): Promise<{ uid: string }> {
