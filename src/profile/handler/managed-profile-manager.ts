@@ -70,29 +70,40 @@ export class ManagedProfileManager {
                         profile.serverProfile['managedBy'] :
                         profile.uid;
 
+                    const managedByProfile: ServerProfile = (profile.serverProfile && !profile.serverProfile['managedBy']) ?
+                        profile.serverProfile :
+                        (
+                            await this.profileService.getServerProfilesDetails(
+                                {
+                                    userId: profile.serverProfile!['managedBy'],
+                                    requiredFields: request.requiredFields
+                                }
+                            ).toPromise()
+                        );
+
                     const fetchFromServer = () => {
                         return defer(async () => {
                             const searchManagedProfilesRequest = new Request.Builder()
                                 .withType(HttpRequestType.POST)
                                 .withPath(this.profileServiceConfig.profileApiPath + '/search')
+                                .withParameters({'fields': request.requiredFields.join(',')})
                                 .withBearerToken(true)
                                 .withUserToken(true)
                                 .withBody({
-                                    'request': {
-                                        'filters': {
-                                            'managedBy': managedByUid
+                                    request: {
+                                        filters: {
+                                            managedBy: managedByUid
                                         },
-                                        'sort_by': {'createdDate': 'desc'},
-                                        'offset': 0,
-                                        'limit': 20
+                                        sort_by: {createdDate: 'desc'}
                                     }
                                 })
                                 .build();
-
                             return await this.apiService
                                 .fetch<{ result: { response: { content: ServerProfile[] } } }>(searchManagedProfilesRequest)
                                 .toPromise()
-                                .then((response) => response.body.result.response.content);
+                                .then((response) => {
+                                    return [managedByProfile, ...response.body.result.response.content];
+                                });
                         });
                     };
 
