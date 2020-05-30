@@ -184,12 +184,12 @@ export class ManagedProfileManager {
                 duration: Math.floor((Date.now() - profileSession.managedSession.createdTime) / 1000),
                 correlationData: [
                     {
-                        id: 'initiator-id',
-                        type: profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid
+                        type: 'initiator-id',
+                        id: profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid
                     },
                     {
-                        id: 'managed-user-id',
-                        type: profileSession.managedSession.uid
+                        type: 'managed-user-id',
+                        id: profileSession.managedSession.uid
                     },
                 ]
             }).toPromise();
@@ -236,12 +236,12 @@ export class ManagedProfileManager {
             mode: 'switch-user',
             correlationData: [
                 {
-                    id: 'initiator-id',
-                    type: profileSession.uid
+                    type: 'initiator-id',
+                    id: profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid
                 },
                 {
-                    id: 'managed-user-id',
-                    type: profileSession.managedSession.uid
+                    type: 'managed-user-id',
+                    id: profileSession.managedSession.uid
                 },
             ]
         }).toPromise();

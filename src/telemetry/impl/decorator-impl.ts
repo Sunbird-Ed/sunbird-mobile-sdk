@@ -12,9 +12,7 @@ import Telemetry = SunbirdTelemetry.Telemetry;
 
 @injectable()
 export class TelemetryDecoratorImpl implements TelemetryDecorator {
-
     private apiConfig: ApiConfig;
-    private profileSession: ProfileSession;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -33,7 +31,6 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         campaignParameters?: CorrelationData[]
     ): any {
         const {uid, sid} = profileSession;
-        this.profileSession = profileSession;
         event.ets += offset;
         if (!event.mid) {
             event.mid = UniqueId.generateUniqueId();
@@ -43,9 +40,14 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         } else {
             this.patchActor(event, '');
         }
-
         this.patchContext(event, sid, channelId, campaignParameters);
         // TODO Add tag patching logic
+        event.context.cdata = [
+            ...event.context.cdata, {
+                id: profileSession.managedSession ? profileSession.managedSession.uid : profileSession.sid,
+                type: 'sid'
+            }
+        ];
         return event;
     }
 
@@ -53,13 +55,10 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         if (!event.actor) {
             event.actor = new Actor();
         }
-
         const actor: Actor = event.actor;
-
         if (!actor.id) {
             actor.id = uid;
         }
-
         if (!actor.type) {
             actor.type = Actor.TYPE_USER;
         }
@@ -80,7 +79,6 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         if (!pData.id) {
             pData.id = this.apiConfig.api_authentication.producerId;
         }
-
         const pid = pData.pid;
         if (pid) {
             pData.pid = pid;
@@ -89,7 +87,6 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         } else {
             pData.pid = 'sunbird.android';
         }
-
         if (!pData.ver) {
             pData.ver = this.appInfo.getVersionName();
         }
@@ -121,10 +118,6 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         }
         // patching cData
         context.cdata = context.cdata ? context.cdata.concat(campaignParameters || []) : (campaignParameters || []);
-        context.cdata.push({
-            id: this.profileSession.managedSession ? this.profileSession.managedSession.uid : this.profileSession.sid,
-            type: 'sid'
-        });
         return context;
     }
 }
