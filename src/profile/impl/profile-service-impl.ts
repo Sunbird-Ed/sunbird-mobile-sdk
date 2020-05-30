@@ -111,6 +111,9 @@ export class ProfileServiceImpl implements ProfileService {
             this.sdkConfig.profileServiceConfig,
             this.apiService,
             this.cachedItemStore,
+            this.dbService,
+            this.frameworkService,
+            this.sharedPreferences
         );
     }
 
@@ -463,11 +466,9 @@ export class ProfileServiceImpl implements ProfileService {
             ),
             mergeMap((profile: Profile) => {
                 const profileSession = new ProfileSession(profile.uid);
-                return this.sharedPreferences.putString(ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify({
-                    uid: profileSession.uid,
-                    sid: profileSession.sid,
-                    createdTime: profileSession.createdTime
-                })).pipe(
+                return this.sharedPreferences.putString(
+                    ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify(profileSession)
+                ).pipe(
                     mapTo(true)
                 );
             }),

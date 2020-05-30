@@ -6,6 +6,7 @@ import {
     Profile,
     ProfileService,
     ProfileServiceConfig,
+    ProfileSession,
     ProfileSource,
     ProfileType,
     ServerProfile
@@ -15,6 +16,13 @@ import {AuthService, OAuthSession, SessionProvider} from '../../auth';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {GetManagedServerProfilesRequest} from '../def/get-managed-server-profiles-request';
 import {catchError, mapTo, mergeMap, startWith} from 'rxjs/operators';
+import {ProfileEntry} from '../db/schema';
+import {DbService} from '../../db';
+import {ProfileDbEntryMapper} from '../util/profile-db-entry-mapper';
+import {FrameworkService} from '../../framework';
+import {ProfileKeys} from '../../preference-keys';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
 
 export class ManagedProfileManager {
     private static readonly MANGED_SERVER_PROFILES_LOCAL_KEY = 'managed_server_profiles-';
@@ -26,6 +34,9 @@ export class ManagedProfileManager {
         private profileServiceConfig: ProfileServiceConfig,
         private apiService: ApiService,
         private cachedItemStore: CachedItemStore,
+        private dbService: DbService,
+        private frameworkService: FrameworkService,
+        private sharedPreferences: SharedPreferences,
     ) {
     }
 
@@ -119,7 +130,7 @@ export class ManagedProfileManager {
     }
 
     switchSessionToManagedProfile(request: { uid: string }): Observable<undefined> {
-        return this.profileService.setActiveSessionForProfile(request.uid).pipe(
+        return defer(() => this.setActiveSessionForManagedProfile(request.uid)).pipe(
             catchError((e) => {
                 if (e instanceof NoProfileFoundError) {
                     this.profileService.getServerProfilesDetails({
@@ -137,7 +148,7 @@ export class ManagedProfileManager {
                                 serverProfile: {} as any
                             }, ProfileSource.SERVER);
 
-                            return this.profileService.setActiveSessionForProfile(request.uid);
+                            return this.setActiveSessionForManagedProfile(request.uid);
                         })
                     );
                 }
@@ -160,6 +171,80 @@ export class ManagedProfileManager {
             }),
             mapTo(undefined)
         );
+    }
+
+    private async setActiveSessionForManagedProfile(uid: string) {
+        const profileSession = await this.profileService.getActiveProfileSession().toPromise();
+
+        if (profileSession.managedSession) {
+            await TelemetryLogger.log.end({
+                type: 'session',
+                env: 'sdk',
+                mode: 'switch-user',
+                duration: Math.floor((Date.now() - profileSession.managedSession.createdTime) / 1000),
+                correlationData: [
+                    {
+                        id: 'initiator-id',
+                        type: profileSession.uid
+                    },
+                    {
+                        id: 'managed-user-id',
+                        type: profileSession.managedSession.uid
+                    },
+                ]
+            }).toPromise();
+        }
+
+        const findProfile: () => Promise<Profile | undefined> = async () => {
+            return this.dbService.read({
+                table: ProfileEntry.TABLE_NAME,
+                selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
+                selectionArgs: [uid]
+            }).toPromise().then((rows) =>
+                rows && rows[0] && ProfileDbEntryMapper.mapProfileDBEntryToProfile(rows[0])
+            );
+        };
+
+        const profile = await findProfile();
+
+        if (!profile) {
+            throw new NoProfileFoundError(`No Profile found with uid=${uid}`);
+        } else if (profile.source !== ProfileSource.SERVER) {
+            throw new NoProfileFoundError(`No Server Profile found with uid=${uid}`);
+        }
+
+        const setActiveChannelId = async () => {
+            const serverProfile: ServerProfile = await this.profileService.getServerProfilesDetails({
+                userId: uid,
+                requiredFields: []
+            }).toPromise();
+
+            return this.frameworkService
+                .setActiveChannelId(serverProfile.rootOrg.hashTagId);
+        };
+
+        await setActiveChannelId();
+
+        profileSession.managedSession = new ProfileSession(uid);
+        await this.sharedPreferences.putString(
+            ProfileKeys.KEY_USER_SESSION, JSON.stringify(profileSession)
+        ).toPromise();
+
+        TelemetryLogger.log.start({
+            type: 'session',
+            env: 'sdk',
+            mode: 'switch-user',
+            correlationData: [
+                {
+                    id: 'initiator-id',
+                    type: profileSession.uid
+                },
+                {
+                    id: 'managed-user-id',
+                    type: profileSession.managedSession.uid
+                },
+            ]
+        }).toPromise();
     }
 
     private async createManagedProfile(addManagedProfileRequest: AddManagedProfileRequest): Promise<{ uid: string }> {

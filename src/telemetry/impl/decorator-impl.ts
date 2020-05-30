@@ -1,18 +1,20 @@
-import {Actor, Context, ProducerData, SunbirdTelemetry, TelemetryDecorator, CorrelationData} from '..';
+import {Actor, Context, CorrelationData, ProducerData, SunbirdTelemetry, TelemetryDecorator} from '..';
 import {ApiConfig} from '../../api';
 import {DeviceInfo} from '../../util/device/def/device-info';
 import {AppInfo} from '../../util/app/def/app-info';
-import Telemetry = SunbirdTelemetry.Telemetry;
 import {UniqueId} from '../../db/util/unique-id';
-import { inject, injectable } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
-import { SdkConfig } from '../../sdk-config';
-import { CodePushExperimentService } from '../../codepush-experiment';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
+import {SdkConfig} from '../../sdk-config';
+import {CodePushExperimentService} from '../../codepush-experiment';
+import {ProfileSession} from '../../profile';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 @injectable()
 export class TelemetryDecoratorImpl implements TelemetryDecorator {
 
     private apiConfig: ApiConfig;
+    private profileSession: ProfileSession;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -22,8 +24,16 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         this.apiConfig = this.sdkConfig.apiConfig;
     }
 
-    decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset: number = 0,
-         channelId?: string, campaignParameters?: CorrelationData[]): any {
+    decorate(
+        event: Telemetry,
+        profileSession: ProfileSession,
+        gid?: string,
+        offset: number = 0,
+        channelId?: string,
+        campaignParameters?: CorrelationData[]
+    ): any {
+        const {uid, sid} = profileSession;
+        this.profileSession = profileSession;
         event.ets += offset;
         if (!event.mid) {
             event.mid = UniqueId.generateUniqueId();
@@ -101,7 +111,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
             context.env = 'app';
         }
         const expKey = this.codePushExperimentService.getExperimentKey();
-        if (typeof(expKey) === 'string') {
+        if (typeof (expKey) === 'string') {
             context.pdata.pid = context.pdata.pid + '-' + expKey;
         }
         context.sid = sid;
@@ -111,6 +121,10 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         }
         // patching cData
         context.cdata = context.cdata ? context.cdata.concat(campaignParameters || []) : (campaignParameters || []);
+        context.cdata.push({
+            id: this.profileSession.managedSession ? this.profileSession.managedSession.uid : this.profileSession.sid,
+            type: 'sid'
+        });
         return context;
     }
 }
