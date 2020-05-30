@@ -81,9 +81,7 @@ import {UserFeed} from '../def/user-feed-response';
 import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
 import {UserMigrateResponse} from '../def/user-migrate-response';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
-import {AddManagedProfileRequest} from '../def/add-managed-profile-request';
 import {ManagedProfileManager} from '../handler/managed-profile-manager';
-import {GetManagedServerProfilesRequest} from '../def/get-managed-server-profiles-request';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -91,7 +89,7 @@ export class ProfileServiceImpl implements ProfileService {
     private static readonly MERGE_SERVER_PROFILES_PATH = '/api/user/v1/account/merge';
 
     private readonly apiConfig: ApiConfig;
-    private managedProfileManager: ManagedProfileManager;
+    readonly managedProfileManager: ManagedProfileManager;
 
     constructor(@inject(InjectionTokens.CONTAINER) private container: Container,
                 @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -710,18 +708,6 @@ export class ProfileServiceImpl implements ProfileService {
                 duration: Math.floor((Date.now() - profileSession.createdTime) / 1000)
             }).toPromise();
         }
-    }
-
-    addManagedProfile(request: AddManagedProfileRequest): Observable<Profile> {
-        return this.managedProfileManager.addManagedProfile(request);
-    }
-
-    getManagedServerProfiles(request: GetManagedServerProfilesRequest): Observable<ServerProfile[]> {
-        return this.managedProfileManager.getManagedServerProfiles(request);
-    }
-
-    switchSessionToManagedProfile(request: { uid: string }): Observable<undefined> {
-        return this.managedProfileManager.switchSessionToManagedProfile(request);
     }
 }
 
