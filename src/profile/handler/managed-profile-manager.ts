@@ -185,7 +185,7 @@ export class ManagedProfileManager {
                 correlationData: [
                     {
                         id: 'initiator-id',
-                        type: profileSession.uid
+                        type: profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid
                     },
                     {
                         id: 'managed-user-id',
