@@ -1,6 +1,6 @@
 import {ManagedProfileManager} from './managed-profile-manager';
 import {AuthService, OAuthSession} from '../../auth';
-import {NoActiveSessionError, ProfileService, ProfileServiceConfig, ProfileSource, ProfileType} from '..';
+import {NoActiveSessionError, NoProfileFoundError, ProfileService, ProfileServiceConfig, ProfileSource, ProfileType} from '..';
 import {ApiService, Response} from '../../api';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {DbService} from '../../db';
@@ -162,6 +162,54 @@ describe('ManagedProfileManager', () => {
                 requiredFields: []
             }).subscribe(() => {
                 done();
+            });
+        });
+    });
+
+    describe('switchSessionToManagedProfile', () => {
+        it('should create local profile if switching to non-existent profile', (done) => {
+            // arrange
+            const setActiveSessionForManagedProfileStack = [
+                () => Promise.resolve(),
+                () => Promise.reject(
+                    new NoProfileFoundError('')
+                )
+            ];
+
+            managedProfileManager['setActiveSessionForManagedProfile'] =
+                jest.fn(() => {
+                    return setActiveSessionForManagedProfileStack.pop()!();
+                });
+
+            mockProfileService.getServerProfilesDetails = jest.fn(() => of({
+                firstName: 'first_name',
+                uid: 'some_uid'
+            } as any));
+
+            const createdProfile = {
+                uid: 'sample_uid',
+                handle: 'sample_handle',
+                profileType: ProfileType.TEACHER,
+                source: ProfileSource.SERVER,
+                serverProfile: {} as any
+            };
+
+            mockProfileService.createProfile = jest.fn(() => of(createdProfile));
+            mockAuthService.getSession = jest.fn(() => of({
+                access_token: 'some_access_token',
+                refresh_token: 'some_refresh_token',
+                userToken: 'some_previous_uid'
+            }));
+            mockAuthService.setSession = jest.fn(() => of(undefined));
+
+            // act
+            managedProfileManager.switchSessionToManagedProfile({
+                uid: 'some_uid'
+            }).subscribe(() => {
+                expect(mockProfileService.createProfile).toBeCalled();
+                done();
+            }, (e) => {
+                fail(e);
             });
         });
     });

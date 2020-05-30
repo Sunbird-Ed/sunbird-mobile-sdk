@@ -133,7 +133,7 @@ export class ManagedProfileManager {
         return defer(() => this.setActiveSessionForManagedProfile(request.uid)).pipe(
             catchError((e) => {
                 if (e instanceof NoProfileFoundError) {
-                    this.profileService.getServerProfilesDetails({
+                    return this.profileService.getServerProfilesDetails({
                         userId: request.uid, requiredFields: []
                     }).pipe(
                         mergeMap((serverProfile: ServerProfile) => {
@@ -175,6 +175,7 @@ export class ManagedProfileManager {
 
     private async setActiveSessionForManagedProfile(uid: string) {
         const profileSession = await this.profileService.getActiveProfileSession().toPromise();
+        const initialSession = {...profileSession};
 
         if (profileSession.managedSession) {
             await TelemetryLogger.log.end({
@@ -237,7 +238,7 @@ export class ManagedProfileManager {
             correlationData: [
                 {
                     type: 'initiator-id',
-                    id: profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid
+                    id: initialSession.managedSession ? initialSession.managedSession.uid : initialSession.uid
                 },
                 {
                     type: 'managed-user-id',
