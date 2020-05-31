@@ -386,13 +386,13 @@ export class ProfileServiceImpl implements ProfileService {
                 return this.dbService.read({
                     table: ProfileEntry.TABLE_NAME,
                     selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
-                    selectionArgs: [profileSession.uid]
+                    selectionArgs: [profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid]
                 }).pipe(
                     map((rows) => {
                         const profileDBEntry = rows && rows[0];
 
                         if (!profileDBEntry) {
-                            throw new NoProfileFoundError(`No profile found for profileSession with uid ${profileSession.uid}`);
+                            throw new NoProfileFoundError(`No profile found for profileSession with uid ${profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid}`);
                         }
 
                         return ProfileDbEntryMapper.mapProfileDBEntryToProfile(profileDBEntry);
