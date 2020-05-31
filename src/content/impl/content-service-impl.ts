@@ -192,6 +192,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         entries.forEach((entry: ContentMarkerEntry.SchemaMap) => {
                             const content: Content = {
                                 identifier: entry[ContentMarkerEntry.COLUMN_NAME_CONTENT_IDENTIFIER],
+                                name: '',
                                 contentData: entry[ContentMarkerEntry.COLUMN_NAME_DATA] &&
                                     JSON.parse(entry[ContentMarkerEntry.COLUMN_NAME_DATA]),
                                 isUpdateAvailable: false,
