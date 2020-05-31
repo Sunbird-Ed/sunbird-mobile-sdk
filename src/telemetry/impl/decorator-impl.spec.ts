@@ -7,6 +7,7 @@ import {AppInfo} from '../../util/app';
 import {CodePushExperimentService} from '../../codepush-experiment';
 import {TelemetryDecorator} from '..';
 import {of} from 'rxjs';
+import {ProfileSession} from '../../profile';
 
 describe('decorator-impl', () => {
     let decoratorImpl: TelemetryDecoratorImpl;
@@ -86,7 +87,7 @@ describe('decorator-impl', () => {
                 }
             } as any;
             // act
-            decoratorImpl.decorate(event, 'sampleUid', 'sampleSid', 'sampleGid', 0, 'sampleChannelId');
+            decoratorImpl.decorate(event, new ProfileSession('sample_uid'), 'sampleGid', 0, 'sampleChannelId');
             // assert
             expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
             expect(mockAppInfo.getVersionName).toHaveBeenCalled();
@@ -112,7 +113,7 @@ describe('decorator-impl', () => {
                 tags: ['1', '2'],
             } as any;
             // act
-            decoratorImpl.decorate(event, '', 'sampleSid', 'sampleGid', 0, 'sampleChannelId');
+            decoratorImpl.decorate(event, new ProfileSession('sample_uid'), 'sampleGid', 0, 'sampleChannelId');
             // assert
             mockAppInfo.getVersionName = jest.fn(() => 'sample');
             mockCodePushExperiment.getExperimentKey = jest.fn(() => of('sampleString'));
@@ -139,7 +140,7 @@ describe('decorator-impl', () => {
                 }
             } as any;
             // act
-            decoratorImpl.decorate(event, 'sampleUid', 'sampleSid', 'sampleGid', 0, 'sampleChannelId');
+            decoratorImpl.decorate(event, new ProfileSession('sample_uid'), 'sampleGid', 0, 'sampleChannelId');
             // assert
             expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
             expect(mockAppInfo.getVersionName).toHaveBeenCalled();
@@ -171,7 +172,7 @@ describe('decorator-impl', () => {
                 }
             } as any;
             // act
-            decoratorImpl.decorate(event, 'sampleUid', 'sampleSid', 'sampleGid', 0, undefined);
+            decoratorImpl.decorate(event, new ProfileSession('sample_uid'), 'sampleGid', 0, undefined);
             // assert
             expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
             expect(mockCodePushExperiment.getExperimentKey).toHaveBeenCalled();

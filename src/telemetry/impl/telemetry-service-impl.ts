@@ -341,9 +341,10 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
 
                         const insertQuery: InsertQuery = {
                             table: TelemetryEntry.TABLE_NAME,
-                            modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!.uid,
-                                profileSession!.sid, groupSession && groupSession.gid, Number(offset),
-                                this.frameworkService.activeChannelId, this.campaignParameters), 1)
+                            modelJson: this.decorator.prepare(this.decorator.decorate(
+                                telemetry, profileSession, groupSession && groupSession.gid, Number(offset),
+                                this.frameworkService.activeChannelId, this.campaignParameters
+                            ), 1)
                         };
                         return this.dbService.insert(insertQuery).pipe(
                             tap(() => this.eventsBusService.emit({

@@ -25,9 +25,12 @@ import {MergeServerProfilesRequest} from './merge-server-profiles-request';
 import {UserFeed} from './user-feed-response';
 import {UserMigrateResponse} from './user-migrate-response';
 import {UserMigrateRequest} from './user-migrate-request';
+import {ManagedProfileManager} from '../handler/managed-profile-manager';
 
 
 export interface ProfileService extends SdkServicePreInitDelegate {
+    readonly managedProfileManager: ManagedProfileManager;
+
     createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
 
     deleteProfile(uid: string): Observable<undefined>;

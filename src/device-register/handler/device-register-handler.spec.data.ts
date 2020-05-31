@@ -26,11 +26,12 @@ export const mockSdkConfigWithSampleApiConfig: Partial<SdkConfig> = {
         fcmToken: 'SAMPLE_FCM_TOKEN'
     },
     profileServiceConfig: {
-            profileApiPath: '',
-            profileApiPath_V2: '',
-            tenantApiPath: '',
-            otpApiPath: '',
-            searchLocationApiPath: '',
-            locationDirPath: ''
+        profileApiPath: '',
+        profileApiPath_V2: '',
+        profileApiPath_V4: '',
+        tenantApiPath: '',
+        otpApiPath: '',
+        searchLocationApiPath: '',
+        locationDirPath: ''
     }
 };
