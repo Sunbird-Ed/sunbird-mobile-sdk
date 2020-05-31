@@ -1,5 +1,4 @@
 import {CopyAsset} from './copy-asset';
-import {FileService} from '../../../util/file/def/file-service';
 import {ContentEntry} from '../../db/schema';
 import {ExportContentContext} from '../..';
 
@@ -7,12 +6,9 @@ declare const sbutility;
 
 describe('CopyAsset', () => {
     let copyAsset: CopyAsset;
-    const mockFileService: Partial<FileService> = {};
 
     beforeAll(() => {
-        copyAsset = new CopyAsset(
-            mockFileService as FileService
-        );
+        copyAsset = new CopyAsset();
     });
 
     beforeEach(() => {

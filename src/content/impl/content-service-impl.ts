@@ -286,7 +286,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             ecarFilePath: tempLocationPath.nativeURL.concat(fileName),
                             destinationFolder: contentExportRequest.destinationFolder,
                             contentModelsToExport: contentsInDb,
-                            tmpLocationPath: tempLocationPath.nativeURL
+                            tmpLocationPath: tempLocationPath.nativeURL,
+                            subContentIds: contentExportRequest.subContentIds
                         };
                         //     return new CleanTempLoc(this.fileService).execute(exportContentContext);
                         // }).then((exportResponse: Response) => {
@@ -300,7 +301,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     }).then((exportResponse: Response) => {
                         return new DeviceMemoryCheck(this.fileService).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
-                        return new CopyAsset(this.fileService).execute(exportResponse.body);
+                        return new CopyAsset().execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
                         return new EcarBundle(this.fileService, this.zipService).execute(exportResponse.body);
                     }).then((exportResponse: Response) => {
