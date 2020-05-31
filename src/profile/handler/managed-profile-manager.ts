@@ -137,7 +137,7 @@ export class ManagedProfileManager {
                         userId: request.uid, requiredFields: []
                     }).pipe(
                         mergeMap((serverProfile: ServerProfile) => {
-                            this.profileService.createProfile({
+                            return this.profileService.createProfile({
                                 uid: request.uid,
                                 profileType: ProfileType.STUDENT,
                                 source: ProfileSource.SERVER,
@@ -146,9 +146,11 @@ export class ManagedProfileManager {
                                 medium: (serverProfile['framework'] && serverProfile['framework']['medium']) || [],
                                 grade: (serverProfile['framework'] && serverProfile['framework']['gradeLevel']) || [],
                                 serverProfile: {} as any
-                            }, ProfileSource.SERVER);
-
-                            return this.setActiveSessionForManagedProfile(request.uid);
+                            }, ProfileSource.SERVER).pipe(
+                                mergeMap(() => {
+                                    return this.setActiveSessionForManagedProfile(request.uid);
+                                })
+                            );
                         })
                     );
                 }
