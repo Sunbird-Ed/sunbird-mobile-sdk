@@ -24,6 +24,7 @@ import {OfflineContentStateHandler} from '../handlers/offline-content-state-hand
 import {ContentStatesSyncHandler} from '../handlers/content-states-sync-handler';
 import {SyncAssessmentEventsHandler} from '../handlers/sync-assessment-events-handler';
 import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
+import { FileService } from '../../util/file/def/file-service';
 
 jest.mock('../handlers/offline-content-state-handler');
 jest.mock('../handlers/content-states-sync-handler');
@@ -61,7 +62,10 @@ describe('CourseServiceImpl', () => {
     const mockSyncAssessmentEventsHandler = {
         handle: jest.fn().mockImplementation(() => of(undefined))
     };
-
+    const mockFileService: Partial<FileService> = {
+        exists: jest.fn().mockImplementation(() => { }),
+        getTempLocation: jest.fn().mockImplementation(() => { })
+    };
     beforeAll(() => {
         container.bind<CourseService>(InjectionTokens.COURSE_SERVICE).to(CourseServiceImpl);
         container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(mockSdkConfigWithCourseConfig as SdkConfig);
@@ -72,6 +76,7 @@ describe('CourseServiceImpl', () => {
         container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).toConstantValue(sharePreferencesMock as SharedPreferences);
         container.bind<AuthService>(InjectionTokens.AUTH_SERVICE).toConstantValue(mockAuthService as AuthService);
         container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
+        container.bind<FileService>(InjectionTokens.FILE_SERVICE).toConstantValue(mockFileService as FileService);
 
         (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockImplementation(() => {
             return mockSyncAssessmentEventsHandler as Partial<SyncAssessmentEventsHandler> as SyncAssessmentEventsHandler;
