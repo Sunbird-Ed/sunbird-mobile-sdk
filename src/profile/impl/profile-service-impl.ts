@@ -140,7 +140,9 @@ export class ProfileServiceImpl implements ProfileService {
                         );
                 }
 
-                return this.setActiveSessionForProfile(profileSession.uid).pipe(
+                return this.setActiveSessionForProfile(
+                    profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid
+                ).pipe(
                     mapTo(undefined)
                 );
             })

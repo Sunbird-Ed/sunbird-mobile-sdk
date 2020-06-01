@@ -374,16 +374,19 @@ describe('AuthUtil', () => {
       response.responseCode = ResponseCode.HTTP_SUCCESS;
 
       when(MockApiService.fetch(anything())).thenReturn(of(response));
+      when(MockSharedPreferences.putString(anyString(), anyString())).thenReturn(of(undefined));
 
       const mockApiService: ApiService = instance(MockApiService);
       const mockSharedPreferences: SharedPreferences = instance(MockSharedPreferences);
       const mockEventsBusService: EventsBusService = instance(MockEventsBusService);
 
+      spyOn(mockSharedPreferences, 'putString').and.callThrough();
+
       const authUtil = new AuthUtil(
-        mockApConfig,
-        mockApiService,
-        mockSharedPreferences,
-        mockEventsBusService
+          mockApConfig,
+          mockApiService,
+          mockSharedPreferences,
+          mockEventsBusService
       );
 
       spyOn(authUtil, 'startSession').and.stub();
@@ -396,10 +399,10 @@ describe('AuthUtil', () => {
 
       // act
       authUtil.refreshSession().then(() => {
-        expect(authUtil.startSession).toHaveBeenCalledWith(expect.objectContaining({
-          access_token: expect.any(String),
-          refresh_token: expect.any(String),
-          userToken: expect.any(String)
+        expect(mockSharedPreferences.putString).toHaveBeenCalledWith(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify({
+          access_token: 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ1WXhXdE4tZzRfMld5MG5PS1ZoaE5hU0gtM2lSSjdXU25ibFlwVVU0TFRrIn0.eyJqdGkiOiJmMDZiMWFlZC1hODNkLTQ1NWQtODFjMS1kODExNTZiZGJjYzMiLCJleHAiOjE1MjE2OTY2OTMsIm5iZiI6MCwiaWF0IjoxNTIxNjk2MDkzLCJpc3MiOiJodHRwczovL2Rldi5vcGVuLXN1bmJpcmQub3JnL2F1dGgvcmVhbG1zL3N1bmJpcmQiLCJhdWQiOiJhZG1pbi1jbGkiLCJzdWIiOiI3ODFjMjFmYy01MDU0LTRlZTAtOWEwMi1mYmIxMDA2YTRmZGQiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJhZG1pbi1jbGkiLCJhdXRoX3RpbWUiOjAsInNlc3Npb25fc3RhdGUiOiJiOGNhNTM4Zi02NGRhLTQzYmYtOTYwMC0xNTk1MDU5OWY0NTciLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbXSwicmVzb3VyY2VfYWNjZXNzIjp7fSwibmFtZSI6ImFkbWluIG9yZyIsInByZWZlcnJlZF91c2VybmFtZSI6Im9yZ19hZG1pbiIsImdpdmVuX25hbWUiOiJhZG1pbiIsImZhbWlseV9uYW1lIjoib3JnIn0.XVw_NFBCO6_OMzozlWv9ecwEvjJNtuvS5RJ_o9Bky6rs80D09VtPUsU2s9X2-ZLQae48o5s2_yzRizpMEcY5Bku-ARUEDMriB806DKtf0NNm4J_50CScgV3dnd9ZBdUzcJBxpYlMFqOH2QpzYQ7x0j-3wcakj9wKYb5D7AF_fbMQj33VqgFNEY-fO3jyXqLtZ9PTjTxjgwXUT6kmMoiHqBTdmk3JZLKb4mC53sCnrZ6Zq3OHQXgk23-DLR-asowF5DUkKD38zHPp3lqMMXXLovYxPI7igDd9S7oXJSYRtyFemfZUyWTJceEHINmD_x_iyT3PIEnK0bZkZjUFkey9iw',
+          refresh_token: 'SAMPLE_REFRESH_TOKEN',
+          userToken: 'SAMPLE_USER_TOKEN'
         }));
         done();
       });

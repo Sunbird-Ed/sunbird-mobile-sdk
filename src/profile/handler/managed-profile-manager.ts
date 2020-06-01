@@ -277,7 +277,10 @@ export class ManagedProfileManager {
             requiredFields: []
         }).toPromise();
 
-        await this.profileService.acceptTermsAndConditions({version: serverProfile.tncLatestVersion}).toPromise();
+        await this.profileService.acceptTermsAndConditions({
+            version: serverProfile.tncLatestVersion,
+            userId: uid
+        }).toPromise();
     }
 
     private async isLoggedInUser(): Promise<boolean> {
