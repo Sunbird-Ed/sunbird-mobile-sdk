@@ -43,7 +43,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
         @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService
     ) {
         this.summarizerTelemetryHandler = new SummaryTelemetryEventHandler(this.courseService, this.sharedPreference, this,
-            this.eventsBusService, this.contenService, this.profileService, this.dbService);
+            this.eventsBusService, this.contenService, this.profileService);
     }
 
     onInit(): Observable<undefined> {
