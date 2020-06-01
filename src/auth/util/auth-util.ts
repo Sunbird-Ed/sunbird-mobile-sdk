@@ -55,7 +55,7 @@ export class AuthUtil {
                             userToken: prevSessionData ? prevSessionData.userToken : userToken
                         };
 
-                        await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
+                        return await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
                     }
 
                     throw new AuthTokenRefreshError('No token found in server response');
