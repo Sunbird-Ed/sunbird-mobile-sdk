@@ -1,7 +1,7 @@
 import {Actor, Context, CorrelationData, ProducerData, SunbirdTelemetry, TelemetryDecorator} from '..';
 import {ApiConfig} from '../../api';
-import {DeviceInfo} from '../../util/device/def/device-info';
-import {AppInfo} from '../../util/app/def/app-info';
+import {DeviceInfo} from '../../util/device';
+import {AppInfo} from '../../util/app';
 import {UniqueId} from '../../db/util/unique-id';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
@@ -44,7 +44,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         // TODO Add tag patching logic
         event.context.cdata = [
             ...event.context.cdata, {
-                id: profileSession.managedSession ? profileSession.managedSession.uid : profileSession.sid,
+                id: profileSession.managedSession ? profileSession.managedSession.sid : profileSession.sid,
                 type: 'sid'
             }
         ];
