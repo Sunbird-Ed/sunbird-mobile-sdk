@@ -74,6 +74,12 @@ export class AuthUtil {
     }
 
     public async startSession(sessionData: OAuthSession): Promise<void> {
+        const prevSessionData = await this.getSessionData();
+
+        if (prevSessionData) {
+            sessionData.userToken = prevSessionData.userToken;
+        }
+
         await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
     }
 
