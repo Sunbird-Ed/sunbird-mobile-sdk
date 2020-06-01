@@ -99,7 +99,10 @@ describe('ManagedProfileManager', () => {
                 managedBy: 'sample_user_uid'
             }).subscribe((profile) => {
                 // assert
-                expect(mockProfileService.acceptTermsAndConditions).toBeCalledWith({version: 'v4'});
+                expect(mockProfileService.acceptTermsAndConditions).toBeCalledWith({
+                    userId: 'sample_user_id_1',
+                    version: 'v4'
+                });
                 expect(profile).toBe(createdProfile);
                 done();
             });
