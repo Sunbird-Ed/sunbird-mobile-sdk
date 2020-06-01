@@ -272,7 +272,7 @@ export class CourseServiceImpl implements CourseService {
                     return defer(async () => {
                         try {
                             await this.fileService.exists(filePath);
-                            throw new CertificateAlreadyDownloaded(filePath);
+                            throw new CertificateAlreadyDownloaded('Certificate already downloaded');
                         } catch (e) {
                             if (e instanceof CertificateAlreadyDownloaded) {
                                 throw e;
