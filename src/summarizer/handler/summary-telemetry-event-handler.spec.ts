@@ -22,8 +22,7 @@ describe('SummaryTelemetryEventHandler', () => {
             mockSummarizerService as SummarizerService,
             mockEventBusService as EventsBusService,
             mockContentService as ContentService,
-            mockProfileService as ProfileService,
-            mockDbService as DbService
+            mockProfileService as ProfileService
         );
     });
 
