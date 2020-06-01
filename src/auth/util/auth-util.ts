@@ -42,18 +42,20 @@ export class AuthUtil {
 
                     throw e;
                 })
-                .then((response: Response) => {
+                .then(async (response: Response) => {
                     if (response.body.result.access_token && response.body.result.refresh_token) {
                         const jwtPayload: { sub: string } = JWTUtil.getJWTPayload(response.body.result.access_token);
 
-                        const userToken = jwtPayload.sub.split(':').length === 3 ? <string>jwtPayload.sub.split(':').pop() : jwtPayload.sub;
+                        const userToken = jwtPayload.sub.split(':').length === 3 ? <string> jwtPayload.sub.split(':').pop() : jwtPayload.sub;
+
+                        const prevSessionData = await this.getSessionData();
 
                         sessionData = {
                             ...response.body.result,
-                            userToken
+                            userToken: prevSessionData ? prevSessionData.userToken : userToken
                         };
 
-                        return this.startSession(sessionData!);
+                        await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
                     }
 
                     throw new AuthTokenRefreshError('No token found in server response');
@@ -74,12 +76,6 @@ export class AuthUtil {
     }
 
     public async startSession(sessionData: OAuthSession): Promise<void> {
-        const prevSessionData = await this.getSessionData();
-
-        if (prevSessionData) {
-            sessionData.userToken = prevSessionData.userToken;
-        }
-
         await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
     }
 
