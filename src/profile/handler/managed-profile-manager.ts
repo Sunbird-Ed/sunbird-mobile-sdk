@@ -179,24 +179,22 @@ export class ManagedProfileManager {
         const profileSession = await this.profileService.getActiveProfileSession().toPromise();
         const initialSession = {...profileSession};
 
-        if (profileSession.managedSession) {
-            await TelemetryLogger.log.end({
-                type: 'session',
-                env: 'sdk',
-                mode: 'switch-user',
-                duration: Math.floor((Date.now() - profileSession.managedSession.createdTime) / 1000),
-                correlationData: [
-                    {
-                        type: 'initiator-id',
-                        id: profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid
-                    },
-                    {
-                        type: 'managed-user-id',
-                        id: profileSession.managedSession.uid
-                    },
-                ]
-            }).toPromise();
-        }
+        await TelemetryLogger.log.end({
+            type: 'session',
+            env: 'sdk',
+            mode: 'switch-user',
+            duration: Math.floor((Date.now() - (initialSession.managedSession || initialSession).createdTime) / 1000),
+            correlationData: [
+                {
+                    type: 'initiator-id',
+                    id: initialSession.managedSession ? initialSession.managedSession.uid : initialSession.uid
+                },
+                {
+                    type: 'managed-user-id',
+                    id: uid
+                },
+            ]
+        }).toPromise();
 
         const findProfile: () => Promise<Profile | undefined> = async () => {
             return this.dbService.read({
@@ -228,7 +226,12 @@ export class ManagedProfileManager {
 
         await setActiveChannelId();
 
-        profileSession.managedSession = new ProfileSession(uid);
+        if (profileSession.uid === uid) {
+            profileSession.managedSession = undefined;
+        } else {
+            profileSession.managedSession = new ProfileSession(uid);
+        }
+
         await this.sharedPreferences.putString(
             ProfileKeys.KEY_USER_SESSION, JSON.stringify(profileSession)
         ).toPromise();
@@ -244,7 +247,7 @@ export class ManagedProfileManager {
                 },
                 {
                     type: 'managed-user-id',
-                    id: profileSession.managedSession.uid
+                    id: profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid
                 },
             ]
         }).toPromise();
