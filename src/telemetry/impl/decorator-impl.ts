@@ -45,7 +45,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         event.context.cdata = [
             ...event.context.cdata, {
                 id: profileSession.managedSession ? profileSession.managedSession.sid : profileSession.sid,
-                type: 'sid'
+                type: 'UserSession'
             }
         ];
         return event;
