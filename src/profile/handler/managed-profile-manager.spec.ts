@@ -1,12 +1,25 @@
 import {ManagedProfileManager} from './managed-profile-manager';
 import {AuthService, OAuthSession} from '../../auth';
-import {NoActiveSessionError, NoProfileFoundError, ProfileService, ProfileServiceConfig, ProfileSource, ProfileType} from '..';
+import {
+    NoActiveSessionError,
+    NoProfileFoundError,
+    ProfileService,
+    ProfileServiceConfig,
+    ProfileSource,
+    ProfileType,
+    ServerProfile
+} from '..';
 import {ApiService, Response} from '../../api';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {DbService} from '../../db';
 import {FrameworkService} from '../../framework';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {of} from 'rxjs';
+import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
+import {TelemetryService} from '../../telemetry';
+import {ProfileEntry} from '../db/schema';
+
+jest.mock('../../telemetry/util/telemetry-logger');
 
 describe('ManagedProfileManager', () => {
     let managedProfileManager: ManagedProfileManager;
@@ -31,6 +44,10 @@ describe('ManagedProfileManager', () => {
             mockFrameworkService as FrameworkService,
             mockSharedPreferences as SharedPreferences,
         );
+    });
+
+    beforeEach(() => {
+        jest.restoreAllMocks();
     });
 
     it('should be able to create an instance', () => {
@@ -179,10 +196,9 @@ describe('ManagedProfileManager', () => {
                 )
             ];
 
-            managedProfileManager['setActiveSessionForManagedProfile'] =
-                jest.fn(() => {
-                    return setActiveSessionForManagedProfileStack.pop()!();
-                });
+            spyOn(managedProfileManager as any, 'setActiveSessionForManagedProfile').and.callFake(() => {
+                return setActiveSessionForManagedProfileStack.pop()!();
+            });
 
             mockProfileService.getServerProfilesDetails = jest.fn(() => of({
                 firstName: 'first_name',
@@ -212,6 +228,58 @@ describe('ManagedProfileManager', () => {
                 expect(mockProfileService.createProfile).toBeCalled();
                 done();
             }, (e) => {
+                fail(e);
+            });
+        });
+    });
+
+    describe('setActiveSessionForManagedProfile', () => {
+        it('should generate END/START telemetry for current and next sessions respectively', (done) => {
+            // arrange
+            const mockTelemetryService: Partial<TelemetryService> = {
+                end: jest.fn().mockImplementation(() => of(undefined)),
+                start: jest.fn().mockImplementation(() => of(undefined))
+            };
+            (TelemetryLogger as any)['log'] = mockTelemetryService;
+
+            mockProfileService.getActiveProfileSession = jest.fn(() => of({
+                uid: 'sample_uid',
+                sid: 'sample_sid',
+                createdTime: 12345,
+            }));
+
+            mockDbService.read = jest.fn(() => of([{
+                [ProfileEntry.COLUMN_NAME_UID]: 'sample_uid',
+                [ProfileEntry.COLUMN_NAME_HANDLE]: 'sample_handle',
+                [ProfileEntry.COLUMN_NAME_CREATED_AT]: 12345,
+                [ProfileEntry.COLUMN_NAME_MEDIUM]: '',
+                [ProfileEntry.COLUMN_NAME_BOARD]: '',
+                [ProfileEntry.COLUMN_NAME_SUBJECT]: '',
+                [ProfileEntry.COLUMN_NAME_PROFILE_TYPE]: ProfileType.TEACHER,
+                [ProfileEntry.COLUMN_NAME_GRADE]: '',
+                [ProfileEntry.COLUMN_NAME_SYLLABUS]: '',
+                [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.SERVER,
+                [ProfileEntry.COLUMN_NAME_GRADE_VALUE]: '',
+            }]));
+
+            mockProfileService.getServerProfilesDetails = jest.fn(() => of({
+                rootOrg: {
+                    hashTagId: 'some_root_org_id'
+                }
+            } as Partial<ServerProfile> as ServerProfile));
+
+            mockFrameworkService.setActiveChannelId = jest.fn(() => of(undefined));
+
+            mockSharedPreferences.putString = jest.fn(() => of(undefined));
+
+            // act
+            managedProfileManager['setActiveSessionForManagedProfile']('some_uid').then(() => {
+                // assert
+                expect(mockTelemetryService.end).toHaveBeenCalled();
+                expect(mockTelemetryService.start).toHaveBeenCalled();
+                expect(mockFrameworkService.setActiveChannelId).toHaveBeenCalledWith('some_root_org_id');
+                done();
+            }).catch((e) => {
                 fail(e);
             });
         });

@@ -221,7 +221,7 @@ export class ManagedProfileManager {
             }).toPromise();
 
             return this.frameworkService
-                .setActiveChannelId(serverProfile.rootOrg.hashTagId);
+                .setActiveChannelId(serverProfile.rootOrg.hashTagId).toPromise();
         };
 
         await setActiveChannelId();
