@@ -186,11 +186,11 @@ export class ManagedProfileManager {
             duration: Math.floor((Date.now() - (initialSession.managedSession || initialSession).createdTime) / 1000),
             correlationData: [
                 {
-                    type: 'initiator-id',
+                    type: 'InitiatorId',
                     id: initialSession.managedSession ? initialSession.managedSession.uid : initialSession.uid
                 },
                 {
-                    type: 'managed-user-id',
+                    type: 'ManagedUserId',
                     id: uid
                 },
             ]
@@ -242,11 +242,11 @@ export class ManagedProfileManager {
             mode: 'switch-user',
             correlationData: [
                 {
-                    type: 'initiator-id',
+                    type: 'InitiatorId',
                     id: initialSession.managedSession ? initialSession.managedSession.uid : initialSession.uid
                 },
                 {
-                    type: 'managed-user-id',
+                    type: 'ManagedUserId',
                     id: profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid
                 },
             ]
