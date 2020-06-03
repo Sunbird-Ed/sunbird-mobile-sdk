@@ -1,14 +1,6 @@
 import {ManagedProfileManager} from './managed-profile-manager';
 import {AuthService, OAuthSession} from '../../auth';
-import {
-    NoActiveSessionError,
-    NoProfileFoundError,
-    ProfileService,
-    ProfileServiceConfig,
-    ProfileSource,
-    ProfileType,
-    ServerProfile
-} from '..';
+import {NoActiveSessionError, ProfileService, ProfileServiceConfig, ProfileSource, ProfileType,} from '..';
 import {ApiService, Response} from '../../api';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {DbService} from '../../db';
@@ -18,6 +10,7 @@ import {of} from 'rxjs';
 import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
 import {TelemetryService} from '../../telemetry';
 import {ProfileEntry} from '../db/schema';
+import {tap} from 'rxjs/operators';
 
 jest.mock('../../telemetry/util/telemetry-logger');
 
@@ -144,7 +137,7 @@ describe('ManagedProfileManager', () => {
             });
         });
 
-        it('should return managedProfiles for loggedIn user', (done) => {
+        it('should return managedProfiles for loggedIn user and persist them in DB', (done) => {
             // arrange
             mockAuthService.getSession = jest.fn(() => of({
                 userToken: 'some_user_token'
@@ -176,33 +169,68 @@ describe('ManagedProfileManager', () => {
                 return cb();
             }) as any;
 
+            mockDbService.execute = jest.fn(() => of([]));
+
+            const createdProfile = {
+                uid: 'sample_uid',
+                handle: 'sample_handle',
+                profileType: ProfileType.TEACHER,
+                source: ProfileSource.SERVER,
+                serverProfile: {} as any
+            };
+            mockProfileService.createProfile = jest.fn(() => of(createdProfile));
+
+            mockCachedItemStore.getCached = jest.fn(() => of(undefined).pipe(
+                tap(() => done())
+            )) as any;
+
             // act
             managedProfileManager.getManagedServerProfiles({
                 from: CachedItemRequestSourceFrom.SERVER,
                 requiredFields: []
-            }).subscribe(() => {
-                done();
-            });
+            }).subscribe();
         });
     });
 
     describe('switchSessionToManagedProfile', () => {
-        it('should create local profile if switching to non-existent profile', (done) => {
+        it('should create new profile session for managed profile', (done) => {
             // arrange
-            const setActiveSessionForManagedProfileStack = [
-                () => Promise.resolve(),
-                () => Promise.reject(
-                    new NoProfileFoundError('')
-                )
-            ];
+            mockProfileService.getActiveProfileSession = jest.fn(() => of({
+                uid: 'sample_uid',
+                sid: 'sample_sid',
+                createdTime: 12345,
+            }));
 
-            spyOn(managedProfileManager as any, 'setActiveSessionForManagedProfile').and.callFake(() => {
-                return setActiveSessionForManagedProfileStack.pop()!();
-            });
+            const mockTelemetryService: Partial<TelemetryService> = {
+                end: jest.fn().mockImplementation(() => of(undefined)),
+                start: jest.fn().mockImplementation(() => of(undefined))
+            };
+            (TelemetryLogger as any)['log'] = mockTelemetryService;
+
+            mockDbService.read = jest.fn(() => of([{
+                [ProfileEntry.COLUMN_NAME_UID]: 'sample_uid',
+                [ProfileEntry.COLUMN_NAME_HANDLE]: 'sample_handle',
+                [ProfileEntry.COLUMN_NAME_CREATED_AT]: 12345,
+                [ProfileEntry.COLUMN_NAME_MEDIUM]: '',
+                [ProfileEntry.COLUMN_NAME_BOARD]: '',
+                [ProfileEntry.COLUMN_NAME_SUBJECT]: '',
+                [ProfileEntry.COLUMN_NAME_PROFILE_TYPE]: ProfileType.TEACHER,
+                [ProfileEntry.COLUMN_NAME_GRADE]: '',
+                [ProfileEntry.COLUMN_NAME_SYLLABUS]: '',
+                [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.SERVER,
+                [ProfileEntry.COLUMN_NAME_GRADE_VALUE]: '',
+            }]));
+
+            mockFrameworkService.setActiveChannelId = jest.fn(() => of(undefined));
+
+            mockSharedPreferences.putString = jest.fn(() => of(undefined));
 
             mockProfileService.getServerProfilesDetails = jest.fn(() => of({
                 firstName: 'first_name',
-                uid: 'some_uid'
+                uid: 'some_uid',
+                rootOrg: {
+                    hashTagId: 'some_root_org_id'
+                }
             } as any));
 
             const createdProfile = {
@@ -225,61 +253,10 @@ describe('ManagedProfileManager', () => {
             managedProfileManager.switchSessionToManagedProfile({
                 uid: 'some_uid'
             }).subscribe(() => {
-                expect(mockProfileService.createProfile).toBeCalled();
+                expect(mockAuthService.setSession).toBeCalled();
+                expect(mockFrameworkService.setActiveChannelId).toBeCalledWith('some_root_org_id');
                 done();
             }, (e) => {
-                fail(e);
-            });
-        });
-    });
-
-    describe('setActiveSessionForManagedProfile', () => {
-        it('should generate END/START telemetry for current and next sessions respectively', (done) => {
-            // arrange
-            const mockTelemetryService: Partial<TelemetryService> = {
-                end: jest.fn().mockImplementation(() => of(undefined)),
-                start: jest.fn().mockImplementation(() => of(undefined))
-            };
-            (TelemetryLogger as any)['log'] = mockTelemetryService;
-
-            mockProfileService.getActiveProfileSession = jest.fn(() => of({
-                uid: 'sample_uid',
-                sid: 'sample_sid',
-                createdTime: 12345,
-            }));
-
-            mockDbService.read = jest.fn(() => of([{
-                [ProfileEntry.COLUMN_NAME_UID]: 'sample_uid',
-                [ProfileEntry.COLUMN_NAME_HANDLE]: 'sample_handle',
-                [ProfileEntry.COLUMN_NAME_CREATED_AT]: 12345,
-                [ProfileEntry.COLUMN_NAME_MEDIUM]: '',
-                [ProfileEntry.COLUMN_NAME_BOARD]: '',
-                [ProfileEntry.COLUMN_NAME_SUBJECT]: '',
-                [ProfileEntry.COLUMN_NAME_PROFILE_TYPE]: ProfileType.TEACHER,
-                [ProfileEntry.COLUMN_NAME_GRADE]: '',
-                [ProfileEntry.COLUMN_NAME_SYLLABUS]: '',
-                [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.SERVER,
-                [ProfileEntry.COLUMN_NAME_GRADE_VALUE]: '',
-            }]));
-
-            mockProfileService.getServerProfilesDetails = jest.fn(() => of({
-                rootOrg: {
-                    hashTagId: 'some_root_org_id'
-                }
-            } as Partial<ServerProfile> as ServerProfile));
-
-            mockFrameworkService.setActiveChannelId = jest.fn(() => of(undefined));
-
-            mockSharedPreferences.putString = jest.fn(() => of(undefined));
-
-            // act
-            managedProfileManager['setActiveSessionForManagedProfile']('some_uid').then(() => {
-                // assert
-                expect(mockTelemetryService.end).toHaveBeenCalled();
-                expect(mockTelemetryService.start).toHaveBeenCalled();
-                expect(mockFrameworkService.setActiveChannelId).toHaveBeenCalledWith('some_root_org_id');
-                done();
-            }).catch((e) => {
                 fail(e);
             });
         });

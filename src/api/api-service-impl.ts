@@ -115,12 +115,22 @@ export class ApiServiceImpl implements ApiService {
             }
         });
 
-        if (request.withBearerToken && request.responseInterceptors.indexOf(this.bearerTokenRefreshInterceptor) === -1) {
-            request.responseInterceptors.push(this.bearerTokenRefreshInterceptor);
+        if (request.withBearerToken) {
+            const bearerTokenRefreshInterceptorIndex = request.responseInterceptors.indexOf(this.bearerTokenRefreshInterceptor);
+            if (bearerTokenRefreshInterceptorIndex === -1) {
+                request.responseInterceptors.push(this.bearerTokenRefreshInterceptor);
+            } else {
+                request.requestInterceptors.splice(bearerTokenRefreshInterceptorIndex, 1);
+            }
         }
 
-        if (request.withUserToken && request.responseInterceptors.indexOf(this.userTokenRefreshInterceptor) === -1) {
-            request.responseInterceptors.push(this.userTokenRefreshInterceptor);
+        if (request.withUserToken) {
+            const userTokenRefreshInterceptorIndex = request.responseInterceptors.indexOf(this.userTokenRefreshInterceptor);
+            if (userTokenRefreshInterceptorIndex === -1) {
+                request.responseInterceptors.push(this.userTokenRefreshInterceptor);
+            } else {
+                request.responseInterceptors.splice(userTokenRefreshInterceptorIndex, 1);
+            }
         }
 
         return this.httpService.fetch<T>(request).pipe(
