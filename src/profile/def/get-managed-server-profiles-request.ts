@@ -1,6 +1,5 @@
-import {CachedItemRequestSourceFrom} from '../../key-value-store';
+import {CachedItemRequest} from '../../key-value-store';
 
-export interface GetManagedServerProfilesRequest {
-    from: CachedItemRequestSourceFrom;
+export interface GetManagedServerProfilesRequest extends CachedItemRequest {
     requiredFields: string[];
 }
