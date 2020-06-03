@@ -20,10 +20,18 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     }
 
     private static getIdForRequest(request: FormRequest): string {
-        let id = request.type + '_' + request.subType + '_' + request.action;
+        let id = `${request.type}_${request.subType}_${request.action}`;
 
         if (request.rootOrgId) {
             id += ('_' + request.rootOrgId);
+        }
+
+        if (request.framework) {
+            id += ('_' + request.framework);
+        }
+
+        if (request.component) {
+            id += ('_' + request.component);
         }
 
         return id;
