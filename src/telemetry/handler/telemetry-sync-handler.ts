@@ -1,12 +1,4 @@
-import {
-    ApiConfig,
-    ApiRequestHandler,
-    ApiService,
-    HttpClientError,
-    HttpRequestType,
-    Request,
-    ResponseCode
-} from '../../api';
+import {ApiConfig, ApiRequestHandler, ApiService, HttpClientError, HttpRequestType, HttpSerializer, Request, ResponseCode} from '../../api';
 import {InteractSubType, InteractType, TelemetryAutoSyncModes, TelemetrySyncRequest, TelemetrySyncStat} from '..';
 import {TelemetrySyncPreprocessor} from '../def/telemetry-sync-preprocessor';
 import {StringToGzippedString} from '../impl/string-to-gzipped-string';
@@ -370,9 +362,14 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
         // const body = JSON.parse(pako.ungzip(processedEventsBatchEntry[TelemetryProcessedEntry.COLUMN_NAME_DATA], {to: 'string'}));
 
         const apiRequest: Request = new Request.Builder()
+            .withSerializer(HttpSerializer.RAW)
             .withHost(this.telemetryConfig.host!)
             .withType(HttpRequestType.POST)
             .withPath(this.telemetryConfig.apiPath + TelemetrySyncHandler.TELEMETRY_ENDPOINT)
+            .withHeaders({
+                'Content-Type': 'application/json',
+                'Content-Encoding': 'gzip'
+            })
             .withBody(body)
             .withApiToken(true)
             .build();

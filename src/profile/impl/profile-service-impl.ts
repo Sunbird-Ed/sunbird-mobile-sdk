@@ -18,9 +18,9 @@ import {
     ProfileType,
     ServerProfile,
     ServerProfileDetailsRequest,
-    ServerProfileSearchCriteria,
     TenantInfoRequest,
     UpdateServerProfileInfoRequest,
+    UserMigrateRequest,
     VerifyOtpRequest
 } from '..';
 import {DbService} from '../../db';
@@ -29,7 +29,6 @@ import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
 import {ApiConfig, ApiService, HttpRequestType, Request, Response} from '../../api';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
-import {SearchServerProfileHandler} from '../handler/search-server-profile-handler';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {ProfileDbEntryMapper} from '../util/profile-db-entry-mapper';
@@ -76,11 +75,10 @@ import {SdkConfig} from '../../sdk-config';
 import {Container, inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {AuthService} from '../../auth';
-import {defer, from, Observable, of, zip, iif, throwError} from 'rxjs';
+import {defer, from, iif, Observable, of, throwError, zip} from 'rxjs';
 import {catchError, finalize, map, mapTo, mergeMap, tap} from 'rxjs/operators';
 import {UserFeed} from '../def/user-feed-response';
 import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
-import {UserMigrateRequest} from '../def/user-migrate-request';
 import {UserMigrateResponse} from '../def/user-migrate-response';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
 
@@ -312,10 +310,6 @@ export class ProfileServiceImpl implements ProfileService {
     updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<Profile> {
         return new UpdateServerProfileInfoHandler(this.apiService,
             this.sdkConfig.profileServiceConfig).handle(updateUserInfoRequest);
-    }
-
-    getServerProfiles(searchCriteria: ServerProfileSearchCriteria): Observable<ServerProfile[]> {
-        return new SearchServerProfileHandler(this.apiService, this.sdkConfig.profileServiceConfig).handle(searchCriteria);
     }
 
     getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo> {
@@ -638,18 +632,18 @@ export class ProfileServiceImpl implements ProfileService {
                 return undefined;
             }),
             finalize(() => {
-            const launchUrl = this.sdkConfig.apiConfig.user_authentication.mergeUserHost +
-                this.sdkConfig.apiConfig.user_authentication.authUrl + '/logout' + '?redirect_uri=' +
-                this.sdkConfig.apiConfig.host + '/oauth2callback';
+                const launchUrl = this.sdkConfig.apiConfig.user_authentication.mergeUserHost +
+                    this.sdkConfig.apiConfig.user_authentication.authUrl + '/logout' + '?redirect_uri=' +
+                    this.sdkConfig.apiConfig.host + '/oauth2callback';
 
-            const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', 'zoom=no,hidden=yes');
+                const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', 'zoom=no,hidden=yes');
 
-            inAppBrowserRef.addEventListener('loadstart', async (event) => {
-                if ((<string>event.url).indexOf('/oauth2callback') > -1) {
-                    inAppBrowserRef.close();
-                }
-            });
-        })
+                inAppBrowserRef.addEventListener('loadstart', async (event) => {
+                    if ((<string>event.url).indexOf('/oauth2callback') > -1) {
+                        inAppBrowserRef.close();
+                    }
+                });
+            })
         );
     }
 
@@ -662,6 +656,24 @@ export class ProfileServiceImpl implements ProfileService {
                 return results[0] === results[1];
             })
         );
+    }
+
+    getUserFeed(): Observable<UserFeed[]> {
+        return this.authService.getSession().pipe(
+            mergeMap((session) => {
+                if (!session) {
+                    throw new NoActiveSessionError('No Active Session Found');
+                }
+                return new GetUserFeedHandler(this.sdkConfig, this.apiService)
+                    .handle(session.userToken);
+            })
+        );
+
+    }
+
+    userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse> {
+        return new UserMigrateHandler(this.sdkConfig, this.apiService)
+            .handle(userMigrateRequest);
     }
 
     private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
@@ -686,23 +698,5 @@ export class ProfileServiceImpl implements ProfileService {
                 duration: Math.floor((Date.now() - profileSession.createdTime) / 1000)
             }).toPromise();
         }
-    }
-
-    getUserFeed(): Observable<UserFeed[]> {
-        return this.authService.getSession().pipe(
-            mergeMap((session) => {
-                if (!session) {
-                    throw new NoActiveSessionError('No Active Session Found');
-                }
-                return new GetUserFeedHandler(this.sdkConfig, this.apiService)
-                .handle(session.userToken);
-            })
-        );
-
-    }
-
-    userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse> {
-        return new UserMigrateHandler(this.sdkConfig, this.apiService)
-        .handle(userMigrateRequest);
     }
 }

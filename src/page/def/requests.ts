@@ -13,8 +13,12 @@ export interface PageAssembleFilter {
     ageGroup?: Array<string>;
     ownership?: Array<string>;
     dialcodes?: string;
+    'batches.createdFor'?: string[];
 }
 
+export interface PageAssembleProfile {
+    board: string[];
+}
 export interface SetPageAssembleChannelRequest {
     channelId: string;
 }
@@ -25,6 +29,12 @@ export interface PageAssembleCriteria extends CachedItemRequest {
     source?: 'app' | 'web';
     mode?: 'soft' | 'hard';
     filters?: PageAssembleFilter;
+    userProfile?: PageAssembleProfile;
+    sections?: {
+        [sectionId: string]: {
+            filters?: PageAssembleFilter
+        }
+    };
 }
 
 export enum PageName {

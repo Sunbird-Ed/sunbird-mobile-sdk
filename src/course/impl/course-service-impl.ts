@@ -36,7 +36,6 @@ import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DownloadCertificateRequest} from '../def/download-certificate-request';
-import {AuthService} from '../../auth';
 import {NoCertificateFound} from '../errors/no-certificate-found';
 import {AppInfo} from '../../util/app';
 import {FileUtil} from '../../util/file/util/file-util';
@@ -50,6 +49,16 @@ import {catchError, concatMap, delay, filter, map, mapTo, mergeMap, take} from '
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
+    public static readonly GET_CONTENT_STATE_KEY_PREFIX = 'getContentState';
+    public static readonly GET_ENROLLED_COURSE_KEY_PREFIX = 'enrolledCourses';
+    public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
+    public static readonly LAST_READ_CONTENTID_PREFIX = 'lastReadContentId';
+    private static readonly CERTIFICATE_SIGN_ENDPOINT = '/api/certreg/v1/certs/download';
+    private readonly courseServiceConfig: CourseServiceConfig;
+    private readonly profileServiceConfig: ProfileServiceConfig;
+    private capturedAssessmentEvents: { [key: string]: SunbirdTelemetry.Telemetry[] | undefined } = {};
+    private syncAssessmentEventsHandler: SyncAssessmentEventsHandler;
+
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
         @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
@@ -57,7 +66,6 @@ export class CourseServiceImpl implements CourseService {
         @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
-        @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService,
         @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo
     ) {
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
@@ -70,19 +78,6 @@ export class CourseServiceImpl implements CourseService {
             this.dbService
         );
     }
-
-    public static readonly GET_CONTENT_STATE_KEY_PREFIX = 'getContentState';
-    public static readonly GET_ENROLLED_COURSE_KEY_PREFIX = 'enrolledCourses';
-    public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
-    public static readonly LAST_READ_CONTENTID_PREFIX = 'lastReadContentId';
-
-    private static readonly CERTIFICATE_SIGN_ENDPOINT = '/certs/download';
-
-    private readonly courseServiceConfig: CourseServiceConfig;
-    private readonly profileServiceConfig: ProfileServiceConfig;
-
-    private capturedAssessmentEvents: { [key: string]: SunbirdTelemetry.Telemetry[] | undefined } = {};
-    private syncAssessmentEventsHandler: SyncAssessmentEventsHandler;
 
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch> {
         return new GetBatchDetailsHandler(this.apiService, this.courseServiceConfig)
@@ -121,16 +116,14 @@ export class CourseServiceImpl implements CourseService {
     }
 
     getCourseBatches(request: CourseBatchesRequest): Observable<Batch[]> {
-        return new GetCourseBatchesHandler(
-            this.apiService, this.courseServiceConfig, this.profileService, this.authService)
-            .handle(request);
+        return new GetCourseBatchesHandler(this.apiService, this.courseServiceConfig).handle(request);
     }
 
     getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]> {
         const updateContentStateHandler: UpdateContentStateApiHandler =
             new UpdateContentStateApiHandler(this.apiService, this.courseServiceConfig);
         return zip(
-            this.syncAssessmentEvents({ persistedOnly: true }),
+            this.syncAssessmentEvents({persistedOnly: true}),
             new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)
                 .updateContentState()
         ).pipe(
@@ -274,7 +267,7 @@ export class CourseServiceImpl implements CourseService {
                 mergeMap(({certificate, course}) => {
                     const signCertificateRequest = new Request.Builder()
                         .withType(HttpRequestType.POST)
-                        .withPath(this.profileServiceConfig.profileApiPath + CourseServiceImpl.CERTIFICATE_SIGN_ENDPOINT)
+                        .withPath(CourseServiceImpl.CERTIFICATE_SIGN_ENDPOINT)
                         .withApiToken(true)
                         .withSessionToken(true)
                         .withBody({
@@ -358,7 +351,7 @@ export class CourseServiceImpl implements CourseService {
         this.capturedAssessmentEvents[key]!.push(event);
     }
 
-    public syncAssessmentEvents(options = { persistedOnly: false }): Observable<undefined> {
+    public syncAssessmentEvents(options = {persistedOnly: false}): Observable<undefined> {
         let capturedAssessmentEvents = {};
 
         if (!options.persistedOnly) {

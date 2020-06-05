@@ -4,7 +4,7 @@ import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
 import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
 import {FileService} from '../../util/file/def/file-service';
 import {of, throwError} from 'rxjs';
-import {Organization} from '../def/Organization';
+import {Organization} from '../def/organization';
 import {ApiService, HttpRequestType, Request, HttpClient} from '../../api';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';

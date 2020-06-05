@@ -1,17 +1,5 @@
-export interface UserFeed {
-    id: string;
-    userId: string;
-    category: string;
-    priority: number;
-    createdBy: string;
-    createdOn: string;
-    channel: string;
-    status: string;
-    expireOn: string;
-    data: {
-        prospectChannels: Array<string>;
-    };
-}
+export {Feed as UserFeed} from '@project-sunbird/client-services';
+import {Feed as UserFeed} from '@project-sunbird/client-services';
 
 export interface UserFeedResponse {
     response: UserFeed[];

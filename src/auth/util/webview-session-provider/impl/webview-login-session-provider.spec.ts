@@ -2,7 +2,7 @@ import {ApiService} from '../../../../api';
 import {EventsBusService} from '../../../../events-bus';
 import {mockSdkConfig} from '../../../../page/impl/page-assemble-service-impl.spec.data';
 import {WebviewLoginSessionProvider} from './webview-login-session-provider';
-import {loginConfig, loginConfigForStateError, mergeConfig} from './webview-login-session-provider.spec.data';
+import {loginConfig, loginConfigForReset, loginConfigForStateError, mergeConfig} from './webview-login-session-provider.spec.data';
 import {WebviewRunner} from '../def/webview-runner';
 import {OAuthSession, SignInError} from '../../..';
 import {of} from 'rxjs';
@@ -39,6 +39,8 @@ describe('WebviewLoginSessionProvider', () => {
 
     beforeEach(() => {
         jest.resetAllMocks();
+        jest.clearAllMocks();
+        jest.restoreAllMocks();
     });
 
     it('should be able to create an instance', () => {
@@ -153,6 +155,43 @@ describe('WebviewLoginSessionProvider', () => {
                     })
                 })
             );
+            done();
+        });
+    });
+
+    it('should capture params and reset/relaunch webview when config type "reset" is captured', (done) => {
+        webviewLoginSessionProvider = new WebviewLoginSessionProvider(
+            loginConfigForReset,
+            mergeConfig,
+            mockWebviewRunner as WebviewRunner
+        );
+
+        // arrange
+        const mockPdata = {'id': 'staging.diksha.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'};
+        mockTelemetryService.buildContext = jest.fn().mockImplementation(() => {
+            return of({
+                pdata: mockPdata
+            });
+        });
+        const orderStack = [() => Promise.reject(), () => Promise.resolve()];
+        mockWebviewRunner.launchWebview = jest.fn().mockImplementation(() => orderStack.pop()!());
+        mockWebviewRunner.capture = jest.fn().mockImplementation(() => Promise.resolve());
+        mockWebviewRunner.getCaptureExtras = jest.fn().mockImplementation(() => Promise.resolve({'SOME_EXTRA_PARAM': 'SOME_EXTRA_VALUE'}));
+        mockWebviewRunner.closeWebview = jest.fn().mockImplementation(() => Promise.resolve());
+        mockWebviewRunner.any = jest.fn().mockImplementation((params) => Promise.race([params]));
+
+        // act
+        webviewLoginSessionProvider.provide().catch(() => {
+            // assert
+            expect(mockWebviewRunner.launchWebview).nthCalledWith(2, expect.objectContaining({
+                params: expect.objectContaining({
+                    ...loginConfigForReset.target.params.reduce((acc, p) => {
+                        acc[p.key] = p.value;
+                        return acc;
+                    }, {}),
+                    'SOME_EXTRA_PARAM': 'SOME_EXTRA_VALUE'
+                })
+            }));
             done();
         });
     });

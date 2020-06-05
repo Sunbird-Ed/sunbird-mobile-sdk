@@ -4,21 +4,22 @@ import { PageAssembleService } from '..';
 import { InjectionTokens } from '../../injection-tokens';
 import {
     SdkConfig,
-    DeviceInfo,
     CachedItemStore,
     KeyValueStore,
     SharedPreferences,
+    FrameworkService,
     AuthService,
+    DbService,
     ProfileService,
     SystemSettingsService
 } from '../..';
 import { ApiService } from '../../api';
 import { mockSdkConfig } from './page-assemble-service-impl.spec.data';
-import { PageName, PageAssembleCriteria } from '../def/requests';
-import {PageAssemblerHandler} from '../handle/page-assembler-handler';
+import { PageName, PageAssembleCriteria } from '..';
+import {PageAssemblerFactory} from '../handle/page-assembler-factory';
 import { of } from 'rxjs';
 
-jest.mock('../handle/page-assembler-handler');
+jest.mock('../handle/page-assembler-factory');
 
 describe('PageAssembleServiceImpl', () => {
     let pageAssembleServiceImpl: PageAssembleServiceImpl;
@@ -27,6 +28,8 @@ describe('PageAssembleServiceImpl', () => {
     const mockCachedItemStore: Partial<CachedItemStore> = {};
     const mockKeyValueStore: Partial<KeyValueStore> = {};
     const mockSharedPreferences: Partial<SharedPreferences> = {};
+    const mockFrameworkService: Partial<FrameworkService> = {};
+    const mockDbService: Partial<DbService> = {};
     const mockAuthService: Partial<AuthService> = {};
     const mockProfileService: Partial<ProfileService> = {};
     const mockSystemSettingsService: Partial<SystemSettingsService> = {};
@@ -38,7 +41,9 @@ describe('PageAssembleServiceImpl', () => {
         container.bind<CachedItemStore>(InjectionTokens.CACHED_ITEM_STORE).toConstantValue(mockCachedItemStore as CachedItemStore);
         container.bind<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE).toConstantValue(mockKeyValueStore as KeyValueStore);
         container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).toConstantValue(mockSharedPreferences as SharedPreferences);
+        container.bind<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE).toConstantValue(mockFrameworkService as FrameworkService);
         container.bind<AuthService>(InjectionTokens.AUTH_SERVICE).toConstantValue(mockAuthService as AuthService);
+        container.bind<DbService>(InjectionTokens.DB_SERVICE).toConstantValue(mockDbService as DbService);
         container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).toConstantValue(mockProfileService as ProfileService);
         container.bind<SystemSettingsService>(InjectionTokens.SYSTEM_SETTINGS_SERVICE).toConstantValue(mockSystemSettingsService as SystemSettingsService);
 
@@ -47,7 +52,7 @@ describe('PageAssembleServiceImpl', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        (PageAssemblerHandler as any as jest.Mock<PageAssemblerHandler>).mockClear();
+        (PageAssemblerFactory as any as jest.Mock<PageAssemblerFactory>).mockClear();
     });
 
     it('should be create a instance of pageAssembleServiceImpl', () => {
@@ -63,10 +68,10 @@ describe('PageAssembleServiceImpl', () => {
 
         const handleMethod = jest.fn().mockImplementation(() => of(''));
 
-        (PageAssemblerHandler as any as jest.Mock<PageAssemblerHandler>).mockImplementation(() => {
+        (PageAssemblerFactory as any as jest.Mock<PageAssemblerFactory>).mockImplementation(() => {
             return {
                 handle: handleMethod,
-            } as Partial<PageAssemblerHandler> as PageAssemblerHandler;
+            } as Partial<PageAssemblerFactory> as PageAssemblerFactory;
         });
         // act
         pageAssembleServiceImpl.getPageAssemble(request).subscribe(() => {

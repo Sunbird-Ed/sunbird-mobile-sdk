@@ -91,7 +91,7 @@ export class SearchContentHandler {
         };
     }
 
-    getSearchFilter(criteria: ContentSearchCriteria): SearchFilter {
+    private getSearchFilter(criteria: ContentSearchCriteria): SearchFilter {
         if (criteria.searchType!.valueOf() === SearchType.SEARCH.valueOf()) {
             return this.getSearchRequest(criteria);
         } else if (criteria.searchType!.valueOf() === SearchType.FILTER.valueOf()) {
@@ -100,7 +100,7 @@ export class SearchContentHandler {
         return {};
     }
 
-    getFilterRequest(criteria: ContentSearchCriteria): SearchFilter {
+    private getFilterRequest(criteria: ContentSearchCriteria): SearchFilter {
         let searchFilter: SearchFilter = {
             compatibilityLevel: this.getCompatibilityLevelFilter(),
             contentType: (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : []
@@ -119,7 +119,7 @@ export class SearchContentHandler {
         return searchFilter;
     }
 
-    addFiltersToRequest(searchFilter: SearchFilter, filter: ContentSearchFilter[]) {
+    private addFiltersToRequest(searchFilter: SearchFilter, filter: ContentSearchFilter[]) {
         if (filter && filter.length) {
             filter.forEach(facetFilter => {
                 const filterValueList: string[] = [];
@@ -137,7 +137,7 @@ export class SearchContentHandler {
         }
     }
 
-    getSearchRequest(criteria: ContentSearchCriteria): SearchFilter {
+    private getSearchRequest(criteria: ContentSearchCriteria): SearchFilter {
         return {
             compatibilityLevel: this.getCompatibilityLevelFilter(),
             status: criteria.contentStatusArray,
@@ -160,15 +160,15 @@ export class SearchContentHandler {
         };
     }
 
-    getSortByRequest(sortCriteria: ContentSortCriteria[]): any {
-        if (!sortCriteria || !sortCriteria!.length) {
+    getSortByRequest(sortCriteria?: ContentSortCriteria[]): {[key: string]: SortOrder} {
+        if (!sortCriteria) {
             return {};
         }
-        const attribute = sortCriteria[0].sortAttribute;
-        const sortOrder: SortOrder = sortCriteria[0].sortOrder;
-        const sortByFilter = {};
-        sortByFilter[attribute] = sortOrder;
-        return sortByFilter;
+
+        return sortCriteria.reduce((acc, criteria) => {
+            acc[criteria.sortAttribute] = criteria.sortOrder;
+            return acc;
+        }, {});
     }
 
     getCompatibilityLevelFilter(): any {

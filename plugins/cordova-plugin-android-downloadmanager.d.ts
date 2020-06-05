@@ -59,5 +59,5 @@ declare var downloadManager: {
     enqueue: (enqueueRequest: EnqueueRequest, callback?: (err, id: string) => void) => void;
     query: (filter: EnqueueFilter | undefined, callback?: (err, entries: EnqueuedEntry[]) => void) => void;
     remove: (ids: string[], callback?: (err, removeCount: number) => void) => void;
-    fetchSpeedLog: (successCallback: (downloadSpeedLog: DownloadSpeedLog) => void, errorCallback: () => void) => void;
+    fetchSpeedLog: (successCallback: (args: any, downloadSpeedLog: DownloadSpeedLog) => void, errorCallback: () => void) => void;
 };

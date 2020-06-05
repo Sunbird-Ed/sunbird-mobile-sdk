@@ -47,14 +47,9 @@ export class BaseConnection implements Connection {
                     ).toPromise();
                     break;
                 case HttpRequestType.POST: {
-                    if (request.body instanceof Uint8Array) {
-                        response = await this.handleByteArrayPost(request);
-                    } else {
-                        response = await this.http.post(
-                            request.host || this.apiConfig.host, request.path, request.headers, request.body
-                        ).toPromise();
-                    }
-
+                    response = await this.http.post(
+                        request.host || this.apiConfig.host, request.path, request.headers, request.body
+                    ).toPromise();
                     break;
                 }
             }
@@ -125,56 +120,4 @@ export class BaseConnection implements Connection {
 
         return response;
     }
-
-    private async handleByteArrayPost(request: Request): Promise<Response> {
-        return new Promise<Response>((resolve, reject) => {
-            const xhr = new XMLHttpRequest;
-            xhr.open(HttpRequestType.POST, (request.host || this.apiConfig.host) + request.path, true);
-
-            Object.keys(request.headers).filter((header) => header !== 'Content-Type' && header !== 'Content-Encoding')
-                .forEach((header) => {
-                    xhr.setRequestHeader(header, request.headers[header]);
-                });
-
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.setRequestHeader('Content-Encoding', 'gzip');
-
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        const sunbirdResponse = new Response<any>();
-                        sunbirdResponse.responseCode = xhr.status;
-                        sunbirdResponse.body = JSON.parse(xhr.responseText);
-
-                        resolve(sunbirdResponse);
-                    } else {
-                        const sunbirdResponse = new Response<any>();
-                        sunbirdResponse.errorMesg = 'NETWORK ERROR';
-                        sunbirdResponse.responseCode = xhr.status;
-
-                        if (
-                            sunbirdResponse.responseCode === ResponseCode.HTTP_UNAUTHORISED ||
-                            sunbirdResponse.responseCode === ResponseCode.HTTP_FORBIDDEN
-                        ) {
-                            resolve(sunbirdResponse);
-                        } else {
-                            if (sunbirdResponse.responseCode >= 400 && sunbirdResponse.responseCode <= 499) {
-                                reject(new HttpClientError(`
-                                    ${(request.host || this.apiConfig.host) + request.path} -
-                                    ${xhr.responseText || ''}
-                                `, sunbirdResponse));
-                            } else {
-                                reject(new HttpServerError(`
-                                    ${(request.host || this.apiConfig.host) + request.path} -
-                                    ${xhr.responseText || ''}
-                                `, sunbirdResponse));
-                            }
-                        }
-                    }
-                }
-            };
-            xhr.send(request.body as any);
-        });
-    }
-
 }

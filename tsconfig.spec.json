@@ -6,7 +6,7 @@
       "src/__test__"
     ],
     "types": [
-      "jest"
+      "jest", "node"
     ]
   },
   "include": [

@@ -14,7 +14,7 @@ export class ContentSearchApiHandler implements ApiRequestHandler<SearchRequest,
     }
 
     handle(request: SearchRequest): Observable<SearchResponse> {
-        const additionalPath = this.framework && this.langCode && `?framework=${this.framework}&lang=${this.langCode}`;
+        const additionalPath = this.framework && this.langCode && `?framework=${this.framework}&lang=${this.langCode}&orgdetails=orgName`;
         const apiRequest: Request = new Request.Builder()
             .withHost(this.contentServiceConfig.host)
             .withType(HttpRequestType.POST)

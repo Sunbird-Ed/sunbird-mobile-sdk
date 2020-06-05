@@ -13,6 +13,7 @@ export interface FrameworkDetailsRequest extends CachedItemRequest {
 export interface OrganizationSearchCriteria<T> {
     filters: {
         isRootOrg: boolean;
+        slug?: string;
     };
     fields?: (keyof T)[];
 }

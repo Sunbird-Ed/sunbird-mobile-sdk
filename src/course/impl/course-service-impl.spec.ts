@@ -39,10 +39,7 @@ describe('CourseServiceImpl', () => {
         fetch: jest.fn().mockImplementation(() => {
         })
     };
-    const mockProfileService: Partial<ProfileService> = {
-        getServerProfiles: jest.fn().mockImplementation(() => {
-        })
-    };
+    const mockProfileService: Partial<ProfileService> = {};
     const mockKeyValueStore: Partial<KeyValueStore> = {
         getValue: jest.fn().mockImplementation(() => {
         }),
@@ -147,7 +144,10 @@ describe('CourseServiceImpl', () => {
             userId: 'SAMPLE_USER_ID',
             courseId: 'SAMPLE_COURSE_ID',
             contentId: 'SAMPLE_CONTENT_ID',
-            batchId: 'SAMPLE_BATCH_ID'
+            batchId: 'SAMPLE_BATCH_ID',
+            result: 'SOME_RESULT',
+            grade: 'SOME_GRADE',
+            score: 'SOME_SCORE'
         };
         spyOn(mockApiService, 'fetch').and.returnValue(of({response: {body: {result: 'FAILED'}}}));
         spyOn(mockKeyValueStore, 'getValue').and.returnValue(of('MOCK_KEY_VALUE'));
@@ -180,13 +180,10 @@ describe('CourseServiceImpl', () => {
                 }
             }
         }));
-        spyOn(mockAuthService, 'getSession').and.returnValue(of(['SAMPLE_SESSION']));
-        spyOn(mockProfileService, 'getServerProfiles').and.returnValue(of(['SAMPLE_PROFILE']));
         // act
         courseService.getCourseBatches(request).subscribe(() => {
             // assert
             expect(mockApiService.fetch).toHaveBeenCalled();
-            expect(mockProfileService.getServerProfiles).toHaveBeenCalled();
             done();
         });
     });
@@ -216,7 +213,11 @@ describe('CourseServiceImpl', () => {
     });
 
     describe('getEnrolledCourse()', () => {
-        it('should delegate to GetEnrolledCourseHandler', (done) => {
+        let mockGetEnrolledCourseHandler = {
+            handle: jest.fn().mockImplementation(() => of([]))
+        };
+
+        beforeEach(() => {
             // arrange
             spyOn(courseService, 'syncAssessmentEvents').and.returnValue(of(undefined));
             (ContentStatesSyncHandler as jest.Mock<ContentStatesSyncHandler>).mockImplementation(() => {
@@ -224,12 +225,15 @@ describe('CourseServiceImpl', () => {
                     updateContentState: jest.fn().mockImplementation(() => of(true))
                 } as Partial<ContentStatesSyncHandler> as ContentStatesSyncHandler;
             });
-            const mockGetEnrolledCourseHandler = {
+            mockGetEnrolledCourseHandler = {
                 handle: jest.fn().mockImplementation(() => of([]))
             };
             (GetEnrolledCourseHandler as jest.Mock<GetEnrolledCourseHandler>).mockImplementation(() => {
                 return mockGetEnrolledCourseHandler as Partial<GetEnrolledCourseHandler> as GetEnrolledCourseHandler;
             });
+        });
+
+        it('should delegate to GetEnrolledCourseHandler', (done) => {
             const request = {
                 userId: 'SAMPLE_USER_ID',
                 returnFreshCourses: true
@@ -238,6 +242,21 @@ describe('CourseServiceImpl', () => {
             courseService.getEnrolledCourses(request).subscribe(() => {
                 // assert
                 expect(mockGetEnrolledCourseHandler.handle).toHaveBeenCalledWith(request);
+                done();
+            });
+        });
+
+        it('should sync persisted assessment events', (done) => {
+            const request = {
+                userId: 'SAMPLE_USER_ID',
+                returnFreshCourses: true
+            };
+            // act
+            courseService.getEnrolledCourses(request).subscribe(() => {
+                // assert
+                expect(courseService.syncAssessmentEvents).toHaveBeenCalledWith({
+                    persistedOnly: true
+                });
                 done();
             });
         });
@@ -313,7 +332,7 @@ describe('CourseServiceImpl', () => {
             courseService.syncAssessmentEvents().subscribe(() => {
                 // assert
                 expect(mockSyncAssessmentEventsHandler.handle).toHaveBeenCalledWith(
-                    expect.objectContaining({ 'SAMPLE_KEY': expect.any(Array) })
+                    expect.objectContaining({'SAMPLE_KEY': expect.any(Array)})
                 );
                 expect(courseService.resetCapturedAssessmentEvents).toHaveBeenCalled();
                 done();
@@ -326,7 +345,7 @@ describe('CourseServiceImpl', () => {
             spyOn(courseService, 'resetCapturedAssessmentEvents').and.stub();
 
             // act
-            courseService.syncAssessmentEvents({ persistedOnly: true }).subscribe(() => {
+            courseService.syncAssessmentEvents({persistedOnly: true}).subscribe(() => {
                 // assert
                 expect(mockSyncAssessmentEventsHandler.handle).toHaveBeenCalledWith(expect.objectContaining({}));
                 expect(courseService.resetCapturedAssessmentEvents).not.toHaveBeenCalled();

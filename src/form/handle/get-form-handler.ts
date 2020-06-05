@@ -30,13 +30,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     }
 
     handle(request: FormRequest): Observable<{ [key: string]: {} }> {
-        if (request.from && request.from === CachedItemRequestSourceFrom.SERVER) {
-            return this.fetchFormServer(request).pipe(
-                map(res => res['form'])
-            );
-        }
-
-        return this.cachedItemStore.getCached(
+        return this.cachedItemStore[request.from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
             GetFormHandler.getIdForRequest(request),
             this.FORM_LOCAL_KEY,
             'ttl_' + this.FORM_LOCAL_KEY,

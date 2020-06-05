@@ -39,6 +39,9 @@ describe('SearchContentHandler', () => {
 
     it('should search content sort criteria', () => {
         // arrange
+        const filterMap: SearchFilter = {
+            contentType: ['SAMPLE_CONTENT_TYPE']
+        };
         const request = {
             request: {
                 query: 'Sample_query',
@@ -50,7 +53,7 @@ describe('SearchContentHandler', () => {
                     key1: 'asc',
                     key2: 'desc'
                 },
-                filters: 'filters',
+                filters: filterMap,
                 facets: 'facets',
                 searchType: SearchType.FILTER
             }
@@ -67,10 +70,6 @@ describe('SearchContentHandler', () => {
             sortOrder: SortOrder.DESC
         };
         sortCriteria.push(criteria2);
-        // request.request.sort_by = sortCriteria;
-        const filterMap: SearchFilter = {
-            contentType: ['SAMPLE_CONTENT_TYPE']
-        };
         // act
         searchContentHandler.getSearchCriteria(request);
         // assert
@@ -84,10 +83,8 @@ describe('SearchContentHandler', () => {
         const request = {
             request: {
                 query: 'Sample_query',
-                exists: 'Sample_exists',
-                limit: 'Sample_limit',
-                offset: 'Sample_offset',
                 mode: 'mode',
+                filters: 'filters'
             }
         };
         // act
@@ -108,7 +105,6 @@ describe('SearchContentHandler', () => {
             facets: [],
             exists: ['SAMPLE_1', 'SAMPLE_2']
         };
-        // spyOn(searchContentHandler, 'getSearchFilter').and.stub();
         // act
         searchContentHandler.getSearchContentRequest(criteria);
         // assert
@@ -122,7 +118,6 @@ describe('SearchContentHandler', () => {
         const criteria: ContentSearchCriteria = {
             searchType: SearchType.FILTER
         };
-        // spyOn(searchContentHandler, 'getSearchFilter').and.stub();
 
         // act
         searchContentHandler.getSearchContentRequest(criteria);
@@ -132,32 +127,112 @@ describe('SearchContentHandler', () => {
 
     it('should added filter for search request to invoked addFiltersToRequest()', () => {
         // arrange
-        const valueRequest: FilterValue[] = [{
-            name: 'SAMPLE_NAME',
-            apply: true
-        }];
-        const filter: ContentSearchFilter[] = [{
+        const valueRequest: FilterValue[] = [
+            {
+                name: 'SAMPLE_NAME',
+                apply: true
+            },
+            {
+                name: 'SAMPLE_NAME_1',
+                apply: false
+            }
+        ];
+        const facetFilters: ContentSearchFilter[] = [{
             name: 'SAMPLE_CONTENT',
             values: valueRequest
         }];
-        const searchFilter: SearchFilter = {};
+        const criteria: ContentSearchCriteria = {
+            searchType: SearchType.FILTER,
+            query: 'SAMPLE_QUERY',
+            offset: 1,
+            limit: 2,
+            mode: 'SAMPLE_MODE',
+            facets: [],
+            exists: ['SAMPLE_1', 'SAMPLE_2'],
+            facetFilters: facetFilters,
+        };
+        // const searchFilter: SearchFilter = {};
         // act
-        searchContentHandler.addFiltersToRequest(searchFilter, filter);
+        const searchRequest = searchContentHandler.getSearchContentRequest(criteria);
         // assert
-        expect(filter.length).toBeGreaterThan(0);
+        expect(searchRequest.filters).toEqual({ compatibilityLevel: { min: 1, max: undefined },
+            contentType: [],
+            SAMPLE_CONTENT: [ 'SAMPLE_NAME' ] });
     });
 
-    it('should sort all Attributes to invocked getSortByRequest()', () => {
+    it('should added filter for search request', () => {
         // arrange
-        const sortCriteria: ContentSortCriteria[] = [{
-            sortAttribute: 'key',
-            sortOrder: SortOrder.ASC
-        }];
+        const criteria: ContentSearchCriteria = {
+            facets: ['sample facets'],
+            searchType: SearchType.SEARCH,
+            contentTypes: ['sample_content_type'],
+            keywords: ['sample keyword'],
+            dialCodes: ['sample dialcode'],
+            createdBy: ['sample createdBy'],
+            grade: ['sample grade'],
+            medium: ['Sample Medium'],
+            board: ['Sample board'],
+            language: ['Sample language'],
+            topic: ['Sample topic'],
+            purpose: ['Sample purpose'],
+            channel: ['Sample channel'],
+            mimeType: ['sample mimeType'],
+            subject: ['sample subject']
+            // query: 'SAMPLE_QUERY',
+            // offset: 1,
+            // limit: 2,
+            // mode: 'SAMPLE_MODE',
+            // facets: [],
+            // exists: ['SAMPLE_1', 'SAMPLE_2'],
+            // facetFilters: facetFilters
+        };
+        // const searchFilter: SearchFilter = {};
         // act
-        searchContentHandler.getSortByRequest(sortCriteria);
+        const searchRequest = searchContentHandler.getSearchContentRequest(criteria);
+        console.log('searchRequest.filters: ', searchRequest.filters);
         // assert
-        expect(sortCriteria[0].sortAttribute).toBe('key');
-        expect(sortCriteria[0].sortOrder).toBe('asc');
+        expect(searchRequest.filters).toEqual({ compatibilityLevel: { min: 1, max: undefined },
+            status: undefined,
+            objectType: [ 'Content' ],
+            contentType: [ 'sample_content_type' ],
+            keywords: [ 'sample keyword' ],
+            dialcodes: [ 'sample dialcode' ],
+            createdBy: [ 'sample createdBy' ],
+            gradeLevel: [ 'sample grade' ],
+            medium: [ 'Sample Medium' ],
+            board: [ 'Sample board' ],
+            language: [ 'Sample language' ],
+            topic: [ 'Sample topic' ],
+            purpose: [ 'Sample purpose' ],
+            channel: [ 'Sample channel' ],
+            mimeType: [ 'sample mimeType' ],
+            subject: [ 'sample subject' ] }
+        );
+    });
+
+    describe('getSortByRequest()', () => {
+        it('should return empty map if no criteria is provided', () => {
+            // arrange
+            const sortCriteria: ContentSortCriteria[] = [];
+            // act / assert
+            expect(searchContentHandler.getSortByRequest(sortCriteria)).toEqual({});
+        });
+
+        it('should return map of attribute:sortOrder given sortCriteria', () => {
+            // arrange
+            const sortCriteria: ContentSortCriteria[] = [{
+                sortAttribute: 'key1',
+                sortOrder: SortOrder.ASC
+            }, {
+                sortAttribute: 'key2',
+                sortOrder: SortOrder.DESC
+            }];
+            // act / assert
+            expect(searchContentHandler.getSortByRequest(sortCriteria)).toEqual({
+                key1: 'asc',
+                key2: 'desc'
+            });
+        });
     });
 
     it('should create filter by previousCriteria and return contentFilterCriteria', () => {

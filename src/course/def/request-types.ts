@@ -1,3 +1,5 @@
+import {SortOrder} from '../../content';
+
 export interface FetchEnrolledCourseRequest {
     userId: string;
     returnFreshCourses?: boolean;
@@ -26,6 +28,7 @@ export interface UpdateContentStateRequest {
 export interface CourseBatchesRequest {
     filters: CourseBatchesRequestFilters;
     fields: string[];
+    sort_by?: {[key: string]: SortOrder};
 }
 
 export interface UpdateContentStateAPIRequest {
@@ -50,14 +53,6 @@ export interface CourseBatchesRequestFilters {
     courseId: string[] | string;
     status?: string[];
     enrollmentType?: string;
-    sortBy?: string;
-}
-
-export interface CourseBatchesRequestFilters {
-    courseId: string[] | string;
-    status?: string[];
-    enrollmentType?: string;
-    sortBy?: string;
 }
 
 export enum CourseEnrollmentType {

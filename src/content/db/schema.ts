@@ -26,6 +26,8 @@ export namespace ContentEntry {
     export const COLUMN_NAME_BOARD = 'board';
     export const COLUMN_NAME_MEDIUM = 'medium';
     export const COLUMN_NAME_GRADE = 'grade';
+    export const COLUMN_NAME_DIALCODES = 'dialcodes';
+    export const COLUMN_NAME_CHILD_NODES = 'child_nodes';
 
     export interface SchemaMap {
         [COLUMN_NAME_IDENTIFIER]: string;
@@ -47,6 +49,8 @@ export namespace ContentEntry {
         [COLUMN_NAME_BOARD]?: string;
         [COLUMN_NAME_MEDIUM]?: string;
         [COLUMN_NAME_GRADE]?: string;
+        [COLUMN_NAME_DIALCODES]?: string;
+        [COLUMN_NAME_CHILD_NODES]?: string;
     }
 
     export const getCreateEntry: (() => string) = () => {
@@ -70,7 +74,9 @@ export namespace ContentEntry {
             COLUMN_NAME_BOARD + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
             COLUMN_NAME_MEDIUM + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
             COLUMN_NAME_GRADE + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_MANIFEST_VERSION + DbConstants.SPACE + DbConstants.TEXT_TYPE +
+            COLUMN_NAME_MANIFEST_VERSION + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_DIALCODES + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CHILD_NODES + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' +
             ' )';
     };
 
@@ -99,6 +105,13 @@ export namespace ContentEntry {
         return `ALTER TABLE ${TABLE_NAME} ADD COLUMN ${COLUMN_NAME_GRADE} TEXT DEFAULT ''`;
     };
 
+    export const getAlterEntryForDialCode: (() => string) = () => {
+        return `ALTER TABLE ${TABLE_NAME} ADD COLUMN ${COLUMN_NAME_DIALCODES} TEXT DEFAULT ''`;
+    };
+
+    export const getAlterEntryForChildNodes: (() => string) = () => {
+        return `ALTER TABLE ${TABLE_NAME} ADD COLUMN ${COLUMN_NAME_CHILD_NODES} TEXT DEFAULT ''`;
+    };
 }
 
 export namespace ContentAccessEntry {

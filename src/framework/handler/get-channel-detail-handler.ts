@@ -29,9 +29,7 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
         ).pipe(
             map((channel: Channel) => {
                 if (channel.frameworks) {
-                    const maxIndex: number = channel.frameworks.reduce((acc, val) => (val.index && (val.index > acc)) ? val.index : acc, 0);
-
-                    channel.frameworks.sort((i, j) => (i.index || maxIndex + 1) - (j.index || maxIndex + 1));
+                    channel.frameworks.sort((i, j) => i.name.localeCompare(j.name));
                 }
                 return channel;
             })

@@ -4,7 +4,8 @@ import { Authenticator } from './authenticator';
 export declare enum HttpSerializer {
     JSON = "json",
     URLENCODED = "urlencoded",
-    UTF8 = "utf8"
+    UTF8 = "utf8",
+    RAW = "raw"
 }
 export declare enum HttpRequestType {
     GET = "GET",
