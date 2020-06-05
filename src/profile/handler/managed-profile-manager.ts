@@ -250,8 +250,8 @@ export class ManagedProfileManager {
     }
 
     private async persistManagedProfile(serverProfile: ServerProfile) {
-        // adding missing fields
-        serverProfile.userId = serverProfile.id;
+        // TODO: adding missing fields; should remove
+        serverProfile.userId = serverProfile.identifier;
         serverProfile.rootOrg = {
             hashTagId: serverProfile['rootOrgId']
         };
