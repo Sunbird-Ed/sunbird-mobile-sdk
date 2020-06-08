@@ -56,7 +56,10 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
 
         return this.apiService.fetch<{ result: { response: ServerProfile } }>(apiRequest).pipe(
             map((success) => {
-                return success.body.result.response;
+                // TODO: adding missing fields; should remove
+                const serverProfile = success.body.result.response;
+                serverProfile.userId = serverProfile.identifier;
+                return serverProfile;
             })
         );
     }
