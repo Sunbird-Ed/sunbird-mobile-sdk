@@ -28,7 +28,7 @@ import {ArrayUtil} from '../../util/array-util';
 export class ManagedProfileManager {
     private static readonly MANGED_SERVER_PROFILES_LOCAL_KEY = 'managed_server_profiles-';
     private static readonly USER_PROFILE_DETAILS_KEY_PREFIX = 'userProfileDetails';
-    private managedProfileAdded$ = new Subject<undefined>();
+    private managedProfileAdded$ = new Subject<boolean>();
 
     constructor(
         private profileService: ProfileService,
@@ -52,7 +52,7 @@ export class ManagedProfileManager {
 
             await this.updateTnCForManagedProfile(uid);
 
-            this.managedProfileAdded$.next(undefined);
+            this.managedProfileAdded$.next(true);
 
             return await this.profileService.createProfile({
                 uid: uid,
@@ -69,11 +69,15 @@ export class ManagedProfileManager {
 
     getManagedServerProfiles(request: GetManagedServerProfilesRequest): Observable<ServerProfile[]> {
         return this.managedProfileAdded$.pipe(
-            startWith(undefined),
-            mergeMap(() => {
+            startWith(false),
+            mergeMap((managedProfileAdded: boolean) => {
                 return defer(async () => {
                     if (!(await this.isLoggedInUser())) {
                         throw new NoActiveSessionError('No active LoggedIn Session found');
+                    }
+
+                    if (request.from !== CachedItemRequestSourceFrom.SERVER) {
+                        request.from = managedProfileAdded ? CachedItemRequestSourceFrom.SERVER : CachedItemRequestSourceFrom.CACHE;
                     }
 
                     const profile = await this.profileService.getActiveSessionProfile({requiredFields: []})
