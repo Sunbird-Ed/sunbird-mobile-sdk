@@ -53,14 +53,12 @@ export class ApiTokenHandler {
   }
 
   private async getBearerTokenFromKongV2(): Promise<string> {
-    console.log('APIV2', 'V2 called');
     const apiPathKongV2 = `/api/api-manager/v2/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`;
     return this.apiService.fetch(this.buildGetMobileDeviceConsumerSecretAPIRequest(apiPathKongV2)).toPromise()
       .then((res) => {
         throw new Error();
         return res.body.result.token;
       }).catch((e) => {
-        console.log('APIV2', 'V2 Filled');
         if (!(e instanceof CsNetworkError)) {
           return this.getBearerTokenFromKongV1();
         }
@@ -69,12 +67,10 @@ export class ApiTokenHandler {
   }
 
   private async getBearerTokenFromKongV1(): Promise<string> {
-    console.log('APIV1', 'V1 called');
     const apiPathKongV1 = `/api/api-manager/v1/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`;
     return this.apiService.fetch(this.buildGetMobileDeviceConsumerSecretAPIRequest(apiPathKongV1)).toPromise()
       .then((res) => {
         const result = res.body.result;
-        console.log('APIV2', result.token);
         if (!result.token) {
           return JWTUtil.createJWToken({iss: this.getMobileDeviceConsumerKey()}, result.secret, JWTokenType.HS256);
         }
