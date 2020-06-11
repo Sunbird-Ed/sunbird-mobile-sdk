@@ -97,11 +97,11 @@ export class ContentMapper {
                     localData.previewUrl = serverData.previewUrl;
                 }
 
-                if (!localData.me_totalRatingsCount) {
+                if (serverData.me_totalRatingsCount) {
                     localData.me_totalRatingsCount = serverData.me_totalRatingsCount;
                 }
 
-                if (!localData.me_averageRating) {
+                if (serverData.me_averageRating) {
                     localData.me_averageRating = serverData.me_averageRating;
                 }
 
@@ -109,7 +109,7 @@ export class ContentMapper {
                     localData.size = serverData.size;
                 }
 
-                if (!localData.licenseDetails) {
+                if (serverData.licenseDetails) {
                     localData.licenseDetails = serverData.licenseDetails;
                 }
             }

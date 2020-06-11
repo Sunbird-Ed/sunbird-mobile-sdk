@@ -12,13 +12,12 @@ import {
 import {SharedPreferences} from '../../util/shared-preferences';
 import {ContentKeys} from '../../preference-keys';
 import {EventNamespace, EventsBusService} from '../../events-bus';
-import {Content, ContentDetailRequest, ContentEventType, ContentMarkerRequest, ContentService, MarkerType, MimeType} from '../../content';
+import {Content, ContentDetailRequest, ContentEventType, ContentMarkerRequest, ContentService, MarkerType} from '../../content';
 import {ContentAccess, ContentAccessStatus, ProfileService} from '../../profile';
-import {ArrayUtil} from '../../util/array-util';
 import {defer, Observable, of} from 'rxjs';
 import {delay, map, mapTo, mergeMap, tap} from 'rxjs/operators';
-import {CsCourseProgressCalculator} from '@project-sunbird/client-services/services/course/utilities/course-progress-calculator';
 import Telemetry = SunbirdTelemetry.Telemetry;
+import {CsContentProgressCalculator} from '@project-sunbird/client-services/services/content/utilities/content-progress-calculator';
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -95,7 +94,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                                         return this.validEndEvent(event, content, courseContext).pipe(
                                             mergeMap((isValid: boolean) => {
                                                 if (isValid) {
-                                                    const progress = CsCourseProgressCalculator.calculate
+                                                    const progress = CsContentProgressCalculator.calculate
                                                     (event.edata.summary, content.mimeType as any);
                                                     const updateContentStateRequest: UpdateContentStateRequest = {
                                                         userId: userId,
@@ -329,4 +328,3 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         return of(undefined);
     }
 }
-
