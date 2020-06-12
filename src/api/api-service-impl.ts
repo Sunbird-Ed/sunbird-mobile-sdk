@@ -120,7 +120,7 @@ export class ApiServiceImpl implements ApiService {
             if (bearerTokenRefreshInterceptorIndex === -1) {
                 request.responseInterceptors.push(this.bearerTokenRefreshInterceptor);
             } else {
-                request.requestInterceptors.splice(bearerTokenRefreshInterceptorIndex, 1);
+                request.responseInterceptors.splice(bearerTokenRefreshInterceptorIndex, 1);
             }
         }
 
