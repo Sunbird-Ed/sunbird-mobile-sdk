@@ -6,6 +6,7 @@ export interface TelemetryAuditRequest {
     actor: Actor;
     currentState: AuditState;
     updatedProperties?: string[];
+    type?: string;
     objId?: string;
     objType?: string;
     objVer?: string;

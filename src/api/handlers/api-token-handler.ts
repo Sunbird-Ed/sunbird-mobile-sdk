@@ -3,62 +3,85 @@ import {from, Observable} from 'rxjs';
 import * as dayjs from 'dayjs';
 import {DeviceInfo} from '../../util/device';
 import {map} from 'rxjs/operators';
-import {CsHttpRequestType, CsRequest} from '@project-sunbird/client-services/core/http-service';
+import {
+  CsHttpClientError,
+  CsHttpRequestType,
+  CsHttpServerError,
+  CsNetworkError,
+  CsRequest
+} from '@project-sunbird/client-services/core/http-service';
 
 export class ApiTokenHandler {
 
-    private static readonly VERSION = '1.0';
-    private static readonly ID = 'ekstep.genie.device.register';
+  private static readonly VERSION = '1.0';
+  private static readonly ID = 'ekstep.genie.device.register';
 
-    constructor(
-        private config: ApiConfig,
-        private apiService: ApiService,
-        private deviceInfo: DeviceInfo
-    ) {
-    }
+  constructor(
+    private config: ApiConfig,
+    private apiService: ApiService,
+    private deviceInfo: DeviceInfo
+  ) {
+  }
 
-    public refreshAuthToken(): Observable<string> {
-        return from(
-            this.getMobileDeviceConsumerSecret()
-        ).pipe(
-            map((mobileDeviceConsumerSecret: string) => {
-                return JWTUtil.createJWToken({iss: this.getMobileDeviceConsumerKey()}, mobileDeviceConsumerSecret, JWTokenType.HS256);
-            })
-        );
-    }
+  public refreshAuthToken(): Observable<string> {
+    return from(
+      this.getBearerTokenFromKongV2()
+    );
+  }
 
-    private getMobileDeviceConsumerKey() {
-        return this.config.api_authentication.producerId + '-' + this.deviceInfo.getDeviceID();
-    }
+  private getMobileDeviceConsumerKey() {
+    return this.config.api_authentication.producerId + '-' + this.deviceInfo.getDeviceID();
+  }
 
-    private buildGetMobileDeviceConsumerSecretAPIRequest(): CsRequest {
-        return new CsRequest.Builder()
-            .withPath(`/api/api-manager/v1/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`)
-            .withType(CsHttpRequestType.POST)
-            .withHeaders({
-                'Content-Encoding': 'gzip',
-                'Authorization': `Bearer ${this.generateMobileAppConsumerBearerToken()}`
-            })
-            .withBody({
-                id: ApiTokenHandler.ID,
-                ver: ApiTokenHandler.VERSION,
-                ts: dayjs().format(),
-                request: {
-                    key: this.getMobileDeviceConsumerKey()
-                }
-            })
-            .build();
-    }
+  private buildGetMobileDeviceConsumerSecretAPIRequest(path: string): CsRequest {
+    return new CsRequest.Builder()
+      .withPath(path)
+      .withType(CsHttpRequestType.POST)
+      .withHeaders({
+        'Content-Encoding': 'gzip',
+        'Authorization': `Bearer ${this.generateMobileAppConsumerBearerToken()}`
+      })
+      .withBody({
+        id: ApiTokenHandler.ID,
+        ver: ApiTokenHandler.VERSION,
+        ts: dayjs().format(),
+        request: {
+          key: this.getMobileDeviceConsumerKey()
+        }
+      })
+      .build();
+  }
 
-    private async getMobileDeviceConsumerSecret(): Promise<string> {
-        return this.apiService.fetch(this.buildGetMobileDeviceConsumerSecretAPIRequest()).toPromise()
-            .then((res) => res.body.result.secret);
-    }
+  private async getBearerTokenFromKongV2(): Promise<string> {
+    const apiPathKongV2 = `/api/api-manager/v2/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`;
+    return this.apiService.fetch(this.buildGetMobileDeviceConsumerSecretAPIRequest(apiPathKongV2)).toPromise()
+      .then((res) => {
+        return res.body.result.token;
+      }).catch((e) => {
+        if (!(e instanceof CsNetworkError)) {
+          return this.getBearerTokenFromKongV1();
+        }
+        throw  e;
+      });
+  }
 
-    private generateMobileAppConsumerBearerToken(): string {
-        const mobileAppConsumerKey = this.config.api_authentication.mobileAppKey;
-        const mobileAppConsumerSecret = this.config.api_authentication.mobileAppSecret;
+  private async getBearerTokenFromKongV1(): Promise<string> {
+    const apiPathKongV1 = `/api/api-manager/v1/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`;
+    return this.apiService.fetch(this.buildGetMobileDeviceConsumerSecretAPIRequest(apiPathKongV1)).toPromise()
+      .then((res) => {
+        const result = res.body.result;
+        if (!result.token) {
+          return JWTUtil.createJWToken({iss: this.getMobileDeviceConsumerKey()}, result.secret, JWTokenType.HS256);
+        }
+        return result.token;
+      }).catch(() => {
 
-        return JWTUtil.createJWToken({iss: mobileAppConsumerKey}, mobileAppConsumerSecret, JWTokenType.HS256);
-    }
+      });
+  }
+
+  private generateMobileAppConsumerBearerToken(): string {
+    const mobileAppConsumerKey = this.config.api_authentication.mobileAppKey;
+    const mobileAppConsumerSecret = this.config.api_authentication.mobileAppSecret;
+    return JWTUtil.createJWToken({iss: mobileAppConsumerKey}, mobileAppConsumerSecret, JWTokenType.HS256);
+  }
 }
