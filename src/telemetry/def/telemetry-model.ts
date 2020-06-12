@@ -441,6 +441,7 @@ export namespace SunbirdTelemetry {
                     actor: Actor,
                     currentState: AuditState,
                     updatedProperties: string[] | undefined,
+                    type: string | undefined,
                     objId: string = '',
                     objType: string = '',
                     objVer: string = '',
@@ -450,6 +451,7 @@ export namespace SunbirdTelemetry {
             this.edata = {
                 ...{state: currentState},
                 ...(updatedProperties ? {props: updatedProperties} : {}),
+                ...{type}
             };
             this.context.cdata = correlationData;
             this.context.env = env;
