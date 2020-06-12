@@ -193,7 +193,7 @@ describe('ManagedProfileManager', () => {
     });
 
     describe('switchSessionToManagedProfile', () => {
-        it('should create new profile session for managed profile', (done) => {
+        it('should create new profile session for managed profile updating current authSession', (done) => {
             // arrange
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
                 uid: 'sample_uid',
@@ -249,12 +249,26 @@ describe('ManagedProfileManager', () => {
             }));
             mockAuthService.setSession = jest.fn(() => of(undefined));
 
+            spyOn(managedProfileManager, 'getManagedServerProfiles').and.returnValue(
+                of([{identifier: 'some_uid', managedToken: 'some_managed_token'}])
+            );
+
+            mockAuthService.getSession = jest.fn(() => of({
+                access_token: 'some_access_token',
+                refresh_token: 'some_refresh_token',
+                userToken: 'some_access_token',
+                managed_access_token: 'some_old_managed_token'
+            } as OAuthSession));
+
+            mockAuthService.setSession = jest.fn(() => of(undefined));
+
             // act
             managedProfileManager.switchSessionToManagedProfile({
                 uid: 'some_uid'
             }).subscribe(() => {
                 expect(mockAuthService.setSession).toBeCalled();
                 expect(mockFrameworkService.setActiveChannelId).toBeCalledWith('some_root_org_id');
+                expect(mockAuthService.setSession).toHaveBeenCalled();
                 done();
             }, (e) => {
                 fail(e);
