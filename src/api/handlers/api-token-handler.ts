@@ -56,7 +56,6 @@ export class ApiTokenHandler {
     const apiPathKongV2 = `/api/api-manager/v2/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`;
     return this.apiService.fetch(this.buildGetMobileDeviceConsumerSecretAPIRequest(apiPathKongV2)).toPromise()
       .then((res) => {
-        throw new Error();
         return res.body.result.token;
       }).catch((e) => {
         if (!(e instanceof CsNetworkError)) {
