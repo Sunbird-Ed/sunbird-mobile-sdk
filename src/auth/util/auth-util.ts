@@ -52,7 +52,8 @@ export class AuthUtil {
 
                         sessionData = {
                             ...response.body.result,
-                            userToken: prevSessionData ? prevSessionData.userToken : userToken
+                            userToken: prevSessionData ? prevSessionData.userToken : userToken,
+                            managed_access_token: prevSessionData ? prevSessionData.managed_access_token : undefined
                         };
 
                         return await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
