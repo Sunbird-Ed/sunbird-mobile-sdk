@@ -135,7 +135,7 @@ export class ApiServiceImpl implements ApiService {
 
         return this.httpService.fetch<T>(request).pipe(
             catchError((e) => {
-                if (e instanceof CsHttpServerError) {
+                if (CsHttpServerError.isInstance(e)) {
                     this.eventsBusService.emit({
                         namespace: EventNamespace.ERROR,
                         event: {
@@ -143,7 +143,7 @@ export class ApiServiceImpl implements ApiService {
                             payload: e
                         } as HttpServerErrorEvent
                     } as EmitRequest<EventsBusEvent>);
-                } else if (e instanceof CsHttpClientError) {
+                } else if (CsHttpClientError.isInstance(e)) {
                     this.eventsBusService.emit({
                         namespace: EventNamespace.ERROR,
                         event: {
