@@ -32,12 +32,15 @@ export class AuthServiceImpl implements AuthService {
             if (value) {
                 try {
                     CsModule.instance.config.core.api.authentication.userToken = (JSON.parse(value) as OAuthSession).access_token;
+                    CsModule.instance.config.core.api.authentication.managedUserToken = (JSON.parse(value) as OAuthSession).managed_access_token;
                 } catch (e) {
                     console.error(e);
                     CsModule.instance.config.core.api.authentication.userToken = undefined;
+                    CsModule.instance.config.core.api.authentication.managedUserToken = undefined;
                 }
             } else {
                 CsModule.instance.config.core.api.authentication.userToken = undefined;
+                CsModule.instance.config.core.api.authentication.managedUserToken = undefined;
             }
 
             CsModule.instance.updateConfig(CsModule.instance.config);

@@ -36,7 +36,7 @@ export class AuthUtil {
         try {
             await this.apiService.fetch(request).toPromise()
                 .catch((e) => {
-                    if (e instanceof HttpClientError && e.response.responseCode === ResponseCode.HTTP_BAD_REQUEST) {
+                    if (HttpClientError.isInstance(e) && e.response.responseCode === ResponseCode.HTTP_BAD_REQUEST) {
                         throw new AuthTokenRefreshError(e.message);
                     }
 
@@ -52,7 +52,8 @@ export class AuthUtil {
 
                         sessionData = {
                             ...response.body.result,
-                            userToken: prevSessionData ? prevSessionData.userToken : userToken
+                            userToken: prevSessionData ? prevSessionData.userToken : userToken,
+                            managed_access_token: prevSessionData ? prevSessionData.managed_access_token : undefined
                         };
 
                         return await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
