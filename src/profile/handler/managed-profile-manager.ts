@@ -103,7 +103,11 @@ export class ManagedProfileManager {
                             const searchManagedProfilesRequest = new Request.Builder()
                                 .withType(HttpRequestType.GET)
                                 .withPath(`${this.profileServiceConfig.profileApiPath}/managed/${managedByUid}`)
-                                .withParameters({'withTokens': 'true'})
+                                .withParameters({
+                                    'withTokens': 'true',
+                                    'sortBy': 'createdDate',
+                                    'order': 'desc'
+                                })
                                 .withBearerToken(true)
                                 .withUserToken(true)
                                 .build();
