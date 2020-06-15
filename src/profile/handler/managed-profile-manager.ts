@@ -15,7 +15,7 @@ import {ApiService, HttpRequestType, Request} from '../../api';
 import {AuthService, OAuthSession, SessionProvider} from '../../auth';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {GetManagedServerProfilesRequest} from '../def/get-managed-server-profiles-request';
-import {mapTo, mergeMap, startWith, tap} from 'rxjs/operators';
+import {mapTo, mergeMap, startWith, take, tap} from 'rxjs/operators';
 import {ProfileEntry} from '../db/schema';
 import {DbService} from '../../db';
 import {ProfileDbEntryMapper} from '../util/profile-db-entry-mapper';
@@ -101,26 +101,26 @@ export class ManagedProfileManager {
                                 );
 
                             const searchManagedProfilesRequest = new Request.Builder()
-                                .withType(HttpRequestType.POST)
-                                .withPath(this.profileServiceConfig.profileApiPath + '/search')
-                                .withParameters({'fields': request.requiredFields.join(',')})
+                                .withType(HttpRequestType.GET)
+                                .withPath(`${this.profileServiceConfig.profileApiPath}/managed/${managedByUid}`)
+                                .withParameters({
+                                    'withTokens': 'true',
+                                    'sortBy': 'createdDate',
+                                    'order': 'desc'
+                                })
                                 .withBearerToken(true)
                                 .withUserToken(true)
-                                .withBody({
-                                    request: {
-                                        filters: {
-                                            managedBy: managedByUid
-                                        },
-                                        sort_by: {createdDate: 'desc'}
-                                    }
-                                })
                                 .build();
 
                             return await this.apiService
                                 .fetch<{ result: { response: { content: ServerProfile[] } } }>(searchManagedProfilesRequest)
                                 .toPromise()
                                 .then((response) => {
-                                    return [managedByProfile, ...response.body.result.response.content];
+                                    return [
+                                        managedByProfile,
+                                        ...response.body.result.response.content
+                                            .sort((a, b) => new Date(b['createdDate']).getTime() - new Date(a['createdDate']).getTime())
+                                    ];
                                 });
                         }).pipe(
                             tap(async (managedProfiles: ServerProfile[]) => {
@@ -213,6 +213,23 @@ export class ManagedProfileManager {
                 profileSession.managedSession = undefined;
             } else {
                 profileSession.managedSession = new ProfileSession(uid);
+
+                const managedProfiles = await this.getManagedServerProfiles({
+                    from: CachedItemRequestSourceFrom.CACHE,
+                    requiredFields: []
+                }).pipe(
+                    take(1)
+                ).toPromise();
+
+                const managedProfile = managedProfiles.find((m) => m.identifier === uid)!;
+
+                const authSession = (await this.authService.getSession().toPromise())!;
+                authSession.managed_access_token = managedProfile['managedToken'];
+                await this.authService.setSession(new class implements SessionProvider {
+                    async provide(): Promise<OAuthSession> {
+                        return authSession;
+                    }
+                }).toPromise();
             }
 
             await this.sharedPreferences.putString(
