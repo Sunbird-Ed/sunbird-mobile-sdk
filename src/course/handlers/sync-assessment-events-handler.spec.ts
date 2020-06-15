@@ -3,6 +3,7 @@ import { CourseService } from '..';
 import { SdkConfig, ApiService, DbService, SunbirdTelemetry } from '../..';
 import {of, throwError} from 'rxjs';
 import {CourseAssessmentEntry} from '../../summarizer/db/schema';
+import {NetworkQueue} from '../../api/network-queue';
 
 describe('SyncAssessmentEventsHandler', () => {
     let syncAssessmentEventsHandler: SyncAssessmentEventsHandler;
@@ -14,13 +15,17 @@ describe('SyncAssessmentEventsHandler', () => {
     };
     const mockCourseService: Partial<CourseService> = {};
     const mockDbService: Partial<DbService> = {};
+    const mockNetworkQueue: Partial<NetworkQueue> = {
+        enqueue: jest.fn(() => of({} as any))
+    };
 
     beforeAll(() => {
         syncAssessmentEventsHandler = new SyncAssessmentEventsHandler(
             mockCourseService as CourseService,
             mockSdkConfig as SdkConfig,
             mockApiService as ApiService,
-            mockDbService as DbService
+            mockDbService as DbService,
+            mockNetworkQueue as NetworkQueue
         );
     });
 
@@ -55,7 +60,7 @@ describe('SyncAssessmentEventsHandler', () => {
             // act
             syncAssessmentEventsHandler.handle(capturedAssessmentEvents).subscribe((e) => {
                 // assert
-                expect(mockApiService.fetch).toBeCalledTimes(1);
+                expect(mockNetworkQueue.enqueue).toBeCalledTimes(1);
                 done();
             });
         });
@@ -91,7 +96,7 @@ describe('SyncAssessmentEventsHandler', () => {
             // act
             syncAssessmentEventsHandler.handle(capturedAssessmentEvents).subscribe((e) => {
                 // assert
-                expect(mockApiService.fetch).toBeCalledTimes(2);
+                expect(mockNetworkQueue.enqueue).toBeCalledTimes(1);
                 done();
             });
         });

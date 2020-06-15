@@ -64,16 +64,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
 
     get autoSync() {
         if (!this.telemetryAutoSyncService) {
-            this.telemetryAutoSyncService = new TelemetryAutoSyncServiceImpl(
-                this,
-                this.sharedPreferences,
-                this.profileService,
-                this.courseService,
-                this.sdkConfig,
-                this.apiService,
-                this.dbService,
-                this.keyValueStore
-            );
+            this.telemetryAutoSyncService = new TelemetryAutoSyncServiceImpl( this, this.sharedPreferences);
         }
 
         return this.telemetryAutoSyncService;
