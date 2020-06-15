@@ -18,6 +18,8 @@ import {defer, Observable, of} from 'rxjs';
 import {delay, map, mapTo, mergeMap, tap} from 'rxjs/operators';
 import Telemetry = SunbirdTelemetry.Telemetry;
 import {CsContentProgressCalculator} from '@project-sunbird/client-services/services/content/utilities/content-progress-calculator';
+import { TelemetryLogger } from '../../telemetry/util/telemetry-logger';
+import { TelemetryAuditRequest, Actor, AuditState } from '../../telemetry';
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -105,6 +107,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                                                         progress
 
                                                     };
+                                                    this.generateAuditTelemetry(userId, courseId, batchId, content);
                                                     return this.courseService.updateContentState(updateContentStateRequest).pipe(
                                                         tap(() => {
                                                             this.eventBusService.emit({
@@ -326,5 +329,41 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
 
     private processOEEnd(event: Telemetry): Observable<undefined> {
         return of(undefined);
+    }
+
+    private generateAuditTelemetry(userId: string, courseId: string, batchId: string, content: Content) {
+        const actor = new Actor();
+        actor.id = userId;
+        actor.type = Actor.TYPE_USER;
+        const cdata = [
+            {
+                type: 'CourseId',
+                id: courseId
+            },
+            {
+                type: 'BatchId',
+                id: batchId
+            },
+            {
+                type: 'UserId',
+                id: userId
+            },
+            {
+                type: 'ContentId',
+                id: content.identifier
+            }
+        ];
+
+        const auditRequest: TelemetryAuditRequest = {
+            env: 'Course',
+            actor,
+            currentState: AuditState.AUDIT_UPDATED,
+            updatedProperties: ['progress'],
+            objId: content.identifier,
+            objType: content.contentData.contentType || '',
+            objVer: content.contentData.pkgVersion || '',
+            correlationData : cdata
+        };
+        TelemetryLogger.log.audit(auditRequest).toPromise();
     }
 }
