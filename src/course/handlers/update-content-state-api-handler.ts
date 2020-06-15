@@ -12,9 +12,7 @@ export class UpdateContentStateApiHandler implements ApiRequestHandler<UpdateCon
   public static readonly UPDATE_CONTENT_STATE_ENDPOINT = '/content/state/update';
 
 
-  constructor(private apiService: ApiService,
-              private courseServiceConfig: CourseServiceConfig,
-              private networkQueue: NetworkQueue,
+  constructor(private networkQueue: NetworkQueue,
               private sdkConfig: SdkConfig) {
   }
 
@@ -32,11 +30,12 @@ export class UpdateContentStateApiHandler implements ApiRequestHandler<UpdateCon
             const error = response.course_progress_error;
             if (courseProgressResponse) {
               observer.next(courseProgressResponse);
-              observer.complete();
             } else if (error) {
               observer.error(error);
             }
+            observer.complete();
           }, async (error) => {
+            observer.error(error);
           });
         });
       }));

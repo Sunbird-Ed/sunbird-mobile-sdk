@@ -1,12 +1,11 @@
 import {InteractSubType, InteractType, TelemetryAutoSyncModes, TelemetryService} from '..';
 import {TelemetryLogger} from './telemetry-logger';
-import {interval, Observable, of, zip} from 'rxjs';
+import {interval, Observable, of} from 'rxjs';
 import {catchError, filter, map, mapTo, tap} from 'rxjs/operators';
 import {TelemetryAutoSyncService} from './telemetry-auto-sync-service';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {TelemetryKeys} from '../../preference-keys';
-import {CourseService} from '../../course';
-import {ProfileService} from '../../profile';
+
 
 export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
     private static DOWNLOAD_SPEED_TELEMETRY_SYNC_INTERVAL = 60 * 1000;

@@ -123,7 +123,7 @@ describe('CourseServiceImpl', () => {
         // assert
     });
 
-    xit('should updateContentState and store it in noSql', (done) => {
+    it('should updateContentState and store it in noSql', (done) => {
         // arrange
         (OfflineContentStateHandler as jest.Mock<OfflineContentStateHandler>).mockImplementation(() => {
             return {
@@ -143,10 +143,12 @@ describe('CourseServiceImpl', () => {
                 result: 'SAMPLE_RESULT'
             }
         }));
+        spyOn(mockKeyValueStore, 'getValue').and.returnValue(of('MOCK_KEY_VALUE'));
+        spyOn(mockKeyValueStore, 'setValue').and.returnValue(of('MOCK_VALUE'));
         // act
         courseService.updateContentState(updateContentStateRequest).subscribe(() => {
             // assert
-            expect(mockApiService.fetch).toHaveBeenCalled();
+            expect(mockNetworkQueue.enqueue).toHaveBeenCalled();
             done();
         });
     });

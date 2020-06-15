@@ -79,7 +79,6 @@ export class CourseServiceImpl implements CourseService {
         this.syncAssessmentEventsHandler = new SyncAssessmentEventsHandler(
             this,
             this.sdkConfig,
-            this.apiService,
             this.dbService,
             this.networkQueue
         );
@@ -92,8 +91,7 @@ export class CourseServiceImpl implements CourseService {
 
     updateContentState(request: UpdateContentStateRequest): Observable<boolean> {
         const offlineContentStateHandler: OfflineContentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
-        return new UpdateContentStateApiHandler(this.apiService, this.courseServiceConfig, this.networkQueue, this.sdkConfig
-        )
+        return new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig)
             .handle(CourseUtil.getUpdateContentStateRequest(request))
             .pipe(
                 map((response: { [key: string]: any }) => {
@@ -128,7 +126,7 @@ export class CourseServiceImpl implements CourseService {
 
     getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]> {
         const updateContentStateHandler: UpdateContentStateApiHandler =
-            new UpdateContentStateApiHandler(this.apiService, this.courseServiceConfig, this.networkQueue, this.sdkConfig);
+            new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig);
         return zip(
             this.syncAssessmentEvents({persistedOnly: true}),
             new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)

@@ -48,7 +48,6 @@ export class SyncAssessmentEventsHandler {
   constructor(
     private courseService: CourseService,
     private sdkConfig: SdkConfig,
-    private apiService: ApiService,
     private dbService: DbService,
     private networkQueue: NetworkQueue
   ) {
@@ -107,10 +106,10 @@ export class SyncAssessmentEventsHandler {
             const error = response.course_assesment_error;
             if (courseAssesmentResponse) {
               observer.next(courseAssesmentResponse);
-              observer.complete();
             } else if (error) {
               observer.error(error);
             }
+            observer.complete();
           }, async (error) => {
             observer.error(error);
           });
