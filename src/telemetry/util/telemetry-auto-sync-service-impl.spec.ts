@@ -19,23 +19,11 @@ describe('TelemetryAutoSyncServiceImpl', () => {
     let telemetryAutoSyncService: TelemetryAutoSyncServiceImpl;
     const mockTelemetryService = {} as Partial<TelemetryService>;
     const mockSharedPreferences = {} as Partial<SharedPreferences>;
-    const mockProfileService = {} as Partial<ProfileService>;
-    const mockCourseService = {} as Partial<CourseService>;
-    const mockSdkConfig = {} as Partial<SdkConfig>;
-    const mockApiService = {} as Partial<ApiService>;
-    const mockDbService = {} as Partial<DbService>;
-    const mockKeyValueStore = {} as Partial<KeyValueStore>;
 
     beforeAll(() => {
         telemetryAutoSyncService = new TelemetryAutoSyncServiceImpl(
             mockTelemetryService as TelemetryService,
-            mockSharedPreferences as SharedPreferences,
-            mockProfileService as ProfileService,
-            mockCourseService as CourseService,
-            mockSdkConfig as SdkConfig,
-            mockApiService as ApiService,
-            mockDbService as DbService,
-            mockKeyValueStore as KeyValueStore,
+            mockSharedPreferences as SharedPreferences
         );
     });
 
@@ -111,14 +99,6 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                 });
             });
 
-            mockProfileService.getActiveSessionProfile = jest.fn().mockImplementation(() => {
-                return of({
-                    uid: 'SAMPLE_UID',
-                    handle: 'SAMPLE_HANDLE',
-                    source: ProfileSource.LOCAL
-                });
-            });
-
             // act
             telemetryAutoSyncService.start(30000).pipe(
                 take(2),
@@ -147,14 +127,6 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                         syncedEventCount: 0,
                         syncTime: Date.now(),
                         syncedFileSize: 0
-                    });
-                });
-
-                mockProfileService.getActiveSessionProfile = jest.fn().mockImplementation(() => {
-                    return of({
-                        uid: 'SAMPLE_UID',
-                        handle: 'SAMPLE_HANDLE',
-                        source: ProfileSource.LOCAL
                     });
                 });
 
@@ -188,13 +160,6 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                     });
                 });
 
-                mockProfileService.getActiveSessionProfile = jest.fn().mockImplementation(() => {
-                    return of({
-                        uid: 'SAMPLE_UID',
-                        handle: 'SAMPLE_HANDLE',
-                        source: ProfileSource.LOCAL
-                    });
-                });
 
                 // act
                 telemetryAutoSyncService.start(10000).pipe(
@@ -227,23 +192,6 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                 });
             });
 
-            mockProfileService.getActiveSessionProfile = jest.fn().mockImplementation(() => {
-                return of({
-                    uid: 'SAMPLE_UID',
-                    handle: 'SAMPLE_HANDLE',
-                    source: ProfileSource.SERVER
-                });
-            });
-
-            mockCourseService.syncAssessmentEvents = jest.fn().mockImplementation(() => of(undefined));
-
-            const mockUpdateContentState = jest.fn().mockImplementation(() => of(undefined));
-            (ContentStatesSyncHandler as any).mockImplementation(() => {
-                return {
-                    updateContentState: mockUpdateContentState
-                };
-            });
-
             // act
             telemetryAutoSyncService.start(30000).pipe(
                 take(1),
@@ -256,8 +204,6 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                 jest.useRealTimers();
 
                 setTimeout(() => {
-                    expect(mockCourseService.syncAssessmentEvents).toHaveBeenCalledWith(expect.objectContaining({ persistedOnly: true }));
-                    expect(mockUpdateContentState).toHaveBeenCalled();
                     done();
                 });
             });
@@ -284,14 +230,6 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                     syncedEventCount: 0,
                     syncTime: Date.now(),
                     syncedFileSize: 0
-                });
-            });
-
-            mockProfileService.getActiveSessionProfile = jest.fn().mockImplementation(() => {
-                return of({
-                    uid: 'SAMPLE_UID',
-                    handle: 'SAMPLE_HANDLE',
-                    source: ProfileSource.LOCAL
                 });
             });
 
