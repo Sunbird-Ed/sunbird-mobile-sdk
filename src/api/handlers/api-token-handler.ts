@@ -1,4 +1,4 @@
-import {ApiConfig, ApiService, JWTokenType, JWTUtil} from '..';
+import {ApiConfig, ApiService, JWTokenType, JWTUtil, ResponseCode} from '..';
 import {from, Observable} from 'rxjs';
 import * as dayjs from 'dayjs';
 import {DeviceInfo} from '../../util/device';
@@ -51,16 +51,22 @@ export class ApiTokenHandler {
       .then((res) => {
         return res.body.result.token;
       }).catch((e) => {
-          if (!(CsNetworkError.isInstance(e))) {
-            return this.getBearerTokenFromKongV1();
+        if ((!(CsNetworkError.isInstance(e)))) {
+          const apiPathKongV1 = `/api/api-manager/v1/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`;
+          if (e.response.responseCode === ResponseCode.HTTP_KONG_FAILURE) {
+            const responseHeaders = e.response.headers;
+            const fallBackUrl = responseHeaders ? responseHeaders['location'] : apiPathKongV1;
+            return this.getBearerTokenFromFallback(fallBackUrl || apiPathKongV1);
+          } else {
+            return this.getBearerTokenFromFallback(apiPathKongV1);
           }
+        }
         throw  e;
       });
   }
 
-  private async getBearerTokenFromKongV1(): Promise<string> {
-    const apiPathKongV1 = `/api/api-manager/v1/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`;
-    return this.apiService.fetch(this.buildGetMobileDeviceConsumerSecretAPIRequest(apiPathKongV1)).toPromise()
+  private async getBearerTokenFromFallback(fallBackUrl: string): Promise<string> {
+    return this.apiService.fetch(this.buildGetMobileDeviceConsumerSecretAPIRequest(fallBackUrl)).toPromise()
       .then((res) => {
         const result = res.body.result;
         if (!result.token) {
