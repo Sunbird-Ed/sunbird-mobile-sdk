@@ -9,12 +9,12 @@ import {
     UnenrollCourseRequest,
     UpdateContentStateRequest
 } from '..';
-import {InjectionTokens} from '../../injection-tokens';
+import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {mockSdkConfigWithCourseConfig} from './course-service-impl.spec.data';
 import {ApiService} from '../../api';
 import {ProfileService} from '../../profile';
-import {KeyValueStore} from '../../key-value-store';
+import {CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {DbService} from '../../db';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AuthService} from '../../auth';
@@ -24,7 +24,8 @@ import {OfflineContentStateHandler} from '../handlers/offline-content-state-hand
 import {ContentStatesSyncHandler} from '../handlers/content-states-sync-handler';
 import {SyncAssessmentEventsHandler} from '../handlers/sync-assessment-events-handler';
 import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
-import { FileService } from '../../util/file/def/file-service';
+import {FileService} from '../../util/file/def/file-service';
+import {CsCourseService} from '@project-sunbird/client-services/services/course';
 
 jest.mock('../handlers/offline-content-state-handler');
 jest.mock('../handlers/content-states-sync-handler');
@@ -63,9 +64,13 @@ describe('CourseServiceImpl', () => {
         handle: jest.fn().mockImplementation(() => of(undefined))
     };
     const mockFileService: Partial<FileService> = {
-        exists: jest.fn().mockImplementation(() => { }),
-        getTempLocation: jest.fn().mockImplementation(() => { })
+        exists: jest.fn().mockImplementation(() => {
+        }),
+        getTempLocation: jest.fn().mockImplementation(() => {
+        })
     };
+    const mockCachedItemStore: Partial<CachedItemStore> = {};
+    const mockCsCourseService: Partial<CsCourseService> = {};
     beforeAll(() => {
         container.bind<CourseService>(InjectionTokens.COURSE_SERVICE).to(CourseServiceImpl);
         container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(mockSdkConfigWithCourseConfig as SdkConfig);
@@ -77,6 +82,8 @@ describe('CourseServiceImpl', () => {
         container.bind<AuthService>(InjectionTokens.AUTH_SERVICE).toConstantValue(mockAuthService as AuthService);
         container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
         container.bind<FileService>(InjectionTokens.FILE_SERVICE).toConstantValue(mockFileService as FileService);
+        container.bind<CachedItemStore>(InjectionTokens.CACHED_ITEM_STORE).toConstantValue(mockCachedItemStore as CachedItemStore);
+        container.bind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(mockCsCourseService as CsCourseService);
 
         (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockImplementation(() => {
             return mockSyncAssessmentEventsHandler as Partial<SyncAssessmentEventsHandler> as SyncAssessmentEventsHandler;
@@ -356,6 +363,29 @@ describe('CourseServiceImpl', () => {
                 expect(courseService.resetCapturedAssessmentEvents).not.toHaveBeenCalled();
                 done();
             });
+        });
+    });
+
+    describe('getUserEnrollmentList', () => {
+        it('should delegate to cached CsCourseService defaulting to from.Cache', (done) => {
+            mockCachedItemStore.getCached = jest.fn().mockImplementation(() => of([]));
+
+            courseService.getUserEnrollmentList({request: {userId: 'some_user_id'}}).subscribe(() => {
+                expect(mockCachedItemStore.getCached).toHaveBeenCalled();
+                done();
+            }, fail);
+        });
+
+        it('should delegate to cached CsCourseService', (done) => {
+            mockCachedItemStore.get = jest.fn().mockImplementation(() => of([]));
+
+            courseService.getUserEnrollmentList({
+                from: CachedItemRequestSourceFrom.SERVER,
+                request: {userId: 'some_user_id'}
+            }).subscribe(() => {
+                expect(mockCachedItemStore.get).toHaveBeenCalled();
+                done();
+            }, fail);
         });
     });
 });

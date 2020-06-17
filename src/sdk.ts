@@ -78,6 +78,7 @@ import * as SHA1 from 'crypto-js/sha1';
 import {CsGroupService} from '@project-sunbird/client-services/services/group';
 import {ClassRoomService} from './class-room';
 import {ClassRoomServiceImpl} from './class-room/impl/class-room-service-impl';
+import {CsCourseService} from '@project-sunbird/client-services/services/course';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -359,11 +360,16 @@ export class SunbirdSdk {
                     authentication: {}
                 }
             },
-            services: {}
+            services: {
+                courseServiceConfig: {
+                    apiPath: '/api/course/v1'
+                }
+            }
         });
 
         this._container.bind<CsHttpService>(CsInjectionTokens.HTTP_SERVICE).toConstantValue(CsModule.instance.httpService);
         this._container.bind<CsGroupService>(CsInjectionTokens.GROUP_SERVICE).toConstantValue(CsModule.instance.groupService);
+        this._container.bind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(CsModule.instance.courseService);
 
         await this.dbService.init();
         await this.appInfo.init();
