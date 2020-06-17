@@ -50,8 +50,6 @@ export class ManagedProfileManager {
 
             const {uid} = await this.createManagedProfile(request);
 
-            await this.updateTnCForManagedProfile(uid);
-
             this.managedProfileAdded$.next(true);
 
             return await this.profileService.createProfile({
@@ -317,18 +315,6 @@ export class ManagedProfileManager {
 
         return await this.apiService.fetch<{ result: { userId: string } }>(createManagedProfileRequest).toPromise()
             .then((response) => ({uid: response.body.result.userId}));
-    }
-
-    private async updateTnCForManagedProfile(uid: string): Promise<void> {
-        const serverProfile: ServerProfile = await this.profileService.getServerProfilesDetails({
-            userId: uid,
-            requiredFields: []
-        }).toPromise();
-
-        await this.profileService.acceptTermsAndConditions({
-            version: serverProfile.tncLatestVersion,
-            userId: uid
-        }).toPromise();
     }
 
     private async isLoggedInUser(): Promise<boolean> {

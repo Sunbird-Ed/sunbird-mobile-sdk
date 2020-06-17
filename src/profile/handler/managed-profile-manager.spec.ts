@@ -1,6 +1,6 @@
 import {ManagedProfileManager} from './managed-profile-manager';
 import {AuthService, OAuthSession} from '../../auth';
-import {NoActiveSessionError, ProfileService, ProfileServiceConfig, ProfileSource, ProfileType,} from '..';
+import {NoActiveSessionError, ProfileService, ProfileServiceConfig, ProfileSource, ProfileType} from '..';
 import {ApiService, Response} from '../../api';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {DbService} from '../../db';
@@ -92,8 +92,6 @@ describe('ManagedProfileManager', () => {
                 tncLatestVersion: 'v4'
             } as any));
 
-            mockProfileService.acceptTermsAndConditions = jest.fn(() => of(true));
-
             const createdProfile = {
                 uid: 'sample_uid',
                 handle: 'sample_handle',
@@ -109,10 +107,6 @@ describe('ManagedProfileManager', () => {
                 managedBy: 'sample_user_uid'
             }).subscribe((profile) => {
                 // assert
-                expect(mockProfileService.acceptTermsAndConditions).toBeCalledWith({
-                    userId: 'sample_user_id_1',
-                    version: 'v4'
-                });
                 expect(profile).toBe(createdProfile);
                 done();
             });
