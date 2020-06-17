@@ -1,5 +1,6 @@
 import {
     Batch,
+    CertificateAlreadyDownloaded,
     ContentStateResponse,
     Course,
     CourseBatchDetailsRequest,
@@ -10,17 +11,18 @@ import {
     FetchEnrolledCourseRequest,
     GenerateAttemptIdRequest,
     GetContentStateRequest,
+    GetUserEnrollmentListRequest,
     UnenrollCourseRequest,
     UpdateContentStateRequest
 } from '..';
-import {interval, Observable, Observer, of, zip, defer} from 'rxjs';
+import {defer, interval, Observable, Observer, of, zip} from 'rxjs';
 import {ProfileService, ProfileServiceConfig} from '../../profile';
 import {GetBatchDetailsHandler} from '../handlers/get-batch-details-handler';
 import {UpdateContentStateApiHandler} from '../handlers/update-content-state-api-handler';
 import {GetCourseBatchesHandler} from '../handlers/get-course-batches-handler';
 import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
 import {EnrollCourseHandler} from '../handlers/enroll-course-handler';
-import {KeyValueStore} from '../../key-value-store';
+import {CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {ApiService, HttpRequestType, Request} from '../../api';
 import {UnenrollCourseHandler} from '../handlers/unenroll-course-handler';
 import {DbService} from '../../db';
@@ -33,7 +35,7 @@ import {CourseUtil} from '../course-util';
 import {ContentStatesSyncHandler} from '../handlers/content-states-sync-handler';
 import {ProcessingError} from '../../auth/errors/processing-error';
 import {inject, injectable} from 'inversify';
-import {InjectionTokens} from '../../injection-tokens';
+import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DownloadCertificateRequest} from '../def/download-certificate-request';
 import {NoCertificateFound} from '../errors/no-certificate-found';
@@ -46,11 +48,12 @@ import * as MD5 from 'crypto-js/md5';
 import {SyncAssessmentEventsHandler} from '../handlers/sync-assessment-events-handler';
 import {ObjectUtil} from '../../util/object-util';
 import {catchError, concatMap, delay, filter, map, mapTo, mergeMap, take} from 'rxjs/operators';
-import { FileService } from '../../util/file/def/file-service';
-import { CertificateAlreadyDownloaded } from '../errors/certificate-already-downloaded';
+import {FileService} from '../../util/file/def/file-service';
+import {CsCourseService} from '@project-sunbird/client-services/services/course';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
+    private static readonly USER_ENROLLMENT_LIST_KEY_PREFIX = 'userEnrollmentList';
     public static readonly GET_CONTENT_STATE_KEY_PREFIX = 'getContentState';
     public static readonly GET_ENROLLED_COURSE_KEY_PREFIX = 'enrolledCourses';
     public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
@@ -69,7 +72,9 @@ export class CourseServiceImpl implements CourseService {
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
-        @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService
+        @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
+        @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
+        @inject(CsInjectionTokens.COURSE_SERVICE) private csCourseService: CsCourseService,
     ) {
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
         this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
@@ -135,6 +140,15 @@ export class CourseServiceImpl implements CourseService {
                     this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
                 ).handle(request);
             })
+        );
+    }
+
+    getUserEnrollmentList({request, from}: GetUserEnrollmentListRequest): Observable<Course[]> {
+        return this.cachedItemStore[from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
+            request.userId + (request.filters ? '_' + JSON.stringify(request.filters) : ''),
+            CourseServiceImpl.USER_ENROLLMENT_LIST_KEY_PREFIX,
+            'ttl_' + CourseServiceImpl.USER_ENROLLMENT_LIST_KEY_PREFIX,
+            () => this.csCourseService.getUserEnrollmentList(request, {}, {apiPath: '/api/course/v2'}),
         );
     }
 
