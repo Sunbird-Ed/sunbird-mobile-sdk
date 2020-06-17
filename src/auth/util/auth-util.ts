@@ -36,7 +36,7 @@ export class AuthUtil {
         try {
             await this.apiService.fetch(request).toPromise()
                 .catch((e) => {
-                    if (e instanceof HttpClientError && e.response.responseCode === ResponseCode.HTTP_BAD_REQUEST) {
+                    if (HttpClientError.isInstance(e) && e.response.responseCode === ResponseCode.HTTP_BAD_REQUEST) {
                         throw new AuthTokenRefreshError(e.message);
                     }
 

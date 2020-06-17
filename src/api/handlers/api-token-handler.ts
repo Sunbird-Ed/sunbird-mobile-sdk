@@ -2,14 +2,7 @@ import {ApiConfig, ApiService, JWTokenType, JWTUtil} from '..';
 import {from, Observable} from 'rxjs';
 import * as dayjs from 'dayjs';
 import {DeviceInfo} from '../../util/device';
-import {map} from 'rxjs/operators';
-import {
-  CsHttpClientError,
-  CsHttpRequestType,
-  CsHttpServerError,
-  CsNetworkError,
-  CsRequest
-} from '@project-sunbird/client-services/core/http-service';
+import {CsHttpRequestType, CsNetworkError, CsRequest} from '@project-sunbird/client-services/core/http-service';
 
 export class ApiTokenHandler {
 
@@ -58,9 +51,9 @@ export class ApiTokenHandler {
       .then((res) => {
         return res.body.result.token;
       }).catch((e) => {
-        if (!(e instanceof CsNetworkError)) {
-          return this.getBearerTokenFromKongV1();
-        }
+          if (!(CsNetworkError.isInstance(e))) {
+            return this.getBearerTokenFromKongV1();
+          }
         throw  e;
       });
   }
