@@ -370,7 +370,7 @@ describe('CourseServiceImpl', () => {
         it('should delegate to cached CsCourseService defaulting to from.Cache', (done) => {
             mockCachedItemStore.getCached = jest.fn().mockImplementation(() => of([]));
 
-            courseService.getUserEnrollmentList({request: {userId: 'some_user_id'}}).subscribe(() => {
+            courseService.getUserEnrolledCourses({request: {userId: 'some_user_id'}}).subscribe(() => {
                 expect(mockCachedItemStore.getCached).toHaveBeenCalled();
                 done();
             }, fail);
@@ -379,7 +379,7 @@ describe('CourseServiceImpl', () => {
         it('should delegate to cached CsCourseService', (done) => {
             mockCachedItemStore.get = jest.fn().mockImplementation(() => of([]));
 
-            courseService.getUserEnrollmentList({
+            courseService.getUserEnrolledCourses({
                 from: CachedItemRequestSourceFrom.SERVER,
                 request: {userId: 'some_user_id'}
             }).subscribe(() => {

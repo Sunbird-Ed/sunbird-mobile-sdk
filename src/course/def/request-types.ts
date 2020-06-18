@@ -1,5 +1,5 @@
 import {SortOrder} from '../../content';
-import {GetUserEnrollmentListRequests as CsGetUserEnrollmentListRequests} from '@project-sunbird/client-services/services/course';
+import {GetUserEnrolledCoursesRequest as CsGetUserEnrolledCoursesRequest} from '@project-sunbird/client-services/services/course';
 import {CachedItemRequestSourceFrom} from '../../key-value-store';
 
 export interface FetchEnrolledCourseRequest {
@@ -96,7 +96,7 @@ export interface GenerateAttemptIdRequest {
     userId: string;
 }
 
-export interface GetUserEnrollmentListRequest {
+export interface GetUserEnrolledCoursesRequest {
     from?: CachedItemRequestSourceFrom;
-    request: CsGetUserEnrollmentListRequests;
+    request: CsGetUserEnrolledCoursesRequest;
 }
