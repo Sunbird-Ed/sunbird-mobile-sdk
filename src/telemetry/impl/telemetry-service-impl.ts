@@ -44,15 +44,16 @@ import {ErrorLoggerService} from '../../error';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AppInfo} from '../../util/app';
 import {DeviceRegisterService} from '../../device-register';
-import {map, mergeMap, take, tap} from 'rxjs/operators';
-import {BehaviorSubject, defer, from, Observable, of, zip} from 'rxjs';
-import {TelemetryKeys} from '../../preference-keys';
+import {catchError, map, mapTo, mergeMap, take, tap} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, defer, from, Observable, Observer, of, zip} from 'rxjs';
+import {ApiKeys, TelemetryKeys} from '../../preference-keys';
 import {TelemetryAutoSyncServiceImpl} from '../util/telemetry-auto-sync-service-impl';
 import {CourseService} from '../../course';
 import {NetworkQueue} from '../../api/network-queue';
 import {CorrelationData} from '../def/telemetry-model';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
+import {ApiTokenHandler} from '../../api/handlers/api-token-handler';
 
 
 @injectable()
@@ -64,16 +65,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
 
     get autoSync() {
         if (!this.telemetryAutoSyncService) {
-            this.telemetryAutoSyncService = new TelemetryAutoSyncServiceImpl(
-                this,
-                this.sharedPreferences,
-                this.profileService,
-                this.courseService,
-                this.sdkConfig,
-                this.apiService,
-                this.dbService,
-                this.keyValueStore
-            );
+            this.telemetryAutoSyncService = new TelemetryAutoSyncServiceImpl( this, this.sharedPreferences);
         }
 
         return this.telemetryAutoSyncService;
@@ -115,17 +107,38 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
     }
 
     onInit(): Observable<undefined> {
-        return defer(async () => {
-            const lastSyncTimestamp = await this.sharedPreferences.getString(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP).toPromise();
-            if (lastSyncTimestamp) {
-                try {
-                    this._lastSyncedTimestamp$.next(parseInt(lastSyncTimestamp, 10));
-                } catch (e) {
-                    console.error(e);
+        return  combineLatest([
+            defer(async () => {
+                const lastSyncTimestamp = await this.sharedPreferences.getString(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP).toPromise();
+                if (lastSyncTimestamp) {
+                    try {
+                        this._lastSyncedTimestamp$.next(parseInt(lastSyncTimestamp, 10));
+                    } catch (e) {
+                        console.error(e);
+                    }
                 }
-            }
-            return undefined;
-        });
+                return undefined;
+            }),
+            new Observable((observer: Observer<undefined>) => {
+                sbsync.onSyncSucces(async (response) => {
+                    const error = response.network_queue_error;
+                    if (error) {
+                        observer.next(undefined);
+                    }
+                }, async (error) => {
+                });
+            }).pipe(
+              mergeMap(() => {
+                  return new ApiTokenHandler(this.sdkConfig.apiConfig, this.apiService, this.deviceInfo).refreshAuthToken().pipe(
+                    mergeMap((bearerToken) => {
+                        return this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken);
+                    }),
+                    catchError(() => of(undefined))
+                  );
+              })
+            )
+        ]).pipe(mapTo(undefined));
+
     }
 
     saveTelemetry(request: string): Observable<boolean> {

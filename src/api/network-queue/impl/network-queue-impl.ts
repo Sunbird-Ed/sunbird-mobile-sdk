@@ -61,6 +61,9 @@ export class NetworkQueueImpl implements NetworkQueue {
 
                   const existingHeaders = request.headers;
                   existingHeaders['X-Authenticated-User-Token'] = sessionData.access_token;
+                  if (sessionData.managed_access_token) {
+                    existingHeaders['X-Authenticated-For'] = sessionData.managed_access_token;
+                  }
 
                   request.headers = existingHeaders;
                 }
@@ -78,13 +81,13 @@ export class NetworkQueueImpl implements NetworkQueue {
           request.headers['Access-Control-Allow-Origin'] = '*';
           request.body = {};
           const apiRequest: Request = new Request.Builder()
-              .withSerializer(request.serializer)
-              .withHost(this.sdkConfig.apiConfig.host)
-              .withType(request.type)
-              .withPath(request.path)
-              .withHeaders(request.headers)
-              .withBody({})
-              .withBearerToken(true)
+            .withSerializer(request.serializer)
+            .withHost(this.sdkConfig.apiConfig.host)
+            .withType(request.type)
+            .withPath(request.path)
+            .withHeaders(request.headers)
+            .withBody({})
+            .withBearerToken(true)
             .build();
           return apiRequest;
         })
