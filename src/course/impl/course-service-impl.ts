@@ -11,7 +11,7 @@ import {
     FetchEnrolledCourseRequest,
     GenerateAttemptIdRequest,
     GetContentStateRequest,
-    GetUserEnrollmentListRequest,
+    GetUserEnrolledCoursesRequest,
     UnenrollCourseRequest,
     UpdateContentStateRequest
 } from '..';
@@ -143,12 +143,12 @@ export class CourseServiceImpl implements CourseService {
         );
     }
 
-    getUserEnrollmentList({request, from}: GetUserEnrollmentListRequest): Observable<Course[]> {
+    getUserEnrolledCourses({request, from}: GetUserEnrolledCoursesRequest): Observable<Course[]> {
         return this.cachedItemStore[from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
             request.userId + (request.filters ? '_' + JSON.stringify(request.filters) : ''),
             CourseServiceImpl.USER_ENROLLMENT_LIST_KEY_PREFIX,
             'ttl_' + CourseServiceImpl.USER_ENROLLMENT_LIST_KEY_PREFIX,
-            () => this.csCourseService.getUserEnrollmentList(request, {}, {apiPath: '/api/course/v2'}),
+            () => this.csCourseService.getUserEnrolledCourses(request, {}, {apiPath: '/api/course/v2'}),
         );
     }
 

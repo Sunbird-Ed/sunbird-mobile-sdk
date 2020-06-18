@@ -6,7 +6,7 @@ import {
     FetchEnrolledCourseRequest,
     GenerateAttemptIdRequest,
     GetContentStateRequest,
-    GetUserEnrollmentListRequest,
+    GetUserEnrolledCoursesRequest,
     UpdateContentStateRequest
 } from './request-types';
 import {Observable} from 'rxjs';
@@ -27,7 +27,7 @@ export interface CourseService {
 
     getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]>;
 
-    getUserEnrollmentList(request: GetUserEnrollmentListRequest): Observable<Course[]>;
+    getUserEnrolledCourses(request: GetUserEnrolledCoursesRequest): Observable<Course[]>;
 
     enrollCourse(request: EnrollCourseRequest): Observable<boolean>;
 
