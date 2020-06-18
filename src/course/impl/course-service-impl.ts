@@ -50,7 +50,6 @@ import {ObjectUtil} from '../../util/object-util';
 import {catchError, concatMap, delay, filter, map, mapTo, mergeMap, take} from 'rxjs/operators';
 import {FileService} from '../../util/file/def/file-service';
 import {CsCourseService} from '@project-sunbird/client-services/services/course';
-import { CertificateAlreadyDownloaded } from '../errors/certificate-already-downloaded';
 import {NetworkQueue} from '../../api/network-queue';
 
 @injectable()
