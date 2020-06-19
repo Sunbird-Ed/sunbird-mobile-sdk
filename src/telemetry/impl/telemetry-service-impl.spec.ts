@@ -185,6 +185,9 @@ describe('TelemetryServiceImpl', () => {
   describe('onInit', () => {
     it('should return lastSyncTimestamp', (done) => {
       mockSharedPreferences.getString = jest.fn(() => of('sample-last-sync-time'));
+      sbsync.onSyncSucces = jest.fn((success, error) => {
+        success({network_queue_error: 'Unauthorized'});
+      });
       telemetryService.onInit().subscribe(() => {
         expect(mockSharedPreferences.getString).toHaveBeenCalledWith(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP);
         done();
@@ -193,6 +196,9 @@ describe('TelemetryServiceImpl', () => {
 
     it('should not return lastSyncTimestamp if undefined', (done) => {
       mockSharedPreferences.getString = jest.fn(() => of(undefined));
+      sbsync.onSyncSucces = jest.fn((success, error) => {
+        success({network_queue_error: 'Unauthorized'});
+      });
       telemetryService.onInit().subscribe(() => {
         expect(mockSharedPreferences.getString).toHaveBeenCalledWith(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP);
         done();
@@ -201,6 +207,9 @@ describe('TelemetryServiceImpl', () => {
 
     it('should not return lastSyncTimestamp if undefined', (done) => {
       mockSharedPreferences.getString = jest.fn(() => throwError({error: 'error-part'}));
+      sbsync.onSyncSucces = jest.fn((success, error) => {
+        success({network_queue_error: 'Unauthorized'});
+      });
       telemetryService.onInit().toPromise().catch((e) => {
         expect(e.error).toBe('error-part');
         expect(mockSharedPreferences.getString).toHaveBeenCalledWith(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP);
