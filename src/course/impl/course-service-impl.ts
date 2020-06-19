@@ -50,6 +50,7 @@ import {ObjectUtil} from '../../util/object-util';
 import {catchError, concatMap, delay, filter, map, mapTo, mergeMap, take} from 'rxjs/operators';
 import {FileService} from '../../util/file/def/file-service';
 import {CsCourseService} from '@project-sunbird/client-services/services/course';
+import {NetworkQueue} from '../../api/network-queue';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -75,6 +76,7 @@ export class CourseServiceImpl implements CourseService {
         @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
         @inject(CsInjectionTokens.COURSE_SERVICE) private csCourseService: CsCourseService,
+        @inject(InjectionTokens.NETWORK_QUEUE) private networkQueue: NetworkQueue,
     ) {
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
         this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
@@ -82,8 +84,8 @@ export class CourseServiceImpl implements CourseService {
         this.syncAssessmentEventsHandler = new SyncAssessmentEventsHandler(
             this,
             this.sdkConfig,
-            this.apiService,
-            this.dbService
+            this.dbService,
+            this.networkQueue
         );
     }
 
@@ -94,7 +96,7 @@ export class CourseServiceImpl implements CourseService {
 
     updateContentState(request: UpdateContentStateRequest): Observable<boolean> {
         const offlineContentStateHandler: OfflineContentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
-        return new UpdateContentStateApiHandler(this.apiService, this.courseServiceConfig)
+        return new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig)
             .handle(CourseUtil.getUpdateContentStateRequest(request))
             .pipe(
                 map((response: { [key: string]: any }) => {
@@ -129,7 +131,7 @@ export class CourseServiceImpl implements CourseService {
 
     getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]> {
         const updateContentStateHandler: UpdateContentStateApiHandler =
-            new UpdateContentStateApiHandler(this.apiService, this.courseServiceConfig);
+            new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig);
         return zip(
             this.syncAssessmentEvents({persistedOnly: true}),
             new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)
