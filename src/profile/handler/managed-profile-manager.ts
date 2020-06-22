@@ -50,8 +50,6 @@ export class ManagedProfileManager {
 
             const {uid} = await this.createManagedProfile(request);
 
-            await this.updateTnCForManagedProfile(uid);
-
             this.managedProfileAdded$.next(true);
 
             return await this.profileService.createProfile({
@@ -195,20 +193,6 @@ export class ManagedProfileManager {
                 throw new NoProfileFoundError(`No Server Profile found with uid=${uid}`);
             }
 
-            const setActiveChannelId = async () => {
-                const serverProfile: ServerProfile = await this.profileService.getServerProfilesDetails({
-                    userId: uid,
-                    requiredFields: []
-                }).toPromise();
-
-                const rootOrgId = serverProfile.rootOrg ? serverProfile.rootOrg.hashTagId : serverProfile['rootOrgId'];
-
-                return this.frameworkService
-                    .setActiveChannelId(rootOrgId).toPromise();
-            };
-
-            await setActiveChannelId();
-
             if (profileSession.uid === uid) {
                 profileSession.managedSession = undefined;
             } else {
@@ -266,6 +250,17 @@ export class ManagedProfileManager {
                     })
                 );
             }),
+            mergeMap(async () => {
+                const serverProfile: ServerProfile = await this.profileService.getServerProfilesDetails({
+                    userId: uid,
+                    requiredFields: []
+                }).toPromise();
+
+                const rootOrgId = serverProfile.rootOrg ? serverProfile.rootOrg.hashTagId : serverProfile['rootOrgId'];
+
+                return this.frameworkService.setActiveChannelId(rootOrgId).toPromise();
+
+            }),
             mapTo(undefined)
         );
     }
@@ -317,18 +312,6 @@ export class ManagedProfileManager {
 
         return await this.apiService.fetch<{ result: { userId: string } }>(createManagedProfileRequest).toPromise()
             .then((response) => ({uid: response.body.result.userId}));
-    }
-
-    private async updateTnCForManagedProfile(uid: string): Promise<void> {
-        const serverProfile: ServerProfile = await this.profileService.getServerProfilesDetails({
-            userId: uid,
-            requiredFields: []
-        }).toPromise();
-
-        await this.profileService.acceptTermsAndConditions({
-            version: serverProfile.tncLatestVersion,
-            userId: uid
-        }).toPromise();
     }
 
     private async isLoggedInUser(): Promise<boolean> {

@@ -88,12 +88,6 @@ describe('ManagedProfileManager', () => {
             };
             mockApiService.fetch = jest.fn(() => of(response));
 
-            mockProfileService.getServerProfilesDetails = jest.fn(() => of({
-                tncLatestVersion: 'v4'
-            } as any));
-
-            mockProfileService.acceptTermsAndConditions = jest.fn(() => of(true));
-
             const createdProfile = {
                 uid: 'sample_uid',
                 handle: 'sample_handle',
@@ -109,10 +103,6 @@ describe('ManagedProfileManager', () => {
                 managedBy: 'sample_user_uid'
             }).subscribe((profile) => {
                 // assert
-                expect(mockProfileService.acceptTermsAndConditions).toBeCalledWith({
-                    userId: 'sample_user_id_1',
-                    version: 'v4'
-                });
                 expect(profile).toBe(createdProfile);
                 done();
             });
