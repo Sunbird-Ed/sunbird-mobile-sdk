@@ -3,6 +3,7 @@ import {from, Observable} from 'rxjs';
 import * as dayjs from 'dayjs';
 import {DeviceInfo} from '../../util/device';
 import {CsHttpRequestType, CsNetworkError, CsRequest} from '@project-sunbird/client-services/core/http-service';
+import {map} from 'rxjs/operators';
 
 export class ApiTokenHandler {
 
@@ -16,11 +17,48 @@ export class ApiTokenHandler {
   ) {
   }
 
-  public refreshAuthToken(): Observable<string> {
+  public refreshAuthTokenV2(): Observable<string> {
     return from(
       this.getBearerTokenFromKongV2()
     );
   }
+
+  /*------------------------Temporary code(Will be removed after KongV2 implementation in platform)---------------------------------------*/
+  public refreshAuthToken(): Observable<string> {
+    return from(
+      this.getMobileDeviceConsumerSecretV1()
+    ).pipe(
+      map((mobileDeviceConsumerSecret: string) => {
+        return JWTUtil.createJWToken({iss: this.getMobileDeviceConsumerKey()}, mobileDeviceConsumerSecret, JWTokenType.HS256);
+      })
+    );
+  }
+
+  private async getMobileDeviceConsumerSecretV1(): Promise<string> {
+    return this.apiService.fetch(this.buildGetMobileDeviceConsumerSecretAPIRequestV1()).toPromise()
+      .then((res) => res.body.result.secret);
+  }
+
+  private buildGetMobileDeviceConsumerSecretAPIRequestV1(): CsRequest {
+    return new CsRequest.Builder()
+      .withPath(`/api/api-manager/v1/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`)
+      .withType(CsHttpRequestType.POST)
+      .withHeaders({
+        'Content-Encoding': 'gzip',
+        'Authorization': `Bearer ${this.generateMobileAppConsumerBearerToken()}`
+      })
+      .withBody({
+        id: ApiTokenHandler.ID,
+        ver: ApiTokenHandler.VERSION,
+        ts: dayjs().format(),
+        request: {
+          key: this.getMobileDeviceConsumerKey()
+        }
+      })
+      .build();
+  }
+
+  /*------------------------Temporary code-----------------------------------------------*/
 
   private getMobileDeviceConsumerKey() {
     return this.config.api_authentication.producerId + '-' + this.deviceInfo.getDeviceID();
