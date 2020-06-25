@@ -235,10 +235,16 @@ export class ManagedProfileManager {
                     },
                 ]
             }).toPromise();
+
+            return profileSession;
         }).pipe(
-            mergeMap(() => {
+            mergeMap((profileSession) => {
                 return this.authService.getSession().pipe(
                     mergeMap((session) => {
+                        if (!profileSession.managedSession && session) {
+                            session.managed_access_token = undefined;
+                        }
+
                         return this.authService.setSession(new class implements SessionProvider {
                             async provide(): Promise<OAuthSession> {
                                 return {
