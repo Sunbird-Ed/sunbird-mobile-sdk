@@ -269,7 +269,7 @@ describe('CourseServiceImpl', () => {
             // act
             courseService.getEnrolledCourses(request).subscribe(() => {
                 // assert
-                expect(courseService.syncAssessmentEvents).toHaveBeenCalledWith({
+                expect(courseService.syncAssessmentEvents).not.toHaveBeenCalledWith({
                     persistedOnly: true
                 });
                 done();
