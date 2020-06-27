@@ -3,7 +3,7 @@ export namespace AppInfoKeys {
 }
 
 export namespace ApiKeys {
-    export const KEY_API_TOKEN = 'api_bearer_token_v2';
+    export const KEY_API_TOKEN = 'api_bearer_token';
 }
 
 export namespace AuthKeys {

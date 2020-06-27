@@ -3,5 +3,5 @@ export interface AddManagedProfileRequest {
     lastName?: string;
     managedBy: string;
     framework?: any;
-    locationIds?: string[];
+    locationCodes?: string[];
 }

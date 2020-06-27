@@ -193,20 +193,6 @@ export class ManagedProfileManager {
                 throw new NoProfileFoundError(`No Server Profile found with uid=${uid}`);
             }
 
-            const setActiveChannelId = async () => {
-                const serverProfile: ServerProfile = await this.profileService.getServerProfilesDetails({
-                    userId: uid,
-                    requiredFields: []
-                }).toPromise();
-
-                const rootOrgId = serverProfile.rootOrg ? serverProfile.rootOrg.hashTagId : serverProfile['rootOrgId'];
-
-                return this.frameworkService
-                    .setActiveChannelId(rootOrgId).toPromise();
-            };
-
-            await setActiveChannelId();
-
             if (profileSession.uid === uid) {
                 profileSession.managedSession = undefined;
             } else {
@@ -263,6 +249,17 @@ export class ManagedProfileManager {
                         });
                     })
                 );
+            }),
+            mergeMap(async () => {
+                const serverProfile: ServerProfile = await this.profileService.getServerProfilesDetails({
+                    userId: uid,
+                    requiredFields: []
+                }).toPromise();
+
+                const rootOrgId = serverProfile.rootOrg ? serverProfile.rootOrg.hashTagId : serverProfile['rootOrgId'];
+
+                return this.frameworkService.setActiveChannelId(rootOrgId).toPromise();
+
             }),
             mapTo(undefined)
         );

@@ -107,14 +107,15 @@ export class CourseServiceImpl implements CourseService {
                     throw new ProcessingError('Request processing failed');
                 }),
                 catchError((error) => {
-                    const key = CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX.concat(request.userId,
-                        request.courseId, request.contentId, request.batchId);
-                    return this.keyValueStore.getValue(key)
-                        .pipe(
-                            mergeMap((value: string | undefined) => {
-                                return this.keyValueStore.setValue(key, JSON.stringify(request));
-                            })
-                        );
+                    // const key = CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX.concat(request.userId,
+                    //     request.courseId, request.contentId, request.batchId);
+                    // return this.keyValueStore.getValue(key)
+                    //     .pipe(
+                    //         mergeMap((value: string | undefined) => {
+                    //             return this.keyValueStore.setValue(key, JSON.stringify(request));
+                    //         })
+                    //     );
+                  return of(true);
                 }),
                 mergeMap(() => {
                     return offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request);
@@ -130,19 +131,22 @@ export class CourseServiceImpl implements CourseService {
     }
 
     getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]> {
-        const updateContentStateHandler: UpdateContentStateApiHandler =
-            new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig);
-        return zip(
-            this.syncAssessmentEvents({persistedOnly: true}),
-            new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)
-                .updateContentState()
-        ).pipe(
-            mergeMap(() => {
-                return new GetEnrolledCourseHandler(
-                    this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
-                ).handle(request);
-            })
-        );
+      return new GetEnrolledCourseHandler(
+        this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
+      ).handle(request);
+        // const updateContentStateHandler: UpdateContentStateApiHandler =
+        //     new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig);
+        // return zip(
+        //     this.syncAssessmentEvents({persistedOnly: true}),
+        //     new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)
+        //         .updateContentState()
+        // ).pipe(
+        //     mergeMap(() => {
+        //         return new GetEnrolledCourseHandler(
+        //             this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
+        //         ).handle(request);
+        //     })
+        // );
     }
 
     getUserEnrolledCourses({request, from}: GetUserEnrolledCoursesRequest): Observable<Course[]> {
