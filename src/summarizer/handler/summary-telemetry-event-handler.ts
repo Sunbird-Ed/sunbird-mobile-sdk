@@ -1,5 +1,5 @@
 import {ApiRequestHandler} from '../../api';
-import {ProducerData, SunbirdTelemetry} from '../../telemetry';
+import {ProducerData, Rollup, SunbirdTelemetry} from '../../telemetry';
 import {SummarizerService} from '..';
 import {
     ContentState,
@@ -107,7 +107,8 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                                                         progress
 
                                                     };
-                                                    this.generateAuditTelemetry(userId, courseId, batchId, content);
+                                                    this.generateAuditTelemetry(userId, courseId, batchId, content,
+                                                      event.object ? event.object.rollup! : {});
                                                     return this.courseService.updateContentState(updateContentStateRequest).pipe(
                                                         tap(() => {
                                                             this.eventBusService.emit({
@@ -331,7 +332,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         return of(undefined);
     }
 
-    private generateAuditTelemetry(userId: string, courseId: string, batchId: string, content: Content) {
+    private generateAuditTelemetry(userId: string, courseId: string, batchId: string, content: Content, rollup: Rollup) {
         const actor = new Actor();
         actor.id = userId;
         actor.type = Actor.TYPE_USER;
@@ -355,14 +356,16 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         ];
 
         const auditRequest: TelemetryAuditRequest = {
-            env: 'Course',
+            env: 'course',
             actor,
             currentState: AuditState.AUDIT_UPDATED,
             updatedProperties: ['progress'],
             objId: content.identifier,
             objType: content.contentData.contentType || '',
             objVer: content.contentData.pkgVersion || '',
-            correlationData : cdata
+            rollUp: rollup || {},
+            correlationData : cdata,
+            type: 'content-progress'
         };
         TelemetryLogger.log.audit(auditRequest).toPromise();
     }

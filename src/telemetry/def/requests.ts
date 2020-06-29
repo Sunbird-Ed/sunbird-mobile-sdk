@@ -11,6 +11,7 @@ export interface TelemetryAuditRequest {
     objType?: string;
     objVer?: string;
     correlationData?: Array<CorrelationData>;
+    rollUp?: Rollup;
 }
 
 export class TelemetryInteractRequest {

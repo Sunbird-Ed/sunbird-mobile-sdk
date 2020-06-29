@@ -53,13 +53,15 @@ export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseReques
         ];
 
         const auditRequest: TelemetryAuditRequest = {
-            env: 'Course',
+            env: 'course',
             actor,
             currentState: AuditState.AUDIT_CREATED,
             updatedProperties: ['courseId', 'userId', 'batchId'],
             objId: request.courseId,
             objType: 'Course',
-            correlationData : cdata
+            rollUp: { l1: request.courseId},
+            correlationData : cdata,
+            type: 'enrollment'
         };
         TelemetryLogger.log.audit(auditRequest).toPromise();
     }
