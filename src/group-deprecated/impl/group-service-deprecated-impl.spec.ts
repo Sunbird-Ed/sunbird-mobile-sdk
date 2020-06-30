@@ -1,34 +1,30 @@
 import {DbService} from '../../db';
-import {
-    GetAllGroupRequest,
-    Group,
-    GroupService,
-    ProfilesToGroupRequest
-} from '..';
+import {GetAllGroupRequestDeprecated, GroupDeprecated, GroupServiceDeprecated, ProfilesToGroupRequestDeprecated} from '..';
 import {ProfileService} from '../../profile';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {GroupKeys} from '../../preference-keys';
 import {TelemetryService} from '../../telemetry';
 import {Container} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
-import { GroupServiceImpl } from './group-service-impl';
-import { instance, mock } from 'ts-mockito';
-import { of } from 'rxjs';
+import {GroupServiceDeprecatedImpl} from './group-service-deprecated-impl';
+import {instance, mock} from 'ts-mockito';
+import {of} from 'rxjs';
 
 describe('GroupServiceImpl', () => {
 
-    let groupService: GroupService;
+    let groupService: GroupServiceDeprecated;
     const container = new Container();
     const mockDbService: Partial<DbService> = {};
     const mockProfileService: Partial<ProfileService> = {
-        getActiveProfileSession: jest.fn().mockImplementation(() => {})
+        getActiveProfileSession: jest.fn().mockImplementation(() => {
+        })
     };
     const mockTelemetryService: Partial<TelemetryService> = {
         feedback: jest.fn().mockImplementation(() => {})
     };
     const mockSharedPreferences: SharedPreferences = instance(mock<SharedPreferences>());
     beforeAll(() => {
-        container.bind<GroupService>(InjectionTokens.GROUP_SERVICE).to(GroupServiceImpl);
+        container.bind<GroupServiceDeprecated>(InjectionTokens.GROUP_SERVICE).to(GroupServiceDeprecatedImpl);
         container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(container);
         container.bind<DbService>(InjectionTokens.DB_SERVICE).toConstantValue(mockDbService as DbService);
         container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).toConstantValue(mockProfileService as ProfileService);
@@ -48,12 +44,12 @@ describe('GroupServiceImpl', () => {
 
     it('should return Create Group DBEntry Using ProfileService', () => {
         // arrange
-        const group: Group = {
-            gid : 'SAMPLE_UID',
+        const group: GroupDeprecated = {
+            gid: 'SAMPLE_UID',
             name: 'SAMPLE_NAME',
             syllabus: ['ENGLISH', 'MATHS'],
             grade: ['GRADE1', 'GRADE2'],
-            gradeValue: { key: 'SAMPLE_KEY'},
+            gradeValue: {key: 'SAMPLE_KEY'},
             createdAt: 123,
             updatedAt: 1234
         };
@@ -70,12 +66,12 @@ describe('GroupServiceImpl', () => {
 
     it('should return Delete Group DBEntry Using ProfileService', () => {
         // arrange
-        const group: Group = {
-            gid : 'SAMPLE_UID',
+        const group: GroupDeprecated = {
+            gid: 'SAMPLE_UID',
             name: 'SAMPLE_NAME',
             syllabus: ['ENGLISH', 'MATHS'],
             grade: ['GRADE1', 'GRADE2'],
-            gradeValue: { key: 'SAMPLE_KEY'},
+            gradeValue: {key: 'SAMPLE_KEY'},
             createdAt: 123,
             updatedAt: 1234
         };
@@ -94,12 +90,12 @@ describe('GroupServiceImpl', () => {
 
     it('should return Update Group DBEntry Using ProfileService', () => {
         // arrange
-        const group: Group = {
-            gid : 'SAMPLE_UID',
+        const group: GroupDeprecated = {
+            gid: 'SAMPLE_UID',
             name: 'SAMPLE_NAME',
             syllabus: ['ENGLISH', 'MATHS'],
             grade: ['GRADE1', 'GRADE2'],
-            gradeValue: { key: 'SAMPLE_KEY'},
+            gradeValue: {key: 'SAMPLE_KEY'},
             createdAt: 123,
             updatedAt: 1234
         };
@@ -159,7 +155,7 @@ describe('GroupServiceImpl', () => {
 
     it('should return getAllGroups Using GroupService', () => {
         // arrange
-        const groupRequest: GetAllGroupRequest = {uid: '123'};
+        const groupRequest: GetAllGroupRequestDeprecated = {uid: '123'};
         mockDbService.execute = jest.fn().mockImplementation(() => of([]));
         mockDbService.read = jest.fn().mockImplementation(() => of([]));
 
@@ -174,7 +170,7 @@ describe('GroupServiceImpl', () => {
 
     it('should return addProfilesToGroup Using GroupService', () => {
         // arrange
-        const profileToGroupRequest: ProfilesToGroupRequest = {groupId: '123', uidList: ['2', '23']};
+        const profileToGroupRequest: ProfilesToGroupRequestDeprecated = {groupId: '123', uidList: ['2', '23']};
         mockDbService.beginTransaction = jest.fn().mockImplementation(() => of([]));
         mockDbService.delete = jest.fn().mockImplementation(() => of([]));
         mockDbService.read = jest.fn().mockImplementation(() => of([]));
@@ -192,7 +188,7 @@ describe('GroupServiceImpl', () => {
     });
     it('should Catch addProfilesToGroup Using GroupService', () => {
         // arrange
-        const profileToGroupRequest: ProfilesToGroupRequest = {groupId: '123', uidList: ['2', '23']};
+        const profileToGroupRequest: ProfilesToGroupRequestDeprecated = {groupId: '123', uidList: ['2', '23']};
         mockDbService.beginTransaction = jest.fn().mockImplementation(() => of([]));
         mockDbService.delete = jest.fn().mockImplementation(() => of([]));
         mockDbService.read = jest.fn().mockImplementation(() => of([]));

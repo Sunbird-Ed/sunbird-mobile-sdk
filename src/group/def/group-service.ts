@@ -1,27 +1,53 @@
-import {Group} from './group';
 import {Observable} from 'rxjs';
-import {GetAllGroupRequest} from './get-all-group-request';
-import {ProfilesToGroupRequest} from './profiles-to-group-request';
-import {GroupSession} from './group-session';
-
+import {Group, GroupMember} from './models';
+import {
+    AddActivitiesRequest,
+    AddMembersRequest,
+    DeleteByIdRequest,
+    GetByIdRequest,
+    GetMembersRequest,
+    GroupCreateRequest,
+    GroupSearchCriteria,
+    RemoveActivitiesRequest,
+    RemoveMembersRequest,
+    UpdateActivitiesRequest,
+    UpdateByIdRequest,
+    UpdateMembersRequest
+} from './requests';
+import {
+    GroupAddActivitiesResponse,
+    GroupAddMembersResponse,
+    GroupCreateResponse,
+    GroupDeleteResponse,
+    GroupRemoveActivitiesResponse,
+    GroupRemoveMembersResponse,
+    GroupUpdateActivitiesResponse,
+    GroupUpdateMembersResponse,
+    GroupUpdateResponse
+} from './responses';
 
 export interface GroupService {
+    create(request: GroupCreateRequest): Observable<GroupCreateResponse>;
 
-    createGroup(group: Group): Observable<Group>;
+    getById(request: GetByIdRequest): Observable<Group>;
 
-    deleteGroup(gid: string): Observable<undefined>;
+    search(request: GroupSearchCriteria): Observable<Group[]>;
 
-    updateGroup(group: Group): Observable<Group>;
+    updateById(request: UpdateByIdRequest): Observable<GroupUpdateResponse>;
 
-    getActiveSessionGroup(): Observable<Group>;
+    deleteById(request: DeleteByIdRequest): Observable<GroupDeleteResponse>;
 
-    setActiveSessionForGroup(groupGid: string): Observable<boolean>;
+    getMembers(request: GetMembersRequest): Observable<GroupMember[]>;
 
-    getActiveGroupSession(): Observable<GroupSession | undefined>;
+    addMembers(request: AddMembersRequest): Observable<GroupAddMembersResponse>;
 
-    getAllGroups(getAllGroupRequest?: GetAllGroupRequest): Observable<Group[]>;
+    updateMembers(request: UpdateMembersRequest): Observable<GroupUpdateMembersResponse>;
 
-    addProfilesToGroup(profilesToGroupRequest: ProfilesToGroupRequest): Observable<number>;
+    removeMembers(request: RemoveMembersRequest): Observable<GroupRemoveMembersResponse>;
 
-    removeActiveGroupSession(): Observable<undefined>;
+    addActivities(request: AddActivitiesRequest): Observable<GroupAddActivitiesResponse>;
+
+    updateActivities(request: UpdateActivitiesRequest): Observable<GroupUpdateActivitiesResponse>;
+
+    removeActivities(request: RemoveActivitiesRequest): Observable<GroupRemoveActivitiesResponse>;
 }
