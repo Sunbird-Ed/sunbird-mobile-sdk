@@ -77,6 +77,8 @@ import {CsGroupService} from '@project-sunbird/client-services/services/group';
 import {CsCourseService} from '@project-sunbird/client-services/services/course';
 import {GroupService} from './group';
 import {GroupServiceImpl} from './group/impl/group-service-impl';
+import {GroupServiceDeprecated} from './group-deprecated';
+import {GroupServiceDeprecatedImpl} from './group-deprecated/impl/group-service-deprecated-impl';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -135,6 +137,10 @@ export class SunbirdSdk {
 
     get groupService(): GroupService {
         return this._container.get<GroupService>(InjectionTokens.GROUP_SERVICE);
+    }
+
+    get groupServiceDeprecated(): GroupServiceDeprecated {
+        return this._container.get<GroupServiceDeprecated>(InjectionTokens.GROUP_SERVICE_DEPRECATED);
     }
 
     get contentService(): ContentService {
@@ -289,6 +295,8 @@ export class SunbirdSdk {
         this._container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).to(ProfileServiceImpl).inSingletonScope();
 
         this._container.bind<GroupService>(InjectionTokens.GROUP_SERVICE).to(GroupServiceImpl).inSingletonScope();
+
+        this._container.bind<GroupServiceDeprecated>(InjectionTokens.GROUP_SERVICE_DEPRECATED).to(GroupServiceDeprecatedImpl).inSingletonScope();
 
         this._container.bind<ErrorLoggerService>(InjectionTokens.ERROR_LOGGER_SERVICE).to(ErrorLoggerServiceImpl).inSingletonScope();
 
