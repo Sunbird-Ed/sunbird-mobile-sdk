@@ -4,14 +4,13 @@ import {ProfileService, ProfileSession} from '../../profile';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {mockSdkConfigWithSamplePlayerConfig} from './player-service-impl.spec.data';
-import {GroupService, GroupSession} from '../../group';
+import {GroupServiceDeprecated, GroupSessionDeprecated} from '../../group-deprecated';
 import {FrameworkService} from '../../framework';
 import {DeviceInfo} from '../../util/device';
 import {AppInfo} from '../../util/app';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 import {Content} from '../../content';
 import {Rollup} from '../../telemetry';
-import { of } from 'rxjs';
 
 describe('PlayerServiceImpl', () => {
     let playerService: PlayerService;
@@ -22,9 +21,10 @@ describe('PlayerServiceImpl', () => {
         getDeviceID: jest.fn().mockImplementation(() => {})
     };
     const mockProfileService: Partial<ProfileService> = {
-        getActiveSessionProfile: jest.fn().mockImplementation(() => {})
+        getActiveSessionProfile: jest.fn().mockImplementation(() => {
+        })
     };
-    const mockGroupService: Partial<GroupService> = {};
+    const mockGroupService: Partial<GroupServiceDeprecated> = {};
 
     const mockFrameWorkService: Partial<FrameworkService> = {
         getActiveChannelId: jest.fn().mockImplementation(() => {
@@ -37,7 +37,7 @@ describe('PlayerServiceImpl', () => {
     beforeAll(() => {
         container.bind<PlayerService>(InjectionTokens.PLAYER_SERVICE).to(PlayerServiceImpl);
         container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).toConstantValue(mockProfileService as ProfileService);
-        container.bind<GroupService>(InjectionTokens.GROUP_SERVICE).toConstantValue(mockGroupService as GroupService);
+        container.bind<GroupServiceDeprecated>(InjectionTokens.GROUP_SERVICE).toConstantValue(mockGroupService as GroupServiceDeprecated);
         container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(mockSdkConfigWithSamplePlayerConfig as SdkConfig);
         container.bind<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE).toConstantValue(mockFrameWorkService as FrameworkService);
         container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).toConstantValue(mockDeviceInfoService as DeviceInfo);
@@ -67,7 +67,7 @@ describe('PlayerServiceImpl', () => {
         mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of(mockProfileSession));
         (mockProfileService.getActiveSessionProfile as jest.Mock).mockReturnValue(of('MOCK_PROFILE'));
 
-        const mockGroupSession: GroupSession = new GroupSession('MOCK_GID');
+        const mockGroupSession: GroupSessionDeprecated = new GroupSessionDeprecated('MOCK_GID');
         mockGroupService.getActiveGroupSession = jest.fn().mockImplementation(() => of(mockGroupSession));
 
         (mockFrameWorkService.getActiveChannelId as jest.Mock).mockReturnValue(of('MOCK_CHANNEL_ID'));

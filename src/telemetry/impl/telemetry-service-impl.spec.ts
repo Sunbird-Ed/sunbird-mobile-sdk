@@ -1,41 +1,41 @@
-import { TelemetryServiceImpl } from './telemetry-service-impl';
-import { ApiService } from '../../api';
-import { FileService } from '../../util/file/def/file-service';
-import { CachedItemStore, KeyValueStore } from '../../key-value-store';
-import { SdkConfig } from '../../sdk-config';
-import { Container, inject } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
-import { of, throwError } from 'rxjs';
-import { TelemetryDecorator, TelemetryService } from '..';
-import { DbService } from '../../db';
-import { ProfileService } from '../../profile';
-import { GroupService } from '../../group';
-import { DeviceInfo } from '../../util/device';
-import { EventsBusService } from '../../events-bus';
-import { FrameworkService } from '../../framework';
-import { NetworkInfoService } from '../../util/network';
-import { ErrorLoggerService } from '../../error';
-import { SharedPreferences } from '../../util/shared-preferences';
-import { AppInfo } from '../../util/app';
-import { DeviceRegisterService } from '../../device-register';
-import { CourseService } from '../../course';
-import { mockSdkConfigWithtelemetryServiceConfig } from './telemetry-service-impl.spec.data';
-import { NetworkQueue } from '../../api/network-queue';
-import { TelemetryKeys } from '../../preference-keys';
+import {TelemetryServiceImpl} from './telemetry-service-impl';
+import {ApiService} from '../../api';
+import {FileService} from '../../util/file/def/file-service';
+import {KeyValueStore} from '../../key-value-store';
+import {SdkConfig} from '../../sdk-config';
+import {Container} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
+import {of, throwError} from 'rxjs';
+import {TelemetryDecorator, TelemetryService} from '..';
+import {DbService} from '../../db';
+import {ProfileService} from '../../profile';
+import {GroupServiceDeprecated} from '../../group-deprecated';
+import {DeviceInfo} from '../../util/device';
+import {EventsBusService} from '../../events-bus';
+import {FrameworkService} from '../../framework';
+import {NetworkInfoService} from '../../util/network';
+import {ErrorLoggerService} from '../../error';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {AppInfo} from '../../util/app';
+import {DeviceRegisterService} from '../../device-register';
+import {CourseService} from '../../course';
+import {mockSdkConfigWithtelemetryServiceConfig} from './telemetry-service-impl.spec.data';
+import {NetworkQueue} from '../../api/network-queue';
+import {TelemetryKeys} from '../../preference-keys';
 
 declare const sbutility;
 
 
 describe('TelemetryServiceImpl', () => {
-  let telemetryService: TelemetryService;
+    let telemetryService: TelemetryService;
 
-  const container = new Container();
+    const container = new Container();
 
-  const mockDbService: Partial<DbService> = {};
+    const mockDbService: Partial<DbService> = {};
   const mockTelemetryDecorator: Partial<TelemetryDecorator> = {};
-  const mockProfileService: Partial<ProfileService> = {};
-  const mockGroupService: Partial<GroupService> = {};
-  const mockKeyValueStore: Partial<KeyValueStore> = {};
+    const mockProfileService: Partial<ProfileService> = {};
+    const mockGroupService: Partial<GroupServiceDeprecated> = {};
+    const mockKeyValueStore: Partial<KeyValueStore> = {};
   const mockApiService: Partial<ApiService> = {};
   const mockSdkConfig: Partial<SdkConfig> = {};
   const mockDeviceInfo: Partial<DeviceInfo> = {};
@@ -55,9 +55,9 @@ describe('TelemetryServiceImpl', () => {
     container.bind<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE).to(TelemetryServiceImpl);
     container.bind<DbService>(InjectionTokens.DB_SERVICE).toConstantValue(mockDbService as DbService);
     container.bind<TelemetryDecorator>(InjectionTokens.TELEMETRY_DECORATOR).toConstantValue(mockTelemetryDecorator as TelemetryDecorator);
-    container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).toConstantValue(mockProfileService as ProfileService);
-    container.bind<GroupService>(InjectionTokens.GROUP_SERVICE).toConstantValue(mockGroupService as GroupService);
-    container.bind<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE).toConstantValue(mockKeyValueStore as KeyValueStore);
+      container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).toConstantValue(mockProfileService as ProfileService);
+      container.bind<GroupServiceDeprecated>(InjectionTokens.GROUP_SERVICE).toConstantValue(mockGroupService as GroupServiceDeprecated);
+      container.bind<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE).toConstantValue(mockKeyValueStore as KeyValueStore);
     container.bind<ApiService>(InjectionTokens.API_SERVICE).toConstantValue(mockApiService as ApiService);
     container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(mockSdkConfigWithtelemetryServiceConfig as SdkConfig);
     container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).toConstantValue(mockDeviceInfo as DeviceInfo);

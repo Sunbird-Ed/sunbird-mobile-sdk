@@ -1,13 +1,13 @@
 import {UniqueId} from '../../db/util/unique-id';
-import { GroupSession } from '..';
-import { getServiceIdentifierAsString } from 'inversify';
+import {GroupSessionDeprecated} from '..';
+
 describe('GroupSession', () => {
     const gid = 'SAMPLE_GID';
     const sid = UniqueId.generateUniqueId();
     const createdTime = Date.now();
-    let groupSession: GroupSession;
+    let groupSession: GroupSessionDeprecated;
     beforeAll(() => {
-        groupSession = new GroupSession(gid);
+        groupSession = new GroupSessionDeprecated(gid);
     });
     beforeEach(() => {
         jest.clearAllMocks();

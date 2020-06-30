@@ -10,7 +10,7 @@ export * from './framework';
 export * from './form';
 export * from './content';
 export * from './profile';
-export * from './group';
+export * from './group-deprecated';
 export * from './page';
 export * from './sdk';
 export * from './sdk-config';
@@ -24,7 +24,6 @@ export * from './error';
 export * from './codepush-experiment';
 export * from './faq';
 export * from './archive';
-export * from './class-room';
 // utils
 export * from './util/shared-preferences';
 export * from './util/download';

@@ -1,4 +1,4 @@
-export interface Group {
+export interface GroupDeprecated {
     gid: string;
     name: string;
     syllabus: string[];
@@ -9,7 +9,7 @@ export interface Group {
     profilesCount?: number;
 }
 
-export interface GroupProfile {
+export interface GroupProfileDeprecated {
     gid: string;
     uid: string;
 }
