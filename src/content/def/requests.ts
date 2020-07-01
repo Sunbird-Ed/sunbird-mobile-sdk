@@ -4,8 +4,9 @@ import {CorrelationData, Rollup} from '../../telemetry';
 import {ContentImportResponse} from './response';
 import {ContentEntry} from '../db/schema';
 import {DownloadRequest} from '../../util/download';
+import {CachedItemRequest} from '../../key-value-store';
 
-export interface SearchAndGroupContentRequest {
+export interface SearchAndGroupContentRequest extends CachedItemRequest {
     groupBy: keyof ContentData;
     combination?: {
         [key in keyof ContentData]?: string[]
