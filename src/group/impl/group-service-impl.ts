@@ -24,11 +24,12 @@ import {
 } from '..';
 import {Observable} from 'rxjs';
 import {Group, GroupMember} from '../def/models';
-import {inject} from 'inversify';
+import {inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {CsGroupService} from '@project-sunbird/client-services/services/group';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 
+@injectable()
 export class GroupServiceImpl implements GroupService {
     private static GROUP_LOCAL_KEY = 'GROUP-';
     private static GROUP_SEARCH_LOCAL_KEY = 'GROUP_SEARCH-';
