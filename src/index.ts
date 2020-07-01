@@ -10,6 +10,7 @@ export * from './framework';
 export * from './form';
 export * from './content';
 export * from './profile';
+export * from './group';
 export * from './group-deprecated';
 export * from './page';
 export * from './sdk';
