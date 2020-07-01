@@ -11,7 +11,7 @@ import {
 import {defer, Observable, of} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 import * as SHA1 from 'crypto-js/sha1';
-import {CachedItemStore} from '../../key-value-store';
+import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {ContentsGroupGenerator} from './contents-group-generator';
 
 export class SearchAndGroupContentHandler {
@@ -37,7 +37,7 @@ export class SearchAndGroupContentHandler {
     handle(request: SearchAndGroupContentRequest): Observable<ContentsGroupedByPageSection> {
         return defer(async () => {
             const localTextBooksContentDataList = await this.fetchOfflineContent(request.searchCriteria);
-            const searchContentDataList = ((await this.fetchOnlineContent(request.searchCriteria)).contentDataList as ContentData[] || [])
+            const searchContentDataList = ((await this.fetchOnlineContent(request)).contentDataList as ContentData[] || [])
                 .filter((contentData) => {
                     return !localTextBooksContentDataList.find(
                         (localContentData) => localContentData.identifier === contentData.identifier);
@@ -75,12 +75,12 @@ export class SearchAndGroupContentHandler {
         ).toPromise();
     }
 
-    private async fetchOnlineContent(searchRequest: ContentSearchCriteria): Promise<ContentSearchResult> {
-        return this.cachedItemStore.getCached(
-            SearchAndGroupContentHandler.getIdForDb(searchRequest),
+    private async fetchOnlineContent({from, searchCriteria}: SearchAndGroupContentRequest): Promise<ContentSearchResult> {
+        return this.cachedItemStore[from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
+            SearchAndGroupContentHandler.getIdForDb(searchCriteria),
             SearchAndGroupContentHandler.SEARCH_CONTENT_GROUPED_KEY,
             'ttl_' + SearchAndGroupContentHandler.SEARCH_CONTENT_GROUPED_KEY,
-            () => this.contentService.searchContent(searchRequest),
+            () => this.contentService.searchContent(searchCriteria),
             undefined,
             undefined,
             (contentSearchResult: ContentSearchResult) =>
@@ -94,7 +94,7 @@ export class SearchAndGroupContentHandler {
                 return of({
                     id: 'OFFLINE_RESPONSE_ID',
                     responseMessageId: 'OFFLINE_RESPONSE_ID',
-                    filterCriteria: searchRequest,
+                    filterCriteria: searchCriteria,
                     contentDataList: []
                 });
             })
