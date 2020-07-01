@@ -75,7 +75,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
         @inject(InjectionTokens.TELEMETRY_DECORATOR) private decorator: TelemetryDecorator,
         @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
-        @inject(InjectionTokens.GROUP_SERVICE) private groupService: GroupServiceDeprecated,
+        @inject(InjectionTokens.GROUP_SERVICE_DEPRECATED) private groupService: GroupServiceDeprecated,
         @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
         @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,

@@ -37,7 +37,7 @@ describe('PlayerServiceImpl', () => {
     beforeAll(() => {
         container.bind<PlayerService>(InjectionTokens.PLAYER_SERVICE).to(PlayerServiceImpl);
         container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).toConstantValue(mockProfileService as ProfileService);
-        container.bind<GroupServiceDeprecated>(InjectionTokens.GROUP_SERVICE).toConstantValue(mockGroupService as GroupServiceDeprecated);
+        container.bind<GroupServiceDeprecated>(InjectionTokens.GROUP_SERVICE_DEPRECATED).toConstantValue(mockGroupService as GroupServiceDeprecated);
         container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(mockSdkConfigWithSamplePlayerConfig as SdkConfig);
         container.bind<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE).toConstantValue(mockFrameWorkService as FrameworkService);
         container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).toConstantValue(mockDeviceInfoService as DeviceInfo);
