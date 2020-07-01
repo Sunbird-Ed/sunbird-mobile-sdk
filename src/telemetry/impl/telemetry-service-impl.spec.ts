@@ -55,9 +55,9 @@ describe('TelemetryServiceImpl', () => {
     container.bind<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE).to(TelemetryServiceImpl);
     container.bind<DbService>(InjectionTokens.DB_SERVICE).toConstantValue(mockDbService as DbService);
     container.bind<TelemetryDecorator>(InjectionTokens.TELEMETRY_DECORATOR).toConstantValue(mockTelemetryDecorator as TelemetryDecorator);
-      container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).toConstantValue(mockProfileService as ProfileService);
-      container.bind<GroupServiceDeprecated>(InjectionTokens.GROUP_SERVICE).toConstantValue(mockGroupService as GroupServiceDeprecated);
-      container.bind<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE).toConstantValue(mockKeyValueStore as KeyValueStore);
+    container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).toConstantValue(mockProfileService as ProfileService);
+    container.bind<GroupServiceDeprecated>(InjectionTokens.GROUP_SERVICE_DEPRECATED).toConstantValue(mockGroupService as GroupServiceDeprecated);
+    container.bind<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE).toConstantValue(mockKeyValueStore as KeyValueStore);
     container.bind<ApiService>(InjectionTokens.API_SERVICE).toConstantValue(mockApiService as ApiService);
     container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(mockSdkConfigWithtelemetryServiceConfig as SdkConfig);
     container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).toConstantValue(mockDeviceInfo as DeviceInfo);

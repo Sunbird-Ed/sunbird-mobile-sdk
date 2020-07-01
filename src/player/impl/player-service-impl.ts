@@ -17,7 +17,7 @@ import {mergeMap} from 'rxjs/operators';
 @injectable()
 export class PlayerServiceImpl implements PlayerService {
     constructor(@inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
-                @inject(InjectionTokens.GROUP_SERVICE) private groupService: GroupServiceDeprecated,
+                @inject(InjectionTokens.GROUP_SERVICE_DEPRECATED) private groupService: GroupServiceDeprecated,
                 @inject(InjectionTokens.SDK_CONFIG) private config: SdkConfig,
                 @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
                 @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
