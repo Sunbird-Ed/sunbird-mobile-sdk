@@ -53,6 +53,7 @@ export class AuthServiceImpl implements AuthService {
                 }
 
                 CsModule.instance.config.core.api.authentication.userToken = session.access_token;
+                CsModule.instance.config.core.api.authentication.managedUserToken = session.managed_access_token;
                 CsModule.instance.updateConfig(CsModule.instance.config);
                 return of(undefined);
             })
