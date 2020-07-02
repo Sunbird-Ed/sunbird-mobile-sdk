@@ -1,3 +1,3 @@
 export {
-    Group, GroupMember, GroupJoinStrategy, GroupActivity, GroupMemberRole, GroupEntityStatus
+    Group, GroupMember, GroupMembershipType, GroupActivity, GroupMemberRole, GroupEntityStatus
 } from '@project-sunbird/client-services/models/group';
