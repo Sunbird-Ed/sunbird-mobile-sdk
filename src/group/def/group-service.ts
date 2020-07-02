@@ -1,11 +1,10 @@
 import {Observable} from 'rxjs';
-import {Group, GroupMember} from './models';
+import {Group} from './models';
 import {
     AddActivitiesRequest,
     AddMembersRequest,
     DeleteByIdRequest,
     GetByIdRequest,
-    GetMembersRequest,
     GroupCreateRequest,
     GroupSearchCriteria,
     RemoveActivitiesRequest,
@@ -36,8 +35,6 @@ export interface GroupService {
     updateById(request: UpdateByIdRequest): Observable<GroupUpdateResponse>;
 
     deleteById(request: DeleteByIdRequest): Observable<GroupDeleteResponse>;
-
-    getMembers(request: GetMembersRequest): Observable<GroupMember[]>;
 
     addMembers(request: AddMembersRequest): Observable<GroupAddMembersResponse>;
 

@@ -15,7 +15,10 @@ export {CsGroupCreateRequest as GroupCreateRequest} from '@project-sunbird/clien
 
 export interface GetByIdRequest extends CachedItemRequest {
     id: string;
-    includeMembers?: boolean;
+    options?: {
+        includeMembers?: boolean;
+        includeActivities?: boolean;
+    };
 }
 
 export interface GroupSearchCriteria extends CachedItemRequest {
@@ -29,10 +32,6 @@ export interface UpdateByIdRequest {
 
 export interface DeleteByIdRequest {
     id: string;
-}
-
-export interface GetMembersRequest extends CachedItemRequest {
-    groupId: string;
 }
 
 export interface AddMembersRequest {

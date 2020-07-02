@@ -3,7 +3,6 @@ import {
     AddMembersRequest,
     DeleteByIdRequest,
     GetByIdRequest,
-    GetMembersRequest,
     GroupAddActivitiesResponse,
     GroupAddMembersResponse,
     GroupCreateRequest,
@@ -23,7 +22,7 @@ import {
     UpdateMembersRequest
 } from '..';
 import {Observable} from 'rxjs';
-import {Group, GroupMember} from '../def/models';
+import {Group} from '../def/models';
 import {inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {CsGroupService} from '@project-sunbird/client-services/services/group';
@@ -33,7 +32,6 @@ import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-stor
 export class GroupServiceImpl implements GroupService {
     private static GROUP_LOCAL_KEY = 'GROUP-';
     private static GROUP_SEARCH_LOCAL_KEY = 'GROUP_SEARCH-';
-    private static GROUP_MEMBERS_LOCAL_KEY = 'GROUP_MEMBERS-';
 
     constructor(
         @inject(CsInjectionTokens.GROUP_SERVICE) private groupServiceDelegate: CsGroupService,
@@ -47,16 +45,18 @@ export class GroupServiceImpl implements GroupService {
 
     getById(request: GetByIdRequest): Observable<Group> {
         return this.cachedItemStore[request.from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
-            `${request.id}${request.includeMembers ? '-' + request.includeMembers : ''}`,
+            `${request.id}` +
+            `${(request.options && request.options.includeMembers) ? '-' + request.options.includeMembers : ''}` +
+            `${(request.options && request.options.includeActivities) ? '-' + request.options.includeActivities : ''}`,
             GroupServiceImpl.GROUP_LOCAL_KEY,
             'ttl_' + GroupServiceImpl.GROUP_LOCAL_KEY,
-            () => this.groupServiceDelegate.getById(request.id, request.includeMembers),
+            () => this.groupServiceDelegate.getById(request.id, request.options),
         );
     }
 
     search({request, from}: GroupSearchCriteria): Observable<Group[]> {
         return this.cachedItemStore[from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
-            `${request.filters.memberId}`,
+            `${request.filters.userId}`,
             GroupServiceImpl.GROUP_SEARCH_LOCAL_KEY,
             'ttl_' + GroupServiceImpl.GROUP_SEARCH_LOCAL_KEY,
             () => this.groupServiceDelegate.search(request),
@@ -69,15 +69,6 @@ export class GroupServiceImpl implements GroupService {
 
     deleteById(request: DeleteByIdRequest): Observable<GroupDeleteResponse> {
         return this.groupServiceDelegate.deleteById(request.id);
-    }
-
-    getMembers({from, groupId}: GetMembersRequest): Observable<GroupMember[]> {
-        return this.cachedItemStore[from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
-            `${groupId}`,
-            GroupServiceImpl.GROUP_MEMBERS_LOCAL_KEY,
-            'ttl_' + GroupServiceImpl.GROUP_MEMBERS_LOCAL_KEY,
-            () => this.groupServiceDelegate.getMembers(groupId),
-        );
     }
 
     addMembers(request: AddMembersRequest): Observable<GroupAddMembersResponse> {
