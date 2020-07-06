@@ -23,7 +23,7 @@ import {
 } from '..';
 import {Observable} from 'rxjs';
 import {Group} from '../def/models';
-import {inject, injectable} from 'inversify';
+import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {CsGroupService} from '@project-sunbird/client-services/services/group';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
@@ -34,9 +34,13 @@ export class GroupServiceImpl implements GroupService {
     private static GROUP_SEARCH_LOCAL_KEY = 'GROUP_SEARCH-';
 
     constructor(
-        @inject(CsInjectionTokens.GROUP_SERVICE) private groupServiceDelegate: CsGroupService,
+        @inject(InjectionTokens.CONTAINER) private container: Container,
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore
     ) {
+    }
+
+    private get groupServiceDelegate(): CsGroupService {
+        return this.container.get(CsInjectionTokens.GROUP_SERVICE);
     }
 
     create(request: GroupCreateRequest): Observable<GroupCreateResponse> {
