@@ -315,7 +315,7 @@ describe('AuthUtil', () => {
         verify(MockEventsBusService.emit(objectContaining({
           namespace: EventNamespace.ERROR
         }))).called();
-        expect(e).toEqual(badRequestError);
+        expect(e instanceof AuthTokenRefreshError).toBeTruthy();
         done();
       });
     });
