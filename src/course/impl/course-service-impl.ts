@@ -32,7 +32,6 @@ import {GetContentStateHandler} from '../handlers/get-content-state-handler';
 import {UpdateEnrolledCoursesHandler} from '../handlers/update-enrolled-courses-handler';
 import {OfflineContentStateHandler} from '../handlers/offline-content-state-handler';
 import {CourseUtil} from '../course-util';
-import {ContentStatesSyncHandler} from '../handlers/content-states-sync-handler';
 import {ProcessingError} from '../../auth/errors/processing-error';
 import {inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
@@ -107,14 +106,6 @@ export class CourseServiceImpl implements CourseService {
                     throw new ProcessingError('Request processing failed');
                 }),
                 catchError((error) => {
-                    // const key = CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX.concat(request.userId,
-                    //     request.courseId, request.contentId, request.batchId);
-                    // return this.keyValueStore.getValue(key)
-                    //     .pipe(
-                    //         mergeMap((value: string | undefined) => {
-                    //             return this.keyValueStore.setValue(key, JSON.stringify(request));
-                    //         })
-                    //     );
                   return of(true);
                 }),
                 mergeMap(() => {
@@ -134,19 +125,6 @@ export class CourseServiceImpl implements CourseService {
       return new GetEnrolledCourseHandler(
         this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
       ).handle(request);
-        // const updateContentStateHandler: UpdateContentStateApiHandler =
-        //     new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig);
-        // return zip(
-        //     this.syncAssessmentEvents({persistedOnly: true}),
-        //     new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)
-        //         .updateContentState()
-        // ).pipe(
-        //     mergeMap(() => {
-        //         return new GetEnrolledCourseHandler(
-        //             this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
-        //         ).handle(request);
-        //     })
-        // );
     }
 
     getUserEnrolledCourses({request, from}: GetUserEnrolledCoursesRequest): Observable<Course[]> {
