@@ -20,6 +20,7 @@ import {
     GroupDeleteResponse,
     GroupRemoveActivitiesResponse,
     GroupRemoveMembersResponse,
+    GroupSearchResponse,
     GroupUpdateActivitiesResponse,
     GroupUpdateMembersResponse,
     GroupUpdateResponse
@@ -30,7 +31,7 @@ export interface GroupService {
 
     getById(request: GetByIdRequest): Observable<Group>;
 
-    search(request: GroupSearchCriteria): Observable<Group[]>;
+    search(request: GroupSearchCriteria): Observable<GroupSearchResponse[]>;
 
     updateById(request: UpdateByIdRequest): Observable<GroupUpdateResponse>;
 

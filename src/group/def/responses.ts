@@ -5,6 +5,7 @@ import {
     CsGroupDeleteResponse,
     CsGroupRemoveActivitiesResponse,
     CsGroupRemoveMembersResponse,
+    CsGroupSearchResponse,
     CsGroupUpdateActivitiesResponse,
     CsGroupUpdateMembersResponse,
     CsGroupUpdateResponse
@@ -20,4 +21,5 @@ export {
     CsGroupAddActivitiesResponse as GroupAddActivitiesResponse,
     CsGroupUpdateActivitiesResponse as GroupUpdateActivitiesResponse,
     CsGroupRemoveActivitiesResponse as GroupRemoveActivitiesResponse,
+    CsGroupSearchResponse as GroupSearchResponse
 } from '@project-sunbird/client-services/services/group';
