@@ -11,6 +11,7 @@ import {
     GroupRemoveActivitiesResponse,
     GroupRemoveMembersResponse,
     GroupSearchCriteria,
+    GroupSearchResponse,
     GroupService,
     GroupUpdateActivitiesResponse,
     GroupUpdateMembersResponse,
@@ -58,7 +59,7 @@ export class GroupServiceImpl implements GroupService {
         );
     }
 
-    search({request, from}: GroupSearchCriteria): Observable<Group[]> {
+    search({request, from}: GroupSearchCriteria): Observable<GroupSearchResponse[]> {
         return this.cachedItemStore[from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
             `${request.filters.userId}`,
             GroupServiceImpl.GROUP_SEARCH_LOCAL_KEY,
