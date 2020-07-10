@@ -2,6 +2,7 @@ export const CsInjectionTokens = {
     HTTP_SERVICE: Symbol.for('CS_HTTP_SERVICE'),
     GROUP_SERVICE: Symbol.for('CS_GROUP_SERVICE'),
     COURSE_SERVICE: Symbol.for('CS_COURSE_SERVICE'),
+    USER_SERVICE: Symbol.for('CS_USER_SERVICE'),
 };
 
 export const InjectionTokens = {

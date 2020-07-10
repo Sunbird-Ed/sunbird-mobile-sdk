@@ -365,7 +365,8 @@ export class SunbirdSdk {
                     apiPath: '/api/course/v1'
                 },
                 groupServiceConfig: {
-                    apiPath: '/api/group/v1'
+                    apiPath: '/api/group/v1',
+                    dataApiPath: '/api/data/v1/group'
                 }
             }
         }, (() => {

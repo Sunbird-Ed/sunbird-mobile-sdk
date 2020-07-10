@@ -25,8 +25,11 @@ import {
     GroupUpdateMembersResponse,
     GroupUpdateResponse
 } from './responses';
+import {GroupActivityService} from './group-activity-service';
 
 export interface GroupService {
+    activityService: GroupActivityService;
+
     create(request: GroupCreateRequest): Observable<GroupCreateResponse>;
 
     getById(request: GetByIdRequest): Observable<Group>;

@@ -26,10 +26,14 @@ import {UserFeed} from './user-feed-response';
 import {UserMigrateResponse} from './user-migrate-response';
 import {UserMigrateRequest} from './user-migrate-request';
 import {ManagedProfileManager} from '../handler/managed-profile-manager';
+import {CheckUserExistsResponse} from './check-user-exists-response';
+import {CheckUserExistsRequest} from './check-user-exists-request';
 
 
 export interface ProfileService extends SdkServicePreInitDelegate {
     readonly managedProfileManager: ManagedProfileManager;
+
+    checkServerProfileExists(request: CheckUserExistsRequest): Observable<CheckUserExistsResponse>;
 
     createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
 
@@ -76,4 +80,6 @@ export interface ProfileService extends SdkServicePreInitDelegate {
     getUserFeed(): Observable<UserFeed[]>;
 
     userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse>;
+
+
 }

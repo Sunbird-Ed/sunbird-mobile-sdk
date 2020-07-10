@@ -21,5 +21,9 @@ export {
     CsGroupAddActivitiesResponse as GroupAddActivitiesResponse,
     CsGroupUpdateActivitiesResponse as GroupUpdateActivitiesResponse,
     CsGroupRemoveActivitiesResponse as GroupRemoveActivitiesResponse,
-    CsGroupSearchResponse as GroupSearchResponse
+    CsGroupSearchResponse as GroupSearchResponse,
 } from '@project-sunbird/client-services/services/group';
+
+export {
+    CsGroupActivityDataAggregation as GroupActivityDataAggregation
+} from '@project-sunbird/client-services/services/group/activity';
