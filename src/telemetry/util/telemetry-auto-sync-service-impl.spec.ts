@@ -1,19 +1,10 @@
 import {TelemetryAutoSyncServiceImpl} from './telemetry-auto-sync-service-impl';
 import {TelemetryAutoSyncModes, TelemetryService} from '..';
 import {SharedPreferences} from '../../util/shared-preferences';
-import {ProfileService, ProfileSource} from '../../profile';
-import {CourseService} from '../../course';
-import {SdkConfig} from '../../sdk-config';
-import {ApiService} from '../../api';
-import {DbService} from '../../db';
-import {KeyValueStore} from '../../key-value-store';
 import {TelemetryKeys} from '../../preference-keys';
 import {of} from 'rxjs';
 import {take} from 'rxjs/operators';
 import advanceTimersByTime = jest.advanceTimersByTime;
-import {ContentStatesSyncHandler} from '../../course/handlers/content-states-sync-handler';
-
-jest.mock('../../course/handlers/content-states-sync-handler');
 
 describe('TelemetryAutoSyncServiceImpl', () => {
     let telemetryAutoSyncService: TelemetryAutoSyncServiceImpl;
