@@ -79,6 +79,7 @@ import {GroupService} from './group';
 import {GroupServiceImpl} from './group/impl/group-service-impl';
 import {GroupServiceDeprecated} from './group-deprecated';
 import {GroupServiceDeprecatedImpl} from './group-deprecated/impl/group-service-deprecated-impl';
+import {CsUserService} from '@project-sunbird/client-services/services/user';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -367,17 +368,22 @@ export class SunbirdSdk {
                 groupServiceConfig: {
                     apiPath: '/api/group/v1',
                     dataApiPath: '/api/data/v1/group'
+                },
+                userServiceConfig: {
+                    apiPath: '/api/user/v2'
                 }
             }
         }, (() => {
             this._container.rebind<CsHttpService>(CsInjectionTokens.HTTP_SERVICE).toConstantValue(CsModule.instance.httpService);
             this._container.rebind<CsGroupService>(CsInjectionTokens.GROUP_SERVICE).toConstantValue(CsModule.instance.groupService);
             this._container.rebind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(CsModule.instance.courseService);
+            this._container.rebind<CsUserService>(CsInjectionTokens.USER_SERVICE).toConstantValue(CsModule.instance.userService);
         }).bind(this));
 
         this._container.bind<CsHttpService>(CsInjectionTokens.HTTP_SERVICE).toConstantValue(CsModule.instance.httpService);
         this._container.bind<CsGroupService>(CsInjectionTokens.GROUP_SERVICE).toConstantValue(CsModule.instance.groupService);
         this._container.bind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(CsModule.instance.courseService);
+        this._container.bind<CsUserService>(CsInjectionTokens.USER_SERVICE).toConstantValue(CsModule.instance.userService);
 
         await this.dbService.init();
         await this.appInfo.init();
