@@ -3,6 +3,7 @@ import {
     AddMembersRequest,
     DeleteByIdRequest,
     GetByIdRequest,
+    GroupActivityService,
     GroupAddActivitiesResponse,
     GroupAddMembersResponse,
     GroupCreateRequest,
@@ -28,11 +29,25 @@ import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {CsGroupService} from '@project-sunbird/client-services/services/group';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
+import {GroupActivityServiceImpl} from './group-activity-service-impl';
 
 @injectable()
 export class GroupServiceImpl implements GroupService {
     private static GROUP_LOCAL_KEY = 'GROUP-';
     private static GROUP_SEARCH_LOCAL_KEY = 'GROUP_SEARCH-';
+
+    private _groupActivityService: GroupActivityService;
+
+    get activityService(): GroupActivityService {
+        if (!this._groupActivityService) {
+            this._groupActivityService = new GroupActivityServiceImpl(
+                this.groupServiceDelegate.activityService,
+                this.cachedItemStore
+            );
+        }
+
+        return this._groupActivityService;
+    }
 
     constructor(
         @inject(InjectionTokens.CONTAINER) private container: Container,
