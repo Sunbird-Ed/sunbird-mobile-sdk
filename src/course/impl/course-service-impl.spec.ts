@@ -21,7 +21,6 @@ import {AuthService} from '../../auth';
 import {of} from 'rxjs';
 import {AppInfo} from '../../util/app';
 import {OfflineContentStateHandler} from '../handlers/offline-content-state-handler';
-import {ContentStatesSyncHandler} from '../handlers/content-states-sync-handler';
 import {SyncAssessmentEventsHandler} from '../handlers/sync-assessment-events-handler';
 import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
 import {CsCourseService} from '@project-sunbird/client-services/services/course';
@@ -30,7 +29,6 @@ import {NetworkQueue} from '../../api/network-queue';
 import {UpdateContentStateApiHandler} from '../handlers/update-content-state-api-handler';
 
 jest.mock('../handlers/offline-content-state-handler');
-jest.mock('../handlers/content-states-sync-handler');
 jest.mock('../handlers/sync-assessment-events-handler');
 jest.mock('../handlers/get-enrolled-course-handler');
 
@@ -102,7 +100,6 @@ describe('CourseServiceImpl', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         (OfflineContentStateHandler as jest.Mock<OfflineContentStateHandler>).mockClear();
-        (ContentStatesSyncHandler as jest.Mock<ContentStatesSyncHandler>).mockClear();
         (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockClear();
     });
 
@@ -242,11 +239,6 @@ describe('CourseServiceImpl', () => {
         beforeEach(() => {
             // arrange
             spyOn(courseService, 'syncAssessmentEvents').and.returnValue(of(undefined));
-            (ContentStatesSyncHandler as jest.Mock<ContentStatesSyncHandler>).mockImplementation(() => {
-                return {
-                    updateContentState: jest.fn().mockImplementation(() => of(true))
-                } as Partial<ContentStatesSyncHandler> as ContentStatesSyncHandler;
-            });
             mockGetEnrolledCourseHandler = {
                 handle: jest.fn().mockImplementation(() => of([]))
             };
