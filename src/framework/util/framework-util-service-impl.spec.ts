@@ -7,7 +7,7 @@ import {
 } from '../..';
 import { FrameworkService } from '..';
 import { of } from 'rxjs';
-import { User } from '@project-sunbird/client-services';
+import { User } from '@project-sunbird/client-services/models';
 import { GetFrameworkCategoryTermsHandler } from '../handler/get-framework-category-terms-handler';
 
 jest.mock('../handler/get-framework-category-terms-handler');

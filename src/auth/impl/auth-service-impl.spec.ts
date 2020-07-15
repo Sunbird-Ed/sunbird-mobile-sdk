@@ -1,5 +1,5 @@
 import {Container} from 'inversify';
-import {AuthService, OAuthSession, SessionProvider} from '..';
+import {AuthService, SessionProvider} from '..';
 import {SdkConfig} from '../../sdk-config';
 import {ApiService} from '../../api';
 import {instance, mock, when} from 'ts-mockito';
@@ -8,9 +8,29 @@ import {EventsBusService} from '../../events-bus';
 import {InjectionTokens} from '../../injection-tokens';
 import {AuthServiceImpl} from './auth-service-impl';
 import {AuthUtil} from '../util/auth-util';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
+import {CsModule} from '@project-sunbird/client-services';
 
 jest.mock('../util/auth-util');
+jest.mock('@project-sunbird/client-services', () => {
+  return {
+    CsModule: {
+      instance: {
+        config: {
+          core: {
+            api: {
+              authentication: {
+                userToken: ''
+              }
+            }
+          }
+        },
+        updateConfig: jest.fn().mockImplementation(() => {
+        })
+      }
+    }
+  };
+});
 
 describe('AuthServiceImpl', () => {
   let authService: AuthService;
@@ -115,6 +135,59 @@ describe('AuthServiceImpl', () => {
       // assert
       expect(refreshSession).toHaveBeenCalled();
       done();
+    });
+  });
+
+  describe('onInit', () => {
+    it('should setup sharePreference listener to update CsModule user token when changed', (done) => {
+      // arrange
+      const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
+      mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify({access_token: 'some_token'})));
+      mockSharedPreferences.addListener = jest.fn().mockImplementation((_, listener) => {
+        listener(JSON.stringify({access_token: 'some_token'}));
+      });
+      spyOn(authService, 'getSession').and.returnValue(of(undefined));
+
+      // act
+      authService.onInit().subscribe(() => {
+        // assert
+        expect(CsModule.instance.updateConfig).toHaveBeenCalledWith(CsModule.instance.config);
+        done();
+      });
+    });
+
+    it('should setup sharePreference listener to update CsModule user token when removed', (done) => {
+      // arrange
+      const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
+      mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify({access_token: 'some_token'})));
+      mockSharedPreferences.addListener = jest.fn().mockImplementation((_, listener) => {
+        listener('');
+      });
+      spyOn(authService, 'getSession').and.returnValue(of(undefined));
+
+      // act
+      authService.onInit().subscribe(() => {
+        // assert
+        expect(CsModule.instance.updateConfig).toHaveBeenCalledWith(CsModule.instance.config);
+        done();
+      });
+    });
+
+    it('should update CsModule userToken if set in sharedPreferences', (done) => {
+      // arrange
+      const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
+      mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify({access_token: 'some_token'})));
+      mockSharedPreferences.addListener = jest.fn().mockImplementation((_, listener) => {
+        listener('');
+      });
+      spyOn(authService, 'getSession').and.returnValue(of({access_token: 'some_token'}));
+
+      // act
+      authService.onInit().subscribe(() => {
+        // assert
+        expect(CsModule.instance.updateConfig).toHaveBeenCalledWith(CsModule.instance.config);
+        done();
+      });
     });
   });
 });

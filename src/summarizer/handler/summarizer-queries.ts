@@ -14,17 +14,6 @@ export class SummarizerQueries {
                 GROUP BY ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} `;
     }
 
-    public static getContentProgressQuery(contentId: string): string {
-        return `SELECT ${LearnerAssessmentsEntry.COLUMN_NAME_UID}, ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID},
-                COUNT (${LearnerAssessmentsEntry.COLUMN_NAME_QID}) AS no_of_questions,
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_CORRECT}) AS correct_answers,
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_TIME_SPENT}) AS total_time_spent, h_data ,
-                SUM (${LearnerAssessmentsEntry.COLUMN_NAME_MAX_SCORE}) AS total_max_score,
-                FROM  ${LearnerAssessmentsEntry.TABLE_NAME}
-                WHERE ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = '${contentId}'
-                GROUP BY ${LearnerAssessmentsEntry.COLUMN_NAME_UID} `;
-    }
-
     public static getDetailReportsQuery(uids: string[], contentId: string): string {
         return `SELECT *, lcs.${LearnerSummaryEntry.COLUMN_NAME_TOTAL_TS}
                 FROM  ${LearnerAssessmentsEntry.TABLE_NAME} la
@@ -96,17 +85,17 @@ export class SummarizerQueries {
     }
 
     public static getUpdateSelection() {
-        const query = `${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ? AND
-                       ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = ? AND
-                       ${LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA} = ? AND
-                       ${LearnerAssessmentsEntry.COLUMN_NAME_QID} = ? `;
+        const query = `${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ? AND ` +
+                       `${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = ? AND ` +
+                       `${LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA} = ? AND ` +
+                       `${LearnerAssessmentsEntry.COLUMN_NAME_QID} = ? `;
         return query;
     }
 
     public static getLearnerSummaryReadSelection(hData: string) {
-        const query = `${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ? AND
-                       ${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = ? AND
-                       ${LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA} = ? `;
+        const query = `${LearnerAssessmentsEntry.COLUMN_NAME_UID} = ? AND ` +
+                       `${LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID} = ? AND ` +
+                       `${LearnerAssessmentsEntry.COLUMN_NAME_HIERARCHY_DATA} = ? `;
         return query;
     }
 

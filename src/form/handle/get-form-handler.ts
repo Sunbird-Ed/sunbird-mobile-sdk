@@ -20,10 +20,18 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     }
 
     private static getIdForRequest(request: FormRequest): string {
-        let id = request.type + '_' + request.subType + '_' + request.action;
+        let id = `${request.type}_${request.subType}_${request.action}`;
 
         if (request.rootOrgId) {
             id += ('_' + request.rootOrgId);
+        }
+
+        if (request.framework) {
+            id += ('_' + request.framework);
+        }
+
+        if (request.component) {
+            id += ('_' + request.component);
         }
 
         return id;
@@ -43,7 +51,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.formServiceConfig.apiPath + this.GET_FORM_DETAILS_ENDPOINT)
-            .withApiToken(true)
+            .withBearerToken(true)
             .withBody({request})
             .build();
         return this.apiService.fetch <{ result: { [key: string]: {} } }>(apiRequest)

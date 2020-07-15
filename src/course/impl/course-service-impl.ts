@@ -13,7 +13,7 @@ import {
     UnenrollCourseRequest,
     UpdateContentStateRequest
 } from '..';
-import {interval, Observable, Observer, of, zip} from 'rxjs';
+import {interval, Observable, Observer, of, zip, defer} from 'rxjs';
 import {ProfileService, ProfileServiceConfig} from '../../profile';
 import {GetBatchDetailsHandler} from '../handlers/get-batch-details-handler';
 import {UpdateContentStateApiHandler} from '../handlers/update-content-state-api-handler';
@@ -46,6 +46,9 @@ import * as MD5 from 'crypto-js/md5';
 import {SyncAssessmentEventsHandler} from '../handlers/sync-assessment-events-handler';
 import {ObjectUtil} from '../../util/object-util';
 import {catchError, concatMap, delay, filter, map, mapTo, mergeMap, take} from 'rxjs/operators';
+import { FileService } from '../../util/file/def/file-service';
+import { CertificateAlreadyDownloaded } from '../errors/certificate-already-downloaded';
+import {NetworkQueue} from '../../api/network-queue';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -66,7 +69,9 @@ export class CourseServiceImpl implements CourseService {
         @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
-        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo
+        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
+        @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
+        @inject(InjectionTokens.NETWORK_QUEUE) private networkQueue: NetworkQueue,
     ) {
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
         this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
@@ -74,8 +79,8 @@ export class CourseServiceImpl implements CourseService {
         this.syncAssessmentEventsHandler = new SyncAssessmentEventsHandler(
             this,
             this.sdkConfig,
-            this.apiService,
-            this.dbService
+            this.dbService,
+            this.networkQueue
         );
     }
 
@@ -86,7 +91,7 @@ export class CourseServiceImpl implements CourseService {
 
     updateContentState(request: UpdateContentStateRequest): Observable<boolean> {
         const offlineContentStateHandler: OfflineContentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
-        return new UpdateContentStateApiHandler(this.apiService, this.courseServiceConfig)
+        return new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig)
             .handle(CourseUtil.getUpdateContentStateRequest(request))
             .pipe(
                 map((response: { [key: string]: any }) => {
@@ -97,14 +102,15 @@ export class CourseServiceImpl implements CourseService {
                     throw new ProcessingError('Request processing failed');
                 }),
                 catchError((error) => {
-                    const key = CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX.concat(request.userId,
-                        request.courseId, request.contentId, request.batchId);
-                    return this.keyValueStore.getValue(key)
-                        .pipe(
-                            mergeMap((value: string | undefined) => {
-                                return this.keyValueStore.setValue(key, JSON.stringify(request));
-                            })
-                        );
+                    // const key = CourseServiceImpl.UPDATE_CONTENT_STATE_KEY_PREFIX.concat(request.userId,
+                    //     request.courseId, request.contentId, request.batchId);
+                    // return this.keyValueStore.getValue(key)
+                    //     .pipe(
+                    //         mergeMap((value: string | undefined) => {
+                    //             return this.keyValueStore.setValue(key, JSON.stringify(request));
+                    //         })
+                    //     );
+                  return of(true);
                 }),
                 mergeMap(() => {
                     return offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request);
@@ -120,19 +126,22 @@ export class CourseServiceImpl implements CourseService {
     }
 
     getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]> {
-        const updateContentStateHandler: UpdateContentStateApiHandler =
-            new UpdateContentStateApiHandler(this.apiService, this.courseServiceConfig);
-        return zip(
-            this.syncAssessmentEvents({persistedOnly: true}),
-            new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)
-                .updateContentState()
-        ).pipe(
-            mergeMap(() => {
-                return new GetEnrolledCourseHandler(
-                    this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
-                ).handle(request);
-            })
-        );
+      return new GetEnrolledCourseHandler(
+        this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
+      ).handle(request);
+        // const updateContentStateHandler: UpdateContentStateApiHandler =
+        //     new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig);
+        // return zip(
+        //     this.syncAssessmentEvents({persistedOnly: true}),
+        //     new ContentStatesSyncHandler(updateContentStateHandler, this.dbService, this.sharedPreferences, this.keyValueStore)
+        //         .updateContentState()
+        // ).pipe(
+        //     mergeMap(() => {
+        //         return new GetEnrolledCourseHandler(
+        //             this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
+        //         ).handle(request);
+        //     })
+        // );
     }
 
     enrollCourse(request: EnrollCourseRequest): Observable<boolean> {
@@ -265,11 +274,25 @@ export class CourseServiceImpl implements CourseService {
                     return {certificate, course};
                 }),
                 mergeMap(({certificate, course}) => {
+                    const filePath = `${cordova.file.externalRootDirectory}Download/${FileUtil.getFileName(certificate.url)}`;
+                    return defer(async () => {
+                        try {
+                            await this.fileService.exists(filePath);
+                            throw new CertificateAlreadyDownloaded('Certificate already downloaded');
+                        } catch (e) {
+                            if (e instanceof CertificateAlreadyDownloaded) {
+                                throw e;
+                            }
+                            return {certificate, course};
+                        }
+                    });
+                }),
+                mergeMap(({certificate, course}) => {
                     const signCertificateRequest = new Request.Builder()
                         .withType(HttpRequestType.POST)
                         .withPath(CourseServiceImpl.CERTIFICATE_SIGN_ENDPOINT)
-                        .withApiToken(true)
-                        .withSessionToken(true)
+                        .withBearerToken(true)
+                        .withUserToken(true)
                         .withBody({
                             request:
                                 {
@@ -296,9 +319,9 @@ export class CourseServiceImpl implements CourseService {
                         mimeType: 'application/pdf',
                         visibleInDownloadsUi: true,
                         notificationVisibility: 1,
-                        destinationInExternalFilesDir: {
+                        destinationInExternalPublicDir: {
                             dirType: 'Download',
-                            subPath: `/${this.appInfo.getVersionName()}/${FileUtil.getFileName(certificate.url)}`
+                            subPath: `/${FileUtil.getFileName(certificate.url)}`
                         },
                         headers: []
                     };
@@ -310,6 +333,7 @@ export class CourseServiceImpl implements CourseService {
                             }
 
                             observer.next(id);
+                            observer.complete();
                         });
                     }) as Observable<string>;
                 }),

@@ -162,7 +162,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 .withParameters({
                     licenseDetails: 'name,url,description'
                 })
-                .withApiToken(true)
+                .withBearerToken(true)
                 .build()
         ).pipe(
             map((response) => {

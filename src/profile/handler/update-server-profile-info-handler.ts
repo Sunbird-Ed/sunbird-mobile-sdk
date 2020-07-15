@@ -16,8 +16,8 @@ export class UpdateServerProfileInfoHandler implements ApiRequestHandler<UpdateS
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.PATCH)
             .withPath(this.updateUserInfoConfig.profileApiPath + this.GET_SERVER_PROFILE_INFO_API)
-            .withApiToken(true)
-            .withSessionToken(true)
+            .withBearerToken(true)
+            .withUserToken(true)
             .withBody({request})
             .build();
         return this.apiService.fetch <{ result: Profile }>(apiRequest).pipe(

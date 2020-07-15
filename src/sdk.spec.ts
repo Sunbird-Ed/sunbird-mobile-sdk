@@ -72,6 +72,7 @@ const mockSdkConfig: SdkConfig = {
     profileServiceConfig: {
         profileApiPath: '/api/user/v1',
         profileApiPath_V2: '/api/user/v2',
+        profileApiPath_V4: '/api/user/v4',
         tenantApiPath: '/v1/tenant',
         otpApiPath: '/api/otp/v1',
         searchLocationApiPath: '/api/data/v1',
@@ -209,7 +210,8 @@ describe('sdk', () => {
 
             jest.spyOn(sdkInstance, 'telemetryService', 'get').mockImplementation(() => {
                 return {
-                    onInit: jest.fn().mockImplementation(() => of(undefined))
+                    onInit: jest.fn().mockImplementation(() => of(undefined)),
+                    preInit: jest.fn(() => of(undefined))
                 } as Partial<TelemetryService> as TelemetryService;
             });
 

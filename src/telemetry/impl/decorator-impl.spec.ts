@@ -2,12 +2,12 @@ import {TelemetryDecoratorImpl} from './decorator-impl';
 import {Container} from 'inversify';
 import {SdkConfig} from '../../sdk-config';
 import {InjectionTokens} from '../../injection-tokens';
-import {mockSdkConfigWithSampleApiConfig} from '../../api/api-service-impl.spec.data';
 import {DeviceInfo} from '../../util/device';
 import {AppInfo} from '../../util/app';
 import {CodePushExperimentService} from '../../codepush-experiment';
 import {TelemetryDecorator} from '..';
 import {of} from 'rxjs';
+import {ProfileSession} from '../../profile';
 
 describe('decorator-impl', () => {
     let decoratorImpl: TelemetryDecoratorImpl;
@@ -16,6 +16,28 @@ describe('decorator-impl', () => {
     const mockDeviceInfo: Partial<DeviceInfo> = {};
     const mockAppInfo: Partial<AppInfo> = {};
     const mockCodePushExperiment: Partial<CodePushExperimentService> = {};
+    const mockSdkConfigWithSampleApiConfig: Partial<SdkConfig> = {
+        apiConfig: {
+            host: 'SAMPLE_HOST',
+            user_authentication: {
+                redirectUrl: 'SAMPLE_REDIRECT_URL',
+                authUrl: 'SAMPLE_AUTH_URL',
+                mergeUserHost: '',
+                autoMergeApiPath: ''
+            },
+            api_authentication: {
+                mobileAppKey: 'SAMPLE_MOBILE_APP_KEY',
+                mobileAppSecret: 'SAMPLE_MOBILE_APP_SECRET',
+                mobileAppConsumer: 'SAMPLE_MOBILE_APP_CONSTANT',
+                channelId: 'SAMPLE_CHANNEL_ID',
+                producerId: 'SAMPLE_PRODUCER_ID',
+                producerUniqueId: 'SAMPLE_PRODUCER_UNIQUE_ID'
+            },
+            cached_requests: {
+                timeToLive: 2 * 60 * 60 * 1000
+            }
+        }
+    };
 
     beforeAll(() => {
         container.bind<TelemetryDecorator>(InjectionTokens.TELEMETRY_DECORATOR).to(TelemetryDecoratorImpl);
@@ -65,7 +87,7 @@ describe('decorator-impl', () => {
                 }
             } as any;
             // act
-            decoratorImpl.decorate(event, 'sampleUid', 'sampleSid', 'sampleGid', 0, 'sampleChannelId');
+            decoratorImpl.decorate(event, new ProfileSession('sample_uid'), 'sampleGid', 0, 'sampleChannelId');
             // assert
             expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
             expect(mockAppInfo.getVersionName).toHaveBeenCalled();
@@ -91,7 +113,7 @@ describe('decorator-impl', () => {
                 tags: ['1', '2'],
             } as any;
             // act
-            decoratorImpl.decorate(event, '', 'sampleSid', 'sampleGid', 0, 'sampleChannelId');
+            decoratorImpl.decorate(event, new ProfileSession('sample_uid'), 'sampleGid', 0, 'sampleChannelId');
             // assert
             mockAppInfo.getVersionName = jest.fn(() => 'sample');
             mockCodePushExperiment.getExperimentKey = jest.fn(() => of('sampleString'));
@@ -118,7 +140,7 @@ describe('decorator-impl', () => {
                 }
             } as any;
             // act
-            decoratorImpl.decorate(event, 'sampleUid', 'sampleSid', 'sampleGid', 0, 'sampleChannelId');
+            decoratorImpl.decorate(event, new ProfileSession('sample_uid'), 'sampleGid', 0, 'sampleChannelId');
             // assert
             expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
             expect(mockAppInfo.getVersionName).toHaveBeenCalled();
@@ -150,7 +172,7 @@ describe('decorator-impl', () => {
                 }
             } as any;
             // act
-            decoratorImpl.decorate(event, 'sampleUid', 'sampleSid', 'sampleGid', 0, undefined);
+            decoratorImpl.decorate(event, new ProfileSession('sample_uid'), 'sampleGid', 0, undefined);
             // assert
             expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
             expect(mockCodePushExperiment.getExperimentKey).toHaveBeenCalled();

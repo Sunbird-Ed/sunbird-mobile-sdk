@@ -1,4 +1,4 @@
-import {Observable, of, throwError, EMPTY} from 'rxjs';
+import {EMPTY, Observable, of, throwError} from 'rxjs';
 import {ErrorStackEntry} from '../db/schema';
 import {ApiService, HttpRequestType, Request} from '../../api';
 import {DbService} from '../../db';
@@ -108,7 +108,7 @@ export class ErrorStackSyncHandler {
                                 const apiRequest: Request = new Request.Builder()
                                     .withType(HttpRequestType.POST)
                                     .withPath(this.errorLoggerConfig.errorLoggerApiPath)
-                                    .withApiToken(true)
+                                    .withBearerToken(true)
                                     .withBody({
                                         request
                                     })

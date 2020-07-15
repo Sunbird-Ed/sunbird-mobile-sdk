@@ -3,7 +3,7 @@ import {FileService} from '../../util/file/def/file-service';
 import {Path} from '../../util/file/util/path';
 import {GetSystemSettingsRequest, SystemSettings, SystemSettingsConfig} from '..';
 import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {Observable, from} from 'rxjs';
+import {from, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSettingsRequest, SystemSettings> {
@@ -31,7 +31,7 @@ export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSett
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
             .withPath(this.systemSettingsConfig.systemSettingsApiPath + this.GET_SYSTEM_SETTINGS_ENDPOINT + '/' + request.id)
-            .withApiToken(true)
+            .withBearerToken(true)
             .build();
 
         return this.apiService.fetch<{ result: { response: SystemSettings } }>(apiRequest).pipe(

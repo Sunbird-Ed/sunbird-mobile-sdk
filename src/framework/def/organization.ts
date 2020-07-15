@@ -1,1 +1,1 @@
-export {Organisation as Organization} from '@project-sunbird/client-services';
+export {Organisation as Organization} from '@project-sunbird/client-services/models';

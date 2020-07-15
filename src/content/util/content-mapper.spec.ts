@@ -1,5 +1,6 @@
-import { ContentMapper } from './content-mapper';
-import { State } from './content-constants';
+import {ContentMapper} from './content-mapper';
+import {State} from './content-constants';
+import {ContentEntry} from '../db/schema';
 
 
 describe('ContentMapper', () => {
@@ -208,23 +209,21 @@ describe('ContentMapper', () => {
             const contentEntry = {
                 identifier: 'sample-identifier',
                 server_data: '',
-                local_data: '',
+                local_data: '{"identifier":"sample-identifier", "name": "some_name", "contentType": "sample-content-type", "mimeType": "sample-mime-type"}',
                 mime_type: 'sample-mime-type',
                 manifest_version: 'sample-manifest-version',
-                content_type: 'sample-content-type',
+                [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: 'sample-content-type',
                 local_last_updated_on: '20/02/2020',
                 data: 'sample-data'
             };
 
             const shouldConvertBasePath = true;
-            JSON.parse = jest.fn().mockImplementationOnce(() => {
-                return contentEntry.local_data;
-            });
             expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath)).toEqual({
                 basePath: '/_app_file_',
-                contentData: undefined,
+                contentData: {identifier: 'sample-identifier', name: 'some_name', contentType: 'sample-content-type', mimeType: 'sample-mime-type'},
                 contentType: 'sample-content-type',
                 identifier: 'sample-identifier',
+                name: 'some_name',
                 isAvailableLocally: false,
                 isUpdateAvailable: false,
                 lastUpdatedTime: NaN,

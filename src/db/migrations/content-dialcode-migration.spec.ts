@@ -1,6 +1,6 @@
 import {ContentDialcodeMigration} from './content-dialcode-migration';
 import {DbService} from '..';
-import {of} from 'rxjs';
+import {of, throwError} from 'rxjs';
 import {mockContentsWithDialcodesAndChildNodes, mockContentsWithOnlyDialcodes, mockContentsWithOnlyChildNodes} from './content-dialcode-migration.spec.data';
 import {ContentEntry} from '../../content/db/schema';
 
@@ -75,6 +75,17 @@ describe('ContentDialcodeMigration', () => {
 
             contentDialcodeMigration.apply(mockDbService as DbService).then(() => {
                 expect(mockDbService.execute).not.toHaveBeenCalledTimes(3);
+                done();
+            });
+        });
+
+        it('should end transaction if any error occurs inbetween', (done) => {
+            // arrange
+            mockDbService.read = jest.fn().mockImplementation(() => throwError([]));
+
+            contentDialcodeMigration.apply(mockDbService as DbService).then(() => {
+            }).catch(() => {
+                expect(mockDbService.endTransaction).toHaveBeenCalled();
                 done();
             });
         });

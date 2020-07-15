@@ -14,8 +14,8 @@ export class UnenrollCourseHandler implements ApiRequestHandler<UnenrollCourseRe
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.unenrollCourseServiceApiConfig.apiPath + this.GET_UNENROLL_COURSE_ENDPOINT)
-            .withApiToken(true)
-            .withSessionToken(true)
+            .withBearerToken(true)
+            .withUserToken(true)
             .withBody({request: unenrollCourseRequest})
             .build();
 

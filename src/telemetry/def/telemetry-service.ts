@@ -15,13 +15,14 @@ import {
     TelemetryStartRequest,
     TelemetrySyncRequest
 } from './requests';
-import {Context} from './telemetry-model';
+import {Context, CorrelationData} from './telemetry-model';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {TelemetryAutoSyncService} from '..';
+import { SdkServicePreInitDelegate } from '../../sdk-service-pre-init-delegate';
 
-export interface TelemetryService extends SdkServiceOnInitDelegate {
+export interface TelemetryService extends SdkServiceOnInitDelegate, SdkServicePreInitDelegate {
     autoSync: TelemetryAutoSyncService;
-    
+
     saveTelemetry(request: string): Observable<boolean>;
 
     audit(request: TelemetryAuditRequest): Observable<boolean>;
@@ -55,4 +56,6 @@ export interface TelemetryService extends SdkServiceOnInitDelegate {
     resetDeviceRegisterTTL(): Observable<undefined>;
 
     buildContext(): Observable<Context>;
+
+    updateCampaignParameters(params: CorrelationData[]);
 }

@@ -49,4 +49,10 @@ declare var sbutility: {
 
     copyFile: (sourceDirectory: string, destinationDirectory: string, fileName: string,
                onSuccess: () => void, onError: (error: any) => void) => void;
+
+    getUtmInfo: (success:
+        (callbackUrl: any) => void, error: (error: string) => void) => void;
+
+    clearUtmInfo: (success:
+        (callbackUrl: any) => void, error: (error: string) => void) => void;
 };

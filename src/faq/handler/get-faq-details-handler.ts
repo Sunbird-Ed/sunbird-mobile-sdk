@@ -34,7 +34,7 @@ export class GetFaqDetailsHandler {
             .withType(HttpRequestType.GET)
             .withHost(request.faqUrl)
             .withPath('/faq-' + request.language + '.json')
-            .withApiToken(false)
+            .withBearerToken(false)
             .build();
 
         return this.apiService.fetch(apiRequest)

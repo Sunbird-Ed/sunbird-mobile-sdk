@@ -81,6 +81,7 @@ import {UserFeed} from '../def/user-feed-response';
 import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
 import {UserMigrateResponse} from '../def/user-migrate-response';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
+import {ManagedProfileManager} from '../handler/managed-profile-manager';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -88,6 +89,7 @@ export class ProfileServiceImpl implements ProfileService {
     private static readonly MERGE_SERVER_PROFILES_PATH = '/api/user/v1/account/merge';
 
     private readonly apiConfig: ApiConfig;
+    readonly managedProfileManager: ManagedProfileManager;
 
     constructor(@inject(InjectionTokens.CONTAINER) private container: Container,
                 @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -101,6 +103,16 @@ export class ProfileServiceImpl implements ProfileService {
                 @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
                 @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService) {
         this.apiConfig = this.sdkConfig.apiConfig;
+        this.managedProfileManager = new ManagedProfileManager(
+            this,
+            this.authService,
+            this.sdkConfig.profileServiceConfig,
+            this.apiService,
+            this.cachedItemStore,
+            this.dbService,
+            this.frameworkService,
+            this.sharedPreferences
+        );
     }
 
     private get telemetryService(): TelemetryService {
@@ -128,9 +140,14 @@ export class ProfileServiceImpl implements ProfileService {
                         );
                 }
 
-                return this.setActiveSessionForProfile(profileSession.uid).pipe(
-                    mapTo(undefined)
-                );
+                return profileSession.managedSession ?
+                    this.managedProfileManager.switchSessionToManagedProfile({
+                        uid: profileSession.managedSession.uid
+                    }) : this.setActiveSessionForProfile(
+                        profileSession.uid
+                    ).pipe(
+                        mapTo(undefined)
+                    );
             })
         );
     }
@@ -374,13 +391,13 @@ export class ProfileServiceImpl implements ProfileService {
                 return this.dbService.read({
                     table: ProfileEntry.TABLE_NAME,
                     selection: `${ProfileEntry.COLUMN_NAME_UID} = ?`,
-                    selectionArgs: [profileSession.uid]
+                    selectionArgs: [profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid]
                 }).pipe(
                     map((rows) => {
                         const profileDBEntry = rows && rows[0];
 
                         if (!profileDBEntry) {
-                            throw new NoProfileFoundError(`No profile found for profileSession with uid ${profileSession.uid}`);
+                            throw new NoProfileFoundError(`No profile found for profileSession with uid ${profileSession.managedSession ? profileSession.managedSession.uid : profileSession.uid}`);
                         }
 
                         return ProfileDbEntryMapper.mapProfileDBEntryToProfile(profileDBEntry);
@@ -452,11 +469,9 @@ export class ProfileServiceImpl implements ProfileService {
             ),
             mergeMap((profile: Profile) => {
                 const profileSession = new ProfileSession(profile.uid);
-                return this.sharedPreferences.putString(ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify({
-                    uid: profileSession.uid,
-                    sid: profileSession.sid,
-                    createdTime: profileSession.createdTime
-                })).pipe(
+                return this.sharedPreferences.putString(
+                    ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify(profileSession)
+                ).pipe(
                     mapTo(true)
                 );
             }),
@@ -613,7 +628,7 @@ export class ProfileServiceImpl implements ProfileService {
         const apiRequest = new Request.Builder()
             .withType(HttpRequestType.PATCH)
             .withPath(ProfileServiceImpl.MERGE_SERVER_PROFILES_PATH)
-            .withApiToken(true)
+            .withBearerToken(true)
             .withHeaders({
                 'x-source-user-token': mergeServerProfilesRequest.from.accessToken,
                 'x-authenticated-user-token': mergeServerProfilesRequest.to.accessToken
@@ -639,7 +654,7 @@ export class ProfileServiceImpl implements ProfileService {
                 const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', 'zoom=no,hidden=yes');
 
                 inAppBrowserRef.addEventListener('loadstart', async (event) => {
-                    if ((<string>event.url).indexOf('/oauth2callback') > -1) {
+                    if ((<string> event.url).indexOf('/oauth2callback') > -1) {
                         inAppBrowserRef.close();
                     }
                 });
@@ -700,3 +715,4 @@ export class ProfileServiceImpl implements ProfileService {
         }
     }
 }
+
