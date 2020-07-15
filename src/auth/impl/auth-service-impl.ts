@@ -1,7 +1,7 @@
 import {AuthService, OAuthSession, SessionProvider} from '..';
 import {ApiConfig, ApiService} from '../../api';
 import {AuthUtil} from '../util/auth-util';
-import {from, Observable, of} from 'rxjs';
+import {from, Observable} from 'rxjs';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {EventsBusService} from '../../events-bus';
 import {inject, injectable} from 'inversify';
@@ -70,15 +70,17 @@ export class AuthServiceImpl implements AuthService {
         });
 
         return this.getSession().pipe(
-            mergeMap((session) => {
+            mergeMap(async (session) => {
                 if (!session) {
-                    return of(undefined);
+                    return undefined;
                 }
 
+                const profileSession: ProfileSession = JSON.parse((await this.sharedPreferences.getString(ProfileKeys.KEY_USER_SESSION).toPromise())!);
                 CsModule.instance.config.core.api.authentication.userToken = session.access_token;
-                CsModule.instance.config.core.api.authentication.managedUserToken = session.managed_access_token;
+                CsModule.instance.config.core.api.authentication.managedUserToken = profileSession.managedSession ? session.managed_access_token : undefined;
                 CsModule.instance.updateConfig(CsModule.instance.config);
-                return of(undefined);
+
+                return undefined;
             })
         );
     }
