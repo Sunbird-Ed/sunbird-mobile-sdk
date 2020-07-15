@@ -92,22 +92,13 @@ describe('ManagedProfileManager', () => {
                 tncLatestVersion: 'v4'
             } as any));
 
-            const createdProfile = {
-                uid: 'sample_uid',
-                handle: 'sample_handle',
-                profileType: ProfileType.TEACHER,
-                source: ProfileSource.SERVER,
-                serverProfile: {} as any
-            };
-            mockProfileService.createProfile = jest.fn(() => of(createdProfile));
-
             // act
             managedProfileManager.addManagedProfile({
                 firstName: 'sample_name',
                 managedBy: 'sample_user_uid'
-            }).subscribe((profile) => {
+            }).subscribe((profileData) => {
                 // assert
-                expect(profile).toBe(createdProfile);
+                expect(profileData.uid).toBe(response.body.result.userId);
                 done();
             });
         });
