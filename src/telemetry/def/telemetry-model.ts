@@ -441,20 +441,23 @@ export namespace SunbirdTelemetry {
                     actor: Actor,
                     currentState: AuditState,
                     updatedProperties: string[] | undefined,
+                    type: string | undefined,
                     objId: string = '',
                     objType: string = '',
                     objVer: string = '',
-                    correlationData: Array<CorrelationData> = []) {
+                    correlationData: Array<CorrelationData> = [],
+                    rollup: Rollup = {}) {
             super(Audit.EID);
 
             this.edata = {
                 ...{state: currentState},
                 ...(updatedProperties ? {props: updatedProperties} : {}),
+                ...{type}
             };
             this.context.cdata = correlationData;
             this.context.env = env;
             this.object = new TelemetryObject(objId, objType, objVer);
-            this.object.rollup = {};
+            this.object.rollup = rollup || {};
             this.actor = actor;
         }
     }

@@ -5,3 +5,4 @@ export * from './def/course';
 export * from './def/course-service';
 export * from './def/request-types';
 export * from './def/unenrollCourseRequest';
+export * from './errors/certificate-already-downloaded';

@@ -14,8 +14,8 @@ export class GenerateOtpHandler implements ApiRequestHandler<GenerateOtpRequest,
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.otpServiceConfig.otpApiPath + this.GET_GENERATE_OTP_ENDPOINT)
-            .withApiToken(true)
-            .withSessionToken(true)
+            .withBearerToken(true)
+            .withUserToken(true)
             .withBody({request: request})
             .build();
 

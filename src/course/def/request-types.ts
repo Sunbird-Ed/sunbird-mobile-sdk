@@ -81,6 +81,7 @@ export interface ContentState {
     courseId?: string;
     lastCompletedTime?: string;
     status?: number;
+    userId?: string;
 }
 
 export interface ContentStateResponse {

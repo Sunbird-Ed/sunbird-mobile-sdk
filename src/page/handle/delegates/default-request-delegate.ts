@@ -7,9 +7,9 @@ import {defer, Observable} from 'rxjs';
 import * as SHA1 from 'crypto-js/sha1';
 import {PageAssembleKeys} from '../../../preference-keys';
 import {SharedPreferences} from '../../../util/shared-preferences';
-import { AuthService } from '../../../auth';
-import { ProfileService } from '../../../profile';
-import { SystemSettingsService } from '../../../system-settings';
+import {AuthService} from '../../../auth';
+import {ProfileService} from '../../../profile';
+import {SystemSettingsService} from '../../../system-settings';
 
 export class DefaultRequestDelegate implements ApiRequestHandler<PageAssembleCriteria, PageAssemble> {
     private readonly PAGE_ASSEMBLE_LOCAL_KEY = 'page_assemble-';
@@ -113,7 +113,7 @@ export class DefaultRequestDelegate implements ApiRequestHandler<PageAssembleCri
             .withHost(this.pageApiServiceConfig.host)
             .withType(HttpRequestType.POST)
             .withPath(this.pageApiServiceConfig.apiPath + pageAssembleEndPoint)
-            .withApiToken(true)
+            .withBearerToken(true)
             .withBody({request})
             .build();
         return this.apiService.fetch<{ result: { response: PageAssemble } }>(apiRequest).pipe(

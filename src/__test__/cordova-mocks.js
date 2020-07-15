@@ -82,7 +82,8 @@ global.sbutility = {
     },
     getBuildConfigValue: () => {
     },
-    writeFile: () => {}
+    writeFile: () => {},
+    getUtmInfo: () => {},
 };
 
 global.sbutility = {
@@ -108,5 +109,31 @@ global.customtabs = {
     launch: () => {
     },
     launchInBrowser: () => {
+    }
+};
+
+global.sbsync = {
+    enqueue: () => {
+    }
+};
+
+global.db = {
+    update: () => {
+    },
+    delete: () => {
+    },
+    read: () => {
+    },
+    execute: () => {
+    },
+    insert: () => {
+    },
+    endTransaction: () => {
+    },
+    beginTransaction: () => {
+    },
+    copyDatabase: () => {
+    },
+    open: () => {
     }
 };

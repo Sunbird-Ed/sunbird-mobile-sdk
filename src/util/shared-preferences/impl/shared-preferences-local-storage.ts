@@ -5,6 +5,8 @@ import {map, mapTo} from 'rxjs/operators';
 
 @injectable()
 export class SharedPreferencesLocalStorage implements SharedPreferences {
+    private listeners: Map<string, ((v: any) => void)[]> = new Map();
+
     public getString(key: string): Observable<string | undefined> {
         return defer(() => of(localStorage.getItem(key)).pipe(
             map((v) => v || undefined))
@@ -28,5 +30,16 @@ export class SharedPreferencesLocalStorage implements SharedPreferences {
         return defer(() => of(
             localStorage.getItem(key) === 'true'
         ));
+    }
+
+    addListener(key: string, listener: (value: any) => void) {
+        const keyListeners: ((v: any) => void)[] = this.listeners.get(key) || [];
+        keyListeners.push(listener);
+        this.listeners.set(key, keyListeners);
+    }
+
+    removeListener(key: string, listener: (value: any) => void) {
+        const keyListeners: ((v: any) => void)[] = this.listeners.get(key) || [];
+        this.listeners.set(key, keyListeners.filter((l) => l !== listener));
     }
 }

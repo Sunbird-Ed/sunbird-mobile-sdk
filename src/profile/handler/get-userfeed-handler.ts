@@ -1,9 +1,9 @@
 import {ApiConfig, ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {UserFeedResponse, UserFeed} from '../def/user-feed-response';
+import {UserFeed} from '../def/user-feed-response';
 import {Observable} from 'rxjs';
 import {SdkConfig} from '../../sdk-config';
 import {map} from 'rxjs/operators';
-import { ProfileServiceConfig } from '../config/profile-service-config';
+import {ProfileServiceConfig} from '..';
 
 export class GetUserFeedHandler implements ApiRequestHandler<undefined, UserFeed[]> {
 
@@ -25,14 +25,14 @@ export class GetUserFeedHandler implements ApiRequestHandler<undefined, UserFeed
     }
 
     fetchFromServer(uid): Observable<UserFeed[]> {
-        return this.apiService.fetch<{result: { response: { userFeed: UserFeed[]} }}>(
+        return this.apiService.fetch<{ result: { response: { userFeed: UserFeed[] } } }>(
             new Request.Builder()
                 .withHost(this.apiConfig.host)
                 .withType(HttpRequestType.GET)
                 .withPath(this.profileServiceConfig.profileApiPath + GetUserFeedHandler.GET_USER_FEED
                     + '/' + uid)
-                .withApiToken(true)
-                .withSessionToken(true)
+                .withBearerToken(true)
+                .withUserToken(true)
                 .build()
         ).pipe(
             map((response) => {

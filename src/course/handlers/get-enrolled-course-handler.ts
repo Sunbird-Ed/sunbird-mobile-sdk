@@ -96,8 +96,8 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
                 + '?orgdetails=orgName,email'
                 + '&fields=contentType,topic,name,channel,pkgVersion'
                 + '&batchDetails=name,endDate,startDate,status,enrollmentType,createdBy,certificates')
-            .withApiToken(true)
-            .withSessionToken(true)
+            .withBearerToken(true)
+            .withUserToken(true)
             .build();
 
         return this.apiService.fetch<GetEnrolledCourseResponse>(apiRequest)

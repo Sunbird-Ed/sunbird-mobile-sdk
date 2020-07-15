@@ -49,14 +49,17 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
             .withType(HttpRequestType.GET)
             .withPath(this.profileServiceConfig.profileApiPath_V2 + this.GET_SERVER_PROFILE_DETAILS_ENDPOINT + '/' + request.userId)
             .withParameters({'fields': request.requiredFields.join(',')})
-            .withApiToken(true)
-            .withSessionToken(true)
+            .withBearerToken(true)
+            .withUserToken(true)
             .withBody(request)
             .build();
 
         return this.apiService.fetch<{ result: { response: ServerProfile } }>(apiRequest).pipe(
             map((success) => {
-                return success.body.result.response;
+                // TODO: adding missing fields; should remove
+                const serverProfile = success.body.result.response;
+                serverProfile.userId = serverProfile.identifier;
+                return serverProfile;
             })
         );
     }

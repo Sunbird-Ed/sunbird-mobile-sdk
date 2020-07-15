@@ -1,1 +1,1 @@
-export {Location as LocationSearchResult} from '@project-sunbird/client-services';
+export {Location as LocationSearchResult} from '@project-sunbird/client-services/models';

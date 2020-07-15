@@ -1,17 +1,17 @@
-import {Actor, Context, ProducerData, SunbirdTelemetry, TelemetryDecorator} from '..';
+import {Actor, Context, CorrelationData, ProducerData, SunbirdTelemetry, TelemetryDecorator} from '..';
 import {ApiConfig} from '../../api';
-import {DeviceInfo} from '../../util/device/def/device-info';
-import {AppInfo} from '../../util/app/def/app-info';
-import Telemetry = SunbirdTelemetry.Telemetry;
+import {DeviceInfo} from '../../util/device';
+import {AppInfo} from '../../util/app';
 import {UniqueId} from '../../db/util/unique-id';
-import { inject, injectable } from 'inversify';
-import { InjectionTokens } from '../../injection-tokens';
-import { SdkConfig } from '../../sdk-config';
-import { CodePushExperimentService } from '../../codepush-experiment';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
+import {SdkConfig} from '../../sdk-config';
+import {CodePushExperimentService} from '../../codepush-experiment';
+import {ProfileSession} from '../../profile';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 @injectable()
 export class TelemetryDecoratorImpl implements TelemetryDecorator {
-
     private apiConfig: ApiConfig;
 
     constructor(
@@ -22,7 +22,15 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         this.apiConfig = this.sdkConfig.apiConfig;
     }
 
-    decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset: number = 0, channelId?: string): any {
+    decorate(
+        event: Telemetry,
+        profileSession: ProfileSession,
+        gid?: string,
+        offset: number = 0,
+        channelId?: string,
+        campaignParameters?: CorrelationData[]
+    ): any {
+        const {uid, sid} = profileSession;
         event.ets += offset;
         if (!event.mid) {
             event.mid = UniqueId.generateUniqueId();
@@ -32,9 +40,14 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         } else {
             this.patchActor(event, '');
         }
-
-        this.patchContext(event, sid, channelId);
+        this.patchContext(event, sid, channelId, campaignParameters);
         // TODO Add tag patching logic
+        event.context.cdata = [
+            ...event.context.cdata, {
+                id: profileSession.managedSession ? profileSession.managedSession.sid : profileSession.sid,
+                type: 'UserSession'
+            }
+        ];
         return event;
     }
 
@@ -42,23 +55,20 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         if (!event.actor) {
             event.actor = new Actor();
         }
-
         const actor: Actor = event.actor;
-
         if (!actor.id) {
             actor.id = uid;
         }
-
         if (!actor.type) {
             actor.type = Actor.TYPE_USER;
         }
     }
 
-    private patchContext(event: Telemetry, sid, channelId) {
+    private patchContext(event: Telemetry, sid, channelId, campaignParameters?: CorrelationData[]) {
         if (!event.context) {
             event.context = new Context();
         }
-        event.context = this.buildContext(sid, channelId, event.context);
+        event.context = this.buildContext(sid, channelId, event.context, campaignParameters);
     }
 
     private patchPData(event: Context) {
@@ -69,7 +79,6 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         if (!pData.id) {
             pData.id = this.apiConfig.api_authentication.producerId;
         }
-
         const pid = pData.pid;
         if (pid) {
             pData.pid = pid;
@@ -78,7 +87,6 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         } else {
             pData.pid = 'sunbird.android';
         }
-
         if (!pData.ver) {
             pData.ver = this.appInfo.getVersionName();
         }
@@ -93,14 +101,14 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         };
     }
 
-    buildContext(sid: string, channelId: string, context: Context): Context {
+    buildContext(sid: string, channelId: string, context: Context, campaignParameters?: CorrelationData[]): Context {
         context.channel = channelId;
         this.patchPData(context);
         if (!context.env) {
             context.env = 'app';
         }
         const expKey = this.codePushExperimentService.getExperimentKey();
-        if (typeof(expKey) === 'string') {
+        if (typeof (expKey) === 'string') {
             context.pdata.pid = context.pdata.pid + '-' + expKey;
         }
         context.sid = sid;
@@ -108,6 +116,8 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         if (channelId !== this.apiConfig.api_authentication.channelId) {
             context.rollup = {l1: channelId};
         }
+        // patching cData
+        context.cdata = context.cdata ? context.cdata.concat(campaignParameters || []) : (campaignParameters || []);
         return context;
     }
 }

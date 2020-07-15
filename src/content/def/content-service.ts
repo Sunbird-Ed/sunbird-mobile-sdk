@@ -11,7 +11,8 @@ import {
     ContentSpaceUsageSummaryRequest,
     ContentSpaceUsageSummaryResponse,
     EcarImportRequest,
-    RelevantContentRequest
+    RelevantContentRequest,
+    SearchAndGroupContentRequest
 } from './requests';
 import {Response} from '../../api';
 import {Observable} from 'rxjs';
@@ -40,7 +41,7 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
 
     searchContent(criteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult>;
 
-    searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection>;
+    searchAndGroupContent(request: SearchAndGroupContentRequest): Observable<ContentsGroupedByPageSection>;
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
 

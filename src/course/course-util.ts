@@ -20,6 +20,7 @@ export class CourseUtil {
 
     private static getRequestMap(updateContentReq: UpdateContentStateRequest): ContentState {
         const contentState: ContentState = {};
+        contentState.userId = updateContentReq.userId;
         contentState.contentId = updateContentReq.contentId;
         contentState.courseId = updateContentReq.courseId;
         contentState.batchId = updateContentReq.batchId;

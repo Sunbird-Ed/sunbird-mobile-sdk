@@ -4,6 +4,10 @@ import { SummarizerService } from '..';
 import { telemetry } from './summary-telemetry-event-handler.spec.data';
 import { of } from 'rxjs';
 import { ContentKeys } from '../../preference-keys';
+import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
+import {TelemetryService} from '../../telemetry';
+
+jest.mock('../../telemetry/util/telemetry-logger');
 
 describe('SummaryTelemetryEventHandler', () => {
     let summaryTelemetryEventHandler: SummaryTelemetryEventHandler;
@@ -14,6 +18,7 @@ describe('SummaryTelemetryEventHandler', () => {
     const mockContentService: Partial<ContentService> = {};
     const mockProfileService: Partial<ProfileService> = {};
     const mockDbService: Partial<DbService> = {};
+   
 
     beforeAll(() => {
         summaryTelemetryEventHandler = new SummaryTelemetryEventHandler(
@@ -22,8 +27,7 @@ describe('SummaryTelemetryEventHandler', () => {
             mockSummarizerService as SummarizerService,
             mockEventBusService as EventsBusService,
             mockContentService as ContentService,
-            mockProfileService as ProfileService,
-            mockDbService as DbService
+            mockProfileService as ProfileService
         );
     });
 
@@ -62,6 +66,10 @@ describe('SummaryTelemetryEventHandler', () => {
 
     it('should update content state if batch is not expire END event', (done) => {
         // arrange
+        const mockTelemetryService: Partial<TelemetryService> = {
+            audit: jest.fn().mockImplementation(() => of(true))
+        };
+        (TelemetryLogger as any)['log'] = mockTelemetryService;
         telemetry.eid = 'END';
         mockSharedPreference.getString = jest.fn().mockImplementation(() => { });
         (mockSharedPreference.getString as jest.Mock)
@@ -70,11 +78,23 @@ describe('SummaryTelemetryEventHandler', () => {
         (mockCourseService.getContentState as jest.Mock).mockReturnValue(of({}));
         mockCourseService.resetCapturedAssessmentEvents = jest.fn().mockImplementation(() => {});
         mockContentService.getContentDetails = jest.fn().mockImplementation(() => { });
-        (mockContentService.getContentDetails as jest.Mock).mockReturnValue(of({ name: 'CONTENT_NAME', contentType: 'course', sections: {} }));
+        (mockContentService.getContentDetails as jest.Mock).mockReturnValue(of(
+            {
+                name: 'CONTENT_NAME',
+                contentType: 'course',
+                sections: {},
+                contentData: {
+                    contentType: 'contentType',
+                    pkgVersion: '1'
+                }
+            }
+            )
+            );
         telemetry.edata.summary = [{ progress: 100 }];
         mockEventBusService.emit = jest.fn().mockImplementation(() => { });
         (mockEventBusService.emit as jest.Mock).mockReturnValue(of());
         mockSharedPreference.putString = jest.fn().mockImplementation(() => { });
+        mockCourseService.updateContentState = jest.fn(() => of(true));
         // act
         const data = (mockSharedPreference.putString as jest.Mock).mockReturnValue(of('SAMPLE_RESULT'));
         // act

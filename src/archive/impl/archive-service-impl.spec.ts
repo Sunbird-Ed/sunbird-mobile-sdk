@@ -10,6 +10,8 @@ import {InvalidRequestError} from '..';
 import {reduce, take} from 'rxjs/operators';
 import {TelemetryImportDelegate} from '../import/impl/telemetry-import-delegate';
 import {DeviceInfo} from '../../util/device';
+import {NetworkQueue} from '../../api/network-queue';
+import {SdkConfig} from '../../sdk-config';
 
 jest.mock('../export/impl/telemetry-export-delegate');
 jest.mock('../import/impl/telemetry-import-delegate');
@@ -24,6 +26,8 @@ describe('ArchiveServiceImpl', () => {
     const mockDeviceInfo: Partial<DeviceInfo> = {
         getDeviceID: jest.fn(() => 'SOME_DEVICE_ID')
     };
+    const mockNetworkQueue: Partial<NetworkQueue> = {};
+    const mockSdkConfig: Partial<SdkConfig> = {};
     let archiveService: ArchiveServiceImpl;
 
     beforeAll(() => {
@@ -32,7 +36,9 @@ describe('ArchiveServiceImpl', () => {
             mockDbService as DbService,
             mockTelemetryService as TelemetryService,
             mockZipService as ZipService,
-            mockDeviceInfo as DeviceInfo
+            mockDeviceInfo as DeviceInfo,
+            mockNetworkQueue as NetworkQueue,
+            mockSdkConfig as SdkConfig
         );
     });
 

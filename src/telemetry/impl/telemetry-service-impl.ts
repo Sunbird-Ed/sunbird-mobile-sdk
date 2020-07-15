@@ -44,30 +44,28 @@ import {ErrorLoggerService} from '../../error';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AppInfo} from '../../util/app';
 import {DeviceRegisterService} from '../../device-register';
-import {expand, map, mapTo, mergeMap, take, tap} from 'rxjs/operators';
-import {BehaviorSubject, defer, EMPTY, from, Observable, of, zip} from 'rxjs';
-import {TelemetryKeys} from '../../preference-keys';
+import {catchError, map, mapTo, mergeMap, take, tap} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, defer, from, Observable, Observer, of, zip} from 'rxjs';
+import {ApiKeys, TelemetryKeys} from '../../preference-keys';
 import {TelemetryAutoSyncServiceImpl} from '../util/telemetry-auto-sync-service-impl';
 import {CourseService} from '../../course';
+import {NetworkQueue} from '../../api/network-queue';
+import {CorrelationData} from '../def/telemetry-model';
+import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
+import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
+import {ApiTokenHandler} from '../../api/handlers/api-token-handler';
+
 
 @injectable()
-export class TelemetryServiceImpl implements TelemetryService {
+export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitDelegate, SdkServicePreInitDelegate {
     private _lastSyncedTimestamp$: BehaviorSubject<number | undefined>;
     private telemetryAutoSyncService?: TelemetryAutoSyncServiceImpl;
     private telemetryConfig: TelemetryConfig;
+    private campaignParameters: CorrelationData[] = [];
 
     get autoSync() {
         if (!this.telemetryAutoSyncService) {
-            this.telemetryAutoSyncService = new TelemetryAutoSyncServiceImpl(
-                this,
-                this.sharedPreferences,
-                this.profileService,
-                this.courseService,
-                this.sdkConfig,
-                this.apiService,
-                this.dbService,
-                this.keyValueStore
-            );
+            this.telemetryAutoSyncService = new TelemetryAutoSyncServiceImpl( this, this.sharedPreferences);
         }
 
         return this.telemetryAutoSyncService;
@@ -91,24 +89,56 @@ export class TelemetryServiceImpl implements TelemetryService {
         @inject(InjectionTokens.APP_INFO) private appInfoService: AppInfo,
         @inject(InjectionTokens.DEVICE_REGISTER_SERVICE) private deviceRegisterService: DeviceRegisterService,
         @inject(InjectionTokens.COURSE_SERVICE) private courseService: CourseService,
+        @inject(InjectionTokens.NETWORK_QUEUE) private networkQueue: NetworkQueue,
     ) {
         this.telemetryConfig = this.sdkConfig.telemetryConfig;
         this._lastSyncedTimestamp$ = new BehaviorSubject<number | undefined>(undefined);
     }
 
+    preInit(): Observable<undefined> {
+        return defer(async () => {
+            this.getInitialUtmParameters().then((parameters) => {
+                if (parameters && parameters.length) {
+                    this.updateCampaignParameters(parameters);
+                }
+            });
+            return undefined;
+        });
+    }
+
     onInit(): Observable<undefined> {
-        return this.sharedPreferences.getString(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP).pipe(
-            tap((v) => {
-                if (v) {
+        return  combineLatest([
+            defer(async () => {
+                const lastSyncTimestamp = await this.sharedPreferences.getString(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP).toPromise();
+                if (lastSyncTimestamp) {
                     try {
-                        this._lastSyncedTimestamp$.next(parseInt(v, 10));
+                        this._lastSyncedTimestamp$.next(parseInt(lastSyncTimestamp, 10));
                     } catch (e) {
                         console.error(e);
                     }
                 }
+                return undefined;
             }),
-            mapTo(undefined)
-        );
+            new Observable((observer: Observer<undefined>) => {
+                sbsync.onSyncSucces(async (response) => {
+                    const error = response.network_queue_error;
+                    if (error) {
+                        observer.next(undefined);
+                    }
+                }, async (error) => {
+                });
+            }).pipe(
+              mergeMap(() => {
+                  return new ApiTokenHandler(this.sdkConfig.apiConfig, this.apiService, this.deviceInfo).refreshAuthToken().pipe(
+                    mergeMap((bearerToken) => {
+                        return this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken);
+                    }),
+                    catchError(() => of(undefined))
+                  );
+              })
+            )
+        ]).pipe(mapTo(undefined));
+
     }
 
     saveTelemetry(request: string): Observable<boolean> {
@@ -123,9 +153,10 @@ export class TelemetryServiceImpl implements TelemetryService {
         });
     }
 
-    audit({env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData}:
+    audit({env, actor, currentState, updatedProperties, type, objId, objType, objVer, correlationData, rollUp}:
               TelemetryAuditRequest): Observable<boolean> {
-        const audit = new SunbirdTelemetry.Audit(env, actor, currentState, updatedProperties, objId, objType, objVer, correlationData);
+        const audit = new SunbirdTelemetry.Audit(env, actor, currentState, updatedProperties, type, objId,
+             objType, objVer, correlationData, rollUp);
         return this.decorateAndPersist(audit);
     }
 
@@ -256,7 +287,8 @@ export class TelemetryServiceImpl implements TelemetryService {
             this.appInfoService,
             this.deviceRegisterService,
             this.keyValueStore,
-            this.apiService
+            this.apiService,
+            this.networkQueue
         ).resetDeviceRegisterTTL();
     }
 
@@ -279,7 +311,8 @@ export class TelemetryServiceImpl implements TelemetryService {
                     this.appInfoService,
                     this.deviceRegisterService,
                     this.keyValueStore,
-                    this.apiService
+                    this.apiService,
+                    this.networkQueue
                 ).handle(request).pipe(
                     tap((syncStat) => {
                         if (!syncStat.error && syncStat.syncedEventCount) {
@@ -322,9 +355,10 @@ export class TelemetryServiceImpl implements TelemetryService {
 
                         const insertQuery: InsertQuery = {
                             table: TelemetryEntry.TABLE_NAME,
-                            modelJson: this.decorator.prepare(this.decorator.decorate(telemetry, profileSession!.uid,
-                                profileSession!.sid, groupSession && groupSession.gid, Number(offset),
-                                this.frameworkService.activeChannelId), 1)
+                            modelJson: this.decorator.prepare(this.decorator.decorate(
+                                telemetry, profileSession, groupSession && groupSession.gid, Number(offset),
+                                this.frameworkService.activeChannelId, this.campaignParameters
+                            ), 1)
                         };
                         return this.dbService.insert(insertQuery).pipe(
                             tap(() => this.eventsBusService.emit({
@@ -340,5 +374,23 @@ export class TelemetryServiceImpl implements TelemetryService {
                 );
             })
         );
+    }
+
+    updateCampaignParameters(params: CorrelationData[]) {
+        this.campaignParameters = params;
+    }
+
+    private getInitialUtmParameters(): Promise<CorrelationData[]> {
+        return new Promise<CorrelationData[]>((resolve, reject) => {
+            try {
+                sbutility.getUtmInfo((response: {val: CorrelationData[]}) => {
+                    resolve(response.val);
+                }, err => {
+                    reject(err);
+                });
+            } catch (xc) {
+                reject(xc);
+            }
+        });
     }
 }

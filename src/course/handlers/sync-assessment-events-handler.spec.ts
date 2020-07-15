@@ -3,6 +3,7 @@ import { CourseService } from '..';
 import { SdkConfig, ApiService, DbService, SunbirdTelemetry } from '../..';
 import {of, throwError} from 'rxjs';
 import {CourseAssessmentEntry} from '../../summarizer/db/schema';
+import {NetworkQueue} from '../../api/network-queue';
 
 describe('SyncAssessmentEventsHandler', () => {
     let syncAssessmentEventsHandler: SyncAssessmentEventsHandler;
@@ -14,13 +15,16 @@ describe('SyncAssessmentEventsHandler', () => {
     };
     const mockCourseService: Partial<CourseService> = {};
     const mockDbService: Partial<DbService> = {};
+    const mockNetworkQueue: Partial<NetworkQueue> = {
+        enqueue: jest.fn(() => of({} as any))
+    };
 
     beforeAll(() => {
         syncAssessmentEventsHandler = new SyncAssessmentEventsHandler(
             mockCourseService as CourseService,
             mockSdkConfig as SdkConfig,
-            mockApiService as ApiService,
-            mockDbService as DbService
+            mockDbService as DbService,
+            mockNetworkQueue as NetworkQueue
         );
     });
 
@@ -52,10 +56,13 @@ describe('SyncAssessmentEventsHandler', () => {
             mockApiService.fetch = jest.fn().mockImplementation(() => of(undefined));
             mockDbService.insert = jest.fn().mockImplementation(() => of(1));
             mockDbService.execute = jest.fn().mockImplementation(() => of([]));
+            sbsync.onSyncSucces = jest.fn((success, error) => {
+                success({courseAssesmentResponse: 'assesment_response'});
+            });
             // act
             syncAssessmentEventsHandler.handle(capturedAssessmentEvents).subscribe((e) => {
                 // assert
-                expect(mockApiService.fetch).toBeCalledTimes(1);
+                expect(mockNetworkQueue.enqueue).toBeCalledTimes(1);
                 done();
             });
         });
@@ -75,6 +82,9 @@ describe('SyncAssessmentEventsHandler', () => {
                     )
                 ]
             };
+            sbsync.onSyncSucces = jest.fn((success, error) => {
+                success({courseAssesmentResponse: 'assesment_response'});
+            });
             mockCourseService.generateAssessmentAttemptId  = jest.fn().mockImplementation(() => 'SOME_ASSESSMENT_ID');
             mockApiService.fetch = jest.fn().mockImplementation(() => of(undefined));
             mockDbService.insert = jest.fn().mockImplementation(() => of(1));
@@ -91,7 +101,7 @@ describe('SyncAssessmentEventsHandler', () => {
             // act
             syncAssessmentEventsHandler.handle(capturedAssessmentEvents).subscribe((e) => {
                 // assert
-                expect(mockApiService.fetch).toBeCalledTimes(2);
+                expect(mockNetworkQueue.enqueue).toBeCalledTimes(2);
                 done();
             });
         });
@@ -113,6 +123,9 @@ describe('SyncAssessmentEventsHandler', () => {
             };
             mockApiService.fetch = jest.fn().mockImplementation(() => throwError(new Error('SOME_ERROR')));
             mockDbService.insert = jest.fn().mockImplementation(() => of(1));
+            sbsync.onSyncSucces = jest.fn((success, error) => {
+                error({course_assesment_error: 'assesment_error'});
+            });
             // act
             syncAssessmentEventsHandler.handle(capturedAssessmentEvents).subscribe((e) => {
                 // assert

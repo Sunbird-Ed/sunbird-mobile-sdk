@@ -11,6 +11,12 @@ export interface UpdateServerProfileInfoRequest {
     profileSummary?: string;
     recoveryEmail?: string;
     recoveryPhone?: string;
+    externalIds?: {
+        id: string;
+        operation: string;
+        idType: string;
+        provider: string;
+    }[];
     /*
     language?: Array<string>;
     profileSummary?: string;

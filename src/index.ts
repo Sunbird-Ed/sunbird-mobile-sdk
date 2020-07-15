@@ -24,6 +24,7 @@ export * from './error';
 export * from './codepush-experiment';
 export * from './faq';
 export * from './archive';
+export * from './class-room';
 // utils
 export * from './util/shared-preferences';
 export * from './util/download';
@@ -32,4 +33,4 @@ export * from './player';
 export * from './util/app';
 export * from './util/search-history';
 export * from './util/network';
-
+export * from './errors';

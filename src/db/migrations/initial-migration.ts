@@ -9,6 +9,7 @@ import {KeyValueStoreEntry} from '../../key-value-store/db/schema';
 import {ErrorStackEntry} from '../../error/db/schema';
 import {SearchHistoryEntry} from '../../util/search-history/db/schema';
 import {CourseAssessmentEntry} from '../../summarizer/db/schema';
+import {NetworkQueueEntry} from '../../api/network-queue';
 
 export class InitialMigration extends Migration {
 
@@ -43,7 +44,8 @@ export class InitialMigration extends Migration {
             ContentMarkerEntry.getCreateEntry(),
             ErrorStackEntry.getCreateEntry(),
             SearchHistoryEntry.getCreateEntry(),
-            CourseAssessmentEntry.getCreateEntry()
+            CourseAssessmentEntry.getCreateEntry(),
+            NetworkQueueEntry.getCreateEntry()
         ];
     }
 

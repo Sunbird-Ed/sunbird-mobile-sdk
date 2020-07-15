@@ -1,4 +1,4 @@
-import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response, ResponseCode, HttpClientError} from '../../api';
+import {ApiConfig, ApiService, HttpClientError, HttpRequestType, HttpSerializer, JWTUtil, Request, Response, ResponseCode} from '../../api';
 import {OAuthSession} from '..';
 import {AuthKeys} from '../../preference-keys';
 import {NoActiveSessionError} from '../../profile';
@@ -26,7 +26,7 @@ export class AuthUtil {
             .withPath('/auth/v1/refresh/token')
             .withType(HttpRequestType.POST)
             .withSerializer(HttpSerializer.URLENCODED)
-            .withApiToken(true)
+            .withBearerToken(true)
             .withBody({
                 refresh_token: sessionData.refresh_token
             })
@@ -36,24 +36,27 @@ export class AuthUtil {
         try {
             await this.apiService.fetch(request).toPromise()
                 .catch((e) => {
-                    if (e instanceof HttpClientError && e.response.responseCode === ResponseCode.HTTP_BAD_REQUEST) {
+                    if (HttpClientError.isInstance(e) && e.response.responseCode === ResponseCode.HTTP_BAD_REQUEST) {
                         throw new AuthTokenRefreshError(e.message);
                     }
 
                     throw e;
                 })
-                .then((response: Response) => {
+                .then(async (response: Response) => {
                     if (response.body.result.access_token && response.body.result.refresh_token) {
                         const jwtPayload: { sub: string } = JWTUtil.getJWTPayload(response.body.result.access_token);
 
-                        const userToken = jwtPayload.sub.split(':').length === 3 ? <string>jwtPayload.sub.split(':').pop() : jwtPayload.sub;
+                        const userToken = jwtPayload.sub.split(':').length === 3 ? <string> jwtPayload.sub.split(':').pop() : jwtPayload.sub;
+
+                        const prevSessionData = await this.getSessionData();
 
                         sessionData = {
                             ...response.body.result,
-                            userToken
+                            userToken: prevSessionData ? prevSessionData.userToken : userToken,
+                            managed_access_token: prevSessionData ? prevSessionData.managed_access_token : undefined
                         };
 
-                        return this.startSession(sessionData!);
+                        return await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
                     }
 
                     throw new AuthTokenRefreshError('No token found in server response');

@@ -117,6 +117,7 @@ describe('GetContentDetailsHandler', () => {
         // arrange
         const content_data: Content = {
             identifier: 'SAMPLE_IDENTIFIER',
+            name: '',
             contentData: mockContentData,
             mimeType: '',
             basePath: '',

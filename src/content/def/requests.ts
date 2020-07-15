@@ -5,6 +5,14 @@ import {ContentImportResponse} from './response';
 import {ContentEntry} from '../db/schema';
 import {DownloadRequest} from '../../util/download';
 
+export interface SearchAndGroupContentRequest {
+    groupBy: keyof ContentData;
+    combination?: {
+        [key in keyof ContentData]?: string[]
+    };
+    searchCriteria: ContentSearchCriteria;
+}
+
 export interface ContentDecorateRequest {
     content: Content;
     attachFeedback?: boolean;
@@ -94,6 +102,7 @@ export interface ContentExportRequest {
     destinationFolder: string;
     contentIds: string[];
     saveLocally?: boolean;
+    subContentIds?: string[];
 }
 
 export interface ContentMarkerRequest {
@@ -194,6 +203,7 @@ export interface ExportContentContext {
     contentModelsToExport: ContentEntry.SchemaMap[];
     metadata: { [key: string]: any };
     manifest?: any;
+    subContentIds?: string[];
 }
 
 export interface ContentDownloadRequest extends DownloadRequest {

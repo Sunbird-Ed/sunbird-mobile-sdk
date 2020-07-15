@@ -15,8 +15,8 @@ export class GetCourseBatchesHandler implements ApiRequestHandler<CourseBatchesR
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.courseServiceConfig.apiPath + this.GET_COURSE_BATCHES)
-            .withApiToken(true)
-            .withSessionToken(false)
+            .withBearerToken(true)
+            .withUserToken(false)
             .withBody({request})
             .build();
 

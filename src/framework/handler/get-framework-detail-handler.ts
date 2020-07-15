@@ -51,7 +51,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
             .withType(HttpRequestType.GET)
             .withPath(this.frameworkServiceConfig.frameworkApiPath + this.GET_FRAMEWORK_DETAILS_ENDPOINT + '/' + request.frameworkId)
             .withParameters({categories: request.requiredCategories.join(',')})
-            .withApiToken(true)
+            .withBearerToken(true)
             .build();
 
         return this.apiService.fetch<{ result: { framework: Framework } }>(apiRequest).pipe(
