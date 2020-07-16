@@ -17,7 +17,7 @@ export class GroupActivityServiceImpl implements GroupActivityService {
             `group-${request.groupId}-activity-${request.activity.id}-${request.activity.type}`,
             GroupActivityServiceImpl.GROUP_ACTIVITY_DATA_AGGREGATION_KEY,
             'ttl_' + GroupActivityServiceImpl.GROUP_ACTIVITY_DATA_AGGREGATION_KEY,
-            () => this.groupActivityService.getDataAggregation(request.groupId, request.activity),
+            () => this.groupActivityService.getDataAggregation(request.groupId, request.activity, request.mergeGroup),
         );
     }
 }
