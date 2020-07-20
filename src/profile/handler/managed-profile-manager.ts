@@ -42,26 +42,19 @@ export class ManagedProfileManager {
     ) {
     }
 
-    addManagedProfile(request: AddManagedProfileRequest): Observable<Profile> {
+    addManagedProfile(request: AddManagedProfileRequest): Observable<{ uid: string }> {
         return defer(async () => {
             if (!(await this.isLoggedInUser())) {
                 throw new NoActiveSessionError('No active LoggedIn Session found');
             }
 
-            const {uid} = await this.createManagedProfile(request);
+            const { uid } = await this.createManagedProfile(request);
 
-            this.managedProfileAdded$.next(true);
+            setTimeout(() => {
+                this.managedProfileAdded$.next(true);
+            }, 1000);
 
-            return await this.profileService.createProfile({
-                uid: uid,
-                profileType: ProfileType.STUDENT,
-                source: ProfileSource.SERVER,
-                handle: request.firstName,
-                board: (request.framework && request.framework['board']) || [],
-                medium: (request.framework && request.framework['medium']) || [],
-                grade: (request.framework && request.framework['gradeLevel']) || [],
-                serverProfile: {} as any
-            }, ProfileSource.SERVER).toPromise();
+            return { uid };
         });
     }
 

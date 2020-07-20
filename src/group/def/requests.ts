@@ -10,7 +10,7 @@ import {
     CsGroupUpdateRequest
 } from '@project-sunbird/client-services/services/group';
 import {CachedItemRequest} from '../../key-value-store';
-import {GroupActivity} from './models';
+import {Group, GroupActivity} from './models';
 
 export {CsGroupCreateRequest as GroupCreateRequest} from '@project-sunbird/client-services/services/group';
 
@@ -68,4 +68,5 @@ export interface RemoveActivitiesRequest {
 export interface GroupActivityDataAggregationRequest extends CachedItemRequest {
     groupId: string;
     activity: Pick<GroupActivity, 'id' | 'type'>;
+    mergeGroup?: Group;
 }
