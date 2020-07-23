@@ -16,6 +16,7 @@ export {CsGroupCreateRequest as GroupCreateRequest} from '@project-sunbird/clien
 
 export interface GetByIdRequest extends CachedItemRequest {
     id: string;
+    userId: string;
     options?: {
         includeMembers?: boolean;
         includeActivities?: boolean;
