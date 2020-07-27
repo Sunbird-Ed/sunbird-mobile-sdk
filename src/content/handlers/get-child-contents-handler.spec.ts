@@ -29,18 +29,36 @@ describe('ChildContentsHandler', () => {
         expect(childContentHandler).toBeTruthy();
     });
 
-    it('should fetch all children if availabe from content', async (done) => {
+    it('should fetch all children if availabe from content', (done) => {
         // arrange
+        const localData = JSON.stringify({
+            children: [{
+                index: 1,
+                identifier: 'do-123'
+            }, {
+                index: 2,
+                identifier: 'do-234'
+            }, {
+                index: 3,
+                identifier: 'do-345'
+            }],
+            identifier: 'do-123',
+            name: 'sample'
+        });
+        const serverData = JSON.stringify({
+            identifier: 'server-id',
+            name: 'server'
+        });
         const request: ContentEntry.SchemaMap = {
             identifier: 'IDENTIFIER',
-            server_data: 'SERVER_DATA',
-            local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
+            server_data: serverData,
+            local_data: localData,
             mime_type: 'MIME_TYPE',
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE'
         };
         const currentLevel = -1;
-        const level = -1;
+        const level = 1;
         const childData: ChildContent = {
             identifier: 'IDENTIFIER',
             name: 'SAMPLE_NAME',
@@ -49,16 +67,17 @@ describe('ChildContentsHandler', () => {
             index: 1
         };
         const childContentsMap = new Map();
-        childContentsMap.set('IDENTIFIER', 'd0_id');
-        ContentMapper.mapContentDBEntryToContent = jest.fn().mockImplementation(() => ({hierarchyInfo: {data: ''}}));
-        const data = JSON.parse(request[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
-        mockDbService.execute = jest.fn().mockImplementation(() => of([]));
+        childContentsMap.set('do-123', {server_data: serverData, local_data: localData});
+        mockDbService.execute = jest.fn(() => of([{
+            identifier: 'do-000', local_data: localData
+        }]));
         // act
-        await childContentHandler.fetchChildrenOfContent(request, childContentsMap, currentLevel, level).then(() => {
+        childContentHandler.fetchChildrenOfContent(request, childContentsMap, currentLevel, level).then(() => {
             // assert
-            expect(ContentMapper.mapContentDBEntryToContent).toHaveBeenCalled();
-            expect(mockDbService.execute).toHaveBeenCalled();
-            expect(data.children[0].DOWNLOAD).toEqual(1);
+            setTimeout(() => {
+                expect(ContentMapper.mapContentDBEntryToContent).toHaveBeenCalled();
+                expect(mockDbService.execute).toHaveBeenCalled();
+            }, 0);
             done();
         });
     });
@@ -68,13 +87,28 @@ describe('ChildContentsHandler', () => {
         const request: ContentEntry.SchemaMap = {
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
-            local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
+            local_data: JSON.stringify({
+                children: [{
+                    index: 1,
+                    identifier: 'identifier'
+                }, {
+                    index: 2,
+                    identifier: 'do-234'
+                }, {
+                    index: 3,
+                    identifier: 'do-345'
+                }],
+                identifier: 'do-123'
+            }),
             mime_type: 'MIME_TYPE',
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE'
         };
         const key = 'IDENTIFIER';
-        const data = JSON.parse(request[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+        // const data = JSON.parse(request[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+        mockDbService.execute = jest.fn(() => of([{
+            identifier: 'sample-id'
+        }]));
         // act
         childContentHandler.getContentsKeyList(request).then(() => {
             expect(key).toEqual('IDENTIFIER');
@@ -94,9 +128,24 @@ describe('ChildContentsHandler', () => {
             contentType: 'SAMPLE_CONTENT_TYPE_2'
         }];
         const identifier = 'IDENTIFIER';
-        mockGetContentDetailsHandler.fetchFromDB = jest.fn().mockImplementation(() => of([]));
+        mockGetContentDetailsHandler.fetchFromDB = jest.fn().mockImplementation(() => of({
+            local_data: JSON.stringify({
+                children: [{
+                    index: 1,
+                    identifier: 'identifier'
+                }, {
+                    index: 2,
+                    identifier: 'do-234'
+                }, {
+                    index: 3,
+                    identifier: 'do-345'
+                }],
+                identifier: 'do-123'
+            }),
+        }));
         // act
         await childContentHandler.getContentFromDB(request, identifier).then(() => {
+            expect(mockGetContentDetailsHandler.fetchFromDB).toHaveBeenCalled();
             done();
         });
         // assert
@@ -157,13 +206,13 @@ describe('ChildContentsHandler', () => {
         });
     });
 
-    it('should get ChildIdentifiers From Manifest for catch part', async(done) => {
+    it('should get ChildIdentifiers From Manifest for catch part', async (done) => {
         // arrange
         mockFileService.readAsText = jest.fn().mockImplementation(() => Promise.reject('textbook'));
         // act
         childContentHandler.getChildIdentifiersFromManifest('textbook_unit_1').then(() => {
-             // assert
-             expect(mockFileService.readAsText).toHaveBeenCalledWith('file:///textbook_unit_1', 'manifest.json');
+            // assert
+            expect(mockFileService.readAsText).toHaveBeenCalledWith('file:///textbook_unit_1', 'manifest.json');
             done();
         });
     });
