@@ -48,6 +48,7 @@ describe('GroupServiceImpl', () => {
             // arrange
             const request: GetByIdRequest = {
                 id: 'sample-id',
+                userId: 'sample-userId',
                 options: {
                     includeMembers: true,
                     includeActivities: true
@@ -69,6 +70,7 @@ describe('GroupServiceImpl', () => {
             // arrange
             const request: GetByIdRequest = {
                 id: 'sample-id',
+                userId: 'sample-userId',
                 options: {
                     includeMembers: true,
                     includeActivities: true
