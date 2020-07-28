@@ -1,6 +1,7 @@
-import {ContentMarkerHandler} from './content-marker-handler';
-import {DbService} from '../../db';
-import {of} from 'rxjs';
+import { ContentMarkerHandler } from './content-marker-handler';
+import { DbService } from '../../db';
+import { of } from 'rxjs';
+import { ContentMarkerEntry } from '../db/schema';
 
 describe('ContentMarkerHandler', () => {
     let contentMarkerHandler: ContentMarkerHandler;
@@ -31,5 +32,29 @@ describe('ContentMarkerHandler', () => {
             expect(mockDbService.execute).toHaveBeenCalled();
             done();
         });
+    });
+
+    it('should return contentMarker in contain details', () => {
+        // arrange
+        const identifier = 'SAMPLE_IDENTIFIER';
+        const uid = 'SAMPLE_UID';
+        const request: ContentMarkerEntry.SchemaMap[] = [{
+            'uid': 'sample-uid',
+            identifier: 'sample-identifier',
+            epoch_timestamp: 10,
+            data: '',
+            extra_info: JSON.stringify({id: 'do-123'}),
+            marker: 1,
+            mime_type: ''
+        }];
+        // act
+        const data = contentMarkerHandler.mapDBEntriesToContentMarkerDetails(request);
+        // assert
+        expect(data).toStrictEqual([{
+            contentId: 'sample-identifier',
+            uid: 'sample-uid',
+            extraInfoMap: {id: 'do-123'},
+            marker: 1
+        }]);
     });
 });
