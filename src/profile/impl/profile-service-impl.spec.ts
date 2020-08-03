@@ -190,7 +190,9 @@ describe.only('ProfileServiceImpl', () => {
             };
 
             profileService.checkServerProfileExists(request).subscribe(() => {
-                expect(mockCsUserService.checkUserExists).toHaveBeenCalledWith(request.matching, request.captchaResponseToken);
+                expect(mockCsUserService.checkUserExists).toHaveBeenCalledWith(
+                    request.matching, expect.objectContaining({token: request.captchaResponseToken, app: '1'})
+                );
                 done();
             });
         });
