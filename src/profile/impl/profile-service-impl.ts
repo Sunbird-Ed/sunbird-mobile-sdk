@@ -159,7 +159,9 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     checkServerProfileExists(request: CheckUserExistsRequest): Observable<CheckUserExistsResponse> {
-        return this.userService.checkUserExists(request.matching, request.captchaResponseToken);
+        return this.userService.checkUserExists(
+            request.matching, request.captchaResponseToken ? {token: request.captchaResponseToken, app: '1'} : undefined
+        );
     }
 
     createProfile(profile: Profile, profileSource: ProfileSource = ProfileSource.LOCAL): Observable<Profile> {
