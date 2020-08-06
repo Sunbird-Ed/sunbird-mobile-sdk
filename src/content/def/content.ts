@@ -1,9 +1,9 @@
 import {Content as ContentData} from '@project-sunbird/client-services/models';
-export {Content as ContentData, LicenseDetails, AltMsg as ComingSoonMsg, OriginData} from '@project-sunbird/client-services/models';
-
 import {Rollup} from '../../telemetry';
 import {ContentAccess} from '../../profile';
 import {ContentMarker} from './response';
+
+export {Content as ContentData, LicenseDetails, OriginData} from '@project-sunbird/client-services/models';
 
 export interface Content {
     identifier: string;

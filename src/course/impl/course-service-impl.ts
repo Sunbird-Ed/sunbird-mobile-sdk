@@ -15,7 +15,7 @@ import {
     UnenrollCourseRequest,
     UpdateContentStateRequest
 } from '..';
-import {defer, interval, Observable, Observer, of, zip} from 'rxjs';
+import {defer, interval, Observable, Observer, of} from 'rxjs';
 import {ProfileService, ProfileServiceConfig} from '../../profile';
 import {GetBatchDetailsHandler} from '../handlers/get-batch-details-handler';
 import {UpdateContentStateApiHandler} from '../handlers/update-content-state-api-handler';
@@ -50,6 +50,7 @@ import {catchError, concatMap, delay, filter, map, mapTo, mergeMap, take} from '
 import {FileService} from '../../util/file/def/file-service';
 import {CsCourseService} from '@project-sunbird/client-services/services/course';
 import {NetworkQueue} from '../../api/network-queue';
+import {ContentService} from '../../content';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -76,6 +77,7 @@ export class CourseServiceImpl implements CourseService {
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
         @inject(CsInjectionTokens.COURSE_SERVICE) private csCourseService: CsCourseService,
         @inject(InjectionTokens.NETWORK_QUEUE) private networkQueue: NetworkQueue,
+        @inject(InjectionTokens.CONTENT_SERVICE) private contentService: ContentService,
     ) {
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
         this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
@@ -155,44 +157,21 @@ export class CourseServiceImpl implements CourseService {
     }
 
     getContentState(request: GetContentStateRequest): Observable<ContentStateResponse | undefined> {
-        const key = CourseServiceImpl.GET_CONTENT_STATE_KEY_PREFIX.concat(request.userId, request.courseIds[0]);
+        const key = CourseServiceImpl.GET_CONTENT_STATE_KEY_PREFIX.concat(
+            request.userId, request.courseId ? request.courseId : (request.courseIds || []).join(',')
+        );
         const offlinecontentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
         const updateCourseHandler: UpdateEnrolledCoursesHandler =
             new UpdateEnrolledCoursesHandler(this.keyValueStore, offlinecontentStateHandler);
         return this.keyValueStore.getValue(key)
             .pipe(
                 mergeMap((value?: string) => {
-                    if (!value) {
-                        return new GetContentStateHandler(this.apiService, this.courseServiceConfig)
-                            .handle(request)
-                            .pipe(
-                                mergeMap((response: any) => {
-                                    if (response) {
-                                        return this.keyValueStore.setValue(key, JSON.stringify(response))
-                                            .pipe(
-                                                mergeMap(() => {
-                                                    return offlinecontentStateHandler.getLocalContentStateResponse(request);
-                                                }),
-                                                mergeMap(() => {
-                                                    return updateCourseHandler.updateEnrollCourses(request);
-                                                })
-                                            );
-                                    } else {
-                                        return of<ContentStateResponse | undefined>(undefined);
-                                    }
-                                }),
-                                catchError((error) => {
-                                    return offlinecontentStateHandler.getLocalContentStateResponse(request)
-                                        .pipe(
-                                            mergeMap(() => {
-                                                return updateCourseHandler.updateEnrollCourses(request);
-                                            })
-                                        );
-                                })
-                            );
-                    } else if (request.returnRefreshedContentStates) {
-                        return new GetContentStateHandler(this.apiService, this.courseServiceConfig)
-                            .handle(request)
+                    if (!value || request.returnRefreshedContentStates) {
+                        return new GetContentStateHandler(
+                            this.apiService,
+                            this.courseServiceConfig,
+                            this.contentService
+                        ).handle(request)
                             .pipe(
                                 mergeMap((response: any) => {
                                     if (response) {
