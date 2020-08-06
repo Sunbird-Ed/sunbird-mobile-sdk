@@ -33,7 +33,7 @@ import {UpdateEnrolledCoursesHandler} from '../handlers/update-enrolled-courses-
 import {OfflineContentStateHandler} from '../handlers/offline-content-state-handler';
 import {CourseUtil} from '../course-util';
 import {ProcessingError} from '../../auth/errors/processing-error';
-import {inject, injectable} from 'inversify';
+import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DownloadCertificateRequest} from '../def/download-certificate-request';
@@ -50,7 +50,6 @@ import {catchError, concatMap, delay, filter, map, mapTo, mergeMap, take} from '
 import {FileService} from '../../util/file/def/file-service';
 import {CsCourseService} from '@project-sunbird/client-services/services/course';
 import {NetworkQueue} from '../../api/network-queue';
-import {ContentService} from '../../content';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -77,7 +76,7 @@ export class CourseServiceImpl implements CourseService {
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
         @inject(CsInjectionTokens.COURSE_SERVICE) private csCourseService: CsCourseService,
         @inject(InjectionTokens.NETWORK_QUEUE) private networkQueue: NetworkQueue,
-        @inject(InjectionTokens.CONTENT_SERVICE) private contentService: ContentService,
+        @inject(InjectionTokens.CONTAINER) private container: Container,
     ) {
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
         this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
@@ -170,7 +169,7 @@ export class CourseServiceImpl implements CourseService {
                         return new GetContentStateHandler(
                             this.apiService,
                             this.courseServiceConfig,
-                            this.contentService
+                            this.container
                         ).handle(request)
                             .pipe(
                                 mergeMap((response: any) => {
