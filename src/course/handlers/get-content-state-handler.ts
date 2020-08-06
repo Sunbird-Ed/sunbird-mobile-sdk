@@ -3,6 +3,8 @@ import {CourseServiceConfig, GetContentStateRequest} from '..';
 import {defer, iif, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {ContentService} from '../../content';
+import {Container} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
 
 export class GetContentStateHandler {
     private readonly GET_CONTENT_STATE_KEY_PREFIX = 'getContentState';
@@ -11,8 +13,12 @@ export class GetContentStateHandler {
     constructor(
         private apiService: ApiService,
         private courseServiceConfig: CourseServiceConfig,
-        private contentService: ContentService
+        private container: Container
     ) {
+    }
+
+    private get contentService(): ContentService {
+        return this.container.get(InjectionTokens.CONTENT_SERVICE);
     }
 
     public handle(contentStateRequest: GetContentStateRequest): Observable<any> {

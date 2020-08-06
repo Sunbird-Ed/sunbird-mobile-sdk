@@ -3,6 +3,8 @@ import {ApiService, Response} from '../../api';
 import {CourseServiceConfig} from '..';
 import {Content, ContentService} from '../../content';
 import {of} from 'rxjs';
+import {Container} from 'inversify';
+import {InjectionTokens} from '../../injection-tokens';
 
 describe('GetContentStateHandler', () => {
     let getContentStateHandler: GetContentStateHandler;
@@ -13,11 +15,14 @@ describe('GetContentStateHandler', () => {
     const mockContentService: Partial<ContentService> = {};
 
     beforeEach(() => {
+        const container = new Container();
+        container.bind<ContentService>(InjectionTokens.CONTENT_SERVICE).toConstantValue(mockContentService as ContentService);
+        container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(container as Container);
 
         getContentStateHandler = new GetContentStateHandler(
             mockApiService as ApiService,
             mockCourseServiceConfig,
-            mockContentService as ContentService
+            container
         );
     });
 
