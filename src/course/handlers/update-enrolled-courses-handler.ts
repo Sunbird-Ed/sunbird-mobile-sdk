@@ -31,7 +31,7 @@ export class UpdateEnrolledCoursesHandler {
                                     }
                                     const newCourses: Course[] = [...courses];
                                     courses.forEach((course: Course) => {
-                                        if (course.courseId === (request.courseId || (request.courseIds && request.courseIds[0])) && course.batchId === request.batchId) {
+                                        if (course.courseId === request.courseId && course.batchId === request.batchId) {
                                             const updateCourse = course;
                                             const contentList: ContentState[] = contentState.contentList;
                                             contentList.forEach((content) => {

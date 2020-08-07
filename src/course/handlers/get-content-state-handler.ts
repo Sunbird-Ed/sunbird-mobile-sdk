@@ -27,27 +27,9 @@ export class GetContentStateHandler {
         return iif(
             () => !contentStateRequest.contentIds || !contentStateRequest.contentIds.length,
             defer(async () => {
-                contentStateRequest.contentIds = await (async () => {
-                    if (contentStateRequest.courseId) {
-                        const content = await this.contentService.getContentDetails({
-                            contentId: contentStateRequest.courseId
-                        }).toPromise();
-                        return content.contentData['leafNodes'] || [];
-                    } else if (contentStateRequest.courseIds) {
-                        const contents = await Promise.all(
-                            contentStateRequest.courseIds.map((courseId) => this.contentService.getContentDetails({
-                                contentId: courseId
-                            }).toPromise())
-                        );
-
-                        return contents.reduce<string[]>((agg, c) => {
-                            agg = [...agg, ...(c.contentData['leafNodes'] || [])];
-                            return agg;
-                        }, []);
-                    } else {
-                        return [];
-                    }
-                })();
+                contentStateRequest.contentIds = await this.contentService.getContentDetails({
+                    contentId: contentStateRequest.courseId
+                }).toPromise().then((content) => content.contentData['leafNodes'] || []);
 
                 return this.fetchFromApi(contentStateRequest).toPromise();
             }),

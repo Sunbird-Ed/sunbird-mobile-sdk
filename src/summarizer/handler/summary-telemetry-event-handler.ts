@@ -1,5 +1,5 @@
 import {ApiRequestHandler} from '../../api';
-import {ProducerData, Rollup, SunbirdTelemetry} from '../../telemetry';
+import {Actor, AuditState, ProducerData, Rollup, SunbirdTelemetry, TelemetryAuditRequest} from '../../telemetry';
 import {SummarizerService} from '..';
 import {
     ContentState,
@@ -16,10 +16,9 @@ import {Content, ContentDetailRequest, ContentEventType, ContentMarkerRequest, C
 import {ContentAccess, ContentAccessStatus, ProfileService} from '../../profile';
 import {defer, Observable, of} from 'rxjs';
 import {delay, map, mapTo, mergeMap, tap} from 'rxjs/operators';
-import Telemetry = SunbirdTelemetry.Telemetry;
 import {CsContentProgressCalculator} from '@project-sunbird/client-services/services/content/utilities/content-progress-calculator';
-import { TelemetryLogger } from '../../telemetry/util/telemetry-logger';
-import { TelemetryAuditRequest, Actor, AuditState } from '../../telemetry';
+import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
+import Telemetry = SunbirdTelemetry.Telemetry;
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -283,7 +282,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
             userId: userId,
             batchId: batchId,
             contentIds: [contentId],
-            courseIds: [courseId]
+            courseId
         };
 
         return this.courseService.getContentState(contentStateRequest).pipe(
