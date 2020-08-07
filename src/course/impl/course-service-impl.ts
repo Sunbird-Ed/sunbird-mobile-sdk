@@ -156,9 +156,7 @@ export class CourseServiceImpl implements CourseService {
     }
 
     getContentState(request: GetContentStateRequest): Observable<ContentStateResponse | undefined> {
-        const key = CourseServiceImpl.GET_CONTENT_STATE_KEY_PREFIX.concat(
-            request.userId, request.courseId ? request.courseId : (request.courseIds || []).join(',')
-        );
+        const key = CourseServiceImpl.GET_CONTENT_STATE_KEY_PREFIX.concat(request.userId, request.courseId);
         const offlinecontentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
         const updateCourseHandler: UpdateEnrolledCoursesHandler =
             new UpdateEnrolledCoursesHandler(this.keyValueStore, offlinecontentStateHandler);

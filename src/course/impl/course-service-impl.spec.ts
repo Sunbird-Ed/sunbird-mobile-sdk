@@ -344,7 +344,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: false
             };
@@ -374,7 +374,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: false
             };
@@ -402,7 +402,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: false
             };
@@ -430,7 +430,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: true
             };
@@ -460,7 +460,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: true
             };
@@ -488,7 +488,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: true
             };
@@ -522,7 +522,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: false
             };

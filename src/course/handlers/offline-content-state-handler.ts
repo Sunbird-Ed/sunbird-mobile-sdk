@@ -11,7 +11,7 @@ export class OfflineContentStateHandler {
     }
 
     public getLocalContentStateResponse(request: GetContentStateRequest): Observable<ContentStateResponse> {
-        const key = CourseServiceImpl.GET_CONTENT_STATE_KEY_PREFIX.concat(request.userId, (request.courseId || (request.courseIds && request.courseIds[0]))!);
+        const key = CourseServiceImpl.GET_CONTENT_STATE_KEY_PREFIX.concat(request.userId, request.courseId);
         return this.keyValueStore.getValue(key)
             .pipe(
                 map((value: string | undefined) => {

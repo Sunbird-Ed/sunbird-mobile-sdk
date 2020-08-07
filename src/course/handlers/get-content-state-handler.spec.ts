@@ -63,112 +63,50 @@ describe('GetContentStateHandler', () => {
         });
 
         describe('when leafNode contentIds is not passed for requesting root content', () => {
-            describe('when requesting for single courseId', () => {
-                it('should invoke API call attaching single course leafNodes to request', (done) => {
-                    // arrange
-                    mockApiService.fetch = jest.fn(() => {
-                        const response = new Response();
-                        response.responseCode = 200;
-                        response.body = {};
-                        return of(response);
-                    });
+            it('should invoke API call attaching course leafNodes to request', (done) => {
+                // arrange
+                mockApiService.fetch = jest.fn(() => {
+                    const response = new Response();
+                    response.responseCode = 200;
+                    response.body = {};
+                    return of(response);
+                });
 
-                    mockContentService.getContentDetails = jest.fn(() => {
-                        return of({
-                            contentData: {
-                                leafNodes: [
+                mockContentService.getContentDetails = jest.fn(() => {
+                    return of({
+                        contentData: {
+                            leafNodes: [
+                                'SOME_LEAF_NODE_1',
+                                'SOME_LEAF_NODE_2'
+                            ],
+                            leafNodesCount: 2
+                        } as any
+                    } as Partial<Content> as Content);
+                });
+
+                const request = {
+                    userId: 'SOME_USER_ID',
+                    batchId: 'SOME_BATCH_ID',
+                    courseId: 'SOME_BATCH_ID',
+                    contentIds: []
+                };
+
+                // act
+                getContentStateHandler.handle(request).subscribe(() => {
+                    expect(mockApiService.fetch).toHaveBeenCalledWith(expect.objectContaining({
+                        body: {
+                            request: expect.objectContaining({
+                                userId: 'SOME_USER_ID',
+                                batchId: 'SOME_BATCH_ID',
+                                courseId: 'SOME_BATCH_ID',
+                                contentIds: [
                                     'SOME_LEAF_NODE_1',
                                     'SOME_LEAF_NODE_2'
-                                ],
-                                leafNodesCount: 2
-                            } as any
-                        } as Partial<Content> as Content);
-                    });
-
-                    const request = {
-                        userId: 'SOME_USER_ID',
-                        batchId: 'SOME_BATCH_ID',
-                        courseId: 'SOME_BATCH_ID',
-                        contentIds: []
-                    };
-
-                    // act
-                    getContentStateHandler.handle(request).subscribe(() => {
-                        expect(mockApiService.fetch).toHaveBeenCalledWith(expect.objectContaining({
-                            body: {
-                                request: expect.objectContaining({
-                                    userId: 'SOME_USER_ID',
-                                    batchId: 'SOME_BATCH_ID',
-                                    courseId: 'SOME_BATCH_ID',
-                                    contentIds: [
-                                        'SOME_LEAF_NODE_1',
-                                        'SOME_LEAF_NODE_2'
-                                    ]
-                                })
-                            }
-                        }));
-                        done();
-                    });
-                });
-            });
-
-            describe('when requesting for multiple courseIds', () => {
-                it('should invoke API call attaching multiple course leafNodes to request', (done) => {
-                    // arrange
-                    mockApiService.fetch = jest.fn(() => {
-                        const response = new Response();
-                        response.responseCode = 200;
-                        response.body = {};
-                        return of(response);
-                    });
-
-                    const responseStack = [
-                        [
-                            'SOME_LEAF_NODE_1',
-                            'SOME_LEAF_NODE_2'
-                        ],
-                        [
-                            'SOME_LEAF_NODE_3',
-                            'SOME_LEAF_NODE_4'
-                        ],
-                    ];
-                    mockContentService.getContentDetails = jest.fn(() => {
-                        return of({
-                            contentData: {
-                                leafNodes: responseStack.shift(),
-                                leafNodesCount: 2
-                            } as any
-                        } as Partial<Content> as Content);
-                    });
-
-                    const request = {
-                        userId: 'SOME_USER_ID',
-                        batchId: 'SOME_BATCH_ID',
-                        courseIds: ['SOME_BATCH_ID_1', 'SOME_BATCH_ID_2']
-                    };
-
-                    // act
-                    getContentStateHandler.handle(request).subscribe(() => {
-                        expect(mockApiService.fetch).toHaveBeenCalledWith(expect.objectContaining({
-                            body: {
-                                request: expect.objectContaining({
-                                    userId: 'SOME_USER_ID',
-                                    batchId: 'SOME_BATCH_ID',
-                                    courseIds: [
-                                        'SOME_BATCH_ID_1',
-                                        'SOME_BATCH_ID_2'
-                                    ],
-                                    contentIds: [
-                                        'SOME_LEAF_NODE_1',
-                                        'SOME_LEAF_NODE_2',
-                                        'SOME_LEAF_NODE_3',
-                                        'SOME_LEAF_NODE_4'
-                                    ]
-                                })
-                            }
-                        }));
-                        done();
-                    });
+                                ]
+                            })
+                        }
+                    }));
+                    done();
                 });
             });
         });
