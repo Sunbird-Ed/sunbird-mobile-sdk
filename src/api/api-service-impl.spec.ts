@@ -1,10 +1,20 @@
 import {ApiServiceImpl} from './api-service-impl';
 import {Container} from 'inversify';
-import {DeviceInfo, ErrorEventType, EventsBusService, SdkConfig, SharedPreferences} from '..';
+import {
+    DeviceInfo,
+    ErrorEventType,
+    EventNamespace,
+    EventsBusService,
+    HttpRequestType,
+    Request,
+    Response,
+    SdkConfig,
+    SharedPreferences
+} from '..';
 import {CsHttpService} from '@project-sunbird/client-services/core/http-service/interface';
 import {of, throwError} from 'rxjs';
 import {InjectionTokens} from '../injection-tokens';
-import {CsHttpServerError} from '@project-sunbird/client-services/core/http-service';
+import {CsHttpClientError, CsHttpServerError} from '@project-sunbird/client-services/core/http-service';
 import {CsModule} from '@project-sunbird/client-services';
 import {ApiTokenHandler} from './handlers/api-token-handler';
 import {ApiKeys} from '../preference-keys';
@@ -76,35 +86,62 @@ describe('ApiServiceImpl', () => {
     });
 
     describe('fetch', () => {
-        it('should return bareartoken and user token', (done) => {
-            const request = {
-                requestInterceptors: [],
-                responseInterceptors: []
-            } as any;
-            mockHttpService.fetch = jest.fn(() => of({})) as any;
-            // act
-            apiServiceImpl.fetch(request).subscribe(() => {
-                done();
+        describe('when successful', () => {
+            it('should resolve response', (done) => {
+                const request = new Request.Builder()
+                    .withType(HttpRequestType.POST)
+                    .withPath('/SOME_PATH')
+                    .build();
+                mockHttpService.fetch = jest.fn(() => of({})) as any;
+                // act
+                apiServiceImpl.fetch(request).subscribe((response) => {
+                    expect(response).toBeTruthy();
+                    done();
+                });
             });
         });
 
-        it('should return http error for httpService', (done) => {
-            const request = {
-                requestInterceptors: [],
-                responseInterceptors: [],
-                withBearerToken: true,
-                withUserToken: true
-            } as any;
-            const response: CsHttpServerError = {
-                response: {},
-                message: ErrorEventType.HTTP_SERVER_ERROR
-            } as any;
-            mockHttpService.fetch = jest.fn(() => throwError(response));
-            mockEventsBusService.emit = jest.fn();
-            // act
-            apiServiceImpl.fetch(request).toPromise().catch((e) => {
-                expect(e.message).toBe(ErrorEventType.HTTP_SERVER_ERROR);
-                done();
+        describe('when failed with code 500-599', () => {
+            it('should reject with appropriate CsHttpServerError', (done) => {
+                const request = new Request.Builder()
+                    .withType(HttpRequestType.POST)
+                    .withPath('/SOME_PATH')
+                    .build();
+                const response = new Response();
+                response.responseCode = 531;
+                const error: CsHttpServerError = new CsHttpServerError('SOME_MESSAGE', response);
+                mockHttpService.fetch = jest.fn(() => throwError(error));
+                mockEventsBusService.emit = jest.fn();
+                // act
+                apiServiceImpl.fetch(request).toPromise().catch((e) => {
+                    expect(CsHttpServerError.isInstance(e)).toBeTruthy();
+                    expect(mockEventsBusService.emit).toHaveBeenCalledWith({
+                        namespace: EventNamespace.ERROR,
+                        event: expect.objectContaining({
+                            type: ErrorEventType.HTTP_SERVER_ERROR
+                        })
+                    });
+                    done();
+                });
+            });
+        });
+
+        describe('when failed with code 400-499', () => {
+            it('should reject with appropriate CsHttpClientError', (done) => {
+                const request = {
+                    requestInterceptors: [],
+                    responseInterceptors: [],
+                    withBearerToken: true,
+                    withUserToken: true
+                } as any;
+                const response: CsHttpClientError = new CsHttpClientError('SOME_MESSAGE', new Response());
+                mockHttpService.fetch = jest.fn(() => throwError(response));
+                mockEventsBusService.emit = jest.fn();
+                // act
+                apiServiceImpl.fetch(request).toPromise().catch((e) => {
+                    expect(CsHttpClientError.isInstance(e)).toBeTruthy();
+                    done();
+                });
             });
         });
     });

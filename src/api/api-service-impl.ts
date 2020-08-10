@@ -27,7 +27,8 @@ import {CsModule} from '@project-sunbird/client-services';
 
 @injectable()
 export class ApiServiceImpl implements ApiService {
-
+    private static PLANNED_MAINTENANCE_ERROR_CODE = 531;
+    private hasEmittedPlannedMaintenanceErrorEvent = false;
     private defaultRequestInterceptors: CsRequestInterceptor[] = [
         // new CsRequestLoggerInterceptor()
     ];
@@ -143,6 +144,19 @@ export class ApiServiceImpl implements ApiService {
                             payload: e
                         } as HttpServerErrorEvent
                     } as EmitRequest<EventsBusEvent>);
+
+                    if ((e as CsHttpServerError).response.responseCode === ApiServiceImpl.PLANNED_MAINTENANCE_ERROR_CODE) {
+                        if (!this.hasEmittedPlannedMaintenanceErrorEvent) {
+                            this.hasEmittedPlannedMaintenanceErrorEvent = true;
+                            this.eventsBusService.emit({
+                                namespace: EventNamespace.ERROR,
+                                event: {
+                                    type: ErrorEventType.PLANNED_MAINTENANCE_PERIOD,
+                                    payload: e
+                                }
+                            });
+                        }
+                    }
                 } else if (CsHttpClientError.isInstance(e)) {
                     this.eventsBusService.emit({
                         namespace: EventNamespace.ERROR,
