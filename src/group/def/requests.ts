@@ -20,6 +20,7 @@ export interface GetByIdRequest extends CachedItemRequest {
     options?: {
         includeMembers?: boolean;
         includeActivities?: boolean;
+        groupActivities?: boolean;
     };
 }
 

@@ -1,8 +1,20 @@
-import { GroupServiceImpl } from './group-service-impl';
-import { Container } from 'inversify';
-import { CachedItemStore, CachedItemRequestSourceFrom } from '../../key-value-store';
-import { GroupCreateRequest, GetByIdRequest, GroupSearchCriteria, UpdateByIdRequest, DeleteByIdRequest, AddMembersRequest, UpdateMembersRequest, RemoveMembersRequest, AddActivitiesRequest, UpdateActivitiesRequest, RemoveActivitiesRequest } from '..';
-import { of } from 'rxjs';
+import {GroupServiceImpl} from './group-service-impl';
+import {Container} from 'inversify';
+import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
+import {
+    AddActivitiesRequest,
+    AddMembersRequest,
+    DeleteByIdRequest,
+    GetByIdRequest,
+    GroupCreateRequest,
+    GroupSearchCriteria,
+    RemoveActivitiesRequest,
+    RemoveMembersRequest,
+    UpdateActivitiesRequest,
+    UpdateByIdRequest,
+    UpdateMembersRequest
+} from '..';
+import {of} from 'rxjs';
 
 describe('GroupServiceImpl', () => {
     let groupServiceImpl: GroupServiceImpl;
@@ -281,6 +293,21 @@ describe('GroupServiceImpl', () => {
         groupServiceImpl.removeActivities(request).subscribe(() => {
             expect(mockContainer.get).toHaveBeenCalled();
             done();
+        });
+    });
+
+    describe('getSupportedActivities()', () => {
+        it('should delegate to CsGroupService', (done) => {
+            // arrange
+            const mockCsGroupService = {
+                getSupportedActivities: jest.fn(() => of({}))
+            };
+            mockContainer.get = jest.fn(() => mockCsGroupService) as any;
+            // act
+            groupServiceImpl.getSupportedActivities().subscribe(() => {
+                expect(mockCsGroupService.getSupportedActivities).toHaveBeenCalled();
+                done();
+            });
         });
     });
 });
