@@ -1,4 +1,4 @@
-import {Profile, ProfileSource} from './profile';
+import {Profile, ProfileSource, UserDeclaration} from './profile';
 import {Observable} from 'rxjs';
 import {TenantInfo} from './tenant-info';
 import {ServerProfile} from './server-profile';
@@ -28,6 +28,8 @@ import {UserMigrateRequest} from './user-migrate-request';
 import {ManagedProfileManager} from '../handler/managed-profile-manager';
 import {CheckUserExistsResponse} from './check-user-exists-response';
 import {CheckUserExistsRequest} from './check-user-exists-request';
+import {UpdateServerProfileDeclarationsResponse} from './update-server-profile-declarations-response';
+import {UpdateServerProfileDeclarationsRequest} from './update-server-profile-declarations-request';
 
 
 export interface ProfileService extends SdkServicePreInitDelegate {
@@ -81,5 +83,5 @@ export interface ProfileService extends SdkServicePreInitDelegate {
 
     userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse>;
 
-
+    updateServerProfileDeclarations(updateServerProfileDeclarationsRequest: UpdateServerProfileDeclarationsRequest): Observable<UpdateServerProfileDeclarationsResponse>;
 }
