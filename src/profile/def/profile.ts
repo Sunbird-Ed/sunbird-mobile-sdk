@@ -1,4 +1,8 @@
-import {ServerProfile} from './server-profile';
+import { ServerProfile } from './server-profile';
+
+export {
+    UserDeclaration
+} from '@project-sunbird/client-services/models';
 
 export enum ProfileType {
     STUDENT = 'student',
