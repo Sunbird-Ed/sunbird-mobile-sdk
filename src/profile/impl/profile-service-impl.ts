@@ -85,6 +85,8 @@ import {ManagedProfileManager} from '../handler/managed-profile-manager';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
 import {CheckUserExistsRequest} from '../def/check-user-exists-request';
 import {CheckUserExistsResponse} from '../def/check-user-exists-response';
+import {UpdateServerProfileDeclarationsResponse} from '../def/update-server-profile-declarations-response';
+import {UpdateServerProfileDeclarationsRequest} from '../def/update-server-profile-declarations-request';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -701,6 +703,10 @@ export class ProfileServiceImpl implements ProfileService {
     userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse> {
         return new UserMigrateHandler(this.sdkConfig, this.apiService)
             .handle(userMigrateRequest);
+    }
+
+    updateServerProfileDeclarations(request: UpdateServerProfileDeclarationsRequest): Observable<UpdateServerProfileDeclarationsResponse> {
+        return this.userService.updateUserDeclarations(request.declarations, { apiPath: this.sdkConfig.profileServiceConfig.profileApiPath });
     }
 
     private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
