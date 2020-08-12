@@ -14,6 +14,7 @@ import {
     GroupSearchCriteria,
     GroupSearchResponse,
     GroupService,
+    GroupSupportedActivitiesFormField,
     GroupUpdateActivitiesResponse,
     GroupUpdateMembersResponse,
     GroupUpdateResponse,
@@ -25,6 +26,7 @@ import {
 } from '..';
 import {Observable} from 'rxjs';
 import {Group} from '../def/models';
+import {Form} from '../../form/def/models';
 import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {CsGroupService} from '@project-sunbird/client-services/services/group';
@@ -114,5 +116,9 @@ export class GroupServiceImpl implements GroupService {
 
     removeActivities(request: RemoveActivitiesRequest): Observable<GroupRemoveActivitiesResponse> {
         return this.groupServiceDelegate.removeActivities(request.groupId, request.removeActivitiesRequest);
+    }
+
+    getSupportedActivities(): Observable<Form<GroupSupportedActivitiesFormField>> {
+        return this.groupServiceDelegate.getSupportedActivities();
     }
 }
