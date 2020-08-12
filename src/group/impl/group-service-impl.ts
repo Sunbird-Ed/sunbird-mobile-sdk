@@ -66,8 +66,9 @@ export class GroupServiceImpl implements GroupService {
     getById(request: GetByIdRequest): Observable<Group> {
         return this.cachedItemStore[request.from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
             `${request.id}-${request.userId}` +
-            `${(request.options && request.options.includeMembers) ? '-' + request.options.includeMembers : ''}` +
-            `${(request.options && request.options.includeActivities) ? '-' + request.options.includeActivities : ''}`,
+            `${(request.options && request.options.includeMembers) ? '-includeMembers:' + request.options.includeMembers : ''}` +
+            `${(request.options && request.options.includeActivities) ? '-includeActivities:' + request.options.includeActivities : ''}` +
+            `${(request.options && request.options.groupActivities) ? '-groupActivities:' + request.options.groupActivities : ''}`,
             GroupServiceImpl.GROUP_LOCAL_KEY,
             'ttl_' + GroupServiceImpl.GROUP_LOCAL_KEY,
             () => this.groupServiceDelegate.getById(request.id, request.options),
