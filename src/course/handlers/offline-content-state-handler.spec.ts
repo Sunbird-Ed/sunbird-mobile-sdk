@@ -1,6 +1,6 @@
-import { OfflineContentStateHandler } from './offline-content-state-handler';
-import { KeyValueStore, GetContentStateRequest, UpdateContentStateRequest } from '../..';
-import { of } from 'rxjs';
+import {OfflineContentStateHandler} from './offline-content-state-handler';
+import {GetContentStateRequest, KeyValueStore, UpdateContentStateRequest} from '../..';
+import {of} from 'rxjs';
 
 describe('OfflineContentStateHandler', () => {
     let offlineContentStateHandler: OfflineContentStateHandler;
@@ -25,7 +25,7 @@ describe('OfflineContentStateHandler', () => {
         const request: GetContentStateRequest = {
             userId: 'uid-00001111',
             batchId: 'sample-batch-id',
-            courseIds: ['course-id-1'],
+            courseId: 'course-id-1',
         };
         mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('{"result": {"contentList": "sample-list"}}'));
         // act
@@ -42,7 +42,7 @@ describe('OfflineContentStateHandler', () => {
         const request: GetContentStateRequest = {
             userId: 'uid-00001111',
             batchId: 'sample-batch-id',
-            courseIds: ['course-id-1'],
+            courseId: 'course-id-1',
         };
         mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('{"contentList": "sample-list"}'));
         // act
@@ -59,7 +59,7 @@ describe('OfflineContentStateHandler', () => {
         const request: GetContentStateRequest = {
             userId: 'uid-00001111',
             batchId: 'sample-batch-id',
-            courseIds: ['course-id-1'],
+            courseId: 'course-id-1',
         };
         mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of(undefined));
         // act

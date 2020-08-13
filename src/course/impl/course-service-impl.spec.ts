@@ -24,16 +24,15 @@ import {OfflineContentStateHandler} from '../handlers/offline-content-state-hand
 import {SyncAssessmentEventsHandler} from '../handlers/sync-assessment-events-handler';
 import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
 import {CsCourseService} from '@project-sunbird/client-services/services/course';
-import { FileService } from '../../util/file/def/file-service';
+import {FileService} from '../../util/file/def/file-service';
 import {NetworkQueue} from '../../api/network-queue';
 import {UpdateContentStateApiHandler} from '../handlers/update-content-state-api-handler';
-import { DownloadCertificateRequest } from '../def/download-certificate-request';
-import { NoCertificateFound } from '../errors/no-certificate-found';
-import { CertificateAlreadyDownloaded} from '../errors/certificate-already-downloaded';
-import { TelemetryService, DownloadStatus, GenerateAttemptIdRequest } from '../..';
-import { EnrollCourseHandler } from '../handlers/enroll-course-handler';
-import { GetContentStateHandler } from '../handlers/get-content-state-handler';
-import { UpdateEnrolledCoursesHandler } from '../handlers/update-enrolled-courses-handler';
+import {DownloadCertificateRequest} from '../def/download-certificate-request';
+import {NoCertificateFound} from '../errors/no-certificate-found';
+import {CertificateAlreadyDownloaded} from '../errors/certificate-already-downloaded';
+import {ContentService, DownloadStatus, GenerateAttemptIdRequest} from '../..';
+import {EnrollCourseHandler} from '../handlers/enroll-course-handler';
+import {GetContentStateHandler} from '../handlers/get-content-state-handler';
 
 jest.mock('../handlers/offline-content-state-handler');
 jest.mock('../handlers/sync-assessment-events-handler');
@@ -83,6 +82,7 @@ describe('CourseServiceImpl', () => {
     };
     const mockCachedItemStore: Partial<CachedItemStore> = {};
     const mockCsCourseService: Partial<CsCourseService> = {};
+    const mockContentService: Partial<ContentService> = {};
 
     const mockNetworkQueue: Partial<NetworkQueue> = {
         enqueue: jest.fn(() => of({} as any))
@@ -101,6 +101,7 @@ describe('CourseServiceImpl', () => {
         container.bind<CachedItemStore>(InjectionTokens.CACHED_ITEM_STORE).toConstantValue(mockCachedItemStore as CachedItemStore);
         container.bind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(mockCsCourseService as CsCourseService);
         container.bind<NetworkQueue>(InjectionTokens.NETWORK_QUEUE).toConstantValue(mockNetworkQueue as NetworkQueue);
+        container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(container);
 
         (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockImplementation(() => {
             return mockSyncAssessmentEventsHandler as Partial<SyncAssessmentEventsHandler> as SyncAssessmentEventsHandler;
@@ -343,7 +344,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: false
             };
@@ -373,7 +374,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: false
             };
@@ -401,7 +402,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: false
             };
@@ -429,7 +430,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: true
             };
@@ -459,7 +460,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: true
             };
@@ -487,7 +488,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: true
             };
@@ -521,7 +522,7 @@ describe('CourseServiceImpl', () => {
             const request: GetContentStateRequest = {
                 userId: 'SAMPLE_USER_ID',
                 batchId: 'SAMPLE_BATCH_ID',
-                courseIds: ['SAMPLE_COURSE_ID'],
+                courseId: 'SAMPLE_COURSE_ID',
                 contentIds: ['SAMPLE_CONTENT_ID'],
                 returnRefreshedContentStates: false
             };

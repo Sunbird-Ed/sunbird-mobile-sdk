@@ -21,11 +21,13 @@ import {
     GroupRemoveActivitiesResponse,
     GroupRemoveMembersResponse,
     GroupSearchResponse,
+    GroupSupportedActivitiesFormField,
     GroupUpdateActivitiesResponse,
     GroupUpdateMembersResponse,
     GroupUpdateResponse
 } from './responses';
 import {GroupActivityService} from './group-activity-service';
+import {Form} from '../../form/def/models';
 
 export interface GroupService {
     activityService: GroupActivityService;
@@ -51,4 +53,6 @@ export interface GroupService {
     updateActivities(request: UpdateActivitiesRequest): Observable<GroupUpdateActivitiesResponse>;
 
     removeActivities(request: RemoveActivitiesRequest): Observable<GroupRemoveActivitiesResponse>;
+
+    getSupportedActivities(): Observable<Form<GroupSupportedActivitiesFormField>>;
 }

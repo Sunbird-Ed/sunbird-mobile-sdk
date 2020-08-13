@@ -46,7 +46,7 @@ export interface CourseBatchDetailsRequest {
 export interface GetContentStateRequest {
     userId: string;
     batchId: string;
-    courseIds: string[];
+    courseId: string;
     contentIds?: string[];
     returnRefreshedContentStates?: boolean;
 }

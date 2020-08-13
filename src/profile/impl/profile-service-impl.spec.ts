@@ -13,6 +13,7 @@ import {
     Profile,
     ProfileExportRequest,
     ProfileService,
+    ProfileServiceConfig,
     ProfileServiceImpl,
     ProfileSession,
     ProfileSource,
@@ -93,7 +94,11 @@ describe.only('ProfileServiceImpl', () => {
     let profileService: ProfileService;
 
     const container = new Container();
-    const mockSdkConfig: Partial<SdkConfig> = {};
+    const mockSdkConfig: Partial<SdkConfig> = {
+        profileServiceConfig: {
+            profileApiPath: 'MOCK_V1_API_PATH'
+        } as Partial<ProfileServiceConfig> as ProfileServiceConfig
+    };
     const mockDbService: Partial<DbService> = {};
     const mockApiService: Partial<ApiService> = {};
     const mockCachedItemStore: Partial<CachedItemStore> = {};
@@ -1005,6 +1010,23 @@ describe.only('ProfileServiceImpl', () => {
             profileService.userMigrate(request).subscribe((res) => {
                 // assert
                 expect(res).toBe(response);
+                done();
+            });
+        });
+    });
+
+    describe('updateServerProfileDeclarations()', () => {
+        it('should delegate to CsUserService.updateUserDeclarations() with v1 endpoint', (done) => {
+            // arrange
+            mockCsUserService.updateUserDeclarations = jest.fn(() => of({}));
+
+            const declarations = [];
+            const request = {
+                declarations
+            };
+
+            profileService.updateServerProfileDeclarations(request).subscribe(() => {
+                expect(mockCsUserService.updateUserDeclarations).toHaveBeenCalledWith(declarations, {apiPath: 'MOCK_V1_API_PATH'});
                 done();
             });
         });
