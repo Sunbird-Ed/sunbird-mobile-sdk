@@ -8,4 +8,6 @@ declare var sbsync: {
            (callbackUrl: any) => void, error: (error: string) => void) => void;
 
   onSyncSucces: (sucess: (data: any) => void, error?: (error: any) => void) => void;
+
+  onAuthorizationError: (sucess: (data: any) => void, error?: (error: any) => void) => void;
 };
