@@ -733,7 +733,7 @@ describe('CourseServiceImpl', () => {
                     super: jest.fn(() => ({code: 'error'})) as any
                 } as Partial<CertificateAlreadyDownloaded> as CertificateAlreadyDownloaded;
             });
-            mockCsCourseService.getSignedCourseCertificate = jest.fn(() => of({signedUrl: 'https://'}));
+            mockCsCourseService.getSignedCourseCertificate = jest.fn(() => of({printUri: 'https://'}));
             window['downloadManager'] = {
                 enqueue: jest.fn(({}, fn) => fn({err: 'error'}))
             };
@@ -853,7 +853,7 @@ describe('CourseServiceImpl', () => {
                     super: jest.fn(() => ({code: 'error'})) as any
                 } as Partial<CertificateAlreadyDownloaded> as CertificateAlreadyDownloaded;
             });
-            mockCsCourseService.getSignedCourseCertificate = jest.fn(() => of({signedUrl: 'https://'}));
+            mockCsCourseService.getSignedCourseCertificate = jest.fn(() => of({printUri: 'https://'}));
             const data = undefined;
             window['downloadManager'] = {
                 enqueue: jest.fn(({}, fn) => fn(data, {id: 'sample-id'})),
