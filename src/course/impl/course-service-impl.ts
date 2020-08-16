@@ -36,7 +36,7 @@ import {ProcessingError} from '../../auth/errors/processing-error';
 import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
-import {DownloadCertificateRequest} from '../def/download-certificate-request';
+import {DownloadCertificateRequest, DownloadCertificateRequestV2} from '../def/download-certificate-request';
 import {NoCertificateFound} from '../errors/no-certificate-found';
 import {AppInfo} from '../../util/app';
 import {FileUtil} from '../../util/file/util/file-util';
@@ -133,7 +133,7 @@ export class CourseServiceImpl implements CourseService {
             request.userId + (request.filters ? '_' + JSON.stringify(request.filters) : ''),
             CourseServiceImpl.USER_ENROLLMENT_LIST_KEY_PREFIX,
             'ttl_' + CourseServiceImpl.USER_ENROLLMENT_LIST_KEY_PREFIX,
-            () => this.csCourseService.getUserEnrolledCourses(request, {}, {apiPath: '/api/course/v2'}),
+            () => this.csCourseService.getUserEnrolledCourses(request, {}, {apiPath: '/api/course/v2', certRegistrationApiPath: ''}),
         );
     }
 
@@ -212,6 +212,74 @@ export class CourseServiceImpl implements CourseService {
             );
     }
 
+    public downloadCurrentProfileCourseCertificateV2(
+        request: DownloadCertificateRequestV2,
+        pdfDataProvider: (pdfSvgData: string, cb: (pdfData: Blob) => void) => void): Observable<DownloadCertificateResponse> {
+        return this.profileService.getActiveProfileSession()
+            .pipe(
+                mergeMap((session) => {
+                    const option = {
+                        userId: session.uid,
+                        refreshEnrolledCourses: false,
+                        returnRefreshedEnrolledCourses: true
+                    };
+                    return this.getEnrolledCourses(option);
+                }),
+                map((courses: Course[]) => {
+                    return courses
+                        .filter((course) => course.status && course.status === 2)
+                        .find((course) => course.courseId === request.courseId)!;
+                }),
+                map((course: Course) => {
+                    if (!course.certificates || !course.certificates.length) {
+                        throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
+                    }
+
+                    const certificate = course.certificates[0];
+
+                    if (!certificate) {
+                        throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
+                    }
+
+                    return {certificate, course};
+                }),
+                mergeMap(({certificate, course}) => {
+                    console.log('Certificate name', certificate.name);
+                    const filePath = `${cordova.file.externalRootDirectory}Download/${certificate.name}.pdf)}`;
+                    return defer(async () => {
+                        try {
+                            await this.fileService.exists(filePath);
+                            throw new CertificateAlreadyDownloaded('Certificate already downloaded');
+                        } catch (e) {
+                            if (e instanceof CertificateAlreadyDownloaded) {
+                                throw e;
+                            }
+                            return {certificate, course};
+                        }
+                    });
+                }),
+                mergeMap(async ({certificate, course}) => {
+                    console.log(certificate.identifier);
+                    const response = await this.csCourseService.getSignedCourseCertificate(certificate.identifier!).toPromise();
+
+                    return new Promise<{ path: string }>((resolve, reject) => {
+                        console.log('printUri', response);
+                        pdfDataProvider(response['printUri'], (pdfData: Blob) => {
+                            try {
+                                this.fileService.writeFile(cordova.file.externalRootDirectory +
+                                    'Download/', certificate.name + '.pdf', pdfData as any, { replace: true });
+                                resolve({
+                                    path: cordova.file.externalRootDirectory + 'Download/' + certificate.name + '.pdf'
+                                });
+                            } catch (e) {
+                                reject(e);
+                            }
+                        });
+                    });
+                })
+            );
+    }
+
     public downloadCurrentProfileCourseCertificate(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
         return this.profileService.getActiveProfileSession()
             .pipe(
@@ -242,7 +310,7 @@ export class CourseServiceImpl implements CourseService {
                     return {certificate, course};
                 }),
                 mergeMap(({certificate, course}) => {
-                    const filePath = `${cordova.file.externalRootDirectory}Download/${FileUtil.getFileName(certificate.url)}`;
+                    const filePath = `${cordova.file.externalRootDirectory}Download/${FileUtil.getFileName(certificate.url!)}`;
                     return defer(async () => {
                         try {
                             await this.fileService.exists(filePath);
@@ -289,7 +357,7 @@ export class CourseServiceImpl implements CourseService {
                         notificationVisibility: 1,
                         destinationInExternalPublicDir: {
                             dirType: 'Download',
-                            subPath: `/${FileUtil.getFileName(certificate.url)}`
+                            subPath: `/${FileUtil.getFileName(certificate.url!)}`
                         },
                         headers: []
                     };
