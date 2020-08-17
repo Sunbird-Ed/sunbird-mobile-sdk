@@ -219,7 +219,7 @@ export class CourseServiceImpl implements CourseService {
             .pipe(
                 mergeMap((session) => {
                     const option = {
-                        userId: session.uid,
+                        userId: session.managedSession ? session.managedSession.uid : session.uid,
                         refreshEnrolledCourses: false,
                         returnRefreshedEnrolledCourses: true
                     };
@@ -285,7 +285,7 @@ export class CourseServiceImpl implements CourseService {
             .pipe(
                 mergeMap((session) => {
                     const option = {
-                        userId: session.uid,
+                        userId: session.managedSession ? session.managedSession.uid : session.uid,
                         refreshEnrolledCourses: false,
                         returnRefreshedEnrolledCourses: true
                     };
