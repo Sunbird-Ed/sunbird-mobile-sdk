@@ -363,7 +363,8 @@ export class SunbirdSdk {
             },
             services: {
                 courseServiceConfig: {
-                    apiPath: '/api/course/v1'
+                    apiPath: '/api/course/v1',
+                    certRegistrationApiPath: '/api/certreg/v2/certs'
                 },
                 groupServiceConfig: {
                     apiPath: '/api/group/v1',

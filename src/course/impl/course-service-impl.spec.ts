@@ -733,13 +733,7 @@ describe('CourseServiceImpl', () => {
                     super: jest.fn(() => ({code: 'error'})) as any
                 } as Partial<CertificateAlreadyDownloaded> as CertificateAlreadyDownloaded;
             });
-            mockApiService.fetch = jest.fn(() => of({
-                body: {
-                    result: {
-                        signedUrl: 'http://signed-url'
-                    }
-                }
-            })) as any;
+            mockCsCourseService.getSignedCourseCertificate = jest.fn(() => of({printUri: 'https://'}));
             window['downloadManager'] = {
                 enqueue: jest.fn(({}, fn) => fn({err: 'error'}))
             };
@@ -747,7 +741,7 @@ describe('CourseServiceImpl', () => {
             courseService.downloadCurrentProfileCourseCertificate(request).subscribe(() => {
                 expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
                 expect(mockFileService.exists).toHaveBeenCalled();
-                expect(mockApiService.fetch).toHaveBeenCalled();
+                expect(mockCsCourseService.getSignedCourseCertificate).toHaveBeenCalled();
                 done();
             }, (e) => {
                 done();
@@ -859,13 +853,7 @@ describe('CourseServiceImpl', () => {
                     super: jest.fn(() => ({code: 'error'})) as any
                 } as Partial<CertificateAlreadyDownloaded> as CertificateAlreadyDownloaded;
             });
-            mockApiService.fetch = jest.fn(() => of({
-                body: {
-                    result: {
-                        signedUrl: 'http://signed-url'
-                    }
-                }
-            })) as any;
+            mockCsCourseService.getSignedCourseCertificate = jest.fn(() => of({printUri: 'https://'}));
             const data = undefined;
             window['downloadManager'] = {
                 enqueue: jest.fn(({}, fn) => fn(data, {id: 'sample-id'})),
@@ -878,7 +866,7 @@ describe('CourseServiceImpl', () => {
             courseService.downloadCurrentProfileCourseCertificate(request).subscribe(() => {
                 expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
                 expect(mockFileService.exists).toHaveBeenCalled();
-                expect(mockApiService.fetch).toHaveBeenCalled();
+                expect(mockCsCourseService.getSignedCourseCertificate).toHaveBeenCalled();
                 done();
             }, (e) => {
                 done();

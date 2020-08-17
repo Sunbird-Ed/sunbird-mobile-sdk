@@ -54,6 +54,7 @@ import {CorrelationData} from '../def/telemetry-model';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
 import {ApiTokenHandler} from '../../api/handlers/api-token-handler';
+import {AuthUtil} from '../../auth/util/auth-util';
 
 
 @injectable()
@@ -128,13 +129,21 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
                 }, async (error) => {
                 });
             }).pipe(
-              mergeMap(() => {
-                  return new ApiTokenHandler(this.sdkConfig.apiConfig, this.apiService, this.deviceInfo).refreshAuthToken().pipe(
-                    mergeMap((bearerToken) => {
-                        return this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken);
-                    }),
-                    catchError(() => of(undefined))
-                  );
+              mergeMap((error) => {
+                  if (error === 'API_TOKEN_EXPIRED') {
+                      return new ApiTokenHandler(this.sdkConfig.apiConfig, this.apiService, this.deviceInfo).refreshAuthToken().pipe(
+                        mergeMap((bearerToken) => {
+                            return this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken);
+                        }),
+                        catchError(() => of(undefined))
+                      );
+                  } else {
+                      return from(new AuthUtil(this.sdkConfig.apiConfig, this.apiService,
+                        this.sharedPreferences,
+                        this.eventsBusService).refreshSession()).pipe(
+                        catchError(() => of(undefined))
+                      );
+                  }
               })
             )
         ]).pipe(mapTo(undefined));
