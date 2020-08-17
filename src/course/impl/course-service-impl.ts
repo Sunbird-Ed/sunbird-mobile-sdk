@@ -245,7 +245,7 @@ export class CourseServiceImpl implements CourseService {
                 }),
                 mergeMap(({certificate, course}) => {
                     console.log('Certificate name', certificate.name);
-                    const filePath = `${cordova.file.externalRootDirectory}Download/${certificate.name}.pdf)}`;
+                    const filePath = `${cordova.file.externalRootDirectory}Download/${certificate.name}_${course.courseId}_${course.userId}.pdf)}`;
                     return defer(async () => {
                         try {
                             await this.fileService.exists(filePath);
@@ -267,9 +267,9 @@ export class CourseServiceImpl implements CourseService {
                         pdfDataProvider(response['printUri'], (pdfData: Blob) => {
                             try {
                                 this.fileService.writeFile(cordova.file.externalRootDirectory +
-                                    'Download/', certificate.name + '.pdf', pdfData as any, { replace: true });
+                                  'Download/', `${certificate.name}_${course.courseId}_${course.userId}.pdf`, pdfData as any, {replace: true});
                                 resolve({
-                                    path: cordova.file.externalRootDirectory + 'Download/' + certificate.name + '.pdf'
+                                    path: `${cordova.file.externalRootDirectory}Download/${certificate.name}_${course.courseId}_${course.userId}.pdf`
                                 });
                             } catch (e) {
                                 reject(e);
