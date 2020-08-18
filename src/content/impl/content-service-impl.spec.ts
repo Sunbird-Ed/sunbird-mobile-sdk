@@ -130,6 +130,7 @@ describe('ContentServiceImpl', () => {
         getAppName: () => 'MOCK_APP_NAME'
     };
     const mockSharedPreferences = new SharedPreferencesLocalStorage();
+    const contentUpdateSizeOnDeviceTimeoutRef: Map<string, NodeJS.Timeout> = new Map();
 
     beforeAll(() => {
         container.bind<ContentService>(InjectionTokens.CONTENT_SERVICE).to(ContentServiceImpl).inTransientScope();
@@ -311,6 +312,10 @@ describe('ContentServiceImpl', () => {
                 [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                 [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
             };
+            const val = new Map();
+            const n: NodeJS.Timeout  = setTimeout( () =>  { /* snip */  }, 500);
+            val.set('SAMPLE_CONTENT_ID', n);
+            contentUpdateSizeOnDeviceTimeoutRef.get = jest.fn(() => n) as any;
             const fetchData = jest.fn().mockImplementation(() => of(contents));
             (GetContentDetailsHandler as any as jest.Mock<GetContentDetailsHandler>).mockImplementation(() => {
                 return {
@@ -689,10 +694,11 @@ describe('ContentServiceImpl', () => {
                         archive: [Object]
                     },
                     FILE_SIZE: '34KB',
-                    rootIdentifier: 'sample-root-id'
+                    rootIdentifier: 'sample-root-id',
+                    identifiers: ['ids']
                 }
             };
-            (mockFileService.exists as jest.Mock).mockResolvedValue(response);
+            mockFileService.exists = jest.fn(() => Promise.resolve(response)) as any;
             const generateInteractTelemetryData = jest.fn(() => Promise.resolve(response) as any);
             (GenerateInteractTelemetry as jest.Mock<GenerateInteractTelemetry>).mockImplementation(() => {
                 return {
@@ -1205,38 +1211,75 @@ describe('ContentServiceImpl', () => {
         });
     });
 
-    it('should used for search content', (done) => {
-        // arrange
-        const getSearchContentRequestData = jest.fn().mockImplementation(() => ({ filter: {} }));
-        const mapSearchResponseData = jest.fn().mockImplementation(() => ({ id: 'sid' }));
-        (SearchContentHandler as jest.Mock<SearchContentHandler>).mockImplementation(() => {
-            return {
-                getSearchContentRequest: getSearchContentRequestData,
-                mapSearchResponse: mapSearchResponseData
-            } as Partial<SearchContentHandler> as SearchContentHandler;
-        });
-        const request: ContentSearchCriteria = {
-            limit: 1,
-            offset: 2
-        };
-        contentService = container.get(InjectionTokens.CONTENT_SERVICE);
-
-        mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'));
-        spyOn(mockApiService, 'fetch').and.returnValue(of({
-            body: {
-                result: {
-                    response: 'SAMPLE_RESPONSE'
+     describe('searchContent', () => {
+        it('should used for search content', (done) => {
+            // arrange
+            const getSearchContentRequestData = jest.fn().mockImplementation(() => ({ filter: {} }));
+            const mapSearchResponseData = jest.fn().mockImplementation(() => ({ id: 'sid' }));
+            (SearchContentHandler as jest.Mock<SearchContentHandler>).mockImplementation(() => {
+                return {
+                    getSearchContentRequest: getSearchContentRequestData,
+                    mapSearchResponse: mapSearchResponseData
+                } as Partial<SearchContentHandler> as SearchContentHandler;
+            });
+            const request: ContentSearchCriteria = {
+                limit: 1,
+                offset: 2
+            };
+            contentService = container.get(InjectionTokens.CONTENT_SERVICE);
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'));
+            spyOn(mockApiService, 'fetch').and.returnValue(of({
+                body: {
+                    result: {
+                        response: 'SAMPLE_RESPONSE'
+                    }
                 }
-            }
-        }));
-        // act
-        contentService.searchContent(request).subscribe(() => {
-            // assert
-            expect(mockSharedPreferences.getString).toHaveBeenCalled();
-            expect(mockApiService.fetch).toHaveBeenCalled();
-            expect(getSearchContentRequestData).toHaveBeenCalled();
-            expect(mapSearchResponseData).toHaveBeenCalled();
-            done();
+            }));
+            // act
+            contentService.searchContent(request).subscribe(() => {
+                // assert
+                expect(mockSharedPreferences.getString).toHaveBeenCalled();
+                expect(mockApiService.fetch).toHaveBeenCalled();
+                expect(getSearchContentRequestData).toHaveBeenCalled();
+                expect(mapSearchResponseData).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it('should used for search content if request', (done) => {
+            // arrange
+            const getSearchContentRequestData = jest.fn().mockImplementation(() => ({ filter: {} }));
+            const mapSearchResponseData = jest.fn().mockImplementation(() => ({ id: 'sid' }));
+            (SearchContentHandler as jest.Mock<SearchContentHandler>).mockImplementation(() => {
+                return {
+                    getSearchContentRequest: getSearchContentRequestData,
+                    mapSearchResponse: mapSearchResponseData,
+                    getSearchCriteria: jest.fn(() => ({languageCode: 'bn'}))
+                } as Partial<SearchContentHandler> as SearchContentHandler;
+            });
+            const request: ContentSearchCriteria = {
+                limit: 1,
+                offset: 2,
+                languageCode: 'en'
+            };
+            contentService = container.get(InjectionTokens.CONTENT_SERVICE);
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'));
+            spyOn(mockApiService, 'fetch').and.returnValue(of({
+                body: {
+                    result: {
+                        response: 'SAMPLE_RESPONSE'
+                    }
+                }
+            }));
+            // act
+            contentService.searchContent(request, {limit: 5}).subscribe(() => {
+                // assert
+                expect(mockSharedPreferences.getString).toHaveBeenCalled();
+                expect(mockApiService.fetch).toHaveBeenCalled();
+                expect(getSearchContentRequestData).toHaveBeenCalled();
+                expect(mapSearchResponseData).toHaveBeenCalled();
+                done();
+            });
         });
     });
 
