@@ -71,4 +71,5 @@ export interface GroupActivityDataAggregationRequest extends CachedItemRequest {
     groupId: string;
     activity: Pick<GroupActivity, 'id' | 'type'>;
     mergeGroup?: Group;
+    leafNodesCount?: number;
 }
