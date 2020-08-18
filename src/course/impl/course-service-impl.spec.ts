@@ -27,7 +27,7 @@ import {CsCourseService} from '@project-sunbird/client-services/services/course'
 import {FileService} from '../../util/file/def/file-service';
 import {NetworkQueue} from '../../api/network-queue';
 import {UpdateContentStateApiHandler} from '../handlers/update-content-state-api-handler';
-import {DownloadCertificateRequest} from '../def/download-certificate-request';
+import {DownloadCertificateRequest, DownloadCertificateRequestV2} from '../def/download-certificate-request';
 import {NoCertificateFound} from '../errors/no-certificate-found';
 import {CertificateAlreadyDownloaded} from '../errors/certificate-already-downloaded';
 import {ContentService, DownloadStatus, GenerateAttemptIdRequest} from '../..';
@@ -940,5 +940,46 @@ describe('CourseServiceImpl', () => {
             userId: 'sample-user-id'
         };
         courseService.generateAssessmentAttemptId(request);
+    });
+
+    describe('downloadCurrentProfileCourseCertificateV2', () => {
+        it('should return message if certifacte is not found', (done) => {
+            // arrange
+            const request: DownloadCertificateRequestV2 = {
+                courseId: 'sample-course-id'
+            };
+            mockProfileService.getActiveProfileSession = jest.fn(() => of({
+                managedSession: {
+                    uid: 'sample-uid'
+                },
+                uid: 'sample-uid'
+            })) as any;
+            const mockBlob = new Blob();
+            const mockDataProvider = (_, callback) => { callback(mockBlob); };
+            jest.spyOn(courseService, 'getEnrolledCourses').mockImplementation(() => {
+                return of([{
+                    identifier: 'do-123',
+                    status: 2,
+                    courseId: 'sample-course-id',
+                    certificates: [{
+                        name: 'sample-certificate',
+                        identifier: 'sample-id'
+                    }]
+                }]) as any;
+            });
+            mockFileService.exists = jest.fn(() => Promise.reject({}));
+            mockCsCourseService.getSignedCourseCertificate = jest.fn(() => of({printUri: 'sample-print-uri'}));
+            mockFileService.writeFile = jest.fn(() => Promise.resolve('sample-file'));
+            // act
+            courseService.downloadCurrentProfileCourseCertificateV2(request, mockDataProvider).subscribe(() => {
+                // assert
+                expect(mockFileService.exists).toHaveBeenCalled();
+                expect(mockCsCourseService.getSignedCourseCertificate).toHaveBeenCalled();
+                expect(mockFileService.writeFile).toHaveBeenCalled();
+                done();
+            }, (e) => {
+                fail(e);
+            });
+        });
     });
 });
