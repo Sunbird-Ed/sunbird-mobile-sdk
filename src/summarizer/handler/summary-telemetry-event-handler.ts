@@ -338,19 +338,19 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         const cdata = [
             {
                 type: 'CourseId',
-                id: courseId
+                id: courseId || ''
             },
             {
                 type: 'BatchId',
-                id: batchId
+                id: batchId || ''
             },
             {
                 type: 'UserId',
-                id: userId
+                id: userId || ''
             },
             {
                 type: 'ContentId',
-                id: content.identifier
+                id: content.identifier || ''
             }
         ];
 
