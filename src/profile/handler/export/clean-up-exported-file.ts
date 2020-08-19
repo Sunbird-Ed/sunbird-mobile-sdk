@@ -6,7 +6,7 @@ import {ErrorCode} from '../../../content';
 import {ExportProfileContext} from '../../def/export-profile-context';
 import {LearnerAssessmentsEntry, LearnerSummaryEntry, ProfileEntry, UserEntry} from '../../db/schema';
 import {MetaEntry} from '../../../telemetry/db/schema';
-import {GroupEntry, GroupProfileEntry} from '../../../group/db/schema';
+import {GroupEntry, GroupProfileEntry} from '../../../group-deprecated/db/schema';
 import {KeyValueStoreEntry} from '../../../key-value-store/db/schema';
 
 export class CleanupExportedFile {

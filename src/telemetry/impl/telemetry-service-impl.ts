@@ -22,7 +22,7 @@ import {
 } from '..';
 import {TelemetryEntry, TelemetryProcessedEntry} from '../db/schema';
 import {ProfileService, ProfileSession} from '../../profile';
-import {GroupService, GroupSession} from '../../group';
+import {GroupServiceDeprecated, GroupSessionDeprecated} from '../../group-deprecated';
 import {TelemetrySyncHandler} from '../handler/telemetry-sync-handler';
 import {KeyValueStore} from '../../key-value-store';
 import {ApiService, Response} from '../../api';
@@ -75,7 +75,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
         @inject(InjectionTokens.TELEMETRY_DECORATOR) private decorator: TelemetryDecorator,
         @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
-        @inject(InjectionTokens.GROUP_SERVICE) private groupService: GroupService,
+        @inject(InjectionTokens.GROUP_SERVICE_DEPRECATED) private groupService: GroupServiceDeprecated,
         @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
         @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -347,7 +347,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
         ).pipe(
             mergeMap((sessions) => {
                 const profileSession: ProfileSession | undefined = sessions[0];
-                const groupSession: GroupSession | undefined = sessions[1];
+                const groupSession: GroupSessionDeprecated | undefined = sessions[1];
 
                 return this.keyValueStore.getValue(TelemetrySyncHandler.TELEMETRY_LOG_MIN_ALLOWED_OFFSET_KEY).pipe(
                     mergeMap((offset?: string) => {

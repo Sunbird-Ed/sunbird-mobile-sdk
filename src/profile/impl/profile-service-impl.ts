@@ -73,7 +73,7 @@ import {ObjectUtil} from '../../util/object-util';
 import {TransportProfiles} from '../handler/import/transport-profiles';
 import {SdkConfig} from '../../sdk-config';
 import {Container, inject, injectable} from 'inversify';
-import {InjectionTokens} from '../../injection-tokens';
+import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {AuthService} from '../../auth';
 import {defer, from, iif, Observable, of, throwError, zip} from 'rxjs';
 import {catchError, finalize, map, mapTo, mergeMap, tap} from 'rxjs/operators';
@@ -82,6 +82,9 @@ import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
 import {UserMigrateResponse} from '../def/user-migrate-response';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
 import {ManagedProfileManager} from '../handler/managed-profile-manager';
+import {CsUserService} from '@project-sunbird/client-services/services/user';
+import {CheckUserExistsRequest} from '../def/check-user-exists-request';
+import {CheckUserExistsResponse} from '../def/check-user-exists-response';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -91,17 +94,20 @@ export class ProfileServiceImpl implements ProfileService {
     private readonly apiConfig: ApiConfig;
     readonly managedProfileManager: ManagedProfileManager;
 
-    constructor(@inject(InjectionTokens.CONTAINER) private container: Container,
-                @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
-                @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
-                @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
-                @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
-                @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
-                @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
-                @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
-                @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
-                @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
-                @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService) {
+    constructor(
+        @inject(InjectionTokens.CONTAINER) private container: Container,
+        @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
+        @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+        @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
+        @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
+        @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
+        @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
+        @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
+        @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
+        @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService,
+        @inject(CsInjectionTokens.USER_SERVICE) private userService: CsUserService
+    ) {
         this.apiConfig = this.sdkConfig.apiConfig;
         this.managedProfileManager = new ManagedProfileManager(
             this,
@@ -149,6 +155,12 @@ export class ProfileServiceImpl implements ProfileService {
                         mapTo(undefined)
                     );
             })
+        );
+    }
+
+    checkServerProfileExists(request: CheckUserExistsRequest): Observable<CheckUserExistsResponse> {
+        return this.userService.checkUserExists(
+            request.matching, request.captchaResponseToken ? {token: request.captchaResponseToken, app: '1'} : undefined
         );
     }
 

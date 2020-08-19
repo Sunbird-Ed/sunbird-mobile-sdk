@@ -1,8 +1,8 @@
-import {GroupEntry} from '../../group/db/schema';
-import {Group} from '..';
+import {GroupEntry} from '../db/schema';
+import {GroupDeprecated} from '..';
 
 export class GroupMapper {
-    public static mapGroupDBEntryToGroup(groupEntry: GroupEntry.SchemaMap): Group {
+    public static mapGroupDBEntryToGroup(groupEntry: GroupEntry.SchemaMap): GroupDeprecated {
         return {
             gid: groupEntry[GroupEntry.COLUMN_NAME_GID],
             name: groupEntry[GroupEntry.COLUMN_NAME_NAME],
@@ -14,7 +14,7 @@ export class GroupMapper {
         };
     }
 
-    public static mapGroupToGroupDBEntry(group: Group): GroupEntry.SchemaMap {
+    public static mapGroupToGroupDBEntry(group: GroupDeprecated): GroupEntry.SchemaMap {
         return {
             [GroupEntry.COLUMN_NAME_GID]: group.gid,
             [GroupEntry.COLUMN_NAME_SYLLABUS]: (group.syllabus ? group.syllabus.join(',') : ''),

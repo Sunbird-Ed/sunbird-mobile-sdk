@@ -1,7 +1,7 @@
 import {PlayerService} from '..';
 import {Content} from '../../content';
 import {Profile, ProfileService, ProfileSession} from '../../profile';
-import {GroupService, GroupSession} from '../../group';
+import {GroupServiceDeprecated, GroupSessionDeprecated} from '../../group-deprecated';
 import {Context, PlayerInput} from '../def/response';
 import {DeviceInfo} from '../../util/device';
 import {Actor, CorrelationData, ProducerData} from '../../telemetry';
@@ -17,7 +17,7 @@ import {mergeMap} from 'rxjs/operators';
 @injectable()
 export class PlayerServiceImpl implements PlayerService {
     constructor(@inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
-                @inject(InjectionTokens.GROUP_SERVICE) private groupService: GroupService,
+                @inject(InjectionTokens.GROUP_SERVICE_DEPRECATED) private groupService: GroupServiceDeprecated,
                 @inject(InjectionTokens.SDK_CONFIG) private config: SdkConfig,
                 @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
                 @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
@@ -64,7 +64,7 @@ export class PlayerServiceImpl implements PlayerService {
                 }
                 return this.groupService.getActiveGroupSession();
             }),
-            mergeMap((groupSession: GroupSession | undefined) => {
+            mergeMap((groupSession: GroupSessionDeprecated | undefined) => {
                 let corRelationList: CorrelationData[] = [];
                 if (groupSession && groupSession.gid) {
                     corRelationList.push({id: groupSession.gid, type: 'group'});

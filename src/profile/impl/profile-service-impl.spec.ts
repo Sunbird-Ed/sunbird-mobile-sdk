@@ -34,7 +34,7 @@ import {ApiService, Response} from '../../api';
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {Channel, FrameworkService} from '../../framework';
 import {FileService} from '../../util/file/def/file-service';
-import {InjectionTokens} from '../../injection-tokens';
+import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {Observable, of} from 'rxjs';
 import {ProfileEntry} from '../db/schema';
 import {AuthService, OAuthSession} from '../../auth';
@@ -58,6 +58,7 @@ import {TransportGroup} from '../handler/import/transport-group';
 import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-profile-metadata';
 import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
+import {CsUserService} from '@project-sunbird/client-services/services/user';
 
 jest.mock('../handler/update-server-profile-info-handler');
 jest.mock('../handler/tenant-info-handler');
@@ -107,6 +108,7 @@ describe.only('ProfileServiceImpl', () => {
             return of(true);
         }
     };
+    const mockCsUserService: Partial<CsUserService> = {};
 
     beforeAll(() => {
         container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).to(ProfileServiceImpl);
@@ -122,6 +124,7 @@ describe.only('ProfileServiceImpl', () => {
         container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).toConstantValue(mockDeviceInfo as DeviceInfo);
         container.bind<AuthService>(InjectionTokens.AUTH_SERVICE).toConstantValue(mockAuthService as AuthService);
         container.bind<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE).toConstantValue(mockTelemetryService as TelemetryService);
+        container.bind<CsUserService>(CsInjectionTokens.USER_SERVICE).toConstantValue(mockCsUserService as CsUserService);
 
         profileService = container.get(InjectionTokens.PROFILE_SERVICE);
     });
@@ -171,6 +174,25 @@ describe.only('ProfileServiceImpl', () => {
                 // assert
                 expect(profileService.createProfile).toBeCalled();
                 expect(profileService.setActiveSessionForProfile).toBeCalledWith('SAMPLE_UID');
+                done();
+            });
+        });
+    });
+
+    describe('checkUserExists()', () => {
+        it('should delegate to CsUserService.checkUserExists()', (done) => {
+            // arrange
+            mockCsUserService.checkUserExists = jest.fn(() => of({exists: true}));
+
+            const request = {
+                matching: {key: 'userId', value: 'SOME_USER_ID'},
+                captchaResponseToken: 'SOME_CAPTCHA_TOKEN'
+            };
+
+            profileService.checkServerProfileExists(request).subscribe(() => {
+                expect(mockCsUserService.checkUserExists).toHaveBeenCalledWith(
+                    request.matching, expect.objectContaining({token: request.captchaResponseToken, app: '1'})
+                );
                 done();
             });
         });

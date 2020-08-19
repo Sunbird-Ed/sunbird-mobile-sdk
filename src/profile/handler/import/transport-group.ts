@@ -1,7 +1,7 @@
 import {DbService} from '../../../db';
 import {ImportProfileContext} from '../../def/import-profile-context';
 import {Response} from '../../../api';
-import {GroupEntry} from '../../../group/db/schema';
+import {GroupEntry} from '../../../group-deprecated/db/schema';
 
 export class TransportGroup {
     constructor(private dbService: DbService) {

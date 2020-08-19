@@ -1,7 +1,7 @@
 import {DbService, Migration} from '..';
 import {EventPriorityEntry, TelemetryEntry, TelemetryProcessedEntry, TelemetryTagEntry} from '../../telemetry/db/schema';
 import {ImportedMetadataEntry, LearnerAssessmentsEntry, LearnerSummaryEntry, ProfileEntry, UserEntry} from '../../profile/db/schema';
-import {GroupEntry, GroupProfileEntry} from '../../group/db/schema';
+import {GroupEntry, GroupProfileEntry} from '../../group-deprecated/db/schema';
 import {PartnerEntry} from '../../partner/db/schema';
 import {ContentAccessEntry, ContentEntry, ContentFeedbackEntry, ContentMarkerEntry} from '../../content/db/schema';
 import {NotificationEntry} from '../../notification/db/schema';

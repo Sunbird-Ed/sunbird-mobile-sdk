@@ -1,6 +1,6 @@
 import {UniqueId} from '../../db/util/unique-id';
 
-export class GroupSession {
+export class GroupSessionDeprecated {
     private readonly _gid: string;
     private readonly _sid: string;
     private readonly _createdTime: number;
