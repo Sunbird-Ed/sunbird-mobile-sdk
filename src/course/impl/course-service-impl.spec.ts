@@ -9,27 +9,26 @@ import {
     UnenrollCourseRequest,
     UpdateContentStateRequest
 } from '..';
-import {InjectionTokens} from '../../injection-tokens';
+import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {mockSdkConfigWithCourseConfig} from './course-service-impl.spec.data';
 import {ApiService} from '../../api';
 import {ProfileService} from '../../profile';
-import {KeyValueStore} from '../../key-value-store';
+import {CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {DbService} from '../../db';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AuthService} from '../../auth';
 import {of} from 'rxjs';
 import {AppInfo} from '../../util/app';
 import {OfflineContentStateHandler} from '../handlers/offline-content-state-handler';
-import {ContentStatesSyncHandler} from '../handlers/content-states-sync-handler';
 import {SyncAssessmentEventsHandler} from '../handlers/sync-assessment-events-handler';
 import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
+import {CsCourseService} from '@project-sunbird/client-services/services/course';
 import { FileService } from '../../util/file/def/file-service';
 import {NetworkQueue} from '../../api/network-queue';
 import {UpdateContentStateApiHandler} from '../handlers/update-content-state-api-handler';
 
 jest.mock('../handlers/offline-content-state-handler');
-jest.mock('../handlers/content-states-sync-handler');
 jest.mock('../handlers/sync-assessment-events-handler');
 jest.mock('../handlers/get-enrolled-course-handler');
 
@@ -65,9 +64,13 @@ describe('CourseServiceImpl', () => {
         handle: jest.fn().mockImplementation(() => of(undefined))
     };
     const mockFileService: Partial<FileService> = {
-        exists: jest.fn().mockImplementation(() => { }),
-        getTempLocation: jest.fn().mockImplementation(() => { })
+        exists: jest.fn().mockImplementation(() => {
+        }),
+        getTempLocation: jest.fn().mockImplementation(() => {
+        })
     };
+    const mockCachedItemStore: Partial<CachedItemStore> = {};
+    const mockCsCourseService: Partial<CsCourseService> = {};
 
     const mockNetworkQueue: Partial<NetworkQueue> = {
         enqueue: jest.fn(() => of({} as any))
@@ -83,6 +86,8 @@ describe('CourseServiceImpl', () => {
         container.bind<AuthService>(InjectionTokens.AUTH_SERVICE).toConstantValue(mockAuthService as AuthService);
         container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
         container.bind<FileService>(InjectionTokens.FILE_SERVICE).toConstantValue(mockFileService as FileService);
+        container.bind<CachedItemStore>(InjectionTokens.CACHED_ITEM_STORE).toConstantValue(mockCachedItemStore as CachedItemStore);
+        container.bind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(mockCsCourseService as CsCourseService);
         container.bind<NetworkQueue>(InjectionTokens.NETWORK_QUEUE).toConstantValue(mockNetworkQueue as NetworkQueue);
 
         (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockImplementation(() => {
@@ -95,7 +100,6 @@ describe('CourseServiceImpl', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         (OfflineContentStateHandler as jest.Mock<OfflineContentStateHandler>).mockClear();
-        (ContentStatesSyncHandler as jest.Mock<ContentStatesSyncHandler>).mockClear();
         (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockClear();
     });
 
@@ -235,11 +239,6 @@ describe('CourseServiceImpl', () => {
         beforeEach(() => {
             // arrange
             spyOn(courseService, 'syncAssessmentEvents').and.returnValue(of(undefined));
-            (ContentStatesSyncHandler as jest.Mock<ContentStatesSyncHandler>).mockImplementation(() => {
-                return {
-                    updateContentState: jest.fn().mockImplementation(() => of(true))
-                } as Partial<ContentStatesSyncHandler> as ContentStatesSyncHandler;
-            });
             mockGetEnrolledCourseHandler = {
                 handle: jest.fn().mockImplementation(() => of([]))
             };
@@ -366,6 +365,29 @@ describe('CourseServiceImpl', () => {
                 expect(courseService.resetCapturedAssessmentEvents).not.toHaveBeenCalled();
                 done();
             });
+        });
+    });
+
+    describe('getUserEnrollmentList', () => {
+        it('should delegate to cached CsCourseService defaulting to from.Cache', (done) => {
+            mockCachedItemStore.getCached = jest.fn().mockImplementation(() => of([]));
+
+            courseService.getUserEnrolledCourses({request: {userId: 'some_user_id'}}).subscribe(() => {
+                expect(mockCachedItemStore.getCached).toHaveBeenCalled();
+                done();
+            }, fail);
+        });
+
+        it('should delegate to cached CsCourseService', (done) => {
+            mockCachedItemStore.get = jest.fn().mockImplementation(() => of([]));
+
+            courseService.getUserEnrolledCourses({
+                from: CachedItemRequestSourceFrom.SERVER,
+                request: {userId: 'some_user_id'}
+            }).subscribe(() => {
+                expect(mockCachedItemStore.get).toHaveBeenCalled();
+                done();
+            }, fail);
         });
     });
 });

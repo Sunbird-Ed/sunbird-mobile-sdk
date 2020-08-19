@@ -15,11 +15,12 @@ import {ProfileService} from './profile';
 import {FrameworkService} from './framework';
 import {AppInfo} from './util/app';
 import {DbService} from './db';
+import {CsModule} from '@project-sunbird/client-services';
+import {AuthService} from './auth';
 
 const mockSdkConfig: SdkConfig = {
     platform: 'cordova',
-    fileConfig: {
-    },
+    fileConfig: {},
     apiConfig: {
         host: 'some_build_config_BASE_URL',
         user_authentication: {
@@ -137,16 +138,16 @@ describe('sdk', () => {
     });
 
     describe('init()', () => {
-        it('should be able to initialize sdk', (done) => {
-            window['device'] = { uuid: 'some_uuid' };
+        it('should rebind client-services services on configuration update', (done) => {
+            window['device'] = {uuid: 'some_uuid'};
 
-            jest.spyOn(sdkInstance, 'dbService', 'get').mockImplementation( () => {
-               return {
-                   init: jest.fn().mockImplementation(() => Promise.resolve())
-               } as Partial<DbService> as DbService;
+            jest.spyOn(sdkInstance, 'dbService', 'get').mockImplementation(() => {
+                return {
+                    init: jest.fn().mockImplementation(() => Promise.resolve())
+                } as Partial<DbService> as DbService;
             });
 
-            jest.spyOn(sdkInstance, 'appInfo', 'get').mockImplementation( () => {
+            jest.spyOn(sdkInstance, 'appInfo', 'get').mockImplementation(() => {
                 return {
                     init: jest.fn().mockImplementation(() => Promise.resolve())
                 } as Partial<AppInfo> as AppInfo;
@@ -215,8 +216,23 @@ describe('sdk', () => {
                 } as Partial<TelemetryService> as TelemetryService;
             });
 
+            jest.spyOn(sdkInstance, 'authService', 'get').mockImplementation(() => {
+                return {
+                    onInit: jest.fn().mockImplementation(() => of(undefined)),
+                    preInit: jest.fn(() => of(undefined))
+                } as Partial<TelemetryService> as AuthService;
+            });
+
             sdkInstance.init(mockSdkConfig).then(() => {
-               done();
+                const oldGroupServiceInstance = sdkInstance.groupService['groupServiceDelegate'];
+
+                CsModule.instance.updateConfig(CsModule.instance.config);
+
+                const newGroupServiceInstance = sdkInstance.groupService['groupServiceDelegate'];
+
+                expect(oldGroupServiceInstance !== newGroupServiceInstance).toBeTruthy();
+
+                done();
             }, (e) => {
                 fail(e);
             });

@@ -29,8 +29,6 @@ import {GroupProfileMigration} from './db/migrations/group-profile-migration';
 import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
 import {ErrorStackMigration} from './db/migrations/error-stack-migration';
 import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
-import {GroupService} from './group';
-import {GroupServiceImpl} from './group/impl/group-service-impl';
 import {SystemSettingsService, SystemSettingsServiceImpl} from './system-settings';
 import {ZipService} from './util/zip/def/zip-service';
 import {DeviceInfo} from './util/device';
@@ -76,8 +74,12 @@ import {CsModule} from '@project-sunbird/client-services';
 import {CsHttpService} from '@project-sunbird/client-services/core/http-service';
 import * as SHA1 from 'crypto-js/sha1';
 import {CsGroupService} from '@project-sunbird/client-services/services/group';
-import {ClassRoomService} from './class-room';
-import {ClassRoomServiceImpl} from './class-room/impl/class-room-service-impl';
+import {CsCourseService} from '@project-sunbird/client-services/services/course';
+import {GroupService} from './group';
+import {GroupServiceImpl} from './group/impl/group-service-impl';
+import {GroupServiceDeprecated} from './group-deprecated';
+import {GroupServiceDeprecatedImpl} from './group-deprecated/impl/group-service-deprecated-impl';
+import {CsUserService} from '@project-sunbird/client-services/services/user';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -136,6 +138,10 @@ export class SunbirdSdk {
 
     get groupService(): GroupService {
         return this._container.get<GroupService>(InjectionTokens.GROUP_SERVICE);
+    }
+
+    get groupServiceDeprecated(): GroupServiceDeprecated {
+        return this._container.get<GroupServiceDeprecated>(InjectionTokens.GROUP_SERVICE_DEPRECATED);
     }
 
     get contentService(): ContentService {
@@ -230,10 +236,6 @@ export class SunbirdSdk {
         return this._container.get<NetworkQueue>(InjectionTokens.NETWORK_QUEUE);
     }
 
-    get classRoomService(): ClassRoomService {
-        return this._container.get<ClassRoomService>(InjectionTokens.CLASS_ROOM_SERVICE);
-    }
-
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
@@ -295,6 +297,8 @@ export class SunbirdSdk {
 
         this._container.bind<GroupService>(InjectionTokens.GROUP_SERVICE).to(GroupServiceImpl).inSingletonScope();
 
+        this._container.bind<GroupServiceDeprecated>(InjectionTokens.GROUP_SERVICE_DEPRECATED).to(GroupServiceDeprecatedImpl).inSingletonScope();
+
         this._container.bind<ErrorLoggerService>(InjectionTokens.ERROR_LOGGER_SERVICE).to(ErrorLoggerServiceImpl).inSingletonScope();
 
         this._container.bind<ZipService>(InjectionTokens.ZIP_SERVICE).to(ZipServiceImpl).inSingletonScope();
@@ -344,8 +348,6 @@ export class SunbirdSdk {
 
         this._container.bind<NetworkQueue>(InjectionTokens.NETWORK_QUEUE).to(NetworkQueueImpl).inSingletonScope();
 
-        this._container.bind<ClassRoomService>(InjectionTokens.CLASS_ROOM_SERVICE).to(ClassRoomServiceImpl).inSingletonScope();
-
         await CsModule.instance.init({
             core: {
                 httpAdapter: 'HttpClientCordovaAdapter',
@@ -359,11 +361,29 @@ export class SunbirdSdk {
                     authentication: {}
                 }
             },
-            services: {}
-        });
+            services: {
+                courseServiceConfig: {
+                    apiPath: '/api/course/v1'
+                },
+                groupServiceConfig: {
+                    apiPath: '/api/group/v1',
+                    dataApiPath: '/api/data/v1/group'
+                },
+                userServiceConfig: {
+                    apiPath: '/api/user/v2'
+                }
+            }
+        }, (() => {
+            this._container.rebind<CsHttpService>(CsInjectionTokens.HTTP_SERVICE).toConstantValue(CsModule.instance.httpService);
+            this._container.rebind<CsGroupService>(CsInjectionTokens.GROUP_SERVICE).toConstantValue(CsModule.instance.groupService);
+            this._container.rebind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(CsModule.instance.courseService);
+            this._container.rebind<CsUserService>(CsInjectionTokens.USER_SERVICE).toConstantValue(CsModule.instance.userService);
+        }).bind(this));
 
         this._container.bind<CsHttpService>(CsInjectionTokens.HTTP_SERVICE).toConstantValue(CsModule.instance.httpService);
         this._container.bind<CsGroupService>(CsInjectionTokens.GROUP_SERVICE).toConstantValue(CsModule.instance.groupService);
+        this._container.bind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(CsModule.instance.courseService);
+        this._container.bind<CsUserService>(CsInjectionTokens.USER_SERVICE).toConstantValue(CsModule.instance.userService);
 
         await this.dbService.init();
         await this.appInfo.init();
@@ -386,6 +406,9 @@ export class SunbirdSdk {
         for (const key in update) {
             if (update.hasOwnProperty(key)) {
                 this.sdkConfig.deviceRegisterConfig[key] = update[key];
+                if (key === 'fcmToken') {
+                    this.telemetryService.resetDeviceRegisterTTL();
+                }
             }
         }
     }
@@ -394,10 +417,6 @@ export class SunbirdSdk {
         for (const key in update) {
             if (update.hasOwnProperty(key)) {
                 this.sdkConfig.contentServiceConfig[key] = update[key];
-
-                if (key === 'fcmToken') {
-                    this.telemetryService.resetDeviceRegisterTTL();
-                }
             }
         }
     }

@@ -2,7 +2,7 @@ import {DbService} from '..';
 import {of} from 'rxjs';
 import {GroupProfileMigration} from './group-profile-migration';
 import {GroupProfileEntry, ProfileEntry} from '../../profile/db/schema';
-import {GroupEntry} from '../../group/db/schema';
+import {GroupEntry} from '../../group-deprecated/db/schema';
 
 describe('GroupProfileMigration', () => {
   let groupProfileMigration: GroupProfileMigration;

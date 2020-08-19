@@ -1,6 +1,6 @@
 import {ManagedProfileManager} from './managed-profile-manager';
 import {AuthService, OAuthSession} from '../../auth';
-import {NoActiveSessionError, ProfileService, ProfileServiceConfig, ProfileSource, ProfileType,} from '..';
+import {NoActiveSessionError, ProfileService, ProfileServiceConfig, ProfileSource, ProfileType} from '..';
 import {ApiService, Response} from '../../api';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {DbService} from '../../db';
@@ -88,22 +88,17 @@ describe('ManagedProfileManager', () => {
             };
             mockApiService.fetch = jest.fn(() => of(response));
 
-            const createdProfile = {
-                uid: 'sample_uid',
-                handle: 'sample_handle',
-                profileType: ProfileType.TEACHER,
-                source: ProfileSource.SERVER,
-                serverProfile: {} as any
-            };
-            mockProfileService.createProfile = jest.fn(() => of(createdProfile));
+            mockProfileService.getServerProfilesDetails = jest.fn(() => of({
+                tncLatestVersion: 'v4'
+            } as any));
 
             // act
             managedProfileManager.addManagedProfile({
                 firstName: 'sample_name',
                 managedBy: 'sample_user_uid'
-            }).subscribe((profile) => {
+            }).subscribe((profileData) => {
                 // assert
-                expect(profile).toBe(createdProfile);
+                expect(profileData.uid).toBe(response.body.result.userId);
                 done();
             });
         });
