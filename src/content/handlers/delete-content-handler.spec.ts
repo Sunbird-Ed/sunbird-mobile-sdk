@@ -79,6 +79,7 @@ describe('DeleteContentHandler', () => {
                 return 'value';
             });
             mockSharedPreferences.putString = jest.fn(() => of(undefined));
+            sbutility.rm = jest.fn((_, __, cb, err) => cb({}));
             // act
             await deleteContentHandler.deleteAllChildren(request, isChildContent).then(() => {
                 // assert
@@ -134,6 +135,7 @@ describe('DeleteContentHandler', () => {
             jest.spyOn(ContentUtil, 'getFirstPartOfThePathNameOnLastDelimiter').mockImplementation(() => {
                 return undefined;
             });
+            sbutility.rm = jest.fn((_, __, cb, err) => err({error: 'error'}));
             // act
             await deleteContentHandler.deleteAllChildren(request, isChildContent).then(() => {
                 // assert
@@ -316,7 +318,52 @@ describe('DeleteContentHandler', () => {
             });
         });
 
-        it('should update a content if isChildContent is false', (done) => {
+        it('should update a content if isChildContent is false and mimeType is collection ', (done) => {
+            // arrange
+            const request: ContentEntry.SchemaMap = {
+                identifier: 'IDENTIFIER',
+                server_data: 'SERVER_DATA',
+                local_data: 'LOCAL_DATA',
+                mime_type: MimeType.COLLECTION.valueOf(),
+                manifest_version: 'MAINFEST_VERSION',
+                content_type: 'CONTENT_TYPE',
+                ref_count: 2,
+                visibility: Visibility.DEFAULT
+            };
+            const isChildItems = false;
+            const isChildContent = false;
+            // act
+            deleteContentHandler.deleteOrUpdateContent(request, isChildItems, isChildContent).then(() => {
+                // assert
+                expect(request.mime_type).toBe(MimeType.COLLECTION.valueOf());
+                done();
+            });
+        });
+
+        it('should update a content if isChildContent is false and isChildItems is true', (done) => {
+            // arrange
+            const request: ContentEntry.SchemaMap = {
+                identifier: 'IDENTIFIER',
+                server_data: 'SERVER_DATA',
+                local_data: '',
+                mime_type: MimeType.ECAR,
+                manifest_version: 'MAINFEST_VERSION',
+                content_type: 'CONTENT_TYPE',
+                ref_count: 2,
+                visibility: Visibility.DEFAULT,
+                path: 'http://sample-path',
+            };
+            const isChildItems = true;
+            const isChildContent = false;
+            // act
+            deleteContentHandler.deleteOrUpdateContent(request, isChildItems, isChildContent).then(() => {
+                // assert
+                expect(request.mime_type).toBe(MimeType.ECAR);
+                done();
+            });
+        });
+
+        it('should update a content if isChildContent and isChildItems are false', (done) => {
             // arrange
             const request: ContentEntry.SchemaMap = {
                 identifier: 'IDENTIFIER',
@@ -326,14 +373,42 @@ describe('DeleteContentHandler', () => {
                 manifest_version: 'MAINFEST_VERSION',
                 content_type: 'CONTENT_TYPE',
                 ref_count: 2,
-                visibility: Visibility.DEFAULT
+                visibility: Visibility.DEFAULT.valueOf()
             };
-            const isChildItems = true;
+            const isChildItems = false;
             const isChildContent = false;
             // act
             deleteContentHandler.deleteOrUpdateContent(request, isChildItems, isChildContent).then(() => {
                 // assert
                 expect(request.visibility).toBe(Visibility.DEFAULT.valueOf());
+                done();
+            });
+        });
+
+        it('should update a content if isChildContent and isChildItems are false, visibility is not match', (done) => {
+            // arrange
+            const request: ContentEntry.SchemaMap = {
+                identifier: 'IDENTIFIER',
+                server_data: 'SERVER_DATA',
+                local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "appIcon": "sample-app-icon", "itemSetPreviewUrl": "preview-url"}',
+                mime_type: MimeType.ECAR,
+                manifest_version: 'MAINFEST_VERSION',
+                content_type: 'CONTENT_TYPE',
+                ref_count: 2,
+                visibility: '',
+                path: 'http://sample-path',
+                size_on_device: 2
+            };
+            const isChildItems = false;
+            const isChildContent = false;
+            sbutility.rm = jest.fn((_, __, cb, err) => cb({}));
+            mockDbService.update = jest.fn(() => of(1));
+            // act
+            deleteContentHandler.deleteOrUpdateContent(request, isChildItems, isChildContent).then(() => {
+                // assert
+                expect(request.visibility).toBe('');
+                expect(sbutility.rm).toHaveBeenCalled();
+                expect(mockDbService.update).toHaveBeenCalled();
                 done();
             });
         });

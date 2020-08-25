@@ -8,7 +8,7 @@ import {EventsBusService} from '../../events-bus';
 import {InjectionTokens} from '../../injection-tokens';
 import {AuthServiceImpl} from './auth-service-impl';
 import {AuthUtil} from '../util/auth-util';
-import {EMPTY, of} from 'rxjs';
+import {EMPTY, of, throwError} from 'rxjs';
 import {CsModule} from '@project-sunbird/client-services';
 import {AuthKeys, ProfileKeys} from '../../preference-keys';
 import {ProfileSession} from '../../profile';
@@ -180,6 +180,37 @@ describe('AuthServiceImpl', () => {
         authService.onInit().subscribe();
       });
 
+      it('should also add/update managedUserToken when managed profileSession present for catch part', (done) => {
+        // arrange
+        const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
+        const mockAuthSession = {access_token: 'some_token', managed_access_token: 'some_managed_token'};
+        const mockProfileSession = {uid: 'some_uid', managedSession: {uid: 'some_managed_uid'}};
+        mockSharedPreferences.getString = jest.fn(() => throwError({error: 'error'}));
+        mockSharedPreferences.addListener = jest.fn().mockImplementation((key, listener) => {
+          if (key === AuthKeys.KEY_OAUTH_SESSION) {
+            listener(JSON.stringify(mockAuthSession)).then(() => {
+              expect(CsModule.instance.updateConfig).toHaveBeenCalledWith({
+                core: {
+                  api: {
+                    authentication: {
+                      userToken: undefined,
+                      managedUserToken: undefined
+                    }
+                  }
+                }
+              });
+              done();
+            });
+          }
+        });
+        spyOn(authService, 'getSession').and.returnValue(EMPTY);
+
+        // act
+        authService.onInit().subscribe();
+        expect(mockSharedPreferences.getString).toHaveBeenCalled();
+        expect(mockSharedPreferences.addListener).toHaveBeenCalled();
+      });
+
       it('should also remove managedUserToken when managed ProfileSession not present', (done) => {
         // arrange
         const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
@@ -211,6 +242,38 @@ describe('AuthServiceImpl', () => {
 
         // act
         authService.onInit().subscribe();
+      });
+
+      it('should also remove managedUserToken when managed ProfileSession not present for catch part', (done) => {
+        // arrange
+        const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
+        const mockAuthSession = {access_token: 'some_token', managed_access_token: 'some_managed_token'};
+        const mockProfileSession = {uid: 'some_uid'};
+        mockSharedPreferences.getString = jest.fn(() => throwError({error: 'error'}));
+        mockSharedPreferences.addListener = jest.fn().mockImplementation((key, listener) => {
+          if (key === AuthKeys.KEY_OAUTH_SESSION) {
+            listener(JSON.stringify(mockAuthSession)).then(() => {
+              expect(CsModule.instance.updateConfig).toHaveBeenCalledWith({
+                core: {
+                  api: {
+                    authentication: {
+                      userToken: undefined,
+                      managedUserToken: undefined
+                    }
+                  }
+                }
+              });
+              done();
+            });
+          }
+        });
+        spyOn(authService, 'getSession').and.returnValue(EMPTY);
+
+        // act
+        authService.onInit().subscribe();
+        // assert
+        expect(mockSharedPreferences.getString).toHaveBeenCalled();
+        expect(mockSharedPreferences.addListener).toHaveBeenCalled();
       });
 
       it('should remove both userToken and managedUserToken when userToken is removed', (done) => {
@@ -316,6 +379,38 @@ describe('AuthServiceImpl', () => {
 
         // act
         authService.onInit().subscribe();
+      });
+
+      it('should also remove managedUserToken when managed ProfileSession not present for catch part', (done) => {
+        // arrange
+        const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
+        const mockAuthSession = {access_token: 'some_token', managed_access_token: 'some_managed_token'};
+        const mockProfileSession = {uid: 'some_uid'};
+        mockSharedPreferences.getString = jest.fn(() => throwError({error: 'error'}));
+        mockSharedPreferences.addListener = jest.fn().mockImplementation((key, listener) => {
+          if (key === ProfileKeys.KEY_USER_SESSION) {
+            listener(JSON.stringify(mockProfileSession)).then(() => {
+              expect(CsModule.instance.updateConfig).toHaveBeenCalledWith({
+                core: {
+                  api: {
+                    authentication: {
+                      userToken: undefined,
+                      managedUserToken: undefined
+                    }
+                  }
+                }
+              });
+              done();
+            });
+          }
+        });
+        spyOn(authService, 'getSession').and.returnValue(EMPTY);
+
+        // act
+        authService.onInit().subscribe();
+        // assert
+        expect(mockSharedPreferences.getString).toHaveBeenCalled();
+        expect(mockSharedPreferences.addListener).toHaveBeenCalled();
       });
 
       it('should remove both userToken and managedUserToken when userToken is removed', (done) => {
