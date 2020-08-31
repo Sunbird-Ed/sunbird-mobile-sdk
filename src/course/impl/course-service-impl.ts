@@ -107,7 +107,7 @@ export class CourseServiceImpl implements CourseService {
                     throw new ProcessingError('Request processing failed');
                 }),
                 catchError((error) => {
-                  return of(true);
+                    return of(true);
                 }),
                 mergeMap(() => {
                     return offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request);
@@ -123,9 +123,9 @@ export class CourseServiceImpl implements CourseService {
     }
 
     getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]> {
-      return new GetEnrolledCourseHandler(
-        this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
-      ).handle(request);
+        return new GetEnrolledCourseHandler(
+            this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
+        ).handle(request);
     }
 
     getUserEnrolledCourses({request, from}: GetUserEnrolledCoursesRequest): Observable<Course[]> {
@@ -227,7 +227,6 @@ export class CourseServiceImpl implements CourseService {
                 }),
                 map((courses: Course[]) => {
                     return courses
-                        .filter((course) => course.status && course.status === 2)
                         .find((course) => course.courseId === request.courseId)!;
                 }),
                 map((course: Course) => {
@@ -244,7 +243,6 @@ export class CourseServiceImpl implements CourseService {
                     return {certificate, course};
                 }),
                 mergeMap(({certificate, course}) => {
-                    console.log('Certificate name', certificate.name);
                     const filePath = `${cordova.file.externalRootDirectory}Download/${certificate.name}_${course.courseId}_${course.userId}.pdf)}`;
                     return defer(async () => {
                         try {
@@ -259,15 +257,15 @@ export class CourseServiceImpl implements CourseService {
                     });
                 }),
                 mergeMap(async ({certificate, course}) => {
-                    console.log(certificate.identifier);
                     const response = await this.csCourseService.getSignedCourseCertificate(certificate.identifier!).toPromise();
-
+                    if (!response['printUri']) {
+                        throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
+                    }
                     return new Promise<{ path: string }>((resolve, reject) => {
-                        console.log('printUri', response);
                         pdfDataProvider(response['printUri'], (pdfData: Blob) => {
                             try {
                                 this.fileService.writeFile(cordova.file.externalRootDirectory +
-                                  'Download/', `${certificate.name}_${course.courseId}_${course.userId}.pdf`, pdfData as any, {replace: true});
+                                    'Download/', `${certificate.name}_${course.courseId}_${course.userId}.pdf`, pdfData as any, {replace: true});
                                 resolve({
                                     path: `${cordova.file.externalRootDirectory}Download/${certificate.name}_${course.courseId}_${course.userId}.pdf`
                                 });
