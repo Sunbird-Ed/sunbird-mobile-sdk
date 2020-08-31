@@ -291,7 +291,6 @@ export class CourseServiceImpl implements CourseService {
                 }),
                 map((courses: Course[]) => {
                     return courses
-                        .filter((course) => course.status && course.status === 2)
                         .find((course) => course.courseId === request.courseId)!;
                 }),
                 map((course: Course) => {
