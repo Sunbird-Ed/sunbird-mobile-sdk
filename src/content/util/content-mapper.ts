@@ -1,6 +1,8 @@
 import {ContentAccessEntry, ContentEntry, ContentMarkerEntry} from '../db/schema';
 import {Content, ContentData} from '..';
 import {ContentUtil} from './content-util';
+import { CsContentType } from '@project-sunbird/client-services/services/content';
+import { TrackingEnabled } from '@project-sunbird/client-services/models';
 
 export class ContentMapper {
     public static mapContentDataToContentDBEntry(contentData, manifestVersion: string): ContentEntry.SchemaMap {
@@ -24,6 +26,7 @@ export class ContentMapper {
             [ContentEntry.COLUMN_NAME_VISIBILITY]: ContentUtil.readVisibility(contentData),
             [ContentEntry.COLUMN_NAME_AUDIENCE]: ContentUtil.readAudience(contentData),
             [ContentEntry.COLUMN_NAME_PRAGMA]: ContentUtil.readPragma(contentData),
+            [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ContentUtil.readPrimaryCategory(contentData)
         };
     }
 
@@ -45,6 +48,7 @@ export class ContentMapper {
             mimeType: contentData.mimeType,
             basePath: '',
             contentType: ContentUtil.readContentType(contentData),
+            primaryCategory: ContentUtil.readPrimaryCategory(contentData),
             isAvailableLocally: false,
             referenceCount: 0,
             sizeOnDevice: 0,
@@ -64,6 +68,7 @@ export class ContentMapper {
         let mimeType = contentEntry[ContentEntry.COLUMN_NAME_MIME_TYPE];
         let visibility = contentEntry[ContentEntry.COLUMN_NAME_VISIBILITY];
         let contentType = contentEntry[ContentEntry.COLUMN_NAME_CONTENT_TYPE];
+        let primaryCategory = contentEntry[ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY];
         let lastUsedTime = 0;
         if (contentEntry.hasOwnProperty(ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP)) {
             lastUsedTime = contentEntry[ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP];
@@ -78,6 +83,7 @@ export class ContentMapper {
                 mimeType = localData.mimeType;
                 visibility = ContentUtil.readVisibility(localData);
                 contentType = ContentUtil.readContentType(localData);
+                primaryCategory = ContentUtil.readPrimaryCategory(localData);
             }
         }
         if (localData) {
@@ -123,7 +129,11 @@ export class ContentMapper {
 
         const sizeOnDevice = Number(contentEntry[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]);
         const size = sizeOnDevice ? sizeOnDevice : Number(serverData ? serverData.size : 0);
-
+        if (!contentData.trackable && contentType.toLowerCase() === CsContentType.COURSE.toLowerCase()) {
+           contentData.trackable = {
+               enable: TrackingEnabled.YES
+           };
+        }
         const basePath = contentEntry[ContentEntry.COLUMN_NAME_PATH]! || '';
         return {
             identifier: identifier,
@@ -132,6 +142,7 @@ export class ContentMapper {
             isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
             mimeType: mimeType,
             basePath: !shouldConvertBasePath ? basePath : '/_app_file_' + basePath,
+            primaryCategory: primaryCategory,
             contentType: contentType,
             isAvailableLocally: ContentUtil.isAvailableLocally(contentEntry[ContentEntry.COLUMN_NAME_CONTENT_STATE]!),
             referenceCount: Number(contentEntry[ContentEntry.COLUMN_NAME_REF_COUNT]) || 0,
