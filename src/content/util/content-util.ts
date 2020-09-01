@@ -7,6 +7,7 @@ import {NumberUtil} from '../../util/number-util';
 import {ArrayUtil} from '../../util/array-util';
 import * as dayjs from 'dayjs';
 import {ChildContent} from '..';
+import { CategoryMapper } from './category-mapper';
 
 export class ContentUtil {
     public static defaultCompatibilityLevel = 1;
@@ -169,6 +170,17 @@ export class ContentUtil {
         }
         return contentType;
     }
+
+    public static readPrimaryCategory(contentData): string {
+        let primaryCategory: string = contentData.primaryCategory;
+        if (primaryCategory) {
+            primaryCategory = primaryCategory.toLowerCase();
+        } else {
+            primaryCategory = CategoryMapper.getPrimaryCategory(contentData.contentType.toLowerCase(), contentData.mimeType).toLowerCase();
+        }
+        return primaryCategory;
+    }
+
 
     public static readAudience(contentData): string {
         const audience = contentData.audience;
@@ -487,8 +499,8 @@ export class ContentUtil {
         return `select * from ${ContentEntry.TABLE_NAME} where ${ContentEntry.COLUMN_NAME_REF_COUNT} > 0`;
     }
 
-    public static constructContentDBModel(identifier, manifestVersion, localData, mimeType, contentType, visibility, path, refCount,
-                                          contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
+    public static constructContentDBModel(identifier, manifestVersion, localData, mimeType, contentType, primaryCategory,
+         visibility, path, refCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
@@ -506,7 +518,8 @@ export class ContentUtil {
             [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: dayjs().format(),
             [ContentEntry.COLUMN_NAME_BOARD]: ContentUtil.getContentAttribute(board),
             [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
-            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)
+            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade),
+            [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: primaryCategory
         };
     }
 

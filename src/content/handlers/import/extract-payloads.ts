@@ -92,6 +92,7 @@ export class ExtractPayloads {
             const contentEncoding = item.contentEncoding;
             const contentDisposition = item.contentDisposition;
             const contentType = ContentUtil.readContentType(item);
+            const primaryCategory = ContentUtil.readPrimaryCategory(item);
             let visibility = ContentUtil.readVisibility(item);
             const audience = ContentUtil.readAudience(item);
             const pragma = ContentUtil.readPragma(item);
@@ -214,7 +215,7 @@ export class ExtractPayloads {
                 // }
             }
             const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
-                JSON.stringify(item), mimeType, contentType, visibility, basePath,
+                JSON.stringify(item), mimeType, contentType, primaryCategory, visibility, basePath,
                 referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade, dialcodes, childNodes);
             if (!existingContentModel) {
                 insertNewContentModels.push(newContentModel);
@@ -411,7 +412,7 @@ export class ExtractPayloads {
     }
 
     private constructContentDBModel(identifier, manifestVersion, localData,
-                                    mimeType, contentType, visibility, path,
+                                    mimeType, contentType, primaryCategory, visibility, path,
                                     refCount, contentState, audience, pragma, sizeOnDevice,
                                     board, medium, grade,
                                     dialcodes, childNodes): ContentEntry.SchemaMap {
@@ -434,7 +435,8 @@ export class ExtractPayloads {
             [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
             [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade),
             [ContentEntry.COLUMN_NAME_DIALCODES]: ContentUtil.getContentAttribute(dialcodes),
-            [ContentEntry.COLUMN_NAME_CHILD_NODES]: ContentUtil.getContentAttribute(childNodes)
+            [ContentEntry.COLUMN_NAME_CHILD_NODES]: ContentUtil.getContentAttribute(childNodes),
+            [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: primaryCategory
         };
     }
 

@@ -3,6 +3,7 @@ export class ContentAccess {
     contentId: string;
     contentType: string;
     contentLearnerState?: ContentLearnerState;
+    primaryCategory?: string;
 }
 
 export interface ContentLearnerState {
