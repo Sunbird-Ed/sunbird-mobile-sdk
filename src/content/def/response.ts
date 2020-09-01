@@ -11,6 +11,14 @@ export interface ContentSearchResult {
     collectionDataList?: ContentData[];
 }
 
+export interface ContentAggregatorResponse {
+    result: {
+        title: string;
+        orientation: 'horizontal' | 'vertical';
+        section: ContentsGroupedByPageSection;
+    }[];
+}
+
 export interface ContentsGroupedByPageSection {
     name: string;
     combination?: {

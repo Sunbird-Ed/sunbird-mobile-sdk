@@ -1,6 +1,8 @@
 import {
     ChildContentRequest,
     Content,
+    ContentAggregatorRequest,
+    ContentAggregatorResponse,
     ContentData,
     ContentDelete,
     ContentDeleteRequest,
@@ -22,7 +24,6 @@ import {
     ContentSearchResult,
     ContentService,
     ContentServiceConfig,
-    ContentsGroupedByPageSection,
     ContentSpaceUsageSummaryRequest,
     ContentSpaceUsageSummaryResponse,
     EcarImportRequest,
@@ -34,7 +35,6 @@ import {
     RelevantContentRequest,
     RelevantContentResponse,
     RelevantContentResponsePlayer,
-    SearchAndGroupContentRequest,
     SearchResponse,
 } from '..';
 import {combineLatest, defer, from, Observable, of} from 'rxjs';
@@ -94,7 +94,8 @@ import {CopyToDestination} from '../handlers/export/copy-to-destination';
 import {AppInfo} from '../../util/app';
 import {GetContentHeirarchyHandler} from '../handlers/get-content-heirarchy-handler';
 import {DeleteTempDir} from '../handlers/export/deletete-temp-dir';
-import {SearchAndGroupContentHandler} from '../handlers/search-and-group-content-handler';
+import {ContentAggregator} from '../handlers/content-aggregator';
+import {FormService} from '../../form';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -109,7 +110,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     private contentUpdateSizeOnDeviceTimeoutRef: Map<string, NodeJS.Timeout> = new Map();
 
-    private searchAndGroupContentHandler: SearchAndGroupContentHandler;
+    private contentAggregator: ContentAggregator;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -125,9 +126,11 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
-        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo
+        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
+        @inject(InjectionTokens.FORM_SERVICE) private formService: FormService,
     ) {
-        this.searchAndGroupContentHandler = new SearchAndGroupContentHandler(
+        this.contentAggregator = new ContentAggregator(
+            this.formService,
             this,
             this.cachedItemStore
         );
@@ -654,8 +657,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         );
     }
 
-    searchAndGroupContent(request: SearchAndGroupContentRequest): Observable<ContentsGroupedByPageSection> {
-        return this.searchAndGroupContentHandler.handle(request);
+    aggregateContent(request: ContentAggregatorRequest): Observable<ContentAggregatorResponse> {
+        return this.contentAggregator.handle(request);
     }
 
     onDownloadCompletion(request: ContentDownloadRequest): Observable<undefined> {
