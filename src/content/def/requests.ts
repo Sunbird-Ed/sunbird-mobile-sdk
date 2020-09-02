@@ -6,12 +6,11 @@ import {ContentEntry} from '../db/schema';
 import {DownloadRequest} from '../../util/download';
 import {CachedItemRequest} from '../../key-value-store';
 
-export interface SearchAndGroupContentRequest extends CachedItemRequest {
-    groupBy: keyof ContentData;
-    combination?: {
+export interface ContentAggregatorRequest extends CachedItemRequest {
+    applyFirstAvailableCombination?: {
         [key in keyof ContentData]?: string[]
     };
-    searchCriteria: ContentSearchCriteria;
+    interceptSearchCriteria?: (searchCriteria: ContentSearchCriteria) => ContentSearchCriteria;
 }
 
 export interface ContentDecorateRequest {

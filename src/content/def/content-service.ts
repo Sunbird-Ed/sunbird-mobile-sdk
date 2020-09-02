@@ -1,5 +1,6 @@
 import {
     ChildContentRequest,
+    ContentAggregatorRequest,
     ContentDelete,
     ContentDeleteRequest,
     ContentDetailRequest,
@@ -12,17 +13,16 @@ import {
     ContentSpaceUsageSummaryResponse,
     EcarImportRequest,
     RelevantContentRequest,
-    SearchAndGroupContentRequest
 } from './requests';
 import {Response} from '../../api';
 import {Observable} from 'rxjs';
 import {Content, HierarchyInfo} from './content';
 import {
+    ContentAggregatorResponse,
     ContentDeleteResponse,
     ContentExportResponse,
     ContentImportResponse,
     ContentSearchResult,
-    ContentsGroupedByPageSection,
     RelevantContentResponsePlayer
 } from './response';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
@@ -41,7 +41,7 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
 
     searchContent(criteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult>;
 
-    searchAndGroupContent(request: SearchAndGroupContentRequest): Observable<ContentsGroupedByPageSection>;
+    aggregateContent(request: ContentAggregatorRequest): Observable<ContentAggregatorResponse>;
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
 

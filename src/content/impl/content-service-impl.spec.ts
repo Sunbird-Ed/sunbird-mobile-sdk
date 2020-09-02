@@ -17,7 +17,6 @@ import {
     HierarchyInfo,
     MarkerType,
     RelevantContentRequest,
-    SearchAndGroupContentRequest
 } from '..';
 import {ContentServiceImpl} from './content-service-impl';
 import {Container} from 'inversify';
@@ -25,7 +24,16 @@ import {InjectionTokens} from '../../injection-tokens';
 import {DbService} from '../../db';
 import {SdkConfig} from '../../sdk-config';
 import {ApiService} from '../../api';
-import {AppInfo, Content, ContentDelete, ContentDeleteRequest, ContentDetailRequest, ContentMarkerRequest, ProfileService} from '../..';
+import {
+    AppInfo,
+    Content,
+    ContentDelete,
+    ContentDeleteRequest,
+    ContentDetailRequest,
+    ContentMarkerRequest,
+    FormService,
+    ProfileService
+} from '../..';
 import {FileService} from '../../util/file/def/file-service';
 import {ZipService} from '../../util/zip/def/zip-service';
 import {DeviceInfo} from '../../util/device';
@@ -62,7 +70,7 @@ import {ValidateEcar} from '../handlers/import/validate-ecar';
 import {ExtractPayloads} from '../handlers/import/extract-payloads';
 import {CreateContentImportManifest} from '../handlers/import/create-content-import-manifest';
 import {SharedPreferencesLocalStorage} from '../../util/shared-preferences/impl/shared-preferences-local-storage';
-import {SearchAndGroupContentHandler} from '../handlers/search-and-group-content-handler';
+import {ContentAggregator} from '../handlers/content-aggregator';
 
 
 jest.mock('../handlers/search-content-handler');
@@ -85,7 +93,7 @@ jest.mock('../handlers/import/extract-ecar');
 jest.mock('../handlers/import/validate-ecar');
 jest.mock('../handlers/import/extract-payloads');
 jest.mock('../handlers/import/create-content-import-manifest');
-jest.mock('../handlers/search-and-group-content-handler');
+jest.mock('../handlers/content-aggregator');
 
 describe('ContentServiceImpl', () => {
     let contentService: ContentService;
@@ -131,6 +139,7 @@ describe('ContentServiceImpl', () => {
     };
     const mockSharedPreferences = new SharedPreferencesLocalStorage();
     const contentUpdateSizeOnDeviceTimeoutRef: Map<string, NodeJS.Timeout> = new Map();
+    const mockFormService: Partial<FormService> = {};
 
     beforeAll(() => {
         container.bind<ContentService>(InjectionTokens.CONTENT_SERVICE).to(ContentServiceImpl).inTransientScope();
@@ -149,6 +158,7 @@ describe('ContentServiceImpl', () => {
         container.bind<EventsBusService>(InjectionTokens.EVENTS_BUS_SERVICE).toConstantValue(mockEventsBusService as EventsBusService);
         container.bind<CachedItemStore>(InjectionTokens.CACHED_ITEM_STORE).toConstantValue(mockCachedItemStore as CachedItemStore);
         container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
+        container.bind<FormService>(InjectionTokens.FORM_SERVICE).toConstantValue(mockFormService as FormService);
 
         contentService = container.get(InjectionTokens.CONTENT_SERVICE);
     });
@@ -1284,30 +1294,23 @@ describe('ContentServiceImpl', () => {
     });
 
     describe('searchAndGroupContent()', () => {
-        const mockSearchAndGroupContentHandler = {
+        const mockContentAggregator = {
             handle: jest.fn().mockImplementation(() => of({
-                name: 'some_name',
-                sections: [],
+                result: []
             }))
-        } as Partial<SearchAndGroupContentHandler> as SearchAndGroupContentHandler;
+        } as Partial<ContentAggregator> as ContentAggregator;
 
         beforeAll(() => {
-            (SearchAndGroupContentHandler as any as jest.Mock<SearchAndGroupContentHandler>).mockImplementation(() => {
-                return mockSearchAndGroupContentHandler;
+            (ContentAggregator as any as jest.Mock<ContentAggregator>).mockImplementation(() => {
+                return mockContentAggregator;
             });
             contentService = container.get(InjectionTokens.CONTENT_SERVICE);
         });
 
         it('should delegate to SearchAndGroupContentHandler', (done) => {
-            // arrange
-            const request: SearchAndGroupContentRequest = {
-                groupBy: 'subject',
-                searchCriteria: {}
-            };
-
             // act
-            contentService.searchAndGroupContent(request).subscribe(() => {
-                expect(mockSearchAndGroupContentHandler.handle).toHaveBeenCalledWith(request);
+            contentService.aggregateContent({}).subscribe(() => {
+                expect(mockContentAggregator.handle).toHaveBeenCalledWith({});
                 done();
             });
         });
