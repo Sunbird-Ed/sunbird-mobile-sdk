@@ -256,7 +256,7 @@ export class SearchContentHandler {
             },
             fields: [
                 ...fields,
-                'downloadUrl', 'variants', 'mimeType', 'contentType', 'pkgVersion'
+                'downloadUrl', 'variants', 'mimeType', 'contentType', 'primaryCategory', 'pkgVersion'
             ]
         };
     }

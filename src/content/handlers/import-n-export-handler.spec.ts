@@ -37,8 +37,9 @@ describe('ImportNExportHandler', () => {
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
             mime_type: 'MIME_TYPE',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE',
-            path: 'sample_path'
+            content_type: 'textbook',
+            path: 'sample_path',
+            primary_category: 'textbook'
         }];
         mockDeviceInfo.getDeviceID = jest.fn().mockImplementation(() => of([]));
         // act

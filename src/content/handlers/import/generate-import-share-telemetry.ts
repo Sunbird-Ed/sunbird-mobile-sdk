@@ -32,7 +32,7 @@ export class GenerateImportShareTelemetry {
                 objId: importContentContext.items && importContentContext.items!.length ?
                     importContentContext.items[0]['identifier'] : '',
                 objType: importContentContext.items && importContentContext.items.length ?
-                    importContentContext.items[0]['contentType'] : '',
+                ContentUtil.readPrimaryCategoryServer(importContentContext.items[0]) : '',
                 objVer: importContentContext.items && importContentContext.items.length ?
                     ContentUtil.readPkgVersion(importContentContext.items[0]) + '' : '',
                 rollUp: importContentContext.rollUp

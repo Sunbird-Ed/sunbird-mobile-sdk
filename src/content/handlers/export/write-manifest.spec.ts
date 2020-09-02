@@ -41,6 +41,7 @@ describe('writeManifest', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE',
             content_state: 2,
+            primary_category: 'textbook'
         }];
         const request: ExportContentContext = {
             ecarFilePath: 'ECAR_FILE_PATH',
@@ -71,6 +72,7 @@ describe('writeManifest', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE',
             content_state: 2,
+            primary_category: 'textbook'
         }];
         const request: ExportContentContext = {
             ecarFilePath: 'ECAR_FILE_PATH',

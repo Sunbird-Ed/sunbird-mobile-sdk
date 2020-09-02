@@ -321,6 +321,7 @@ describe('ContentServiceImpl', () => {
                 [ContentEntry.COLUMN_NAME_VISIBILITY]: '',
                 [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                 [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
             };
             const val = new Map();
             const n: NodeJS.Timeout  = setTimeout( () =>  { /* snip */  }, 500);
@@ -379,6 +380,7 @@ describe('ContentServiceImpl', () => {
                 [ContentEntry.COLUMN_NAME_VISIBILITY]: '',
                 [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                 [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
             };
 
             const fetchData = jest.fn().mockImplementation(() => of(contents));
@@ -464,6 +466,7 @@ describe('ContentServiceImpl', () => {
                 [ContentEntry.COLUMN_NAME_VISIBILITY]: '',
                 [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                 [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
             }
         ];
         it('should be find child content if hierarchiInfoList is empty', (done) => {
@@ -897,6 +900,7 @@ describe('ContentServiceImpl', () => {
                     [ContentEntry.COLUMN_NAME_VISIBILITY]: '',
                     [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                     [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                    [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
                 }
             ];
             const content: Partial<Content> = {
@@ -950,6 +954,7 @@ describe('ContentServiceImpl', () => {
                     [ContentEntry.COLUMN_NAME_VISIBILITY]: '',
                     [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                     [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                    [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
                 }
             ];
             JSON.parse = jest.fn().mockImplementation().mockImplementationOnce(() => {
@@ -1361,6 +1366,7 @@ describe('ContentServiceImpl', () => {
                     [ContentEntry.COLUMN_NAME_VISIBILITY]: '',
                     [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                     [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                    [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
                 }
             ];
             mockDbService.execute = jest.fn(() => of(contents));
@@ -1396,6 +1402,7 @@ describe('ContentServiceImpl', () => {
                     [ContentEntry.COLUMN_NAME_VISIBILITY]: '',
                     [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                     [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                    [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
                 }
             ];
             mockDbService.execute = jest.fn().mockImplementation(() => of(contents));
