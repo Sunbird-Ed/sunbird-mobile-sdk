@@ -48,7 +48,7 @@ describe('GetContentDetailsHandler', () => {
         const request: ContentDetailRequest = {
             contentId: 'SAMPLE_CONTENT_ID'
         };
-        mockDbService.read = jest.fn().mockImplementation(() => of([]));
+        mockDbService.read = jest.fn().mockImplementation(() => of([{content_type: 'course', local_data: '{"contentType":"course"}'}]));
         mockApiService.fetch = jest.fn().mockImplementation(() => of({
             body: {
                 result: 'sample_result'
