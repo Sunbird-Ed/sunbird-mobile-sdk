@@ -34,9 +34,10 @@ describe('ValidateDestinationContent', () => {
             local_data: '{"childNodes": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
             mime_type: '',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE',
+            content_type: 'textbook',
             content_state: 2,
-            path: 'SAMPLE_PATH'
+            path: 'SAMPLE_PATH',
+            primary_category: 'textbook'
         }];
         const dupContents: MoveContentResponse[] = [
             {

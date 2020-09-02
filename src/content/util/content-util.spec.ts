@@ -18,7 +18,8 @@ describe('ContentUtil', () => {
                     [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
                     [ContentEntry.COLUMN_NAME_VISIBILITY]: Visibility.DEFAULT.valueOf(),
                     [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
-                    [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: ''
+                    [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                    [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
                 },
                 {
                     [ContentEntry.COLUMN_NAME_IDENTIFIER]: 'SOME_IDENTIFIER',
@@ -29,7 +30,8 @@ describe('ContentUtil', () => {
                     [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
                     [ContentEntry.COLUMN_NAME_VISIBILITY]: Visibility.DEFAULT.valueOf(),
                     [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
-                    [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: ''
+                    [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                    [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
                 }
             ];
 
@@ -49,7 +51,8 @@ describe('ContentUtil', () => {
                     [ContentEntry.COLUMN_NAME_MIME_TYPE]: '',
                     [ContentEntry.COLUMN_NAME_VISIBILITY]: '',
                     [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
-                    [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: ''
+                    [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                    [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
                 }
             ];
 
@@ -171,6 +174,7 @@ describe('ContentUtil', () => {
                 [ContentEntry.COLUMN_NAME_VISIBILITY]: 'default',
                 [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                 [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
             };
             const contentData = { identifier: 'do-123', visibility: 'default', pkgVersion: 3 };
 
@@ -186,6 +190,7 @@ describe('ContentUtil', () => {
                 [ContentEntry.COLUMN_NAME_VISIBILITY]: 'defaults',
                 [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                 [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
             };
             const contentData = { identifier: 'do-1234', visibility: 'default', pkgVersion: 3 };
 
@@ -228,6 +233,7 @@ describe('ContentUtil', () => {
                 [ContentEntry.COLUMN_NAME_VISIBILITY]: 'default',
                 [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                 [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
             };
             const newIdentifier = 'do-123';
             const newPkgVersion = 8;
@@ -245,6 +251,7 @@ describe('ContentUtil', () => {
                 [ContentEntry.COLUMN_NAME_VISIBILITY]: 'default',
                 [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                 [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
             };
             const newIdentifier = 'do-123';
             const newPkgVersion = 3;
@@ -262,6 +269,7 @@ describe('ContentUtil', () => {
                 [ContentEntry.COLUMN_NAME_VISIBILITY]: 'default',
                 [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                 [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
             };
             const newIdentifier = 'do-123';
             const newPkgVersion = 8;
@@ -279,6 +287,7 @@ describe('ContentUtil', () => {
                 [ContentEntry.COLUMN_NAME_VISIBILITY]: 'default',
                 [ContentEntry.COLUMN_NAME_MANIFEST_VERSION]: '',
                 [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: '',
+                [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: ''
             };
             const newIdentifier = 'do-1234';
             const newPkgVersion = 3;

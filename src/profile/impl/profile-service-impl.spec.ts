@@ -830,7 +830,8 @@ describe.only('ProfileServiceImpl', () => {
                 status: ContentAccessStatus.PLAYED,
                 contentId: 'sample-content-id',
                 contentType: 'sample-content-type',
-                contentLearnerState: learnerData
+                contentLearnerState: learnerData,
+                primaryCategory: 'TextBook'
             };
             jest.spyOn(profileService, 'getActiveProfileSession').mockReturnValue(of({
                 _uid: 'sample-uid',
@@ -856,7 +857,8 @@ describe.only('ProfileServiceImpl', () => {
                 status: ContentAccessStatus.PLAYED,
                 contentId: 'sample-content-id',
                 contentType: 'sample-content-type',
-                contentLearnerState: learnerData
+                contentLearnerState: learnerData,
+                primaryCategory: 'TextBook'
             };
             jest.spyOn(profileService, 'getActiveProfileSession').mockReturnValue(of({
                 _uid: 'sample-uid',

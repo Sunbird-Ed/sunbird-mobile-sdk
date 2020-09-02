@@ -43,7 +43,8 @@ describe('CleanTempLoc', () => {
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
             mime_type: 'MIME_TYPE',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE'
+            content_type: 'CONTENT_TYPE',
+            primary_category: 'textbook'
         }];
         const exportContext: ExportContentContext = {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
@@ -79,7 +80,8 @@ describe('CleanTempLoc', () => {
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
             mime_type: 'MIME_TYPE',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE'
+            content_type: 'CONTENT_TYPE',
+            primary_category: 'textbook'
         }];
         const exportContext: ExportContentContext = {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
@@ -114,7 +116,8 @@ describe('CleanTempLoc', () => {
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
             mime_type: 'MIME_TYPE',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE'
+            content_type: 'CONTENT_TYPE',
+            primary_category: 'textbook'
         }];
         const exportContext: ExportContentContext = {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
@@ -145,7 +148,8 @@ describe('CleanTempLoc', () => {
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
             mime_type: 'MIME_TYPE',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE'
+            content_type: 'CONTENT_TYPE',
+            primary_category: 'textbook'
         }];
         const exportContext: ExportContentContext = {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',

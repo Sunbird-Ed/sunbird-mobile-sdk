@@ -40,7 +40,8 @@ describe('StoreDestinationContentInDb', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE',
             content_state: 2,
-            path: 'SAMPLE_PATH'
+            path: 'SAMPLE_PATH',
+            primary_category: 'textbook'
         }];
         const dupContents: MoveContentResponse[] = [
             {
@@ -59,7 +60,7 @@ describe('StoreDestinationContentInDb', () => {
         };
         mockFileService.readAsText = jest.fn().mockImplementation(() => {});
         const readAsText = (mockFileService.readAsText as jest.Mock)
-        .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
+        .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass", "contentType":"Course"}]}}');
         readAsText().then((value) => {
             return value;
         });
@@ -90,7 +91,8 @@ describe('StoreDestinationContentInDb', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE',
             content_state: 2,
-            path: 'SAMPLE_PATH'
+            path: 'SAMPLE_PATH',
+            primary_category: 'textbook'
         }];
         const dupContents: MoveContentResponse[] = [
             {
@@ -109,7 +111,7 @@ describe('StoreDestinationContentInDb', () => {
         };
         mockFileService.readAsText = jest.fn().mockImplementation(() => {});
         const readAsText = (mockFileService.readAsText as jest.Mock)
-        .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
+        .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass", "contentType":"Course"}]}}');
         readAsText().then((value) => {
             return value;
         });
@@ -140,7 +142,8 @@ describe('StoreDestinationContentInDb', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE',
             content_state: 2,
-            path: 'SAMPLE_PATH'
+            path: 'SAMPLE_PATH',
+            primary_category: 'textbook'
         }];
         const dupContents: MoveContentResponse[] = [
             {
@@ -159,7 +162,7 @@ describe('StoreDestinationContentInDb', () => {
         };
         mockFileService.readAsText = jest.fn().mockImplementation(() => {});
         const readAsText = (mockFileService.readAsText as jest.Mock)
-        .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass"}]}}');
+        .mockResolvedValue('{"ver": "1.0", "archive": {"items": [{"status": "pass", "contentType":"Course"}]}}');
         readAsText().then((value) => {
             return value;
         });
