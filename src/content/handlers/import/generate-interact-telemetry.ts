@@ -20,7 +20,7 @@ export class GenerateInteractTelemetry {
         telemetryInteractRequest.env = 'sdk';
         telemetryInteractRequest.objId =  identifier ? identifier : importContext.identifier,
         telemetryInteractRequest.objType = importContext.items && importContext.items.length ?
-            importContext.items[0]['contentType'] : '';
+            ContentUtil.readPrimaryCategoryServer(importContext.items[0]) : '';
         telemetryInteractRequest.objVer = importContext.items && importContext.items.length ?
             ContentUtil.readPkgVersion(importContext.items[0]) + '' : '';
         telemetryInteractRequest.correlationData = importContext.correlationData;

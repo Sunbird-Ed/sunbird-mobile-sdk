@@ -67,6 +67,12 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                         if (typeof (content.contentData.originData) === 'string') {
                             content.contentData.originData = JSON.parse(content.contentData.originData);
                         }
+                        if (content.contentData.trackable && typeof (content.contentData.trackable) === 'string') {
+                            content.contentData.trackable = JSON.parse(content.contentData.trackable);
+                        }
+                        if (content.contentData.userConsent && typeof (content.contentData.userConsent) === 'string') {
+                            content.contentData.userConsent = JSON.parse(content.contentData.userConsent);
+                        }
                         return this.decorateContent({
                             content,
                             attachFeedback: request.attachFeedback,

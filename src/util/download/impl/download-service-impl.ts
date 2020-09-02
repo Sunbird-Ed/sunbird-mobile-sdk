@@ -24,6 +24,7 @@ import {InjectionTokens} from '../../../injection-tokens';
 import {catchError, concatMapTo, distinctUntilChanged, mapTo, mergeMap, switchMap, take, tap, map} from 'rxjs/operators';
 import {ContentDeleteListener} from '../../../content/def/content-delete-listener';
 import {DownloadTracking} from '../def/response';
+import { ContentUtil } from '../../../content/util/content-util';
 
 @injectable()
 export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate, ContentDeleteListener {
@@ -55,8 +56,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'ContentDetail',
             id: 'ContentDetail',
             objId: downloadRequest.identifier,
-            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['contentType'] ?
-                downloadRequest['contentMeta']['contentType'] : 'Content',
+            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['primaryCategory'] ?
+                ContentUtil.readPrimaryCategoryServer(downloadRequest['contentMeta']) : 'Content',
             objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
                 downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
@@ -73,8 +74,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'ContentDetail',
             id: 'ContentDetail',
             objId: downloadRequest.identifier,
-            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['contentType'] ?
-                downloadRequest['contentMeta']['contentType'] : 'Content',
+            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['primaryCategory'] ?
+            ContentUtil.readPrimaryCategoryServer(downloadRequest['contentMeta']) : 'Content',
             objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
                 downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []
@@ -91,8 +92,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
             pageId: 'ContentDetail',
             id: 'ContentDetail',
             objId: downloadRequest.identifier,
-            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['contentType'] ?
-                downloadRequest['contentMeta']['contentType'] : 'Content',
+            objType: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['primaryCategory'] ?
+            ContentUtil.readPrimaryCategoryServer(downloadRequest['contentMeta']) : 'Content',
             objVer: downloadRequest['contentMeta'] && downloadRequest['contentMeta']['pkgVersion'] ?
                 downloadRequest['contentMeta']['pkgVersion'] : '',
             correlationData: downloadRequest['correlationData'] || []

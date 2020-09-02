@@ -181,6 +181,16 @@ export class ContentUtil {
         return primaryCategory;
     }
 
+    public static readPrimaryCategoryServer(contentData): string {
+        let primaryCategory: string = contentData.primaryCategory;
+        if (primaryCategory) {
+            primaryCategory = primaryCategory;
+        } else {
+            primaryCategory = CategoryMapper.getPrimaryCategory(contentData.contentType.toLowerCase(), contentData.mimeType);
+        }
+        return primaryCategory;
+    }
+
 
     public static readAudience(contentData): string {
         const audience = contentData.audience;
