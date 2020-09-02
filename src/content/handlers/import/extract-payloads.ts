@@ -215,8 +215,8 @@ export class ExtractPayloads {
                 // }
             }
             const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
-                JSON.stringify(item), mimeType, contentType, primaryCategory, visibility, basePath,
-                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade, dialcodes, childNodes);
+                JSON.stringify(item), mimeType, contentType, visibility, basePath,
+                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade, dialcodes, childNodes, primaryCategory);
             if (!existingContentModel) {
                 insertNewContentModels.push(newContentModel);
             } else {
@@ -412,10 +412,10 @@ export class ExtractPayloads {
     }
 
     private constructContentDBModel(identifier, manifestVersion, localData,
-                                    mimeType, contentType, primaryCategory, visibility, path,
+                                    mimeType, contentType, visibility, path,
                                     refCount, contentState, audience, pragma, sizeOnDevice,
                                     board, medium, grade,
-                                    dialcodes, childNodes): ContentEntry.SchemaMap {
+                                    dialcodes, childNodes, primaryCategory): ContentEntry.SchemaMap {
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',

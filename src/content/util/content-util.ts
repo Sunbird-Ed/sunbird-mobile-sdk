@@ -499,8 +499,8 @@ export class ContentUtil {
         return `select * from ${ContentEntry.TABLE_NAME} where ${ContentEntry.COLUMN_NAME_REF_COUNT} > 0`;
     }
 
-    public static constructContentDBModel(identifier, manifestVersion, localData, mimeType, contentType, primaryCategory,
-         visibility, path, refCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
+    public static constructContentDBModel(identifier, manifestVersion, localData, mimeType, contentType, visibility, path, refCount,
+        contentState, audience, pragma, sizeOnDevice, board, medium, grade, primaryCategory): ContentEntry.SchemaMap {
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
