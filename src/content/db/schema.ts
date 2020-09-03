@@ -140,7 +140,6 @@ export namespace ContentAccessEntry {
         [COLUMN_NAME_STATUS]: number;
         [COLUMN_NAME_CONTENT_TYPE]: string;
         [COLUMN_NAME_LEARNER_STATE]: string;
-        [COLUMN_NAME_PRIMARY_CATEGORY]: string;
     }
 
     export const getCreateEntry: (() => string) = () => {
@@ -152,7 +151,6 @@ export namespace ContentAccessEntry {
             COLUMN_NAME_STATUS + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_CONTENT_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_LEARNER_STATE + DbConstants.SPACE + DbConstants.BLOB_TYPE +
-            COLUMN_NAME_PRIMARY_CATEGORY + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' +
             ' )';
     };
 

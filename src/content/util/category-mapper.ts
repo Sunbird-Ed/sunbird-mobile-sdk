@@ -1,5 +1,5 @@
 import {CsMimeType, CsPrimaryCategory, CsContentType} from '@project-sunbird/client-services/services/content';
-​
+
 export class CategoryMapper {
   private static readonly CATEGORY_MAP = {
     [CsContentType.CLASSROOM_TEACHING_VIDEO.toLowerCase()]: CsPrimaryCategory.EXPLANATION_CONTENT,
@@ -27,8 +27,8 @@ export class CategoryMapper {
     [CsContentType.LESSON_PLAN_RESOURCE.toLowerCase()]: CsPrimaryCategory.TEACHER_RESOURCE,
     [CsContentType.PREVIOUS_BOARD_EXAM_PAPERS.toLowerCase()]: CsPrimaryCategory.LEARNING_RESOURCE,
   };
-​
-​
+
+
   public static getPrimaryCategory(contentType: string, mimeType: string): string {
     if (contentType && contentType.toLowerCase() === CsContentType.RESOURCE.toLowerCase()) {
       switch (mimeType) {
@@ -46,5 +46,5 @@ export class CategoryMapper {
     }
     return CategoryMapper.CATEGORY_MAP[contentType] || contentType;
   }
-​
+
 }

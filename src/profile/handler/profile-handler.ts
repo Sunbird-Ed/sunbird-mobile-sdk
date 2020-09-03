@@ -8,8 +8,7 @@ export class ProfileHandler {
             status: Number(contentAccess[ContentAccessEntry.COLUMN_NAME_STATUS]),
             contentId: contentAccess[ContentAccessEntry.COLUMN_NAME_CONTENT_IDENTIFIER],
             contentType: contentAccess[ContentAccessEntry.COLUMN_NAME_CONTENT_TYPE],
-            contentLearnerState: {learnerState: learnerState && JSON.parse(learnerState)},
-            primaryCategory: contentAccess[ContentAccessEntry.COLUMN_NAME_PRIMARY_CATEGORY]
+            contentLearnerState: {learnerState: learnerState && JSON.parse(learnerState)}
         };
     }
 }
