@@ -568,7 +568,11 @@ describe('CourseServiceImpl', () => {
         it('should return course which does not have certificate', (done) => {
             const request: DownloadCertificateRequest = {
                 courseId: 'sample-course-id',
-                certificateToken: 'sample-certicate-token'
+                certificate: {
+                    name: 'sample-certificate',
+                    lastIssuedOn: 'some-time',
+                    token: 'some-token'
+                }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
                 uid: 'sample-uid',
@@ -606,7 +610,11 @@ describe('CourseServiceImpl', () => {
         it('should return DownloadCertificateResponse if certificate ont found', (done) => {
             const request: DownloadCertificateRequest = {
                 courseId: 'sample-course-id',
-                certificateToken: 'sample-certicate-token'
+                certificate: {
+                    name: 'sample-certificate',
+                    lastIssuedOn: 'some-time',
+                    token: 'some-token'
+                }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
                 uid: 'sample-uid',
@@ -644,7 +652,11 @@ describe('CourseServiceImpl', () => {
         it('should return DownloadCertificateResponse if certificate already downloaded', (done) => {
             const request: DownloadCertificateRequest = {
                 courseId: 'sample-course-id',
-                certificate: 'sample-certicate-token'
+                certificate: {
+                    name: 'sample-certificate',
+                    lastIssuedOn: 'some-time',
+                    token: 'some-token'
+                }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
                 uid: 'sample-uid',
@@ -695,7 +707,11 @@ describe('CourseServiceImpl', () => {
         it('should return DownloadCertificateResponse if certificate already downloaded for catch part and enqueue is error', (done) => {
             const request: DownloadCertificateRequest = {
                 courseId: 'sample-course-id',
-                certificateToken: 'sample-certicate-token'
+                certificate: {
+                    name: 'sample-certificate',
+                    lastIssuedOn: 'some-time',
+                    token: 'some-token'
+                }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
                 uid: 'sample-uid',
@@ -751,7 +767,11 @@ describe('CourseServiceImpl', () => {
         it('should return DownloadCertificateResponse if certificate already downloaded for catch part enqueue is downloadId', (done) => {
             const request: DownloadCertificateRequest = {
                 courseId: 'sample-course-id',
-                certificateToken: 'sample-certicate-token'
+                certificate: {
+                    name: 'sample-certificate',
+                    lastIssuedOn: 'some-time',
+                    token: 'some-token'
+                }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
                 uid: 'sample-uid',
@@ -815,7 +835,11 @@ describe('CourseServiceImpl', () => {
         it('should return DownloadCertificateResponse if certificate already downloaded for catch partand quary is entries', (done) => {
             const request: DownloadCertificateRequest = {
                 courseId: 'sample-course-id',
-                certificateToken: 'sample-certicate-token'
+                certificate: {
+                    name: 'sample-certificate',
+                    lastIssuedOn: 'some-time',
+                    token: 'some-token'
+                }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
                 uid: 'sample-uid',
@@ -945,8 +969,13 @@ describe('CourseServiceImpl', () => {
     describe('downloadCurrentProfileCourseCertificateV2', () => {
         it('should return message if certifacte is not found', (done) => {
             // arrange
-            const request: DownloadCertificateRequestV2 = {
-                courseId: 'sample-course-id'
+            const request: DownloadCertificateRequest = {
+                courseId: 'sample-course-id',
+                certificate: {
+                    name: 'sample-certificate',
+                    lastIssuedOn: 'some-time',
+                    token: 'some-token'
+                }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
                 managedSession: {
@@ -955,7 +984,9 @@ describe('CourseServiceImpl', () => {
                 uid: 'sample-uid'
             })) as any;
             const mockBlob = new Blob();
-            const mockDataProvider = (_, callback) => { callback(mockBlob); };
+            const mockDataProvider = (_, callback) => {
+                callback(mockBlob);
+            };
             jest.spyOn(courseService, 'getEnrolledCourses').mockImplementation(() => {
                 return of([{
                     identifier: 'do-123',
