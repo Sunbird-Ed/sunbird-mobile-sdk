@@ -4,7 +4,7 @@ describe('CertificateAlreadyDownloaded', () => {
     let certificateAlreadyDownloaded: CertificateAlreadyDownloaded;
 
     beforeAll(() => {
-        certificateAlreadyDownloaded = new CertificateAlreadyDownloaded('sample-message');
+        certificateAlreadyDownloaded = new CertificateAlreadyDownloaded('sample-message', '');
     });
 
     beforeEach(() => {

@@ -27,7 +27,7 @@ import {CsCourseService} from '@project-sunbird/client-services/services/course'
 import {FileService} from '../../util/file/def/file-service';
 import {NetworkQueue} from '../../api/network-queue';
 import {UpdateContentStateApiHandler} from '../handlers/update-content-state-api-handler';
-import {DownloadCertificateRequest, DownloadCertificateRequestV2} from '../def/download-certificate-request';
+import {DownloadCertificateRequest} from '../def/download-certificate-request';
 import {NoCertificateFound} from '../errors/no-certificate-found';
 import {CertificateAlreadyDownloaded} from '../errors/certificate-already-downloaded';
 import {ContentService, DownloadStatus, GenerateAttemptIdRequest} from '../..';
@@ -644,7 +644,7 @@ describe('CourseServiceImpl', () => {
         it('should return DownloadCertificateResponse if certificate already downloaded', (done) => {
             const request: DownloadCertificateRequest = {
                 courseId: 'sample-course-id',
-                certificateToken: 'sample-certicate-token'
+                certificate: 'sample-certicate-token'
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
                 uid: 'sample-uid',

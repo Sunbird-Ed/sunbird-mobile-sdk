@@ -1,8 +1,6 @@
+import {CourseCertificate} from './course';
+
 export interface DownloadCertificateRequest {
   courseId: string;
-  certificateToken: string;
-}
-
-export interface DownloadCertificateRequestV2 {
-  courseId: string;
+  certificate: CourseCertificate;
 }
