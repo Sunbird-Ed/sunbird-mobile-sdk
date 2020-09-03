@@ -13,7 +13,7 @@ import {Observable} from 'rxjs';
 import {Batch} from './batch';
 import {Course} from './course';
 import {UnenrollCourseRequest} from './unenrollCourseRequest';
-import {DownloadCertificateRequest, DownloadCertificateRequestV2} from './download-certificate-request';
+import {DownloadCertificateRequest} from './download-certificate-request';
 import {DownloadCertificateResponse} from './download-certificate-response';
 import {SunbirdTelemetry} from '../../telemetry';
 import Telemetry = SunbirdTelemetry.Telemetry;
@@ -53,6 +53,6 @@ export interface CourseService {
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 
     downloadCurrentProfileCourseCertificateV2(
-        request: DownloadCertificateRequestV2,
+        request: DownloadCertificateRequest,
         pdfDataProvider: (pdfSvgData: string, cb: (pdfData: Blob) => void) => void): Observable<DownloadCertificateResponse>;
 }
