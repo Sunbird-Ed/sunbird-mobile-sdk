@@ -39,7 +39,6 @@ import {SdkConfig} from '../../sdk-config';
 import {DownloadCertificateRequest} from '../def/download-certificate-request';
 import {NoCertificateFound} from '../errors/no-certificate-found';
 import {AppInfo} from '../../util/app';
-import {FileUtil} from '../../util/file/util/file-util';
 import {DownloadStatus} from '../../util/download';
 import {DownloadCertificateResponse} from '../def/download-certificate-response';
 import {SunbirdTelemetry} from '../../telemetry';
@@ -218,7 +217,7 @@ export class CourseServiceImpl implements CourseService {
         return defer(async () => {
             const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
             const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
-            const filePath = `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf)}`;
+            const filePath = `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
             try {
                 await this.fileService.exists(filePath);
                 throw new CertificateAlreadyDownloaded('Certificate already downloaded', filePath);
@@ -252,7 +251,7 @@ export class CourseServiceImpl implements CourseService {
         return defer(async () => {
             const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
             const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
-            const filePath = `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf)}`;
+            const filePath = `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
             try {
                 await this.fileService.exists(filePath);
                 throw new CertificateAlreadyDownloaded('Certificate already downloaded', filePath);
@@ -298,7 +297,7 @@ export class CourseServiceImpl implements CourseService {
                     notificationVisibility: 1,
                     destinationInExternalPublicDir: {
                         dirType: 'Download',
-                        subPath: `/${request.certificate.name}_${request.courseId}_${userId}.pdf}`
+                        subPath: `/${request.certificate.name}_${request.courseId}_${userId}.pdf`
                     },
                     headers: []
                 };
