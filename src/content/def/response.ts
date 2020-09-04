@@ -16,6 +16,7 @@ export interface ContentAggregatorResponse {
         title: string;
         orientation: 'horizontal' | 'vertical';
         section: ContentsGroupedByPageSection;
+        searchCriteria: ContentSearchCriteria;
     }[];
 }
 
