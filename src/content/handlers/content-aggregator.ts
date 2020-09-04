@@ -92,6 +92,7 @@ export class ContentAggregator {
                     return {
                         title: field.title,
                         orientation: field.orientation,
+                        searchCriteria,
                         section: {
                             name: field.index + '',
                             sections: [
@@ -106,6 +107,7 @@ export class ContentAggregator {
                     return {
                         title: field.title,
                         orientation: field.orientation,
+                        searchCriteria,
                         section: CsContentsGroupGenerator.generate(
                             combinedContents,
                             field.groupBy,
@@ -126,6 +128,7 @@ export class ContentAggregator {
                 result: await Promise.all<{
                     title: string;
                     orientation: 'horizontal' | 'vertical';
+                    searchCriteria: ContentSearchCriteria;
                     section: ContentsGroupedByPageSection;
                 }>(fieldTasks)
             };
