@@ -31,6 +31,7 @@ describe('CopyToDestination', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE',
             content_state: 2,
+            primary_category: 'textbook'
         }];
 
         const exportContext = {
@@ -77,6 +78,7 @@ describe('CopyToDestination', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE',
             content_state: 2,
+            primary_category: 'textbook'
         }];
 
         const exportContext = {

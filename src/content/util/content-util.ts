@@ -7,6 +7,7 @@ import {NumberUtil} from '../../util/number-util';
 import {ArrayUtil} from '../../util/array-util';
 import * as dayjs from 'dayjs';
 import {ChildContent} from '..';
+import { CategoryMapper } from './category-mapper';
 
 export class ContentUtil {
     public static defaultCompatibilityLevel = 1;
@@ -169,6 +170,27 @@ export class ContentUtil {
         }
         return contentType;
     }
+
+    public static readPrimaryCategory(contentData): string {
+        let primaryCategory: string = contentData.primaryCategory;
+        if (primaryCategory) {
+            primaryCategory = primaryCategory.toLowerCase();
+        } else {
+            primaryCategory = CategoryMapper.getPrimaryCategory(contentData.contentType.toLowerCase(), contentData.mimeType).toLowerCase();
+        }
+        return primaryCategory;
+    }
+
+    public static readPrimaryCategoryServer(contentData): string {
+        let primaryCategory: string = contentData.primaryCategory;
+        if (primaryCategory) {
+            primaryCategory = primaryCategory;
+        } else {
+            primaryCategory = CategoryMapper.getPrimaryCategory(contentData.contentType.toLowerCase(), contentData.mimeType);
+        }
+        return primaryCategory;
+    }
+
 
     public static readAudience(contentData): string {
         const audience = contentData.audience;
@@ -488,7 +510,7 @@ export class ContentUtil {
     }
 
     public static constructContentDBModel(identifier, manifestVersion, localData, mimeType, contentType, visibility, path, refCount,
-                                          contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
+        contentState, audience, pragma, sizeOnDevice, board, medium, grade, primaryCategory): ContentEntry.SchemaMap {
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
@@ -506,7 +528,8 @@ export class ContentUtil {
             [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: dayjs().format(),
             [ContentEntry.COLUMN_NAME_BOARD]: ContentUtil.getContentAttribute(board),
             [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
-            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)
+            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade),
+            [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: primaryCategory
         };
     }
 

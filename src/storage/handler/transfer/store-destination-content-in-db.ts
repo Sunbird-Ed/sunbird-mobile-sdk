@@ -94,6 +94,7 @@ export class StoreDestinationContentInDb {
             const identifier = element.identifier;
             const mimeType = element.mimeType;
             const contentType = ContentUtil.readContentType(element);
+            const primaryCategory = ContentUtil.readPrimaryCategory(element);
             let visibility = ContentUtil.readVisibility(element);
             const audience = ContentUtil.readAudience(element);
             const pragma = ContentUtil.readPragma(element);
@@ -137,7 +138,7 @@ export class StoreDestinationContentInDb {
             ContentUtil.addOrUpdateViralityMetadata(element, this.deviceInfo.getDeviceID().toString());
             const newContentModel: ContentEntry.SchemaMap = ContentUtil.constructContentDBModel(identifier, manifestVersion,
                 JSON.stringify(element), mimeType, contentType, visibility, basePath,
-                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade);
+                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade, primaryCategory);
             if (!existingContentModel) {
                 insertNewContentModels.push(newContentModel);
             } else {

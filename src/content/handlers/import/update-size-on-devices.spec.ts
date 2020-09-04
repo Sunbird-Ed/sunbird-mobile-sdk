@@ -39,11 +39,12 @@ describe('UpdateSizeOnDevice', () => {
             local_data: '{"childNodes": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
             mime_type: 'application/vnd.ekstep.content-collection',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE',
+            content_type: 'textbook',
             content_state: 4,
             visibility: 'Default',
             path: 'sample-path',
-            size_on_device: 16
+            size_on_device: 16,
+            primary_category: 'textbook'
         }];
         (mockDbService.execute as jest.Mock).mockReturnValue(of(rootContentsInDb));
         mockSharedPreferences.putBoolean = jest.fn(() => of(true));
@@ -73,10 +74,11 @@ describe('UpdateSizeOnDevice', () => {
             local_data: '{"artifactUrl": "http:///do_123"}',
             mime_type: 'application/vnd.ekstep.content-collection',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE',
+            content_type: 'textbook',
             content_state: 2,
             visibility: 'Default',
-            path: 'sample-path'
+            path: 'sample-path',
+            primary_category: 'textbook'
         }];
         (mockDbService.execute as jest.Mock).mockReturnValue(of(rootContentsInDb));
         mockSharedPreferences.putBoolean = jest.fn(() => of(true));
@@ -101,9 +103,10 @@ describe('UpdateSizeOnDevice', () => {
             local_data: '{"childNodes": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
             mime_type: '',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE',
+            content_type: 'textbook',
             content_state: 2,
             visibility: 'auto',
+            primary_category: 'textbook'
         }];
         (mockDbService.execute as jest.Mock).mockReturnValue(of(rootContentsInDb));
         mockSharedPreferences.putBoolean = jest.fn(() => of(true));

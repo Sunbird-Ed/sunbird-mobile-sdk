@@ -24,6 +24,7 @@ export interface Content {
     contentFeedback?: ContentFeedback[];
     contentAccess?: ContentAccess[];
     contentMarker?: ContentMarker[];
+    primaryCategory?: string;
 }
 
 export interface ContentFeedback {
@@ -43,6 +44,7 @@ export interface ContentFeedbackFilterCriteria {
 export interface HierarchyInfo {
     identifier: string;
     contentType: string;
+    primaryCategory?: string;
 }
 
 

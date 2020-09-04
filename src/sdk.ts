@@ -80,6 +80,7 @@ import {GroupServiceImpl} from './group/impl/group-service-impl';
 import {GroupServiceDeprecated} from './group-deprecated';
 import {GroupServiceDeprecatedImpl} from './group-deprecated/impl/group-service-deprecated-impl';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
+import {ContentGeneralizationMigration} from './db/migrations/content-generalization-migration';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -241,7 +242,7 @@ export class SunbirdSdk {
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(27);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(28);
 
         this._container.bind<(Migration | MigrationFactory)[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
             new ProfileSyllabusMigration(),
@@ -257,7 +258,8 @@ export class SunbirdSdk {
             return new NetworkQueueMigration(
               sdkConfig, this._container.get<NetworkQueue>(InjectionTokens.NETWORK_QUEUE)
             );
-            }
+            },
+            new ContentGeneralizationMigration(),
         ]);
 
         switch (sdkConfig.platform) {

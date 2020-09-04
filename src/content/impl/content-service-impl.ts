@@ -202,6 +202,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                 mimeType: '',
                                 basePath: '',
                                 contentType: '',
+                                primaryCategory: '',
                                 isAvailableLocally: false,
                                 referenceCount: 0,
                                 sizeOnDevice: 0,

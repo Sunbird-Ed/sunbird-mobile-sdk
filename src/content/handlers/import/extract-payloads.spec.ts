@@ -108,7 +108,8 @@ describe('ExtractPayloads', () => {
                     itemSetPreviewUrl: 'http://',
                     board: 'CBSC',
                     medium: 'english',
-                    gradeLevel: 'Class6'
+                    gradeLevel: 'Class6',
+                    contentType: 'Course'
                 }],
                 existedContentIdentifiers: { 'identifier': true }
             };
@@ -290,7 +291,8 @@ describe('ExtractPayloads', () => {
                     itemSetPreviewUrl: 'http://',
                     board: 'CBSC',
                     medium: 'english',
-                    gradeLevel: 'Class6'
+                    gradeLevel: 'Class6',
+                    primaryCategory: 'OnlineCourse'
                 }],
                 existedContentIdentifiers: { 'identifier': true }
             };
@@ -375,7 +377,8 @@ describe('ExtractPayloads', () => {
                     itemSetPreviewUrl: 'http://',
                     board: 'CBSC',
                     medium: 'english',
-                    gradeLevel: 'Class6'
+                    gradeLevel: 'Class6',
+                    contentType: 'Course'
                 }],
                 existedContentIdentifiers: { 'identifier': true }
             };
@@ -460,7 +463,8 @@ describe('ExtractPayloads', () => {
                     itemSetPreviewUrl: 'http://',
                     board: 'CBSC',
                     medium: 'english',
-                    gradeLevel: 'Class6'
+                    gradeLevel: 'Class6',
+                    primaryCategory: 'ETB'
                 }],
                 existedContentIdentifiers: { 'identifier': true }
             };
@@ -543,7 +547,8 @@ describe('ExtractPayloads', () => {
                     itemSetPreviewUrl: 'http://',
                     board: 'CBSC',
                     medium: 'english',
-                    gradeLevel: 'Class6'
+                    gradeLevel: 'Class6',
+                    primaryCategory: 'ETB'
                 }],
                 existedContentIdentifiers: { 'identifier': true }
             };
@@ -626,7 +631,8 @@ describe('ExtractPayloads', () => {
                     itemSetPreviewUrl: 'http://',
                     board: 'CBSC',
                     medium: 'english',
-                    gradeLevel: 'Class6'
+                    gradeLevel: 'Class6',
+                    primaryCategory: 'ETB'
                 }],
                 existedContentIdentifiers: { 'identifier': true }
             };
@@ -709,7 +715,8 @@ describe('ExtractPayloads', () => {
                     itemSetPreviewUrl: 'http://',
                     board: 'CBSC',
                     medium: 'english',
-                    gradeLevel: 'Class6'
+                    gradeLevel: 'Class6',
+                    primaryCategory: 'ETB'
                 }],
                 existedContentIdentifiers: { 'identifier': true }
             };
@@ -879,8 +886,9 @@ describe('ExtractPayloads', () => {
             local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"], "artifactUrl": "http:///do_123"}',
             mime_type: 'MIME_TYPE',
             manifest_version: 'MAINFEST_VERSION',
-            content_type: 'CONTENT_TYPE',
+            content_type: 'textbook',
             content_state: 2,
+            primary_category: 'textbook'
         }];
         const updateNewContentModels: ContentEntry.SchemaMap[] = [{
             identifier: 'IDENTIFIER',
@@ -890,6 +898,7 @@ describe('ExtractPayloads', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE',
             content_state: 2,
+            primary_category: 'textbook'
         }];
         mockDbService.beginTransaction = jest.fn().mockImplementation(() => of());
         mockDbService.insert = jest.fn().mockImplementation(() => of());
@@ -897,9 +906,10 @@ describe('ExtractPayloads', () => {
         mockDbService.endTransaction = jest.fn().mockImplementation(() => of());
         // act
         extractPayloads.updateContentDB(insertNewContentModels, updateNewContentModels).then(() => {
+            // assert
+            // expect(mockDbService.beginTransaction).toHaveBeenCalled();
             done();
         });
-        // assert
     });
 
     describe('copyAssets', () => {

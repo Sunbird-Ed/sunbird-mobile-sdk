@@ -1,11 +1,11 @@
 import { GenerateImportShareTelemetry } from './generate-import-share-telemetry';
 import { TelemetryService, ContentImportResponse, ContentImportStatus, ImportContentContext } from '../../..';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 describe('GenerateImportShareTelemetry', () => {
     let generateImportShareTelemetry: GenerateImportShareTelemetry;
     const mockTelemetryService: Partial<TelemetryService> = {
-        share: jest.fn().mockImplementation(() => {})
+        share: jest.fn().mockImplementation(() => { })
     };
 
     beforeAll(() => {
@@ -22,7 +22,7 @@ describe('GenerateImportShareTelemetry', () => {
         expect(generateImportShareTelemetry).toBeTruthy();
     });
 
-    it('should share telemetry file', () => {
+    it('should share telemetry file', (done) => {
         // arrange
         const contentImportResponse: ContentImportResponse[] = [{
             identifier: 'SAMPLE_IDENTIFIER',
@@ -35,18 +35,19 @@ describe('GenerateImportShareTelemetry', () => {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             contentImportResponseList: contentImportResponse,
             contentIdsToDelete: new Set(['1', '2']),
-            items: ['item_1', 'item_2', 'item_3'],
-            existedContentIdentifiers: {'identifier' : true}
+            items: [{ primaryCategory: 'OnlineCourese' }],
+            existedContentIdentifiers: { 'identifier': true },
         };
-        (mockTelemetryService.share as jest.Mock).mockReturnValue(of(false));
+        mockTelemetryService.share = jest.fn(() => of(true));
         // act
         generateImportShareTelemetry.execute(request).then(() => {
-
+            // assert
+            expect(mockTelemetryService.share).toHaveBeenCalled();
+            done();
         });
-        // assert
     });
 
-    it('should share telemetry file', () => {
+    it('should share telemetry file', (done) => {
         // arrange
         const contentImportResponse: ContentImportResponse[] = [{
             identifier: 'SAMPLE_IDENTIFIER',
@@ -59,14 +60,16 @@ describe('GenerateImportShareTelemetry', () => {
             destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
             contentImportResponseList: contentImportResponse,
             contentIdsToDelete: new Set(['1', '2']),
-            items: ['item_1', 'item_2', 'item_3'],
-            existedContentIdentifiers: {'identifier' : true}
+            items: [{ contentType: 'Course' }],
+            existedContentIdentifiers: { 'identifier': true }
         };
-        (mockTelemetryService.share as jest.Mock).mockReturnValue(of(''));
+        mockTelemetryService.share = jest.fn(() => throwError({error: {}}));
         // act
-        generateImportShareTelemetry.execute(request).catch(() => {
-
+        generateImportShareTelemetry.execute(request).then(() => {
+            // assert
+            done();
+        }, e => {
+            done();
         });
-        // assert
     });
 });
