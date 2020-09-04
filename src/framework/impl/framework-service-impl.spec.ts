@@ -1,17 +1,17 @@
 import {CachedItemStore} from '../../key-value-store';
-import {Channel, ChannelDetailsRequest, FrameworkService, OrganizationSearchCriteria, FrameworkServiceImpl} from '..';
+import {Channel, ChannelDetailsRequest, FrameworkService, FrameworkServiceImpl, OrganizationSearchCriteria} from '..';
 import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
 import {FileService} from '../../util/file/def/file-service';
 import {of, throwError} from 'rxjs';
 import {ApiService} from '../../api';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';
-import {SystemSettingsService, SystemSettings} from '../../system-settings';
+import {SystemSettings, SystemSettingsService} from '../../system-settings';
 import {SdkConfig} from '../../sdk-config';
 import {FrameworkKeys} from '../../preference-keys';
-import {inject, injectable, Container} from 'inversify';
+import {Container} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
-import { HttpSerializer } from '../..';
+import {CsModule} from '@project-sunbird/client-services';
 
 jest.mock('../handler/get-channel-detail-handler');
 
@@ -115,17 +115,49 @@ describe('FrameworkServiceImpl', () => {
          });
     });
 
-    it('should return setActiveChannelId Using FrameworkService', (done) => {
+    it('should be able to set current active channelId', (done) => {
         // arrange
-        const  channelId = '12345';
+        const channelId = '12345';
         mockSharedPreferences.putString = jest.fn().mockImplementation(() => of([]));
         (mockSharedPreferences.putString as jest.Mock).mockReturnValue(of(''));
+        jest.spyOn(CsModule.instance, 'isInitialised', 'get').mockReturnValue(true);
+        jest.spyOn(CsModule.instance, 'config', 'get').mockReturnValue({
+            core: {
+                httpAdapter: 'HttpClientCordovaAdapter',
+                global: {
+                    channelId: 'channelId',
+                    producerId: 'producerId',
+                    deviceId: 'deviceId'
+                },
+                api: {
+                    host: 'host',
+                    authentication: {}
+                }
+            },
+            services: {}
+        });
+        spyOn(CsModule.instance, 'updateConfig').and.returnValue(undefined);
         // act
-         frameworkService.setActiveChannelId(channelId).subscribe(() => {
-             // assert
-             expect(mockSharedPreferences.putString).toHaveBeenCalledWith(FrameworkKeys.KEY_ACTIVE_CHANNEL_ID, channelId);
-             done();
-         });
+        frameworkService.setActiveChannelId(channelId).subscribe(() => {
+            // assert
+            expect(CsModule.instance.updateConfig).toHaveBeenCalledWith({
+                core: {
+                    httpAdapter: 'HttpClientCordovaAdapter',
+                    global: {
+                        channelId: '12345',
+                        producerId: 'producerId',
+                        deviceId: 'deviceId'
+                    },
+                    api: {
+                        host: 'host',
+                        authentication: {}
+                    }
+                },
+                services: {}
+            });
+            expect(mockSharedPreferences.putString).toHaveBeenCalledWith(FrameworkKeys.KEY_ACTIVE_CHANNEL_ID, channelId);
+            done();
+        });
     });
 
 
