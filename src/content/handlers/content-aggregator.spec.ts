@@ -122,6 +122,7 @@ describe('ContentAggregator', () => {
                             {
                                 title: '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
                                 orientation: 'horizontal',
+                                searchCriteria: expect.anything(),
                                 section: {
                                     name: '0',
                                     sections: [
@@ -142,6 +143,7 @@ describe('ContentAggregator', () => {
                             {
                                 title: '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
                                 orientation: 'vertical',
+                                searchCriteria: expect.anything(),
                                 section: {
                                     name: 'subject',
                                     sections: [
@@ -248,6 +250,7 @@ describe('ContentAggregator', () => {
                             {
                                 title: '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
                                 orientation: 'horizontal',
+                                searchCriteria: expect.anything(),
                                 section: {
                                     name: '0',
                                     sections: [
@@ -271,6 +274,7 @@ describe('ContentAggregator', () => {
                             {
                                 title: '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
                                 orientation: 'vertical',
+                                searchCriteria: expect.anything(),
                                 section: {
                                     name: 'subject',
                                     combination: {
@@ -378,6 +382,7 @@ describe('ContentAggregator', () => {
                             {
                                 title: '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
                                 orientation: 'horizontal',
+                                searchCriteria: expect.anything(),
                                 section: {
                                     name: '0',
                                     sections: [
@@ -401,6 +406,7 @@ describe('ContentAggregator', () => {
                             {
                                 title: '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
                                 orientation: 'vertical',
+                                searchCriteria: expect.anything(),
                                 section: {
                                     name: 'subject',
                                     combination: {

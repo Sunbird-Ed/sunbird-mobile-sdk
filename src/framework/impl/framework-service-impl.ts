@@ -22,6 +22,7 @@ import {FrameworkKeys} from '../../preference-keys';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {catchError, map, mapTo, mergeMap, tap} from 'rxjs/operators';
+import {CsModule} from '@project-sunbird/client-services';
 
 @injectable()
 export class FrameworkServiceImpl implements FrameworkService {
@@ -126,6 +127,18 @@ export class FrameworkServiceImpl implements FrameworkService {
 
     setActiveChannelId(channelId: string): Observable<undefined> {
         this._activeChannelId = channelId;
+        if (CsModule.instance.isInitialised) {
+            CsModule.instance.updateConfig({
+                ...CsModule.instance.config,
+                core: {
+                    ...CsModule.instance.config.core,
+                    global: {
+                        ...CsModule.instance.config.core.global,
+                        channelId
+                    }
+                }
+            });
+        }
         return this.sharedPreferences.putString(FrameworkServiceImpl.KEY_ACTIVE_CHANNEL_ID, channelId);
     }
 }
