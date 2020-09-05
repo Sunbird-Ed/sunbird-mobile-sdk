@@ -185,9 +185,9 @@ describe('GetContentsHandler', () => {
                 contentTypes: ['pdf', 'ecml'],
                 uid: ['uid-123', 'uid-234'],
                 resourcesOnly: false,
-                audience: undefined,
-                exclPragma: undefined,
-                pragma: undefined,
+                audience: ['Teacher', 'Student'],
+                exclPragma: ['excelPragma1', 'excelPragma2'],
+                pragma: ['pragma1', 'pragma2'],
                 sortCriteria: [undefined] as any,
                 recentlyViewed: false,
                 localOnly: false,
@@ -200,9 +200,9 @@ describe('GetContentsHandler', () => {
             };
             getContentsHandler.getAllLocalContentQuery(request);
             expect(request.resourcesOnly).toBeFalsy();
-            expect(request.audience).toBeUndefined();
-            expect(request.exclPragma).toBeUndefined();
-            expect(request.pragma).toBeUndefined();
+            expect(request.audience).toBeDefined();
+            expect(request.exclPragma).toBeDefined();
+            expect(request.pragma).toBeDefined();
         });
     });
 });

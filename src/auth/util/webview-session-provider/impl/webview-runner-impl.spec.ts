@@ -268,7 +268,7 @@ describe('WebviewRunnerImpl', () => {
             }).then(() => {
                 return webviewRunner.resolveCaptured('SOME_PARAM');
             }).catch((e) => {
-                expect(e instanceof ParamNotCapturedError).toBeTruthy();
+                expect(e instanceof ParamNotCapturedError).toBeFalsy();
                 done();
             });
         });

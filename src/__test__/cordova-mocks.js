@@ -42,6 +42,11 @@ global.cordova = {
     },
     getAppVersion: {
         getAppName: () => {}
+    },
+
+    InAppBrowser : {
+        open: () => {
+        }
     }
 };
 
@@ -121,6 +126,7 @@ global.downloadManager = {
     fetchSpeedLog: () => {
     }
 };
+
 
 global.db = {
     update: () => {

@@ -36,7 +36,7 @@ import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {Channel, FrameworkService} from '../../framework';
 import {FileService} from '../../util/file/def/file-service';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
-import {Observable, of} from 'rxjs';
+import {Observable, of, throwError} from 'rxjs';
 import {ProfileEntry} from '../db/schema';
 import {AuthService, OAuthSession} from '../../auth';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
@@ -60,6 +60,7 @@ import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-p
 import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
+import {catchError} from 'rxjs/operators';
 
 jest.mock('../handler/update-server-profile-info-handler');
 jest.mock('../handler/tenant-info-handler');
@@ -157,7 +158,6 @@ describe.only('ProfileServiceImpl', () => {
             spyOn(profileService, 'createProfile').and.stub();
             spyOn(profileService, 'setActiveSessionForProfile').and.returnValue(of(true));
 
-            // act
             profileService.preInit().subscribe(() => {
                 // assert
                 expect(profileService.createProfile).not.toBeCalled();
@@ -182,6 +182,48 @@ describe.only('ProfileServiceImpl', () => {
                 done();
             });
         });
+
+        it('should set  active channelid on preInit() if manage session is available', (done) => {
+            // arrange
+            mockDbService.read = jest.fn().mockImplementation(() => of([{
+                [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID',
+                [ProfileEntry.COLUMN_NAME_HANDLE]: 'SAMPLE_HANDLE',
+                [ProfileEntry.COLUMN_NAME_PROFILE_TYPE]: ProfileType.STUDENT,
+                [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.SERVER,
+            } as ProfileEntry.SchemaMap]));
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => {
+                const profileSession = new ProfileSession('SAMPLE_UID');
+                return of(JSON.stringify({
+                    uid: profileSession.uid,
+                    sid: profileSession.sid,
+                    createdTime: profileSession.createdTime,
+                    managedSession: profileSession
+                }));
+            });
+            mockSharedPreferences.putString = jest.fn().mockImplementation(() => {
+                return of(undefined);
+            });
+            mockAuthService.getSession = jest.fn().mockImplementation(() => of({
+                access_token: 'sample-access-token',
+                refresh_token: 'sample-refresh-token',
+                userToken: 'sample-user-token'
+            }));
+
+            mockAuthService.setSession = jest.fn().mockImplementation(() => of({
+            }));
+            spyOn(profileService, 'createProfile').and.stub();
+            spyOn(profileService, 'setActiveSessionForProfile').and.returnValue(of(true));
+            spyOn(profileService, 'getServerProfilesDetails').and.returnValue(of({rootOrgId: 'sample_rootorg_id'}));
+            mockFrameworkService.setActiveChannelId = jest.fn().mockImplementation(() => of({
+            }));
+            // act
+            profileService.preInit().subscribe(() => {
+                // assert
+                expect(profileService.createProfile).not.toBeCalled();
+                expect(mockFrameworkService.setActiveChannelId).toBeCalledWith('sample_rootorg_id');
+                done();
+            });
+        });
     });
 
     describe('checkUserExists()', () => {
@@ -197,6 +239,23 @@ describe.only('ProfileServiceImpl', () => {
             profileService.checkServerProfileExists(request).subscribe(() => {
                 expect(mockCsUserService.checkUserExists).toHaveBeenCalledWith(
                     request.matching, expect.objectContaining({token: request.captchaResponseToken, app: '1'})
+                );
+                done();
+            });
+        });
+
+        it('should invoke to CsUserService.checkUserExists() with undefined', (done) => {
+            // arrange
+            mockCsUserService.checkUserExists = jest.fn(() => of({exists: true}));
+
+            const request = {
+                matching: {key: 'userId', value: 'SOME_USER_ID'},
+                captchaResponseToken: undefined
+            };
+
+            profileService.checkServerProfileExists(request).subscribe(() => {
+                expect(mockCsUserService.checkUserExists).toHaveBeenCalledWith(
+                  request.matching, undefined
                 );
                 done();
             });
@@ -246,6 +305,106 @@ describe.only('ProfileServiceImpl', () => {
 
             done();
         });
+
+        it('should throw error if source is LOCAL,  profile.source is not LOCAL', (done) => {
+            // arrange
+            mockTelemetryService.audit = jest.fn().mockImplementation(() => of(true));
+            mockDbService.insert = jest.fn().mockImplementation(() => of(1));
+            const profile: Profile = {
+                uid: 'SAMPLE_UID',
+                handle: 'SAMPLE_HANDLE',
+                profileType: ProfileType.STUDENT,
+                source: ProfileSource.SERVER,
+                serverProfile: {}
+            } as any;
+
+            // act
+            // assert
+            expect(() => profileService.createProfile(profile, ProfileSource.LOCAL))
+              .toThrow();
+
+            done();
+        });
+
+        it('should throw error if source is LOCAL ,profile.source is not LOCAL and  have no serverProfile', (done) => {
+            // arrange
+            mockTelemetryService.audit = jest.fn().mockImplementation(() => of(true));
+            mockDbService.insert = jest.fn().mockImplementation(() => of(1));
+            const profile: Profile = {
+                uid: 'SAMPLE_UID',
+                handle: 'SAMPLE_HANDLE',
+                profileType: ProfileType.STUDENT,
+                source: ProfileSource.LOCAL,
+                serverProfile: {}
+            } as any;
+
+            // act
+            // assert
+            expect(() => profileService.createProfile(profile, ProfileSource.LOCAL))
+              .toThrow();
+
+            done();
+        });
+
+        it('should throw error if source is SERVER,  profile.source is not SERVER', (done) => {
+            // arrange
+            mockTelemetryService.audit = jest.fn().mockImplementation(() => of(true));
+            mockDbService.insert = jest.fn().mockImplementation(() => of(1));
+            const profile: Profile = {
+                uid: 'SAMPLE_UID',
+                handle: 'SAMPLE_HANDLE',
+                profileType: ProfileType.STUDENT,
+                source: ProfileSource.LOCAL,
+                serverProfile: {}
+            } as any;
+
+            // act
+            // assert
+            expect(() => profileService.createProfile(profile, ProfileSource.SERVER))
+              .toThrow();
+
+            done();
+        });
+
+        it('should not throw error if source is LOCAL ,profile.source is not LOCAL and  have no serverProfile', (done) => {
+            // arrange
+            mockTelemetryService.audit = jest.fn().mockImplementation(() => of(true));
+            mockDbService.insert = jest.fn().mockImplementation(() => of(1));
+            const profile: Profile = {
+                uid: '',
+                handle: 'SAMPLE_HANDLE',
+                profileType: ProfileType.STUDENT,
+                source: ProfileSource.SERVER,
+                serverProfile: {}
+            } as any;
+
+            // act
+            // assert
+            expect(() => profileService.createProfile(profile, ProfileSource.SERVER)).toThrow();
+
+            done();
+        });
+
+        it('should not throw error if source is LOCAL ,profile.source is not LOCAL and  have no serverProfile', (done) => {
+            // arrange
+            mockTelemetryService.audit = jest.fn().mockImplementation(() => of(true));
+            mockDbService.insert = jest.fn().mockImplementation(() => of(1));
+            const profile: Profile = {
+                uid: 'sample_uid',
+                handle: 'SAMPLE_HANDLE',
+                profileType: ProfileType.STUDENT,
+                source: ProfileSource.SERVER,
+                serverProfile: {}
+            } as any;
+
+            // act
+            // assert
+            expect(() => profileService.createProfile(profile, ProfileSource.SERVER)).not.toThrow();
+
+            done();
+        });
+
+
     });
 
     describe('deleteProfile()', () => {
@@ -571,7 +730,14 @@ describe.only('ProfileServiceImpl', () => {
                     accessToken: 'SAMPLE_ACCESS_TOKEN_2'
                 }
             };
-
+            jest.spyOn(global['cordova']['InAppBrowser'], 'open').mockImplementation(() => {
+                return {
+                    addEventListener: (_, cb) => {
+                        cb({ url: 'xyz/oauth2callback' });
+                    },
+                    close: () => { }
+                };
+            });
             // act
             profileService.mergeServerProfiles(request).subscribe(() => {
                 // assert
@@ -599,7 +765,6 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             const response = JSON.stringify({uid: 'SAMPLE_UID'});
             mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(response));
-
             // act
             profileService.getActiveProfileSession().subscribe((res) => {
                 expect(res).toBeTruthy();
@@ -625,7 +790,14 @@ describe.only('ProfileServiceImpl', () => {
             // arrange
             const response = [];
             mockDbService.read = jest.fn().mockImplementation(() => of(response));
-
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => {
+                const profileSession = new ProfileSession('SAMPLE_UID');
+                return of(JSON.stringify({
+                    uid: profileSession.uid,
+                    sid: profileSession.sid,
+                    createdTime: profileSession.createdTime
+                }));
+            });
             // act
             profileService.getAllProfiles().subscribe((res) => {
                 expect(mockDbService.read).toHaveBeenCalledWith(
@@ -671,10 +843,12 @@ describe.only('ProfileServiceImpl', () => {
             });
         });
 
-        it('should resolve with all profiles filtered by groupId in request', (done) => {
+
+
+        it('should resolve with all profiles filtered by  groupid and server = true  in request', (done) => {
             // arrange
-            const response = [];
-            const profileRequest = {groupId: 'SAMPLE_GROUP_ID'} as GetAllProfileRequest;
+            const response = [{uid: '1', source: 'server'}];
+            const profileRequest = {groupId: 'SAMPLE_GROUP_ID', server: true} as GetAllProfileRequest;
             mockDbService.execute = jest.fn().mockImplementation(() => of(response));
 
             // act
@@ -986,6 +1160,26 @@ describe.only('ProfileServiceImpl', () => {
                 // assert
                 expect(res).toBe(response);
                 expect(mockAuthService.getSession).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it('should throw error if there are no  active session', (done) => {
+            // arrange
+
+            mockAuthService.getSession = jest.fn().mockImplementation(() => of(undefined));
+            const response = {
+                response: 'SAMPLE_RESPONSE',
+                failed: 'err',
+                imported: 'sample'
+            };
+            // act
+            profileService.getUserFeed().pipe(
+              catchError(() => {
+                  done();
+                  return of({});
+              })
+            ).subscribe((res) => {
                 done();
             });
         });
