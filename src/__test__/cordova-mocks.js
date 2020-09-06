@@ -42,11 +42,6 @@ global.cordova = {
     },
     getAppVersion: {
         getAppName: () => {}
-    },
-
-    InAppBrowser : {
-        open: () => {
-        }
     }
 };
 
