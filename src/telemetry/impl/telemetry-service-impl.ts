@@ -121,10 +121,10 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
                 return undefined;
             }),
             new Observable((observer: Observer<undefined>) => {
-                sbsync.onSyncSucces(async (response) => {
+                sbsync.onAuthorizationError(async (response) => {
                     const error = response.network_queue_error;
                     if (error) {
-                        observer.next(undefined);
+                        observer.next(error);
                     }
                 }, async (error) => {
                 });
