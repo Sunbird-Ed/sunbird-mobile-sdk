@@ -559,8 +559,7 @@ export class ProfileServiceImpl implements ProfileService {
                             status: ContentAccessStatus.PLAYED.valueOf(),
                             content_type: contentAccess.contentType.toLowerCase(),
                             learner_state: contentAccess.contentLearnerState! &&
-                                JSON.stringify(contentAccess.contentLearnerState!.learnerState),
-                            primary_category: contentAccess.primaryCategory!.toLowerCase()
+                                JSON.stringify(contentAccess.contentLearnerState!.learnerState)
                         };
                         if (contentAccessInDb && contentAccessInDb.length) {
                             contentAccessDbModel.status = contentAccessInDb[0][ContentAccessEntry.COLUMN_NAME_STATUS];

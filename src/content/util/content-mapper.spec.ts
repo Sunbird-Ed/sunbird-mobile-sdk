@@ -87,6 +87,7 @@ describe('ContentMapper', () => {
                         identifier: 'sample-id',
                         lastUpdatedOn: '12/02/20202',
                         mimeType: 'sample-mime-type',
+                        primaryCategory: 'ETB',
                         previewUrl: undefined,
                         size: undefined,
                         streamingUrl: undefined,
@@ -135,7 +136,8 @@ describe('ContentMapper', () => {
                         previewUrl: 'p-url',
                         size: '10KB',
                         streamingUrl: 'url',
-                        trackable: {
+                        primaryCategory: 'OnlineCourse',
+                      trackable: {
                             enable: 'Yes'
                         }
                     },
@@ -172,7 +174,8 @@ describe('ContentMapper', () => {
                 contentData: {
                     identifier: 'sample-id',
                     lastUpdatedOn: '12/02/20202',
-                    mimeType: 'sample-mime-type'
+                    mimeType: 'sample-mime-type',
+                    primaryCategory: 'sample-content-type'
                 },
                 contentType: 'sample-content-type',
                 identifier: 'sample-identifier',
@@ -209,6 +212,7 @@ describe('ContentMapper', () => {
                     lastUpdatedOn: '12/02/20202',
                     mimeType: 'sample-mime-type',
                     contentType: 'Course',
+                    primaryCategory: 'OnlineCourse',
                     trackable: {
                         enable: 'Yes'
                     }
@@ -243,7 +247,7 @@ describe('ContentMapper', () => {
             const shouldConvertBasePath = true;
             expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath)).toEqual({
                 basePath: '/_app_file_',
-                contentData: {identifier: 'sample-identifier', name: 'some_name', contentType: 'sample-content-type', mimeType: 'sample-mime-type'},
+                contentData: {identifier: 'sample-identifier', name: 'some_name', contentType: 'sample-content-type', mimeType: 'sample-mime-type', primaryCategory: 'sample-content-type'},
                 contentType: 'sample-content-type',
                 identifier: 'sample-identifier',
                 name: 'some_name',
@@ -275,7 +279,8 @@ describe('ContentMapper', () => {
                         identifier: 'sample-id',
                         lastUpdatedOn: '12/02/20202',
                         mimeType: 'sample-mime-type',
-                        contentType: 'Course'
+                        contentType: 'Course',
+                        primaryCategory: 'OnlineCourse'
                     },
                     contentType: 'course',
                     identifier: 'sample-id',

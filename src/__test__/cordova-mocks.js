@@ -117,6 +117,12 @@ global.sbsync = {
     }
 };
 
+global.downloadManager = {
+    fetchSpeedLog: () => {
+    }
+};
+
+
 global.db = {
     update: () => {
     },

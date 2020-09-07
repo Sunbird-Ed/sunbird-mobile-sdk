@@ -3,6 +3,7 @@ import {Content, ContentData} from '..';
 import {ContentUtil} from './content-util';
 import { CsContentType } from '@project-sunbird/client-services/services/content';
 import { TrackingEnabled } from '@project-sunbird/client-services/models';
+import {CategoryMapper} from './category-mapper';
 
 export class ContentMapper {
     public static mapContentDataToContentDBEntry(contentData, manifestVersion: string): ContentEntry.SchemaMap {
@@ -39,6 +40,10 @@ export class ContentMapper {
             serverData = contentData;
         } else {
             localData = contentData;
+        }
+
+        if (!contentData.primaryCategory && contentData.contentType && contentData.mimeType) {
+            contentData.primaryCategory = CategoryMapper.getPrimaryCategory(contentData.contentType.toLowerCase(), contentData.mimeType);
         }
         return {
             identifier: contentData.identifier,
@@ -129,10 +134,13 @@ export class ContentMapper {
 
         const sizeOnDevice = Number(contentEntry[ContentEntry.COLUMN_NAME_SIZE_ON_DEVICE]);
         const size = sizeOnDevice ? sizeOnDevice : Number(serverData ? serverData.size : 0);
-        if (!contentData.trackable && contentType.toLowerCase() === CsContentType.COURSE.toLowerCase()) {
+        if (!contentData.trackable && contentType && contentType.toLowerCase() === CsContentType.COURSE.toLowerCase()) {
            contentData.trackable = {
                enable: TrackingEnabled.YES
            };
+        }
+        if (!contentData.primaryCategory && contentType) {
+            contentData.primaryCategory = CategoryMapper.getPrimaryCategory(contentType.toLowerCase(), mimeType);
         }
         const basePath = contentEntry[ContentEntry.COLUMN_NAME_PATH]! || '';
         return {

@@ -21,7 +21,7 @@ export class GetContentsHandler {
             filter = `${filter}  AND (${mimeTypeFilter})`;
         } else {
             const contentTypesStr = ArrayUtil.joinPreservingQuotes(request.contentTypes);
-            const contentTypeFilter = `c.${ContentEntry.COLUMN_NAME_CONTENT_TYPE} IN(${contentTypesStr.toLowerCase()})`;
+            const contentTypeFilter = `c.${ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY} IN(${contentTypesStr.toLowerCase()})`;
             filter = `${filter}  AND (${contentTypeFilter})`;
         }
 

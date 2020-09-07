@@ -462,6 +462,36 @@ describe('DbCordovaService', () => {
       it('should call onUpgrade method if plugin init method returns onUpgrade response', (done) => {
         // arrange
         db.init = jest.fn((_, __, [], success) => {
+          success({method: 'onTest', oldVersion: 26, newVersion: 27});
+        });
+        jest.spyOn(db, 'execute').mockImplementation((_, __, success, error) => {
+          success({});
+        });
+        // act and assert
+        dbCordovaService.init().then(() => {
+          done();
+        });
+
+      });
+
+      it('should call onUpgrade method if plugin init method returns onUpgrade response', (done) => {
+        // arrange
+        db.init = jest.fn((_, __, [], success) => {
+          success({method: 'onUpgrade', oldVersion: 26, newVersion: 27});
+        });
+        jest.spyOn(db, 'execute').mockImplementation((_, __, success, error) => {
+          success({});
+        });
+        // act and assert
+        dbCordovaService.init().then(() => {
+          done();
+        });
+
+      });
+
+      it('should call onUpgrade method if plugin init method returns onUpgrade response', (done) => {
+        // arrange
+        db.init = jest.fn((_, __, [], success) => {
           success({method: 'onUpgrade', oldVersion: 26, newVersion: 27});
         });
         jest.spyOn(db, 'execute').mockImplementation((_, __, success, error) => {
