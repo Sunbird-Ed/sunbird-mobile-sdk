@@ -3,7 +3,7 @@ import {Content, ContentData} from '..';
 import {ContentUtil} from './content-util';
 import { CsContentType } from '@project-sunbird/client-services/services/content';
 import { TrackingEnabled } from '@project-sunbird/client-services/models';
-import {CategoryMapper} from './category-mapper';
+import {CsPrimaryCategoryMapper} from '@project-sunbird/client-services/services/content/utilities/primary-category-mapper';
 
 export class ContentMapper {
     public static mapContentDataToContentDBEntry(contentData, manifestVersion: string): ContentEntry.SchemaMap {
@@ -43,7 +43,8 @@ export class ContentMapper {
         }
 
         if (!contentData.primaryCategory && contentData.contentType && contentData.mimeType) {
-            contentData.primaryCategory = CategoryMapper.getPrimaryCategory(contentData.contentType.toLowerCase(), contentData.mimeType);
+            contentData.primaryCategory = CsPrimaryCategoryMapper.getPrimaryCategory(
+              contentData.contentType.toLowerCase(), contentData.mimeType, contentData.resourceType);
         }
         return {
             identifier: contentData.identifier,
@@ -75,6 +76,7 @@ export class ContentMapper {
         let contentType = contentEntry[ContentEntry.COLUMN_NAME_CONTENT_TYPE];
         let primaryCategory = contentEntry[ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY];
         let lastUsedTime = 0;
+        let resourceType;
         if (contentEntry.hasOwnProperty(ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP)) {
             lastUsedTime = contentEntry[ContentAccessEntry.COLUMN_NAME_EPOCH_TIMESTAMP];
         }
@@ -86,6 +88,7 @@ export class ContentMapper {
             if (localData) {
                 identifier = localData.identifier;
                 mimeType = localData.mimeType;
+                resourceType = localData.resourceType;
                 visibility = ContentUtil.readVisibility(localData);
                 contentType = ContentUtil.readContentType(localData);
                 primaryCategory = ContentUtil.readPrimaryCategory(localData);
@@ -139,8 +142,10 @@ export class ContentMapper {
                enable: TrackingEnabled.YES
            };
         }
+        resourceType = contentData.resourceType;
         if (!contentData.primaryCategory && contentType) {
-            contentData.primaryCategory = CategoryMapper.getPrimaryCategory(contentType.toLowerCase(), mimeType);
+            contentData.primaryCategory = CsPrimaryCategoryMapper.getPrimaryCategory(
+              contentType.toLowerCase(), mimeType, resourceType);
         }
         const basePath = contentEntry[ContentEntry.COLUMN_NAME_PATH]! || '';
         return {

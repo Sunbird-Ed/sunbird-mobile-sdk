@@ -54,7 +54,7 @@ describe('GenerateInteractTelemetry', () => {
                 id: 'ImportContent',
                 env: 'sdk',
                 objId: 'sample-id',
-                objType: 'OnlineCourse',
+                objType: 'Course',
                 objVer: 'undefined',
                 correlationData: [ { id: 'SAMPLE_ID', type: 'SAMPLE_TYPE' } ] });
             done();

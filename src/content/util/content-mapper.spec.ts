@@ -26,7 +26,7 @@ describe('ContentMapper', () => {
                     server_data: undefined,
                     server_last_updated_on: undefined,
                     visibility: 'Default',
-                    primary_category: 'onlinecourse'
+                    primary_category: 'course'
                 }
             );
         });
@@ -52,7 +52,7 @@ describe('ContentMapper', () => {
                     server_data: '{"lastUpdatedOn":"12/02/20202","identifier":"sample-id","mimeType":"sample-mime-type","contentType":"resource"}',
                     server_last_updated_on: '12/02/20202',
                     visibility: 'Default',
-                    primary_category: 'resource'
+                    primary_category: 'learning resource'
                 }
             );
         });
@@ -73,7 +73,7 @@ describe('ContentMapper', () => {
                 lastUpdatedOn: '20/02/2020',
                 size_on_device: 30,
                 path: 'base-path',
-                primary_category: 'textbook'
+                primary_category: 'digital textbook'
             };
 
             const shouldConvertBasePath = true;
@@ -87,7 +87,7 @@ describe('ContentMapper', () => {
                         identifier: 'sample-id',
                         lastUpdatedOn: '12/02/20202',
                         mimeType: 'sample-mime-type',
-                        primaryCategory: 'ETB',
+                        primaryCategory: 'Digital Textbook',
                         previewUrl: undefined,
                         size: undefined,
                         streamingUrl: undefined,
@@ -101,7 +101,7 @@ describe('ContentMapper', () => {
                     lastUsedTime: 5,
                     mimeType: 'sample-mime-type',
                     name: undefined,
-                    primaryCategory: 'etb',
+                    primaryCategory: 'digital textbook',
                     referenceCount: 0,
                     sizeOnDevice: 30
                 }
@@ -136,7 +136,7 @@ describe('ContentMapper', () => {
                         previewUrl: 'p-url',
                         size: '10KB',
                         streamingUrl: 'url',
-                        primaryCategory: 'OnlineCourse',
+                        primaryCategory: 'Course',
                       trackable: {
                             enable: 'Yes'
                         }
@@ -149,7 +149,7 @@ describe('ContentMapper', () => {
                     lastUsedTime: 5,
                     mimeType: undefined,
                     name: undefined,
-                    primaryCategory: 'onlinecourse',
+                    primaryCategory: 'course',
                     referenceCount: 0,
                     sizeOnDevice: NaN
                 }
@@ -212,7 +212,7 @@ describe('ContentMapper', () => {
                     lastUpdatedOn: '12/02/20202',
                     mimeType: 'sample-mime-type',
                     contentType: 'Course',
-                    primaryCategory: 'OnlineCourse',
+                    primaryCategory: 'Course',
                     trackable: {
                         enable: 'Yes'
                     }
@@ -225,7 +225,7 @@ describe('ContentMapper', () => {
                 lastUsedTime: 0,
                 mimeType: 'sample-mime-type',
                 name: undefined,
-                primaryCategory: 'onlinecourse',
+                primaryCategory: 'course',
                 referenceCount: 0,
                 sizeOnDevice: 0
             });
@@ -280,7 +280,7 @@ describe('ContentMapper', () => {
                         lastUpdatedOn: '12/02/20202',
                         mimeType: 'sample-mime-type',
                         contentType: 'Course',
-                        primaryCategory: 'OnlineCourse'
+                        primaryCategory: 'Course'
                     },
                     contentType: 'course',
                     identifier: 'sample-id',
@@ -290,7 +290,7 @@ describe('ContentMapper', () => {
                     lastUsedTime: 0,
                     mimeType: 'sample-mime-type',
                     name: undefined,
-                    primaryCategory: 'onlinecourse',
+                    primaryCategory: 'course',
                     referenceCount: 0,
                     sizeOnDevice: 0
                 }
