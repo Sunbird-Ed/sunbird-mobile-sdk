@@ -206,7 +206,6 @@ describe('SearchContentHandler', () => {
             // assert
             expect(searchRequest.filters).toEqual({
                 compatibilityLevel: { min: 1, max: undefined },
-                contentType: [],
                 SAMPLE_CONTENT: ['SAMPLE_NAME'],
                 filter: 'sample-filter'
             });
