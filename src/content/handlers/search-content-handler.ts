@@ -103,7 +103,6 @@ export class SearchContentHandler {
     private getFilterRequest(criteria: ContentSearchCriteria): SearchFilter {
         let searchFilter: SearchFilter = {
             compatibilityLevel: this.getCompatibilityLevelFilter(),
-            contentType: (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : []
         };
         this.addFiltersToRequest(searchFilter, criteria.facetFilters!);
         this.addFiltersToRequest(searchFilter, criteria.impliedFilters!);

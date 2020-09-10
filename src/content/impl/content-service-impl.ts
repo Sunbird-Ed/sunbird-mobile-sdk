@@ -595,6 +595,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig, frameworkId!,
                     contentSearchCriteria.languageCode).handle(searchRequest).pipe(
                     map((searchResponse: SearchResponse) => {
+                        if (!contentSearchCriteria.facetFilters) {
+                            searchRequest.filters.contentType = [];
+                        }
                         return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
                     })
                 );

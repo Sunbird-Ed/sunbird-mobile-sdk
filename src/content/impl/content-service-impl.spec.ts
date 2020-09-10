@@ -1229,7 +1229,7 @@ describe('ContentServiceImpl', () => {
      describe('searchContent', () => {
         it('should used for search content', (done) => {
             // arrange
-            const getSearchContentRequestData = jest.fn().mockImplementation(() => ({ filter: {} }));
+            const getSearchContentRequestData = jest.fn().mockImplementation(() => ({ filters: {contentType: []} }));
             const mapSearchResponseData = jest.fn().mockImplementation(() => ({ id: 'sid' }));
             (SearchContentHandler as jest.Mock<SearchContentHandler>).mockImplementation(() => {
                 return {
@@ -1263,7 +1263,7 @@ describe('ContentServiceImpl', () => {
 
         it('should used for search content if request', (done) => {
             // arrange
-            const getSearchContentRequestData = jest.fn().mockImplementation(() => ({ filter: {} }));
+            const getSearchContentRequestData = jest.fn().mockImplementation(() => ({ filters: {contentType: []} }));
             const mapSearchResponseData = jest.fn().mockImplementation(() => ({ id: 'sid' }));
             (SearchContentHandler as jest.Mock<SearchContentHandler>).mockImplementation(() => {
                 return {
