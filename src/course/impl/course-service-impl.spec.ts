@@ -313,29 +313,58 @@ describe('CourseServiceImpl', () => {
         });
     });
 
-    it('should enroll a course store it to noSql and update getEnrolledCourses', (done) => {
-        // arrange
-        const request: EnrollCourseRequest = {
-            userId: 'SAMPLE_USER_ID',
-            courseId: 'SAMPLE_COURSE_ID',
-            batchId: 'SAMPLE_BATCH_ID'
-        };
-        sharePreferencesMock.putString = jest.fn(() => of(undefined));
-        (EnrollCourseHandler as any as jest.Mock<EnrollCourseHandler>).mockImplementation(() => {
-            return {
-                handle: jest.fn(() => of(true))
-            } as Partial<EnrollCourseHandler> as EnrollCourseHandler;
+    describe('enrollCourse()', () => {
+        it('should cache context and update getEnrolledCourses when enrol successful', (done) => {
+            // arrange
+            const request: EnrollCourseRequest = {
+                userId: 'SAMPLE_USER_ID',
+                courseId: 'SAMPLE_COURSE_ID',
+                batchId: 'SAMPLE_BATCH_ID'
+            };
+            sharePreferencesMock.putString = jest.fn(() => of(undefined));
+            (EnrollCourseHandler as any as jest.Mock<EnrollCourseHandler>).mockImplementation(() => {
+                return {
+                    handle: jest.fn(() => of(true))
+                } as Partial<EnrollCourseHandler> as EnrollCourseHandler;
+            });
+            jest.spyOn(courseService, 'getEnrolledCourses').mockImplementation(() => {
+                return of([{id: 'do-123'}]);
+            });
+            // act
+            courseService.enrollCourse(request).subscribe((result) => {
+                // assert
+                expect(result).toBeTruthy();
+                expect(sharePreferencesMock.putString).toHaveBeenCalled();
+                expect(courseService.getEnrolledCourses).toHaveBeenCalled();
+                done();
+            });
         });
-        jest.spyOn(courseService, 'getEnrolledCourses').mockImplementation(() => {
-            return of([{id: 'do-123'}]);
+
+        it('should not cache context nor update getEnrolledCourses when enrol fails', (done) => {
+            // arrange
+            const request: EnrollCourseRequest = {
+                userId: 'SAMPLE_USER_ID',
+                courseId: 'SAMPLE_COURSE_ID',
+                batchId: 'SAMPLE_BATCH_ID'
+            };
+            sharePreferencesMock.putString = jest.fn(() => of(undefined));
+            (EnrollCourseHandler as any as jest.Mock<EnrollCourseHandler>).mockImplementation(() => {
+                return {
+                    handle: jest.fn(() => of(false))
+                } as Partial<EnrollCourseHandler> as EnrollCourseHandler;
+            });
+            jest.spyOn(courseService, 'getEnrolledCourses').mockImplementation(() => {
+                return of([{id: 'do-123'}]);
+            });
+            // act
+            courseService.enrollCourse(request).subscribe((result) => {
+                // assert
+                expect(result).toBeFalsy();
+                expect(sharePreferencesMock.putString).not.toHaveBeenCalled();
+                expect(courseService.getEnrolledCourses).not.toHaveBeenCalled();
+                done();
+            });
         });
-        // act
-        courseService.enrollCourse(request).subscribe(() => {
-            expect(sharePreferencesMock.putString).toHaveBeenCalled();
-            expect(courseService.getEnrolledCourses).toHaveBeenCalled();
-            done();
-        });
-        // assert
     });
 
     describe('getContentState', () => {

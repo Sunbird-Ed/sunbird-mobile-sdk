@@ -141,17 +141,23 @@ export class CourseServiceImpl implements CourseService {
         return new EnrollCourseHandler(this.apiService, this.courseServiceConfig)
             .handle(request)
             .pipe(
-                mergeMap(() => {
-                    const courseContext: { [key: string]: any } = {};
-                    courseContext['userId'] = request.userId;
-                    courseContext['batchStatus'] = request.batchStatus;
-                    return this.sharedPreferences.putString(ContentKeys.COURSE_CONTEXT, JSON.stringify(courseContext));
-                }),
-                delay(2000),
-                concatMap(() => {
-                    return this.getEnrolledCourses({userId: request.userId, returnFreshCourses: true});
-                }),
-                mapTo(true)
+                mergeMap((isEnrolled) => {
+                    if (isEnrolled) {
+                        const courseContext: { [key: string]: any } = {};
+                        courseContext['userId'] = request.userId;
+                        courseContext['batchStatus'] = request.batchStatus;
+
+                        return this.sharedPreferences.putString(ContentKeys.COURSE_CONTEXT, JSON.stringify(courseContext)).pipe(
+                            delay(2000),
+                            concatMap(() => {
+                                return this.getEnrolledCourses({userId: request.userId, returnFreshCourses: true});
+                            }),
+                            mapTo(isEnrolled)
+                        );
+                    }
+
+                    return of(isEnrolled);
+                })
             );
     }
 
