@@ -39,7 +39,7 @@ describe('ContentGeneralizationMigration', () => {
       mockDbService.read = jest.fn().mockImplementation(() => of(mockContents));
 
       contentGeneralizationMigration.apply(mockDbService as DbService).then(() => {
-        expect(mockDbService.execute).toHaveBeenNthCalledWith(2, `UPDATE content SET  primary_category = CASE identifier  WHEN 'do_31265486640564633624236' THEN 'etb'  WHEN 'do_31265547281583308824491' THEN 'onlinecourse'  ELSE '' END ;`);
+        expect(mockDbService.execute).toHaveBeenNthCalledWith(2, `UPDATE content SET  primary_category = CASE identifier  WHEN 'do_31265486640564633624236' THEN 'digital textbook'  WHEN 'do_31265547281583308824491' THEN 'course'  ELSE '' END ;`);
         done();
       });
     });

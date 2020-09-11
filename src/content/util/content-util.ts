@@ -7,7 +7,7 @@ import {NumberUtil} from '../../util/number-util';
 import {ArrayUtil} from '../../util/array-util';
 import * as dayjs from 'dayjs';
 import {ChildContent} from '..';
-import { CategoryMapper } from './category-mapper';
+import {CsPrimaryCategoryMapper} from '@project-sunbird/client-services/services/content/utilities/primary-category-mapper';
 
 export class ContentUtil {
     public static defaultCompatibilityLevel = 1;
@@ -176,7 +176,8 @@ export class ContentUtil {
         if (primaryCategory) {
             primaryCategory = primaryCategory.toLowerCase();
         } else {
-            primaryCategory = CategoryMapper.getPrimaryCategory(contentData.contentType.toLowerCase(), contentData.mimeType).toLowerCase();
+            primaryCategory = CsPrimaryCategoryMapper.getPrimaryCategory(
+              contentData.contentType.toLowerCase(), contentData.mimeType, contentData.resourceType).toLowerCase();
         }
         return primaryCategory;
     }
@@ -186,7 +187,8 @@ export class ContentUtil {
         if (primaryCategory) {
             primaryCategory = primaryCategory;
         } else {
-            primaryCategory = CategoryMapper.getPrimaryCategory(contentData.contentType.toLowerCase(), contentData.mimeType);
+            primaryCategory = CsPrimaryCategoryMapper.getPrimaryCategory(
+              contentData.contentType.toLowerCase(), contentData.mimeType, contentData.resourceType);
         }
         return primaryCategory;
     }
