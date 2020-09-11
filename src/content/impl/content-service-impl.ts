@@ -28,7 +28,7 @@ import {
     ContentSpaceUsageSummaryResponse,
     EcarImportRequest,
     ExportContentContext,
-    FileExtension,
+    FileExtension, FilterValue,
     HierarchyInfo,
     ImportContentContext,
     MimeType,
@@ -96,6 +96,8 @@ import {GetContentHeirarchyHandler} from '../handlers/get-content-heirarchy-hand
 import {DeleteTempDir} from '../handlers/export/deletete-temp-dir';
 import {ContentAggregator} from '../handlers/content-aggregator';
 import {FormService} from '../../form';
+import {CsMimeTypeFacetToMimeTypeCategoryAggregator} from '@project-sunbird/client-services/services/content/utilities/mime-type-facet-to-mime-type-category-aggregator';
+import {MimeTypeCategory} from '@project-sunbird/client-services/models/content';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -575,6 +577,20 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     searchContent(contentSearchCriteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult> {
+        contentSearchCriteria = JSON.parse(JSON.stringify(contentSearchCriteria));
+        if (contentSearchCriteria.facetFilters) {
+            const mimeTypeFacetFilters = contentSearchCriteria.facetFilters.find(f => f.name === 'mimeType');
+
+            if (mimeTypeFacetFilters) {
+                mimeTypeFacetFilters.values = mimeTypeFacetFilters.values
+                    .filter(v => v.apply)
+                    .reduce<FilterValue[]>((acc, v) => {
+                        acc = acc.concat((v['values'] as FilterValue[]).map(f => ({...f, apply: true})));
+                        return acc;
+                    }, []);
+            }
+        }
+
         const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
             this.contentServiceConfig, this.telemetryService);
         const languageCode = contentSearchCriteria.languageCode;
@@ -599,6 +615,21 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             searchRequest.filters.contentType = [];
                         }
                         return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
+                    }),
+                    map((contentSearchResponse) => {
+                        if (!contentSearchResponse.filterCriteria.facetFilters) {
+                            return contentSearchResponse;
+                        }
+
+                        const mimeTypeFacetFilters = contentSearchResponse.filterCriteria.facetFilters.find(f => f.name === 'mimeType');
+
+                        if (mimeTypeFacetFilters) {
+                            mimeTypeFacetFilters.values =
+                                CsMimeTypeFacetToMimeTypeCategoryAggregator.aggregate(mimeTypeFacetFilters.values as any,
+                                    contentSearchCriteria.searchType === 'filter' ? [MimeTypeCategory.ALL] : []) as any;
+                        }
+
+                        return contentSearchResponse;
                     })
                 );
             })
