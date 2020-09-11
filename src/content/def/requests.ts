@@ -168,6 +168,7 @@ export interface FilterValue {
     translations?: string;
     description?: string;
     index?: number;
+    values?: FilterValue[];
 }
 
 export interface ContentSortCriteria {
