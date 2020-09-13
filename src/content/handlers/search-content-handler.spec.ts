@@ -250,7 +250,8 @@ describe('SearchContentHandler', () => {
                 purpose: ['Sample purpose'],
                 channel: ['Sample channel'],
                 mimeType: ['sample mimeType'],
-                subject: ['sample subject']
+                subject: ['sample subject'],
+                primaryCategory: []
             }
             );
         });

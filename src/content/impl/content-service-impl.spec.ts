@@ -1005,7 +1005,7 @@ describe('ContentServiceImpl', () => {
             // arrange
             const request: ContentRequest = {
                 uid: 'sample-u-id',
-                contentTypes: ['textbook', 'course'],
+                primaryCategories: ['textbook', 'course'],
                 attachContentAccess: true,
                 attachFeedback: true,
                 resourcesOnly: true

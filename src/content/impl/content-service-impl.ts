@@ -613,6 +613,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     map((searchResponse: SearchResponse) => {
                         if (!contentSearchCriteria.facetFilters) {
                             searchRequest.filters.contentType = [];
+                            searchRequest.filters.primaryCategory = [];
                         }
                         return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
                     }),

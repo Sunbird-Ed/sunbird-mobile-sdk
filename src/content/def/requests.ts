@@ -30,7 +30,7 @@ export interface ContentDetailRequest {
 
 export interface ContentRequest {
     uid?: string | string[];
-    contentTypes: string[];
+    primaryCategories: string[];
     audience?: string[];
     pragma?: string[];
     exclPragma?: string[];
@@ -154,6 +154,7 @@ export interface ContentSearchCriteria {
     mimeType?: string[];
     subject?: string[];
     fields?: string[];
+    primaryCategories?: string[];
 }
 
 export interface ContentSearchFilter {

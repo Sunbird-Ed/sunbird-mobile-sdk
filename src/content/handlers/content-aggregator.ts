@@ -44,7 +44,7 @@ export class ContentAggregator {
     private static getIdForDb(request: ContentSearchCriteria): string {
         const key = {
             framework: request.framework || '',
-            contentType: request.contentTypes || '',
+            primaryCategory: request.primaryCategories || '',
             board: request.board || '',
             medium: request.medium || '',
             grade: request.grade || '',
@@ -137,7 +137,7 @@ export class ContentAggregator {
 
     private async fetchOfflineContents(searchRequest: ContentSearchCriteria): Promise<ContentData[]> {
         return this.contentService.getContents({
-            contentTypes: searchRequest.contentTypes || [],
+            primaryCategories: searchRequest.primaryCategories || [],
             board: searchRequest.board,
             medium: searchRequest.medium,
             grade: searchRequest.grade

@@ -13,7 +13,7 @@ export class GenerateImportShareTelemetry {
         const items: Item[] = [];
         for (const element of importContentContext.items!) {
             const item: Item = {
-                type: ContentUtil.readContentType(element),
+                type: ContentUtil.readPrimaryCategoryServer(element),
                 origin: ContentUtil.readOriginFromContentMap(element),
                 identifier: element.identifier,
                 pkgVersion: Number(element.pkgVersion),
