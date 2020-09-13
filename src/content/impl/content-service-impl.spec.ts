@@ -298,6 +298,125 @@ describe('ContentServiceImpl', () => {
         });
     });
 
+    describe('searchContent', () => {
+        it('should used for search content', (done) => {
+            // arrange
+            const getSearchContentRequestData = jest.fn().mockImplementation(() => ({filters: {contentType: []}}));
+            const mapSearchResponseData = jest.fn().mockImplementation(() =>
+                ({
+                    id: 'sid', filterCriteria: {
+                        facetFilters: [{
+                            name: 'mimeType',
+                            values: [
+                                {
+                                    name: 'VIDEO',
+                                    count: 10,
+                                    values: [{
+                                        name: 'video/mp4',
+                                        count: 1,
+                                        apply: true
+                                    }, {
+                                        name: 'video/webm',
+                                        count: 9,
+                                        apply: true
+                                    }],
+                                    apply: true
+                                }
+                            ],
+
+                        }]
+                    }
+                }));
+            (SearchContentHandler as jest.Mock<SearchContentHandler>).mockImplementation(() => {
+                return {
+                    getSearchContentRequest: getSearchContentRequestData,
+                    mapSearchResponse: mapSearchResponseData
+                } as Partial<SearchContentHandler> as SearchContentHandler;
+            });
+            const request: ContentSearchCriteria = {
+                limit: 1,
+                offset: 2,
+                facetFilters: [{
+                    name: 'mimeType',
+                    values: [
+                        {
+                            name: 'VIDEO',
+                            count: 10,
+                            values: [{
+                                name: 'video/mp4',
+                                count: 1,
+                                apply: true
+                            }, {
+                                name: 'video/webm',
+                                count: 9,
+                                apply: true
+                            }],
+                            apply: true
+                        }
+                    ],
+
+                }]
+            };
+            contentService = container.get(InjectionTokens.CONTENT_SERVICE);
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'));
+            spyOn(mockApiService, 'fetch').and.returnValue(of({
+                body: {
+                    result: {
+                        response: 'SAMPLE_RESPONSE'
+                    }
+                }
+            }));
+            // act
+            contentService.searchContent(request).subscribe(() => {
+                // assert
+                expect(mockSharedPreferences.getString).toHaveBeenCalled();
+                expect(mockApiService.fetch).toHaveBeenCalled();
+                expect(getSearchContentRequestData).toHaveBeenCalled();
+                expect(mapSearchResponseData).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it('should used for search content if request', (done) => {
+            // arrange
+            const getSearchContentRequestData = jest.fn().mockImplementation(() => ({filters: {contentType: []}}));
+            const mapSearchResponseData = jest.fn().mockImplementation(() => ({
+                id: 'sid', filterCriteria: {}}));
+            (SearchContentHandler as jest.Mock<SearchContentHandler>).mockImplementation(() => {
+                return {
+                    getSearchContentRequest: getSearchContentRequestData,
+                    mapSearchResponse: mapSearchResponseData,
+                    getSearchCriteria: jest.fn(() => ({languageCode: 'bn'}))
+                } as Partial<SearchContentHandler> as SearchContentHandler;
+            });
+            const request: ContentSearchCriteria = {
+                limit: 1,
+                offset: 2,
+                languageCode: 'en',
+                facetFilters: []
+            };
+            contentService = container.get(InjectionTokens.CONTENT_SERVICE);
+            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'));
+            spyOn(mockApiService, 'fetch').and.returnValue(of({
+                body: {
+                    result: {
+                        response: 'SAMPLE_RESPONSE'
+                    }
+                }
+            }));
+            // act
+            contentService.searchContent(request, {limit: 5}).subscribe(() => {
+                // assert
+                expect(mockSharedPreferences.getString).toHaveBeenCalled();
+                expect(mockApiService.fetch).toHaveBeenCalled();
+                expect(getSearchContentRequestData).toHaveBeenCalled();
+                expect(mapSearchResponseData).toHaveBeenCalled();
+                done();
+            });
+        });
+    });
+
+
     describe('deleteContent', () => {
         it('should delete downloaded content from local', async (done) => {
             // arrange
@@ -1221,78 +1340,6 @@ describe('ContentServiceImpl', () => {
                 // assert
                 expect(mockApiService.fetch).toHaveBeenCalled();
                 expect(getContentSearchFilterData).toHaveBeenCalled();
-                done();
-            });
-        });
-    });
-
-     describe('searchContent', () => {
-        it('should used for search content', (done) => {
-            // arrange
-            const getSearchContentRequestData = jest.fn().mockImplementation(() => ({ filters: {contentType: []} }));
-            const mapSearchResponseData = jest.fn().mockImplementation(() => ({ id: 'sid' }));
-            (SearchContentHandler as jest.Mock<SearchContentHandler>).mockImplementation(() => {
-                return {
-                    getSearchContentRequest: getSearchContentRequestData,
-                    mapSearchResponse: mapSearchResponseData
-                } as Partial<SearchContentHandler> as SearchContentHandler;
-            });
-            const request: ContentSearchCriteria = {
-                limit: 1,
-                offset: 2
-            };
-            contentService = container.get(InjectionTokens.CONTENT_SERVICE);
-            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'));
-            spyOn(mockApiService, 'fetch').and.returnValue(of({
-                body: {
-                    result: {
-                        response: 'SAMPLE_RESPONSE'
-                    }
-                }
-            }));
-            // act
-            contentService.searchContent(request).subscribe(() => {
-                // assert
-                expect(mockSharedPreferences.getString).toHaveBeenCalled();
-                expect(mockApiService.fetch).toHaveBeenCalled();
-                expect(getSearchContentRequestData).toHaveBeenCalled();
-                expect(mapSearchResponseData).toHaveBeenCalled();
-                done();
-            });
-        });
-
-        it('should used for search content if request', (done) => {
-            // arrange
-            const getSearchContentRequestData = jest.fn().mockImplementation(() => ({ filters: {contentType: []} }));
-            const mapSearchResponseData = jest.fn().mockImplementation(() => ({ id: 'sid' }));
-            (SearchContentHandler as jest.Mock<SearchContentHandler>).mockImplementation(() => {
-                return {
-                    getSearchContentRequest: getSearchContentRequestData,
-                    mapSearchResponse: mapSearchResponseData,
-                    getSearchCriteria: jest.fn(() => ({languageCode: 'bn'}))
-                } as Partial<SearchContentHandler> as SearchContentHandler;
-            });
-            const request: ContentSearchCriteria = {
-                limit: 1,
-                offset: 2,
-                languageCode: 'en'
-            };
-            contentService = container.get(InjectionTokens.CONTENT_SERVICE);
-            mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'));
-            spyOn(mockApiService, 'fetch').and.returnValue(of({
-                body: {
-                    result: {
-                        response: 'SAMPLE_RESPONSE'
-                    }
-                }
-            }));
-            // act
-            contentService.searchContent(request, {limit: 5}).subscribe(() => {
-                // assert
-                expect(mockSharedPreferences.getString).toHaveBeenCalled();
-                expect(mockApiService.fetch).toHaveBeenCalled();
-                expect(getSearchContentRequestData).toHaveBeenCalled();
-                expect(mapSearchResponseData).toHaveBeenCalled();
                 done();
             });
         });
