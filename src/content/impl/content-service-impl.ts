@@ -628,6 +628,11 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                 CsMimeTypeFacetToMimeTypeCategoryAggregator.aggregate(mimeTypeFacetFilters.values as any,
                                     contentSearchCriteria.searchType === 'filter' ? [MimeTypeCategory.ALL] : []) as any;
                         }
+                        if (mimeTypeFacetFilters && contentSearchCriteria.searchType === 'search') {
+                            mimeTypeFacetFilters.values = mimeTypeFacetFilters.values
+                                .filter((c) => c.name === 'ALL')
+                                .map(f => ({...f, apply: true}));
+                        }
 
                         return contentSearchResponse;
                     })
