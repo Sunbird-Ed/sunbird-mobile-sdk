@@ -630,7 +630,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         }
                         if (mimeTypeFacetFilters && contentSearchCriteria.searchType === 'search') {
                             mimeTypeFacetFilters.values = mimeTypeFacetFilters.values
-                                .filter((c) => c.name === 'ALL')
+                                .filter((c) => c.name === MimeTypeCategory.ALL)
                                 .map(f => ({...f, apply: true}));
                         }
 
