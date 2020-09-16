@@ -91,7 +91,10 @@ describe('ContentMapper', () => {
                         previewUrl: undefined,
                         size: undefined,
                         streamingUrl: undefined,
-                        visibility: true
+                        visibility: true,
+                        trackable: {
+                          enable: 'No'
+                      }
                     },
                     contentType: 'textbook',
                     identifier: 'sample-id',
@@ -137,7 +140,7 @@ describe('ContentMapper', () => {
                         size: '10KB',
                         streamingUrl: 'url',
                         primaryCategory: 'Course',
-                      trackable: {
+                        trackable: {
                             enable: 'Yes'
                         }
                     },
@@ -175,7 +178,10 @@ describe('ContentMapper', () => {
                     identifier: 'sample-id',
                     lastUpdatedOn: '12/02/20202',
                     mimeType: 'sample-mime-type',
-                    primaryCategory: 'sample-content-type'
+                    primaryCategory: 'sample-content-type',
+                    trackable: {
+                      enable: 'No'
+                  }
                 },
                 contentType: 'sample-content-type',
                 identifier: 'sample-identifier',
@@ -247,7 +253,9 @@ describe('ContentMapper', () => {
             const shouldConvertBasePath = true;
             expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath)).toEqual({
                 basePath: '/_app_file_',
-                contentData: {identifier: 'sample-identifier', name: 'some_name', contentType: 'sample-content-type', mimeType: 'sample-mime-type', primaryCategory: 'sample-content-type'},
+                contentData: {identifier: 'sample-identifier', name: 'some_name', contentType: 'sample-content-type', mimeType: 'sample-mime-type', primaryCategory: 'sample-content-type', trackable: {
+                    enable: 'No'
+                  }},
                 contentType: 'sample-content-type',
                 identifier: 'sample-identifier',
                 name: 'some_name',
@@ -280,7 +288,10 @@ describe('ContentMapper', () => {
                         lastUpdatedOn: '12/02/20202',
                         mimeType: 'sample-mime-type',
                         contentType: 'Course',
-                        primaryCategory: 'Course'
+                        primaryCategory: 'Course',
+                        trackable: {
+                          enable: 'Yes'
+                        }
                     },
                     contentType: 'course',
                     identifier: 'sample-id',
