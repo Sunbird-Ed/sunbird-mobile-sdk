@@ -84,6 +84,7 @@ global.sbutility = {
     },
     writeFile: () => {},
     getUtmInfo: () => {},
+    renameDirectory: () => {}
 };
 
 global.sbutility = {
