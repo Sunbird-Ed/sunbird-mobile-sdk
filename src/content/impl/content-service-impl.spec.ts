@@ -17,6 +17,7 @@ import {
     HierarchyInfo,
     MarkerType,
     RelevantContentRequest,
+    SearchType,
 } from '..';
 import {ContentServiceImpl} from './content-service-impl';
 import {Container} from 'inversify';
@@ -309,18 +310,18 @@ describe('ContentServiceImpl', () => {
                             name: 'mimeType',
                             values: [
                                 {
-                                    name: 'VIDEO',
+                                    name: 'ALL',
                                     count: 10,
                                     values: [{
                                         name: 'video/mp4',
                                         count: 1,
-                                        apply: true
+                                        apply: false
                                     }, {
                                         name: 'video/webm',
                                         count: 9,
-                                        apply: true
+                                        apply: false
                                     }],
-                                    apply: true
+                                    apply: false
                                 }
                             ],
 
@@ -340,7 +341,7 @@ describe('ContentServiceImpl', () => {
                     name: 'mimeType',
                     values: [
                         {
-                            name: 'VIDEO',
+                            name: 'ALL',
                             count: 10,
                             values: [{
                                 name: 'video/mp4',
@@ -351,11 +352,12 @@ describe('ContentServiceImpl', () => {
                                 count: 9,
                                 apply: true
                             }],
-                            apply: true
+                            apply: false
                         }
                     ],
 
-                }]
+                }],
+                searchType: SearchType.SEARCH
             };
             contentService = container.get(InjectionTokens.CONTENT_SERVICE);
             mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('[{"identifiers": "sample-id"}]'));
