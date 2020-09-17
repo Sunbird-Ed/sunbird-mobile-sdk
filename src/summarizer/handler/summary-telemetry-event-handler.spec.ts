@@ -1,11 +1,11 @@
-import { SummaryTelemetryEventHandler } from './summary-telemetry-event-handler';
-import { CourseService, SharedPreferences, EventsBusService, ContentService, ProfileService, DbService } from '../..';
-import { SummarizerService } from '..';
-import { telemetry } from './summary-telemetry-event-handler.spec.data';
-import { of } from 'rxjs';
-import { ContentKeys } from '../../preference-keys';
+import {SummaryTelemetryEventHandler} from './summary-telemetry-event-handler';
+import {ContentService, CourseService, DbService, EventsBusService, ProfileService, SharedPreferences} from '../..';
+import {SummarizerService} from '..';
+import {telemetry} from './summary-telemetry-event-handler.spec.data';
+import {of} from 'rxjs';
 import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
 import {TelemetryService} from '../../telemetry';
+import {CsPrimaryCategory} from '@project-sunbird/client-services/services/content';
 
 jest.mock('../../telemetry/util/telemetry-logger');
 
@@ -124,7 +124,8 @@ describe('SummaryTelemetryEventHandler', () => {
         mockContentService.getContentDetails = jest.fn().mockImplementation(() => { });
         (mockContentService.getContentDetails as jest.Mock).mockReturnValue(of({
             name: 'CONTENT_NAME', sections: {},
-            contentType: 'SELFASSESS'
+            contentType: 'SELFASSESS',
+            primaryCategory: CsPrimaryCategory.COURSE_ASSESSMENT
         }));
         mockCourseService.hasCapturedAssessmentEvent = jest.fn().mockImplementation(() => { });
         (mockCourseService.hasCapturedAssessmentEvent as jest.Mock).mockReturnValue(true);

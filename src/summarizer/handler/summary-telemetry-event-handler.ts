@@ -18,6 +18,7 @@ import {defer, iif, Observable, of} from 'rxjs';
 import {delay, map, mapTo, mergeMap, tap} from 'rxjs/operators';
 import {CsContentProgressCalculator} from '@project-sunbird/client-services/services/content/utilities/content-progress-calculator';
 import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
+import {CsPrimaryCategory} from '@project-sunbird/client-services/services/content';
 import Telemetry = SunbirdTelemetry.Telemetry;
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
@@ -153,9 +154,11 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                 delay(2000),
                 map(() => {
                     if (
-                        (content.contentType.toLowerCase() === 'selfassess' || content.contentType.toLowerCase()
-                            === 'onboardingresource') &&
                         courseContext &&
+                        (
+                            content.primaryCategory === CsPrimaryCategory.COURSE_ASSESSMENT ||
+                            content.contentType.toLowerCase() === 'onboardingresource'
+                        ) &&
                         this.courseService.hasCapturedAssessmentEvent({courseContext})
                     ) {
                         return false;
