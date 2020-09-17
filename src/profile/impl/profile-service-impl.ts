@@ -21,7 +21,10 @@ import {
     TenantInfoRequest,
     UpdateServerProfileInfoRequest,
     UserMigrateRequest,
-    VerifyOtpRequest
+    VerifyOtpRequest,
+    Consent,
+    ReadConsentResponse,
+    UpdateConsentResponse
 } from '..';
 import {DbService} from '../../db';
 import {GroupProfileEntry, ProfileEntry} from '../db/schema';
@@ -707,6 +710,14 @@ export class ProfileServiceImpl implements ProfileService {
 
     updateServerProfileDeclarations(request: UpdateServerProfileDeclarationsRequest): Observable<UpdateServerProfileDeclarationsResponse> {
         return this.userService.updateUserDeclarations(request.declarations, { apiPath: this.sdkConfig.profileServiceConfig.profileApiPath });
+    }
+
+    getConsent(userConsent: Consent): Observable<ReadConsentResponse> {
+        return this.userService.getConsent(userConsent);
+    }
+
+    updateConsent(userConsent: Consent): Observable<UpdateConsentResponse> {
+        return this.userService.updateConsent(userConsent);
     }
 
     private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {

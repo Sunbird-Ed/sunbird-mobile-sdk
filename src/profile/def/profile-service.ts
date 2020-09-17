@@ -30,14 +30,17 @@ import {CheckUserExistsResponse} from './check-user-exists-response';
 import {CheckUserExistsRequest} from './check-user-exists-request';
 import {UpdateServerProfileDeclarationsResponse} from './update-server-profile-declarations-response';
 import {UpdateServerProfileDeclarationsRequest} from './update-server-profile-declarations-request';
-
+import {Consent} from '@project-sunbird/client-services/models';
+export {Consent} from '@project-sunbird/client-services/models';
+export {ReadConsentResponse , UpdateConsentResponse} from '@project-sunbird/client-services/services/user';
+import {ReadConsentResponse, UpdateConsentResponse} from '@project-sunbird/client-services/services/user';
 
 export interface ProfileService extends SdkServicePreInitDelegate {
     readonly managedProfileManager: ManagedProfileManager;
 
     checkServerProfileExists(request: CheckUserExistsRequest): Observable<CheckUserExistsResponse>;
 
-    createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
+        createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
 
     deleteProfile(uid: string): Observable<undefined>;
 
@@ -84,4 +87,7 @@ export interface ProfileService extends SdkServicePreInitDelegate {
     userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse>;
 
     updateServerProfileDeclarations(updateServerProfileDeclarationsRequest: UpdateServerProfileDeclarationsRequest): Observable<UpdateServerProfileDeclarationsResponse>;
+
+    updateConsent(userConsent: Consent): Observable<UpdateConsentResponse>;
+    getConsent(userConsent: Consent): Observable<ReadConsentResponse>;
 }
