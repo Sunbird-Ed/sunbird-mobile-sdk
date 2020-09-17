@@ -14,7 +14,7 @@ import {ContentKeys} from '../../preference-keys';
 import {EventNamespace, EventsBusService} from '../../events-bus';
 import {Content, ContentDetailRequest, ContentEventType, ContentMarkerRequest, ContentService, MarkerType} from '../../content';
 import {ContentAccess, ContentAccessStatus, ProfileService} from '../../profile';
-import {defer, Observable, of} from 'rxjs';
+import {defer, iif, Observable, of} from 'rxjs';
 import {delay, map, mapTo, mergeMap, tap} from 'rxjs/operators';
 import {CsContentProgressCalculator} from '@project-sunbird/client-services/services/content/utilities/content-progress-calculator';
 import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
@@ -26,6 +26,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     private currentUID?: string = undefined;
     private currentContentID?: string = undefined;
     private courseContext = {};
+    private memoizedContentDetails?: { identifier: string, content: Content };
 
     constructor(
         private courseService: CourseService,
@@ -88,8 +89,9 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                                 );
                             } else if ((event.eid === 'END' && status === 0) ||
                                 (event.eid === 'END' && status === 1)) {
-                                return this.contentService.getContentDetails(
-                                    {contentId: event.object.id}
+                                return this.getMemoizedContentDetails(
+                                    {contentId: event.object.id},
+                                    true
                                 ).pipe(
                                     mergeMap((content) => {
                                         return this.validEndEvent(event, content, courseContext).pipe(
@@ -243,7 +245,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         const request: ContentDetailRequest = {
             contentId: identifier
         };
-        return this.contentService.getContentDetails(request).pipe(
+        return this.getMemoizedContentDetails(request).pipe(
             mergeMap((content: Content) => {
                 const addContentAccessRequest: ContentAccess = {
                     status: ContentAccessStatus.PLAYED,
@@ -363,9 +365,36 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
             objType: content.contentData.contentType || '',
             objVer: content.contentData.pkgVersion || '',
             rollUp: rollup || {},
-            correlationData : cdata,
+            correlationData: cdata,
             type: 'content-progress'
         };
         TelemetryLogger.log.audit(auditRequest).toPromise();
+    }
+
+    private getMemoizedContentDetails(request: ContentDetailRequest, clearOnComplete = false): Observable<Content> {
+        return iif(
+            () => {
+                if (this.memoizedContentDetails) {
+                    if (this.memoizedContentDetails.identifier === request.contentId) {
+                        return true;
+                    } else {
+                        console.error(`SummaryTelemetryEventHandler.getMemoizedContentDetails: requesting for ${request.contentId} without clearing ${this.memoizedContentDetails.identifier}`);
+                        return false;
+                    }
+                }
+
+                return false;
+            },
+            defer(() => of(this.memoizedContentDetails!.content)),
+            defer(() => this.contentService.getContentDetails(request).pipe(
+                tap((content) => this.memoizedContentDetails = {identifier: request.contentId, content})
+            ))
+        ).pipe(
+            tap(() => {
+                if (clearOnComplete) {
+                    this.memoizedContentDetails = undefined;
+                }
+            })
+        );
     }
 }
