@@ -1,7 +1,7 @@
-import { UpdateEnrolledCoursesHandler } from './update-enrolled-courses-handler';
-import { KeyValueStore, GetContentStateRequest, ContentStateResponse, ContentState } from '../..';
-import { OfflineContentStateHandler } from './offline-content-state-handler';
-import { of } from 'rxjs';
+import {UpdateEnrolledCoursesHandler} from './update-enrolled-courses-handler';
+import {ContentState, ContentStateResponse, GetContentStateRequest, KeyValueStore} from '../..';
+import {OfflineContentStateHandler} from './offline-content-state-handler';
+import {of} from 'rxjs';
 
 describe('UpdateEnrolledCoursesHandler', () => {
     let updateEnrolledCoursesHandler: UpdateEnrolledCoursesHandler;
@@ -23,12 +23,12 @@ describe('UpdateEnrolledCoursesHandler', () => {
         expect(updateEnrolledCoursesHandler).toBeTruthy();
     });
 
-    it('should handle locla content state means offline', (done) => {
+    it('should handle local content state means offline', (done) => {
         // arrange
         const request: GetContentStateRequest = {
             userId: 'sample-user-id',
             batchId: 'sample-batch-id',
-            courseIds: ['course-id-1', 'course-id-2']
+            courseId: 'course-id-1'
         };
         const contentState: ContentState[] = [{
             lastAccessTime: '03:00AM',
@@ -55,7 +55,7 @@ describe('UpdateEnrolledCoursesHandler', () => {
         const request: GetContentStateRequest = {
             userId: 'sample-user-id',
             batchId: 'sample-batch-id',
-            courseIds: ['course-id-1', 'course-id-2']
+            courseId: 'course-id-1'
         };
         const contentState: ContentState[] = [{
             lastAccessTime: '03:00AM',
@@ -82,7 +82,7 @@ describe('UpdateEnrolledCoursesHandler', () => {
         const request: GetContentStateRequest = {
             userId: 'sample-user-id',
             batchId: 'sample-batch-id',
-            courseIds: ['course-id-1', 'course-id-2']
+            courseId: 'course-id-1'
         };
         const contentState: ContentState[] = [{
             lastAccessTime: '03:00AM',

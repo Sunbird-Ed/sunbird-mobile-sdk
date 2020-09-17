@@ -1,7 +1,7 @@
 import { ApiTokenHandler } from './api-token-handler';
 import { ApiConfig, ApiService } from '..';
-import { DeviceInfo, JWTUtil } from '../..';
-import { of } from 'rxjs';
+import { DeviceInfo, JWTUtil, ResponseCode } from '../..';
+import { of, throwError } from 'rxjs';
 
 describe('ApiTokenHandler', () => {
     let apiTokenHandler: ApiTokenHandler;
@@ -19,6 +19,7 @@ describe('ApiTokenHandler', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.resetAllMocks();
     });
 
     it('should be instance of apiTokenHandler', () => {
@@ -35,7 +36,7 @@ describe('ApiTokenHandler', () => {
                     }
                 }
             })) as any;
-            mockConfig.api_authentication = {mobileAppConsumer : 'sample-mobile-app-consumer'} as any;
+            mockConfig.api_authentication = { mobileAppConsumer: 'sample-mobile-app-consumer' } as any;
             jest.spyOn(JWTUtil, 'createJWToken').mockReturnValue('sample');
             mockDeviceInfo.getDeviceID = jest.fn(() => 'sample-device-id');
             // act

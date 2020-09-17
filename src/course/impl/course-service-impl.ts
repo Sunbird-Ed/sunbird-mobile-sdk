@@ -15,7 +15,7 @@ import {
     UnenrollCourseRequest,
     UpdateContentStateRequest
 } from '..';
-import {defer, interval, Observable, Observer, of, zip} from 'rxjs';
+import {defer, interval, Observable, Observer, of} from 'rxjs';
 import {ProfileService, ProfileServiceConfig} from '../../profile';
 import {GetBatchDetailsHandler} from '../handlers/get-batch-details-handler';
 import {UpdateContentStateApiHandler} from '../handlers/update-content-state-api-handler';
@@ -33,13 +33,12 @@ import {UpdateEnrolledCoursesHandler} from '../handlers/update-enrolled-courses-
 import {OfflineContentStateHandler} from '../handlers/offline-content-state-handler';
 import {CourseUtil} from '../course-util';
 import {ProcessingError} from '../../auth/errors/processing-error';
-import {inject, injectable} from 'inversify';
+import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DownloadCertificateRequest} from '../def/download-certificate-request';
 import {NoCertificateFound} from '../errors/no-certificate-found';
 import {AppInfo} from '../../util/app';
-import {FileUtil} from '../../util/file/util/file-util';
 import {DownloadStatus} from '../../util/download';
 import {DownloadCertificateResponse} from '../def/download-certificate-response';
 import {SunbirdTelemetry} from '../../telemetry';
@@ -76,6 +75,7 @@ export class CourseServiceImpl implements CourseService {
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
         @inject(CsInjectionTokens.COURSE_SERVICE) private csCourseService: CsCourseService,
         @inject(InjectionTokens.NETWORK_QUEUE) private networkQueue: NetworkQueue,
+        @inject(InjectionTokens.CONTAINER) private container: Container,
     ) {
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
         this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
@@ -106,7 +106,7 @@ export class CourseServiceImpl implements CourseService {
                     throw new ProcessingError('Request processing failed');
                 }),
                 catchError((error) => {
-                  return of(true);
+                    return of(true);
                 }),
                 mergeMap(() => {
                     return offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request);
@@ -122,9 +122,9 @@ export class CourseServiceImpl implements CourseService {
     }
 
     getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]> {
-      return new GetEnrolledCourseHandler(
-        this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
-      ).handle(request);
+        return new GetEnrolledCourseHandler(
+            this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
+        ).handle(request);
     }
 
     getUserEnrolledCourses({request, from}: GetUserEnrolledCoursesRequest): Observable<Course[]> {
@@ -132,7 +132,7 @@ export class CourseServiceImpl implements CourseService {
             request.userId + (request.filters ? '_' + JSON.stringify(request.filters) : ''),
             CourseServiceImpl.USER_ENROLLMENT_LIST_KEY_PREFIX,
             'ttl_' + CourseServiceImpl.USER_ENROLLMENT_LIST_KEY_PREFIX,
-            () => this.csCourseService.getUserEnrolledCourses(request, {}, {apiPath: '/api/course/v2'}),
+            () => this.csCourseService.getUserEnrolledCourses(request, {}, {apiPath: '/api/course/v2', certRegistrationApiPath: ''}),
         );
     }
 
@@ -155,44 +155,19 @@ export class CourseServiceImpl implements CourseService {
     }
 
     getContentState(request: GetContentStateRequest): Observable<ContentStateResponse | undefined> {
-        const key = CourseServiceImpl.GET_CONTENT_STATE_KEY_PREFIX.concat(request.userId, request.courseIds[0]);
+        const key = CourseServiceImpl.GET_CONTENT_STATE_KEY_PREFIX.concat(request.userId, request.courseId);
         const offlinecontentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
         const updateCourseHandler: UpdateEnrolledCoursesHandler =
             new UpdateEnrolledCoursesHandler(this.keyValueStore, offlinecontentStateHandler);
         return this.keyValueStore.getValue(key)
             .pipe(
                 mergeMap((value?: string) => {
-                    if (!value) {
-                        return new GetContentStateHandler(this.apiService, this.courseServiceConfig)
-                            .handle(request)
-                            .pipe(
-                                mergeMap((response: any) => {
-                                    if (response) {
-                                        return this.keyValueStore.setValue(key, JSON.stringify(response))
-                                            .pipe(
-                                                mergeMap(() => {
-                                                    return offlinecontentStateHandler.getLocalContentStateResponse(request);
-                                                }),
-                                                mergeMap(() => {
-                                                    return updateCourseHandler.updateEnrollCourses(request);
-                                                })
-                                            );
-                                    } else {
-                                        return of<ContentStateResponse | undefined>(undefined);
-                                    }
-                                }),
-                                catchError((error) => {
-                                    return offlinecontentStateHandler.getLocalContentStateResponse(request)
-                                        .pipe(
-                                            mergeMap(() => {
-                                                return updateCourseHandler.updateEnrollCourses(request);
-                                            })
-                                        );
-                                })
-                            );
-                    } else if (request.returnRefreshedContentStates) {
-                        return new GetContentStateHandler(this.apiService, this.courseServiceConfig)
-                            .handle(request)
+                    if (!value || request.returnRefreshedContentStates) {
+                        return new GetContentStateHandler(
+                            this.apiService,
+                            this.courseServiceConfig,
+                            this.container
+                        ).handle(request)
                             .pipe(
                                 mergeMap((response: any) => {
                                     if (response) {
@@ -236,119 +211,128 @@ export class CourseServiceImpl implements CourseService {
             );
     }
 
-    public downloadCurrentProfileCourseCertificate(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
-        return this.profileService.getActiveProfileSession()
-            .pipe(
-                mergeMap((session) => {
-                    const option = {
-                        userId: session.uid,
-                        refreshEnrolledCourses: false,
-                        returnRefreshedEnrolledCourses: true
-                    };
-                    return this.getEnrolledCourses(option);
-                }),
-                map((courses: Course[]) => {
-                    return courses
-                        .filter((course) => course.status && course.status === 2)
-                        .find((course) => course.courseId === request.courseId)!;
-                }),
-                map((course: Course) => {
-                    if (!course.certificates || !course.certificates.length) {
-                        throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
-                    }
+    public downloadCurrentProfileCourseCertificateV2(
+        request: DownloadCertificateRequest,
+        pdfDataProvider: (pdfSvgData: string, cb: (pdfData: Blob) => void) => void): Observable<DownloadCertificateResponse> {
+        return defer(async () => {
+            const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
+            const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
+            const filePath = `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
+            try {
+                await this.fileService.exists(filePath);
+                throw new CertificateAlreadyDownloaded('Certificate already downloaded', filePath);
+            } catch (e) {
+                if (e instanceof CertificateAlreadyDownloaded) {
+                    throw e;
+                }
+            }
 
-                    const certificate = course.certificates[0];
-
-                    if (!certificate) {
-                        throw new NoCertificateFound(`No certificate found for ${course.identifier}`);
-                    }
-
-                    return {certificate, course};
-                }),
-                mergeMap(({certificate, course}) => {
-                    const filePath = `${cordova.file.externalRootDirectory}Download/${FileUtil.getFileName(certificate.url)}`;
-                    return defer(async () => {
-                        try {
-                            await this.fileService.exists(filePath);
-                            throw new CertificateAlreadyDownloaded('Certificate already downloaded');
-                        } catch (e) {
-                            if (e instanceof CertificateAlreadyDownloaded) {
-                                throw e;
-                            }
-                            return {certificate, course};
-                        }
-                    });
-                }),
-                mergeMap(({certificate, course}) => {
-                    const signCertificateRequest = new Request.Builder()
-                        .withType(HttpRequestType.POST)
-                        .withPath(CourseServiceImpl.CERTIFICATE_SIGN_ENDPOINT)
-                        .withBearerToken(true)
-                        .withUserToken(true)
-                        .withBody({
-                            request:
-                                {
-                                    pdfUrl: certificate.url
-                                }
-                        })
-                        .build();
-
-                    return this.apiService.fetch<{ result: { signedUrl: string } }>(signCertificateRequest)
-                        .pipe(
-                            map((response) => {
-                                return {
-                                    certificate, course,
-                                    signedPdfUrl: response.body.result.signedUrl
-                                };
-                            })
-                        );
-                }),
-                mergeMap(({certificate, course, signedPdfUrl}) => {
-                    const downloadRequest: EnqueueRequest = {
-                        uri: signedPdfUrl,
-                        title: certificate.token,
-                        description: '',
-                        mimeType: 'application/pdf',
-                        visibleInDownloadsUi: true,
-                        notificationVisibility: 1,
-                        destinationInExternalPublicDir: {
-                            dirType: 'Download',
-                            subPath: `/${FileUtil.getFileName(certificate.url)}`
-                        },
-                        headers: []
-                    };
-
-                    return new Observable<string>((observer: Observer<string>) => {
-                        downloadManager.enqueue(downloadRequest, (err, id: string) => {
-                            if (err) {
-                                return observer.error(err);
-                            }
-
-                            observer.next(id);
-                            observer.complete();
+            const response = await this.csCourseService.getSignedCourseCertificate(request.certificate.identifier!).toPromise();
+            if (!response['printUri']) {
+                throw new NoCertificateFound(`No certificate found for ${request.courseId}`);
+            }
+            return new Promise<{ path: string }>((resolve, reject) => {
+                pdfDataProvider(response['printUri'], (pdfData: Blob) => {
+                    try {
+                        this.fileService.writeFile(cordova.file.externalRootDirectory +
+                            'Download/', `${request.certificate.name}_${request.courseId}_${userId}.pdf`, pdfData as any, {replace: true});
+                        resolve({
+                            path: `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`
                         });
-                    }) as Observable<string>;
-                }),
-                mergeMap((downloadId: string) => {
-                    return interval(1000)
-                        .pipe(
-                            mergeMap(() => {
-                                return new Observable((observer: Observer<EnqueuedEntry>) => {
-                                    downloadManager.query({ids: [downloadId]}, (err, entries) => {
-                                        if (err) {
-                                            return observer.error(err);
-                                        }
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            });
+        });
+    }
 
-                                        return observer.next(entries[0]! as EnqueuedEntry);
-                                    });
+    public downloadCurrentProfileCourseCertificate(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
+        return defer(async () => {
+            const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
+            const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
+            const filePath = `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
+            try {
+                await this.fileService.exists(filePath);
+                throw new CertificateAlreadyDownloaded('Certificate already downloaded', filePath);
+            } catch (e) {
+                if (e instanceof CertificateAlreadyDownloaded) {
+                    throw e;
+                }
+            }
+
+            return {userId};
+        }).pipe(
+            mergeMap(({userId}) => {
+                const signCertificateRequest = new Request.Builder()
+                    .withType(HttpRequestType.POST)
+                    .withPath(CourseServiceImpl.CERTIFICATE_SIGN_ENDPOINT)
+                    .withBearerToken(true)
+                    .withUserToken(true)
+                    .withBody({
+                        request:
+                            {
+                                pdfUrl: request.certificate.url!
+                            }
+                    })
+                    .build();
+
+                return this.apiService.fetch<{ result: { signedUrl: string } }>(signCertificateRequest)
+                    .pipe(
+                        map((response) => {
+                            return {
+                                signedPdfUrl: response.body.result.signedUrl,
+                                userId
+                            };
+                        })
+                    );
+            }),
+            mergeMap(({signedPdfUrl, userId}) => {
+                const downloadRequest: EnqueueRequest = {
+                    uri: signedPdfUrl,
+                    title: request.certificate.token,
+                    description: '',
+                    mimeType: 'application/pdf',
+                    visibleInDownloadsUi: true,
+                    notificationVisibility: 1,
+                    destinationInExternalPublicDir: {
+                        dirType: 'Download',
+                        subPath: `/${request.certificate.name}_${request.courseId}_${userId}.pdf`
+                    },
+                    headers: []
+                };
+
+                return new Observable<string>((observer: Observer<string>) => {
+                    downloadManager.enqueue(downloadRequest, (err, id: string) => {
+                        if (err) {
+                            return observer.error(err);
+                        }
+
+                        observer.next(id);
+                        observer.complete();
+                    });
+                }) as Observable<string>;
+            }),
+            mergeMap((downloadId: string) => {
+                return interval(1000)
+                    .pipe(
+                        mergeMap(() => {
+                            return new Observable((observer: Observer<EnqueuedEntry>) => {
+                                downloadManager.query({ids: [downloadId]}, (err, entries) => {
+                                    if (err) {
+                                        return observer.error(err);
+                                    }
+
+                                    return observer.next(entries[0]! as EnqueuedEntry);
                                 });
-                            }),
-                            filter((entry: EnqueuedEntry) => entry.status === DownloadStatus.STATUS_SUCCESSFUL),
-                            take(1)
-                        );
-                }),
-                map((entry) => ({path: entry.localUri}))
-            );
+                            });
+                        }),
+                        filter((entry: EnqueuedEntry) => entry.status === DownloadStatus.STATUS_SUCCESSFUL),
+                        take(1)
+                    );
+            }),
+            map((entry) => ({path: entry.localUri}))
+        );
     }
 
     public hasCapturedAssessmentEvent({courseContext}: { courseContext: any }) {

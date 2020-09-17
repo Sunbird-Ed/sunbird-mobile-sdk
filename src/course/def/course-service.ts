@@ -51,4 +51,8 @@ export interface CourseService {
     syncAssessmentEvents(options?: {persistedOnly: boolean}): Observable<undefined>;
 
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
+
+    downloadCurrentProfileCourseCertificateV2(
+        request: DownloadCertificateRequest,
+        pdfDataProvider: (pdfSvgData: string, cb: (pdfData: Blob) => void) => void): Observable<DownloadCertificateResponse>;
 }

@@ -50,11 +50,23 @@ describe('CleanTempLoc', () => {
             contentModelsToExport: request,
             metadata: {['SAMPLE_KEY']: 'META_DATA'},
         };
-        (mockFileService.listDir as jest.Mock).mockReturnValue(['1', '2']);
+        mockFileService.listDir = jest.fn(() => Promise.resolve([{
+            nativeURL: 'sample.ecar',
+            remove: jest.fn((cb, err) => cb())
+        }])) as any;
+        jest.spyOn(FileUtil, 'getFileExtension').mockImplementation(() => {
+            return 'ecar';
+        });
+        mockFileService.getMetaData = jest.fn(() => Promise.resolve({
+            modificationTime: new Date(2020, 7, 7)
+        })) as any;
         // act
-        await cleanTempLoc.execute(exportContext).then(() => {
+        await cleanTempLoc.execute(exportContext).then((d) => {
             // assert
-            //  expect(mockFileService.listDir).toHaveBeenCalled();
+            expect(d.body).toBeTruthy();
+            expect(mockFileService.listDir).toHaveBeenCalled();
+            expect(FileUtil.getFileExtension).toReturn();
+            expect(mockFileService.getMetaData).toHaveBeenCalled();
             done();
         });
     });
@@ -74,23 +86,78 @@ describe('CleanTempLoc', () => {
             contentModelsToExport: request,
             metadata: {['SAMPLE_KEY']: 'META_DATA'},
         };
-        (mockFileService.listDir as jest.Mock).mockReturnValue(of([{name: 'one'}]));
-
-        // spyOn(dir[0], 'remove').and.callFake(
-        //     (a, b) => {
-        //         setTimeout(() => {
-        //             a();
-        //             b();
-        //         }, 0);
-        //     }
-        // );
-        // console.log(directory[0].remove());
-        (FileUtil.getFileExtension as jest.Mock).mockReturnValue('ecar');
-        (mockFileService.getMetaData as jest.Mock).mockResolvedValue({modificationTime: 'July 20, 69 00:20:18'});
-        await cleanTempLoc.execute(exportContext).then(() => {
+        mockFileService.listDir = jest.fn(() => Promise.resolve([{
+            nativeURL: 'sample.ecar',
+            remove: jest.fn((cb, err) => err({error: 'error'}))
+        }])) as any;
+        jest.spyOn(FileUtil, 'getFileExtension').mockImplementation(() => {
+            return 'ecar';
+        });
+        mockFileService.getMetaData = jest.fn(() => Promise.resolve({
+            modificationTime: new Date(2020, 7, 7)
+        })) as any;
+        await cleanTempLoc.execute(exportContext).then((e) => {
             // assert
+            expect(e.body).toBeTruthy();
+            expect(mockFileService.listDir).toHaveBeenCalled();
+            expect(FileUtil.getFileExtension).toReturn();
+            expect(mockFileService.getMetaData).toHaveBeenCalled();
             done();
         });
-        // await expect(arr[0].remove()).resolves.toEqual('1');
+    });
+
+    it('should exportEcar and clean temporary location if file extention is not matched', async (done) => {
+        // arrange
+        const request: ContentEntry.SchemaMap[] = [{
+            identifier: 'IDENTIFIER',
+            server_data: 'SERVER_DATA',
+            local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
+            mime_type: 'MIME_TYPE',
+            manifest_version: 'MAINFEST_VERSION',
+            content_type: 'CONTENT_TYPE'
+        }];
+        const exportContext: ExportContentContext = {
+            destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
+            contentModelsToExport: request,
+            metadata: {['SAMPLE_KEY']: 'META_DATA'},
+        };
+        mockFileService.listDir = jest.fn(() => Promise.resolve([{
+            nativeURL: 'sample.pdf',
+            remove: jest.fn((cb, err) => err({error: 'error'}))
+        }])) as any;
+        jest.spyOn(FileUtil, 'getFileExtension').mockImplementation(() => {
+            return 'pdf';
+        });
+        await cleanTempLoc.execute(exportContext).then((e) => {
+            // assert
+            expect(e.body).toBeTruthy();
+            expect(mockFileService.listDir).toHaveBeenCalled();
+            expect(FileUtil.getFileExtension).toReturn();
+            done();
+        });
+    });
+
+    it('should exportEcar and clean temporary location if directoryList is empty', async (done) => {
+        // arrange
+        const request: ContentEntry.SchemaMap[] = [{
+            identifier: 'IDENTIFIER',
+            server_data: 'SERVER_DATA',
+            local_data: '{"children": [{"DOWNLOAD": 1}, "do_234", "do_345"]}',
+            mime_type: 'MIME_TYPE',
+            manifest_version: 'MAINFEST_VERSION',
+            content_type: 'CONTENT_TYPE'
+        }];
+        const exportContext: ExportContentContext = {
+            destinationFolder: 'SAMPLE_DESTINATION_FOLDER',
+            contentModelsToExport: request,
+            metadata: {['SAMPLE_KEY']: 'META_DATA'},
+        };
+        mockFileService.listDir = jest.fn(() => Promise.resolve([])) as any;
+        await cleanTempLoc.execute(exportContext).then((e) => {
+            // assert
+            expect(e.body).toBeTruthy();
+            expect(mockFileService.listDir).toHaveBeenCalled();
+            done();
+        });
     });
 });

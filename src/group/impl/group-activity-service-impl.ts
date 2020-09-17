@@ -14,10 +14,10 @@ export class GroupActivityServiceImpl implements GroupActivityService {
 
     getDataAggregation(request: GroupActivityDataAggregationRequest): Observable<GroupActivityDataAggregation> {
         return this.cachedItemStore[request.from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
-            `group-${request.groupId}-activity-${request.activity.id}-${request.activity.type}`,
-            GroupActivityServiceImpl.GROUP_ACTIVITY_DATA_AGGREGATION_KEY,
-            'ttl_' + GroupActivityServiceImpl.GROUP_ACTIVITY_DATA_AGGREGATION_KEY,
-            () => this.groupActivityService.getDataAggregation(request.groupId, request.activity, request.mergeGroup),
+          `group-${request.groupId}-activity-${request.activity.id}-${request.activity.type}`,
+          GroupActivityServiceImpl.GROUP_ACTIVITY_DATA_AGGREGATION_KEY,
+          'ttl_' + GroupActivityServiceImpl.GROUP_ACTIVITY_DATA_AGGREGATION_KEY,
+          () => this.groupActivityService.getDataAggregation(request.groupId, request.activity, request.mergeGroup, request.leafNodesCount),
         );
     }
 }
