@@ -31,7 +31,8 @@ export class ChildContentsHandler {
             hierarchyInfoList = hierarchyInfoList.concat(sourceInfoList!);
             hierarchyInfoList.push({
                 identifier: contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER],
-                contentType: contentInDb[ContentEntry.COLUMN_NAME_CONTENT_TYPE]
+                contentType: contentInDb[ContentEntry.COLUMN_NAME_CONTENT_TYPE],
+                primaryCategory: contentInDb[ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]
             });
             content.hierarchyInfo = hierarchyInfoList!;
 
@@ -113,8 +114,9 @@ export class ChildContentsHandler {
                     .fetchFromDB(nextContentIdentifierList[i]).toPromise();
                 if (contentInDb) {
                     nextContentHierarchyList.push({
-                        'identifier': contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER],
-                        'contentType': contentInDb[ContentEntry.COLUMN_NAME_CONTENT_TYPE]
+                        identifier: contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER],
+                        contentType: contentInDb[ContentEntry.COLUMN_NAME_CONTENT_TYPE],
+                        primaryCategory: contentInDb[ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]
                     });
                 } else {
                     isAllHierarchyContentFound = false;

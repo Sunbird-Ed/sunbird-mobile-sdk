@@ -68,13 +68,12 @@ describe('ContentAggregator', () => {
                 contentAggregator.handle({}).subscribe((result) => {
                     // assert
                     expect(mockContentService.getContents).toHaveBeenNthCalledWith(1, expect.objectContaining({
-                        contentTypes: ['Course'],
                         board: undefined,
                         medium: undefined,
-                        grade: undefined
+                        grade: undefined,
+                        primaryCategories: []
                     }));
                     expect(mockContentService.getContents).toHaveBeenNthCalledWith(2, expect.objectContaining({
-                        contentTypes: ['TextBook'],
                         board: undefined,
                         medium: undefined,
                         grade: undefined
@@ -82,7 +81,7 @@ describe('ContentAggregator', () => {
 
                     expect(mockCachedItemStore.getCached).toHaveBeenNthCalledWith(
                         1,
-                        'a66e7dc7c025107603a05957949c96f129e48c41',
+                        '27e83b402d63d832821e756b5b5d841600289088',
                         'search_content_grouped',
                         'ttl_search_content_grouped',
                         expect.anything(),
@@ -92,7 +91,7 @@ describe('ContentAggregator', () => {
                     );
                     expect(mockCachedItemStore.getCached).toHaveBeenNthCalledWith(
                         2,
-                        '27e7f10419a6a1cb7406942098660db3724da0b0',
+                        '27e83b402d63d832821e756b5b5d841600289088',
                         'search_content_grouped',
                         'ttl_search_content_grouped',
                         expect.anything(),
@@ -193,13 +192,12 @@ describe('ContentAggregator', () => {
                 }).subscribe((result) => {
                     // assert
                     expect(mockContentService.getContents).toHaveBeenNthCalledWith(1, expect.objectContaining({
-                        contentTypes: ['Course'],
                         board: undefined,
                         medium: undefined,
-                        grade: undefined
+                        grade: undefined,
+                        primaryCategories: []
                     }));
                     expect(mockContentService.getContents).toHaveBeenNthCalledWith(2, expect.objectContaining({
-                        contentTypes: ['TextBook'],
                         board: undefined,
                         medium: undefined,
                         grade: undefined
@@ -207,7 +205,7 @@ describe('ContentAggregator', () => {
 
                     expect(mockCachedItemStore.getCached).toHaveBeenNthCalledWith(
                         1,
-                        'a66e7dc7c025107603a05957949c96f129e48c41',
+                        '27e83b402d63d832821e756b5b5d841600289088',
                         'search_content_grouped',
                         'ttl_search_content_grouped',
                         expect.anything(),
@@ -217,7 +215,7 @@ describe('ContentAggregator', () => {
                     );
                     expect(mockCachedItemStore.getCached).toHaveBeenNthCalledWith(
                         2,
-                        '27e7f10419a6a1cb7406942098660db3724da0b0',
+                        '27e83b402d63d832821e756b5b5d841600289088',
                         'search_content_grouped',
                         'ttl_search_content_grouped',
                         expect.anything(),
@@ -325,13 +323,12 @@ describe('ContentAggregator', () => {
                 }).subscribe((result) => {
                     // assert
                     expect(mockContentService.getContents).toHaveBeenNthCalledWith(1, expect.objectContaining({
-                        contentTypes: ['Course'],
                         board: ['some_board'],
                         medium: ['some_medium'],
-                        grade: ['some_grade']
+                        grade: ['some_grade'],
+                        primaryCategories: []
                     }));
                     expect(mockContentService.getContents).toHaveBeenNthCalledWith(2, expect.objectContaining({
-                        contentTypes: ['TextBook'],
                         board: ['some_board'],
                         medium: ['some_medium'],
                         grade: ['some_grade']
@@ -339,7 +336,7 @@ describe('ContentAggregator', () => {
 
                     expect(mockCachedItemStore.getCached).toHaveBeenNthCalledWith(
                         1,
-                        'f23e78a63200ebfa7c97ebba44c2d89b2da80312',
+                        '78b675beed0b4ef73da507eca39195ebf750913e',
                         'search_content_grouped',
                         'ttl_search_content_grouped',
                         expect.anything(),
@@ -349,7 +346,7 @@ describe('ContentAggregator', () => {
                     );
                     expect(mockCachedItemStore.getCached).toHaveBeenNthCalledWith(
                         2,
-                        'a3c1938fe1f98256ef58858e478df2700e199817',
+                        '78b675beed0b4ef73da507eca39195ebf750913e',
                         'search_content_grouped',
                         'ttl_search_content_grouped',
                         expect.anything(),

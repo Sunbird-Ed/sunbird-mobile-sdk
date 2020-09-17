@@ -167,7 +167,7 @@ describe('SummarizerServiceImpl', () => {
             }
         ];
         contentServiceMock.getContents = jest.fn().mockImplementation(() => of(results));
-        const contentRequest: ContentRequest = {resourcesOnly: true, contentTypes: [], uid: request.uids};
+        const contentRequest: ContentRequest = {resourcesOnly: true, primaryCategories: [], uid: request.uids};
         // act
         summarizerService.getSummary(request).subscribe(() => {
             // assert

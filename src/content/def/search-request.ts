@@ -32,5 +32,6 @@ export interface SearchFilter {
     audience?: string[];
     mimeType?: string[];
     subject?: string[];
+    primaryCategory?: string[];
 
 }

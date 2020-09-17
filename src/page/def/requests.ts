@@ -1,5 +1,4 @@
 import { CachedItemRequest } from '../../key-value-store';
-// import { CachedItemRequest } from "src/key-value-store";
 
 export interface PageAssembleFilter {
     subject?: Array<string>;
@@ -10,6 +9,7 @@ export interface PageAssembleFilter {
     language?: Array<string>;
     concepts?: Array<string>;
     contentType?: Array<string>;
+    primaryCategory?: Array<string>;
     ageGroup?: Array<string>;
     ownership?: Array<string>;
     dialcodes?: string;

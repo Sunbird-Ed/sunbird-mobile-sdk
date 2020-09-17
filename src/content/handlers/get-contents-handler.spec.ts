@@ -21,7 +21,7 @@ describe('GetContentsHandler', () => {
         it('should return recently viewed query for local only', () => {
             // arrange
             const request: ContentRequest = {
-                contentTypes: [],
+                primaryCategories: [],
                 uid: 'sample-uid',
                 resourcesOnly: true,
                 audience: ['sample-audience'],
@@ -44,7 +44,7 @@ describe('GetContentsHandler', () => {
         it('should return recently viewed query for else part', () => {
             // arrange
             const request: ContentRequest = {
-                contentTypes: ['pdf', 'ecml'],
+                primaryCategories: ['pdf', 'ecml'],
                 uid: 'uid',
                 resourcesOnly: false,
                 audience: undefined,
@@ -72,7 +72,7 @@ describe('GetContentsHandler', () => {
         it('should generateSortByQuer for lastUsedOn', () => {
             // arrange
             const request: ContentRequest = {
-                contentTypes: ['pdf', 'ecml'],
+                primaryCategories: ['pdf', 'ecml'],
                 uid: undefined,
                 resourcesOnly: false,
                 audience: undefined,
@@ -98,7 +98,7 @@ describe('GetContentsHandler', () => {
         it('should generateSortByQuer for localLastUpdatedOn', () => {
             // arrange
             const request: ContentRequest = {
-                contentTypes: ['pdf', 'ecml'],
+                primaryCategories: ['pdf', 'ecml'],
                 uid: ['uid-123', 'uid-234'],
                 resourcesOnly: false,
                 audience: undefined,
@@ -124,7 +124,7 @@ describe('GetContentsHandler', () => {
         it('should generateSortByQuer for sizeOnDevice', () => {
             // arrange
             const request: ContentRequest = {
-                contentTypes: ['pdf', 'ecml'],
+                primaryCategories: ['pdf', 'ecml'],
                 uid: 'uid-123',
                 resourcesOnly: false,
                 audience: undefined,
@@ -153,7 +153,7 @@ describe('GetContentsHandler', () => {
         it('should generateFieldMatchQuery', () => {
             // arrange
             const request: ContentRequest = {
-                contentTypes: ['pdf', 'ecml'],
+                primaryCategories: ['pdf', 'ecml'],
                 uid: undefined,
                 resourcesOnly: false,
                 audience: undefined,
@@ -182,7 +182,7 @@ describe('GetContentsHandler', () => {
         it('should invoked generateSortByQuer', () => {
             // arrange
             const request: ContentRequest = {
-                contentTypes: ['pdf', 'ecml'],
+                primaryCategories: ['pdf', 'ecml'],
                 uid: ['uid-123', 'uid-234'],
                 resourcesOnly: false,
                 audience: ['Teacher', 'Student'],
