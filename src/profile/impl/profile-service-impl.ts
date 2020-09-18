@@ -713,11 +713,11 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     getConsent(userConsent: Consent): Observable<ReadConsentResponse> {
-        return this.userService.getConsent(userConsent);
+        return this.userService.getConsent(userConsent, { apiPath : '/api/user/v1'});
     }
 
     updateConsent(userConsent: Consent): Observable<UpdateConsentResponse> {
-        return this.userService.updateConsent(userConsent);
+        return this.userService.updateConsent(userConsent, { apiPath : '/api/user/v1'});
     }
 
     private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
