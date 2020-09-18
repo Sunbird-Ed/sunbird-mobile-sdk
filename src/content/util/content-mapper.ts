@@ -165,6 +165,15 @@ export class ContentMapper {
         contentType.toLowerCase(), mimeType, resourceType);
     }
     const basePath = contentEntry[ContentEntry.COLUMN_NAME_PATH]! || '';
+    if (typeof (contentData.originData) === 'string') {
+      contentData.originData = JSON.parse(contentData.originData);
+    }
+    if (contentData.trackable && typeof (contentData.trackable) === 'string') {
+      contentData.trackable = JSON.parse(contentData.trackable);
+    }
+    if (contentData.userConsent && typeof (contentData.userConsent) === 'string') {
+      contentData.userConsent = JSON.parse(contentData.userConsent);
+    }
     return {
       identifier: identifier,
       name: contentData.name,
