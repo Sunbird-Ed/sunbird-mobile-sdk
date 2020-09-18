@@ -82,7 +82,8 @@
     "coveragePathIgnorePatterns": [
       "<rootDir>/src/util/file/impl",
       "<rootDir>/src/codepush-experiment",
-      "<rootDir>/src/util/shared-preferences/impl/shared-preferences-local-storage"
+      "<rootDir>/src/util/shared-preferences/impl/shared-preferences-local-storage",
+      "<rootDir>/src/group-deprecated"
     ],
     "testMatch": [
       "**/?(*.)(spec).ts"

@@ -63,7 +63,7 @@ export class EventsBusServiceImpl implements EventsBusService {
             );
     }
 
-    emit({namespace, event}: EmitRequest<EventsBusEvent>): void {
+    emit<T extends EventsBusEvent = any>({namespace, event}: EmitRequest<T>): void {
         this.eventsBus.next({
             namespace,
             event

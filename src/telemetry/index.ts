@@ -5,6 +5,5 @@ export * from './def/telemetry-stat';
 export * from './def/telemetry-sync-stat';
 export * from './def/telemetry-constants';
 export * from './def/requests';
-export * from './def/telemetry-error';
 export * from './util/telemetry-auto-sync-service';
 export * from './util/telemetry-auto-sync-modes';
