@@ -66,7 +66,7 @@ describe('SummaryTelemetryEventHandler', () => {
                     contentType: 'contentType',
                     pkgVersion: '1',
                     trackable: {
-                        enable: 'Yes'
+                        enabled: 'Yes'
                     }
                 }
             }) as Partial<Content> as Content;
@@ -109,7 +109,7 @@ describe('SummaryTelemetryEventHandler', () => {
                     contentType: 'contentType',
                     pkgVersion: '1',
                     trackable: {
-                        enable: 'Yes'
+                        enabled: 'Yes'
                     }
                 }
             }
@@ -159,7 +159,7 @@ describe('SummaryTelemetryEventHandler', () => {
             contentType: 'SELFASSESS',
             contentData: {
                 trackable: {
-                    enable: 'Yes'
+                    enabled: 'Yes'
                 }
             },
             primaryCategory: CsPrimaryCategory.COURSE_ASSESSMENT
