@@ -371,7 +371,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         if (event.object && event.object.id) {
             return this.getMemoizedContentDetails({contentId: event.object.id})
                 .toPromise()
-                .then((c) => !!c.contentData.trackable && c.contentData.trackable.enable === 'Yes');
+                .then((c) => !!c.contentData.trackable && c.contentData.trackable.enabled === 'Yes');
         }
 
         return false;
