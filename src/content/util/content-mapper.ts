@@ -171,9 +171,6 @@ export class ContentMapper {
     if (contentData.trackable && typeof (contentData.trackable) === 'string') {
       contentData.trackable = JSON.parse(contentData.trackable);
     }
-    if (contentData.userConsent && typeof (contentData.userConsent) === 'string') {
-      contentData.userConsent = JSON.parse(contentData.userConsent);
-    }
     return {
       identifier: identifier,
       name: contentData.name,
