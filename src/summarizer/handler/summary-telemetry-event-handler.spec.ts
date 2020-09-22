@@ -1,5 +1,5 @@
 import {SummaryTelemetryEventHandler} from './summary-telemetry-event-handler';
-import {Content, ContentService, CourseService, EventsBusService, ProfileService, SharedPreferences} from '../..';
+import {Content, ContentService, CourseService, EventsBusService, ProfileService, SharedPreferences, TelemetryObject} from '../..';
 import {SummarizerService} from '..';
 import {telemetry} from './summary-telemetry-event-handler.spec.data';
 import {of} from 'rxjs';
@@ -301,4 +301,171 @@ describe('SummaryTelemetryEventHandler', () => {
         });
     });
 
+    describe('TrackableSessionProxyContentProvider', () => {
+        // tslint:disable-next-line:no-shadowed-variable
+        let summaryTelemetryEventHandler: SummaryTelemetryEventHandler;
+
+        const constructNewInstance = () => {
+            summaryTelemetryEventHandler = new SummaryTelemetryEventHandler(
+                mockCourseService as CourseService,
+                mockSharedPreference as SharedPreferences,
+                mockSummarizerService as SummarizerService,
+                mockEventBusService as EventsBusService,
+                mockContentService as ContentService,
+                mockProfileService as ProfileService
+            );
+        };
+
+        describe('when no contents have been cached', () => {
+            describe('when a START event is detected for a non-trackable content', () => {
+                it('should fetch contents without a cache-proxy', async (done) => {
+                    // arrange
+                    constructNewInstance();
+
+                    const telemetryObject1 = new TelemetryObject('some_content_id_1', 'resource', '');
+                    const startEvent1 = {...telemetry, eid: 'START', object: telemetryObject1};
+                    const telemetryObject2 = new TelemetryObject('some_content_id_2', 'resource', '');
+                    const startEvent2 = {...telemetry, eid: 'START', object: telemetryObject2};
+                    const contentStack = [
+                        {
+                            name: 'CONTENT_NAME',
+                            contentType: 'course',
+                            sections: {},
+                            contentData: {
+                                contentType: 'contentType',
+                                pkgVersion: '1',
+                            }
+                        },
+                        {
+                            name: 'CONTENT_NAME',
+                            contentType: 'course',
+                            sections: {},
+                            contentData: {
+                                contentType: 'contentType',
+                                pkgVersion: '1'
+                            }
+                        },
+                    ];
+                    mockContentService.getContentDetails = jest.fn().mockImplementation(() => {
+                        return of(contentStack.pop()) as Partial<Content> as Content;
+                    });
+
+                    // act
+                    await summaryTelemetryEventHandler.handle(startEvent1).toPromise();
+                    await summaryTelemetryEventHandler.handle(startEvent2).toPromise();
+
+                    // assert
+                    expect(mockContentService.getContentDetails).toHaveBeenNthCalledWith(1, {contentId: 'some_content_id_1'});
+                    expect(mockContentService.getContentDetails).toHaveBeenNthCalledWith(2, {contentId: 'some_content_id_2'});
+                    done();
+                });
+            });
+
+            describe('when a START event is detected for a trackable content', () => {
+                it('should fetch consecutive contents with a cache-proxy till a trackable END event occurs', async (done) => {
+                    // arrange
+                    constructNewInstance();
+
+                    const startTelemetryObject1 = new TelemetryObject('some_content_id_1', 'resource', '');
+                    const startEvent1 = {...telemetry, eid: 'START', object: startTelemetryObject1};
+                    const startTelemetryObject2 = new TelemetryObject('some_content_id_2', 'resource', '');
+                    const startEvent2 = {...telemetry, eid: 'START', object: startTelemetryObject2};
+                    const endTelemetryObject1 = new TelemetryObject('some_content_id_1', 'resource', '');
+                    const endEvent1 = {...telemetry, eid: 'END', object: endTelemetryObject1};
+                    const startTelemetryObject3 = new TelemetryObject('some_content_id_3', 'resource', '');
+                    const startEvent3 = {...telemetry, eid: 'START', object: startTelemetryObject3};
+                    const contentStack = [
+                        {
+                            identifier: 'some_content_id_2',
+                            name: 'CONTENT_NAME_2',
+                            contentType: 'course',
+                            sections: {},
+                            contentData: {
+                                contentType: 'contentType',
+                                pkgVersion: '1',
+                            }
+                        },
+                        {
+                            identifier: 'some_content_id_2',
+                            name: 'CONTENT_NAME_2',
+                            contentType: 'course',
+                            sections: {},
+                            contentData: {
+                                contentType: 'contentType',
+                                pkgVersion: '1',
+                            }
+                        },
+                        {
+                            identifier: 'some_content_id_2',
+                            name: 'CONTENT_NAME_2',
+                            contentType: 'course',
+                            sections: {},
+                            contentData: {
+                                contentType: 'contentType',
+                                pkgVersion: '1',
+                            }
+                        },
+                        {
+                            identifier: 'some_content_id_3',
+                            name: 'CONTENT_NAME_3',
+                            contentType: 'course',
+                            sections: {},
+                            contentData: {
+                                contentType: 'contentType',
+                                pkgVersion: '1',
+                            }
+                        },
+                        {
+                            identifier: 'some_content_id_2',
+                            name: 'CONTENT_NAME_2',
+                            contentType: 'course',
+                            sections: {},
+                            contentData: {
+                                contentType: 'contentType',
+                                pkgVersion: '1',
+                            }
+                        },
+                        {
+                            identifier: 'some_content_id_1',
+                            name: 'CONTENT_NAME_1',
+                            contentType: 'course',
+                            sections: {},
+                            contentData: {
+                                contentType: 'contentType',
+                                pkgVersion: '1',
+                                trackable: {
+                                    enabled: 'Yes'
+                                }
+                            }
+                        },
+                    ];
+                    mockContentService.getContentDetails = jest.fn().mockImplementation(() => {
+                        return of(contentStack.pop()) as Partial<Content> as Content;
+                    });
+
+                    // act
+                    await summaryTelemetryEventHandler.handle(startEvent1).toPromise();
+                    await summaryTelemetryEventHandler.handle(startEvent2).toPromise();
+                    await summaryTelemetryEventHandler.handle(startEvent2).toPromise();
+                    await summaryTelemetryEventHandler.handle(startEvent2).toPromise();
+                    await summaryTelemetryEventHandler.handle(startEvent2).toPromise();
+                    await summaryTelemetryEventHandler.handle(endEvent1).toPromise();
+                    await summaryTelemetryEventHandler.handle(startEvent3).toPromise();
+                    await summaryTelemetryEventHandler.handle(startEvent2).toPromise();
+                    await summaryTelemetryEventHandler.handle(startEvent2).toPromise();
+                    await summaryTelemetryEventHandler.handle(startEvent2).toPromise();
+
+                    // assert
+                    expect(mockContentService.getContentDetails).toHaveBeenNthCalledWith(1, {contentId: 'some_content_id_1'});
+                    expect(mockContentService.getContentDetails).toHaveBeenNthCalledWith(2, {contentId: 'some_content_id_2'});
+                    expect(mockContentService.getContentDetails).toHaveBeenNthCalledWith(3, {contentId: 'some_content_id_3'});
+                    expect(mockContentService.getContentDetails).toHaveBeenNthCalledWith(4, {contentId: 'some_content_id_2'});
+                    expect(mockContentService.getContentDetails).toHaveBeenNthCalledWith(5, {contentId: 'some_content_id_2'});
+                    expect(mockContentService.getContentDetails).toHaveBeenNthCalledWith(6, {contentId: 'some_content_id_2'});
+                    expect(mockContentService.getContentDetails).toHaveBeenCalledTimes(6);
+                    done();
+                });
+            });
+        });
+    });
 });

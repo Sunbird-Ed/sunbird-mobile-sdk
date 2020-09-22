@@ -19,7 +19,45 @@ import {delay, map, mapTo, mergeMap, tap} from 'rxjs/operators';
 import {CsContentProgressCalculator} from '@project-sunbird/client-services/services/content/utilities/content-progress-calculator';
 import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
 import {CsPrimaryCategory} from '@project-sunbird/client-services/services/content';
+import {TrackingEnabled} from '@project-sunbird/client-services/models';
 import Telemetry = SunbirdTelemetry.Telemetry;
+
+class TrackableSessionProxyContentProvider {
+    private trackableSessionContentCache?: { [identifier: string]: Content | undefined };
+
+    constructor(
+        private contentService: ContentService
+    ) {
+    }
+
+    provide(request: ContentDetailRequest): Observable<Content> {
+        if (this.trackableSessionContentCache) {
+            return iif(
+                () => !!this.trackableSessionContentCache![request.contentId],
+                defer(() => of(this.trackableSessionContentCache![request.contentId]!)),
+                defer(() => this.contentService.getContentDetails(request).pipe(
+                    tap((content) => this.trackableSessionContentCache![request.contentId] = content)
+                ))
+            );
+        }
+
+        return this.contentService.getContentDetails(request);
+    }
+
+    cache(content: Content) {
+        if (this.trackableSessionContentCache) {
+            this.trackableSessionContentCache[content.identifier] = content;
+        }
+    }
+
+    init() {
+        this.trackableSessionContentCache = {};
+    }
+
+    dispose() {
+        this.trackableSessionContentCache = undefined;
+    }
+}
 
 export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry, undefined> {
     private static readonly CONTENT_PLAYER_PID = 'contentplayer';
@@ -27,7 +65,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     private currentUID?: string = undefined;
     private currentContentID?: string = undefined;
     private courseContext = {};
-    private memoizedContentDetails?: { identifier: string, content: Content };
+    private trackableSessionProxyContentProvider: TrackableSessionProxyContentProvider;
 
     constructor(
         private courseService: CourseService,
@@ -37,6 +75,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         private contentService: ContentService,
         private profileService: ProfileService,
     ) {
+        this.trackableSessionProxyContentProvider = new TrackableSessionProxyContentProvider(this.contentService);
     }
 
     private static checkPData(pdata: ProducerData): boolean {
@@ -46,9 +85,10 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         return false;
     }
 
-    private setCourseContextEmpty(): Observable<undefined> {
-        this.courseContext = {};
-        return this.sharedPreference.putString(ContentKeys.COURSE_CONTEXT, '');
+    private static isContentTrackable(
+        content: Content
+    ): boolean {
+        return !!content.contentData.trackable && content.contentData.trackable.enabled === TrackingEnabled.YES;
     }
 
     updateContentState(event: Telemetry): Observable<undefined> {
@@ -82,9 +122,8 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                                 );
                             } else if ((event.eid === 'END' && status === 0) ||
                                 (event.eid === 'END' && status === 1)) {
-                                return this.getMemoizedContentDetails(
-                                    {contentId: event.object.id},
-                                    true
+                                return this.trackableSessionProxyContentProvider.provide(
+                                    {contentId: event.object.id}
                                 ).pipe(
                                     mergeMap((content) => {
                                         return this.validEndEvent(event, content, courseContext).pipe(
@@ -102,7 +141,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
 
                                                     };
                                                     this.generateAuditTelemetry(userId, courseId, batchId, content,
-                                                      event.object ? event.object.rollup! : {});
+                                                        event.object ? event.object.rollup! : {});
                                                     return this.courseService.updateContentState(updateContentStateRequest).pipe(
                                                         tap(() => {
                                                             this.eventBusService.emit({
@@ -140,6 +179,93 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         );
     }
 
+    handle(event: SunbirdTelemetry.Telemetry): Observable<undefined> {
+        return defer(async () => {
+            if (event.eid === 'START') {
+                if (SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
+                    this.courseService.resetCapturedAssessmentEvents();
+
+                    return this.processOEStart(event).pipe(
+                        tap(async () => {
+                            await this.summarizerService.saveLearnerAssessmentDetails(event).pipe(
+                                mapTo(undefined)
+                            ).toPromise();
+                        }),
+                        tap(async () => {
+                            await this.getCourseContext().pipe(
+                                mergeMap(() => {
+                                    return this.updateContentState(event);
+                                })
+                            ).toPromise();
+                        }),
+                        tap(async () => {
+                            await this.markContentAsPlayed(event)
+                                .toPromise();
+                        })
+                    ).toPromise();
+                } else if (event.object && event.object.id) {
+                    const content = await this.trackableSessionProxyContentProvider.provide({contentId: event.object.id}).toPromise();
+
+                    if (SummaryTelemetryEventHandler.isContentTrackable(content)) {
+                        this.trackableSessionProxyContentProvider.init();
+                        this.trackableSessionProxyContentProvider.cache(content);
+
+                        return this.getCourseContext().pipe(
+                            mapTo(undefined)
+                        ).toPromise();
+                    }
+                }
+            } else if (event.eid === 'ASSESS' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
+                return this.processOEAssess(event).pipe(
+                    tap(async () => {
+                        const context = await this.getCourseContext().toPromise();
+                        if (
+                            event.context.cdata.find((c) => c.type === 'AttemptId')
+                            && context.userId && context.courseId && context.batchId
+                        ) {
+                            await this.courseService.captureAssessmentEvent({event, courseContext: context});
+                        }
+                    }),
+                    tap(async () => {
+                        await this.summarizerService.saveLearnerAssessmentDetails(event).pipe(
+                            mapTo(undefined)
+                        ).toPromise();
+                    })
+                ).toPromise();
+            } else if (event.eid === 'END') {
+                if (SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
+                    return this.processOEEnd(event).pipe(
+                        tap(async () => {
+                            await this.summarizerService.saveLearnerContentSummaryDetails(event).pipe(
+                                mapTo(undefined)
+                            ).toPromise();
+                        }),
+                        tap(async () => {
+                            await this.getCourseContext().pipe(
+                                mergeMap(() => {
+                                    return this.updateContentState(event);
+                                })
+                            ).toPromise();
+                        })
+                    ).toPromise();
+                } else if (event.object && event.object.id) {
+                    const content = await this.trackableSessionProxyContentProvider.provide({contentId: event.object.id}).toPromise();
+
+                    if (SummaryTelemetryEventHandler.isContentTrackable(content)) {
+                        this.trackableSessionProxyContentProvider.dispose();
+
+                        return this.setCourseContextEmpty().toPromise();
+                    }
+                }
+            }
+        });
+    }
+
+    private setCourseContextEmpty(): Observable<undefined> {
+        this.courseContext = {};
+        return this.sharedPreference.putString(ContentKeys.COURSE_CONTEXT, '');
+    }
+
     private validEndEvent(event: Telemetry, content: Content, courseContext?: any): Observable<boolean> {
         return defer(() => of(undefined))
             .pipe(
@@ -169,79 +295,13 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         return this.sharedPreference.putString(key, contentId);
     }
 
-
-    handle(event: SunbirdTelemetry.Telemetry): Observable<undefined> {
-        return defer(async () => {
-            if (event.eid === 'START' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
-                this.courseService.resetCapturedAssessmentEvents();
-
-                return this.processOEStart(event).pipe(
-                    tap(async () => {
-                        await this.summarizerService.saveLearnerAssessmentDetails(event).pipe(
-                            mapTo(undefined)
-                        ).toPromise();
-                    }),
-                    tap(async () => {
-                        await this.getCourseContext().pipe(
-                            mergeMap(() => {
-                                return this.updateContentState(event);
-                            })
-                        ).toPromise();
-                    }),
-                    tap(async () => {
-                        await this.markContentAsPlayed(event)
-                            .toPromise();
-                    })
-                ).toPromise();
-            } else if (event.eid === 'START' && await this.checkIsTrackable(event)) {
-                return this.getCourseContext().pipe(
-                    mapTo(undefined)
-                ).toPromise();
-            } else if (event.eid === 'ASSESS' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
-                return this.processOEAssess(event).pipe(
-                    tap(async () => {
-                        const context = await this.getCourseContext().toPromise();
-                        if (
-                            event.context.cdata.find((c) => c.type === 'AttemptId')
-                            && context.userId && context.courseId && context.batchId
-                        ) {
-                            await this.courseService.captureAssessmentEvent({event, courseContext: context});
-                        }
-                    }),
-                    tap(async () => {
-                        await this.summarizerService.saveLearnerAssessmentDetails(event).pipe(
-                            mapTo(undefined)
-                        ).toPromise();
-                    })
-                ).toPromise();
-            } else if (event.eid === 'END' && SummaryTelemetryEventHandler.checkPData(event.context.pdata)) {
-                return this.processOEEnd(event).pipe(
-                    tap(async () => {
-                        await this.summarizerService.saveLearnerContentSummaryDetails(event).pipe(
-                            mapTo(undefined)
-                        ).toPromise();
-                    }),
-                    tap(async () => {
-                        await this.getCourseContext().pipe(
-                            mergeMap(() => {
-                                return this.updateContentState(event);
-                            })
-                        ).toPromise();
-                    })
-                ).toPromise();
-            } else if (event.eid === 'END' && await this.checkIsTrackable(event)) {
-                return this.setCourseContextEmpty().toPromise();
-            }
-        });
-    }
-
     private markContentAsPlayed(event): Observable<boolean> {
         const uid = event.actor.id;
         const identifier = event.object.id;
         const request: ContentDetailRequest = {
             contentId: identifier
         };
-        return this.getMemoizedContentDetails(request).pipe(
+        return this.trackableSessionProxyContentProvider.provide(request).pipe(
             mergeMap((content: Content) => {
                 const addContentAccessRequest: ContentAccess = {
                     status: ContentAccessStatus.PLAYED,
@@ -295,7 +355,6 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         const content = contentStateList.find(c => c.contentId === contentId);
         return (content && content.status) || 0;
     }
-
 
     private processOEStart(event: Telemetry): Observable<undefined> {
         this.currentUID = event.actor.id;
@@ -365,42 +424,5 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
             type: 'content-progress'
         };
         TelemetryLogger.log.audit(auditRequest).toPromise();
-    }
-
-    private async checkIsTrackable(event: SunbirdTelemetry.Telemetry): Promise<boolean> {
-        if (event.object && event.object.id) {
-            return this.getMemoizedContentDetails({contentId: event.object.id})
-                .toPromise()
-                .then((c) => !!c.contentData.trackable && c.contentData.trackable.enabled === 'Yes');
-        }
-
-        return false;
-    }
-
-    private getMemoizedContentDetails(request: ContentDetailRequest, clearOnComplete = false): Observable<Content> {
-        return iif(
-            () => {
-                if (this.memoizedContentDetails) {
-                    if (this.memoizedContentDetails.identifier === request.contentId) {
-                        return true;
-                    } else {
-                        console.error(`SummaryTelemetryEventHandler.getMemoizedContentDetails: requesting for ${request.contentId} without clearing ${this.memoizedContentDetails.identifier}`);
-                        return false;
-                    }
-                }
-
-                return false;
-            },
-            defer(() => of(this.memoizedContentDetails!.content)),
-            defer(() => this.contentService.getContentDetails(request).pipe(
-                tap((content) => this.memoizedContentDetails = {identifier: request.contentId, content})
-            ))
-        ).pipe(
-            tap(() => {
-                if (clearOnComplete) {
-                    this.memoizedContentDetails = undefined;
-                }
-            })
-        );
     }
 }
