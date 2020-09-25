@@ -60,6 +60,7 @@ import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-p
 import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
+import {CsModule} from '@project-sunbird/client-services';
 
 jest.mock('../handler/update-server-profile-info-handler');
 jest.mock('../handler/tenant-info-handler');
@@ -734,6 +735,68 @@ describe.only('ProfileServiceImpl', () => {
     });
 
     describe('setActiveSessionForProfile', () => {
+        beforeEach(() => {
+            jest.spyOn(CsModule.instance, 'isInitialised', 'get').mockReturnValue(false);
+        });
+
+        it('should update CsModule session ID configuration', (done) => {
+            // arrange
+            mockSdkConfig.apiConfig = {
+                api_authentication: {
+                    channelId: 'SAMPLE_CHANNEL_ID'
+                }
+            } as any;
+            mockDbService.read = jest.fn().mockImplementation(() => of([
+                {
+                    [ProfileEntry.COLUMN_NAME_UID]: 'SAMPLE_UID',
+                    [ProfileEntry.COLUMN_NAME_SOURCE]: ProfileSource.LOCAL
+                }
+            ]));
+            mockFrameworkService.setActiveChannelId = jest.fn().mockImplementation(() => of(undefined));
+            mockSharedPreferences.putString = jest.fn().mockImplementation(() => of(undefined));
+            jest.spyOn(CsModule.instance, 'isInitialised', 'get').mockReturnValue(true);
+            jest.spyOn(CsModule.instance, 'config', 'get').mockReturnValue({
+                core: {
+                    httpAdapter: 'HttpClientCordovaAdapter',
+                    global: {
+                        channelId: 'channelId',
+                        producerId: 'producerId',
+                        deviceId: 'deviceId'
+                    },
+                    api: {
+                        host: 'host',
+                        authentication: {}
+                    }
+                },
+                services: {}
+            });
+            spyOn(CsModule.instance, 'updateConfig').and.returnValue(undefined);
+
+            // act
+            profileService.setActiveSessionForProfile('SAMPLE_UID').subscribe((res) => {
+                // assert
+                expect(CsModule.instance.updateConfig).toHaveBeenCalledWith({
+                    core: {
+                        httpAdapter: 'HttpClientCordovaAdapter',
+                        global: {
+                            channelId: 'channelId',
+                            producerId: 'producerId',
+                            deviceId: 'deviceId',
+                            sessionId: expect.any(String)
+                        },
+                        api: {
+                            host: 'host',
+                            authentication: {}
+                        }
+                    },
+                    services: {}
+                });
+                expect(mockFrameworkService.setActiveChannelId).toHaveBeenCalledWith('SAMPLE_CHANNEL_ID');
+                expect(res).toBeTruthy();
+                done();
+            });
+        });
+
         it('should reject if not profile in db for profile id in request', (done) => {
             // arrange
             mockDbService.read = jest.fn().mockImplementation(() => of([]));
