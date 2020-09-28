@@ -93,7 +93,7 @@ describe('ContentMapper', () => {
                         streamingUrl: undefined,
                         visibility: true,
                         trackable: {
-                          enable: 'No'
+                            enabled: 'No'
                       }
                     },
                     contentType: 'textbook',
@@ -141,7 +141,7 @@ describe('ContentMapper', () => {
                         streamingUrl: 'url',
                         primaryCategory: 'Course',
                         trackable: {
-                            enable: 'Yes'
+                            enabled: 'Yes'
                         }
                     },
                     contentType: 'course',
@@ -180,7 +180,7 @@ describe('ContentMapper', () => {
                     mimeType: 'sample-mime-type',
                     primaryCategory: 'sample-content-type',
                     trackable: {
-                      enable: 'No'
+                        enabled: 'No'
                   }
                 },
                 contentType: 'sample-content-type',
@@ -220,7 +220,7 @@ describe('ContentMapper', () => {
                     contentType: 'Course',
                     primaryCategory: 'Course',
                     trackable: {
-                        enable: 'Yes'
+                        enabled: 'Yes'
                     }
                 },
                 contentType: 'course',
@@ -254,7 +254,7 @@ describe('ContentMapper', () => {
             expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath)).toEqual({
                 basePath: '/_app_file_',
                 contentData: {identifier: 'sample-identifier', name: 'some_name', contentType: 'sample-content-type', mimeType: 'sample-mime-type', primaryCategory: 'sample-content-type', trackable: {
-                    enable: 'No'
+                    enabled: 'No'
                   }},
                 contentType: 'sample-content-type',
                 identifier: 'sample-identifier',
@@ -290,7 +290,7 @@ describe('ContentMapper', () => {
                         contentType: 'Course',
                         primaryCategory: 'Course',
                         trackable: {
-                          enable: 'Yes'
+                            enabled: 'Yes'
                         }
                     },
                     contentType: 'course',
