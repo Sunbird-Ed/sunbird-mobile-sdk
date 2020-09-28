@@ -6,6 +6,7 @@ import {SharedPreferences} from '../../shared-preferences';
 import {AppInfoKeys} from '../../../preference-keys';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
+import {CsModule} from '@project-sunbird/client-services';
 
 @injectable()
 export class AppInfoImpl implements AppInfo {
@@ -40,6 +41,18 @@ export class AppInfoImpl implements AppInfo {
         return this.getBuildConfigValue(packageName, 'REAL_VERSION_NAME')
             .then((versionName) => {
                 this.versionName = versionName;
+                if (CsModule.instance.isInitialised) {
+                    CsModule.instance.updateConfig({
+                        ...CsModule.instance.config,
+                        core: {
+                            ...CsModule.instance.config.core,
+                            global: {
+                                ...CsModule.instance.config.core.global,
+                                appVersion: versionName
+                            }
+                        }
+                    });
+                }
                 console.log('version name', this.versionName);
                 return;
             });
