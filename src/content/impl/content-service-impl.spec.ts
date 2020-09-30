@@ -1347,7 +1347,7 @@ describe('ContentServiceImpl', () => {
         });
     });
 
-    describe('searchAndGroupContent()', () => {
+    describe('buildContentAggregator()', () => {
         const mockContentAggregator = {
             handle: jest.fn().mockImplementation(() => of({
                 result: []
@@ -1361,12 +1361,13 @@ describe('ContentServiceImpl', () => {
             contentService = container.get(InjectionTokens.CONTENT_SERVICE);
         });
 
-        it('should delegate to SearchAndGroupContentHandler', (done) => {
+        it('should be able to build a ContentAggregator instance', (done) => {
             // act
-            contentService.aggregateContent({}).subscribe(() => {
-                expect(mockContentAggregator.handle).toHaveBeenCalledWith({});
-                done();
-            });
+            expect(contentService.buildContentAggregator(
+                mockFormService as FormService,
+                mockCachedItemStore as CachedItemStore
+            )).toBeTruthy();
+            done();
         });
     });
 

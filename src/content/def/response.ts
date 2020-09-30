@@ -1,6 +1,7 @@
 import {ContentSearchCriteria, ContentSearchFilter} from './requests';
 import {Content, ContentData} from './content';
 import {ContentImportStatus} from '..';
+import {SearchRequest} from './search-request';
 
 export interface ContentSearchResult {
     id: string;
@@ -16,6 +17,7 @@ export interface ContentAggregatorResponse {
         title: string;
         orientation: 'horizontal' | 'vertical';
         section: ContentsGroupedByPageSection;
+        searchRequest: SearchRequest;
         searchCriteria: ContentSearchCriteria;
     }[];
 }
