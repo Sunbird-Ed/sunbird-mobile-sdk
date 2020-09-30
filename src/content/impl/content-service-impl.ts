@@ -125,8 +125,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
-        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
-        @inject(InjectionTokens.FORM_SERVICE) private formService: FormService,
+        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo
     ) {
         this.contentServiceConfig = this.sdkConfig.contentServiceConfig;
         this.appConfig = this.sdkConfig.appConfig;

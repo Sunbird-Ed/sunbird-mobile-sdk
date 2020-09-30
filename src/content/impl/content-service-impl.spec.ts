@@ -140,7 +140,6 @@ describe('ContentServiceImpl', () => {
     };
     const mockSharedPreferences = new SharedPreferencesLocalStorage();
     const contentUpdateSizeOnDeviceTimeoutRef: Map<string, NodeJS.Timeout> = new Map();
-    const mockFormService: Partial<FormService> = {};
 
     beforeAll(() => {
         container.bind<ContentService>(InjectionTokens.CONTENT_SERVICE).to(ContentServiceImpl).inTransientScope();
@@ -159,7 +158,6 @@ describe('ContentServiceImpl', () => {
         container.bind<EventsBusService>(InjectionTokens.EVENTS_BUS_SERVICE).toConstantValue(mockEventsBusService as EventsBusService);
         container.bind<CachedItemStore>(InjectionTokens.CACHED_ITEM_STORE).toConstantValue(mockCachedItemStore as CachedItemStore);
         container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
-        container.bind<FormService>(InjectionTokens.FORM_SERVICE).toConstantValue(mockFormService as FormService);
 
         contentService = container.get(InjectionTokens.CONTENT_SERVICE);
     });
@@ -1348,6 +1346,7 @@ describe('ContentServiceImpl', () => {
     });
 
     describe('buildContentAggregator()', () => {
+        const mockFormService: Partial<FormService> = {};
         const mockContentAggregator = {
             handle: jest.fn().mockImplementation(() => of({
                 result: []
