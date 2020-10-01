@@ -1,6 +1,5 @@
 import {
     ChildContentRequest,
-    ContentAggregatorRequest,
     ContentDelete,
     ContentDeleteRequest,
     ContentDetailRequest,
@@ -18,7 +17,6 @@ import {Response} from '../../api';
 import {Observable} from 'rxjs';
 import {Content, HierarchyInfo} from './content';
 import {
-    ContentAggregatorResponse,
     ContentDeleteResponse,
     ContentExportResponse,
     ContentImportResponse,
@@ -27,6 +25,9 @@ import {
 } from './response';
 import {DownloadCompleteDelegate} from '../../util/download/def/download-complete-delegate';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
+import {ContentAggregator} from '../handlers/content-aggregator';
+import {FormService} from '../../form';
+import {CachedItemStore} from '../../key-value-store';
 
 
 export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -40,8 +41,6 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
 
     searchContent(criteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult>;
-
-    aggregateContent(request: ContentAggregatorRequest): Observable<ContentAggregatorResponse>;
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
 
@@ -75,4 +74,9 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
 
     getContentSpaceUsageSummary(contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest):
         Observable<ContentSpaceUsageSummaryResponse[]>;
+
+    buildContentAggregator(
+        formService: FormService,
+        cachedItemStore: CachedItemStore
+    ): ContentAggregator;
 }
