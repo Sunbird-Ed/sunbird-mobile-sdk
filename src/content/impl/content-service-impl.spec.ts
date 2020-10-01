@@ -1364,7 +1364,6 @@ describe('ContentServiceImpl', () => {
             // act
             expect(contentService.buildContentAggregator(
                 mockFormService as FormService,
-                mockCachedItemStore as CachedItemStore
             )).toBeTruthy();
             done();
         });
