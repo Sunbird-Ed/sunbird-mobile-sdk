@@ -17,6 +17,8 @@ import {FormService} from '../../form';
 import {SearchContentHandler} from './search-content-handler';
 import {CsContentSortCriteria, CsSortOrder} from '@project-sunbird/client-services/services/content';
 import {CsContentsGroupGenerator} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
+import {CourseService} from '../../course';
+import {ProfileService} from '../../profile';
 
 interface LibraryConfigFormField {
     index: number;
@@ -29,6 +31,7 @@ interface LibraryConfigFormField {
         [field: string]: 'asc' | 'desc'
     }[];
     search: SearchRequest;
+    dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS';
 }
 
 export class ContentAggregator {
@@ -38,7 +41,9 @@ export class ContentAggregator {
         private searchContentHandler: SearchContentHandler,
         private formService: FormService,
         private contentService: ContentService,
-        private cachedItemStore: CachedItemStore
+        private cachedItemStore: CachedItemStore,
+        private courseService: CourseService,
+        private profileService: ProfileService
     ) {
     }
 
@@ -53,7 +58,10 @@ export class ContentAggregator {
         return SHA1(JSON.stringify(key)).toString();
     }
 
-    handle(request: ContentAggregatorRequest): Observable<ContentAggregatorResponse> {
+    handle(
+        request: ContentAggregatorRequest,
+        dataSrc: ('CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS' | undefined)[] = ['CONTENTS']
+    ): Observable<ContentAggregatorResponse> {
         return defer(async () => {
             let fields: LibraryConfigFormField[] = await this.formService.getForm({
                 type: 'config',
@@ -62,60 +70,18 @@ export class ContentAggregator {
                 component: 'app',
             }).toPromise().then((r) => r.form.data.fields);
 
-            fields = fields.filter((field) => field.isEnabled)
+            fields = fields.filter((field) => field.isEnabled && dataSrc.indexOf(field.dataSrc || 'CONTENTS') >= 0)
                 .sort((a, b) => a.index - b.index);
 
             const fieldTasks = fields.map(async (field) => {
-                let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({request: field.search});
-
-                if (request.interceptSearchCriteria) {
-                    searchCriteria = request.interceptSearchCriteria(searchCriteria);
-                }
-
-                const offlineSearchContentDataList: ContentData[] = await this.fetchOfflineContents(searchCriteria);
-                const onlineSearchContentDataList: ContentData[] = (
-                    (await this.fetchOnlineContents(searchCriteria, request.from)).contentDataList as ContentData[] || []
-                ).filter((contentData) => {
-                    return !offlineSearchContentDataList.find(
-                        (localContentData) => localContentData.identifier === contentData.identifier);
-                });
-                const combinedContents: ContentData[] = offlineSearchContentDataList.concat(onlineSearchContentDataList);
-
-                if (!field.groupBy) {
-                    return {
-                        title: field.title,
-                        orientation: field.orientation,
-                        searchCriteria,
-                        searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
-                        section: {
-                            name: field.index + '',
-                            sections: [
-                                {
-                                    count: combinedContents.length,
-                                    contents: combinedContents
-                                }
-                            ]
-                        }
-                    };
-                } else {
-                    return {
-                        title: field.title,
-                        orientation: field.orientation,
-                        searchCriteria,
-                        searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
-                        section: CsContentsGroupGenerator.generate(
-                            combinedContents,
-                            field.groupBy,
-                            field.sortBy.reduce((agg, s) => {
-                                Object.keys(s).forEach((k) => agg.push({
-                                    sortAttribute: k,
-                                    sortOrder: s[k] === 'asc' ? CsSortOrder.ASC : CsSortOrder.DESC,
-                                }));
-                                return agg;
-                            }, [] as CsContentSortCriteria[]),
-                            field.applyFirstAvailableCombination && request.applyFirstAvailableCombination as any,
-                        )
-                    };
+                switch (field.dataSrc) {
+                    default:
+                    case 'CONTENTS':
+                        return await this.buildContentSearchTask(field, request);
+                    case 'TRACKABLE_CONTENTS':
+                        return await this.buildTrackableCourseTask(field, request);
+                    case 'TRACKABLE_COURSE_CONTENTS':
+                        return await this.buildTrackableCourseTask(field, request);
                 }
             });
 
@@ -124,11 +90,99 @@ export class ContentAggregator {
                     title: string;
                     orientation: 'horizontal' | 'vertical';
                     section: ContentsGroupedByPageSection;
-                    searchRequest: SearchRequest;
-                    searchCriteria: ContentSearchCriteria;
+                    searchRequest?: SearchRequest;
+                    searchCriteria?: ContentSearchCriteria;
                 }>(fieldTasks)
             };
         });
+    }
+
+    private async buildTrackableCourseTask(field: LibraryConfigFormField, request: ContentAggregatorRequest): Promise<{
+        title: string;
+        orientation: 'horizontal' | 'vertical';
+        section: ContentsGroupedByPageSection;
+        searchRequest?: SearchRequest;
+        searchCriteria?: ContentSearchCriteria;
+    }> {
+        const session = await this.profileService.getActiveProfileSession().toPromise();
+        const courses = await this.courseService.getEnrolledCourses({
+            userId: session.managedSession ? session.managedSession.uid : session.uid,
+            returnFreshCourses: true
+        }).toPromise();
+
+        return {
+            title: field.title,
+            orientation: field.orientation,
+            section: {
+                name: field.index + '',
+                sections: [
+                    {
+                        count: 10,
+                        contents: courses.map(c => c.content!)
+                    }
+                ]
+            }
+        };
+    }
+
+    private async buildContentSearchTask(field: LibraryConfigFormField, request: ContentAggregatorRequest): Promise<{
+        title: string;
+        orientation: 'horizontal' | 'vertical';
+        section: ContentsGroupedByPageSection;
+        searchRequest: SearchRequest;
+        searchCriteria: ContentSearchCriteria;
+    }> {
+        let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({request: field.search});
+
+        if (request.interceptSearchCriteria) {
+            searchCriteria = request.interceptSearchCriteria(searchCriteria);
+        }
+
+        const offlineSearchContentDataList: ContentData[] = await this.fetchOfflineContents(searchCriteria);
+        const onlineSearchContentDataList: ContentData[] = (
+            (await this.fetchOnlineContents(searchCriteria, request.from)).contentDataList as ContentData[] || []
+        ).filter((contentData) => {
+            return !offlineSearchContentDataList.find(
+                (localContentData) => localContentData.identifier === contentData.identifier);
+        });
+        const combinedContents: ContentData[] = offlineSearchContentDataList.concat(onlineSearchContentDataList);
+
+        if (!field.groupBy) {
+            return {
+                title: field.title,
+                orientation: field.orientation,
+                searchCriteria,
+                searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
+                section: {
+                    name: field.index + '',
+                    sections: [
+                        {
+                            count: combinedContents.length,
+                            contents: combinedContents
+                        }
+                    ]
+                }
+            };
+        } else {
+            return {
+                title: field.title,
+                orientation: field.orientation,
+                searchCriteria,
+                searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
+                section: CsContentsGroupGenerator.generate(
+                    combinedContents,
+                    field.groupBy,
+                    field.sortBy.reduce((agg, s) => {
+                        Object.keys(s).forEach((k) => agg.push({
+                            sortAttribute: k,
+                            sortOrder: s[k] === 'asc' ? CsSortOrder.ASC : CsSortOrder.DESC,
+                        }));
+                        return agg;
+                    }, [] as CsContentSortCriteria[]),
+                    field.applyFirstAvailableCombination && request.applyFirstAvailableCombination as any,
+                )
+            };
+        }
     }
 
     private buildSearchCriteriaFromSearchRequest(request): ContentSearchCriteria {

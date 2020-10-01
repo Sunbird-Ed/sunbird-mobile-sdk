@@ -122,6 +122,32 @@ export const mockFormResponse = {
     }
 };
 
+export const mockFormResponseWithCourseDataSrc = {
+    'form': {
+        'type': 'config',
+        'subtype': 'library',
+        'action': 'get',
+        'component': 'app',
+        'framework': '*',
+        'data': {
+            'templateName': 'library',
+            'action': 'get',
+            'fields': [
+                {
+                    'index': 0,
+                    'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
+                    'isEnabled': true,
+                    'orientation': 'horizontal',
+                    'dataSrc': 'TRACKABLE_COURSE_CONTENTS'
+                },
+            ]
+        },
+        'created_on': '2020-08-26T15:11:56.149Z',
+        'last_modified_on': null,
+        'rootOrgId': '*'
+    }
+};
+
 export const mockGetOfflineContentsResponse = [
     {
         contentData: {

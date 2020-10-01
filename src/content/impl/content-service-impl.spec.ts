@@ -32,6 +32,7 @@ import {
     ContentDeleteRequest,
     ContentDetailRequest,
     ContentMarkerRequest,
+    CourseService,
     FormService,
     ProfileService
 } from '../..';
@@ -1347,6 +1348,7 @@ describe('ContentServiceImpl', () => {
 
     describe('buildContentAggregator()', () => {
         const mockFormService: Partial<FormService> = {};
+        const mockCourseService: Partial<CourseService> = {};
         const mockContentAggregator = {
             handle: jest.fn().mockImplementation(() => of({
                 result: []
@@ -1364,7 +1366,8 @@ describe('ContentServiceImpl', () => {
             // act
             expect(contentService.buildContentAggregator(
                 mockFormService as FormService,
-                mockCachedItemStore as CachedItemStore
+                mockCourseService as CourseService,
+                mockProfileService as ProfileService
             )).toBeTruthy();
             done();
         });

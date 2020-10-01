@@ -97,6 +97,7 @@ import {ContentAggregator} from '../handlers/content-aggregator';
 import {FormService} from '../../form';
 import {CsMimeTypeFacetToMimeTypeCategoryAggregator} from '@project-sunbird/client-services/services/content/utilities/mime-type-facet-to-mime-type-category-aggregator';
 import {MimeTypeCategory} from '@project-sunbird/client-services/models/content';
+import {CourseService} from '../../course';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -716,13 +717,16 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     buildContentAggregator(
         formService: FormService,
-        cachedItemStore: CachedItemStore
+        courseService: CourseService,
+        profileService: ProfileService,
     ): ContentAggregator {
         return new ContentAggregator(
             new SearchContentHandler(this.appConfig, this.contentServiceConfig, this.telemetryService),
             formService,
             this,
-            cachedItemStore
+            this.cachedItemStore,
+            courseService,
+            profileService
         );
     }
 

@@ -27,7 +27,8 @@ import {DownloadCompleteDelegate} from '../../util/download/def/download-complet
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import {ContentAggregator} from '../handlers/content-aggregator';
 import {FormService} from '../../form';
-import {CachedItemStore} from '../../key-value-store';
+import {CourseService} from '../../course';
+import {ProfileService} from '../../profile';
 
 
 export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -77,6 +78,7 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
 
     buildContentAggregator(
         formService: FormService,
-        cachedItemStore: CachedItemStore
+        courseService: CourseService,
+        profileService: ProfileService,
     ): ContentAggregator;
 }

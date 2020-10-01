@@ -17,8 +17,8 @@ export interface ContentAggregatorResponse {
         title: string;
         orientation: 'horizontal' | 'vertical';
         section: ContentsGroupedByPageSection;
-        searchRequest: SearchRequest;
-        searchCriteria: ContentSearchCriteria;
+        searchRequest?: SearchRequest;
+        searchCriteria?: ContentSearchCriteria;
     }[];
 }
 
