@@ -716,13 +716,12 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     buildContentAggregator(
         formService: FormService,
-        cachedItemStore: CachedItemStore
     ): ContentAggregator {
         return new ContentAggregator(
             new SearchContentHandler(this.appConfig, this.contentServiceConfig, this.telemetryService),
             formService,
             this,
-            cachedItemStore
+            this.cachedItemStore
         );
     }
 
