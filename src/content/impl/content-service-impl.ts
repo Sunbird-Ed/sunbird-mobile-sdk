@@ -1,8 +1,6 @@
 import {
     ChildContentRequest,
     Content,
-    ContentAggregatorRequest,
-    ContentAggregatorResponse,
     ContentData,
     ContentDelete,
     ContentDeleteRequest,
@@ -28,7 +26,8 @@ import {
     ContentSpaceUsageSummaryResponse,
     EcarImportRequest,
     ExportContentContext,
-    FileExtension, FilterValue,
+    FileExtension,
+    FilterValue,
     HierarchyInfo,
     ImportContentContext,
     MimeType,
@@ -98,6 +97,7 @@ import {ContentAggregator} from '../handlers/content-aggregator';
 import {FormService} from '../../form';
 import {CsMimeTypeFacetToMimeTypeCategoryAggregator} from '@project-sunbird/client-services/services/content/utilities/mime-type-facet-to-mime-type-category-aggregator';
 import {MimeTypeCategory} from '@project-sunbird/client-services/models/content';
+import {CourseService} from '../../course';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -111,8 +111,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     private contentDeleteRequestSet: SharedPreferencesSetCollection<ContentDelete>;
 
     private contentUpdateSizeOnDeviceTimeoutRef: Map<string, NodeJS.Timeout> = new Map();
-
-    private contentAggregator: ContentAggregator;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -128,14 +126,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
-        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
-        @inject(InjectionTokens.FORM_SERVICE) private formService: FormService,
+        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo
     ) {
-        this.contentAggregator = new ContentAggregator(
-            this.formService,
-            this,
-            this.cachedItemStore
-        );
         this.contentServiceConfig = this.sdkConfig.contentServiceConfig;
         this.appConfig = this.sdkConfig.appConfig;
         this.getContentDetailsHandler = new GetContentDetailsHandler(
@@ -692,10 +684,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         );
     }
 
-    aggregateContent(request: ContentAggregatorRequest): Observable<ContentAggregatorResponse> {
-        return this.contentAggregator.handle(request);
-    }
-
     onDownloadCompletion(request: ContentDownloadRequest): Observable<undefined> {
         const importEcarRequest: EcarImportRequest = {
             isChildContent: request.isChildContent!,
@@ -725,6 +713,21 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         const contentSpaceUsageSummaryList: ContentSpaceUsageSummaryResponse[] = [];
         const storageHandler = new ContentStorageHandler(this.dbService);
         return from(storageHandler.getContentUsageSummary(contentSpaceUsageSummaryRequest.paths));
+    }
+
+    buildContentAggregator(
+        formService: FormService,
+        courseService: CourseService,
+        profileService: ProfileService,
+    ): ContentAggregator {
+        return new ContentAggregator(
+            new SearchContentHandler(this.appConfig, this.contentServiceConfig, this.telemetryService),
+            formService,
+            this,
+            this.cachedItemStore,
+            courseService,
+            profileService
+        );
     }
 
     private cleanupContent(importContentContext: ImportContentContext): Observable<undefined> {
