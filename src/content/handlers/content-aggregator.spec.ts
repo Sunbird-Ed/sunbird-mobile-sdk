@@ -58,7 +58,7 @@ describe('ContentAggregator', () => {
             });
 
             // act
-            contentAggregator.handle({}, undefined, {
+            contentAggregator.aggregate({}, undefined, {
                 type: 'config',
                 subType: 'library',
                 action: 'get',
@@ -86,7 +86,7 @@ describe('ContentAggregator', () => {
                     spyOn(CsContentsGroupGenerator, 'generate').and.callThrough();
 
                     // act
-                    contentAggregator.handle({}, undefined, {
+                    contentAggregator.aggregate({}, undefined, {
                         type: 'config',
                         subType: 'library',
                         action: 'get',
@@ -210,7 +210,7 @@ describe('ContentAggregator', () => {
                     spyOn(CsContentsGroupGenerator, 'generate').and.callThrough();
 
                     // act
-                    contentAggregator.handle({
+                    contentAggregator.aggregate({
                         applyFirstAvailableCombination: {
                             'subject': ['Some other Physical Science'],
                             'gradeLevel': ['Class 1']
@@ -340,7 +340,7 @@ describe('ContentAggregator', () => {
                     spyOn(CsContentsGroupGenerator, 'generate').and.callThrough();
 
                     // act
-                    contentAggregator.handle({
+                    contentAggregator.aggregate({
                         applyFirstAvailableCombination: {
                             'subject': ['Some other Physical Science'],
                             'gradeLevel': ['Class 1']
@@ -481,7 +481,7 @@ describe('ContentAggregator', () => {
                     mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([]));
 
                     // act
-                    contentAggregator.handle({}, undefined, {
+                    contentAggregator.aggregate({}, undefined, {
                         type: 'config',
                         subType: 'library',
                         action: 'get',
@@ -506,7 +506,7 @@ describe('ContentAggregator', () => {
                     mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([]));
 
                     // act
-                    contentAggregator.handle({}, ['TRACKABLE_COURSE_CONTENTS'], {
+                    contentAggregator.aggregate({}, ['TRACKABLE_COURSE_CONTENTS'], {
                         type: 'config',
                         subType: 'library',
                         action: 'get',

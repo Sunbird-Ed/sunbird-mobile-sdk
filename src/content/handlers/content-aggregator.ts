@@ -58,7 +58,7 @@ export class ContentAggregator {
         return SHA1(JSON.stringify(key)).toString();
     }
 
-    handle(
+    aggregate(
         request: ContentAggregatorRequest,
         dataSrc: ('CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS' | undefined)[] = ['CONTENTS'],
         formRequest: FormRequest
