@@ -13,7 +13,7 @@ import {catchError, map} from 'rxjs/operators';
 import * as SHA1 from 'crypto-js/sha1';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {SearchRequest} from '../def/search-request';
-import {FormService} from '../../form';
+import {FormRequest, FormService} from '../../form';
 import {SearchContentHandler} from './search-content-handler';
 import {CsContentSortCriteria, CsSortOrder} from '@project-sunbird/client-services/services/content';
 import {CsContentsGroupGenerator} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
@@ -60,15 +60,13 @@ export class ContentAggregator {
 
     handle(
         request: ContentAggregatorRequest,
-        dataSrc: ('CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS' | undefined)[] = ['CONTENTS']
+        dataSrc: ('CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS' | undefined)[] = ['CONTENTS'],
+        formRequest: FormRequest
     ): Observable<ContentAggregatorResponse> {
         return defer(async () => {
-            let fields: LibraryConfigFormField[] = await this.formService.getForm({
-                type: 'config',
-                subType: 'library',
-                action: 'get',
-                component: 'app',
-            }).toPromise().then((r) => r.form.data.fields);
+            let fields: LibraryConfigFormField[] = await this.formService.getForm(
+                formRequest
+            ).toPromise().then((r) => r.form.data.fields);
 
             fields = fields.filter((field) => field.isEnabled && dataSrc.indexOf(field.dataSrc || 'CONTENTS') >= 0)
                 .sort((a, b) => a.index - b.index);

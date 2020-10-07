@@ -58,7 +58,12 @@ describe('ContentAggregator', () => {
             });
 
             // act
-            contentAggregator.handle({}).subscribe(() => {
+            contentAggregator.handle({}, undefined, {
+                type: 'config',
+                subType: 'library',
+                action: 'get',
+                component: 'app',
+            }).subscribe(() => {
                 // assert
                 expect(mockFormService.getForm).toHaveBeenCalledWith({
                     type: 'config',
@@ -81,7 +86,12 @@ describe('ContentAggregator', () => {
                     spyOn(CsContentsGroupGenerator, 'generate').and.callThrough();
 
                     // act
-                    contentAggregator.handle({}).subscribe((result) => {
+                    contentAggregator.handle({}, undefined, {
+                        type: 'config',
+                        subType: 'library',
+                        action: 'get',
+                        component: 'app',
+                    }).subscribe((result) => {
                         // assert
                         expect(mockContentService.getContents).toHaveBeenNthCalledWith(1, expect.objectContaining({
                             board: undefined,
@@ -205,6 +215,11 @@ describe('ContentAggregator', () => {
                             'subject': ['Some other Physical Science'],
                             'gradeLevel': ['Class 1']
                         }
+                    }, undefined, {
+                        type: 'config',
+                        subType: 'library',
+                        action: 'get',
+                        component: 'app',
                     }).subscribe((result) => {
                         // assert
                         expect(mockContentService.getContents).toHaveBeenNthCalledWith(1, expect.objectContaining({
@@ -336,6 +351,11 @@ describe('ContentAggregator', () => {
                             criteria.grade = ['some_grade'];
                             return criteria;
                         }
+                    }, undefined, {
+                        type: 'config',
+                        subType: 'library',
+                        action: 'get',
+                        component: 'app',
                     }).subscribe((result) => {
                         // assert
                         expect(mockContentService.getContents).toHaveBeenNthCalledWith(1, expect.objectContaining({
@@ -461,7 +481,12 @@ describe('ContentAggregator', () => {
                     mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([]));
 
                     // act
-                    contentAggregator.handle({}).subscribe((result) => {
+                    contentAggregator.handle({}, undefined, {
+                        type: 'config',
+                        subType: 'library',
+                        action: 'get',
+                        component: 'app',
+                    }).subscribe((result) => {
                         // assert
                         expect(mockProfileService.getActiveProfileSession).not.toHaveBeenCalled();
                         expect(mockCourseService.getEnrolledCourses).not.toHaveBeenCalled();
@@ -481,7 +506,12 @@ describe('ContentAggregator', () => {
                     mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([]));
 
                     // act
-                    contentAggregator.handle({}, ['TRACKABLE_COURSE_CONTENTS']).subscribe((result) => {
+                    contentAggregator.handle({}, ['TRACKABLE_COURSE_CONTENTS'], {
+                        type: 'config',
+                        subType: 'library',
+                        action: 'get',
+                        component: 'app',
+                    }).subscribe((result) => {
                         // assert
                         expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
                         expect(mockCourseService.getEnrolledCourses).toHaveBeenCalledWith({
