@@ -60,7 +60,7 @@ export class ContentAggregator {
 
     aggregate(
         request: ContentAggregatorRequest,
-        dataSrc: ('CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS' | undefined)[] = ['CONTENTS'],
+        dataSrc: ('CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS' | undefined)[],
         formRequest: FormRequest
     ): Observable<ContentAggregatorResponse> {
         return defer(async () => {
@@ -77,9 +77,9 @@ export class ContentAggregator {
                     case 'CONTENTS':
                         return await this.buildContentSearchTask(field, request);
                     case 'TRACKABLE_CONTENTS':
-                        return await this.buildTrackableCourseTask(field, request);
+                        return await this.buildTrackableTask(field, request, (c) => c.contentType.toLowerCase() !== 'course');
                     case 'TRACKABLE_COURSE_CONTENTS':
-                        return await this.buildTrackableCourseTask(field, request);
+                        return await this.buildTrackableTask(field, request, (c) => c.contentType.toLowerCase() === 'course');
                 }
             });
 
@@ -95,7 +95,7 @@ export class ContentAggregator {
         });
     }
 
-    private async buildTrackableCourseTask(field: LibraryConfigFormField, request: ContentAggregatorRequest): Promise<{
+    private async buildTrackableTask(field: LibraryConfigFormField, request: ContentAggregatorRequest, filter): Promise<{
         title: string;
         orientation: 'horizontal' | 'vertical';
         section: ContentsGroupedByPageSection;
@@ -108,6 +108,8 @@ export class ContentAggregator {
             returnFreshCourses: true
         }).toPromise();
 
+        const contents = courses.map(c => c.content!).filter((c) => filter(c));
+
         return {
             title: field.title,
             orientation: field.orientation,
@@ -115,8 +117,8 @@ export class ContentAggregator {
                 name: field.index + '',
                 sections: [
                     {
-                        count: 10,
-                        contents: courses.map(c => c.content!)
+                        count: contents.length,
+                        contents
                     }
                 ]
             }
