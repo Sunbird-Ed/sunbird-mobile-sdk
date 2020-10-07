@@ -35,6 +35,7 @@ export class ContentAggregator {
     private static readonly SEARCH_CONTENT_GROUPED_KEY = 'search_content_grouped';
 
     constructor(
+        private searchContentHandler: SearchContentHandler,
         private formService: FormService,
         private contentService: ContentService,
         private cachedItemStore: CachedItemStore
@@ -52,14 +53,6 @@ export class ContentAggregator {
         return SHA1(JSON.stringify(key)).toString();
     }
 
-    private static buildSearchCriteria(request): ContentSearchCriteria {
-        return new SearchContentHandler(
-            undefined as any,
-            undefined as any,
-            undefined as any
-        ).getSearchCriteria(request);
-    }
-
     handle(request: ContentAggregatorRequest): Observable<ContentAggregatorResponse> {
         return defer(async () => {
             let fields: LibraryConfigFormField[] = await this.formService.getForm({
@@ -73,7 +66,7 @@ export class ContentAggregator {
                 .sort((a, b) => a.index - b.index);
 
             const fieldTasks = fields.map(async (field) => {
-                let searchCriteria: ContentSearchCriteria = ContentAggregator.buildSearchCriteria({request: field.search});
+                let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({request: field.search});
 
                 if (request.interceptSearchCriteria) {
                     searchCriteria = request.interceptSearchCriteria(searchCriteria);
@@ -93,6 +86,7 @@ export class ContentAggregator {
                         title: field.title,
                         orientation: field.orientation,
                         searchCriteria,
+                        searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
                         section: {
                             name: field.index + '',
                             sections: [
@@ -108,6 +102,7 @@ export class ContentAggregator {
                         title: field.title,
                         orientation: field.orientation,
                         searchCriteria,
+                        searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
                         section: CsContentsGroupGenerator.generate(
                             combinedContents,
                             field.groupBy,
@@ -128,11 +123,20 @@ export class ContentAggregator {
                 result: await Promise.all<{
                     title: string;
                     orientation: 'horizontal' | 'vertical';
-                    searchCriteria: ContentSearchCriteria;
                     section: ContentsGroupedByPageSection;
+                    searchRequest: SearchRequest;
+                    searchCriteria: ContentSearchCriteria;
                 }>(fieldTasks)
             };
         });
+    }
+
+    private buildSearchCriteriaFromSearchRequest(request): ContentSearchCriteria {
+        return this.searchContentHandler.getSearchCriteria(request);
+    }
+
+    private buildSearchRequestFromSearchCriteria(criteria): SearchRequest {
+        return this.searchContentHandler.getSearchContentRequest(criteria);
     }
 
     private async fetchOfflineContents(searchRequest: ContentSearchCriteria): Promise<ContentData[]> {

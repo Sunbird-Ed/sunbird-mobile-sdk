@@ -90,6 +90,7 @@ import {CheckUserExistsRequest} from '../def/check-user-exists-request';
 import {CheckUserExistsResponse} from '../def/check-user-exists-response';
 import {UpdateServerProfileDeclarationsResponse} from '../def/update-server-profile-declarations-response';
 import {UpdateServerProfileDeclarationsRequest} from '../def/update-server-profile-declarations-request';
+import {CsModule} from '@project-sunbird/client-services';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -486,6 +487,18 @@ export class ProfileServiceImpl implements ProfileService {
             ),
             mergeMap((profile: Profile) => {
                 const profileSession = new ProfileSession(profile.uid);
+                if (CsModule.instance.isInitialised) {
+                    CsModule.instance.updateConfig({
+                        ...CsModule.instance.config,
+                        core: {
+                            ...CsModule.instance.config.core,
+                            global: {
+                                ...CsModule.instance.config.core.global,
+                                sessionId: profileSession.sid
+                            }
+                        }
+                    });
+                }
                 return this.sharedPreferences.putString(
                     ProfileServiceImpl.KEY_USER_SESSION, JSON.stringify(profileSession)
                 ).pipe(

@@ -10,6 +10,7 @@ import {
     mockGetOfflineContentsResponseWithTwoSubjects,
     mockGetOnlineContentsResponse
 } from './content-aggregator.spec.data';
+import {SearchContentHandler} from './search-content-handler';
 
 describe('ContentAggregator', () => {
     let contentAggregator: ContentAggregator;
@@ -18,7 +19,14 @@ describe('ContentAggregator', () => {
     const mockFormService: Partial<FormService> = {};
 
     beforeAll(() => {
+        const searchContentHandler = new SearchContentHandler(
+            {maxCompatibilityLevel: 12} as any,
+            undefined as any,
+            undefined as any,
+        );
+
         contentAggregator = new ContentAggregator(
+            searchContentHandler as SearchContentHandler,
             mockFormService as FormService,
             mockContentService as ContentService,
             mockCachedItemStore as CachedItemStore
@@ -121,7 +129,7 @@ describe('ContentAggregator', () => {
                             {
                                 title: '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
                                 orientation: 'horizontal',
-                                searchCriteria: expect.anything(),
+                                searchCriteria: expect.anything(), searchRequest: expect.anything(),
                                 section: {
                                     name: '0',
                                     sections: [
@@ -142,7 +150,7 @@ describe('ContentAggregator', () => {
                             {
                                 title: '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
                                 orientation: 'vertical',
-                                searchCriteria: expect.anything(),
+                                searchCriteria: expect.anything(), searchRequest: expect.anything(),
                                 section: {
                                     name: 'subject',
                                     sections: [
@@ -248,7 +256,7 @@ describe('ContentAggregator', () => {
                             {
                                 title: '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
                                 orientation: 'horizontal',
-                                searchCriteria: expect.anything(),
+                                searchCriteria: expect.anything(), searchRequest: expect.anything(),
                                 section: {
                                     name: '0',
                                     sections: [
@@ -272,7 +280,7 @@ describe('ContentAggregator', () => {
                             {
                                 title: '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
                                 orientation: 'vertical',
-                                searchCriteria: expect.anything(),
+                                searchCriteria: expect.anything(), searchRequest: expect.anything(),
                                 section: {
                                     name: 'subject',
                                     combination: {
@@ -379,7 +387,7 @@ describe('ContentAggregator', () => {
                             {
                                 title: '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
                                 orientation: 'horizontal',
-                                searchCriteria: expect.anything(),
+                                searchCriteria: expect.anything(), searchRequest: expect.anything(),
                                 section: {
                                     name: '0',
                                     sections: [
@@ -403,7 +411,7 @@ describe('ContentAggregator', () => {
                             {
                                 title: '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
                                 orientation: 'vertical',
-                                searchCriteria: expect.anything(),
+                                searchCriteria: expect.anything(), searchRequest: expect.anything(),
                                 section: {
                                     name: 'subject',
                                     combination: {
