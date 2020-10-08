@@ -507,12 +507,12 @@ describe('ContentAggregator', () => {
                     mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([
                         {
                             content: {
-                                contentType: 'Course'
+                                primarycategory: 'Course'
                             }
                         },
                         {
                             content: {
-                                contentType: 'Non-Course'
+                                primarycategory: 'Non-Course'
                             }
                         }
                     ]));
@@ -536,7 +536,7 @@ describe('ContentAggregator', () => {
                                 'section': {
                                     'name': '0',
                                     'sections': [
-                                        {'contents': [{'contentType': 'Course'}], 'count': 1}
+                                        {'contents': [{'primarycategory': 'Course'}], 'count': 1}
                                     ]
                                 },
                                 'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}'
@@ -558,12 +558,12 @@ describe('ContentAggregator', () => {
                     mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([
                         {
                             content: {
-                                contentType: 'Course'
+                                primarycategory: 'Course'
                             }
                         },
                         {
                             content: {
-                                contentType: 'Non-Course'
+                                primarycategory: 'Non-Course'
                             }
                         }
                     ]));
@@ -587,7 +587,7 @@ describe('ContentAggregator', () => {
                                 'section': {
                                     'name': '0',
                                     'sections': [
-                                        {'contents': [{'contentType': 'Non-Course'}], 'count': 1}
+                                        {'contents': [{'primarycategory': 'Non-Course'}], 'count': 1}
                                     ]
                                 },
                                 'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}'

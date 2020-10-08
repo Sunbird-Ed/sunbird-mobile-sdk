@@ -77,9 +77,9 @@ export class ContentAggregator {
                     case 'CONTENTS':
                         return await this.buildContentSearchTask(field, request);
                     case 'TRACKABLE_CONTENTS':
-                        return await this.buildTrackableTask(field, request, (c) => c.contentType.toLowerCase() !== 'course');
+                        return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() !== 'course');
                     case 'TRACKABLE_COURSE_CONTENTS':
-                        return await this.buildTrackableTask(field, request, (c) => c.contentType.toLowerCase() === 'course');
+                        return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() === 'course');
                 }
             });
 
@@ -108,7 +108,7 @@ export class ContentAggregator {
             returnFreshCourses: true
         }).toPromise();
 
-        const contents = courses.map(c => c.content!).filter((c) => filter(c));
+        const contents = courses.filter((c) => filter(c));
 
         return {
             title: field.title,
