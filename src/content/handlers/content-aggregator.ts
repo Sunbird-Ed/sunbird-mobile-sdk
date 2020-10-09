@@ -13,7 +13,7 @@ import {catchError, map} from 'rxjs/operators';
 import * as SHA1 from 'crypto-js/sha1';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {SearchRequest} from '../def/search-request';
-import {FormService} from '../../form';
+import {FormRequest, FormService} from '../../form';
 import {SearchContentHandler} from './search-content-handler';
 import {CsContentSortCriteria, CsSortOrder} from '@project-sunbird/client-services/services/content';
 import {CsContentsGroupGenerator} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
@@ -58,17 +58,15 @@ export class ContentAggregator {
         return SHA1(JSON.stringify(key)).toString();
     }
 
-    handle(
+    aggregate(
         request: ContentAggregatorRequest,
-        dataSrc: ('CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS' | undefined)[] = ['CONTENTS']
+        dataSrc: ('CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS' | undefined)[],
+        formRequest: FormRequest
     ): Observable<ContentAggregatorResponse> {
         return defer(async () => {
-            let fields: LibraryConfigFormField[] = await this.formService.getForm({
-                type: 'config',
-                subType: 'library',
-                action: 'get',
-                component: 'app',
-            }).toPromise().then((r) => r.form.data.fields);
+            let fields: LibraryConfigFormField[] = await this.formService.getForm(
+                formRequest
+            ).toPromise().then((r) => r.form.data.fields);
 
             fields = fields.filter((field) => field.isEnabled && dataSrc.indexOf(field.dataSrc || 'CONTENTS') >= 0)
                 .sort((a, b) => a.index - b.index);
@@ -79,9 +77,9 @@ export class ContentAggregator {
                     case 'CONTENTS':
                         return await this.buildContentSearchTask(field, request);
                     case 'TRACKABLE_CONTENTS':
-                        return await this.buildTrackableCourseTask(field, request);
+                        return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() !== 'course');
                     case 'TRACKABLE_COURSE_CONTENTS':
-                        return await this.buildTrackableCourseTask(field, request);
+                        return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() === 'course');
                 }
             });
 
@@ -97,7 +95,7 @@ export class ContentAggregator {
         });
     }
 
-    private async buildTrackableCourseTask(field: LibraryConfigFormField, request: ContentAggregatorRequest): Promise<{
+    private async buildTrackableTask(field: LibraryConfigFormField, request: ContentAggregatorRequest, filter): Promise<{
         title: string;
         orientation: 'horizontal' | 'vertical';
         section: ContentsGroupedByPageSection;
@@ -110,6 +108,8 @@ export class ContentAggregator {
             returnFreshCourses: true
         }).toPromise();
 
+        const contents = courses.filter((c) => filter(c));
+
         return {
             title: field.title,
             orientation: field.orientation,
@@ -117,8 +117,8 @@ export class ContentAggregator {
                 name: field.index + '',
                 sections: [
                     {
-                        count: 10,
-                        contents: courses.map(c => c.content!)
+                        count: contents.length,
+                        contents
                     }
                 ]
             }

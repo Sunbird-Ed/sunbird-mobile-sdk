@@ -2,6 +2,7 @@ import {ContentSearchCriteria, ContentSearchFilter} from './requests';
 import {Content, ContentData} from './content';
 import {ContentImportStatus} from '..';
 import {SearchRequest} from './search-request';
+import { Course } from '../../course/def/course';
 
 export interface ContentSearchResult {
     id: string;
@@ -33,7 +34,7 @@ export interface ContentsGroupedByPageSection {
 export interface PageSection {
     count?: number;
     name?: string;
-    contents?: ContentData[];
+    contents?: ContentData[] | Course[];
     display?: Display;
 }
 

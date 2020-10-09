@@ -6,7 +6,8 @@ import {FormService} from '../../form';
 import {CsContentsGroupGenerator} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
 import {
     mockFormResponse,
-    mockFormResponseWithCourseDataSrc,
+    mockFormResponseWithTrackableCourseDataSrc,
+    mockFormResponseWithTrackableDataSrc,
     mockGetOfflineContentsResponse,
     mockGetOfflineContentsResponseWithTwoSubjects,
     mockGetOnlineContentsResponse
@@ -58,7 +59,12 @@ describe('ContentAggregator', () => {
             });
 
             // act
-            contentAggregator.handle({}).subscribe(() => {
+            contentAggregator.aggregate({}, ['CONTENTS'], {
+                type: 'config',
+                subType: 'library',
+                action: 'get',
+                component: 'app',
+            }).subscribe(() => {
                 // assert
                 expect(mockFormService.getForm).toHaveBeenCalledWith({
                     type: 'config',
@@ -81,7 +87,12 @@ describe('ContentAggregator', () => {
                     spyOn(CsContentsGroupGenerator, 'generate').and.callThrough();
 
                     // act
-                    contentAggregator.handle({}).subscribe((result) => {
+                    contentAggregator.aggregate({}, ['CONTENTS'], {
+                        type: 'config',
+                        subType: 'library',
+                        action: 'get',
+                        component: 'app',
+                    }).subscribe((result) => {
                         // assert
                         expect(mockContentService.getContents).toHaveBeenNthCalledWith(1, expect.objectContaining({
                             board: undefined,
@@ -200,11 +211,16 @@ describe('ContentAggregator', () => {
                     spyOn(CsContentsGroupGenerator, 'generate').and.callThrough();
 
                     // act
-                    contentAggregator.handle({
+                    contentAggregator.aggregate({
                         applyFirstAvailableCombination: {
                             'subject': ['Some other Physical Science'],
                             'gradeLevel': ['Class 1']
                         }
+                    }, ['CONTENTS'], {
+                        type: 'config',
+                        subType: 'library',
+                        action: 'get',
+                        component: 'app',
                     }).subscribe((result) => {
                         // assert
                         expect(mockContentService.getContents).toHaveBeenNthCalledWith(1, expect.objectContaining({
@@ -325,7 +341,7 @@ describe('ContentAggregator', () => {
                     spyOn(CsContentsGroupGenerator, 'generate').and.callThrough();
 
                     // act
-                    contentAggregator.handle({
+                    contentAggregator.aggregate({
                         applyFirstAvailableCombination: {
                             'subject': ['Some other Physical Science'],
                             'gradeLevel': ['Class 1']
@@ -336,6 +352,11 @@ describe('ContentAggregator', () => {
                             criteria.grade = ['some_grade'];
                             return criteria;
                         }
+                    }, ['CONTENTS'], {
+                        type: 'config',
+                        subType: 'library',
+                        action: 'get',
+                        component: 'app',
                     }).subscribe((result) => {
                         // assert
                         expect(mockContentService.getContents).toHaveBeenNthCalledWith(1, expect.objectContaining({
@@ -461,7 +482,12 @@ describe('ContentAggregator', () => {
                     mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([]));
 
                     // act
-                    contentAggregator.handle({}).subscribe((result) => {
+                    contentAggregator.aggregate({}, ['CONTENTS'], {
+                        type: 'config',
+                        subType: 'library',
+                        action: 'get',
+                        component: 'app',
+                    }).subscribe((result) => {
                         // assert
                         expect(mockProfileService.getActiveProfileSession).not.toHaveBeenCalled();
                         expect(mockCourseService.getEnrolledCourses).not.toHaveBeenCalled();
@@ -473,20 +499,99 @@ describe('ContentAggregator', () => {
             describe('when dataSrc is TRACKABLE_COURSE_CONTENTS', () => {
                 it('should aggregate from enrolledCourses', (done) => {
                     // arrange
-                    mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponseWithCourseDataSrc));
+                    mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponseWithTrackableCourseDataSrc));
                     mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of({
                         uid: 'SOME_UID',
                         sid: 'SOME_SID'
                     }));
-                    mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([]));
+                    mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([
+                        {
+                            content: {
+                                primaryCategory: 'Course'
+                            }
+                        },
+                        {
+                            content: {
+                                primaryCategory: 'Non-Course'
+                            }
+                        }
+                    ]));
 
                     // act
-                    contentAggregator.handle({}, ['TRACKABLE_COURSE_CONTENTS']).subscribe((result) => {
+                    contentAggregator.aggregate({}, ['TRACKABLE_COURSE_CONTENTS'], {
+                        type: 'config',
+                        subType: 'library',
+                        action: 'get',
+                        component: 'app',
+                    }).subscribe((result) => {
                         // assert
                         expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
                         expect(mockCourseService.getEnrolledCourses).toHaveBeenCalledWith({
                             userId: 'SOME_UID',
                             returnFreshCourses: true
+                        });
+                        expect(result).toEqual({
+                            'result': [{
+                                'orientation': 'horizontal',
+                                'section': {
+                                    'name': '0',
+                                    'sections': [
+                                        {'contents': [{'content': {'primaryCategory': 'Course'}}], 'count': 1}
+                                    ]
+                                },
+                                'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}'
+                            }]
+                        });
+                        done();
+                    });
+                });
+            });
+
+            describe('when dataSrc is TRACKABLE_CONTENTS', () => {
+                it('should aggregate from enrolledCourses', (done) => {
+                    // arrange
+                    mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponseWithTrackableDataSrc));
+                    mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of({
+                        uid: 'SOME_UID',
+                        sid: 'SOME_SID'
+                    }));
+                    mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([
+                        {
+                            content: {
+                                primaryCategory: 'Course'
+                            }
+                        },
+                        {
+                            content: {
+                                primaryCategory: 'Non-Course'
+                            }
+                        }
+                    ]));
+
+                    // act
+                    contentAggregator.aggregate({}, ['TRACKABLE_CONTENTS'], {
+                        type: 'config',
+                        subType: 'library',
+                        action: 'get',
+                        component: 'app',
+                    }).subscribe((result) => {
+                        // assert
+                        expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
+                        expect(mockCourseService.getEnrolledCourses).toHaveBeenCalledWith({
+                            userId: 'SOME_UID',
+                            returnFreshCourses: true
+                        });
+                        expect(result).toEqual({
+                            'result': [{
+                                'orientation': 'horizontal',
+                                'section': {
+                                    'name': '0',
+                                    'sections': [
+                                        {'contents': [{'content': {'primaryCategory': 'Non-Course'}}], 'count': 1}
+                                    ]
+                                },
+                                'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}'
+                            }]
                         });
                         done();
                     });
