@@ -101,3 +101,7 @@ export interface GetUserEnrolledCoursesRequest {
     from?: CachedItemRequestSourceFrom;
     request: CsGetUserEnrolledCoursesRequest;
 }
+
+export interface DisplayDiscussionForumRequest {
+    forumId: string;
+}
