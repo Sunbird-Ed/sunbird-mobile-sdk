@@ -61,7 +61,7 @@ export class CourseServiceImpl implements CourseService {
     public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
     public static readonly LAST_READ_CONTENTID_PREFIX = 'lastReadContentId';
     private static readonly CERTIFICATE_SIGN_ENDPOINT = '/api/certreg/v1/certs/download';
-    private static readonly DISCUSSION_FORUM_ENDPOINT = '';
+    private static readonly DISCUSSION_FORUM_ENDPOINT = '/discussions/auth/sunbird-oidc/callback';
     private readonly courseServiceConfig: CourseServiceConfig;
     private readonly profileServiceConfig: ProfileServiceConfig;
     private capturedAssessmentEvents: { [key: string]: SunbirdTelemetry.Telemetry[] | undefined } = {};
