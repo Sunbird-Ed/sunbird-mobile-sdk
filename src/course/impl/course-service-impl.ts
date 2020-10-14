@@ -406,7 +406,7 @@ export class CourseServiceImpl implements CourseService {
                     'returnTo': `/category/${request.forumId}`
                 }),
                 '_blank',
-                'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes,hideurlbar=yes'
+                'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes,hideurlbar=yes,hidenavigationbuttons=true'
             );
 
             return true;
