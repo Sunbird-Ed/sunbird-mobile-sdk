@@ -68,15 +68,16 @@ describe('CachedItemStoreImpl', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.resetAllMocks();
     });
 
-    it('should be get an instance of cachedItemStoreImpl from container', () => {
+     it('should be get an instance of cachedItemStoreImpl from container', () => {
         expect(cachedItemStore).toBeTruthy();
     });
 
     describe('getCached()', () => {
         describe('when item is empty array or empty object or passes custom empty condition', () => {
-            it('should resolve item without saving in cache store', async (done) => {
+             it('should resolve item without saving in cache store', async (done) => {
                 // arrange
                 const mockKeyValueStore = container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
                 const now = Date.now();
@@ -121,7 +122,7 @@ describe('CachedItemStoreImpl', () => {
 
         describe('when item not cached in db', () => {
             describe('when initial source provided', () => {
-                it('should fetch from server and save in cache store with ttl', (done) => {
+                 it('should fetch from server and save in cache store with ttl', (done) => {
                     // arrange
                     const mockKeyValueStore = container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
                     const now = Date.now();
@@ -146,7 +147,7 @@ describe('CachedItemStoreImpl', () => {
             });
 
             describe('when initial source provided', () => {
-                it('should fetch from initial source and save in cache store with ttl', (done) => {
+                 it('should fetch from initial source and save in cache store with ttl', (done) => {
                     // arrange
                     const mockKeyValueStore = container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
                     const now = Date.now();
@@ -170,7 +171,7 @@ describe('CachedItemStoreImpl', () => {
                     });
                 });
 
-                it('should fetch from server and save in cache store if initial store fails with ttl', (done) => {
+                 it('should fetch from server and save in cache store if initial store fails with ttl', (done) => {
                     // arrange
                     const mockKeyValueStore = container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
                     const now = Date.now();
@@ -198,7 +199,7 @@ describe('CachedItemStoreImpl', () => {
 
         describe('when item cached in db', () => {
             describe('when ttl not expired', () => {
-                it('should fetch from cache store', async (done) => {
+                 it('should fetch from cache store', async (done) => {
                     // arrange
                     const mockKeyValueStore = container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
                     const now = Date.now();
@@ -233,7 +234,7 @@ describe('CachedItemStoreImpl', () => {
             });
 
             describe('when ttl expired', () => {
-                it('should fetch from store and in parallel fetch from server and save in cache store updating ttl', async (done) => {
+                 it('should fetch from store and in parallel fetch from server and save in cache store updating ttl', async (done) => {
                     // arrange
                     const mockKeyValueStore = container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
                     const now = Date.now();
@@ -275,7 +276,7 @@ describe('CachedItemStoreImpl', () => {
     });
 
     describe('get()', () => {
-        it('should first fetch from server before checking cache', async (done) => {
+         it('should first fetch from server before checking cache', async (done) => {
             // arrange
             const now1 = Date.now();
 
