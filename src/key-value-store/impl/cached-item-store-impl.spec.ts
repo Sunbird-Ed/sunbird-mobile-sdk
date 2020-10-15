@@ -1,10 +1,10 @@
-import {Container, injectable} from 'inversify';
-import {InjectionTokens} from '../../injection-tokens';
-import {CachedItemStoreImpl} from './cached-item-store-impl';
-import {CachedItemStore, KeyValueStore} from '..';
-import {SdkConfig, SharedPreferences} from '../..';
-import {mockSdkConfig} from '../../page/impl/page-assemble-service-impl.spec.data';
-import {Observable, of, throwError} from 'rxjs';
+import { Container, injectable } from 'inversify';
+import { InjectionTokens } from '../../injection-tokens';
+import { CachedItemStoreImpl } from './cached-item-store-impl';
+import { CachedItemStore, KeyValueStore } from '..';
+import { SdkConfig, SharedPreferences } from '../..';
+import { mockSdkConfig } from '../../page/impl/page-assemble-service-impl.spec.data';
+import { Observable, of, throwError } from 'rxjs';
 
 @injectable()
 class MockKeyValueStore implements KeyValueStore {
@@ -71,13 +71,13 @@ describe('CachedItemStoreImpl', () => {
         jest.resetAllMocks();
     });
 
-     it('should be get an instance of cachedItemStoreImpl from container', () => {
+    it('should be get an instance of cachedItemStoreImpl from container', () => {
         expect(cachedItemStore).toBeTruthy();
     });
 
     describe('getCached()', () => {
         describe('when item is empty array or empty object or passes custom empty condition', () => {
-             it('should resolve item without saving in cache store', async (done) => {
+            it('should resolve item without saving in cache store', async (done) => {
                 // arrange
                 const mockKeyValueStore = container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
                 const now = Date.now();
@@ -104,8 +104,8 @@ describe('CachedItemStoreImpl', () => {
                     'sample_id_' + now,
                     'sample_no_sql_key',
                     'sample_ttl_key',
-                    () => of({items: ['a', 'b', 'c']}),
-                    () => of({items: ['a', 'b', 'c']}),
+                    () => of({ items: ['a', 'b', 'c'] }),
+                    () => of({ items: ['a', 'b', 'c'] }),
                     undefined,
                     (i) => i.items.length < 10
                 ).toPromise();
@@ -113,7 +113,7 @@ describe('CachedItemStoreImpl', () => {
                 // assert
                 expect(r1).toEqual({});
                 expect(r2).toEqual([]);
-                expect(r3).toEqual({items: ['a', 'b', 'c']});
+                expect(r3).toEqual({ items: ['a', 'b', 'c'] });
                 expect(mockKeyValueStore.setValue).not.toHaveBeenCalled();
 
                 done();
@@ -122,7 +122,7 @@ describe('CachedItemStoreImpl', () => {
 
         describe('when item not cached in db', () => {
             describe('when initial source provided', () => {
-                 it('should fetch from server and save in cache store with ttl', (done) => {
+                it('should fetch from server and save in cache store with ttl', (done) => {
                     // arrange
                     const mockKeyValueStore = container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
                     const now = Date.now();
@@ -133,13 +133,13 @@ describe('CachedItemStoreImpl', () => {
                         'sample_id_' + now,
                         'sample_no_sql_key',
                         'sample_ttl_key',
-                        () => of({key: 'fromServer'}),
+                        () => of({ key: 'fromServer' }),
                     ).subscribe((result) => {
                         // assert
-                        expect(result).toEqual({key: 'fromServer'});
+                        expect(result).toEqual({ key: 'fromServer' });
                         expect(mockKeyValueStore.setValue).toHaveBeenCalledWith(
                             `sample_no_sql_key-sample_id_${now}`,
-                            JSON.stringify({key: 'fromServer'})
+                            JSON.stringify({ key: 'fromServer' })
                         );
                         done();
                     });
@@ -147,7 +147,7 @@ describe('CachedItemStoreImpl', () => {
             });
 
             describe('when initial source provided', () => {
-                 it('should fetch from initial source and save in cache store with ttl', (done) => {
+                it('should fetch from initial source and save in cache store with ttl', (done) => {
                     // arrange
                     const mockKeyValueStore = container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
                     const now = Date.now();
@@ -158,20 +158,20 @@ describe('CachedItemStoreImpl', () => {
                         'sample_id_' + now,
                         'sample_no_sql_key',
                         'sample_ttl_key',
-                        () => of({key: 'fromServer'}),
-                        () => of({key: 'fromInitial'})
+                        () => of({ key: 'fromServer' }),
+                        () => of({ key: 'fromInitial' })
                     ).subscribe((result) => {
                         // assert
-                        expect(result).toEqual({key: 'fromInitial'});
+                        expect(result).toEqual({ key: 'fromInitial' });
                         expect(mockKeyValueStore.setValue).toHaveBeenCalledWith(
                             `sample_no_sql_key-sample_id_${now}`,
-                            JSON.stringify({key: 'fromInitial'})
+                            JSON.stringify({ key: 'fromInitial' })
                         );
                         done();
                     });
                 });
 
-                 it('should fetch from server and save in cache store if initial store fails with ttl', (done) => {
+                it('should fetch from server and save in cache store if initial store fails with ttl', (done) => {
                     // arrange
                     const mockKeyValueStore = container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
                     const now = Date.now();
@@ -182,14 +182,14 @@ describe('CachedItemStoreImpl', () => {
                         'sample_id_' + now,
                         'sample_no_sql_key',
                         'sample_ttl_key',
-                        () => of({key: 'fromServer'}),
+                        () => of({ key: 'fromServer' }),
                         () => throwError(new Error('Sample Error'))
                     ).subscribe((result) => {
                         // assert
-                        expect(result).toEqual({key: 'fromServer'});
+                        expect(result).toEqual({ key: 'fromServer' });
                         expect(mockKeyValueStore.setValue).toHaveBeenCalledWith(
                             `sample_no_sql_key-sample_id_${now}`,
-                            JSON.stringify({key: 'fromServer'})
+                            JSON.stringify({ key: 'fromServer' })
                         );
                         done();
                     });
@@ -199,7 +199,7 @@ describe('CachedItemStoreImpl', () => {
 
         describe('when item cached in db', () => {
             describe('when ttl not expired', () => {
-                 it('should fetch from cache store', async (done) => {
+                it('should fetch from cache store', async (done) => {
                     // arrange
                     const mockKeyValueStore = container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
                     const now = Date.now();
@@ -211,7 +211,7 @@ describe('CachedItemStoreImpl', () => {
                         'sample_id_' + now,
                         'sample_no_sql_key',
                         'sample_ttl_key',
-                        () => of({key: 'fromServer1'}),
+                        () => of({ key: 'fromServer1' }),
                     ).toPromise();
 
                     jest.resetAllMocks();
@@ -220,21 +220,21 @@ describe('CachedItemStoreImpl', () => {
                         'sample_id_' + now,
                         'sample_no_sql_key',
                         'sample_ttl_key',
-                        () => of({key: 'fromServer2'}),
+                        () => of({ key: 'fromServer2' }),
                     ).toPromise();
 
                     expect(mockKeyValueStore.getValue).toHaveBeenCalledWith(
                         `sample_no_sql_key-sample_id_${now}`
                     );
 
-                    expect(response).toEqual({key: 'fromServer1'});
+                    expect(response).toEqual({ key: 'fromServer1' });
 
                     done();
                 });
             });
 
             describe('when ttl expired', () => {
-                 it('should fetch from store and in parallel fetch from server and save in cache store updating ttl', async (done) => {
+                it('should fetch from store and in parallel fetch from server and save in cache store updating ttl', async (done) => {
                     // arrange
                     const mockKeyValueStore = container.get<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE);
                     const now = Date.now();
@@ -246,7 +246,7 @@ describe('CachedItemStoreImpl', () => {
                         'sample_id_' + now,
                         'sample_no_sql_key',
                         'sample_ttl_key',
-                        () => of({key: 'fromServer1'}),
+                        () => of({ key: 'fromServer1' }),
                     ).toPromise();
 
                     jest.resetAllMocks();
@@ -255,7 +255,7 @@ describe('CachedItemStoreImpl', () => {
                         'sample_id_' + now,
                         'sample_no_sql_key',
                         'sample_ttl_key',
-                        () => of({key: 'fromServer2'}),
+                        () => of({ key: 'fromServer2' }),
                         undefined,
                         0
                     ).toPromise();
@@ -263,10 +263,10 @@ describe('CachedItemStoreImpl', () => {
                     setTimeout(() => {
                         expect(mockKeyValueStore.setValue).toHaveBeenCalledWith(
                             `sample_no_sql_key-sample_id_${now}`,
-                            JSON.stringify({key: 'fromServer2'})
+                            JSON.stringify({ key: 'fromServer2' })
                         );
 
-                        expect(response).toEqual({key: 'fromServer1'});
+                        expect(response).toEqual({ key: 'fromServer1' });
 
                         done();
                     });
@@ -276,7 +276,7 @@ describe('CachedItemStoreImpl', () => {
     });
 
     describe('get()', () => {
-         it('should first fetch from server before checking cache', async (done) => {
+        it('should first fetch from server before checking cache', async (done) => {
             // arrange
             const now1 = Date.now();
 
@@ -285,8 +285,8 @@ describe('CachedItemStoreImpl', () => {
                 'sample_id_' + now1,
                 'sample_no_sql_key',
                 'sample_ttl_key',
-                () => of({key: 'fromServer1'}),
-                () => of({key: 'fromInitial1'})
+                () => of({ key: 'fromServer1' }),
+                () => of({ key: 'fromInitial1' })
             ).toPromise();
 
             const now2 = Date.now() - 100;
@@ -296,12 +296,12 @@ describe('CachedItemStoreImpl', () => {
                 'sample_no_sql_key',
                 'sample_ttl_key',
                 () => throwError(new Error('Sample Error')),
-                () => of({key: 'fromInitial2'})
+                () => of({ key: 'fromInitial2' })
             ).toPromise();
 
             // assert
-            expect(r1).toEqual({key: 'fromServer1'});
-            expect(r2).toEqual({key: 'fromInitial2'});
+            expect(r1).toEqual({ key: 'fromServer1' });
+            expect(r2).toEqual({ key: 'fromInitial2' });
 
             done();
         });
