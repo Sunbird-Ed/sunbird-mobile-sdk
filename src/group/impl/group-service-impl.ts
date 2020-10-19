@@ -25,13 +25,16 @@ import {
     UpdateMembersRequest
 } from '..';
 import {Observable} from 'rxjs';
-import {Group} from '../def/models';
+import {Group, GroupEntityStatus} from '../def/models';
 import {Form} from '../../form/def/models';
 import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {CsGroupService} from '@project-sunbird/client-services/services/group';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {GroupActivityServiceImpl} from './group-activity-service-impl';
+import { CsGroupServiceConfig } from '@project-sunbird/client-services';
+import { ActivateAndDeactivateByIdRequest } from '../def/requests';
+import { GroupReactivateResponse, GroupSuspendResponse } from '../def/responses';
 
 @injectable()
 export class GroupServiceImpl implements GroupService {
@@ -120,5 +123,13 @@ export class GroupServiceImpl implements GroupService {
 
     getSupportedActivities(): Observable<Form<GroupSupportedActivitiesFormField>> {
         return this.groupServiceDelegate.getSupportedActivities();
+    }
+
+    suspendById(request: ActivateAndDeactivateByIdRequest): Observable<GroupSuspendResponse> {
+        return this.groupServiceDelegate.suspendById(request.id);
+    }
+
+    reactivateById(request: ActivateAndDeactivateByIdRequest): Observable<GroupReactivateResponse> {
+        return this.groupServiceDelegate.reactivateById(request.id);
     }
 }

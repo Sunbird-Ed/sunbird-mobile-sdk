@@ -73,3 +73,7 @@ export interface GroupActivityDataAggregationRequest extends CachedItemRequest {
     mergeGroup?: Group;
     leafNodesCount?: number;
 }
+
+export interface ActivateAndDeactivateByIdRequest {
+    id: string;
+}
