@@ -274,7 +274,10 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                     if (
                         courseContext &&
                         (
-                            content.primaryCategory === CsPrimaryCategory.COURSE_ASSESSMENT ||
+                            (
+                                content.primaryCategory &&
+                                content.primaryCategory.toLowerCase() === CsPrimaryCategory.COURSE_ASSESSMENT.toLowerCase()
+                            ) ||
                             content.contentType.toLowerCase() === 'onboardingresource'
                         ) &&
                         this.courseService.hasCapturedAssessmentEvent({courseContext})
