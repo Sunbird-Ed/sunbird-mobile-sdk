@@ -15,6 +15,7 @@ import {
     UpdateMembersRequest
 } from '..';
 import {of} from 'rxjs';
+import { ActivateAndDeactivateByIdRequest } from '../def/requests';
 
 describe('GroupServiceImpl', () => {
     let groupServiceImpl: GroupServiceImpl;
@@ -308,6 +309,36 @@ describe('GroupServiceImpl', () => {
                 expect(mockCsGroupService.getSupportedActivities).toHaveBeenCalled();
                 done();
             });
+        });
+    });
+
+    it('should return GroupSuspendResponse by invoked suspendById', (done) => {
+        // arrange
+        const request: ActivateAndDeactivateByIdRequest = {
+            id: 'sample-id'
+        };
+        mockContainer.get = jest.fn(() => ({
+            suspendById: jest.fn(() => of({}))
+        })) as any;
+        // act
+        groupServiceImpl.suspendById(request).subscribe(() => {
+            expect(mockContainer.get).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should return reactivateResponse by invoked reactivateById', (done) => {
+        // arrange
+        const request: ActivateAndDeactivateByIdRequest = {
+            id: 'sample-id'
+        };
+        mockContainer.get = jest.fn(() => ({
+            reactivateById: jest.fn(() => of({}))
+        })) as any;
+        // act
+        groupServiceImpl.reactivateById(request).subscribe(() => {
+            expect(mockContainer.get).toHaveBeenCalled();
+            done();
         });
     });
 });
