@@ -2,6 +2,7 @@ import {
     ContentStateResponse,
     CourseBatchDetailsRequest,
     CourseBatchesRequest,
+    DisplayDiscussionForumRequest,
     EnrollCourseRequest,
     FetchEnrolledCourseRequest,
     GenerateAttemptIdRequest,
@@ -48,11 +49,13 @@ export interface CourseService {
     /** @internal */
     resetCapturedAssessmentEvents();
 
-    syncAssessmentEvents(options?: {persistedOnly: boolean}): Observable<undefined>;
+    syncAssessmentEvents(options?: { persistedOnly: boolean }): Observable<undefined>;
 
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 
     downloadCurrentProfileCourseCertificateV2(
         request: DownloadCertificateRequest,
         pdfDataProvider: (pdfSvgData: string, cb: (pdfData: Blob) => void) => void): Observable<DownloadCertificateResponse>;
+
+    displayDiscussionForum(request: DisplayDiscussionForumRequest): Observable<boolean>;
 }
