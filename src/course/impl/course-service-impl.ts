@@ -7,6 +7,7 @@ import {
     CourseBatchesRequest,
     CourseService,
     CourseServiceConfig,
+    DisplayDiscussionForumRequest,
     EnrollCourseRequest,
     FetchEnrolledCourseRequest,
     GenerateAttemptIdRequest,
@@ -49,6 +50,8 @@ import {catchError, concatMap, delay, filter, map, mapTo, mergeMap, take} from '
 import {FileService} from '../../util/file/def/file-service';
 import {CsCourseService} from '@project-sunbird/client-services/services/course';
 import {NetworkQueue} from '../../api/network-queue';
+import {AuthService} from '../../auth';
+import * as qs from 'qs';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -58,6 +61,7 @@ export class CourseServiceImpl implements CourseService {
     public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
     public static readonly LAST_READ_CONTENTID_PREFIX = 'lastReadContentId';
     private static readonly CERTIFICATE_SIGN_ENDPOINT = '/api/certreg/v1/certs/download';
+    private static readonly DISCUSSION_FORUM_ENDPOINT = '/discussions/auth/sunbird-oidc/callback';
     private readonly courseServiceConfig: CourseServiceConfig;
     private readonly profileServiceConfig: ProfileServiceConfig;
     private capturedAssessmentEvents: { [key: string]: SunbirdTelemetry.Telemetry[] | undefined } = {};
@@ -76,6 +80,7 @@ export class CourseServiceImpl implements CourseService {
         @inject(CsInjectionTokens.COURSE_SERVICE) private csCourseService: CsCourseService,
         @inject(InjectionTokens.NETWORK_QUEUE) private networkQueue: NetworkQueue,
         @inject(InjectionTokens.CONTAINER) private container: Container,
+        @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService,
     ) {
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
         this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
@@ -86,6 +91,10 @@ export class CourseServiceImpl implements CourseService {
             this.dbService,
             this.networkQueue
         );
+    }
+
+    static buildUrl(host: string, path: string, params: { [p: string]: string }) {
+        return `${host}${path}?${qs.stringify(params)}`;
     }
 
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch> {
@@ -379,5 +388,28 @@ export class CourseServiceImpl implements CourseService {
         return MD5(
             [request.courseId, request.batchId, request.contentId, request.userId, Date.now()].join('-')
         ).toString();
+    }
+
+    displayDiscussionForum(request: DisplayDiscussionForumRequest): Observable<boolean> {
+        return defer(async () => {
+            const session = await this.authService.getSession().toPromise();
+
+            if (!session) {
+                return false;
+            }
+
+            const accessToken = session.managed_access_token || session.access_token;
+
+            cordova.InAppBrowser.open(
+                CourseServiceImpl.buildUrl(this.sdkConfig.apiConfig.host, CourseServiceImpl.DISCUSSION_FORUM_ENDPOINT, {
+                    'access_token': accessToken,
+                    'returnTo': `/category/${request.forumId}`
+                }),
+                '_blank',
+                'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes,hideurlbar=yes,hidenavigationbuttons=true'
+            );
+
+            return true;
+        });
     }
 }

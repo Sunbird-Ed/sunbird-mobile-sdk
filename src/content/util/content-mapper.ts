@@ -138,6 +138,9 @@ export class ContentMapper {
         if (serverData.licenseDetails) {
           localData.licenseDetails = serverData.licenseDetails;
         }
+        if (serverData.forumId) {
+          localData.forumId = serverData.forumId;
+        }
       }
     }
 

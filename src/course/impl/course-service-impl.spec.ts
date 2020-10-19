@@ -103,6 +103,7 @@ describe('CourseServiceImpl', () => {
         container.bind<NetworkQueue>(InjectionTokens.NETWORK_QUEUE).toConstantValue(mockNetworkQueue as NetworkQueue);
         container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(container);
 
+
         (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockImplementation(() => {
             return mockSyncAssessmentEventsHandler as Partial<SyncAssessmentEventsHandler> as SyncAssessmentEventsHandler;
         });
@@ -1039,6 +1040,79 @@ describe('CourseServiceImpl', () => {
                 done();
             }, (e) => {
                 fail(e);
+            });
+        });
+    });
+
+    describe('displayDiscussionForum', () => {
+        describe('when no loggedIn session found', () => {
+            it('should do nothing and resolve with false', (done) => {
+                // arrange
+                mockAuthService.getSession = jest.fn(() => of(undefined));
+                spyOn(cordova.InAppBrowser, 'open').and.callThrough();
+
+                // act
+                courseService.displayDiscussionForum({
+                    forumId: '17'
+                }).subscribe((result) => {
+                    // assert
+                    expect(result).toEqual(false);
+                    expect(cordova.InAppBrowser.open).not.toHaveBeenCalled();
+                    done();
+                });
+            });
+        });
+
+        describe('when MUA loggedIn session found', () => {
+            it('should open inAppBrowser with appropriate url and resolve with true', (done) => {
+                // arrange
+                mockAuthService.getSession = jest.fn(() => of({
+                    access_token: 'SOME_LUA_ACCESS_TOKEN',
+                    refresh_token: 'SOME_LUA_REFRESH_TOKEN',
+                    userToken: 'SOME_LUA_USER_TOKEN',
+                    managed_access_token: 'SOME_MUA_ACCESS_TOKEN',
+                }));
+                spyOn(cordova.InAppBrowser, 'open').and.callThrough();
+
+                // act
+                courseService.displayDiscussionForum({
+                    forumId: '17'
+                }).subscribe((result) => {
+                    // assert
+                    expect(result).toEqual(true);
+                    expect(cordova.InAppBrowser.open).toHaveBeenCalledWith(
+                        'SAMPLE_HOST/discussions/auth/sunbird-oidc/callback?access_token=SOME_MUA_ACCESS_TOKEN&returnTo=%2Fcategory%2F17',
+                        expect.any(String),
+                        expect.any(String),
+                    );
+                    done();
+                });
+            });
+        });
+
+        describe('when LUA loggedIn session found', () => {
+            it('should open inAppBrowser with appropriate url and resolve with true', (done) => {
+                // arrange
+                mockAuthService.getSession = jest.fn(() => of({
+                    access_token: 'SOME_LUA_ACCESS_TOKEN',
+                    refresh_token: 'SOME_LUA_REFRESH_TOKEN',
+                    userToken: 'SOME_LUA_USER_TOKEN',
+                }));
+                spyOn(cordova.InAppBrowser, 'open').and.callThrough();
+
+                // act
+                courseService.displayDiscussionForum({
+                    forumId: '17'
+                }).subscribe((result) => {
+                    // assert
+                    expect(result).toEqual(true);
+                    expect(cordova.InAppBrowser.open).toHaveBeenCalledWith(
+                        'SAMPLE_HOST/discussions/auth/sunbird-oidc/callback?access_token=SOME_LUA_ACCESS_TOKEN&returnTo=%2Fcategory%2F17',
+                        expect.any(String),
+                        expect.any(String),
+                    );
+                    done();
+                });
             });
         });
     });
