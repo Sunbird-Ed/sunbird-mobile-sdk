@@ -45,8 +45,12 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
         ]).pipe(
             switchMap(() => {
                 return defer(async () => {
-                    const result = await this.fetchNotificationAndUserFeed();
-                    this._notifications$.next(result);
+                    try {
+                        const result = await this.fetchNotificationAndUserFeed();
+                        this._notifications$.next(result);
+                    } catch (e) {
+                        console.error(e);
+                    }
                 });
             }),
             mapTo(undefined)
