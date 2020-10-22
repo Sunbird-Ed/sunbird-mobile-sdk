@@ -30,13 +30,13 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
 
     onInit(): Observable<undefined> {
         const interval$ = interval(1000 * 10).pipe(
-            mapTo(null),
             startWith(null),
+            mapTo(null),
         );
 
         const notificationTrigger$ = this._notificationTrigger$.pipe(
-            throttleTime(1000),
             startWith(null),
+            throttleTime(1000),
         );
 
         return combineLatest([
