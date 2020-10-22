@@ -6,8 +6,8 @@ import {NotificationEntry} from '../db/schema';
 import {NotificationHandler} from '../handler/notification-handler';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {CodePush} from '../../preference-keys';
-import {interval, Observable, of, Subject} from 'rxjs';
-import {map, mapTo, mergeMap, tap} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, defer, interval, Observable, of, Subject} from 'rxjs';
+import {map, mapTo, mergeMap, startWith, switchMap, tap, throttleTime} from 'rxjs/operators';
 import {ProfileService, UserFeedCategory, UserFeedEntry, UserFeedStatus} from '../../profile';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
 import COLUMN_NAME_NOTIFICATION_JSON = NotificationEntry.COLUMN_NAME_NOTIFICATION_JSON;
@@ -21,16 +21,31 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
     ) {
     }
 
-    private _notifications$ = new Subject<Notification[]>();
+    private _notifications$ = new BehaviorSubject<Notification[]>([]);
+    private _notificationTrigger$ = new Subject<null>();
 
     get notifications$(): Subject<Notification[]> {
         return this._notifications$;
     }
 
     onInit(): Observable<undefined> {
-        return interval(1000 * 10).pipe(
-            tap(async () => {
-                await this.emitNotificationChanges();
+        const interval$ = interval(1000 * 10).pipe(
+            startWith(-1)
+        );
+
+        const notificationTrigger$ = this._notificationTrigger$.pipe(
+            throttleTime(1000)
+        );
+
+        return combineLatest([
+            interval$,
+            notificationTrigger$
+        ]).pipe(
+            switchMap(() => {
+                return defer(async () => {
+                    const result = await this.fetchNotificationAndUserFeed();
+                    this._notifications$.next(result);
+                });
             }),
             mapTo(undefined)
         );
@@ -65,7 +80,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                     );
                 }
             }),
-            tap(() => this.emitNotificationChanges())
+            tap(() => this.triggerNotificationChange())
         );
     }
 
@@ -79,7 +94,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
             .concat(notification.id ? `WHERE ${NotificationEntry.COLUMN_NAME_MESSAGE_ID} = ${notification.id}` : '');
         return this.dbService.execute(query).pipe(
             mapTo(true),
-            tap(() => this.emitNotificationChanges())
+            tap(() => this.triggerNotificationChange())
         );
     }
 
@@ -103,7 +118,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                     status: notification.isRead ? UserFeedStatus.READ : UserFeedStatus.UNREAD
                 }
             }).pipe(
-                tap(() => this.emitNotificationChanges())
+                tap(() => this.triggerNotificationChange())
             );
         }
 
@@ -127,7 +142,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                     return of(false);
                 }
             }),
-            tap(() => this.emitNotificationChanges())
+            tap(() => this.triggerNotificationChange())
         );
     }
 
@@ -171,8 +186,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
         });
     }
 
-    private async emitNotificationChanges() {
-        const result = await this.fetchNotificationAndUserFeed();
-        this._notifications$.next(result);
+    private async triggerNotificationChange() {
+        this._notificationTrigger$.next(null);
     }
 }
