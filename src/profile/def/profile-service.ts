@@ -1,4 +1,4 @@
-import {Profile, ProfileSource, UserDeclaration} from './profile';
+import {Profile, ProfileSource, UserFeedEntry} from './profile';
 import {Observable} from 'rxjs';
 import {TenantInfo} from './tenant-info';
 import {ServerProfile} from './server-profile';
@@ -22,7 +22,6 @@ import {ProfileImportResponse} from './profile-import-response';
 import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
 import {TenantInfoRequest} from './tenant-info-request';
 import {MergeServerProfilesRequest} from './merge-server-profiles-request';
-import {UserFeed} from './user-feed-response';
 import {UserMigrateResponse} from './user-migrate-response';
 import {UserMigrateRequest} from './user-migrate-request';
 import {ManagedProfileManager} from '../handler/managed-profile-manager';
@@ -31,16 +30,18 @@ import {CheckUserExistsRequest} from './check-user-exists-request';
 import {UpdateServerProfileDeclarationsResponse} from './update-server-profile-declarations-response';
 import {UpdateServerProfileDeclarationsRequest} from './update-server-profile-declarations-request';
 import {Consent} from '@project-sunbird/client-services/models';
-export {Consent} from '@project-sunbird/client-services/models';
-export {ReadConsentResponse , UpdateConsentResponse} from '@project-sunbird/client-services/services/user';
 import {ReadConsentResponse, UpdateConsentResponse} from '@project-sunbird/client-services/services/user';
+import {UpdateUserFeedRequest} from './update-user-feed-request';
+
+export {Consent} from '@project-sunbird/client-services/models';
+export {ReadConsentResponse, UpdateConsentResponse} from '@project-sunbird/client-services/services/user';
 
 export interface ProfileService extends SdkServicePreInitDelegate {
     readonly managedProfileManager: ManagedProfileManager;
 
     checkServerProfileExists(request: CheckUserExistsRequest): Observable<CheckUserExistsResponse>;
 
-        createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
+    createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
 
     deleteProfile(uid: string): Observable<undefined>;
 
@@ -82,12 +83,17 @@ export interface ProfileService extends SdkServicePreInitDelegate {
 
     isDefaultChannelProfile(): Observable<boolean>;
 
-    getUserFeed(): Observable<UserFeed[]>;
+    getUserFeed(): Observable<UserFeedEntry[]>;
+
+    updateUserFeedEntry(
+        updateUserFeedRequest: UpdateUserFeedRequest
+    ): Observable<boolean>;
 
     userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse>;
 
     updateServerProfileDeclarations(updateServerProfileDeclarationsRequest: UpdateServerProfileDeclarationsRequest): Observable<UpdateServerProfileDeclarationsResponse>;
 
     updateConsent(userConsent: Consent): Observable<UpdateConsentResponse>;
+
     getConsent(userConsent: Consent): Observable<ReadConsentResponse>;
 }

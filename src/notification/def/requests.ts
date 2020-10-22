@@ -2,9 +2,16 @@ export interface NotificationFilterCriteria {
     notificationStatus: NotificationStatus;
 }
 
+export enum NotificationType {
+    USER_FEED = 0,
+    ACTIONABLE_NOTIFICATION = 1,
+    NOTIFY = 2,
+    CONFIG = 3
+}
+
 export interface Notification {
-    id: number;
-    type: number;
+    id: number | string;
+    type: NotificationType;
     displayTime: number;
     expiry: number;
     isRead: number;

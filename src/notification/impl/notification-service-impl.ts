@@ -1,27 +1,43 @@
 import {inject, injectable} from 'inversify';
-import {NotificationService} from '..';
-import {Notification, NotificationFilterCriteria} from '..';
+import {ActionData, Notification, NotificationFilterCriteria, NotificationService, NotificationStatus, NotificationType} from '..';
 import {InjectionTokens} from '../../injection-tokens';
 import {DbService} from '../../db';
 import {NotificationEntry} from '../db/schema';
 import {NotificationHandler} from '../handler/notification-handler';
-import { SharedPreferences } from '../../util/shared-preferences';
-import COLUMN_NAME_NOTIFICATION_JSON = NotificationEntry.COLUMN_NAME_NOTIFICATION_JSON;
+import {SharedPreferences} from '../../util/shared-preferences';
 import {CodePush} from '../../preference-keys';
-import {Observable, of} from 'rxjs';
-import {map, mapTo, mergeMap} from 'rxjs/operators';
+import {interval, Observable, of, Subject} from 'rxjs';
+import {map, mapTo, mergeMap, tap} from 'rxjs/operators';
+import {ProfileService, UserFeedCategory, UserFeedEntry, UserFeedStatus} from '../../profile';
+import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
+import COLUMN_NAME_NOTIFICATION_JSON = NotificationEntry.COLUMN_NAME_NOTIFICATION_JSON;
 
 @injectable()
-export class NotificationServiceImpl implements NotificationService {
-
+export class NotificationServiceImpl implements NotificationService, SdkServiceOnInitDelegate {
     constructor(
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
-        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
+        @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
     ) {
     }
 
+    private _notifications$ = new Subject<Notification[]>();
+
+    get notifications$(): Subject<Notification[]> {
+        return this._notifications$;
+    }
+
+    onInit(): Observable<undefined> {
+        return interval(1000 * 10).pipe(
+            tap(async () => {
+                await this.emitNotificationChanges();
+            }),
+            mapTo(undefined)
+        );
+    }
+
     addNotification(notification: Notification): Observable<boolean> {
-        if (notification.actionData && notification.actionData.actionType === 'codePush' && notification.actionData.deploymentKey ) {
+        if (notification.actionData && notification.actionData.actionType === 'codePush' && notification.actionData.deploymentKey) {
             this.sharedPreferences.putString(CodePush.DEPLOYMENT_KEY, notification.actionData.deploymentKey);
         }
         return this.dbService.read({
@@ -48,15 +64,22 @@ export class NotificationServiceImpl implements NotificationService {
                         mapTo(true)
                     );
                 }
-            })
+            }),
+            tap(() => this.emitNotificationChanges())
         );
     }
 
-    deleteNotification(messageId?: number): Observable<boolean> {
+    deleteNotification(notification: Notification): Observable<boolean> {
+        if (notification.type === NotificationType.USER_FEED) {
+            // todo
+            return of(false);
+        }
+
         const query = `DELETE FROM ${NotificationEntry.TABLE_NAME} `
-            .concat(messageId ? `WHERE ${NotificationEntry.COLUMN_NAME_MESSAGE_ID} = ${messageId}` : '');
+            .concat(notification.id ? `WHERE ${NotificationEntry.COLUMN_NAME_MESSAGE_ID} = ${notification.id}` : '');
         return this.dbService.execute(query).pipe(
-            mapTo(true)
+            mapTo(true),
+            tap(() => this.emitNotificationChanges())
         );
     }
 
@@ -73,6 +96,17 @@ export class NotificationServiceImpl implements NotificationService {
     }
 
     updateNotification(notification: Notification): Observable<boolean> {
+        if (notification.type === NotificationType.USER_FEED) {
+            return this.profileService.updateUserFeedEntry({
+                feedEntryId: notification.id as string,
+                request: {
+                    status: notification.isRead ? UserFeedStatus.READ : UserFeedStatus.UNREAD
+                }
+            }).pipe(
+                tap(() => this.emitNotificationChanges())
+            );
+        }
+
         return this.dbService.read({
             table: NotificationEntry.TABLE_NAME,
             selection: `${NotificationEntry.COLUMN_NAME_MESSAGE_ID}= ?`,
@@ -92,8 +126,53 @@ export class NotificationServiceImpl implements NotificationService {
                 } else {
                     return of(false);
                 }
-            })
+            }),
+            tap(() => this.emitNotificationChanges())
         );
     }
 
+    private async fetchNotificationAndUserFeed(): Promise<Notification[]> {
+        const fetchNotifications = async () => {
+            return this.getAllNotifications({notificationStatus: NotificationStatus.ALL}).toPromise();
+        };
+
+        const fetchFeeds = async () => {
+            try {
+                await this.profileService.getActiveProfileSession().toPromise();
+                return this.profileService.getUserFeed().toPromise().then((entries) => {
+                    return entries.filter(e => e.category === UserFeedCategory.NOTIFICATION) as UserFeedEntry<ActionData>[];
+                });
+            } catch (e) {
+                return [];
+            }
+        };
+
+        const result = await Promise.all([
+            fetchNotifications(),
+            fetchFeeds()
+        ]);
+
+        const notifications = result[0];
+        const userFeedEntries = result[1];
+
+        return notifications.concat(
+            userFeedEntries.map<Notification>((e) => {
+                return {
+                    id: e.identifier,
+                    type: NotificationType.USER_FEED,
+                    displayTime: new Date(e.createdOn).getTime(),
+                    expiry: e.expireOn ? new Date(e.expireOn).getTime() : 0,
+                    isRead: e.status === 'read' ? 1 : 0,
+                    actionData: e.data
+                };
+            })
+        ).sort((a, b) => {
+            return new Date(b.displayTime).getTime() - new Date(a.displayTime).getTime();
+        });
+    }
+
+    private async emitNotificationChanges() {
+        const result = await this.fetchNotificationAndUserFeed();
+        this._notifications$.next(result);
+    }
 }

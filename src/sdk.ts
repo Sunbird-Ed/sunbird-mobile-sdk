@@ -453,7 +453,8 @@ export class SunbirdSdk {
             this.downloadService.onInit(),
             this.contentService.onInit(),
             this.storageService.onInit(),
-            this.telemetryService.onInit()
+            this.telemetryService.onInit(),
+            this.notificationService.onInit()
         ]);
     }
 }

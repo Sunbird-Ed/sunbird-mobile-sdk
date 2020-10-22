@@ -36,7 +36,7 @@ import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {Channel, FrameworkService} from '../../framework';
 import {FileService} from '../../util/file/def/file-service';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
-import {Observable, of, throwError} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {ProfileEntry} from '../db/schema';
 import {AuthService, OAuthSession} from '../../auth';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
@@ -57,7 +57,6 @@ import {ValidateProfileMetadata} from '../handler/import/validate-profile-metada
 import {TransportProfiles} from '../handler/import/transport-profiles';
 import {TransportGroup} from '../handler/import/transport-group';
 import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-profile-metadata';
-import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
 import {CsModule} from '@project-sunbird/client-services';

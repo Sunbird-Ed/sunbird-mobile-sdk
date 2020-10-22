@@ -4,7 +4,7 @@ import {NotificationEntry} from '../db/schema';
 export class NotificationHandler {
     public static constructNotificationDBModel(notification: Notification): NotificationEntry.SchemaMap {
         return {
-            message_id: notification.id,
+            message_id: notification.id as number,
             expiry_time: notification.expiry,
             display_time: notification.displayTime,
             received_at: Date.now(),
