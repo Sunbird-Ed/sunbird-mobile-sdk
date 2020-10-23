@@ -91,6 +91,7 @@ import {UpdateServerProfileDeclarationsResponse} from '../def/update-server-prof
 import {UpdateServerProfileDeclarationsRequest} from '../def/update-server-profile-declarations-request';
 import {CsModule} from '@project-sunbird/client-services';
 import {UpdateUserFeedRequest} from '../def/update-user-feed-request';
+import {DeleteUserFeedRequest} from '../def/delete-user-feed-request';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -719,7 +720,26 @@ export class ProfileServiceImpl implements ProfileService {
                 return this.userService.updateUserFeedEntry(
                     session.managedSession ? session.managedSession.uid : session.uid,
                     updateUserFeedRequest.feedEntryId,
+                    updateUserFeedRequest.category,
                     updateUserFeedRequest.request,
+                    {
+                        apiPath: this.sdkConfig.profileServiceConfig.profileApiPath
+                    }
+                ).pipe(
+                    mapTo(true),
+                    catchError(() => of(false))
+                );
+            })
+        );
+    }
+
+    deleteUserFeedEntry(deleteUserFeedRequest: DeleteUserFeedRequest): Observable<boolean> {
+        return this.getActiveProfileSession().pipe(
+            mergeMap((session) => {
+                return this.userService.deleteUserFeedEntry(
+                    session.managedSession ? session.managedSession.uid : session.uid,
+                    updateUserFeedRequest.feedEntryId,
+                    updateUserFeedRequest.category,
                     {
                         apiPath: this.sdkConfig.profileServiceConfig.profileApiPath
                     }

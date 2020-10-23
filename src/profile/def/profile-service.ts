@@ -32,6 +32,7 @@ import {UpdateServerProfileDeclarationsRequest} from './update-server-profile-de
 import {Consent} from '@project-sunbird/client-services/models';
 import {ReadConsentResponse, UpdateConsentResponse} from '@project-sunbird/client-services/services/user';
 import {UpdateUserFeedRequest} from './update-user-feed-request';
+import {DeleteUserFeedRequest} from './delete-user-feed-request';
 
 export {Consent} from '@project-sunbird/client-services/models';
 export {ReadConsentResponse, UpdateConsentResponse} from '@project-sunbird/client-services/services/user';
@@ -87,6 +88,10 @@ export interface ProfileService extends SdkServicePreInitDelegate {
 
     updateUserFeedEntry(
         updateUserFeedRequest: UpdateUserFeedRequest
+    ): Observable<boolean>;
+
+    deleteUserFeedEntry(
+        deleteUserFeedRequest: DeleteUserFeedRequest
     ): Observable<boolean>;
 
     userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse>;

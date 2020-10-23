@@ -12,4 +12,6 @@ export interface NotificationService extends SdkServiceOnInitDelegate {
     getAllNotifications(criteria: NotificationFilterCriteria): Observable<Notification[]>;
 
     deleteNotification(notification: Notification): Observable<boolean>;
+
+    deleteAllNotifications(): Observable<boolean>;
 }

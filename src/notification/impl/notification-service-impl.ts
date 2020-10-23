@@ -10,14 +10,20 @@ import {BehaviorSubject, combineLatest, defer, interval, Observable, of, Subject
 import {map, mapTo, mergeMap, startWith, switchMap, tap, throttleTime} from 'rxjs/operators';
 import {ProfileService, UserFeedCategory, UserFeedEntry, UserFeedStatus} from '../../profile';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
+import {KeyValueStore} from '../../key-value-store';
+import {gzip} from 'pako/dist/pako_deflate';
+import {ungzip} from 'pako/dist/pako_inflate';
 import COLUMN_NAME_NOTIFICATION_JSON = NotificationEntry.COLUMN_NAME_NOTIFICATION_JSON;
 
 @injectable()
 export class NotificationServiceImpl implements NotificationService, SdkServiceOnInitDelegate {
+    private static readonly USER_NOTIFICATION_FEED_KEY = 'user_notification_feed';
+
     constructor(
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
+        @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore
     ) {
     }
 
@@ -92,8 +98,12 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
 
     deleteNotification(notification: Notification): Observable<boolean> {
         if (notification.type === NotificationType.USER_FEED) {
-            // todo
-            return of(false);
+            return this.profileService.deleteUserFeedEntry({
+                feedEntryId: notification.id as string,
+                category: UserFeedCategory.NOTIFICATION,
+            }).pipe(
+                tap(() => this.triggerNotificationChange())
+            );
         }
 
         const query = `DELETE FROM ${NotificationEntry.TABLE_NAME} `
@@ -120,6 +130,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
         if (notification.type === NotificationType.USER_FEED) {
             return this.profileService.updateUserFeedEntry({
                 feedEntryId: notification.id as string,
+                category: UserFeedCategory.NOTIFICATION,
                 request: {
                     status: notification.isRead ? UserFeedStatus.READ : UserFeedStatus.UNREAD
                 }
@@ -152,6 +163,22 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
         );
     }
 
+    deleteAllNotifications(): Observable<boolean> {
+        return defer(async () => {
+            const notifications = this._notifications$.getValue();
+
+            try {
+                await Promise.all([
+                    notifications.map((n) => this.deleteNotification(n))
+                ]);
+                return true;
+            } catch (e) {
+                console.error(e);
+                return false;
+            }
+        });
+    }
+
     private async fetchNotificationAndUserFeed(): Promise<Notification[]> {
         const fetchNotifications = async () => {
             return this.getAllNotifications({notificationStatus: NotificationStatus.ALL}).toPromise();
@@ -160,11 +187,18 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
         const fetchFeeds = async () => {
             try {
                 await this.profileService.getActiveProfileSession().toPromise();
-                return this.profileService.getUserFeed().toPromise().then((entries) => {
+                const feed = await this.profileService.getUserFeed().toPromise().then((entries) => {
                     return entries.filter(e => e.category === UserFeedCategory.NOTIFICATION) as UserFeedEntry<ActionData>[];
                 });
+                this.keyValueStore.setValue(NotificationServiceImpl.USER_NOTIFICATION_FEED_KEY, gzip(JSON.stringify(gzip))).toPromise();
+                return feed;
             } catch (e) {
-                return [];
+                return this.keyValueStore.getValue(NotificationServiceImpl.USER_NOTIFICATION_FEED_KEY).toPromise()
+                    .then((r) => JSON.parse(ungzip(gzip)))
+                    .catch((e) => {
+                        console.error(e);
+                        return [];
+                    });
             }
         };
 
