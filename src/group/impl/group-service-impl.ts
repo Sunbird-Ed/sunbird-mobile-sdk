@@ -29,7 +29,7 @@ import {Group, GroupEntityStatus} from '../def/models';
 import {Form} from '../../form/def/models';
 import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
-import {CsGroupService} from '@project-sunbird/client-services/services/group';
+import {CsGroupService, CsGroupUpdateGroupGuidelinesRequest, CsGroupUpdateGroupGuidelinesResponse} from '@project-sunbird/client-services/services/group';
 import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
 import {GroupActivityServiceImpl} from './group-activity-service-impl';
 import { CsGroupServiceConfig } from '@project-sunbird/client-services';
@@ -132,4 +132,9 @@ export class GroupServiceImpl implements GroupService {
     reactivateById(request: ActivateAndDeactivateByIdRequest): Observable<GroupReactivateResponse> {
         return this.groupServiceDelegate.reactivateById(request.id);
     }
+
+    updateGroupGuidelines(request: CsGroupUpdateGroupGuidelinesRequest): Observable<CsGroupUpdateGroupGuidelinesResponse> {
+        return this.groupServiceDelegate.updateGroupGuidelines(request);
+    }
+
 }
