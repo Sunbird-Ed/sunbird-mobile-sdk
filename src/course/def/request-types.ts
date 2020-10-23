@@ -14,8 +14,13 @@ export interface EnrollCourseRequest {
     batchStatus?: number;
 }
 
+export enum UpdateContentStateTarget {
+    LOCAL = 'LOCAL',
+    SERVER = 'SERVER'
+}
 
 export interface UpdateContentStateRequest {
+    target?: UpdateContentStateTarget[];
     userId: string;
     courseId: string;
     contentId: string;

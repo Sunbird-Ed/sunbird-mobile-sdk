@@ -14,7 +14,8 @@ import {
     GetContentStateRequest,
     GetUserEnrolledCoursesRequest,
     UnenrollCourseRequest,
-    UpdateContentStateRequest
+    UpdateContentStateRequest,
+    UpdateContentStateTarget
 } from '..';
 import {defer, interval, Observable, Observer, of} from 'rxjs';
 import {ProfileService, ProfileServiceConfig} from '../../profile';
@@ -33,7 +34,6 @@ import {GetContentStateHandler} from '../handlers/get-content-state-handler';
 import {UpdateEnrolledCoursesHandler} from '../handlers/update-enrolled-courses-handler';
 import {OfflineContentStateHandler} from '../handlers/offline-content-state-handler';
 import {CourseUtil} from '../course-util';
-import {ProcessingError} from '../../auth/errors/processing-error';
 import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
@@ -103,27 +103,28 @@ export class CourseServiceImpl implements CourseService {
     }
 
     updateContentState(request: UpdateContentStateRequest): Observable<boolean> {
-        const offlineContentStateHandler: OfflineContentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
-        return new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig)
-            .handle(CourseUtil.getUpdateContentStateRequest(request))
-            .pipe(
-                map((response: { [key: string]: any }) => {
-                    if (response.hasOwnProperty(request.contentId) ||
-                        response[request.contentId] !== 'FAILED') {
-                        return true;
-                    }
-                    throw new ProcessingError('Request processing failed');
-                }),
-                catchError((error) => {
-                    return of(true);
-                }),
-                mergeMap(() => {
-                    return offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request);
-                }),
-                mergeMap(() => {
-                    return offlineContentStateHandler.manipulateGetContentStateResponseLocally(request);
-                })
-            );
+        if (!request.target) {
+            request.target = [UpdateContentStateTarget.LOCAL, UpdateContentStateTarget.SERVER];
+        }
+
+        return defer(async () => {
+            const offlineContentStateHandler: OfflineContentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
+
+            if (request.target!.indexOf(UpdateContentStateTarget.SERVER) > -1) {
+                try {
+                    await (new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig)
+                        .handle(CourseUtil.getUpdateContentStateRequest(request))).toPromise();
+                } catch (e) {
+                }
+            }
+
+            if (request.target!.indexOf(UpdateContentStateTarget.LOCAL) > -1) {
+                await offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request).toPromise();
+                await offlineContentStateHandler.manipulateGetContentStateResponseLocally(request).toPromise();
+            }
+
+            return true;
+        });
     }
 
     getCourseBatches(request: CourseBatchesRequest): Observable<Batch[]> {

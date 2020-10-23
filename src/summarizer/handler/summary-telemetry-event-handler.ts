@@ -7,7 +7,8 @@ import {
     CourseService,
     CourseServiceImpl,
     GetContentStateRequest,
-    UpdateContentStateRequest
+    UpdateContentStateRequest,
+    UpdateContentStateTarget
 } from '../../course';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {ContentKeys} from '../../preference-keys';
@@ -91,6 +92,10 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         return !!content.contentData.trackable && content.contentData.trackable.enabled === TrackingEnabled.YES;
     }
 
+    private static isCourseAssessmentContent(content) {
+        return content.primaryCategory && (content.primaryCategory.toLowerCase() === CsPrimaryCategory.COURSE_ASSESSMENT.toLowerCase());
+    }
+
     updateContentState(event: Telemetry): Observable<undefined> {
         return this.getCourseContext().pipe(
             mergeMap((courseContext: any) => {
@@ -137,8 +142,10 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                                                         courseId: courseId,
                                                         batchId: batchId,
                                                         status: progress === 100 ? 2 : 1,
-                                                        progress
-
+                                                        progress,
+                                                        target: SummaryTelemetryEventHandler.isCourseAssessmentContent(content) ?
+                                                            [UpdateContentStateTarget.LOCAL] :
+                                                            [UpdateContentStateTarget.LOCAL, UpdateContentStateTarget.SERVER]
                                                     };
                                                     this.generateAuditTelemetry(userId, courseId, batchId, content,
                                                         event.object ? event.object.rollup! : {});
@@ -267,21 +274,20 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
     }
 
     private validEndEvent(event: Telemetry, content: Content, courseContext?: any): Observable<boolean> {
+        const isCourseAssessmentSyncPending = () => {
+            return courseContext &&
+                (
+                    SummaryTelemetryEventHandler.isCourseAssessmentContent(content) ||
+                    content.contentType.toLowerCase() === 'onboardingresource'
+                ) &&
+                this.courseService.hasCapturedAssessmentEvent({courseContext});
+        };
+
         return defer(() => of(undefined))
             .pipe(
                 delay(2000),
                 map(() => {
-                    if (
-                        courseContext &&
-                        (
-                            (
-                                content.primaryCategory &&
-                                content.primaryCategory.toLowerCase() === CsPrimaryCategory.COURSE_ASSESSMENT.toLowerCase()
-                            ) ||
-                            content.contentType.toLowerCase() === 'onboardingresource'
-                        ) &&
-                        this.courseService.hasCapturedAssessmentEvent({courseContext})
-                    ) {
+                    if (isCourseAssessmentSyncPending()) {
                         return false;
                     }
                     return event.edata.summary && !!event.edata.summary.find((s) => s['progress']);
