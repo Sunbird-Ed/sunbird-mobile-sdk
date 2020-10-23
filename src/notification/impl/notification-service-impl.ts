@@ -35,7 +35,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
     }
 
     onInit(): Observable<undefined> {
-        const interval$ = interval(1000 * 10).pipe(
+        const interval$ = interval(1000 * 60 * 60).pipe(
             startWith(null),
             mapTo(null),
         );
@@ -168,9 +168,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
             const notifications = this._notifications$.getValue();
 
             try {
-                await Promise.all([
-                    notifications.map((n) => this.deleteNotification(n))
-                ]);
+                await Promise.all(notifications.map((n) => this.deleteNotification(n).toPromise()));
                 return true;
             } catch (e) {
                 console.error(e);
@@ -194,7 +192,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                 return feed;
             } catch (e) {
                 return this.keyValueStore.getValue(NotificationServiceImpl.USER_NOTIFICATION_FEED_KEY).toPromise()
-                    .then((r) => JSON.parse(ungzip(r)))
+                    .then((r) => JSON.parse(ungzip(r, {to: 'string'})))
                     .catch((e) => {
                         console.error(e);
                         return [];
