@@ -355,7 +355,7 @@ describe('GroupServiceImpl', () => {
             ]
         };
         mockContainer.get = jest.fn(() => ({
-            reactivateById: jest.fn(() => of({}))
+            updateGroupGuidelines: jest.fn(() => of({}))
         })) as any;
         // act
         groupServiceImpl.updateGroupGuidelines(request).subscribe(() => {
