@@ -190,11 +190,11 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                 const feed = await this.profileService.getUserFeed().toPromise().then((entries) => {
                     return entries.filter(e => e.category === UserFeedCategory.NOTIFICATION) as UserFeedEntry<ActionData>[];
                 });
-                this.keyValueStore.setValue(NotificationServiceImpl.USER_NOTIFICATION_FEED_KEY, gzip(JSON.stringify(gzip))).toPromise();
+                this.keyValueStore.setValue(NotificationServiceImpl.USER_NOTIFICATION_FEED_KEY, gzip(JSON.stringify(feed))).toPromise();
                 return feed;
             } catch (e) {
                 return this.keyValueStore.getValue(NotificationServiceImpl.USER_NOTIFICATION_FEED_KEY).toPromise()
-                    .then((r) => JSON.parse(ungzip(gzip)))
+                    .then((r) => JSON.parse(ungzip(r)))
                     .catch((e) => {
                         console.error(e);
                         return [];
