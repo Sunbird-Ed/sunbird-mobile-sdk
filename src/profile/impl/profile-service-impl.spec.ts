@@ -36,9 +36,9 @@ import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {Channel, FrameworkService} from '../../framework';
 import {FileService} from '../../util/file/def/file-service';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
-import {Observable, of, throwError} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {ProfileEntry} from '../db/schema';
-import {AuthService, OAuthSession} from '../../auth';
+import {AuthService} from '../../auth';
 import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
@@ -57,11 +57,9 @@ import {ValidateProfileMetadata} from '../handler/import/validate-profile-metada
 import {TransportProfiles} from '../handler/import/transport-profiles';
 import {TransportGroup} from '../handler/import/transport-group';
 import {UpdateImportedProfileMetadata} from '../handler/import/update-imported-profile-metadata';
-import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
 import {CsModule} from '@project-sunbird/client-services';
-import {catchError} from 'rxjs/operators';
 
 jest.mock('../handler/update-server-profile-info-handler');
 jest.mock('../handler/tenant-info-handler');
@@ -75,7 +73,6 @@ jest.mock('../handler/import/validate-profile-metadata');
 jest.mock('../handler/import/transport-profiles');
 jest.mock('../handler/import/transport-group');
 jest.mock('../handler/import/update-imported-profile-metadata');
-jest.mock('../handler/get-userfeed-handler');
 jest.mock('../handler/user-migrate-handler');
 
 jest.mock('../../telemetry/util/telemetry-logger',
@@ -1194,55 +1191,6 @@ describe.only('ProfileServiceImpl', () => {
                 expect(mockDbService.read).toHaveBeenCalled();
                 expect(mockDbService.execute).toHaveBeenCalled();
                 expect(mockDbService.insert).toHaveBeenCalled();
-                done();
-            });
-        });
-    });
-
-    describe('getUserFeed', () => {
-        it('should called GetUserFeedHandler for active session', (done) => {
-            // arrange
-            const sessionData: OAuthSession = {
-                access_token: 'sample-access-token',
-                refresh_token: 'sample-refresh-token',
-                userToken: 'sample-user-token'
-            };
-            mockAuthService.getSession = jest.fn().mockImplementation(() => of(sessionData));
-            const response = {
-                response: 'SAMPLE_RESPONSE',
-                failed: 'err',
-                imported: 'sample'
-            };
-            (GetUserFeedHandler as any as jest.Mock<GetUserFeedHandler>).mockImplementation(() => {
-                return {
-                    handle: jest.fn().mockImplementation(() => of(response))
-                } as Partial<GetUserFeedHandler> as GetUserFeedHandler;
-            });
-            // act
-            profileService.getUserFeed().subscribe((res) => {
-                // assert
-                expect(res).toBe(response);
-                expect(mockAuthService.getSession).toHaveBeenCalled();
-                done();
-            });
-        });
-
-        it('should throw error if there are no  active session', (done) => {
-            // arrange
-
-            mockAuthService.getSession = jest.fn().mockImplementation(() => of(undefined));
-            const response = {
-                response: 'SAMPLE_RESPONSE',
-                failed: 'err',
-                imported: 'sample'
-            };
-            // act
-            profileService.getUserFeed().pipe(
-              catchError(() => {
-                  done();
-                  return of({});
-              })
-            ).subscribe((res) => {
                 done();
             });
         });
