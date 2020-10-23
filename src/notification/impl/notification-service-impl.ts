@@ -211,7 +211,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
         const userFeedEntries = result[1];
 
         return notifications.concat(
-            userFeedEntries.map<Notification>((e) => {
+            userFeedEntries.map((e) => {
                 return {
                     id: e.identifier,
                     type: NotificationType.USER_FEED,
@@ -219,7 +219,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                     expiry: e.expireOn ? new Date(e.expireOn).getTime() : 0,
                     isRead: e.status === 'read' ? 1 : 0,
                     actionData: e.data
-                };
+                } as Notification;
             })
         ).sort((a, b) => {
             return new Date(b.displayTime).getTime() - new Date(a.displayTime).getTime();

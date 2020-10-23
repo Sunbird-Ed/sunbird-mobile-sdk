@@ -738,8 +738,8 @@ export class ProfileServiceImpl implements ProfileService {
             mergeMap((session) => {
                 return this.userService.deleteUserFeedEntry(
                     session.managedSession ? session.managedSession.uid : session.uid,
-                    updateUserFeedRequest.feedEntryId,
-                    updateUserFeedRequest.category,
+                    deleteUserFeedRequest.feedEntryId,
+                    deleteUserFeedRequest.category,
                     {
                         apiPath: this.sdkConfig.profileServiceConfig.profileApiPath
                     }
