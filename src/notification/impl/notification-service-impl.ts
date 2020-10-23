@@ -184,19 +184,30 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
 
         const fetchFeeds = async () => {
             try {
-                await this.profileService.getActiveProfileSession().toPromise();
-                const feed = await this.profileService.getUserFeed().toPromise().then((entries) => {
-                    return entries.filter(e => e.category === UserFeedCategory.NOTIFICATION) as UserFeedEntry<ActionData>[];
-                });
-                this.keyValueStore.setValue(NotificationServiceImpl.USER_NOTIFICATION_FEED_KEY, gzip(JSON.stringify(feed))).toPromise();
-                return feed;
-            } catch (e) {
-                return this.keyValueStore.getValue(NotificationServiceImpl.USER_NOTIFICATION_FEED_KEY).toPromise()
-                    .then((r) => JSON.parse(ungzip(r, {to: 'string'})))
-                    .catch((e) => {
-                        console.error(e);
-                        return [];
+                const session = await this.profileService.getActiveProfileSession().toPromise();
+                const cacheKey = `${NotificationServiceImpl.USER_NOTIFICATION_FEED_KEY}_${session.managedSession ? session.managedSession.uid : session.uid}`;
+
+                try {
+                    const feed = await this.profileService.getUserFeed().toPromise().then((entries) => {
+                        return entries.filter(e => e.category === UserFeedCategory.NOTIFICATION) as UserFeedEntry<ActionData>[];
                     });
+                    this.keyValueStore.setValue(
+                        cacheKey,
+                        gzip(JSON.stringify(feed))
+                    ).toPromise();
+                    return feed;
+                } catch (e) {
+                    return this.keyValueStore.getValue(
+                        cacheKey
+                    ).toPromise()
+                        .then((r) => JSON.parse(ungzip(r, {to: 'string'})))
+                        .catch((e) => {
+                            console.error(e);
+                            return [];
+                        });
+                }
+            } catch (e) {
+                return [];
             }
         };
 
