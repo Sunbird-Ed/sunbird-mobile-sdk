@@ -1,5 +1,6 @@
 import {
     AcceptTermsConditionRequest,
+    Consent,
     ContentAccess,
     ContentAccessStatus,
     GenerateOtpRequest,
@@ -16,15 +17,15 @@ import {
     ProfileSession,
     ProfileSource,
     ProfileType,
+    ReadConsentResponse,
     ServerProfile,
     ServerProfileDetailsRequest,
     TenantInfoRequest,
+    UpdateConsentResponse,
     UpdateServerProfileInfoRequest,
+    UserFeedEntry,
     UserMigrateRequest,
-    VerifyOtpRequest,
-    Consent,
-    ReadConsentResponse,
-    UpdateConsentResponse
+    VerifyOtpRequest
 } from '..';
 import {DbService} from '../../db';
 import {GroupProfileEntry, ProfileEntry} from '../db/schema';
@@ -80,8 +81,6 @@ import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {AuthService} from '../../auth';
 import {defer, from, iif, Observable, of, throwError, zip} from 'rxjs';
 import {catchError, finalize, map, mapTo, mergeMap, tap} from 'rxjs/operators';
-import {UserFeed} from '../def/user-feed-response';
-import {GetUserFeedHandler} from '../handler/get-userfeed-handler';
 import {UserMigrateResponse} from '../def/user-migrate-response';
 import {UserMigrateHandler} from '../handler/user-migrate-handler';
 import {ManagedProfileManager} from '../handler/managed-profile-manager';
@@ -91,6 +90,8 @@ import {CheckUserExistsResponse} from '../def/check-user-exists-response';
 import {UpdateServerProfileDeclarationsResponse} from '../def/update-server-profile-declarations-response';
 import {UpdateServerProfileDeclarationsRequest} from '../def/update-server-profile-declarations-request';
 import {CsModule} from '@project-sunbird/client-services';
+import {UpdateUserFeedRequest} from '../def/update-user-feed-request';
+import {DeleteUserFeedRequest} from '../def/delete-user-feed-request';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -703,17 +704,51 @@ export class ProfileServiceImpl implements ProfileService {
         );
     }
 
-    getUserFeed(): Observable<UserFeed[]> {
-        return this.authService.getSession().pipe(
+    getUserFeed(): Observable<UserFeedEntry[]> {
+        return this.getActiveProfileSession().pipe(
             mergeMap((session) => {
-                if (!session) {
-                    throw new NoActiveSessionError('No Active Session Found');
-                }
-                return new GetUserFeedHandler(this.sdkConfig, this.apiService)
-                    .handle(session.userToken);
+                return this.userService.getUserFeed(session.managedSession ? session.managedSession.uid : session.uid, {
+                    apiPath: this.sdkConfig.profileServiceConfig.profileApiPath
+                });
             })
         );
+    }
 
+    updateUserFeedEntry(updateUserFeedRequest: UpdateUserFeedRequest): Observable<boolean> {
+        return this.getActiveProfileSession().pipe(
+            mergeMap((session) => {
+                return this.userService.updateUserFeedEntry(
+                    session.managedSession ? session.managedSession.uid : session.uid,
+                    updateUserFeedRequest.feedEntryId,
+                    updateUserFeedRequest.category,
+                    updateUserFeedRequest.request,
+                    {
+                        apiPath: this.sdkConfig.profileServiceConfig.profileApiPath
+                    }
+                ).pipe(
+                    mapTo(true),
+                    catchError(() => of(false))
+                );
+            })
+        );
+    }
+
+    deleteUserFeedEntry(deleteUserFeedRequest: DeleteUserFeedRequest): Observable<boolean> {
+        return this.getActiveProfileSession().pipe(
+            mergeMap((session) => {
+                return this.userService.deleteUserFeedEntry(
+                    session.managedSession ? session.managedSession.uid : session.uid,
+                    deleteUserFeedRequest.feedEntryId,
+                    deleteUserFeedRequest.category,
+                    {
+                        apiPath: this.sdkConfig.profileServiceConfig.profileApiPath
+                    }
+                ).pipe(
+                    mapTo(true),
+                    catchError(() => of(false))
+                );
+            })
+        );
     }
 
     userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse> {
@@ -722,7 +757,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     updateServerProfileDeclarations(request: UpdateServerProfileDeclarationsRequest): Observable<UpdateServerProfileDeclarationsResponse> {
-        return this.userService.updateUserDeclarations(request.declarations, { apiPath: this.sdkConfig.profileServiceConfig.profileApiPath });
+        return this.userService.updateUserDeclarations(request.declarations, {apiPath: this.sdkConfig.profileServiceConfig.profileApiPath});
     }
 
     getConsent(userConsent: Consent): Observable<ReadConsentResponse> {
