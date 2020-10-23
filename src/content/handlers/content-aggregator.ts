@@ -54,6 +54,10 @@ export class ContentAggregator {
             board: request.board || '',
             medium: request.medium || '',
             grade: request.grade || '',
+            ...(request.purpose && request.purpose.length ? { purpose: request.purpose } : {}),
+            ...(request.channel && request.channel.length ? { channel: request.channel } : {}),
+            ...(request.subject && request.subject.length ? { subject: request.subject } : {}),
+            ...(request.topic && request.topic.length ? { topic: request.topic } : {})
         };
         return SHA1(JSON.stringify(key)).toString();
     }
