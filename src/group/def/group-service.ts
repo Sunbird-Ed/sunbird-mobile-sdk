@@ -31,6 +31,7 @@ import {
 } from './responses';
 import {GroupActivityService} from './group-activity-service';
 import {Form} from '../../form/def/models';
+import { CsGroupUpdateGroupGuidelinesRequest, CsGroupUpdateGroupGuidelinesResponse } from '@project-sunbird/client-services/services/group';
 export interface GroupService {
     activityService: GroupActivityService;
 
@@ -61,4 +62,6 @@ export interface GroupService {
     suspendById(request: ActivateAndDeactivateByIdRequest): Observable<GroupSuspendResponse>;
 
     reactivateById(request: ActivateAndDeactivateByIdRequest): Observable<GroupReactivateResponse>;
+
+    updateGroupGuidelines(request: CsGroupUpdateGroupGuidelinesRequest): Observable<CsGroupUpdateGroupGuidelinesResponse>;
 }

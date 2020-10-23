@@ -16,6 +16,7 @@ import {
 } from '..';
 import {of} from 'rxjs';
 import { ActivateAndDeactivateByIdRequest } from '../def/requests';
+import { CsGroupUpdateGroupGuidelinesRequest } from '@project-sunbird/client-services/services/group';
 
 describe('GroupServiceImpl', () => {
     let groupServiceImpl: GroupServiceImpl;
@@ -337,6 +338,27 @@ describe('GroupServiceImpl', () => {
         })) as any;
         // act
         groupServiceImpl.reactivateById(request).subscribe(() => {
+            expect(mockContainer.get).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should return update group guidelines response when updateGroupGuidelines invoked', (done) => {
+        // arrange
+        const request: CsGroupUpdateGroupGuidelinesRequest = {
+            userId: 'sample-id',
+            groups: [
+                {
+                    groupId: 'some_group_id',
+                    visited: true
+                }
+            ]
+        };
+        mockContainer.get = jest.fn(() => ({
+            reactivateById: jest.fn(() => of({}))
+        })) as any;
+        // act
+        groupServiceImpl.updateGroupGuidelines(request).subscribe(() => {
             expect(mockContainer.get).toHaveBeenCalled();
             done();
         });

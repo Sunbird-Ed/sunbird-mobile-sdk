@@ -370,7 +370,8 @@ export class SunbirdSdk {
                 },
                 groupServiceConfig: {
                     apiPath: '/api/group/v1',
-                    dataApiPath: '/api/data/v1/group'
+                    dataApiPath: '/api/data/v1/group',
+                    updateGroupGuidelinesApiPath: '/api/group/membership/v1'
                 },
                 userServiceConfig: {
                     apiPath: '/api/user/v2'
