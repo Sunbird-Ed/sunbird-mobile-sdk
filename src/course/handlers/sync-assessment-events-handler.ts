@@ -1,14 +1,14 @@
 import {from, Observable, Observer, of} from 'rxjs';
 import {CourseAssessmentEntry} from '../../summarizer/db/schema';
 import {SunbirdTelemetry} from '../../telemetry';
-import {ApiService, HttpRequestType, Request} from '../../api';
 import {DbService} from '../../db';
 import {SdkConfig} from '../../sdk-config';
-import {CourseService} from '..';
+import {ContentState, CourseService} from '..';
 import {map, mapTo, mergeMap, tap} from 'rxjs/operators';
 import {NetworkQueue, NetworkQueueType} from '../../api/network-queue';
 import {NetworkRequestHandler} from '../../api/network-queue/handlers/network-request-handler';
 import {UniqueId} from '../../db/util/unique-id';
+import {ObjectUtil} from '../../util/object-util';
 
 interface RawEntry {
   [CourseAssessmentEntry.COLUMN_NAME_USER_ID]: string;
@@ -29,15 +29,17 @@ interface Entry {
 }
 
 interface AssessmentTelemetrySyncRequest {
-  assessments: {
-    assessmentTs: number; // Assessment time in epoch
-    userId: string,  // User Identifier - required
-    contentId: string, // Content Identifier - required
-    courseId: string, // Course Identifier - required
-    batchId: string; // Batch Identifier - required
-    attemptId: string, // Attempt Identifier - required
-    events: SunbirdTelemetry.Telemetry[] // Only 'ASSESS' Events - required
-  }[];
+    userId: string;
+    contents: ContentState[];
+    assessments: {
+        assessmentTs: number; // Assessment time in epoch
+        userId: string,  // User Identifier - required
+        contentId: string, // Content Identifier - required
+        courseId: string, // Course Identifier - required
+        batchId: string; // Batch Identifier - required
+        attemptId: string, // Attempt Identifier - required
+        events: SunbirdTelemetry.Telemetry[] // Only 'ASSESS' Events - required
+    }[];
 }
 
 export class SyncAssessmentEventsHandler {
@@ -134,34 +136,53 @@ export class SyncAssessmentEventsHandler {
   }
 
   private async syncCapturedAssessmentEvents() {
-    const assessmentTelemetrySyncRequest: AssessmentTelemetrySyncRequest = {
-      assessments: Object.keys(this.capturedAssessmentEvents)
-        .map((key) => {
-          const context = JSON.parse(key);
-          const events = this.capturedAssessmentEvents[key]!;
+      const assessmentTelemetrySyncRequest: AssessmentTelemetrySyncRequest = Object.keys(this.capturedAssessmentEvents)
+          .reduce<AssessmentTelemetrySyncRequest>((acc, key) => {
+              const context = JSON.parse(key);
+              const events = this.capturedAssessmentEvents[key]!;
 
-          return {
-            assessmentTs: events.reduce((acc, e) => e.ets < acc ? e.ets : acc, events[0].ets),
-            userId: context['userId'],
-            contentId: events[0].object.id,
-            courseId: context['courseId'],
-            batchId: context['batchId'],
-            attemptId: this.courseService.generateAssessmentAttemptId({
-              courseId: context['courseId'],
-              batchId: context['batchId'],
-              contentId: events[0].object.id,
-              userId: context['userId']
-            }),
-            events
-          };
-        })
-    };
+              if (!acc.userId) {
+                  acc.userId = context['userId'];
+              }
 
-    if (!assessmentTelemetrySyncRequest.assessments.length) {
-      return;
-    }
+              const contentState: ContentState = {
+                  contentId: events[0].object.id,
+                  courseId: context['courseId'],
+                  batchId: context['batchId'],
+                  status: 2
+              };
 
-    return this.invokeSyncApi(assessmentTelemetrySyncRequest);
+              if (!acc.contents.find((c) => ObjectUtil.equals(c, contentState))) {
+                  acc.contents.push(contentState);
+              }
+
+              acc.assessments.push({
+                  assessmentTs: events.reduce((etsAcc, e) => e.ets < etsAcc ? e.ets : etsAcc, events[0].ets),
+                  userId: context['userId'],
+                  contentId: events[0].object.id,
+                  courseId: context['courseId'],
+                  batchId: context['batchId'],
+                  attemptId: this.courseService.generateAssessmentAttemptId({
+                      courseId: context['courseId'],
+                      batchId: context['batchId'],
+                      contentId: events[0].object.id,
+                      userId: context['userId']
+                  }),
+                  events
+              });
+
+              return acc;
+          }, {userId: '', contents: [], assessments: []});
+
+      if (
+          !assessmentTelemetrySyncRequest.userId ||
+          !assessmentTelemetrySyncRequest.contents.length ||
+          !assessmentTelemetrySyncRequest.assessments.length
+      ) {
+          return;
+      }
+
+      return this.invokeSyncApi(assessmentTelemetrySyncRequest);
   }
 
   private async syncPersistedAssessmentEvents() {
@@ -194,30 +215,46 @@ export class SyncAssessmentEventsHandler {
         });
       }),
       mergeMap((entries: Entry[]) => {
-        if (!entries.length) {
-          return of(undefined);
-        }
+          if (!entries.length) {
+              return of(undefined);
+          }
 
-        const assessmentTelemetrySyncRequest: AssessmentTelemetrySyncRequest = {
-          assessments: entries.map(({firstTs, userId, contentId, courseId, batchId, events}) => {
-            return {
-              assessmentTs: firstTs,
-              userId,
-              contentId,
-              courseId,
-              batchId,
-              attemptId: this.courseService.generateAssessmentAttemptId({
-                courseId,
-                batchId,
-                contentId,
-                userId
-              }),
-              events
-            };
-          })
-        };
+          const assessmentTelemetrySyncRequest: AssessmentTelemetrySyncRequest = entries
+              .reduce<AssessmentTelemetrySyncRequest>((acc, {
+                  firstTs, userId, contentId, courseId, batchId, events
+              }) => {
+                  if (!acc.userId) {
+                      acc.userId = userId;
+                  }
 
-        return this.invokeSyncApi(assessmentTelemetrySyncRequest);
+                  const contentState: ContentState = {
+                      contentId: contentId,
+                      courseId: courseId,
+                      batchId: batchId,
+                      status: 2
+                  };
+
+                  if (!acc.contents.find((c) => ObjectUtil.equals(c, contentState))) {
+                      acc.contents.push(contentState);
+                  }
+
+                  acc.assessments.push({
+                      assessmentTs: firstTs,
+                      userId,
+                      contentId,
+                      courseId,
+                      batchId,
+                      attemptId: this.courseService.generateAssessmentAttemptId({
+                          courseId,
+                          batchId,
+                          contentId,
+                          userId
+                      }),
+                      events
+                  });
+                  return acc;
+              }, {userId: '', contents: [], assessments: []});
+          return this.invokeSyncApi(assessmentTelemetrySyncRequest);
       }),
       tap(async () =>
         await this.dbService.execute(`DELETE FROM ${CourseAssessmentEntry.TABLE_NAME}`).toPromise()

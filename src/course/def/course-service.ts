@@ -6,7 +6,7 @@ import {
     EnrollCourseRequest,
     FetchEnrolledCourseRequest,
     GenerateAttemptIdRequest,
-    GetContentStateRequest,
+    GetContentStateRequest, GetLearnerCerificateRequest,
     GetUserEnrolledCoursesRequest,
     UpdateContentStateRequest
 } from './request-types';
@@ -18,6 +18,7 @@ import {DownloadCertificateRequest} from './download-certificate-request';
 import {DownloadCertificateResponse} from './download-certificate-response';
 import {SunbirdTelemetry} from '../../telemetry';
 import Telemetry = SunbirdTelemetry.Telemetry;
+import {LearnerCertificate} from './get-learner-certificate-response';
 
 export interface CourseService {
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
@@ -58,4 +59,6 @@ export interface CourseService {
         pdfDataProvider: (pdfSvgData: string, cb: (pdfData: Blob) => void) => void): Observable<DownloadCertificateResponse>;
 
     displayDiscussionForum(request: DisplayDiscussionForumRequest): Observable<boolean>;
+
+    getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<LearnerCertificate[]>;
 }

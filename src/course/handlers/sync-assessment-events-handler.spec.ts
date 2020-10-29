@@ -1,6 +1,6 @@
-import { SyncAssessmentEventsHandler } from './sync-assessment-events-handler';
-import { CourseService } from '..';
-import { SdkConfig, ApiService, DbService, SunbirdTelemetry } from '../..';
+import {SyncAssessmentEventsHandler} from './sync-assessment-events-handler';
+import {CourseService} from '..';
+import {ApiService, DbService, SdkConfig, SunbirdTelemetry} from '../..';
 import {of, throwError} from 'rxjs';
 import {CourseAssessmentEntry} from '../../summarizer/db/schema';
 import {NetworkQueue} from '../../api/network-queue';
@@ -40,7 +40,7 @@ describe('SyncAssessmentEventsHandler', () => {
         it('should sync captured assessment events only if no persisted assessment events exist', (done) => {
             // arrange
             const capturedAssessmentEvents = {
-                '{"batchStatus": 1,"courseId":"SOME_ID","contentId":"SOME_CONTENT"}': [
+                '{"batchStatus": 1,"courseId":"SOME_ID","contentId":"SOME_CONTENT","userId":"SOME_USER_ID"}': [
                     new SunbirdTelemetry.Start(
                         'SOME_TYPE',
                         undefined,
@@ -48,7 +48,8 @@ describe('SyncAssessmentEventsHandler', () => {
                         undefined,
                         undefined,
                         undefined,
-                        'SOME_ENV'
+                        'SOME_ENV',
+                        'SOME_ID'
                     )
                 ]
             };
@@ -70,7 +71,7 @@ describe('SyncAssessmentEventsHandler', () => {
         it('should sync captured assessment events and persisted assessment events if exists', (done) => {
             // arrange
             const capturedAssessmentEvents = {
-                '{"batchStatus": 1,"courseId":"SOME_ID","contentId":"SOME_CONTENT"}': [
+                '{"batchStatus": 1,"courseId":"SOME_ID","contentId":"SOME_CONTENT","userId":"SOME_USER_ID"}': [
                     new SunbirdTelemetry.Start(
                         'SOME_TYPE',
                         undefined,
@@ -109,7 +110,7 @@ describe('SyncAssessmentEventsHandler', () => {
         it('should persist captured assessment events if sync fails', (done) => {
             // arrange
             const capturedAssessmentEvents = {
-                '{"batchStatus": 1,"courseId":"SOME_ID","contentId":"SOME_CONTENT"}': [
+                '{"batchStatus": 1,"courseId":"SOME_ID","contentId":"SOME_CONTENT","userId":"SOME_USER_ID"}': [
                     new SunbirdTelemetry.Start(
                         'SOME_TYPE',
                         undefined,

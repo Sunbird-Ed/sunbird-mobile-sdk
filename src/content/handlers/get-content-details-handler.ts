@@ -126,7 +126,8 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                                         contentId: serverContentData.identifier,
                                         streamingUrl: serverContentData.streamingUrl,
                                         licenseDetails: serverContentData.licenseDetails,
-                                        size: serverContentData.size
+                                        size: serverContentData.size,
+                                        serverContentData: serverContentData,
                                     }
                                 }
                             });
