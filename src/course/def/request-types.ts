@@ -14,8 +14,13 @@ export interface EnrollCourseRequest {
     batchStatus?: number;
 }
 
+export enum UpdateContentStateTarget {
+    LOCAL = 'LOCAL',
+    SERVER = 'SERVER'
+}
 
 export interface UpdateContentStateRequest {
+    target?: UpdateContentStateTarget[];
     userId: string;
     courseId: string;
     contentId: string;
@@ -104,4 +109,8 @@ export interface GetUserEnrolledCoursesRequest {
 
 export interface DisplayDiscussionForumRequest {
     forumId: string;
+}
+
+export interface GetLearnerCerificateRequest {
+    userId: string;
 }
