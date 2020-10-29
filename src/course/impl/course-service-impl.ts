@@ -11,7 +11,7 @@ import {
     EnrollCourseRequest,
     FetchEnrolledCourseRequest,
     GenerateAttemptIdRequest,
-    GetContentStateRequest,
+    GetContentStateRequest, GetLearnerCerificateRequest,
     GetUserEnrolledCoursesRequest,
     UnenrollCourseRequest,
     UpdateContentStateRequest,
@@ -52,6 +52,8 @@ import {CsCourseService} from '@project-sunbird/client-services/services/course'
 import {NetworkQueue} from '../../api/network-queue';
 import {AuthService} from '../../auth';
 import * as qs from 'qs';
+import {GetLearnerCertificateHandler} from '../handlers/get-learner-certificate-handler';
+import {LearnerCertificate} from '../def/get-learner-certificate-response';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -412,5 +414,9 @@ export class CourseServiceImpl implements CourseService {
 
             return true;
         });
+    }
+
+    getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<LearnerCertificate[]> {
+        return new GetLearnerCertificateHandler(this.apiService).handle(request);
     }
 }

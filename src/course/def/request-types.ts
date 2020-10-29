@@ -110,3 +110,7 @@ export interface GetUserEnrolledCoursesRequest {
 export interface DisplayDiscussionForumRequest {
     forumId: string;
 }
+
+export interface GetLearnerCerificateRequest {
+    userId: string;
+}
