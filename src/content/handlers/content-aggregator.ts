@@ -136,6 +136,7 @@ export class ContentAggregator {
         searchRequest: SearchRequest;
         searchCriteria: ContentSearchCriteria;
     }> {
+        field.search['searchType'] = 'filter';
         let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({request: field.search});
 
         if (request.interceptSearchCriteria) {
