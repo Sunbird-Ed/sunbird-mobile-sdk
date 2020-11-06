@@ -19,7 +19,7 @@ export namespace GroupProfileEntry {
             COLUMN_NAME_GID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            'UNIQUE (' + COLUMN_NAME_GID + DbConstants.COMMA_SEP + COLUMN_NAME_UID + ') ON CONFLICT REPLACE' +
+            'UNIQUE (' + COLUMN_NAME_GID + DbConstants.COMMA_SEP + COLUMN_NAME_UID + ')' + ` ${DbConstants.platformAdaptInclude('ON CONFLICT REPLACE')}` +
             ')';
     };
     export const deleteTable: (() => string) = () => {

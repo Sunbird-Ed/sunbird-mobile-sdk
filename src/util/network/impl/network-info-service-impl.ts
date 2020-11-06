@@ -1,13 +1,22 @@
 import {NetworkInfoService, NetworkStatus} from '..';
-import {BehaviorSubject, Observable} from 'rxjs';
-import {injectable} from 'inversify';
+import {BehaviorSubject, Observable, of} from 'rxjs';
+import {inject, injectable} from 'inversify';
+import {InjectionTokens} from '../../../injection-tokens';
+import {SdkConfig} from '../../../sdk-config';
 
 @injectable()
 export class NetworkInfoServiceImpl implements NetworkInfoService {
     networkStatus$: Observable<NetworkStatus>;
     private networkStatusSource: BehaviorSubject<NetworkStatus>;
 
-    constructor() {
+    constructor(
+        @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig
+    ) {
+        if (sdkConfig.platform !== 'android') {
+            this.networkStatus$ = of(NetworkStatus.ONLINE);
+            return;
+        }
+
         if (navigator.connection.type === Connection.NONE) {
             this.networkStatusSource = new BehaviorSubject<NetworkStatus>(NetworkStatus.OFFLINE);
         } else {

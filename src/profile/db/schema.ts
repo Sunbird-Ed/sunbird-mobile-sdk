@@ -51,19 +51,19 @@ export namespace ProfileEntry {
             COLUMN_NAME_GENDER + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_STANDARD + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_LANGUAGE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_DAY + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT -1' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_MONTH + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT -1' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_IS_GROUP_USER + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT 0' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_DAY + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT (-1)' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_MONTH + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT (-1)' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_IS_GROUP_USER + DbConstants.SPACE + DbConstants.INT_TYPE + ' NOT NULL DEFAULT (0)' + DbConstants.COMMA_SEP +
             COLUMN_NAME_CREATED_AT + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_MEDIUM + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_BOARD + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_SUBJECT + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_PROFILE_IMAGE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_NAME_PROFILE_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT "teacher"' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_PROFILE_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT ("teacher")' + DbConstants.COMMA_SEP +
             COLUMN_NAME_GRADE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_SYLLABUS + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_SOURCE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            COLUMN_VALUE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT ""' + DbConstants.COMMA_SEP +
+            DbConstants.platformAdaptToken(COLUMN_VALUE) + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT ("")' + DbConstants.COMMA_SEP +
             COLUMN_NAME_GRADE_VALUE + DbConstants.SPACE + DbConstants.TEXT_TYPE +
             ')';
     };    export const deleteTable: (() => string) = () => {
@@ -119,7 +119,7 @@ export namespace GroupProfileEntry {
             COLUMN_NAME_GID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_EPOCH_TIMESTAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
-            'UNIQUE (' + COLUMN_NAME_GID + DbConstants.COMMA_SEP + COLUMN_NAME_UID + ') ON CONFLICT REPLACE' +
+            'UNIQUE (' + COLUMN_NAME_GID + DbConstants.COMMA_SEP + COLUMN_NAME_UID + ')' + ` ${DbConstants.platformAdaptInclude('ON CONFLICT REPLACE')}` +
             ')';
     };
     export const deleteTable: (() => string) = () => {
@@ -184,7 +184,7 @@ export namespace ImportedMetadataEntry {
             ImportedMetadataEntry._ID + ' INTEGER PRIMARY KEY,' +
             ImportedMetadataEntry.COLUMN_NAME_IMPORTED_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             ImportedMetadataEntry.COLUMN_NAME_DEVICE_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            ImportedMetadataEntry.COLUMN_NAME_COUNT + DbConstants.SPACE + DbConstants.INT_TYPE +
+            DbConstants.platformAdaptToken(ImportedMetadataEntry.COLUMN_NAME_COUNT) + DbConstants.SPACE + DbConstants.INT_TYPE +
             ' )';
     };
 
@@ -327,7 +327,7 @@ export namespace LearnerSummaryEntry {
             COLUMN_NAME_LAST_UPDATED_ON + DbConstants.SPACE + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_HIERARCHY_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             ' UNIQUE (' + COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.COMMA_SEP + COLUMN_NAME_CONTENT_ID
-            + DbConstants.COMMA_SEP + COLUMN_NAME_HIERARCHY_DATA + ') ON CONFLICT REPLACE' +
+            + DbConstants.COMMA_SEP + COLUMN_NAME_HIERARCHY_DATA + ')' + ` ${DbConstants.platformAdaptInclude('ON CONFLICT REPLACE')}` +
             ' )';
     };
 

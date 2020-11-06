@@ -81,6 +81,10 @@ import {GroupServiceDeprecated} from './group-deprecated';
 import {GroupServiceDeprecatedImpl} from './group-deprecated/impl/group-service-deprecated-impl';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
 import {ContentGeneralizationMigration} from './db/migrations/content-generalization-migration';
+import {TelemetryServiceStubImpl} from './telemetry/impl/telemetry-service-stub-impl';
+import {DbInMemorySqlService} from './db/impl/db-in-memory-sql-service';
+import {DeviceInfoMockImpl} from './util/device/impl/device-info-mock-impl';
+import {NotificationServiceMockImpl} from './notification/impl/notification-service-mock-impl';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -263,22 +267,41 @@ export class SunbirdSdk {
         ]);
 
         switch (sdkConfig.platform) {
-            case 'cordova': this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
+            case 'android': this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
                 .to(SharedPreferencesAndroid).inSingletonScope();
                 break;
+            case 'ios':
             case 'web': this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
                 .to(SharedPreferencesLocalStorage).inSingletonScope();
                 break;
             default: throw new Error('FATAL_ERROR: Invalid platform');
         }
 
-        this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbCordovaService).inSingletonScope();
+        switch (sdkConfig.platform) {
+            case 'android':
+                this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbCordovaService).inSingletonScope();
+                break;
+            case 'ios':
+            case 'web':
+                this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbInMemorySqlService).inSingletonScope();
+                break;
+            default: throw new Error('FATAL_ERROR: Invalid platform');
+        }
 
         this._container.bind<FileService>(InjectionTokens.FILE_SERVICE).to(FileServiceImpl).inSingletonScope();
 
         this._container.bind<SdkConfig>(InjectionTokens.SDK_CONFIG).toConstantValue(sdkConfig);
 
-        this._container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).to(DeviceInfoImpl).inSingletonScope();
+        switch (sdkConfig.platform) {
+            case 'android':
+                this._container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).to(DeviceInfoImpl).inSingletonScope();
+                break;
+            case 'ios':
+            case 'web':
+                this._container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).to(DeviceInfoMockImpl).inSingletonScope();
+                break;
+            default: throw new Error('FATAL_ERROR: Invalid platform');
+        }
 
         this._container.bind<EventsBusService>(InjectionTokens.EVENTS_BUS_SERVICE).to(EventsBusServiceImpl).inSingletonScope();
 
@@ -305,7 +328,16 @@ export class SunbirdSdk {
 
         this._container.bind<ZipService>(InjectionTokens.ZIP_SERVICE).to(ZipServiceImpl).inSingletonScope();
 
-        this._container.bind<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE).to(TelemetryServiceImpl).inSingletonScope();
+        switch (sdkConfig.platform) {
+            case 'android':
+                this._container.bind<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE).to(TelemetryServiceImpl).inSingletonScope();
+                break;
+            case 'ios':
+            case 'web':
+                this._container.bind<TelemetryService>(InjectionTokens.TELEMETRY_SERVICE).to(TelemetryServiceStubImpl).inSingletonScope();
+                break;
+            default: throw new Error('FATAL_ERROR: Invalid platform');
+        }
 
         this._container.bind<ContentFeedbackService>(InjectionTokens.CONTENT_FEEDBACK_SERVICE)
             .to(ContentFeedbackServiceImpl).inSingletonScope();
@@ -332,7 +364,16 @@ export class SunbirdSdk {
 
         this._container.bind<StorageService>(InjectionTokens.STORAGE_SERVICE).to(StorageServiceImpl).inSingletonScope();
 
-        this._container.bind<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE).to(NotificationServiceImpl).inSingletonScope();
+        switch (sdkConfig.platform) {
+            case 'android':
+                this._container.bind<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE).to(NotificationServiceImpl).inSingletonScope();
+                break;
+            case 'ios':
+            case 'web':
+                this._container.bind<NotificationService>(InjectionTokens.NOTIFICATION_SERVICE).to(NotificationServiceMockImpl).inSingletonScope();
+                break;
+            default: throw new Error('FATAL_ERROR: Invalid platform');
+        }
 
         this._container.bind<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE).to(NetworkInfoServiceImpl).inSingletonScope();
 
@@ -352,7 +393,7 @@ export class SunbirdSdk {
 
         await CsModule.instance.init({
             core: {
-                httpAdapter: 'HttpClientCordovaAdapter',
+                httpAdapter: sdkConfig.platform === 'android' ? 'HttpClientCordovaAdapter' : 'HttpClientBrowserAdapter',
                 global: {
                     channelId: sdkConfig.apiConfig.api_authentication.channelId,
                     producerId: sdkConfig.apiConfig.api_authentication.producerId,

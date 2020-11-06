@@ -1,5 +1,5 @@
 import {KeyValueStore} from '..';
-import {DbService} from '../../db';
+import {DbConstants, DbService} from '../../db';
 import {KeyValueStoreEntry} from '../db/schema';
 import {injectable, inject} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
@@ -15,7 +15,7 @@ export class KeyValueStoreImpl implements KeyValueStore {
         return this.dbService.read({
             table: KeyValueStoreEntry.TABLE_NAME,
             columns: [],
-            selection: `${KeyValueStoreEntry.COLUMN_NAME_KEY} = ?`,
+            selection: `${DbConstants.platformAdaptToken(KeyValueStoreEntry.COLUMN_NAME_KEY)} = ?`,
             selectionArgs: [key]
         }).pipe(
             map((res: { key: string, value: string }[]) => res[0] && res[0].value)
@@ -31,8 +31,8 @@ export class KeyValueStoreImpl implements KeyValueStore {
                         selection: `${KeyValueStoreEntry.COLUMN_NAME_KEY} = ?`,
                         selectionArgs: [key],
                         modelJson: {
-                            [KeyValueStoreEntry.COLUMN_NAME_KEY]: key,
-                            [KeyValueStoreEntry.COLUMN_NAME_VALUE]: value
+                            [DbConstants.platformAdaptToken(KeyValueStoreEntry.COLUMN_NAME_KEY)]: key,
+                            [DbConstants.platformAdaptToken(KeyValueStoreEntry.COLUMN_NAME_VALUE)]: value
                         }
                     }).pipe(
                         map(v => v > 0)
@@ -42,8 +42,8 @@ export class KeyValueStoreImpl implements KeyValueStore {
                     return this.dbService.insert({
                         table: KeyValueStoreEntry.TABLE_NAME,
                         modelJson: {
-                            [KeyValueStoreEntry.COLUMN_NAME_KEY]: key,
-                            [KeyValueStoreEntry.COLUMN_NAME_VALUE]: value
+                            [DbConstants.platformAdaptToken(KeyValueStoreEntry.COLUMN_NAME_KEY)]: key,
+                            [DbConstants.platformAdaptToken(KeyValueStoreEntry.COLUMN_NAME_VALUE)]: value
                         }
                     }).pipe(
                         map(v => v > 0)

@@ -18,7 +18,7 @@ import {FaqServiceConfig} from './faq';
 import {DeviceRegisterConfig} from './device-register';
 
 export interface SdkConfig {
-    platform: 'cordova' | 'web';
+    platform: 'ios' | 'android' | 'web';
     apiConfig: ApiConfig;
     dbConfig: DbConfig;
     deviceRegisterConfig: DeviceRegisterConfig;

@@ -5,6 +5,10 @@ import {map, mapTo} from 'rxjs/operators';
 
 @injectable()
 export class SharedPreferencesLocalStorage implements SharedPreferences {
+    constructor() {
+        localStorage.clear();
+    }
+
     private listeners: Map<string, ((v: any) => void)[]> = new Map();
 
     public getString(key: string): Observable<string | undefined> {

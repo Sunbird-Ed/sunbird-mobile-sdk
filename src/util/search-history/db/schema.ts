@@ -5,7 +5,7 @@ export namespace SearchHistoryEntry {
     export const TABLE_NAME = 'search_history';
     export const _ID = '_id';
     export const COLUMN_NAME_USER_ID = 'uid';
-    export const COLUMN_NAME_QUERY = 'query';
+    export const COLUMN_NAME_QUERY = '`query`';
     export const COLUMN_NAME_TIME_STAMP = 'time_stamp';
     export const COLUMN_NAME_NAMESPACE = 'namespace';
 
@@ -24,7 +24,7 @@ export namespace SearchHistoryEntry {
             SearchHistoryEntry.COLUMN_NAME_QUERY + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             SearchHistoryEntry.COLUMN_NAME_TIME_STAMP + DbConstants.SPACE + DbConstants.INT_TYPE + DbConstants.COMMA_SEP +
             SearchHistoryEntry.COLUMN_NAME_NAMESPACE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
-            'UNIQUE (' + SearchHistoryEntry.COLUMN_NAME_USER_ID + DbConstants.COMMA_SEP + SearchHistoryEntry.COLUMN_NAME_QUERY + ') ON CONFLICT REPLACE' +
+            'UNIQUE (' + SearchHistoryEntry.COLUMN_NAME_USER_ID + DbConstants.COMMA_SEP + SearchHistoryEntry.COLUMN_NAME_QUERY + ')' +
             ' )';
     };
     export const deleteTable: (() => string) = () => {
