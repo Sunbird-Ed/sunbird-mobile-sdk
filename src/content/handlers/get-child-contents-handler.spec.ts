@@ -149,9 +149,28 @@ describe('ChildContentsHandler', () => {
             content_type: CsContentType.COURSE.toLowerCase(),
             data: {}
         }));
+        mockGetContentDetailsHandler.fetchFromDBForAll = jest.fn(() => of([{
+            local_data: JSON.stringify({
+                children: [{
+                    index: 1,
+                    identifier: 'identifier'
+                }, {
+                    index: 2,
+                    identifier: 'do-234'
+                }, {
+                    index: 3,
+                    identifier: 'do-345'
+                }],
+                contentType: 'Course'
+            }),
+            identifier: 'do-123',
+            content_type: CsContentType.COURSE.toLowerCase(),
+            data: {}
+        }])) as any;
         // act
         await childContentHandler.getContentFromDB(request, identifier).then(() => {
             expect(mockGetContentDetailsHandler.fetchFromDB).toHaveBeenCalled();
+            expect(mockGetContentDetailsHandler.fetchFromDBForAll).toHaveBeenCalled();
             done();
         });
         // assert
