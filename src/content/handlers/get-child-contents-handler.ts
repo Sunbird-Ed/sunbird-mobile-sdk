@@ -130,12 +130,37 @@ export class ChildContentsHandler {
                     nextContent = ContentMapper.mapContentDBEntryToContent(nextContentInDb, shouldConvertBasePath);
                     nextContent.hierarchyInfo = nextContentHierarchyList;
                     nextContent.rollup = ContentUtil.getContentRollup(nextContent.identifier, nextContent.hierarchyInfo);
+                    const hierarchyIdentifiers: string[] = nextContentHierarchyList.map(t => t['identifier']);
+                    const query = ArrayUtil.joinPreservingQuotes(hierarchyIdentifiers);
+                    let contentModels: ContentEntry.SchemaMap[] =
+                      await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
+                    contentModels = contentModels.sort((a, b) => {
+                        return hierarchyIdentifiers.indexOf(a['identifier']) - hierarchyIdentifiers.indexOf(b['identifier']);
+                    });
+                    for (let i = 0; i < contentModels.length; i++) {
+                        const contentModel = contentModels[i];
+                        const localData = JSON.parse(contentModel[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+                        const isTrackable = ContentUtil.isTrackable(localData);
+                        if ( i === 0 && isTrackable === 1) {
+                            break;
+                        } else if (isTrackable === 1 ) {
+                            const parentIdentifier = contentModel['identifier'];
+                            let hierarchyList = JSON.parse(JSON.stringify(nextContentHierarchyList));
+                            if (hierarchyList) {
+                                hierarchyList = hierarchyList.slice(0, i);
+                                nextContent['trackableParentInfo'] = {
+                                    identifier: contentModel['identifier'],
+                                    hierarchyInfo: hierarchyList
+                                };
+                            }
+                            break;
+                        }
+                    }
                 }
             }
         }
         return nextContent;
     }
-
     getNextContentIdentifier(hierarchyInfoList: HierarchyInfo[],
                              currentIdentifier: string,
                              contentKeyList: string[]): string {
