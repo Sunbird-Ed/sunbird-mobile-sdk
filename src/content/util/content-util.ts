@@ -1,4 +1,4 @@
-import {ContentData, HierarchyInfo} from '../def/content';
+import {ContentData, HierarchyInfo, TrackingEnabled} from '../def/content';
 import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from './content-constants';
 import {Rollup} from '../../telemetry';
 import {AppConfig} from '../../api/config/app-config';
@@ -8,6 +8,7 @@ import {ArrayUtil} from '../../util/array-util';
 import * as dayjs from 'dayjs';
 import {ChildContent} from '..';
 import {CsPrimaryCategoryMapper} from '@project-sunbird/client-services/services/content/utilities/primary-category-mapper';
+import { CsContentType } from '@project-sunbird/client-services/services/content';
 
 export class ContentUtil {
     public static defaultCompatibilityLevel = 1;
@@ -600,6 +601,29 @@ export class ContentUtil {
 
     private static isContentMetadataPresentWithoutViralityMetadata(localData): boolean {
         return !Boolean((localData['contentMetaData'])['virality']);
+    }
+
+    public static isTrackable(content): number {
+        if (content.trackable && typeof (content.trackable) === 'string') {
+            content.trackable = JSON.parse(content.trackable);
+        }
+        if (content.trackable && content.trackable.enabled) {
+            if (content.trackable.enabled === TrackingEnabled.YES) {
+                return 1;
+            } else if (content.mimeType === MimeType.COLLECTION) {
+                return 0;
+            } else {
+                return -1;
+            }
+        } else {
+            if (content.contentType.toLowerCase() === CsContentType.COURSE.toLowerCase()) {
+                return 1;
+            } else if (content.mimeType === MimeType.COLLECTION) {
+                return 0;
+            } else {
+                return -1;
+            }
+        }
     }
 
 }
