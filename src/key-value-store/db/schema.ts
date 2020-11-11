@@ -9,7 +9,7 @@ export namespace KeyValueStoreEntry {
 
     export const getCreateEntry: (() => string) = () => {
         return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
-            _ID + ' INTEGER PRIMARY KEY,' +
+            _ID + ' INTEGER PRIMARY KEY AUTOINCREMENT,' +
             DbConstants.platformAdaptToken(COLUMN_NAME_KEY) + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' NOT NULL' + DbConstants.COMMA_SEP +
             DbConstants.platformAdaptToken(COLUMN_NAME_VALUE) + DbConstants.SPACE + DbConstants.TEXT_TYPE +
             ' )';
