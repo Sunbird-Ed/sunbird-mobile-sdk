@@ -323,7 +323,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         if (!childContentRequest.level) {
             childContentRequest.level = -1;
         }
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.appConfig);
         let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
         if (!hierarchyInfoList) {
             hierarchyInfoList = [];
@@ -504,7 +504,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string, shouldConvertBasePath?: boolean): Observable<Content> {
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.appConfig);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier)).pipe(
             mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
@@ -516,7 +516,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string, shouldConvertBasePath?: boolean): Observable<Content> {
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.appConfig);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier)).pipe(
             mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);

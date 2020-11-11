@@ -10,11 +10,13 @@ import {ContentMapper} from '../util/content-mapper';
 import {ArrayUtil} from '../../util/array-util';
 import {FileService} from '../../util/file/def/file-service';
 import { FileName } from './../util/content-constants';
+import {AppConfig} from '../../api/config/app-config';
 
 export class ChildContentsHandler {
 
     constructor(private dbService: DbService,
                 private getContentDetailsHandler: GetContentDetailsHandler,
+                private appConfig: AppConfig,
                 private fileService?: FileService) {
     }
 
@@ -130,6 +132,9 @@ export class ChildContentsHandler {
                     nextContent = ContentMapper.mapContentDBEntryToContent(nextContentInDb, shouldConvertBasePath);
                     nextContent.hierarchyInfo = nextContentHierarchyList;
                     nextContent.rollup = ContentUtil.getContentRollup(nextContent.identifier, nextContent.hierarchyInfo);
+                    const compatibilityLevel = ContentUtil.readCompatibilityLevel(nextContent.contentData);
+                    const isCompatible = ContentUtil.isCompatible(this.appConfig, compatibilityLevel);
+                    nextContent.isCompatible = isCompatible;
                     const hierarchyIdentifiers: string[] = nextContentHierarchyList.map(t => t['identifier']);
                     const query = ArrayUtil.joinPreservingQuotes(hierarchyIdentifiers);
                     let contentModels: ContentEntry.SchemaMap[] =
