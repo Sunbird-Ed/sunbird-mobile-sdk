@@ -7,17 +7,20 @@ import { of } from 'rxjs';
 import { ChildContent, HierarchyInfo } from '..';
 import { FileService } from '../../util/file/def/file-service';
 import { CsContentType } from '@project-sunbird/client-services/services/content';
+import {AppConfig} from '../../api/config/app-config';
 
 describe('ChildContentsHandler', () => {
     let childContentHandler: ChildContentsHandler;
     const mockDbService: Partial<DbService> = {};
     const mockGetContentDetailsHandler: Partial<GetContentDetailsHandler> = {};
     const mockFileService: Partial<FileService> = {};
+    const mockAppConfig: Partial<AppConfig> = {};
 
     beforeAll(() => {
         childContentHandler = new ChildContentsHandler(
             mockDbService as DbService,
             mockGetContentDetailsHandler as GetContentDetailsHandler,
+            mockAppConfig as AppConfig,
             mockFileService as FileService
         );
     });
