@@ -74,7 +74,6 @@ export class StorageHandler {
             let visibility = ContentUtil.readVisibility(element);
             const audience = ContentUtil.readAudience(element);
             const pragma = ContentUtil.readPragma(element);
-            const compatibilityLevel = ContentUtil.readCompatibilityLevel(element);
             const pkgVersion = element.pkgVersion;
             let contentState = State.ONLY_SPINE.valueOf();
             const board = element.board;
@@ -96,14 +95,11 @@ export class StorageHandler {
                 }
             } else {
                 doesContentExist = false;
-
-                if (ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
-                    // Add or update the content_state
-                    if (MimeType.COLLECTION.valueOf() === mimeType) {
-                        contentState = State.ARTIFACT_AVAILABLE.valueOf();
-                    } else {
-                        contentState = State.ARTIFACT_AVAILABLE.valueOf();
-                    }
+                // Add or update the content_state
+                if (MimeType.COLLECTION.valueOf() === mimeType) {
+                    contentState = State.ARTIFACT_AVAILABLE.valueOf();
+                } else {
+                    contentState = State.ARTIFACT_AVAILABLE.valueOf();
                 }
             }
             const referenceCount = ContentUtil.getReferenceCount(existingContentModel, visibility);
