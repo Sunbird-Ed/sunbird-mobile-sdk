@@ -107,15 +107,14 @@ export class SearchContentHandler {
 
   private getFilterRequest(criteria: ContentSearchCriteria): SearchFilter {
     let searchFilter: SearchFilter = {
-      compatibilityLevel: this.getCompatibilityLevelFilter(),
+      // compatibilityLevel: this.getCompatibilityLevelFilter(),
     };
-    this.addFiltersToRequest(searchFilter, criteria.facetFilters!);
-    this.addFiltersToRequest(searchFilter, criteria.impliedFilters!);
+    this.addFiltersToRequest(criteria.facetFilters!);
+    this.addFiltersToRequest(criteria.impliedFilters!);
 
     if (criteria.impliedFiltersMap && criteria.impliedFiltersMap.length > 0) {
       criteria.impliedFiltersMap.forEach(filterMap => {
         searchFilter = {
-          ...searchFilter,
           ...filterMap
         };
       });
@@ -123,7 +122,7 @@ export class SearchContentHandler {
     return searchFilter;
   }
 
-  private addFiltersToRequest(searchFilter: SearchFilter, filter: ContentSearchFilter[]) {
+  private addFiltersToRequest(filter: ContentSearchFilter[]) {
     if (filter && filter.length) {
       filter.forEach(facetFilter => {
         const filterValueList: string[] = [];
@@ -132,18 +131,12 @@ export class SearchContentHandler {
             filterValueList.push(value.name);
           }
         });
-
-        if (filterValueList.length) {
-          searchFilter[facetFilter.name] = filterValueList;
-        }
-
       });
     }
   }
 
   private getSearchRequest(criteria: ContentSearchCriteria): SearchFilter {
     return {
-      compatibilityLevel: this.getCompatibilityLevelFilter(),
       status: criteria.contentStatusArray,
       objectType: ['Content'],
       contentType: (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : [],
@@ -172,10 +165,6 @@ export class SearchContentHandler {
       acc[criteria.sortAttribute] = criteria.sortOrder;
       return acc;
     }, {});
-  }
-
-  getCompatibilityLevelFilter(): any {
-    return {'min': 1, 'max': this.appConfig.maxCompatibilityLevel};
   }
 
   createFilterCriteria(previouscriteria: ContentSearchCriteria, facets: ContentSearchFilter[],
@@ -253,7 +242,6 @@ export class SearchContentHandler {
   public getContentSearchFilter(contentIds: string[], status: string[], fields: (keyof ContentData)[] = []): SearchRequest {
     return {
       filters: {
-        compatibilityLevel: this.getCompatibilityLevelFilter(),
         identifier: contentIds.filter((v, i) => contentIds.indexOf(v) === i),
         status: status,
         objectType: ['Content']
