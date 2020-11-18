@@ -20,6 +20,7 @@ export interface ContentAggregatorResponse {
         section: ContentsGroupedByPageSection;
         searchRequest?: SearchRequest;
         searchCriteria?: ContentSearchCriteria;
+        dataSrc?: string;
     }[];
 }
 
