@@ -110,6 +110,16 @@ export class ContentUtil {
         return visibility ? visibility : Visibility.DEFAULT;
     }
 
+    public static isCompatible(appConfig: AppConfig, compatibilityLevel): boolean {
+        return (compatibilityLevel >= appConfig.minCompatibilityLevel)
+            && (compatibilityLevel <= appConfig.maxCompatibilityLevel);
+    }
+
+    public static readCompatibilityLevel(contentData: any): number {
+        const compatibilityLevel = contentData.compatibilityLevel;
+        return compatibilityLevel ? compatibilityLevel : this.defaultCompatibilityLevel;
+    }
+
     public static isDraftContent(status): boolean {
         return (status && status === ContentStatus.DRAFT.valueOf());
     }

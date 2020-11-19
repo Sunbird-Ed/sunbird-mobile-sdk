@@ -132,6 +132,9 @@ export class ChildContentsHandler {
                     nextContent = ContentMapper.mapContentDBEntryToContent(nextContentInDb, shouldConvertBasePath);
                     nextContent.hierarchyInfo = nextContentHierarchyList;
                     nextContent.rollup = ContentUtil.getContentRollup(nextContent.identifier, nextContent.hierarchyInfo);
+                    const compatibilityLevel = ContentUtil.readCompatibilityLevel(nextContent.contentData);
+                    const isCompatible = ContentUtil.isCompatible(this.appConfig, compatibilityLevel);
+                    nextContent.isCompatible = isCompatible;
                     const hierarchyIdentifiers: string[] = nextContentHierarchyList.map(t => t['identifier']);
                     const query = ArrayUtil.joinPreservingQuotes(hierarchyIdentifiers);
                     let contentModels: ContentEntry.SchemaMap[] =
