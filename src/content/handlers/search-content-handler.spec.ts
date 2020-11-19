@@ -205,6 +205,7 @@ describe('SearchContentHandler', () => {
             const searchRequest = searchContentHandler.getSearchContentRequest(criteria);
             // assert
             expect(searchRequest.filters).toEqual({
+                SAMPLE_CONTENT: ['SAMPLE_NAME'],
                 filter: 'sample-filter'
             });
         });
