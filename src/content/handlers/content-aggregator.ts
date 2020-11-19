@@ -138,6 +138,7 @@ export class ContentAggregator {
         searchCriteria: ContentSearchCriteria;
         dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS'
     }> {
+        field.search['searchType'] = 'filter';
         let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({request: field.search});
 
         if (request.interceptSearchCriteria) {
