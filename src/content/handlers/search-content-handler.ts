@@ -113,6 +113,7 @@ export class SearchContentHandler {
     if (criteria.impliedFiltersMap && criteria.impliedFiltersMap.length > 0) {
       criteria.impliedFiltersMap.forEach(filterMap => {
         searchFilter = {
+          ...searchFilter,
           ...filterMap
         };
       });
