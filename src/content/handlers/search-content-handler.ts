@@ -106,11 +106,9 @@ export class SearchContentHandler {
   }
 
   private getFilterRequest(criteria: ContentSearchCriteria): SearchFilter {
-    let searchFilter: SearchFilter = {
-      // compatibilityLevel: this.getCompatibilityLevelFilter(),
-    };
-    this.addFiltersToRequest(criteria.facetFilters!);
-    this.addFiltersToRequest(criteria.impliedFilters!);
+    let searchFilter: SearchFilter = {};
+    this.addFiltersToRequest(searchFilter, criteria.facetFilters!);
+    this.addFiltersToRequest(searchFilter, criteria.impliedFilters!);
 
     if (criteria.impliedFiltersMap && criteria.impliedFiltersMap.length > 0) {
       criteria.impliedFiltersMap.forEach(filterMap => {
@@ -122,7 +120,7 @@ export class SearchContentHandler {
     return searchFilter;
   }
 
-  private addFiltersToRequest(filter: ContentSearchFilter[]) {
+  private addFiltersToRequest(searchFilter: SearchFilter, filter: ContentSearchFilter[]) {
     if (filter && filter.length) {
       filter.forEach(facetFilter => {
         const filterValueList: string[] = [];
@@ -131,6 +129,11 @@ export class SearchContentHandler {
             filterValueList.push(value.name);
           }
         });
+
+        if (filterValueList.length) {
+          searchFilter[facetFilter.name] = filterValueList;
+        }
+
       });
     }
   }
