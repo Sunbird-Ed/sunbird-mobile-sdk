@@ -66,9 +66,7 @@ export class ValidateEcar {
             const item = e as any;
             const identifier = item.identifier;
             const visibility = ContentUtil.readVisibility(item);
-            const compatibilityLevel = ContentUtil.readCompatibilityLevel(item);
-            if (visibility === Visibility.DEFAULT
-                && !ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
+            if (visibility === Visibility.DEFAULT) {
                 this.skipContent(importContext, identifier, visibility, ContentImportStatus.NOT_COMPATIBLE, items);
                 continue;
             }
