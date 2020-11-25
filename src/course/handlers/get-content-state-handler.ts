@@ -1,15 +1,13 @@
-import {ApiService, HttpRequestType, Request} from '../../api';
-import {CourseServiceConfig, GetContentStateRequest} from '..';
+import {ApiService} from '../../api';
+import {ContentState, CourseServiceConfig, GetContentStateRequest} from '..';
 import {defer, iif, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {ContentService} from '../../content';
 import {Container} from 'inversify';
-import {InjectionTokens} from '../../injection-tokens';
+import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
+import {CsCourseService} from '@project-sunbird/client-services/services/course';
 
 export class GetContentStateHandler {
-    private readonly GET_CONTENT_STATE_KEY_PREFIX = 'getContentState';
-    private readonly GET_CONTENT_STATE_ENDPOINT = '/content/state/read';
-
     constructor(
         private apiService: ApiService,
         private courseServiceConfig: CourseServiceConfig,
@@ -17,11 +15,15 @@ export class GetContentStateHandler {
     ) {
     }
 
+    private get csCourseService(): CsCourseService {
+        return this.container.get(CsInjectionTokens.COURSE_SERVICE);
+    }
+
     private get contentService(): ContentService {
         return this.container.get(InjectionTokens.CONTENT_SERVICE);
     }
 
-    public handle(contentStateRequest: GetContentStateRequest): Observable<any> {
+    public handle(contentStateRequest: GetContentStateRequest): Observable<{ contentList: ContentState[] }> {
         delete contentStateRequest['returnRefreshedContentStates'];
 
         return iif(
@@ -42,20 +44,8 @@ export class GetContentStateHandler {
             delete contentStateRequest.contentIds;
         }
 
-        const apiRequest: Request = new Request.Builder()
-            .withType(HttpRequestType.POST)
-            .withPath(this.courseServiceConfig.apiPath + this.GET_CONTENT_STATE_ENDPOINT)
-            .withBearerToken(true)
-            .withUserToken(true)
-            .withBody({request: contentStateRequest})
-            .build();
-
-        return defer(async () => {
-            return this.apiService.fetch<any>(apiRequest).pipe(
-                map((response) => {
-                    return response.body;
-                })
-            ).toPromise();
-        });
+        return this.csCourseService.getContentState(contentStateRequest).pipe(
+            map((contentStates: ContentState[]) => ({ contentList: contentStates }))
+        );
     }
 }

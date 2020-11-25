@@ -19,13 +19,14 @@ export class CourseUtil {
 
 
     private static getRequestMap(updateContentReq: UpdateContentStateRequest): ContentState {
-        const contentState: ContentState = {};
-        contentState.userId = updateContentReq.userId;
-        contentState.contentId = updateContentReq.contentId;
-        contentState.courseId = updateContentReq.courseId;
-        contentState.batchId = updateContentReq.batchId;
-        contentState.status = updateContentReq.status;
-        contentState.progress = updateContentReq.progress;
+        const contentState: Partial<ContentState> = {
+            userId: updateContentReq.userId,
+            contentId: updateContentReq.contentId,
+            courseId: updateContentReq.courseId,
+            batchId: updateContentReq.batchId,
+            status: updateContentReq.status,
+            progress: updateContentReq.progress,
+        };
 
         if (updateContentReq.result) {
             contentState.result = updateContentReq.result;
@@ -38,7 +39,7 @@ export class CourseUtil {
         if (updateContentReq.score) {
             contentState.score = updateContentReq.score;
         }
-        return contentState;
+        return contentState as ContentState;
     }
 
 }
