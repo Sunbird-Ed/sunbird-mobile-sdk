@@ -187,7 +187,7 @@ export class CourseServiceImpl implements CourseService {
                             this.container
                         ).handle(request)
                             .pipe(
-                                mergeMap((response: any) => {
+                                mergeMap((response) => {
                                     if (response) {
                                         return this.keyValueStore.setValue(key, JSON.stringify(response))
                                             .pipe(
