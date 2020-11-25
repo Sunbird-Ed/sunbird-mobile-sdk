@@ -30,11 +30,11 @@ export interface UpdateContentStateRequest {
     courseId: string;
     contentId: string;
     batchId: string;
-    status?: number;
-    progress?: number;
     result?: string;
     grade?: string;
-    score?: string;
+    status?: ContentState['status'];
+    progress?: ContentState['progress'];
+    score?: ContentState['score'];
 }
 
 export interface CourseBatchesRequest {

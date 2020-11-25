@@ -28,7 +28,8 @@ describe('UpdateEnrolledCoursesHandler', () => {
         const request: GetContentStateRequest = {
             userId: 'sample-user-id',
             batchId: 'sample-batch-id',
-            courseId: 'course-id-1'
+            courseId: 'course-id-1',
+            contentIds: []
         };
         const contentState: ContentState[] = [{
             lastAccessTime: '03:00AM',
@@ -55,7 +56,8 @@ describe('UpdateEnrolledCoursesHandler', () => {
         const request: GetContentStateRequest = {
             userId: 'sample-user-id',
             batchId: 'sample-batch-id',
-            courseId: 'course-id-1'
+            courseId: 'course-id-1',
+            contentIds: []
         };
         const contentState: ContentState[] = [{
             lastAccessTime: '03:00AM',
@@ -82,7 +84,8 @@ describe('UpdateEnrolledCoursesHandler', () => {
         const request: GetContentStateRequest = {
             userId: 'sample-user-id',
             batchId: 'sample-batch-id',
-            courseId: 'course-id-1'
+            courseId: 'course-id-1',
+            contentIds: []
         };
         const contentState: ContentState[] = [{
             lastAccessTime: '03:00AM',

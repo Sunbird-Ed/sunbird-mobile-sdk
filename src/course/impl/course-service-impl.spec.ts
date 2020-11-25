@@ -204,7 +204,6 @@ describe('CourseServiceImpl', () => {
             batchId: 'SAMPLE_BATCH_ID',
             result: 'SOME_RESULT',
             grade: 'SOME_GRADE',
-            score: 'SOME_SCORE'
         };
         spyOn(mockApiService, 'fetch').and.returnValue(of({response: {body: {result: 'FAILED'}}}));
         spyOn(mockKeyValueStore, 'getValue').and.returnValue(of('MOCK_KEY_VALUE'));
@@ -386,7 +385,7 @@ describe('CourseServiceImpl', () => {
             mockKeyValueStore.getValue = jest.fn(() => of(undefined));
             (GetContentStateHandler as jest.Mock<GetContentStateHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of('{"id": "do-123"}'))
+                    handle: jest.fn(() => of({ contentList: [] }))
                 } as Partial<GetContentStateHandler> as GetContentStateHandler;
             });
             mockKeyValueStore.setValue = jest.fn(() => of(true));
@@ -416,7 +415,7 @@ describe('CourseServiceImpl', () => {
             mockKeyValueStore.getValue = jest.fn(() => of(undefined));
             (GetContentStateHandler as jest.Mock<GetContentStateHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(undefined))
+                    handle: jest.fn(() => of({ contentList: [] }))
                 } as Partial<GetContentStateHandler> as GetContentStateHandler;
             });
             // act
@@ -472,7 +471,7 @@ describe('CourseServiceImpl', () => {
             mockKeyValueStore.getValue = jest.fn(() => of(JSON.stringify({result: {courses: [{courseId: 'Course-Id'}]}})));
             (GetContentStateHandler as jest.Mock<GetContentStateHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of('{"id": "do-123"}'))
+                    handle: jest.fn(() => of({ contentList: [] }))
                 } as Partial<GetContentStateHandler> as GetContentStateHandler;
             });
             mockKeyValueStore.setValue = jest.fn(() => of(true));
@@ -502,7 +501,7 @@ describe('CourseServiceImpl', () => {
             mockKeyValueStore.getValue = jest.fn(() => of('{"courseId": "do-123"}'));
             (GetContentStateHandler as jest.Mock<GetContentStateHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(undefined))
+                    handle: jest.fn(() => of(undefined as any))
                 } as Partial<GetContentStateHandler> as GetContentStateHandler;
             });
             // act
@@ -527,7 +526,7 @@ describe('CourseServiceImpl', () => {
                     getLocalContentStateResponse: jest.fn(() => of({contentList: [{
                         status: 2,
                         contentId: 'content-id'
-                    }]}))
+                    }] as any}))
                 } as Partial<OfflineContentStateHandler> as OfflineContentStateHandler;
             });
             mockKeyValueStore.getValue = jest.fn(() => of(JSON.stringify({result: {courses: [{courseId: 'Course-Id',
