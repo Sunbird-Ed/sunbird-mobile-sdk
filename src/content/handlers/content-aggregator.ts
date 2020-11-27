@@ -27,17 +27,9 @@ export interface DataSourceMap {
     'TRACKABLE_CONTENTS': {
         name: 'TRACKABLE_CONTENTS'
     };
-    'SUBJECT_CONTENT_FACETS': {
-        name: 'SUBJECT_CONTENT_FACETS',
-        aggregate: {
-            sortBy?: {
-                [field in keyof ContentData]: 'asc' | 'desc'
-            }[];
-            groupBy?: keyof ContentData;
-        }
-    };
-    'PRIMARY_CATEGORY_CONTENT_FACETS': {
-        name: 'SUBJECT_CONTENT_FACETS',
+    'CONTENT_FACETS': {
+        name: 'CONTENT_FACETS',
+        facet: string,
         aggregate: {
             sortBy?: {
                 [field in keyof ContentData]: 'asc' | 'desc'
@@ -62,17 +54,7 @@ export interface DataSourceMap {
 export interface DataResponseMap {
     'TRACKABLE_COURSE_CONTENTS': ContentsGroupedByPageSection;
     'TRACKABLE_CONTENTS': ContentsGroupedByPageSection;
-    'SUBJECT_CONTENT_FACETS': {
-        facet: string;
-        searchCriteria: ContentSearchCriteria;
-        aggregate: {
-            sortBy?: {
-                [field in keyof ContentData]: 'asc' | 'desc'
-            }[];
-            groupBy?: keyof ContentData;
-        }
-    }[];
-    'PRIMARY_CATEGORY_CONTENT_FACETS': {
+    'CONTENT_FACETS': {
         facet: string;
         searchCriteria: ContentSearchCriteria;
         aggregate: {
@@ -160,10 +142,8 @@ export class ContentAggregator {
 
             const fieldTasks = fields.map(async (field) => {
                 switch (field.dataSrc) {
-                    case 'SUBJECT_CONTENT_FACETS':
-                        return await this.buildFacetsTask(field, request, 'subject');
-                    case 'PRIMARY_CATEGORY_CONTENT_FACETS':
-                        return await this.buildFacetsTask(field, request, 'primaryCategory');
+                    case 'CONTENT_FACETS':
+                        return await this.buildFacetsTask(field, request);
                     case 'RECENTLY_VIEWED_CONTENTS':
                         return await this.buildRecentlyViewedTask(field, request);
                     case 'CONTENTS':
@@ -183,7 +163,10 @@ export class ContentAggregator {
         });
     }
 
-    private async buildRecentlyViewedTask(field: AggregatorConfigField, request: ContentAggregatorRequest): Promise<ContentAggregation> {
+    private async buildRecentlyViewedTask(
+      field: AggregatorConfigField<'RECENTLY_VIEWED_CONTENTS'>,
+      request: ContentAggregatorRequest
+    ): Promise<ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>> {
         return {
             title: field.title,
             data: {
@@ -195,13 +178,16 @@ export class ContentAggregator {
         } as ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>;
     }
 
-    private async buildFacetsTask(field: AggregatorConfigField, request: ContentAggregatorRequest, facet: string): Promise<ContentAggregation> {
+    private async buildFacetsTask(
+      field: AggregatorConfigField<'CONTENT_FACETS'>,
+      request: ContentAggregatorRequest
+    ): Promise<ContentAggregation<'CONTENT_FACETS'>> {
         let searchCriteria: ContentSearchCriteria = {
             offset: 0,
             limit: 0,
             mode: 'hard',
             facets: [
-              facet
+              field.dataSrc.facet
             ],
         };
 
@@ -237,7 +223,11 @@ export class ContentAggregator {
         };
     }
 
-    private async buildTrackableTask(field: AggregatorConfigField, request: ContentAggregatorRequest, filter): Promise<ContentAggregation> {
+    private async buildTrackableTask(
+      field: AggregatorConfigField<'TRACKABLE_CONTENTS'>,
+      request: ContentAggregatorRequest,
+      filter
+    ): Promise<ContentAggregation<'TRACKABLE_CONTENTS'>> {
         const session = await this.profileService.getActiveProfileSession().toPromise();
         const courses = await this.courseService.getEnrolledCourses({
             userId: session.managedSession ? session.managedSession.uid : session.uid,
@@ -259,10 +249,13 @@ export class ContentAggregator {
             },
             dataSrc: field.dataSrc,
             theme: field.theme
-        } as (ContentAggregation<'TRACKABLE_CONTENTS'> | ContentAggregation<'TRACKABLE_COURSE_CONTENTS'>);
+        } as ContentAggregation<'TRACKABLE_CONTENTS'>;
     }
 
-    private async buildContentSearchTask(field: AggregatorConfigField, request: ContentAggregatorRequest): Promise<ContentAggregation> {
+    private async buildContentSearchTask(
+      field: AggregatorConfigField,
+      request: ContentAggregatorRequest
+    ): Promise<ContentAggregation<'CONTENTS'>> {
         if (!field.searchRequest) {
             throw new Error('Expected field.searchRequest for dataSrc.name = "TRACKABLE_CONTENTS"');
         }
