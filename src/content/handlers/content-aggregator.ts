@@ -20,18 +20,90 @@ import {CsContentsGroupGenerator} from '@project-sunbird/client-services/service
 import {CourseService} from '../../course';
 import {ProfileService} from '../../profile';
 
-interface LibraryConfigFormField {
+export interface DataSourceMap {
+    'TRACKABLE_COURSE_CONTENTS': {
+        name: 'TRACKABLE_COURSE_CONTENTS'
+    };
+    'TRACKABLE_CONTENTS': {
+        name: 'TRACKABLE_CONTENTS'
+    };
+    'SUBJECT_CONTENT_FACETS': {
+        name: 'SUBJECT_CONTENT_FACETS',
+        aggregate: {
+            sortBy?: {
+                [field in keyof ContentData]: 'asc' | 'desc'
+            }[];
+            groupBy?: keyof ContentData;
+        }
+    };
+    'PRIMARY_CATEGORY_CONTENT_FACETS': {
+        name: 'SUBJECT_CONTENT_FACETS',
+        aggregate: {
+            sortBy?: {
+                [field in keyof ContentData]: 'asc' | 'desc'
+            }[];
+            groupBy?: keyof ContentData;
+        }
+    };
+    'RECENTLY_VIEWED_CONTENTS': {
+        name: 'RECENTLY_VIEWED_CONTENTS'
+    };
+    'CONTENTS': {
+        name: 'CONTENTS',
+        aggregate: {
+            sortBy?: {
+                [field in keyof ContentData]: 'asc' | 'desc'
+            }[];
+            groupBy?: keyof ContentData;
+        }
+    };
+}
+
+export interface DataResponseMap {
+    'TRACKABLE_COURSE_CONTENTS': ContentsGroupedByPageSection;
+    'TRACKABLE_CONTENTS': ContentsGroupedByPageSection;
+    'SUBJECT_CONTENT_FACETS': {
+        facet: string;
+        searchCriteria: ContentSearchCriteria;
+        aggregate: {
+            sortBy?: {
+                [field in keyof ContentData]: 'asc' | 'desc'
+            }[];
+            groupBy?: keyof ContentData;
+        }
+    }[];
+    'PRIMARY_CATEGORY_CONTENT_FACETS': {
+        facet: string;
+        searchCriteria: ContentSearchCriteria;
+        aggregate: {
+            sortBy?: {
+                [field in keyof ContentData]: 'asc' | 'desc'
+            }[];
+            groupBy?: keyof ContentData;
+        }
+    }[];
+    'RECENTLY_VIEWED_CONTENTS': ContentsGroupedByPageSection;
+    'CONTENTS': ContentsGroupedByPageSection;
+}
+
+export type DataSourceType = keyof DataSourceMap;
+
+interface AggregatorConfigField<T extends DataSourceType = any> {
     index: number;
     title: string;
     isEnabled: boolean;
-    groupBy: keyof ContentData;
-    orientation: 'horizontal' | 'vertical';
-    applyFirstAvailableCombination: boolean;
-    sortBy: {
-        [field: string]: 'asc' | 'desc'
-    }[];
-    search: SearchRequest;
-    dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS';
+    dataSrc: DataSourceMap[T];
+    searchRequest?: SearchRequest;
+    theme: any;
+}
+
+export interface ContentAggregation<T extends DataSourceType = any> {
+    title: string;
+    data: DataResponseMap[T];
+    dataSrc: DataSourceMap[T];
+    searchRequest?: SearchRequest;
+    searchCriteria?: ContentSearchCriteria;
+    theme: any;
 }
 
 export class ContentAggregator {
@@ -64,48 +136,108 @@ export class ContentAggregator {
 
     aggregate(
         request: ContentAggregatorRequest,
-        dataSrc: ('CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS' | undefined)[],
-        formRequest: FormRequest
+        filterDataSrc: DataSourceType[],
+        formRequest?: FormRequest,
+        formFields?: AggregatorConfigField[]
     ): Observable<ContentAggregatorResponse> {
         return defer(async () => {
-            let fields: LibraryConfigFormField[] = await this.formService.getForm(
-                formRequest
-            ).toPromise().then((r) => r.form.data.fields);
+            if (!formRequest || !formFields) {
+                throw new Error('formRequest or formFields required');
+            }
 
-            fields = fields.filter((field) => field.isEnabled && dataSrc.indexOf(field.dataSrc || 'CONTENTS') >= 0)
-                .sort((a, b) => a.index - b.index);
+            let fields: AggregatorConfigField[] = [];
+            if (formRequest) {
+                fields = await this.formService.getForm(
+                  formRequest
+                ).toPromise().then((r) => r.form.data.fields);
+            } else if (formFields) {
+                fields = formFields;
+            }
+
+            fields = fields
+              .filter((field) => field.isEnabled)
+              .sort((a, b) => a.index - b.index);
 
             const fieldTasks = fields.map(async (field) => {
                 switch (field.dataSrc) {
-                    default:
+                    case 'SUBJECT_CONTENT_FACETS':
+                        return await this.buildFacetsTask(field, request, 'subject');
+                    case 'PRIMARY_CATEGORY_CONTENT_FACETS':
+                        return await this.buildFacetsTask(field, request, 'primaryCategory');
+                    case 'RECENTLY_VIEWED_CONTENTS':
+                        return await this.buildRecentlyViewedTask(field, request);
                     case 'CONTENTS':
                         return await this.buildContentSearchTask(field, request);
                     case 'TRACKABLE_CONTENTS':
                         return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() !== 'course');
                     case 'TRACKABLE_COURSE_CONTENTS':
                         return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() === 'course');
+                    default:
+                        return await this.buildContentSearchTask(field, request);
                 }
             });
 
             return {
-                result: await Promise.all<{
-                    title: string;
-                    orientation: 'horizontal' | 'vertical';
-                    section: ContentsGroupedByPageSection;
-                    searchRequest?: SearchRequest;
-                    searchCriteria?: ContentSearchCriteria;
-                }>(fieldTasks)
+                result: await Promise.all<ContentAggregation>(fieldTasks)
             };
         });
     }
 
-    private async buildTrackableTask(field: LibraryConfigFormField, request: ContentAggregatorRequest, filter): Promise<{
-        title: string;
-        orientation: 'horizontal' | 'vertical';
-        section: ContentsGroupedByPageSection;
-        searchRequest?: SearchRequest;
-        searchCriteria?: ContentSearchCriteria;
-    }> {
+    private async buildRecentlyViewedTask(field: AggregatorConfigField, request: ContentAggregatorRequest): Promise<ContentAggregation> {
+        return {
+            title: field.title,
+            data: {
+                name: field.title,
+                sections: []
+            },
+            dataSrc: field.dataSrc,
+            theme: field.theme
+        } as ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>;
+    }
+
+    private async buildFacetsTask(field: AggregatorConfigField, request: ContentAggregatorRequest, facet: string): Promise<ContentAggregation> {
+        let searchCriteria: ContentSearchCriteria = {
+            offset: 0,
+            limit: 0,
+            mode: 'hard',
+            facets: [
+              facet
+            ],
+        };
+
+        if (request.interceptSearchCriteria) {
+            searchCriteria = request.interceptSearchCriteria(searchCriteria);
+        }
+
+        const searchResult = await this.fetchOnlineContents(searchCriteria);
+
+        if (searchResult.filterCriteria.facetFilters && searchResult.filterCriteria.facetFilters[0]) {
+            return {
+                title: field.title,
+                data: searchResult.filterCriteria.facetFilters[0].values.map((filterValue) => {
+                    return {
+                        facet: filterValue.name,
+                        searchCriteria: {
+                            ...searchCriteria,
+                            primaryCategories: (filterValue.values || []).map(v => v.name)
+                        },
+                        aggregate: field.dataSrc['aggregate']
+                    };
+                }),
+                dataSrc: field.dataSrc,
+                theme: field.theme
+            };
+        }
+
+        return {
+            title: field.title,
+            data: [],
+            dataSrc: field.dataSrc,
+            theme: field.theme
+        };
+    }
+
+    private async buildTrackableTask(field: AggregatorConfigField, request: ContentAggregatorRequest, filter): Promise<ContentAggregation> {
         const session = await this.profileService.getActiveProfileSession().toPromise();
         const courses = await this.courseService.getEnrolledCourses({
             userId: session.managedSession ? session.managedSession.uid : session.uid,
@@ -116,8 +248,7 @@ export class ContentAggregator {
 
         return {
             title: field.title,
-            orientation: field.orientation,
-            section: {
+            data: {
                 name: field.index + '',
                 sections: [
                     {
@@ -125,18 +256,19 @@ export class ContentAggregator {
                         contents
                     }
                 ]
-            }
-        };
+            },
+            dataSrc: field.dataSrc,
+            theme: field.theme
+        } as (ContentAggregation<'TRACKABLE_CONTENTS'> | ContentAggregation<'TRACKABLE_COURSE_CONTENTS'>);
     }
 
-    private async buildContentSearchTask(field: LibraryConfigFormField, request: ContentAggregatorRequest): Promise<{
-        title: string;
-        orientation: 'horizontal' | 'vertical';
-        section: ContentsGroupedByPageSection;
-        searchRequest: SearchRequest;
-        searchCriteria: ContentSearchCriteria;
-    }> {
-        let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({request: field.search});
+    private async buildContentSearchTask(field: AggregatorConfigField, request: ContentAggregatorRequest): Promise<ContentAggregation> {
+        if (!field.searchRequest) {
+            throw new Error('Expected field.searchRequest for dataSrc.name = "TRACKABLE_CONTENTS"');
+        }
+        let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({
+            request: field.searchRequest
+        });
 
         if (request.interceptSearchCriteria) {
             searchCriteria = request.interceptSearchCriteria(searchCriteria);
@@ -151,13 +283,12 @@ export class ContentAggregator {
         });
         const combinedContents: ContentData[] = offlineSearchContentDataList.concat(onlineSearchContentDataList);
 
-        if (!field.groupBy) {
+        if (!field.dataSrc.groupBy) {
             return {
                 title: field.title,
-                orientation: field.orientation,
                 searchCriteria,
                 searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
-                section: {
+                data: {
                     name: field.index + '',
                     sections: [
                         {
@@ -165,27 +296,29 @@ export class ContentAggregator {
                             contents: combinedContents
                         }
                     ]
-                }
-            };
+                },
+                dataSrc: field.dataSrc,
+                theme: field.theme
+            } as ContentAggregation<'CONTENTS'>;
         } else {
             return {
                 title: field.title,
-                orientation: field.orientation,
                 searchCriteria,
                 searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
-                section: CsContentsGroupGenerator.generate(
+                data: CsContentsGroupGenerator.generate(
                     combinedContents,
-                    field.groupBy,
-                    field.sortBy.reduce((agg, s) => {
+                    field.dataSrc.groupBy,
+                    field.dataSrc.sortBy.reduce((agg, s) => {
                         Object.keys(s).forEach((k) => agg.push({
                             sortAttribute: k,
                             sortOrder: s[k] === 'asc' ? CsSortOrder.ASC : CsSortOrder.DESC,
                         }));
                         return agg;
-                    }, [] as CsContentSortCriteria[]),
-                    field.applyFirstAvailableCombination && request.applyFirstAvailableCombination as any,
-                )
-            };
+                    }, [] as CsContentSortCriteria[])
+                ),
+                dataSrc: field.dataSrc,
+                theme: field.theme
+            } as ContentAggregation<'CONTENTS'>;
         }
     }
 

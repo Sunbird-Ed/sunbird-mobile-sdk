@@ -7,9 +7,6 @@ import {DownloadRequest} from '../../util/download';
 import {CachedItemRequest} from '../../key-value-store';
 
 export interface ContentAggregatorRequest extends CachedItemRequest {
-    applyFirstAvailableCombination?: {
-        [key in keyof ContentData]?: string[]
-    };
     interceptSearchCriteria?: (searchCriteria: ContentSearchCriteria) => ContentSearchCriteria;
 }
 
