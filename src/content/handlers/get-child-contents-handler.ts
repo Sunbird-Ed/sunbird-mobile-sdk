@@ -10,11 +10,13 @@ import {ContentMapper} from '../util/content-mapper';
 import {ArrayUtil} from '../../util/array-util';
 import {FileService} from '../../util/file/def/file-service';
 import { FileName } from './../util/content-constants';
+import {AppConfig} from '../../api/config/app-config';
 
 export class ChildContentsHandler {
 
     constructor(private dbService: DbService,
                 private getContentDetailsHandler: GetContentDetailsHandler,
+                private appConfig: AppConfig,
                 private fileService?: FileService) {
     }
 
@@ -130,12 +132,40 @@ export class ChildContentsHandler {
                     nextContent = ContentMapper.mapContentDBEntryToContent(nextContentInDb, shouldConvertBasePath);
                     nextContent.hierarchyInfo = nextContentHierarchyList;
                     nextContent.rollup = ContentUtil.getContentRollup(nextContent.identifier, nextContent.hierarchyInfo);
+                    const compatibilityLevel = ContentUtil.readCompatibilityLevel(nextContent.contentData);
+                    const isCompatible = ContentUtil.isCompatible(this.appConfig, compatibilityLevel);
+                    nextContent.isCompatible = isCompatible;
+                    const hierarchyIdentifiers: string[] = nextContentHierarchyList.map(t => t['identifier']);
+                    const query = ArrayUtil.joinPreservingQuotes(hierarchyIdentifiers);
+                    let contentModels: ContentEntry.SchemaMap[] =
+                      await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
+                    contentModels = contentModels.sort((a, b) => {
+                        return hierarchyIdentifiers.indexOf(a['identifier']) - hierarchyIdentifiers.indexOf(b['identifier']);
+                    });
+                    for (let i = 0; i < contentModels.length; i++) {
+                        const contentModel = contentModels[i];
+                        const localData = JSON.parse(contentModel[ContentEntry.COLUMN_NAME_LOCAL_DATA]);
+                        const isTrackable = ContentUtil.isTrackable(localData);
+                        if ( i === 0 && isTrackable === 1) {
+                            break;
+                        } else if (isTrackable === 1 ) {
+                            const parentIdentifier = contentModel['identifier'];
+                            let hierarchyList = JSON.parse(JSON.stringify(nextContentHierarchyList));
+                            if (hierarchyList) {
+                                hierarchyList = hierarchyList.slice(0, i);
+                                nextContent['trackableParentInfo'] = {
+                                    identifier: contentModel['identifier'],
+                                    hierarchyInfo: hierarchyList
+                                };
+                            }
+                            break;
+                        }
+                    }
                 }
             }
         }
         return nextContent;
     }
-
     getNextContentIdentifier(hierarchyInfoList: HierarchyInfo[],
                              currentIdentifier: string,
                              contentKeyList: string[]): string {

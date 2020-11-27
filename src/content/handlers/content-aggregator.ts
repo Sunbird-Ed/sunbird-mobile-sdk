@@ -86,7 +86,6 @@ export class ContentAggregator {
                         return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() === 'course');
                 }
             });
-
             return {
                 result: await Promise.all<{
                     title: string;
@@ -94,17 +93,18 @@ export class ContentAggregator {
                     section: ContentsGroupedByPageSection;
                     searchRequest?: SearchRequest;
                     searchCriteria?: ContentSearchCriteria;
+                    dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS';
                 }>(fieldTasks)
             };
         });
     }
-
     private async buildTrackableTask(field: LibraryConfigFormField, request: ContentAggregatorRequest, filter): Promise<{
         title: string;
         orientation: 'horizontal' | 'vertical';
         section: ContentsGroupedByPageSection;
         searchRequest?: SearchRequest;
         searchCriteria?: ContentSearchCriteria;
+        dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS';
     }> {
         const session = await this.profileService.getActiveProfileSession().toPromise();
         const courses = await this.courseService.getEnrolledCourses({
@@ -125,7 +125,8 @@ export class ContentAggregator {
                         contents
                     }
                 ]
-            }
+            },
+            dataSrc: field.dataSrc
         };
     }
 
@@ -135,6 +136,7 @@ export class ContentAggregator {
         section: ContentsGroupedByPageSection;
         searchRequest: SearchRequest;
         searchCriteria: ContentSearchCriteria;
+        dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS'
     }> {
         let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({request: field.search});
 
@@ -165,7 +167,8 @@ export class ContentAggregator {
                             contents: combinedContents
                         }
                     ]
-                }
+                },
+                dataSrc: field.dataSrc
             };
         } else {
             return {
@@ -184,7 +187,8 @@ export class ContentAggregator {
                         return agg;
                     }, [] as CsContentSortCriteria[]),
                     field.applyFirstAvailableCombination && request.applyFirstAvailableCombination as any,
-                )
+                ),
+                dataSrc: field.dataSrc
             };
         }
     }

@@ -532,6 +532,7 @@ describe('ContentAggregator', () => {
                         });
                         expect(result).toEqual({
                             'result': [{
+                                'dataSrc': 'TRACKABLE_COURSE_CONTENTS',
                                 'orientation': 'horizontal',
                                 'section': {
                                     'name': '0',
@@ -583,6 +584,7 @@ describe('ContentAggregator', () => {
                         });
                         expect(result).toEqual({
                             'result': [{
+                                'dataSrc': 'TRACKABLE_CONTENTS',
                                 'orientation': 'horizontal',
                                 'section': {
                                     'name': '0',
