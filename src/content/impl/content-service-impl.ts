@@ -571,15 +571,14 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     searchContent(contentSearchCriteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult> {
         contentSearchCriteria = JSON.parse(JSON.stringify(contentSearchCriteria));
         if (contentSearchCriteria.facetFilters) {
-            const mimeTypeFacetFilters = contentSearchCriteria.facetFilters.find(f => f.name === 'mimeType');
-
+            const mimeTypeFacetFilters = contentSearchCriteria.facetFilters.find(f => (f.name === 'mimeType'));
             if (mimeTypeFacetFilters) {
                 mimeTypeFacetFilters.values = mimeTypeFacetFilters.values
-                    .filter(v => v.apply)
-                    .reduce<FilterValue[]>((acc, v) => {
-                        acc = acc.concat((v['values'] as FilterValue[]).map(f => ({...f, apply: true})));
-                        return acc;
-                    }, []);
+                  .filter(v => v.apply)
+                  .reduce<FilterValue[]>((acc, v) => {
+                      acc = acc.concat((v['values'] as FilterValue[]).map(f => ({...f, apply: true})));
+                      return acc;
+                  }, []);
             }
         }
 
@@ -606,6 +605,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         if (!contentSearchCriteria.facetFilters) {
                             searchRequest.filters.contentType = [];
                             searchRequest.filters.primaryCategory = [];
+                            searchRequest.filters.audience = [];
                         }
                         return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
                     }),

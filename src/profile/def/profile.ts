@@ -7,7 +7,10 @@ export {
 export enum ProfileType {
     STUDENT = 'student',
     TEACHER = 'teacher',
-    OTHER = 'other'
+    ADMIN = 'administrator',
+    PARENT = 'parent',
+    OTHER = 'other',
+    NONE = 'none'
 }
 
 export enum ProfileSource {

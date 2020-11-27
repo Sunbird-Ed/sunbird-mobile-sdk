@@ -143,6 +143,7 @@ export class SearchContentHandler {
 
   private getSearchRequest(criteria: ContentSearchCriteria): SearchFilter {
     const filter =  {
+      audience: (criteria.audience && criteria.audience.length > 0) ? criteria.audience : [],
       compatibilityLevel: this.getCompatibilityLevelFilter(),
       status: criteria.contentStatusArray,
       objectType: ['Content'],
