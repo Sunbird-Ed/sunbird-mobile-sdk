@@ -4,9 +4,6 @@
   "description": "Heart of the sunbird mobile app.",
   "main": "index.js",
   "scripts": {
-    "preversion": "rm -rf dist",
-    "version": "npm run build:prod && git add -A dist && git commit -m \"RELEASE\"",
-    "postversion": "git push && git push --tags",
     "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
     "test": "jest",
     "test:coverage": "jest --coverage --collectCoverageFrom=src/**/*.{ts,tsx}",
