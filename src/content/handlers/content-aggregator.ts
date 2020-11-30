@@ -123,7 +123,7 @@ export class ContentAggregator {
         formFields?: AggregatorConfigField[]
     ): Observable<ContentAggregatorResponse> {
         return defer(async () => {
-            if (!formRequest || !formFields) {
+            if (!formRequest && !formFields) {
                 throw new Error('formRequest or formFields required');
             }
 
@@ -137,11 +137,11 @@ export class ContentAggregator {
             }
 
             fields = fields
-              .filter((field) => field.isEnabled)
+              .filter((field) => field.isEnabled && filterDataSrc.indexOf(field.dataSrc.name) >= 0)
               .sort((a, b) => a.index - b.index);
 
             const fieldTasks = fields.map(async (field) => {
-                switch (field.dataSrc) {
+                switch (field.dataSrc.name) {
                     case 'CONTENT_FACETS':
                         return await this.buildFacetsTask(field, request);
                     case 'RECENTLY_VIEWED_CONTENTS':
@@ -192,15 +192,19 @@ export class ContentAggregator {
         };
 
         if (request.interceptSearchCriteria) {
-            searchCriteria = request.interceptSearchCriteria(searchCriteria);
+            const impliedSearchCriteria = request.interceptSearchCriteria(searchCriteria);
+            searchCriteria = {
+                ...impliedSearchCriteria, ...searchCriteria
+            };
         }
 
         const searchResult = await this.fetchOnlineContents(searchCriteria);
+        const facetFilters = searchResult.filterCriteria.facetFilters!.find((x) => x.name === field.dataSrc.facet);
 
-        if (searchResult.filterCriteria.facetFilters && searchResult.filterCriteria.facetFilters[0]) {
+        if (facetFilters) {
             return {
                 title: field.title,
-                data: searchResult.filterCriteria.facetFilters[0].values.map((filterValue) => {
+                data: facetFilters.values.map((filterValue) => {
                     return {
                         facet: filterValue.name,
                         searchCriteria: {
