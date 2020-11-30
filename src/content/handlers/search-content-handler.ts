@@ -142,7 +142,8 @@ export class SearchContentHandler {
   }
 
   private getSearchRequest(criteria: ContentSearchCriteria): SearchFilter {
-    return {
+    const filter =  {
+      audience: (criteria.audience && criteria.audience.length > 0) ? criteria.audience : [],
       compatibilityLevel: this.getCompatibilityLevelFilter(),
       status: criteria.contentStatusArray,
       objectType: ['Content'],
@@ -161,6 +162,46 @@ export class SearchContentHandler {
       mimeType: (criteria.mimeType && criteria.mimeType.length > 0) ? criteria.mimeType : [],
       subject: (criteria.subject && criteria.subject.length > 0) ? criteria.subject : []
     };
+
+    if (criteria.impliedFiltersMap) {
+      criteria.impliedFiltersMap.forEach(impliedFilter => {
+        Object.keys(impliedFilter).forEach(key => {
+          filter[key] = impliedFilter[key];
+        });
+      });
+    }
+    if (criteria.impliedFilters) {
+      criteria.impliedFilters.forEach(impliedFilter => {
+        Object.keys(impliedFilter).forEach(key => {
+          const values = impliedFilter['values'];
+          const name = impliedFilter['name'];
+          const filterValues = this.getImpliedFilterValues(values);
+          if (!filter[name]) {
+            filter[name] = [];
+          }
+          if (filter[name]) {
+            const mergedValues = filter[name].concat(filterValues);
+            if (mergedValues) {
+              filter[name] = mergedValues.filter((val, i) => mergedValues.indexOf(val) === i);
+            }
+          }
+        });
+      });
+    }
+    return filter;
+  }
+
+  private getImpliedFilterValues(values: FilterValue[]): string[] {
+    const filterValues: string[] = [];
+    if (!values) {
+      return [];
+    }
+    values.forEach((item) => {
+      if (item.apply) {
+        filterValues.push(item.name);
+      }
+    });
+    return filterValues;
   }
 
   getSortByRequest(sortCriteria?: ContentSortCriteria[]): { [key: string]: SortOrder } {

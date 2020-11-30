@@ -26,6 +26,7 @@ describe('OfflineContentStateHandler', () => {
             userId: 'uid-00001111',
             batchId: 'sample-batch-id',
             courseId: 'course-id-1',
+            contentIds: []
         };
         mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('{"result": {"contentList": "sample-list"}}'));
         // act
@@ -43,6 +44,7 @@ describe('OfflineContentStateHandler', () => {
             userId: 'uid-00001111',
             batchId: 'sample-batch-id',
             courseId: 'course-id-1',
+            contentIds: []
         };
         mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('{"contentList": "sample-list"}'));
         // act
@@ -60,6 +62,7 @@ describe('OfflineContentStateHandler', () => {
             userId: 'uid-00001111',
             batchId: 'sample-batch-id',
             courseId: 'course-id-1',
+            contentIds: []
         };
         mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of(undefined));
         // act

@@ -27,6 +27,12 @@ export class OfflineContentStateHandler {
                             return responseContentState;
                         }
                     }
+                    responseContentState.contentList = responseContentState.contentList.map((contentState: ContentState) => {
+                        if ((typeof contentState.score as any) === 'string') {
+                            contentState.score = undefined;
+                        }
+                        return contentState;
+                    });
                     return responseContentState;
                 })
             );
@@ -177,16 +183,17 @@ export class OfflineContentStateHandler {
     }
 
     private getContentState(updateContentStateRequest: UpdateContentStateRequest): ContentState {
-        const contentState: ContentState = {};
-        contentState.id = updateContentStateRequest.userId;
-        contentState.courseId = updateContentStateRequest.courseId;
-        contentState.contentId = updateContentStateRequest.contentId;
-        contentState.batchId = updateContentStateRequest.batchId;
-        contentState.result = updateContentStateRequest.result;
-        contentState.grade = updateContentStateRequest.grade;
-        contentState.score = updateContentStateRequest.score;
-        contentState.status = updateContentStateRequest.status;
-        contentState.progress = updateContentStateRequest.progress;
-        return contentState;
+        return {
+            id: updateContentStateRequest.userId,
+            userId: updateContentStateRequest.userId,
+            courseId: updateContentStateRequest.courseId,
+            contentId: updateContentStateRequest.contentId,
+            batchId: updateContentStateRequest.batchId,
+            result: updateContentStateRequest.result,
+            grade: updateContentStateRequest.grade,
+            score: updateContentStateRequest.score,
+            status: updateContentStateRequest.status,
+            progress: updateContentStateRequest.progress,
+        };
     }
 }

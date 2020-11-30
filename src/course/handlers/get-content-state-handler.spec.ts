@@ -4,7 +4,8 @@ import {CourseServiceConfig} from '..';
 import {Content, ContentService} from '../../content';
 import {of} from 'rxjs';
 import {Container} from 'inversify';
-import {InjectionTokens} from '../../injection-tokens';
+import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
+import {CsCourseService} from '@project-sunbird/client-services/services/course';
 
 describe('GetContentStateHandler', () => {
     let getContentStateHandler: GetContentStateHandler;
@@ -13,10 +14,14 @@ describe('GetContentStateHandler', () => {
         apiPath: '/mock/api/path'
     };
     const mockContentService: Partial<ContentService> = {};
+    const mockCsCourseService: Partial<CsCourseService> = {
+        getContentState: jest.fn(() => of([]))
+    };
 
     beforeEach(() => {
         const container = new Container();
         container.bind<ContentService>(InjectionTokens.CONTENT_SERVICE).toConstantValue(mockContentService as ContentService);
+        container.bind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(mockCsCourseService as CsCourseService);
         container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(container as Container);
 
         getContentStateHandler = new GetContentStateHandler(
@@ -34,13 +39,6 @@ describe('GetContentStateHandler', () => {
         describe('when leafNode contentIds is passed for requesting root content', () => {
             it('should invoke API call with no modifications to request', (done) => {
                 // arrange
-                mockApiService.fetch = jest.fn(() => {
-                    const response = new Response();
-                    response.responseCode = 200;
-                    response.body = {};
-                    return of(response);
-                });
-
                 const request = {
                     userId: 'SOME_USER_ID',
                     batchId: 'SOME_BATCH_ID',
@@ -52,11 +50,7 @@ describe('GetContentStateHandler', () => {
 
                 // act
                 getContentStateHandler.handle(request).subscribe(() => {
-                    expect(mockApiService.fetch).toHaveBeenCalledWith(expect.objectContaining({
-                        body: {
-                            request
-                        }
-                    }));
+                    expect(mockCsCourseService.getContentState).toHaveBeenCalled();
                     done();
                 });
             });
@@ -65,13 +59,6 @@ describe('GetContentStateHandler', () => {
         describe('when leafNode contentIds is not passed for requesting root content', () => {
             it('should invoke API call attaching course leafNodes to request', (done) => {
                 // arrange
-                mockApiService.fetch = jest.fn(() => {
-                    const response = new Response();
-                    response.responseCode = 200;
-                    response.body = {};
-                    return of(response);
-                });
-
                 mockContentService.getContentDetails = jest.fn(() => {
                     return of({
                         contentData: {
@@ -93,18 +80,14 @@ describe('GetContentStateHandler', () => {
 
                 // act
                 getContentStateHandler.handle(request).subscribe(() => {
-                    expect(mockApiService.fetch).toHaveBeenCalledWith(expect.objectContaining({
-                        body: {
-                            request: expect.objectContaining({
-                                userId: 'SOME_USER_ID',
-                                batchId: 'SOME_BATCH_ID',
-                                courseId: 'SOME_BATCH_ID',
-                                contentIds: [
-                                    'SOME_LEAF_NODE_1',
-                                    'SOME_LEAF_NODE_2'
-                                ]
-                            })
-                        }
+                    expect(mockCsCourseService.getContentState).toHaveBeenCalledWith(expect.objectContaining({
+                        userId: 'SOME_USER_ID',
+                        batchId: 'SOME_BATCH_ID',
+                        courseId: 'SOME_BATCH_ID',
+                        contentIds: [
+                            'SOME_LEAF_NODE_1',
+                            'SOME_LEAF_NODE_2'
+                        ]
                     }));
                     done();
                 });

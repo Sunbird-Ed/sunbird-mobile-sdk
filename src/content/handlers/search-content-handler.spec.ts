@@ -235,6 +235,7 @@ describe('SearchContentHandler', () => {
             console.log('searchRequest.filters: ', searchRequest.filters);
             // assert
             expect(searchRequest.filters).toEqual({
+                audience: [],
                 compatibilityLevel: { min: 1, max: undefined },
                 status: undefined,
                 objectType: ['Content'],

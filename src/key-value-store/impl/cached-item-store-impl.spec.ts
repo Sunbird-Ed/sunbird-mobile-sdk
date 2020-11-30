@@ -302,7 +302,6 @@ describe('CachedItemStoreImpl', () => {
             // assert
             expect(r1).toEqual({ key: 'fromServer1' });
             expect(r2).toEqual({ key: 'fromInitial2' });
-
             done();
         });
     });

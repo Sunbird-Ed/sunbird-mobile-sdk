@@ -323,7 +323,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         if (!childContentRequest.level) {
             childContentRequest.level = -1;
         }
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.appConfig);
         let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
         if (!hierarchyInfoList) {
             hierarchyInfoList = [];
@@ -504,7 +504,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string, shouldConvertBasePath?: boolean): Observable<Content> {
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.appConfig);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier)).pipe(
             mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
@@ -516,7 +516,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string, shouldConvertBasePath?: boolean): Observable<Content> {
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.appConfig);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier)).pipe(
             mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
@@ -571,15 +571,14 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     searchContent(contentSearchCriteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult> {
         contentSearchCriteria = JSON.parse(JSON.stringify(contentSearchCriteria));
         if (contentSearchCriteria.facetFilters) {
-            const mimeTypeFacetFilters = contentSearchCriteria.facetFilters.find(f => f.name === 'mimeType');
-
+            const mimeTypeFacetFilters = contentSearchCriteria.facetFilters.find(f => (f.name === 'mimeType'));
             if (mimeTypeFacetFilters) {
                 mimeTypeFacetFilters.values = mimeTypeFacetFilters.values
-                    .filter(v => v.apply)
-                    .reduce<FilterValue[]>((acc, v) => {
-                        acc = acc.concat((v['values'] as FilterValue[]).map(f => ({...f, apply: true})));
-                        return acc;
-                    }, []);
+                  .filter(v => v.apply)
+                  .reduce<FilterValue[]>((acc, v) => {
+                      acc = acc.concat((v['values'] as FilterValue[]).map(f => ({...f, apply: true})));
+                      return acc;
+                  }, []);
             }
         }
 
@@ -606,6 +605,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                         if (!contentSearchCriteria.facetFilters) {
                             searchRequest.filters.contentType = [];
                             searchRequest.filters.primaryCategory = [];
+                            searchRequest.filters.audience = [];
                         }
                         return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
                     }),

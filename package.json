@@ -1,12 +1,9 @@
 {
   "name": "@project-sunbird/sunbird-sdk",
-  "version": "3.4.7",
+  "version": "3.5.1",
   "description": "Heart of the sunbird mobile app.",
   "main": "index.js",
   "scripts": {
-    "preversion": "rm -rf dist",
-    "version": "npm run build:prod && git add -A dist && git commit -m \"RELEASE\"",
-    "postversion": "git push && git push --tags",
     "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
     "test": "jest",
     "test:coverage": "jest --coverage --collectCoverageFrom=src/**/*.{ts,tsx}",
@@ -48,7 +45,7 @@
     "@types/node-fetch": "^2.5.4",
     "@types/pako": "^1.0.1",
     "@types/websql": "0.0.27",
-    "@project-sunbird/client-services": "3.4.5",
+    "@project-sunbird/client-services": "3.5.1",
     "cordova-plugin-android-downloadmanager": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-downloadmanager.git",
     "jest": "^25.1.0",
     "rxjs": "^6.5.3",
