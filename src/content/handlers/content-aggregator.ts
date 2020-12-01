@@ -257,7 +257,7 @@ export class ContentAggregator {
     }
 
     private async buildContentSearchTask(
-        field: AggregatorConfigField,
+        field: AggregatorConfigField<'CONTENTS'>,
         request: ContentAggregatorRequest
     ): Promise<ContentAggregation<'CONTENTS'>> {
         if (!field.searchRequest) {
@@ -280,7 +280,7 @@ export class ContentAggregator {
         });
         const combinedContents: ContentData[] = offlineSearchContentDataList.concat(onlineSearchContentDataList);
 
-        if (!field.dataSrc.groupBy) {
+        if (!field.dataSrc.aggregate.groupBy) {
             return {
                 title: field.title,
                 searchCriteria,
@@ -304,14 +304,15 @@ export class ContentAggregator {
                 searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
                 data: CsContentsGroupGenerator.generate(
                     combinedContents,
-                    field.dataSrc.groupBy,
-                    field.dataSrc.sortBy.reduce((agg, s) => {
+                    field.dataSrc.aggregate.groupBy,
+                    field.dataSrc.aggregate.sortBy ?
+                    field.dataSrc.aggregate.sortBy.reduce((agg, s) => {
                         Object.keys(s).forEach((k) => agg.push({
                             sortAttribute: k,
                             sortOrder: s[k] === 'asc' ? CsSortOrder.ASC : CsSortOrder.DESC,
                         }));
                         return agg;
-                    }, [] as CsContentSortCriteria[])
+                    }, [] as CsContentSortCriteria[]) : []
                 ),
                 dataSrc: field.dataSrc,
                 theme: field.theme
