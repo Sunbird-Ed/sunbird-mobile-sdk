@@ -108,10 +108,10 @@ export class ContentAggregator {
             board: request.board || '',
             medium: request.medium || '',
             grade: request.grade || '',
-            ...(request.purpose && request.purpose.length ? { purpose: request.purpose } : {}),
-            ...(request.channel && request.channel.length ? { channel: request.channel } : {}),
-            ...(request.subject && request.subject.length ? { subject: request.subject } : {}),
-            ...(request.topic && request.topic.length ? { topic: request.topic } : {})
+            ...(request.purpose && request.purpose.length ? {purpose: request.purpose} : {}),
+            ...(request.channel && request.channel.length ? {channel: request.channel} : {}),
+            ...(request.subject && request.subject.length ? {subject: request.subject} : {}),
+            ...(request.topic && request.topic.length ? {topic: request.topic} : {})
         };
         return SHA1(JSON.stringify(key)).toString();
     }
@@ -130,15 +130,15 @@ export class ContentAggregator {
             let fields: AggregatorConfigField[] = [];
             if (formRequest) {
                 fields = await this.formService.getForm(
-                  formRequest
+                    formRequest
                 ).toPromise().then((r) => r.form.data.fields);
             } else if (formFields) {
                 fields = formFields;
             }
 
             fields = fields
-              .filter((field) => field.isEnabled && filterDataSrc.indexOf(field.dataSrc.name) >= 0)
-              .sort((a, b) => a.index - b.index);
+                .filter((field) => field.isEnabled && filterDataSrc.indexOf(field.dataSrc.name) >= 0)
+                .sort((a, b) => a.index - b.index);
 
             const fieldTasks = fields.map(async (field) => {
                 switch (field.dataSrc.name) {
@@ -164,8 +164,8 @@ export class ContentAggregator {
     }
 
     private async buildRecentlyViewedTask(
-      field: AggregatorConfigField<'RECENTLY_VIEWED_CONTENTS'>,
-      request: ContentAggregatorRequest
+        field: AggregatorConfigField<'RECENTLY_VIEWED_CONTENTS'>,
+        request: ContentAggregatorRequest
     ): Promise<ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>> {
         return {
             title: field.title,
@@ -179,15 +179,15 @@ export class ContentAggregator {
     }
 
     private async buildFacetsTask(
-      field: AggregatorConfigField<'CONTENT_FACETS'>,
-      request: ContentAggregatorRequest
+        field: AggregatorConfigField<'CONTENT_FACETS'>,
+        request: ContentAggregatorRequest
     ): Promise<ContentAggregation<'CONTENT_FACETS'>> {
         let searchCriteria: ContentSearchCriteria = {
             offset: 0,
             limit: 0,
             mode: 'hard',
             facets: [
-              field.dataSrc.facet
+                field.dataSrc.facet
             ],
         };
 
@@ -209,7 +209,7 @@ export class ContentAggregator {
                         facet: filterValue.name,
                         searchCriteria: {
                             ...searchCriteria,
-                            primaryCategories: (filterValue.values || []).map(v => v.name)
+                            [facetFilters.name]: [filterValue.name]
                         },
                         aggregate: field.dataSrc['aggregate']
                     };
@@ -228,9 +228,9 @@ export class ContentAggregator {
     }
 
     private async buildTrackableTask(
-      field: AggregatorConfigField<'TRACKABLE_CONTENTS'>,
-      request: ContentAggregatorRequest,
-      filter
+        field: AggregatorConfigField<'TRACKABLE_CONTENTS'>,
+        request: ContentAggregatorRequest,
+        filter
     ): Promise<ContentAggregation<'TRACKABLE_CONTENTS'>> {
         const session = await this.profileService.getActiveProfileSession().toPromise();
         const courses = await this.courseService.getEnrolledCourses({
@@ -257,8 +257,8 @@ export class ContentAggregator {
     }
 
     private async buildContentSearchTask(
-      field: AggregatorConfigField,
-      request: ContentAggregatorRequest
+        field: AggregatorConfigField,
+        request: ContentAggregatorRequest
     ): Promise<ContentAggregation<'CONTENTS'>> {
         if (!field.searchRequest) {
             throw new Error('Expected field.searchRequest for dataSrc.name = "TRACKABLE_CONTENTS"');
@@ -346,18 +346,7 @@ export class ContentAggregator {
     private async fetchOnlineContents(
         searchCriteria: ContentSearchCriteria, from?: CachedItemRequestSourceFrom
     ): Promise<ContentSearchResult> {
-        return this.cachedItemStore[from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
-            ContentAggregator.getIdForDb(searchCriteria),
-            ContentAggregator.SEARCH_CONTENT_GROUPED_KEY,
-            'ttl_' + ContentAggregator.SEARCH_CONTENT_GROUPED_KEY,
-            () => this.contentService.searchContent(searchCriteria),
-            undefined,
-            undefined,
-            (contentSearchResult: ContentSearchResult) =>
-                !contentSearchResult ||
-                !contentSearchResult.contentDataList ||
-                contentSearchResult.contentDataList.length === 0
-        ).pipe(
+        return this.contentService.searchContent(searchCriteria).pipe(
             catchError((e) => {
                 console.error(e);
 
