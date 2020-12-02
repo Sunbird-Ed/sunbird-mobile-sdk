@@ -2,7 +2,7 @@ import {
     Content,
     ContentAggregatorRequest,
     ContentAggregatorResponse,
-    ContentData,
+    ContentData, ContentRequest,
     ContentSearchCriteria,
     ContentSearchResult,
     ContentService,
@@ -167,11 +167,28 @@ export class ContentAggregator {
         field: AggregatorConfigField<'RECENTLY_VIEWED_CONTENTS'>,
         request: ContentAggregatorRequest
     ): Promise<ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>> {
+        const profile = await this.profileService.getActiveProfileSession().toPromise();
+
+        const requestParams: ContentRequest = {
+          uid: profile ? profile.uid : undefined,
+          primaryCategories: [],
+          recentlyViewed: true,
+          limit: 20
+        };
+
+        const contents = await this.contentService.getContents(requestParams).toPromise();
+
         return {
             title: field.title,
             data: {
-                name: field.title,
-                sections: []
+                name: field.index + '',
+                sections: [
+                    {
+                        name: field.index + '',
+                        count: contents.length,
+                        contents
+                    }
+                ]
             },
             dataSrc: field.dataSrc,
             theme: field.theme
@@ -246,6 +263,7 @@ export class ContentAggregator {
                 name: field.index + '',
                 sections: [
                     {
+                        name: field.index + '',
                         count: contents.length,
                         contents
                     }
