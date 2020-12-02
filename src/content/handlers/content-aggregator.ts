@@ -149,9 +149,9 @@ export class ContentAggregator {
                     case 'CONTENTS':
                         return await this.buildContentSearchTask(field, request);
                     case 'TRACKABLE_CONTENTS':
-                        return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() !== 'course');
+                        return await this.buildTrackableTask(field, request, (c) => (c.content.primaryCategory || c.content.contentType || '').toLowerCase() !== 'course');
                     case 'TRACKABLE_COURSE_CONTENTS':
-                        return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() === 'course');
+                        return await this.buildTrackableTask(field, request, (c) => (c.content.primaryCategory || c.content.contentType || '').toLowerCase() === 'course');
                     default:
                         return await this.buildContentSearchTask(field, request);
                 }
@@ -186,7 +186,10 @@ export class ContentAggregator {
                     {
                         name: field.index + '',
                         count: contents.length,
-                        contents
+                        contents: contents.map(c => {
+                            c.contentData['cardImg'] = c.contentData.appIcon;
+                            return c;
+                        })
                     }
                 ]
             },
@@ -296,7 +299,10 @@ export class ContentAggregator {
             return !offlineSearchContentDataList.find(
                 (localContentData) => localContentData.identifier === contentData.identifier);
         });
-        const combinedContents: ContentData[] = offlineSearchContentDataList.concat(onlineSearchContentDataList);
+        const combinedContents: ContentData[] = offlineSearchContentDataList.concat(onlineSearchContentDataList).map(c => {
+            c['cardImg'] = c.appIcon;
+            return c;
+        });
 
         if (!field.dataSrc.aggregate.groupBy) {
             return {
