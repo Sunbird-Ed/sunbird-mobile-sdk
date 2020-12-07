@@ -205,7 +205,6 @@ describe('SearchContentHandler', () => {
             const searchRequest = searchContentHandler.getSearchContentRequest(criteria);
             // assert
             expect(searchRequest.filters).toEqual({
-                compatibilityLevel: { min: 1, max: undefined },
                 SAMPLE_CONTENT: ['SAMPLE_NAME'],
                 filter: 'sample-filter'
             });
@@ -235,9 +234,8 @@ describe('SearchContentHandler', () => {
             console.log('searchRequest.filters: ', searchRequest.filters);
             // assert
             expect(searchRequest.filters).toEqual({
-                audience: [],
-                compatibilityLevel: { min: 1, max: undefined },
                 status: undefined,
+                audience: [],
                 objectType: ['Content'],
                 contentType: ['sample_content_type'],
                 keywords: ['sample keyword'],

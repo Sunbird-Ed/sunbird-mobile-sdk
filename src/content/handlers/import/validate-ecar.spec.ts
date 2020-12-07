@@ -132,7 +132,6 @@ describe('ValidateEcar', () => {
             content_type: 'CONTENT_TYPE',
             content_state: 2,
         }]));
-        jest.spyOn(ContentUtil, 'isCompatible').mockReturnValue(true);
         jest.spyOn(ContentUtil, 'isDraftContent').mockReturnValue(true);
         jest.spyOn(ContentUtil, 'isExpired').mockReturnValue(true);
         // act
@@ -177,7 +176,6 @@ describe('ValidateEcar', () => {
             content_state: 2,
         }]));
         jest.spyOn(ContentUtil, 'readVisibility').mockReturnValue('set');
-        jest.spyOn(ContentUtil, 'isCompatible').mockReturnValue(true);
         jest.spyOn(ContentUtil, 'isDraftContent').mockReturnValue(true);
         jest.spyOn(ContentUtil, 'isExpired').mockReturnValue(true);
         // act
@@ -270,7 +268,6 @@ describe('ValidateEcar', () => {
             ref_count: 2,
             path: 'sample-path'
         }]));
-        jest.spyOn(ContentUtil, 'isCompatible').mockReturnValue(true);
         jest.spyOn(ContentUtil, 'isDraftContent').mockReturnValue(false);
         jest.spyOn(ContentUtil, 'isExpired').mockReturnValue(false);
         jest.spyOn(ContentUtil, 'isDuplicateCheckRequired').mockReturnValue(false);
@@ -280,8 +277,6 @@ describe('ValidateEcar', () => {
             expect(val.body).toBe(request);
             expect(mockFileService.readAsText).toHaveBeenCalled();
             expect(mockGetContentDetailsHandler.fetchFromDBForAll).toHaveBeenCalled();
-            expect(ContentUtil.isCompatible).toHaveBeenCalled();
-            expect(ContentUtil.isDraftContent).toHaveBeenCalled();
             done();
         });
         // assert
@@ -319,7 +314,6 @@ describe('ValidateEcar', () => {
             content_state: 2,
             ref_count: 2
         }]));
-        jest.spyOn(ContentUtil, 'isCompatible').mockReturnValue(true);
         jest.spyOn(ContentUtil, 'isDraftContent').mockReturnValue(false);
         jest.spyOn(ContentUtil, 'isExpired').mockReturnValue(false);
         jest.spyOn(ContentUtil, 'isDuplicateCheckRequired').mockReturnValue(false);
@@ -329,8 +323,6 @@ describe('ValidateEcar', () => {
             expect(val.body).toBe(request);
             expect(mockFileService.readAsText).toHaveBeenCalled();
             expect(mockGetContentDetailsHandler.fetchFromDBForAll).toHaveBeenCalled();
-            expect(ContentUtil.isCompatible).toHaveBeenCalled();
-            expect(ContentUtil.isDraftContent).toHaveBeenCalled();
             done();
         });
         // assert
@@ -368,7 +360,6 @@ describe('ValidateEcar', () => {
             ref_count: 2,
             path: 'sample-path'
         }]));
-        jest.spyOn(ContentUtil, 'isCompatible').mockReturnValue(true);
         jest.spyOn(ContentUtil, 'isDraftContent').mockReturnValue(false);
         jest.spyOn(ContentUtil, 'isExpired').mockReturnValue(false);
         jest.spyOn(ContentUtil, 'isDuplicateCheckRequired').mockReturnValue(false);
@@ -378,8 +369,6 @@ describe('ValidateEcar', () => {
             expect(val.body).toBe(request);
             expect(mockFileService.readAsText).toHaveBeenCalled();
             expect(mockGetContentDetailsHandler.fetchFromDBForAll).toHaveBeenCalled();
-            expect(ContentUtil.isCompatible).toHaveBeenCalled();
-            expect(ContentUtil.isDraftContent).toHaveBeenCalled();
             done();
         });
         // assert
@@ -417,7 +406,6 @@ describe('ValidateEcar', () => {
             ref_count: 2,
             path: 'sample-path'
         }]));
-        jest.spyOn(ContentUtil, 'isCompatible').mockReturnValue(true);
         jest.spyOn(ContentUtil, 'isDraftContent').mockReturnValue(false);
         jest.spyOn(ContentUtil, 'isExpired').mockReturnValue(false);
         jest.spyOn(ContentUtil, 'isDuplicateCheckRequired').mockReturnValue(false);
@@ -428,8 +416,6 @@ describe('ValidateEcar', () => {
             expect(val.body).toBe(request);
             expect(mockFileService.readAsText).toHaveBeenCalled();
             expect(mockGetContentDetailsHandler.fetchFromDBForAll).toHaveBeenCalled();
-            expect(ContentUtil.isCompatible).toHaveBeenCalled();
-            expect(ContentUtil.isDraftContent).toHaveBeenCalled();
             done();
         });
         // assert
@@ -468,7 +454,6 @@ describe('ValidateEcar', () => {
             ref_count: 2,
             path: 'sample-path'
         }]));
-        jest.spyOn(ContentUtil, 'isCompatible').mockReturnValue(true);
         jest.spyOn(ContentUtil, 'isDraftContent').mockReturnValue(false);
         jest.spyOn(ContentUtil, 'isExpired').mockReturnValue(false);
         jest.spyOn(ContentUtil, 'isDuplicateCheckRequired').mockReturnValue(false);
@@ -479,8 +464,6 @@ describe('ValidateEcar', () => {
             expect(val.body).toBe(request);
             expect(mockFileService.readAsText).toHaveBeenCalled();
             expect(mockGetContentDetailsHandler.fetchFromDBForAll).toHaveBeenCalled();
-            expect(ContentUtil.isCompatible).toHaveBeenCalled();
-            expect(ContentUtil.isDraftContent).toHaveBeenCalled();
             done();
         });
         // assert
