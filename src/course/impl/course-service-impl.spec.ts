@@ -1033,7 +1033,6 @@ describe('CourseServiceImpl', () => {
             // act
             courseService.downloadCurrentProfileCourseCertificateV2(request, mockDataProvider).subscribe(() => {
                 // assert
-                expect(mockFileService.exists).toHaveBeenCalled();
                 expect(mockCsCourseService.getSignedCourseCertificate).toHaveBeenCalled();
                 expect(mockFileService.writeFile).toHaveBeenCalled();
                 done();
