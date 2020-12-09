@@ -1,6 +1,6 @@
 {
   "name": "@project-sunbird/sunbird-sdk",
-  "version": "3.4.17",
+  "version": "3.4.18",
   "description": "Heart of the sunbird mobile app.",
   "main": "index.js",
   "scripts": {
