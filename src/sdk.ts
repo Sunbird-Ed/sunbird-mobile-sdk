@@ -352,7 +352,7 @@ export class SunbirdSdk {
 
         await CsModule.instance.init({
             core: {
-                httpAdapter: 'HttpClientCordovaAdapter',
+                httpAdapter: sdkConfig.platform === 'web' ? 'HttpClientBrowserAdapter' : 'HttpClientCordovaAdapter',
                 global: {
                     channelId: sdkConfig.apiConfig.api_authentication.channelId,
                     producerId: sdkConfig.apiConfig.api_authentication.producerId,
