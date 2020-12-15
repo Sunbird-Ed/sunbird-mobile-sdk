@@ -18,6 +18,7 @@ export interface ContentAggregatorResponse {
         title: string;
         orientation: 'horizontal' | 'vertical';
         section: ContentsGroupedByPageSection;
+        values?: any[];
         searchRequest?: SearchRequest;
         searchCriteria?: ContentSearchCriteria;
         dataSrc?: string;
