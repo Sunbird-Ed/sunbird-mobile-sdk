@@ -20,6 +20,8 @@ import {CsContentsGroupGenerator} from '@project-sunbird/client-services/service
 import {CourseService} from '../../course';
 import {ProfileService} from '../../profile';
 
+type DATA_SRC = 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS' | string;
+
 interface LibraryConfigFormField {
     index: number;
     title: string;
@@ -30,8 +32,9 @@ interface LibraryConfigFormField {
     sortBy: {
         [field: string]: 'asc' | 'desc'
     }[];
-    search: SearchRequest;
-    dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS';
+    search?: SearchRequest;
+    values?: any[];
+    dataSrc?: DATA_SRC;
 }
 
 export class ContentAggregator {
@@ -64,7 +67,7 @@ export class ContentAggregator {
 
     aggregate(
         request: ContentAggregatorRequest,
-        dataSrc: ('CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS' | undefined)[],
+        dataSrc: (DATA_SRC | undefined)[],
         formRequest: FormRequest
     ): Observable<ContentAggregatorResponse> {
         return defer(async () => {
@@ -77,13 +80,14 @@ export class ContentAggregator {
 
             const fieldTasks = fields.map(async (field) => {
                 switch (field.dataSrc) {
-                    default:
                     case 'CONTENTS':
                         return await this.buildContentSearchTask(field, request);
                     case 'TRACKABLE_CONTENTS':
                         return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() !== 'course');
                     case 'TRACKABLE_COURSE_CONTENTS':
                         return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() === 'course');
+                    default:
+                        return await this.buildDefaultTask(field, request);
                 }
             });
             return {
@@ -93,18 +97,44 @@ export class ContentAggregator {
                     section: ContentsGroupedByPageSection;
                     searchRequest?: SearchRequest;
                     searchCriteria?: ContentSearchCriteria;
-                    dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS';
+                    dataSrc?: DATA_SRC;
                 }>(fieldTasks)
             };
         });
     }
+
+    private async buildDefaultTask(field: LibraryConfigFormField, request: ContentAggregatorRequest): Promise<{
+        title: string;
+        orientation: 'horizontal' | 'vertical';
+        section: ContentsGroupedByPageSection;
+        searchRequest?: SearchRequest;
+        searchCriteria?: ContentSearchCriteria;
+        dataSrc?: DATA_SRC;
+        values?: any[];
+    }> {
+        if (field.search) {
+            return this.buildContentSearchTask(field, request);
+        }
+
+        return {
+            title: field.title,
+            orientation: field.orientation,
+            section: {
+                name: field.index + '',
+                sections: []
+            },
+            dataSrc: field.dataSrc,
+            values: field.values
+        };
+    }
+
     private async buildTrackableTask(field: LibraryConfigFormField, request: ContentAggregatorRequest, filter): Promise<{
         title: string;
         orientation: 'horizontal' | 'vertical';
         section: ContentsGroupedByPageSection;
         searchRequest?: SearchRequest;
         searchCriteria?: ContentSearchCriteria;
-        dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS';
+        dataSrc?: DATA_SRC;
     }> {
         const session = await this.profileService.getActiveProfileSession().toPromise();
         const courses = await this.courseService.getEnrolledCourses({
@@ -136,7 +166,7 @@ export class ContentAggregator {
         section: ContentsGroupedByPageSection;
         searchRequest: SearchRequest;
         searchCriteria: ContentSearchCriteria;
-        dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS'
+        dataSrc?: DATA_SRC
     }> {
         let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({request: field.search});
 
