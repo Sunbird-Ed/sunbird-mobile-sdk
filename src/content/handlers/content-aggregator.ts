@@ -89,8 +89,6 @@ export interface ContentAggregation<T extends DataSourceType = any> {
 }
 
 export class ContentAggregator {
-    private static readonly SEARCH_CONTENT_GROUPED_KEY = 'search_content_grouped';
-
     constructor(
         private searchContentHandler: SearchContentHandler,
         private formService: FormService,
@@ -101,24 +99,9 @@ export class ContentAggregator {
     ) {
     }
 
-    private static getIdForDb(request: ContentSearchCriteria): string {
-        const key = {
-            framework: request.framework || '',
-            primaryCategory: request.primaryCategories || '',
-            board: request.board || '',
-            medium: request.medium || '',
-            grade: request.grade || '',
-            ...(request.purpose && request.purpose.length ? {purpose: request.purpose} : {}),
-            ...(request.channel && request.channel.length ? {channel: request.channel} : {}),
-            ...(request.subject && request.subject.length ? {subject: request.subject} : {}),
-            ...(request.topic && request.topic.length ? {topic: request.topic} : {})
-        };
-        return SHA1(JSON.stringify(key)).toString();
-    }
-
     aggregate(
         request: ContentAggregatorRequest,
-        filterDataSrc: DataSourceType[],
+        excludeDataSrc: DataSourceType[],
         formRequest?: FormRequest,
         formFields?: AggregatorConfigField[]
     ): Observable<ContentAggregatorResponse> {
@@ -137,7 +120,7 @@ export class ContentAggregator {
             }
 
             fields = fields
-                .filter((field) => field.isEnabled && filterDataSrc.indexOf(field.dataSrc.name) >= 0)
+                .filter((field) => field.isEnabled && excludeDataSrc.indexOf(field.dataSrc.name) === -1)
                 .sort((a, b) => a.index - b.index);
 
             const fieldTasks = fields.map(async (field) => {
@@ -153,7 +136,7 @@ export class ContentAggregator {
                     case 'TRACKABLE_COURSE_CONTENTS':
                         return await this.buildTrackableTask(field, request, (c) => (c.content.primaryCategory || c.content.contentType || '').toLowerCase() === 'course');
                     default:
-                        return await this.buildContentSearchTask(field, request);
+                        return await this.buildDefaultTask(field, request);
                 }
             });
 
@@ -161,6 +144,31 @@ export class ContentAggregator {
                 result: await Promise.all<ContentAggregation>(fieldTasks)
             };
         });
+    }
+
+    private async buildDefaultTask(
+      field: AggregatorConfigField,
+      request: ContentAggregatorRequest
+    ): Promise<ContentAggregation> {
+        if (field.searchRequest) {
+            return this.buildContentSearchTask(field, request);
+        }
+
+        if (field.dataSrc.values) {
+            return {
+                title: field.title,
+                data: field.dataSrc.values,
+                dataSrc: field.dataSrc,
+                theme: field.theme
+            };
+        }
+
+        return {
+            title: field.title,
+            data: undefined,
+            dataSrc: field.dataSrc,
+            theme: field.theme
+        };
     }
 
     private async buildRecentlyViewedTask(
@@ -294,7 +302,7 @@ export class ContentAggregator {
 
         const offlineSearchContentDataList: ContentData[] = await this.fetchOfflineContents(searchCriteria);
         const onlineSearchContentDataList: ContentData[] = (
-            (await this.fetchOnlineContents(searchCriteria, request.from)).contentDataList as ContentData[] || []
+            (await this.fetchOnlineContents(searchCriteria)).contentDataList as ContentData[] || []
         ).filter((contentData) => {
             return !offlineSearchContentDataList.find(
                 (localContentData) => localContentData.identifier === contentData.identifier);
@@ -369,7 +377,7 @@ export class ContentAggregator {
     }
 
     private async fetchOnlineContents(
-        searchCriteria: ContentSearchCriteria, from?: CachedItemRequestSourceFrom
+        searchCriteria: ContentSearchCriteria
     ): Promise<ContentSearchResult> {
         return this.contentService.searchContent(searchCriteria).pipe(
             catchError((e) => {
