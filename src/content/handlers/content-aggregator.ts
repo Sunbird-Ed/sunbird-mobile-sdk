@@ -10,8 +10,7 @@ import {
 } from '..';
 import {defer, Observable, of} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
-import * as SHA1 from 'crypto-js/sha1';
-import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
+import {CachedItemStore} from '../../key-value-store';
 import {SearchRequest} from '../def/search-request';
 import {FormRequest, FormService} from '../../form';
 import {SearchContentHandler} from './search-content-handler';
@@ -42,7 +41,9 @@ export interface DataSourceMap {
     };
     'CONTENTS': {
         name: 'CONTENTS',
-        aggregate: {
+        applyFirstAvailableCombination?: boolean,
+        search?: SearchRequest;
+        aggregate?: {
             sortBy?: {
                 [field in keyof ContentData]: 'asc' | 'desc'
             }[];
@@ -75,7 +76,6 @@ interface AggregatorConfigField<T extends DataSourceType = any> {
     title: string;
     isEnabled: boolean;
     dataSrc: DataSourceMap[T];
-    searchRequest?: SearchRequest;
     theme: any;
 }
 
@@ -83,9 +83,12 @@ export interface ContentAggregation<T extends DataSourceType = any> {
     title: string;
     data: DataResponseMap[T];
     dataSrc: DataSourceMap[T];
-    searchRequest?: SearchRequest;
-    searchCriteria?: ContentSearchCriteria;
     theme: any;
+    meta?: {
+        filterCriteria?: ContentSearchCriteria;
+        searchRequest?: SearchRequest;
+        searchCriteria?: ContentSearchCriteria;
+    };
 }
 
 export class ContentAggregator {
@@ -150,7 +153,7 @@ export class ContentAggregator {
       field: AggregatorConfigField,
       request: ContentAggregatorRequest
     ): Promise<ContentAggregation> {
-        if (field.searchRequest) {
+        if (field.dataSrc.search) {
             return this.buildContentSearchTask(field, request);
         }
 
@@ -165,7 +168,7 @@ export class ContentAggregator {
 
         return {
             title: field.title,
-            data: undefined,
+            data: [],
             dataSrc: field.dataSrc,
             theme: field.theme
         };
@@ -289,11 +292,11 @@ export class ContentAggregator {
         field: AggregatorConfigField<'CONTENTS'>,
         request: ContentAggregatorRequest
     ): Promise<ContentAggregation<'CONTENTS'>> {
-        if (!field.searchRequest) {
-            throw new Error('Expected field.searchRequest for dataSrc.name = "TRACKABLE_CONTENTS"');
+        if (!field.dataSrc.search) {
+            throw new Error('Expected field.dataSrc.search for dataSrc.name = "TRACKABLE_CONTENTS"');
         }
         let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({
-            request: field.searchRequest
+            request: field.dataSrc.search
         });
 
         if (request.interceptSearchCriteria) {
@@ -301,8 +304,9 @@ export class ContentAggregator {
         }
 
         const offlineSearchContentDataList: ContentData[] = await this.fetchOfflineContents(searchCriteria);
+        const onlineContentsResponse = await this.fetchOnlineContents(searchCriteria);
         const onlineSearchContentDataList: ContentData[] = (
-            (await this.fetchOnlineContents(searchCriteria)).contentDataList as ContentData[] || []
+            onlineContentsResponse.contentDataList as ContentData[] || []
         ).filter((contentData) => {
             return !offlineSearchContentDataList.find(
                 (localContentData) => localContentData.identifier === contentData.identifier);
@@ -312,11 +316,14 @@ export class ContentAggregator {
             return c;
         });
 
-        if (!field.dataSrc.aggregate.groupBy) {
+        if (!field.dataSrc.aggregate || !field.dataSrc.aggregate.groupBy) {
             return {
                 title: field.title,
-                searchCriteria,
-                searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
+                meta: {
+                    searchCriteria,
+                    filterCriteria: onlineContentsResponse.filterCriteria,
+                    searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
+                },
                 data: {
                     name: field.index + '',
                     sections: [
@@ -332,8 +339,11 @@ export class ContentAggregator {
         } else {
             return {
                 title: field.title,
-                searchCriteria,
-                searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
+                meta: {
+                    searchCriteria,
+                    filterCriteria: onlineContentsResponse.filterCriteria,
+                    searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
+                },
                 data: CsContentsGroupGenerator.generate(
                     combinedContents,
                     field.dataSrc.aggregate.groupBy,
@@ -344,7 +354,8 @@ export class ContentAggregator {
                             sortOrder: s[k] === 'asc' ? CsSortOrder.ASC : CsSortOrder.DESC,
                         }));
                         return agg;
-                    }, [] as CsContentSortCriteria[]) : []
+                    }, [] as CsContentSortCriteria[]) : [],
+                    field.dataSrc.applyFirstAvailableCombination && request.applyFirstAvailableCombination as any
                 ),
                 dataSrc: field.dataSrc,
                 theme: field.theme
