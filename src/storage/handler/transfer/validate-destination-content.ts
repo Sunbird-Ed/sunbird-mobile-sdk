@@ -44,8 +44,7 @@ export class ValidateDestinationContent {
                 }
                 const items = manifest.archive.items;
                 for (const item of items) {
-                    if (ContentUtil.readVisibility(item) === Visibility.PARENT ||
-                        !ContentUtil.isCompatible(this.appConfig, ContentUtil.readCompatibilityLevel(item))) {
+                    if (ContentUtil.readVisibility(item) === Visibility.PARENT) {
                         continue;
                     }
 

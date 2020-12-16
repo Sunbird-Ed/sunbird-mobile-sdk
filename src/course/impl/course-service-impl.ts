@@ -1,6 +1,5 @@
 import {
     Batch,
-    CertificateAlreadyDownloaded,
     ContentStateResponse,
     Course,
     CourseBatchDetailsRequest,
@@ -236,15 +235,6 @@ export class CourseServiceImpl implements CourseService {
             const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
             const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
             const filePath = `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
-            try {
-                await this.fileService.exists(filePath);
-                throw new CertificateAlreadyDownloaded('Certificate already downloaded', filePath);
-            } catch (e) {
-                if (e instanceof CertificateAlreadyDownloaded) {
-                    throw e;
-                }
-            }
-
             const response = await this.csCourseService.getSignedCourseCertificate(request.certificate.identifier!).toPromise();
             if (!response['printUri']) {
                 throw new NoCertificateFound(`No certificate found for ${request.courseId}`);
@@ -270,15 +260,6 @@ export class CourseServiceImpl implements CourseService {
             const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
             const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
             const filePath = `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
-            try {
-                await this.fileService.exists(filePath);
-                throw new CertificateAlreadyDownloaded('Certificate already downloaded', filePath);
-            } catch (e) {
-                if (e instanceof CertificateAlreadyDownloaded) {
-                    throw e;
-                }
-            }
-
             return {userId};
         }).pipe(
             mergeMap(({userId}) => {
