@@ -81,6 +81,7 @@ import {GroupServiceDeprecated} from './group-deprecated';
 import {GroupServiceDeprecatedImpl} from './group-deprecated/impl/group-service-deprecated-impl';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
 import {ContentGeneralizationMigration} from './db/migrations/content-generalization-migration';
+import {CsClientStorage} from '@project-sunbird/client-services/core/cs-client-storage';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -255,21 +256,24 @@ export class SunbirdSdk {
             new RecentlyViewedMigration(),
             new CourseAssessmentMigration(),
             () => {
-            return new NetworkQueueMigration(
-              sdkConfig, this._container.get<NetworkQueue>(InjectionTokens.NETWORK_QUEUE)
-            );
+                return new NetworkQueueMigration(
+                    sdkConfig, this._container.get<NetworkQueue>(InjectionTokens.NETWORK_QUEUE)
+                );
             },
             new ContentGeneralizationMigration(),
         ]);
 
         switch (sdkConfig.platform) {
-            case 'cordova': this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
-                .to(SharedPreferencesAndroid).inSingletonScope();
+            case 'cordova':
+                this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
+                    .to(SharedPreferencesAndroid).inSingletonScope();
                 break;
-            case 'web': this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
-                .to(SharedPreferencesLocalStorage).inSingletonScope();
+            case 'web':
+                this._container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES)
+                    .to(SharedPreferencesLocalStorage).inSingletonScope();
                 break;
-            default: throw new Error('FATAL_ERROR: Invalid platform');
+            default:
+                throw new Error('FATAL_ERROR: Invalid platform');
         }
 
         this._container.bind<DbService>(InjectionTokens.DB_SERVICE).to(DbCordovaService).inSingletonScope();
@@ -350,42 +354,54 @@ export class SunbirdSdk {
 
         this._container.bind<NetworkQueue>(InjectionTokens.NETWORK_QUEUE).to(NetworkQueueImpl).inSingletonScope();
 
+        const sharedPreferences = this.sharedPreferences;
+
         await CsModule.instance.init({
-            core: {
-                httpAdapter: sdkConfig.platform === 'web' ? 'HttpClientBrowserAdapter' : 'HttpClientCordovaAdapter',
-                global: {
-                    channelId: sdkConfig.apiConfig.api_authentication.channelId,
-                    producerId: sdkConfig.apiConfig.api_authentication.producerId,
-                    deviceId: SHA1(window.device.uuid).toString()
+                core: {
+                    httpAdapter: sdkConfig.platform === 'web' ? 'HttpClientBrowserAdapter' : 'HttpClientCordovaAdapter',
+                    global: {
+                        channelId: sdkConfig.apiConfig.api_authentication.channelId,
+                        producerId: sdkConfig.apiConfig.api_authentication.producerId,
+                        deviceId: SHA1(window.device.uuid).toString()
+                    },
+                    api: {
+                        host: sdkConfig.apiConfig.host,
+                        authentication: {}
+                    }
                 },
-                api: {
-                    host: sdkConfig.apiConfig.host,
-                    authentication: {}
+                services: {
+                    courseServiceConfig: {
+                        apiPath: '/api/course/v1',
+                        certRegistrationApiPath: '/api/certreg/v2/certs'
+                    },
+                    groupServiceConfig: {
+                        apiPath: '/api/group/v1',
+                        dataApiPath: '/api/data/v1/group',
+                        updateGroupGuidelinesApiPath: '/api/group/membership/v1'
+                    },
+                    userServiceConfig: {
+                        apiPath: '/api/user/v2'
+                    },
+                    formServiceConfig: {
+                        apiPath: '/api/data/v1/form'
+                    }
                 }
-            },
-            services: {
-                courseServiceConfig: {
-                    apiPath: '/api/course/v1',
-                    certRegistrationApiPath: '/api/certreg/v2/certs'
-                },
-                groupServiceConfig: {
-                    apiPath: '/api/group/v1',
-                    dataApiPath: '/api/data/v1/group',
-                    updateGroupGuidelinesApiPath: '/api/group/membership/v1'
-                },
-                userServiceConfig: {
-                    apiPath: '/api/user/v2'
-                },
-                formServiceConfig: {
-                    apiPath: '/api/data/v1/form'
+            }, (() => {
+                this._container.rebind<CsHttpService>(CsInjectionTokens.HTTP_SERVICE).toConstantValue(CsModule.instance.httpService);
+                this._container.rebind<CsGroupService>(CsInjectionTokens.GROUP_SERVICE).toConstantValue(CsModule.instance.groupService);
+                this._container.rebind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(CsModule.instance.courseService);
+                this._container.rebind<CsUserService>(CsInjectionTokens.USER_SERVICE).toConstantValue(CsModule.instance.userService);
+            }).bind(this),
+            new class implements CsClientStorage {
+
+                setItem(key: string, value: string): Promise<void> {
+                    return sharedPreferences.putString(key, value).toPromise();
                 }
-            }
-        }, (() => {
-            this._container.rebind<CsHttpService>(CsInjectionTokens.HTTP_SERVICE).toConstantValue(CsModule.instance.httpService);
-            this._container.rebind<CsGroupService>(CsInjectionTokens.GROUP_SERVICE).toConstantValue(CsModule.instance.groupService);
-            this._container.rebind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(CsModule.instance.courseService);
-            this._container.rebind<CsUserService>(CsInjectionTokens.USER_SERVICE).toConstantValue(CsModule.instance.userService);
-        }).bind(this));
+
+                getItem(key: string): Promise<string | undefined> {
+                    return sharedPreferences.getString(key).toPromise();
+                }
+            });
 
         this._container.bind<CsHttpService>(CsInjectionTokens.HTTP_SERVICE).toConstantValue(CsModule.instance.httpService);
         this._container.bind<CsGroupService>(CsInjectionTokens.GROUP_SERVICE).toConstantValue(CsModule.instance.groupService);
@@ -437,7 +453,7 @@ export class SunbirdSdk {
     }
 
     private preInit() {
-         return this.telemetryService.preInit().pipe(
+        return this.telemetryService.preInit().pipe(
             concatMap(() => this.frameworkService.preInit().pipe(
                 concatMap(() => this.profileService.preInit())
             ))
