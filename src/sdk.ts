@@ -81,7 +81,7 @@ import {GroupServiceDeprecated} from './group-deprecated';
 import {GroupServiceDeprecatedImpl} from './group-deprecated/impl/group-service-deprecated-impl';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
 import {ContentGeneralizationMigration} from './db/migrations/content-generalization-migration';
-import {CsClientStorage} from '@project-sunbird/client-services/core/cs-client-storage';
+import {CsClientStorage} from '@project-sunbird/client-services/core';
 
 export class SunbirdSdk {
     private _container: Container;
