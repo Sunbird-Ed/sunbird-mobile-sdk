@@ -155,6 +155,7 @@ describe('WebviewLoginSessionProvider', () => {
                             })
                         }));
                         expect(session).toEqual({
+                            accessTokenExpiresOn: expect.any(Number),
                             access_token: mockAccessToken,
                             refresh_token: mockRefreshToken,
                             userToken: '8454cb21-3ce9-4e30-85b5-fade097880d8'
@@ -223,6 +224,7 @@ describe('WebviewLoginSessionProvider', () => {
                             path: '/v1/sso/create/session?id=SOME_ID'
                         }));
                         expect(session).toEqual({
+                            accessTokenExpiresOn: expect.any(Number),
                             access_token: mockAccessToken,
                             refresh_token: mockRefreshToken,
                             userToken: '8454cb21-3ce9-4e30-85b5-fade097880d8'
@@ -287,6 +289,7 @@ describe('WebviewLoginSessionProvider', () => {
                     webviewLoginSessionProvider.provide().then((session) => {
                         // assert
                         expect(session).toEqual({
+                            accessTokenExpiresOn: expect.any(Number),
                             access_token: mockAccessToken,
                             refresh_token: mockRefreshToken,
                             userToken: '8454cb21-3ce9-4e30-85b5-fade097880d8'
