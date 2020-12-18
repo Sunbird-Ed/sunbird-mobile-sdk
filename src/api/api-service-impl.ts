@@ -24,17 +24,17 @@ import {BearerTokenRefreshInterceptor} from './util/authenticators/bearer-token-
 import {UserTokenRefreshInterceptor} from './util/authenticators/user-token-refresh-interceptor';
 import {AuthService} from '../auth';
 import {CsModule} from '@project-sunbird/client-services';
+import {
+    CsRequestLoggerInterceptor,
+    CsResponseLoggerInterceptor
+} from '@project-sunbird/client-services/core/http-service/utilities/interceptors';
 
 @injectable()
 export class ApiServiceImpl implements ApiService {
     private static PLANNED_MAINTENANCE_ERROR_CODE = 531;
     private hasEmittedPlannedMaintenanceErrorEvent = false;
-    private defaultRequestInterceptors: CsRequestInterceptor[] = [
-        // new CsRequestLoggerInterceptor()
-    ];
-    private defaultResponseInterceptors: CsResponseInterceptor[] = [
-        // new CsResponseLoggerInterceptor()
-    ];
+    private defaultRequestInterceptors: CsRequestInterceptor[] = [];
+    private defaultResponseInterceptors: CsResponseInterceptor[] = [];
     private apiConfig: ApiConfig;
 
     constructor(
@@ -46,6 +46,16 @@ export class ApiServiceImpl implements ApiService {
         @inject(CsInjectionTokens.HTTP_SERVICE) private httpService: CsHttpService
     ) {
         this.apiConfig = this.sdkConfig.apiConfig;
+
+        if (this.apiConfig.debugMode) {
+            this.defaultRequestInterceptors = [
+                new CsRequestLoggerInterceptor()
+            ];
+
+            this.defaultResponseInterceptors = [
+                new CsResponseLoggerInterceptor()
+            ];
+        }
     }
 
     private _bearerTokenRefreshInterceptor?: BearerTokenRefreshInterceptor;
@@ -173,9 +183,21 @@ export class ApiServiceImpl implements ApiService {
 
     setDefaultRequestInterceptors(interceptors: CsRequestInterceptor[]) {
         this.defaultRequestInterceptors = interceptors;
+
+        if (this.apiConfig.debugMode) {
+            this.defaultRequestInterceptors.push(
+                new CsRequestLoggerInterceptor()
+            );
+        }
     }
 
     setDefaultResponseInterceptors(interceptors: CsResponseInterceptor[]) {
         this.defaultResponseInterceptors = interceptors;
+
+        if (this.apiConfig.debugMode) {
+            this.defaultResponseInterceptors.push(
+                new CsResponseLoggerInterceptor()
+            );
+        }
     }
 }

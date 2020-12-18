@@ -1,6 +1,7 @@
 import {ApiServiceImpl} from './api-service-impl';
 import {Container} from 'inversify';
 import {
+    ApiConfig,
     DeviceInfo,
     ErrorEventType,
     EventNamespace,
@@ -47,7 +48,11 @@ describe('ApiServiceImpl', () => {
     const mockDeviceInfo: Partial<DeviceInfo> = {};
     const mockEventsBusService: Partial<EventsBusService> = {};
     const mockHttpService: Partial<CsHttpService> = {};
-    const mockSdkConfig: Partial<SdkConfig> = {};
+    const mockSdkConfig: Partial<SdkConfig> = {
+        apiConfig: {
+            debugMode: false
+        } as Partial<ApiConfig> as ApiConfig
+    };
     const mockSharedPreferences: Partial<SharedPreferences> = {};
 
     beforeAll(() => {
