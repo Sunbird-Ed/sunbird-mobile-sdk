@@ -2,7 +2,7 @@ import {
     Content,
     ContentAggregatorRequest,
     ContentAggregatorResponse,
-    ContentData,
+    ContentData, ContentRequest,
     ContentSearchCriteria,
     ContentSearchResult,
     ContentService,
@@ -10,8 +10,7 @@ import {
 } from '..';
 import {defer, Observable, of} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
-import * as SHA1 from 'crypto-js/sha1';
-import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
+import {CachedItemStore} from '../../key-value-store';
 import {SearchRequest} from '../def/search-request';
 import {FormRequest, FormService} from '../../form';
 import {SearchContentHandler} from './search-content-handler';
@@ -20,23 +19,79 @@ import {CsContentsGroupGenerator} from '@project-sunbird/client-services/service
 import {CourseService} from '../../course';
 import {ProfileService} from '../../profile';
 
-interface LibraryConfigFormField {
+export interface DataSourceMap {
+    'TRACKABLE_COURSE_CONTENTS': {
+        name: 'TRACKABLE_COURSE_CONTENTS'
+    };
+    'TRACKABLE_CONTENTS': {
+        name: 'TRACKABLE_CONTENTS'
+    };
+    'CONTENT_FACETS': {
+        name: 'CONTENT_FACETS',
+        facet: string,
+        aggregate: {
+            sortBy?: {
+                [field in keyof ContentData]: 'asc' | 'desc'
+            }[];
+            groupBy?: keyof ContentData;
+        }
+    };
+    'RECENTLY_VIEWED_CONTENTS': {
+        name: 'RECENTLY_VIEWED_CONTENTS'
+    };
+    'CONTENTS': {
+        name: 'CONTENTS',
+        applyFirstAvailableCombination?: boolean,
+        search?: SearchRequest;
+        aggregate?: {
+            sortBy?: {
+                [field in keyof ContentData]: 'asc' | 'desc'
+            }[];
+            groupBy?: keyof ContentData;
+        }
+    };
+}
+
+export interface DataResponseMap {
+    'TRACKABLE_COURSE_CONTENTS': ContentsGroupedByPageSection;
+    'TRACKABLE_CONTENTS': ContentsGroupedByPageSection;
+    'CONTENT_FACETS': {
+        facet: string;
+        searchCriteria: ContentSearchCriteria;
+        aggregate: {
+            sortBy?: {
+                [field in keyof ContentData]: 'asc' | 'desc'
+            }[];
+            groupBy?: keyof ContentData;
+        }
+    }[];
+    'RECENTLY_VIEWED_CONTENTS': ContentsGroupedByPageSection;
+    'CONTENTS': ContentsGroupedByPageSection;
+}
+
+export type DataSourceType = keyof DataSourceMap;
+
+interface AggregatorConfigField<T extends DataSourceType = any> {
     index: number;
     title: string;
     isEnabled: boolean;
-    groupBy: keyof ContentData;
-    orientation: 'horizontal' | 'vertical';
-    applyFirstAvailableCombination: boolean;
-    sortBy: {
-        [field: string]: 'asc' | 'desc'
-    }[];
-    search: SearchRequest;
-    dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS';
+    dataSrc: DataSourceMap[T];
+    theme: any;
+}
+
+export interface ContentAggregation<T extends DataSourceType = any> {
+    title: string;
+    data: DataResponseMap[T];
+    dataSrc: DataSourceMap[T];
+    theme: any;
+    meta?: {
+        filterCriteria?: ContentSearchCriteria;
+        searchRequest?: SearchRequest;
+        searchCriteria?: ContentSearchCriteria;
+    };
 }
 
 export class ContentAggregator {
-    private static readonly SEARCH_CONTENT_GROUPED_KEY = 'search_content_grouped';
-
     constructor(
         private searchContentHandler: SearchContentHandler,
         private formService: FormService,
@@ -47,65 +102,167 @@ export class ContentAggregator {
     ) {
     }
 
-    private static getIdForDb(request: ContentSearchCriteria): string {
-        const key = {
-            framework: request.framework || '',
-            primaryCategory: request.primaryCategories || '',
-            board: request.board || '',
-            medium: request.medium || '',
-            grade: request.grade || '',
-            ...(request.purpose && request.purpose.length ? { purpose: request.purpose } : {}),
-            ...(request.channel && request.channel.length ? { channel: request.channel } : {}),
-            ...(request.subject && request.subject.length ? { subject: request.subject } : {}),
-            ...(request.topic && request.topic.length ? { topic: request.topic } : {})
-        };
-        return SHA1(JSON.stringify(key)).toString();
-    }
-
     aggregate(
         request: ContentAggregatorRequest,
-        dataSrc: ('CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS' | undefined)[],
-        formRequest: FormRequest
+        excludeDataSrc: DataSourceType[],
+        formRequest?: FormRequest,
+        formFields?: AggregatorConfigField[]
     ): Observable<ContentAggregatorResponse> {
         return defer(async () => {
-            let fields: LibraryConfigFormField[] = await this.formService.getForm(
-                formRequest
-            ).toPromise().then((r) => r.form.data.fields);
+            if (!formRequest && !formFields) {
+                throw new Error('formRequest or formFields required');
+            }
 
-            fields = fields.filter((field) => field.isEnabled && dataSrc.indexOf(field.dataSrc || 'CONTENTS') >= 0)
+            let fields: AggregatorConfigField[] = [];
+            if (formRequest) {
+                fields = await this.formService.getForm(
+                    formRequest
+                ).toPromise().then((r) => r.form.data.fields);
+            } else if (formFields) {
+                fields = formFields;
+            }
+
+            fields = fields
+                .filter((field) => field.isEnabled && excludeDataSrc.indexOf(field.dataSrc.name) === -1)
                 .sort((a, b) => a.index - b.index);
 
             const fieldTasks = fields.map(async (field) => {
-                switch (field.dataSrc) {
-                    default:
+                switch (field.dataSrc.name) {
+                    case 'CONTENT_FACETS':
+                        return await this.buildFacetsTask(field, request);
+                    case 'RECENTLY_VIEWED_CONTENTS':
+                        return await this.buildRecentlyViewedTask(field, request);
                     case 'CONTENTS':
                         return await this.buildContentSearchTask(field, request);
                     case 'TRACKABLE_CONTENTS':
-                        return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() !== 'course');
+                        return await this.buildTrackableTask(field, request, (c) => (c.content.primaryCategory || c.content.contentType || '').toLowerCase() !== 'course');
                     case 'TRACKABLE_COURSE_CONTENTS':
-                        return await this.buildTrackableTask(field, request, (c) => c.content.primaryCategory.toLowerCase() === 'course');
+                        return await this.buildTrackableTask(field, request, (c) => (c.content.primaryCategory || c.content.contentType || '').toLowerCase() === 'course');
+                    default:
+                        return await this.buildDefaultTask(field, request);
                 }
             });
+
             return {
-                result: await Promise.all<{
-                    title: string;
-                    orientation: 'horizontal' | 'vertical';
-                    section: ContentsGroupedByPageSection;
-                    searchRequest?: SearchRequest;
-                    searchCriteria?: ContentSearchCriteria;
-                    dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS';
-                }>(fieldTasks)
+                result: await Promise.all<ContentAggregation>(fieldTasks)
             };
         });
     }
-    private async buildTrackableTask(field: LibraryConfigFormField, request: ContentAggregatorRequest, filter): Promise<{
-        title: string;
-        orientation: 'horizontal' | 'vertical';
-        section: ContentsGroupedByPageSection;
-        searchRequest?: SearchRequest;
-        searchCriteria?: ContentSearchCriteria;
-        dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS';
-    }> {
+
+    private async buildDefaultTask(
+      field: AggregatorConfigField,
+      request: ContentAggregatorRequest
+    ): Promise<ContentAggregation> {
+        if (field.dataSrc.search) {
+            return this.buildContentSearchTask(field, request);
+        }
+
+        if (field.dataSrc.values) {
+            return {
+                title: field.title,
+                data: field.dataSrc.values,
+                dataSrc: field.dataSrc,
+                theme: field.theme
+            };
+        }
+
+        return {
+            title: field.title,
+            data: [],
+            dataSrc: field.dataSrc,
+            theme: field.theme
+        };
+    }
+
+    private async buildRecentlyViewedTask(
+        field: AggregatorConfigField<'RECENTLY_VIEWED_CONTENTS'>,
+        request: ContentAggregatorRequest
+    ): Promise<ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>> {
+        const profile = await this.profileService.getActiveProfileSession().toPromise();
+
+        const requestParams: ContentRequest = {
+          uid: profile ? profile.uid : undefined,
+          primaryCategories: [],
+          recentlyViewed: true,
+          limit: 20
+        };
+
+        const contents = await this.contentService.getContents(requestParams).toPromise();
+
+        return {
+            title: field.title,
+            data: {
+                name: field.index + '',
+                sections: [
+                    {
+                        name: field.index + '',
+                        count: contents.length,
+                        contents: contents.map(c => {
+                            c.contentData['cardImg'] = c.contentData.appIcon;
+                            return c;
+                        })
+                    }
+                ]
+            },
+            dataSrc: field.dataSrc,
+            theme: field.theme
+        } as ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>;
+    }
+
+    private async buildFacetsTask(
+        field: AggregatorConfigField<'CONTENT_FACETS'>,
+        request: ContentAggregatorRequest
+    ): Promise<ContentAggregation<'CONTENT_FACETS'>> {
+        let searchCriteria: ContentSearchCriteria = {
+            offset: 0,
+            limit: 0,
+            mode: 'hard',
+            facets: [
+                field.dataSrc.facet
+            ],
+        };
+
+        if (request.interceptSearchCriteria) {
+            const impliedSearchCriteria = request.interceptSearchCriteria(searchCriteria);
+            searchCriteria = {
+                ...impliedSearchCriteria, ...searchCriteria
+            };
+        }
+
+        const searchResult = await this.fetchOnlineContents(searchCriteria);
+        const facetFilters = searchResult.filterCriteria.facetFilters!.find((x) => x.name === field.dataSrc.facet);
+
+        if (facetFilters) {
+            return {
+                title: field.title,
+                data: facetFilters.values.map((filterValue) => {
+                    return {
+                        facet: filterValue.name,
+                        searchCriteria: {
+                            ...searchCriteria,
+                            [facetFilters.name]: [filterValue.name]
+                        },
+                        aggregate: field.dataSrc['aggregate']
+                    };
+                }),
+                dataSrc: field.dataSrc,
+                theme: field.theme
+            };
+        }
+
+        return {
+            title: field.title,
+            data: [],
+            dataSrc: field.dataSrc,
+            theme: field.theme
+        };
+    }
+
+    private async buildTrackableTask(
+        field: AggregatorConfigField<'TRACKABLE_CONTENTS'>,
+        request: ContentAggregatorRequest,
+        filter
+    ): Promise<ContentAggregation<'TRACKABLE_CONTENTS'>> {
         const session = await this.profileService.getActiveProfileSession().toPromise();
         const courses = await this.courseService.getEnrolledCourses({
             userId: session.managedSession ? session.managedSession.uid : session.uid,
@@ -116,50 +273,58 @@ export class ContentAggregator {
 
         return {
             title: field.title,
-            orientation: field.orientation,
-            section: {
+            data: {
                 name: field.index + '',
                 sections: [
                     {
+                        name: field.index + '',
                         count: contents.length,
                         contents
                     }
                 ]
             },
-            dataSrc: field.dataSrc
-        };
+            dataSrc: field.dataSrc,
+            theme: field.theme
+        } as ContentAggregation<'TRACKABLE_CONTENTS'>;
     }
 
-    private async buildContentSearchTask(field: LibraryConfigFormField, request: ContentAggregatorRequest): Promise<{
-        title: string;
-        orientation: 'horizontal' | 'vertical';
-        section: ContentsGroupedByPageSection;
-        searchRequest: SearchRequest;
-        searchCriteria: ContentSearchCriteria;
-        dataSrc?: 'CONTENTS' | 'TRACKABLE_CONTENTS' | 'TRACKABLE_COURSE_CONTENTS'
-    }> {
-        let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({request: field.search});
+    private async buildContentSearchTask(
+        field: AggregatorConfigField<'CONTENTS'>,
+        request: ContentAggregatorRequest
+    ): Promise<ContentAggregation<'CONTENTS'>> {
+        if (!field.dataSrc.search) {
+            throw new Error('Expected field.dataSrc.search for dataSrc.name = "TRACKABLE_CONTENTS"');
+        }
+        let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({
+            request: field.dataSrc.search
+        });
 
         if (request.interceptSearchCriteria) {
             searchCriteria = request.interceptSearchCriteria(searchCriteria);
         }
 
         const offlineSearchContentDataList: ContentData[] = await this.fetchOfflineContents(searchCriteria);
+        const onlineContentsResponse = await this.fetchOnlineContents(searchCriteria);
         const onlineSearchContentDataList: ContentData[] = (
-            (await this.fetchOnlineContents(searchCriteria, request.from)).contentDataList as ContentData[] || []
+            onlineContentsResponse.contentDataList as ContentData[] || []
         ).filter((contentData) => {
             return !offlineSearchContentDataList.find(
                 (localContentData) => localContentData.identifier === contentData.identifier);
         });
-        const combinedContents: ContentData[] = offlineSearchContentDataList.concat(onlineSearchContentDataList);
+        const combinedContents: ContentData[] = offlineSearchContentDataList.concat(onlineSearchContentDataList).map(c => {
+            c['cardImg'] = c.appIcon;
+            return c;
+        });
 
-        if (!field.groupBy) {
+        if (!field.dataSrc.aggregate || !field.dataSrc.aggregate.groupBy) {
             return {
                 title: field.title,
-                orientation: field.orientation,
-                searchCriteria,
-                searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
-                section: {
+                meta: {
+                    searchCriteria,
+                    filterCriteria: onlineContentsResponse.filterCriteria,
+                    searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
+                },
+                data: {
                     name: field.index + '',
                     sections: [
                         {
@@ -168,28 +333,33 @@ export class ContentAggregator {
                         }
                     ]
                 },
-                dataSrc: field.dataSrc
-            };
+                dataSrc: field.dataSrc,
+                theme: field.theme
+            } as ContentAggregation<'CONTENTS'>;
         } else {
             return {
                 title: field.title,
-                orientation: field.orientation,
-                searchCriteria,
-                searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
-                section: CsContentsGroupGenerator.generate(
+                meta: {
+                    searchCriteria,
+                    filterCriteria: onlineContentsResponse.filterCriteria,
+                    searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
+                },
+                data: CsContentsGroupGenerator.generate(
                     combinedContents,
-                    field.groupBy,
-                    field.sortBy.reduce((agg, s) => {
+                    field.dataSrc.aggregate.groupBy,
+                    field.dataSrc.aggregate.sortBy ?
+                    field.dataSrc.aggregate.sortBy.reduce((agg, s) => {
                         Object.keys(s).forEach((k) => agg.push({
                             sortAttribute: k,
                             sortOrder: s[k] === 'asc' ? CsSortOrder.ASC : CsSortOrder.DESC,
                         }));
                         return agg;
-                    }, [] as CsContentSortCriteria[]),
-                    field.applyFirstAvailableCombination && request.applyFirstAvailableCombination as any,
+                    }, [] as CsContentSortCriteria[]) : [],
+                    field.dataSrc.applyFirstAvailableCombination && request.applyFirstAvailableCombination as any
                 ),
-                dataSrc: field.dataSrc
-            };
+                dataSrc: field.dataSrc,
+                theme: field.theme
+            } as ContentAggregation<'CONTENTS'>;
         }
     }
 
@@ -218,20 +388,9 @@ export class ContentAggregator {
     }
 
     private async fetchOnlineContents(
-        searchCriteria: ContentSearchCriteria, from?: CachedItemRequestSourceFrom
+        searchCriteria: ContentSearchCriteria
     ): Promise<ContentSearchResult> {
-        return this.cachedItemStore[from === CachedItemRequestSourceFrom.SERVER ? 'get' : 'getCached'](
-            ContentAggregator.getIdForDb(searchCriteria),
-            ContentAggregator.SEARCH_CONTENT_GROUPED_KEY,
-            'ttl_' + ContentAggregator.SEARCH_CONTENT_GROUPED_KEY,
-            () => this.contentService.searchContent(searchCriteria),
-            undefined,
-            undefined,
-            (contentSearchResult: ContentSearchResult) =>
-                !contentSearchResult ||
-                !contentSearchResult.contentDataList ||
-                contentSearchResult.contentDataList.length === 0
-        ).pipe(
+        return this.contentService.searchContent(searchCriteria).pipe(
             catchError((e) => {
                 console.error(e);
 

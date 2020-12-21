@@ -11,107 +11,94 @@ export const mockFormResponse = {
             'fields': [
                 {
                     'index': 0,
-                    'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
+                    'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                     'isEnabled': true,
-                    'orientation': 'horizontal',
-                    'sortBy': [
-                        {
-                            'name': 'asc'
-                        }
-                    ],
-                    'search': {
-                        'facets': [
-                            'topic',
-                            'purpose',
-                            'medium',
-                            'gradeLevel',
-                            'subject',
-                            'channel'
-                        ],
-                        'fields': [
-                            'identifier',
-                            'pkgVersion',
-                            'name',
-                            'appIcon',
-                            'subject',
-                            'medium',
-                            'board',
-                            'framework',
-                            'gradeLevel',
-                            'channel',
-                            'contentType',
-                            'mimeType',
-                            'resourceType',
-                            'status',
-                            'downloadUrl',
-                            'variants',
-                            'createdBy',
-                            'originData',
-                            'origin',
-                            'streamingUrl',
-                            'dialecodes',
-                            'size',
-                            'batches',
-                            'organisation'
-                        ],
-                        'filters': {
-                            'contentType': [
-                                'Course'
-                            ]
-                        }
+                    'dataSrc': {
+                        'name': 'CONTENTS',
+                        'search': {
+                            'facets': [
+                                'board',
+                                'medium',
+                                'gradeLevel',
+                                'subject',
+                                'channel'
+                            ],
+                            'fields': [],
+                            'filters': {
+                                'primaryCategory': [
+                                    'Explanation Content'
+                                ],
+                                'additionalCategories': [
+                                    'TV Lesson'
+                                ]
+                            }
+                        },
+                    },
+                    'theme': {
+                        'orientation': 'horizontal'
                     }
                 },
                 {
-                    'applyFirstAvailableCombination': true,
                     'index': 1,
                     'title': '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
                     'isEnabled': true,
-                    'groupBy': 'subject',
-                    'orientation': 'vertical',
-                    'sortBy': [
-                        {
-                            'name': 'asc'
-                        }
-                    ],
-                    'search': {
-                        'facets': [
-                            'board',
-                            'medium',
-                            'gradeLevel',
-                            'subject',
-                            'channel'
-                        ],
-                        'fields': [
-                            'identifier',
-                            'pkgVersion',
-                            'name',
-                            'appIcon',
-                            'subject',
-                            'medium',
-                            'board',
-                            'framework',
-                            'gradeLevel',
-                            'channel',
-                            'contentType',
-                            'mimeType',
-                            'resourceType',
-                            'status',
-                            'downloadUrl',
-                            'variants',
-                            'createdBy',
-                            'originData',
-                            'origin',
-                            'streamingUrl',
-                            'dialecodes',
-                            'size',
-                            'batches',
-                            'organisation'
-                        ],
-                        'filters': {
-                            'contentType': [
-                                'TextBook'
+                    'dataSrc': {
+                        'name': 'CONTENTS',
+                        'applyFirstAvailableCombination': true,
+                        'aggregate': {
+                            'groupBy': 'subject',
+                            'orientation': 'vertical',
+                            'sortBy': [
+                                {
+                                    'name': 'asc'
+                                }
                             ]
+                        },
+                        'search': {
+                            'facets': [
+                                'board',
+                                'medium',
+                                'gradeLevel',
+                                'subject',
+                                'channel'
+                            ],
+                            'fields': [
+                                'identifier',
+                                'pkgVersion',
+                                'name',
+                                'appIcon',
+                                'subject',
+                                'medium',
+                                'board',
+                                'framework',
+                                'gradeLevel',
+                                'channel',
+                                'contentType',
+                                'mimeType',
+                                'resourceType',
+                                'status',
+                                'downloadUrl',
+                                'variants',
+                                'createdBy',
+                                'originData',
+                                'origin',
+                                'streamingUrl',
+                                'dialecodes',
+                                'size',
+                                'batches',
+                                'organisation',
+                                'primaryCategory',
+                                'trackable'
+                            ],
+                            'filters': {
+                                'primaryCategory': [
+                                    'Digital Textbook'
+                                ]
+                            }
                         }
+                    },
+                    'theme': {
+                        'orientation': 'vertical'
                     }
                 }
             ]
@@ -137,8 +124,124 @@ export const mockFormResponseWithTrackableCourseDataSrc = {
                     'index': 0,
                     'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
                     'isEnabled': true,
-                    'orientation': 'horizontal',
-                    'dataSrc': 'TRACKABLE_COURSE_CONTENTS'
+                    'dataSrc': {
+                        'name': 'TRACKABLE_COURSE_CONTENTS'
+                    },
+                    'theme': {
+                        'orientation': 'horizontal',
+                    }
+                },
+            ]
+        },
+        'created_on': '2020-08-26T15:11:56.149Z',
+        'last_modified_on': null,
+        'rootOrgId': '*'
+    }
+};
+
+export const mockFormResponseWithUnknownDataSrcNoValuesNoSearchFields = {
+    'form': {
+        'type': 'config',
+        'subtype': 'library',
+        'action': 'get',
+        'component': 'app',
+        'framework': '*',
+        'data': {
+            'templateName': 'library',
+            'action': 'get',
+            'fields': [
+                {
+                    'index': 0,
+                    'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
+                    'isEnabled': true,
+                    'dataSrc': {
+                        'name': 'UNKNOWN_DATA_SRC'
+                    },
+                    'theme': {
+                        'orientation': 'horizontal',
+                    }
+                },
+            ]
+        },
+        'created_on': '2020-08-26T15:11:56.149Z',
+        'last_modified_on': null,
+        'rootOrgId': '*'
+    }
+};
+
+export const mockFormResponseWithUnknownDataSrcNoSearchField = {
+    'form': {
+        'type': 'config',
+        'subtype': 'library',
+        'action': 'get',
+        'component': 'app',
+        'framework': '*',
+        'data': {
+            'templateName': 'library',
+            'action': 'get',
+            'fields': [
+                {
+                    'index': 0,
+                    'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
+                    'isEnabled': true,
+                    'dataSrc': {
+                        'name': 'UNKNOWN_DATA_SRC',
+                        'values': [
+                            {'some': 'value'},
+                            {'some': 'value'},
+                        ]
+                    },
+                    'theme': {
+                        'orientation': 'horizontal',
+                    }
+                },
+            ]
+        },
+        'created_on': '2020-08-26T15:11:56.149Z',
+        'last_modified_on': null,
+        'rootOrgId': '*'
+    }
+};
+
+export const mockFormResponseWithUnknownDataSrc = {
+    'form': {
+        'type': 'config',
+        'subtype': 'library',
+        'action': 'get',
+        'component': 'app',
+        'framework': '*',
+        'data': {
+            'templateName': 'library',
+            'action': 'get',
+            'fields': [
+                {
+                    'index': 0,
+                    'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
+                    'isEnabled': true,
+                    'dataSrc': {
+                        'name': 'UNKNOWN_DATA_SRC',
+                        'search': {
+                            'facets': [
+                                'board',
+                                'medium',
+                                'gradeLevel',
+                                'subject',
+                                'channel'
+                            ],
+                            'fields': [],
+                            'filters': {
+                                'primaryCategory': [
+                                    'Explanation Content'
+                                ],
+                                'additionalCategories': [
+                                    'TV Lesson'
+                                ]
+                            }
+                        },
+                    },
+                    'theme': {
+                        'orientation': 'horizontal'
+                    }
                 },
             ]
         },
@@ -163,8 +266,12 @@ export const mockFormResponseWithTrackableDataSrc = {
                     'index': 0,
                     'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
                     'isEnabled': true,
-                    'orientation': 'horizontal',
-                    'dataSrc': 'TRACKABLE_CONTENTS'
+                    'dataSrc': {
+                        'name': 'TRACKABLE_CONTENTS'
+                    },
+                    'theme': {
+                        'orientation': 'horizontal',
+                    }
                 },
             ]
         },
