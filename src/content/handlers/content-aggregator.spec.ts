@@ -10,8 +10,7 @@ import {
     mockFormResponseWithTrackableDataSrc,
     mockGetOfflineContentsResponse,
     mockGetOfflineContentsResponseWithTwoSubjects,
-    mockGetOnlineContentsResponse,
-    mockFormResponseWithExplicitValuesAttached
+    mockGetOnlineContentsResponse
 } from './content-aggregator.spec.data';
 import {SearchContentHandler} from './search-content-handler';
 import {CourseService} from '../../course';
@@ -471,7 +470,7 @@ describe('ContentAggregator', () => {
 
         describe('dataSrc', () => {
             describe('when default - no optional arguments are passed', () => {
-                it('should assume dataSrc to be \'CONTENTS\' if searchRequest Attached', (done) => {
+                it('should assume dataSrc to be CONTENTS', (done) => {
                     // arrange
                     mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponse));
                     mockContentService.getContents = jest.fn().mockImplementation(() => of(mockGetOfflineContentsResponse));
@@ -492,38 +491,6 @@ describe('ContentAggregator', () => {
                         // assert
                         expect(mockProfileService.getActiveProfileSession).not.toHaveBeenCalled();
                         expect(mockCourseService.getEnrolledCourses).not.toHaveBeenCalled();
-                        done();
-                    });
-                });
-
-                it('should silently forward \'values\' if explicitly Attached', (done) => {
-                    // arrange
-                    mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponseWithExplicitValuesAttached));
-                    mockContentService.getContents = jest.fn().mockImplementation(() => of(mockGetOfflineContentsResponse));
-                    mockCachedItemStore.getCached = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
-                    mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of({
-                        uid: 'SOME_UID',
-                        sid: 'SOME_SID'
-                    }));
-                    mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([]));
-
-                    // act
-                    contentAggregator.aggregate({}, ['CONTENTS'], {
-                        type: 'config',
-                        subType: 'library',
-                        action: 'get',
-                        component: 'app',
-                    }).subscribe(({result}) => {
-                        // assert
-                        expect(result).toEqual([
-                          expect.objectContaining({
-                            values: [
-                                {
-                                    'SOME_KEY': 'SOME_VALUE'
-                                }
-                            ]
-                          })
-                        ]);
                         done();
                     });
                 });
