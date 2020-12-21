@@ -13,7 +13,7 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
         const payload: { sub: string, exp: number } = JWTUtil.getJWTPayload(accessToken);
         return {
             userToken: payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub,
-            accessTokenExpiresOn: payload.exp
+            accessTokenExpiresOn: payload.exp * 1000
         };
     }
 
