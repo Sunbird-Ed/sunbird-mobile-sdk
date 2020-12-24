@@ -1,8 +1,8 @@
-import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
-import {ProfileServiceConfig, ServerProfile, ServerProfileDetailsRequest} from '..';
+import {ApiRequestHandler} from '../../api';
+import {ServerProfile, ServerProfileDetailsRequest} from '..';
 import {CachedItemRequest, CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {Observable, of} from 'rxjs';
-import {catchError, map, mergeMap, tap} from 'rxjs/operators';
+import {catchError, mergeMap, tap} from 'rxjs/operators';
 import {CsInjectionTokens} from '../../injection-tokens';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
 import {Container} from 'inversify';
