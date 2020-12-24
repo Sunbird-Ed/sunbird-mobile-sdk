@@ -39,7 +39,6 @@ import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {Observable, of} from 'rxjs';
 import {ProfileEntry} from '../db/schema';
 import {AuthService} from '../../auth';
-import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
@@ -61,7 +60,6 @@ import {UserMigrateHandler} from '../handler/user-migrate-handler';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
 import {CsModule} from '@project-sunbird/client-services';
 
-jest.mock('../handler/update-server-profile-info-handler');
 jest.mock('../handler/tenant-info-handler');
 jest.mock('../handler/get-server-profile-details-handler');
 jest.mock('../handler/accept-term-condition-handler');
@@ -501,18 +499,13 @@ describe.only('ProfileServiceImpl', () => {
     describe('updateServerProfile()', () => {
         it('should delegate to UpdateServerProfileHandler', (done) => {
             // arrange
-            const response = {uid: 'SAMPLE_UID'} as Partial<Profile>;
-            (UpdateServerProfileInfoHandler as jest.Mock<UpdateServerProfileInfoHandler>).mockImplementation(() => {
-                return {
-                    handle: jest.fn().mockImplementation(() => of(response))
-                } as Partial<UpdateServerProfileInfoHandler> as UpdateServerProfileInfoHandler;
-            });
+            mockCsUserService.updateProfile = jest.fn(() => of({ response: 'SUCCESS'} as any));
             const request = {} as Partial<UpdateServerProfileInfoRequest>;
 
             // act
             profileService.updateServerProfile(request as UpdateServerProfileInfoRequest).subscribe((res) => {
                 // assert
-                expect(res).toBe(response);
+                expect(res).toEqual( { response: 'SUCCESS'});
                 done();
             });
         });

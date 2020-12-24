@@ -33,6 +33,7 @@ import {Consent} from '@project-sunbird/client-services/models';
 import {ReadConsentResponse, UpdateConsentResponse} from '@project-sunbird/client-services/services/user';
 import {UpdateUserFeedRequest} from './update-user-feed-request';
 import {DeleteUserFeedRequest} from './delete-user-feed-request';
+import {UpdateServerProfileResponse} from './update-server-profile-response';
 
 export {Consent} from '@project-sunbird/client-services/models';
 export {ReadConsentResponse, UpdateConsentResponse} from '@project-sunbird/client-services/services/user';
@@ -48,7 +49,7 @@ export interface ProfileService extends SdkServicePreInitDelegate {
 
     updateProfile(profile: Profile): Observable<Profile>;
 
-    updateServerProfile(updateServerProfileRequest: UpdateServerProfileInfoRequest): Observable<Profile>;
+    updateServerProfile(updateServerProfileRequest: UpdateServerProfileInfoRequest): Observable<UpdateServerProfileResponse>;
 
     getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo>;
 
