@@ -22,7 +22,6 @@ import {
     ServerProfileDetailsRequest,
     TenantInfoRequest,
     UpdateConsentResponse,
-    UpdateServerProfileInfoRequest,
     UserFeedEntry,
     UserMigrateRequest,
     VerifyOtpRequest
@@ -32,7 +31,6 @@ import {GroupProfileEntry, ProfileEntry} from '../db/schema';
 import {TenantInfo} from '../def/tenant-info';
 import {TenantInfoHandler} from '../handler/tenant-info-handler';
 import {ApiConfig, ApiService, HttpRequestType, Request, Response} from '../../api';
-import {UpdateServerProfileInfoHandler} from '../handler/update-server-profile-info-handler';
 import {GetServerProfileDetailsHandler} from '../handler/get-server-profile-details-handler';
 import {CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {ProfileDbEntryMapper} from '../util/profile-db-entry-mapper';
@@ -92,6 +90,8 @@ import {UpdateServerProfileDeclarationsRequest} from '../def/update-server-profi
 import {CsModule} from '@project-sunbird/client-services';
 import {UpdateUserFeedRequest} from '../def/update-user-feed-request';
 import {DeleteUserFeedRequest} from '../def/delete-user-feed-request';
+import {UpdateServerProfileResponse} from '../def/update-server-profile-response';
+import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-request';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -343,9 +343,8 @@ export class ProfileServiceImpl implements ProfileService {
         );
     }
 
-    updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<Profile> {
-        return new UpdateServerProfileInfoHandler(this.apiService,
-            this.sdkConfig.profileServiceConfig).handle(updateUserInfoRequest);
+    updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<UpdateServerProfileResponse> {
+        return this.userService.updateProfile(updateUserInfoRequest, { apiPath : '/api/user/v1'});
     }
 
     getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo> {
@@ -399,9 +398,8 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {
-        return new GetServerProfileDetailsHandler(this.apiService, this.sdkConfig.profileServiceConfig,
-            this.cachedItemStore, this.keyValueStore)
-            .handle(serverProfileDetailsRequest);
+        return new GetServerProfileDetailsHandler(this.cachedItemStore, this.keyValueStore, this.container)
+          .handle(serverProfileDetailsRequest);
     }
 
     getActiveSessionProfile({requiredFields}: Pick<ServerProfileDetailsRequest, 'requiredFields'>): Observable<Profile> {
