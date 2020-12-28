@@ -19,6 +19,8 @@ import {CsHttpClientError, CsHttpServerError} from '@project-sunbird/client-serv
 import {CsModule} from '@project-sunbird/client-services';
 import {ApiTokenHandler} from './handlers/api-token-handler';
 import {ApiKeys} from '../preference-keys';
+import {CsRequestLoggerInterceptor} from '@project-sunbird/client-services/core/http-service/utilities/interceptors';
+import {CsResponseLoggerInterceptor} from '@project-sunbird/client-services/core/http-service/utilities/interceptors';
 
 jest.mock('@project-sunbird/client-services', () => {
     return {
@@ -42,7 +44,7 @@ jest.mock('@project-sunbird/client-services', () => {
 
 jest.mock('./handlers/api-token-handler');
 
-describe('ApiServiceImpl', () => {
+describe('ApiServiceImpl:debugMode false', () => {
     let apiServiceImpl: ApiServiceImpl;
     const mockContainer: Partial<Container> = {};
     const mockDeviceInfo: Partial<DeviceInfo> = {};
@@ -202,6 +204,57 @@ describe('ApiServiceImpl', () => {
                 expect(mockSharedPreferences.putString).toHaveBeenCalledWith(ApiKeys.KEY_API_TOKEN, 'some_bearer_token');
                 done();
             });
+        });
+    });
+});
+
+describe('ApiServiceImpl:debugMode true', () => {
+    let apiServiceImpl: ApiServiceImpl;
+    const mockContainer: Partial<Container> = {};
+    const mockDeviceInfo: Partial<DeviceInfo> = {};
+    const mockEventsBusService: Partial<EventsBusService> = {};
+    const mockHttpService: Partial<CsHttpService> = {};
+    const mockSdkConfig: Partial<SdkConfig> = {
+        apiConfig: {
+            debugMode: true
+        } as Partial<ApiConfig> as ApiConfig
+    };
+    const mockSharedPreferences: Partial<SharedPreferences> = {};
+
+    beforeAll(() => {
+        apiServiceImpl = new ApiServiceImpl(
+          mockContainer as Container,
+          mockSdkConfig as SdkConfig,
+          mockDeviceInfo as DeviceInfo,
+          mockSharedPreferences as SharedPreferences,
+          mockEventsBusService as EventsBusService,
+          mockHttpService as CsHttpService
+        );
+    });
+
+    it('should be create a instance of apiServiceImpl', () => {
+        expect(apiServiceImpl).toBeTruthy();
+    });
+
+    describe('setDefaultRequestInterceptors()', () => {
+        it('should always append CsRequestLoggerInterceptor', () => {
+            // act
+            apiServiceImpl.setDefaultRequestInterceptors([]);
+
+            // assert
+            expect(apiServiceImpl['defaultRequestInterceptors'].length).toEqual(1);
+            expect(apiServiceImpl['defaultRequestInterceptors'][0] instanceof CsRequestLoggerInterceptor).toBeTruthy();
+        });
+    });
+
+    describe('setDefaultResponseInterceptors()', () => {
+        it('should always append CsResponseLoggerInterceptor', () => {
+            // act
+            apiServiceImpl.setDefaultRequestInterceptors([]);
+
+            // assert
+            expect(apiServiceImpl['defaultResponseInterceptors'].length).toEqual(1);
+            expect(apiServiceImpl['defaultResponseInterceptors'][0] instanceof CsResponseLoggerInterceptor).toBeTruthy();
         });
     });
 });
