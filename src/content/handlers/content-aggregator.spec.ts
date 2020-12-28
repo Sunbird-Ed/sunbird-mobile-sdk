@@ -1,5 +1,5 @@
-import {ContentAggregator} from './content-aggregator';
-import {ContentService} from '..';
+import {ContentAggregation, ContentAggregator, DataResponseMap} from './content-aggregator';
+import {ContentAggregatorResponse, ContentService} from '..';
 import {CachedItemStore} from '../../key-value-store';
 import {of} from 'rxjs';
 import {FormService} from '../../form';
@@ -11,7 +11,9 @@ import {
     mockGetOfflineContentsResponse,
     mockGetOfflineContentsResponseWithTwoSubjects,
     mockGetOnlineContentsResponse,
-    mockFormResponseWithExplicitValuesAttached
+    mockFormResponseWithUnknownDataSrcNoValuesNoSearchFields,
+    mockFormResponseWithUnknownDataSrcNoSearchField,
+    mockFormResponseWithUnknownDataSrc
 } from './content-aggregator.spec.data';
 import {SearchContentHandler} from './search-content-handler';
 import {CourseService} from '../../course';
@@ -83,12 +85,12 @@ describe('ContentAggregator', () => {
                     // arrange
                     mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponse));
                     mockContentService.getContents = jest.fn().mockImplementation(() => of(mockGetOfflineContentsResponse));
-                    mockCachedItemStore.getCached = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
+                    mockContentService.searchContent = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
 
                     spyOn(CsContentsGroupGenerator, 'generate').and.callThrough();
 
                     // act
-                    contentAggregator.aggregate({}, ['CONTENTS'], {
+                    contentAggregator.aggregate({}, ['TRACKABLE_CONTENTS'], {
                         type: 'config',
                         subType: 'library',
                         action: 'get',
@@ -99,59 +101,41 @@ describe('ContentAggregator', () => {
                             board: undefined,
                             medium: undefined,
                             grade: undefined,
-                            primaryCategories: []
+                            primaryCategories: ['Explanation Content']
                         }));
                         expect(mockContentService.getContents).toHaveBeenNthCalledWith(2, expect.objectContaining({
                             board: undefined,
                             medium: undefined,
-                            grade: undefined
+                            grade: undefined,
+                            primaryCategories: ['Digital Textbook']
                         }));
 
-                        expect(mockCachedItemStore.getCached).toHaveBeenNthCalledWith(
-                            1,
-                            '27e83b402d63d832821e756b5b5d841600289088',
-                            'search_content_grouped',
-                            'ttl_search_content_grouped',
-                            expect.anything(),
-                            undefined,
-                            undefined,
-                            expect.anything(),
-                        );
-                        expect(mockCachedItemStore.getCached).toHaveBeenNthCalledWith(
-                            2,
-                            '27e83b402d63d832821e756b5b5d841600289088',
-                            'search_content_grouped',
-                            'ttl_search_content_grouped',
-                            expect.anything(),
-                            undefined,
-                            undefined,
-                            expect.anything(),
-                        );
-
                         expect(CsContentsGroupGenerator.generate).toHaveBeenNthCalledWith(
-                            1,
-                            expect.arrayContaining([
-                                expect.objectContaining({identifier: 'do_21280780867130982412259'}),
-                                expect.objectContaining({identifier: 'do_2128458593096499201172'})
-                            ]),
-                            'subject',
-                            [
-                                {
-                                    sortAttribute: 'name',
-                                    sortOrder: 'asc'
-                                }
-                            ],
-                            undefined
+                          1,
+                          expect.arrayContaining([
+                              expect.objectContaining({identifier: 'do_21280780867130982412259'}),
+                              expect.objectContaining({identifier: 'do_2128458593096499201172'})
+                          ]),
+                          'subject',
+                          [
+                              {
+                                  sortAttribute: 'name',
+                                  sortOrder: 'asc'
+                              }
+                          ],
+                          undefined
                         );
 
                         expect(result).toEqual({
                             result: [
                                 {
-                                    title: '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
-                                    orientation: 'horizontal',
-                                    searchCriteria: expect.anything(), searchRequest: expect.anything(),
-                                    section: {
-                                        name: '0',
+                                    title: expect.any(String),
+                                    meta: {
+                                        searchCriteria: expect.anything(),
+                                        searchRequest: expect.anything(),
+                                    },
+                                    data: {
+                                        name: expect.any(String),
                                         sections: [
                                             {
                                                 count: 2,
@@ -165,17 +149,21 @@ describe('ContentAggregator', () => {
                                                 ]
                                             }
                                         ]
-                                    }
-                                },
+                                    },
+                                    dataSrc: expect.any(Object),
+                                    theme: expect.any(Object)
+                                } as ContentAggregation<'CONTENTS'>,
                                 {
-                                    title: '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
-                                    orientation: 'vertical',
-                                    searchCriteria: expect.anything(), searchRequest: expect.anything(),
-                                    section: {
-                                        name: 'subject',
+                                    title: expect.any(String),
+                                    meta: {
+                                        searchCriteria: expect.anything(),
+                                        searchRequest: expect.anything(),
+                                    },
+                                    data: {
+                                        name: expect.any(String),
                                         sections: [
                                             {
-                                                name: 'English',
+                                                name: expect.any(String),
                                                 count: 1,
                                                 contents: [
                                                     expect.objectContaining({
@@ -184,7 +172,7 @@ describe('ContentAggregator', () => {
                                                 ]
                                             },
                                             {
-                                                name: 'Physical Science',
+                                                name: expect.any(String),
                                                 count: 1,
                                                 contents: [
                                                     expect.objectContaining({
@@ -193,10 +181,12 @@ describe('ContentAggregator', () => {
                                                 ]
                                             }
                                         ]
-                                    }
-                                }
+                                    },
+                                    dataSrc: expect.any(Object),
+                                    theme: expect.any(Object)
+                                } as ContentAggregation<'CONTENTS'>
                             ]
-                        });
+                        } as ContentAggregatorResponse);
                         done();
                     });
                 });
@@ -207,7 +197,7 @@ describe('ContentAggregator', () => {
                     // arrange
                     mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponse));
                     mockContentService.getContents = jest.fn().mockImplementation(() => of(mockGetOfflineContentsResponseWithTwoSubjects));
-                    mockCachedItemStore.getCached = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
+                    mockContentService.searchContent = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
 
                     spyOn(CsContentsGroupGenerator, 'generate').and.callThrough();
 
@@ -217,7 +207,7 @@ describe('ContentAggregator', () => {
                             'subject': ['Some other Physical Science'],
                             'gradeLevel': ['Class 1']
                         }
-                    }, ['CONTENTS'], {
+                    }, ['TRACKABLE_CONTENTS'], {
                         type: 'config',
                         subType: 'library',
                         action: 'get',
@@ -228,34 +218,14 @@ describe('ContentAggregator', () => {
                             board: undefined,
                             medium: undefined,
                             grade: undefined,
-                            primaryCategories: []
+                            primaryCategories: ['Explanation Content']
                         }));
                         expect(mockContentService.getContents).toHaveBeenNthCalledWith(2, expect.objectContaining({
                             board: undefined,
                             medium: undefined,
-                            grade: undefined
+                            grade: undefined,
+                            primaryCategories: ['Digital Textbook']
                         }));
-
-                        expect(mockCachedItemStore.getCached).toHaveBeenNthCalledWith(
-                            1,
-                            '27e83b402d63d832821e756b5b5d841600289088',
-                            'search_content_grouped',
-                            'ttl_search_content_grouped',
-                            expect.anything(),
-                            undefined,
-                            undefined,
-                            expect.anything(),
-                        );
-                        expect(mockCachedItemStore.getCached).toHaveBeenNthCalledWith(
-                            2,
-                            '27e83b402d63d832821e756b5b5d841600289088',
-                            'search_content_grouped',
-                            'ttl_search_content_grouped',
-                            expect.anything(),
-                            undefined,
-                            undefined,
-                            expect.anything(),
-                        );
 
                         expect(CsContentsGroupGenerator.generate).toHaveBeenNthCalledWith(
                             1,
@@ -279,10 +249,11 @@ describe('ContentAggregator', () => {
                         expect(result).toEqual({
                             result: [
                                 {
-                                    title: '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
-                                    orientation: 'horizontal',
-                                    searchCriteria: expect.anything(), searchRequest: expect.anything(),
-                                    section: {
+                                    title: expect.any(String),
+                                    meta: {
+                                        searchCriteria: expect.anything(), searchRequest: expect.anything(),
+                                    },
+                                    data: {
                                         name: '0',
                                         sections: [
                                             {
@@ -300,13 +271,16 @@ describe('ContentAggregator', () => {
                                                 ]
                                             }
                                         ]
-                                    }
-                                },
+                                    },
+                                    dataSrc: expect.any(Object),
+                                    theme: expect.any(Object)
+                                } as ContentAggregation<'CONTENTS'>,
                                 {
-                                    title: '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
-                                    orientation: 'vertical',
-                                    searchCriteria: expect.anything(), searchRequest: expect.anything(),
-                                    section: {
+                                    title: expect.any(String),
+                                    meta: {
+                                        searchCriteria: expect.anything(), searchRequest: expect.anything(),
+                                    },
+                                    data: {
                                         name: 'subject',
                                         combination: {
                                             subject: 'Some other Physical Science',
@@ -323,8 +297,10 @@ describe('ContentAggregator', () => {
                                                 ]
                                             }
                                         ]
-                                    }
-                                }
+                                    },
+                                    dataSrc: expect.any(Object),
+                                    theme: expect.any(Object)
+                                } as ContentAggregation<'CONTENTS'>
                             ]
                         });
                         done();
@@ -337,7 +313,7 @@ describe('ContentAggregator', () => {
                     // arrange
                     mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponse));
                     mockContentService.getContents = jest.fn().mockImplementation(() => of(mockGetOfflineContentsResponseWithTwoSubjects));
-                    mockCachedItemStore.getCached = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
+                    mockContentService.searchContent = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
 
                     spyOn(CsContentsGroupGenerator, 'generate').and.callThrough();
 
@@ -353,7 +329,7 @@ describe('ContentAggregator', () => {
                             criteria.grade = ['some_grade'];
                             return criteria;
                         }
-                    }, ['CONTENTS'], {
+                    }, ['TRACKABLE_CONTENTS'], {
                         type: 'config',
                         subType: 'library',
                         action: 'get',
@@ -364,34 +340,14 @@ describe('ContentAggregator', () => {
                             board: ['some_board'],
                             medium: ['some_medium'],
                             grade: ['some_grade'],
-                            primaryCategories: []
+                            primaryCategories: ['Explanation Content']
                         }));
                         expect(mockContentService.getContents).toHaveBeenNthCalledWith(2, expect.objectContaining({
                             board: ['some_board'],
                             medium: ['some_medium'],
-                            grade: ['some_grade']
+                            grade: ['some_grade'],
+                            primaryCategories: ['Digital Textbook']
                         }));
-
-                        expect(mockCachedItemStore.getCached).toHaveBeenNthCalledWith(
-                            1,
-                            '78b675beed0b4ef73da507eca39195ebf750913e',
-                            'search_content_grouped',
-                            'ttl_search_content_grouped',
-                            expect.anything(),
-                            undefined,
-                            undefined,
-                            expect.anything(),
-                        );
-                        expect(mockCachedItemStore.getCached).toHaveBeenNthCalledWith(
-                            2,
-                            '78b675beed0b4ef73da507eca39195ebf750913e',
-                            'search_content_grouped',
-                            'ttl_search_content_grouped',
-                            expect.anything(),
-                            undefined,
-                            undefined,
-                            expect.anything(),
-                        );
 
                         expect(CsContentsGroupGenerator.generate).toHaveBeenNthCalledWith(
                             1,
@@ -415,10 +371,12 @@ describe('ContentAggregator', () => {
                         expect(result).toEqual({
                             result: [
                                 {
-                                    title: '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
-                                    orientation: 'horizontal',
-                                    searchCriteria: expect.anything(), searchRequest: expect.anything(),
-                                    section: {
+                                    title: expect.any(String),
+                                    meta: {
+                                        searchCriteria: expect.anything(),
+                                        searchRequest: expect.anything(),
+                                    },
+                                    data: {
                                         name: '0',
                                         sections: [
                                             {
@@ -436,13 +394,16 @@ describe('ContentAggregator', () => {
                                                 ]
                                             }
                                         ]
-                                    }
-                                },
+                                    },
+                                    dataSrc: expect.any(Object),
+                                    theme: expect.any(Object)
+                                } as ContentAggregation<'CONTENTS'>,
                                 {
-                                    title: '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
-                                    orientation: 'vertical',
-                                    searchCriteria: expect.anything(), searchRequest: expect.anything(),
-                                    section: {
+                                    title: expect.any(String),
+                                    meta: {
+                                        searchCriteria: expect.anything(), searchRequest: expect.anything(),
+                                    },
+                                    data: {
                                         name: 'subject',
                                         combination: {
                                             subject: 'Some other Physical Science',
@@ -459,8 +420,10 @@ describe('ContentAggregator', () => {
                                                 ]
                                             }
                                         ]
-                                    }
-                                }
+                                    },
+                                    dataSrc: expect.any(Object),
+                                    theme: expect.any(Object)
+                                } as ContentAggregation<'CONTENTS'>
                             ]
                         });
                         done();
@@ -470,12 +433,12 @@ describe('ContentAggregator', () => {
         });
 
         describe('dataSrc', () => {
-            describe('when default - no optional arguments are passed', () => {
-                it('should assume dataSrc to be \'CONTENTS\' if searchRequest Attached', (done) => {
+            describe('when excludes is TRACKABLE_CONTENTS', () => {
+                it('should avoid fetching enrolledCourses', (done) => {
                     // arrange
                     mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponse));
                     mockContentService.getContents = jest.fn().mockImplementation(() => of(mockGetOfflineContentsResponse));
-                    mockCachedItemStore.getCached = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
+                    mockContentService.searchContent = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
                     mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of({
                         uid: 'SOME_UID',
                         sid: 'SOME_SID'
@@ -483,7 +446,7 @@ describe('ContentAggregator', () => {
                     mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([]));
 
                     // act
-                    contentAggregator.aggregate({}, ['CONTENTS'], {
+                    contentAggregator.aggregate({}, ['TRACKABLE_CONTENTS'], {
                         type: 'config',
                         subType: 'library',
                         action: 'get',
@@ -495,41 +458,9 @@ describe('ContentAggregator', () => {
                         done();
                     });
                 });
-
-                it('should silently forward \'values\' if explicitly Attached', (done) => {
-                    // arrange
-                    mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponseWithExplicitValuesAttached));
-                    mockContentService.getContents = jest.fn().mockImplementation(() => of(mockGetOfflineContentsResponse));
-                    mockCachedItemStore.getCached = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
-                    mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of({
-                        uid: 'SOME_UID',
-                        sid: 'SOME_SID'
-                    }));
-                    mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([]));
-
-                    // act
-                    contentAggregator.aggregate({}, ['CONTENTS'], {
-                        type: 'config',
-                        subType: 'library',
-                        action: 'get',
-                        component: 'app',
-                    }).subscribe(({result}) => {
-                        // assert
-                        expect(result).toEqual([
-                          expect.objectContaining({
-                            values: [
-                                {
-                                    'SOME_KEY': 'SOME_VALUE'
-                                }
-                            ]
-                          })
-                        ]);
-                        done();
-                    });
-                });
             });
 
-            describe('when dataSrc is TRACKABLE_COURSE_CONTENTS', () => {
+            describe('when excludes is not TRACKABLE_COURSE_CONTENTS', () => {
                 it('should aggregate from enrolledCourses', (done) => {
                     // arrange
                     mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponseWithTrackableCourseDataSrc));
@@ -551,7 +482,7 @@ describe('ContentAggregator', () => {
                     ]));
 
                     // act
-                    contentAggregator.aggregate({}, ['TRACKABLE_COURSE_CONTENTS'], {
+                    contentAggregator.aggregate({}, ['CONTENTS'], {
                         type: 'config',
                         subType: 'library',
                         action: 'get',
@@ -565,15 +496,17 @@ describe('ContentAggregator', () => {
                         });
                         expect(result).toEqual({
                             'result': [{
-                                'dataSrc': 'TRACKABLE_COURSE_CONTENTS',
-                                'orientation': 'horizontal',
-                                'section': {
+                                'data': {
                                     'name': '0',
                                     'sections': [
-                                        {'contents': [{'content': {'primaryCategory': 'Course'}}], 'count': 1}
+                                        {
+                                            'contents': [{'content': {'primaryCategory': 'Course'}}], 'count': 1, 'name': '0'
+                                        }
                                     ]
                                 },
-                                'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}'
+                                'title': expect.any(String),
+                                'dataSrc': expect.any(Object),
+                                'theme': expect.any(Object),
                             }]
                         });
                         done();
@@ -581,7 +514,7 @@ describe('ContentAggregator', () => {
                 });
             });
 
-            describe('when dataSrc is TRACKABLE_CONTENTS', () => {
+            describe('when excludes is not TRACKABLE_CONTENTS', () => {
                 it('should aggregate from enrolledCourses', (done) => {
                     // arrange
                     mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponseWithTrackableDataSrc));
@@ -603,7 +536,7 @@ describe('ContentAggregator', () => {
                     ]));
 
                     // act
-                    contentAggregator.aggregate({}, ['TRACKABLE_CONTENTS'], {
+                    contentAggregator.aggregate({}, [], {
                         type: 'config',
                         subType: 'library',
                         action: 'get',
@@ -617,18 +550,115 @@ describe('ContentAggregator', () => {
                         });
                         expect(result).toEqual({
                             'result': [{
-                                'dataSrc': 'TRACKABLE_CONTENTS',
-                                'orientation': 'horizontal',
-                                'section': {
+                                'data': {
                                     'name': '0',
                                     'sections': [
-                                        {'contents': [{'content': {'primaryCategory': 'Non-Course'}}], 'count': 1}
+                                        {'contents': [{'content': {'primaryCategory': 'Non-Course'}}], 'count': 1, 'name': '0'}
                                     ]
                                 },
-                                'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}'
+                                'title': expect.any(String),
+                                'dataSrc': expect.any(Object),
+                                'theme': expect.any(Object),
                             }]
                         });
                         done();
+                    });
+                });
+            });
+
+            describe('unknown dataSrc is passed', () => {
+                describe('when neither "search" nor "values" present', () => {
+                    it('should return empty aggregation', (done) => {
+                        // arrange
+                        mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponseWithUnknownDataSrcNoValuesNoSearchFields));
+
+                        // act
+                        contentAggregator.aggregate({}, [], {
+                            type: 'config',
+                            subType: 'library',
+                            action: 'get',
+                            component: 'app',
+                        }).subscribe((result) => {
+                            // assert
+                            expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
+                            expect(mockCourseService.getEnrolledCourses).toHaveBeenCalledWith({
+                                userId: 'SOME_UID',
+                                returnFreshCourses: true
+                            });
+                            expect(result).toEqual({
+                                'result': [{
+                                    'data': [],
+                                    'title': expect.any(String),
+                                    'dataSrc': expect.any(Object),
+                                    'theme': expect.any(Object),
+                                }]
+                            });
+                            done();
+                        });
+                    });
+                });
+
+                describe('when "values" present', () => {
+                    it('should return aggregation with values', (done) => {
+                        // arrange
+                        mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponseWithUnknownDataSrcNoSearchField));
+
+                        // act
+                        contentAggregator.aggregate({}, [], {
+                            type: 'config',
+                            subType: 'library',
+                            action: 'get',
+                            component: 'app',
+                        }).subscribe((result) => {
+                            // assert
+                            expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
+                            expect(mockCourseService.getEnrolledCourses).toHaveBeenCalledWith({
+                                userId: 'SOME_UID',
+                                returnFreshCourses: true
+                            });
+                            expect(result).toEqual({
+                                'result': [{
+                                    'data': [
+                                        {'some': 'value'},
+                                        {'some': 'value'},
+                                    ],
+                                    'title': expect.any(String),
+                                    'dataSrc': expect.any(Object),
+                                    'theme': expect.any(Object),
+                                }]
+                            });
+                            done();
+                        });
+                    });
+                });
+
+                describe('when "search" present', () => {
+                    it('should default to dataSrc: \'CONTENTS\'', (done) => {
+                        // arrange
+                        mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponseWithTrackableDataSrc));
+                        mockContentService.getContents = jest.fn().mockImplementation(() => of(mockGetOfflineContentsResponse));
+                        mockContentService.searchContent = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
+
+                        // act
+                        contentAggregator.aggregate({}, [], {
+                            type: 'config',
+                            subType: 'library',
+                            action: 'get',
+                            component: 'app',
+                        }).subscribe((result) => {
+                            // assert
+                            expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
+                            expect(mockCourseService.getEnrolledCourses).toHaveBeenCalledWith({
+                                userId: 'SOME_UID',
+                                returnFreshCourses: true
+                            });
+                            expect(result).toEqual({
+                                result: [
+                                    expect.any(Object),
+                                ]
+                            } as ContentAggregatorResponse);
+                            done();
+                        });
                     });
                 });
             });

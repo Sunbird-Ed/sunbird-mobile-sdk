@@ -3,6 +3,7 @@ import {Content, ContentData} from './content';
 import {ContentImportStatus} from '..';
 import {SearchRequest} from './search-request';
 import { Course } from '../../course/def/course';
+import {ContentAggregation, DataSourceMap, DataSourceType} from '../handlers/content-aggregator';
 
 export interface ContentSearchResult {
     id: string;
@@ -14,15 +15,7 @@ export interface ContentSearchResult {
 }
 
 export interface ContentAggregatorResponse {
-    result: {
-        title: string;
-        orientation: 'horizontal' | 'vertical';
-        section: ContentsGroupedByPageSection;
-        values?: any[];
-        searchRequest?: SearchRequest;
-        searchCriteria?: ContentSearchCriteria;
-        dataSrc?: string;
-    }[];
+    result: ContentAggregation[];
 }
 
 export interface ContentsGroupedByPageSection {

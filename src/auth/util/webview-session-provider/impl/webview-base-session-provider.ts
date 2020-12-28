@@ -6,9 +6,15 @@ import {OAuthSession} from '../../../def/o-auth-session';
 import {SignInError} from '../../../errors/sign-in-error';
 
 export abstract class WebviewBaseSessionProvider implements SessionProvider {
-    private static parseUserTokenFromAccessToken(accessToken: string) {
-        const payload: { sub: string } = JWTUtil.getJWTPayload(accessToken);
-        return payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub;
+    private static parseAccessToken(accessToken: string): {
+        userToken: string;
+        accessTokenExpiresOn: number;
+    } {
+        const payload: { sub: string, exp: number } = JWTUtil.getJWTPayload(accessToken);
+        return {
+            userToken: payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub,
+            accessTokenExpiresOn: payload.exp * 1000
+        };
     }
 
     protected constructor(
@@ -109,11 +115,12 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
             .toPromise()
             .then((response: Response<{ access_token: string, refresh_token: string }>) => {
                 if (response.body.access_token && response.body.refresh_token) {
-                    const userToken = WebviewBaseSessionProvider.parseUserTokenFromAccessToken(response.body.access_token);
+                    const {userToken, accessTokenExpiresOn} = WebviewBaseSessionProvider.parseAccessToken(response.body.access_token);
 
                     return {
                         access_token: response.body.access_token,
                         refresh_token: response.body.refresh_token,
+                        accessTokenExpiresOn,
                         userToken
                     };
                 }
@@ -136,11 +143,12 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
             .toPromise()
             .then((response: Response<{ access_token: string, refresh_token: string }>) => {
                 if (response.body.access_token && response.body.refresh_token) {
-                    const userToken = WebviewBaseSessionProvider.parseUserTokenFromAccessToken(response.body.access_token);
+                    const {userToken, accessTokenExpiresOn} = WebviewBaseSessionProvider.parseAccessToken(response.body.access_token);
 
                     return {
                         access_token: response.body.access_token,
                         refresh_token: response.body.refresh_token,
+                        accessTokenExpiresOn,
                         userToken
                     };
                 }
@@ -154,11 +162,12 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
 
     private async resolveGoogleSession(captured: {[key: string]: string}): Promise<OAuthSession> {
         if (captured['access_token'] && captured['refresh_token']) {
-            const userToken = WebviewBaseSessionProvider.parseUserTokenFromAccessToken(captured['access_token']);
+            const {userToken, accessTokenExpiresOn} = WebviewBaseSessionProvider.parseAccessToken(captured['access_token']);
 
             return {
                 access_token: captured['access_token'],
                 refresh_token: captured['refresh_token'],
+                accessTokenExpiresOn,
                 userToken
             };
         } else if (captured['error_message']) {

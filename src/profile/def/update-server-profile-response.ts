@@ -1,4 +1,3 @@
 export {
-    CsProfileUpdateRequest as UpdateServerProfileInfoRequest
+  CsProfileUpdateResponse as UpdateServerProfileResponse
 } from '@project-sunbird/client-services/services/user';
-
