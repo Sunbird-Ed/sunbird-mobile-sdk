@@ -82,6 +82,9 @@ import {GroupServiceDeprecatedImpl} from './group-deprecated/impl/group-service-
 import {CsUserService} from '@project-sunbird/client-services/services/user';
 import {ContentGeneralizationMigration} from './db/migrations/content-generalization-migration';
 import {CsClientStorage} from '@project-sunbird/client-services/core';
+import { DiscussionService } from './discussion';
+import { DiscussionServiceImpl } from './discussion/impl/discussion-service.impl';
+import { CsDiscussionService } from '@project-sunbird/client-services/services/discussion';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -238,6 +241,10 @@ export class SunbirdSdk {
         return this._container.get<NetworkQueue>(InjectionTokens.NETWORK_QUEUE);
     }
 
+    get discussionService(): DiscussionService {
+        return this._container.get<DiscussionService>(InjectionTokens.DISCUSSION_SERVICE);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
@@ -354,6 +361,8 @@ export class SunbirdSdk {
 
         this._container.bind<NetworkQueue>(InjectionTokens.NETWORK_QUEUE).to(NetworkQueueImpl).inSingletonScope();
 
+        this._container.bind<DiscussionService>(InjectionTokens.DISCUSSION_SERVICE).to(DiscussionServiceImpl).inSingletonScope();
+
         const sharedPreferences = this.sharedPreferences;
 
         await CsModule.instance.init({
@@ -384,6 +393,9 @@ export class SunbirdSdk {
                     },
                     formServiceConfig: {
                         apiPath: '/api/data/v1/form'
+                    },
+                    discussionServiceConfig: {
+                        apiPath: '/discussion'
                     }
                 }
             }, (() => {
@@ -391,6 +403,7 @@ export class SunbirdSdk {
                 this._container.rebind<CsGroupService>(CsInjectionTokens.GROUP_SERVICE).toConstantValue(CsModule.instance.groupService);
                 this._container.rebind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(CsModule.instance.courseService);
                 this._container.rebind<CsUserService>(CsInjectionTokens.USER_SERVICE).toConstantValue(CsModule.instance.userService);
+                this._container.rebind<CsDiscussionService>(CsInjectionTokens.DISCUSSION_SERVICE).toConstantValue(CsModule.instance.discussionService);
             }).bind(this),
             new class implements CsClientStorage {
 
@@ -407,6 +420,7 @@ export class SunbirdSdk {
         this._container.bind<CsGroupService>(CsInjectionTokens.GROUP_SERVICE).toConstantValue(CsModule.instance.groupService);
         this._container.bind<CsCourseService>(CsInjectionTokens.COURSE_SERVICE).toConstantValue(CsModule.instance.courseService);
         this._container.bind<CsUserService>(CsInjectionTokens.USER_SERVICE).toConstantValue(CsModule.instance.userService);
+        this._container.bind<CsDiscussionService>(CsInjectionTokens.DISCUSSION_SERVICE).toConstantValue(CsModule.instance.discussionService);
 
         await this.dbService.init();
         await this.appInfo.init();
