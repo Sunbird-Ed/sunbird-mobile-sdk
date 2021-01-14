@@ -137,6 +137,8 @@ export class OfflineContentStateHandler {
                                 contentStateList.forEach((contentState: ContentState) => {
                                     if (contentState.contentId === updateContentStateRequest.contentId) {
                                         if (contentState.status !== updateContentStateRequest.status) {
+                                            updateContentStateRequest.score = contentState.score;
+                                            updateContentStateRequest.bestScore = contentState.bestScore;
                                             newContentState = this.getContentState(updateContentStateRequest);
                                             contentStateList = contentStateList.filter((el: ContentState) => {
                                                 return el.contentId !== contentState.contentId;
@@ -192,6 +194,7 @@ export class OfflineContentStateHandler {
             result: updateContentStateRequest.result,
             grade: updateContentStateRequest.grade,
             score: updateContentStateRequest.score,
+            bestScore: updateContentStateRequest.bestScore,
             status: updateContentStateRequest.status,
             progress: updateContentStateRequest.progress,
         };
