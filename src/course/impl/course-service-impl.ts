@@ -53,6 +53,7 @@ import {AuthService} from '../../auth';
 import * as qs from 'qs';
 import {GetLearnerCertificateHandler} from '../handlers/get-learner-certificate-handler';
 import {LearnerCertificate} from '../def/get-learner-certificate-response';
+import {OfflineAssessmentScoreProcessor} from './offline-assessment-score-processor';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -67,6 +68,7 @@ export class CourseServiceImpl implements CourseService {
     private readonly profileServiceConfig: ProfileServiceConfig;
     private capturedAssessmentEvents: { [key: string]: SunbirdTelemetry.Telemetry[] | undefined } = {};
     private syncAssessmentEventsHandler: SyncAssessmentEventsHandler;
+    private offlineAssessmentScoreProcessor: OfflineAssessmentScoreProcessor;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -91,6 +93,9 @@ export class CourseServiceImpl implements CourseService {
             this.sdkConfig,
             this.dbService,
             this.networkQueue
+        );
+        this.offlineAssessmentScoreProcessor = new OfflineAssessmentScoreProcessor(
+            this.keyValueStore
         );
     }
 
@@ -358,6 +363,7 @@ export class CourseServiceImpl implements CourseService {
 
             this.resetCapturedAssessmentEvents();
         }
+        this.offlineAssessmentScoreProcessor.process(capturedAssessmentEvents);
 
         return this.syncAssessmentEventsHandler.handle(
             capturedAssessmentEvents

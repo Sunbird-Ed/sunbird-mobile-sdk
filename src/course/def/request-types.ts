@@ -35,6 +35,7 @@ export interface UpdateContentStateRequest {
     status?: ContentState['status'];
     progress?: ContentState['progress'];
     score?: ContentState['score'];
+    bestScore?: ContentState['bestScore'];
 }
 
 export interface CourseBatchesRequest {
