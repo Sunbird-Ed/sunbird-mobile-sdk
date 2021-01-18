@@ -485,7 +485,7 @@ export class SunbirdSdk {
             this.contentService.onInit(),
             this.storageService.onInit(),
             this.telemetryService.onInit(),
-            // this.notificationService.onInit()
+            this.notificationService.onInit()
         ]);
     }
 }

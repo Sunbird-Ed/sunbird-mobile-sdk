@@ -3,7 +3,6 @@ export interface NotificationFilterCriteria {
 }
 
 export enum NotificationType {
-    USER_FEED = 0,
     ACTIONABLE_NOTIFICATION = 1,
     NOTIFY = 2,
     CONFIG = 3
@@ -11,6 +10,7 @@ export enum NotificationType {
 
 export interface Notification {
     id: number | string;
+    source?: 'FCM' | 'USER_FEED';
     type: NotificationType;
     displayTime: number;
     expiry: number;
