@@ -1,5 +1,5 @@
 import {inject, injectable} from 'inversify';
-import {ActionData, Notification, NotificationFilterCriteria, NotificationService, NotificationStatus, NotificationType} from '..';
+import {Notification, NotificationFilterCriteria, NotificationService, NotificationStatus} from '..';
 import {InjectionTokens} from '../../injection-tokens';
 import {DbService} from '../../db';
 import {NotificationEntry} from '../db/schema';
@@ -97,7 +97,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
     }
 
     deleteNotification(notification: Notification): Observable<boolean> {
-        if (notification.type === NotificationType.USER_FEED) {
+        if (notification.source === 'USER_FEED') {
             return this.profileService.deleteUserFeedEntry({
                 feedEntryId: notification.id as string,
                 category: UserFeedCategory.NOTIFICATION,
@@ -127,7 +127,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
     }
 
     updateNotification(notification: Notification): Observable<boolean> {
-        if (notification.type === NotificationType.USER_FEED) {
+        if (notification.source === 'USER_FEED') {
             return this.profileService.updateUserFeedEntry({
                 feedEntryId: notification.id as string,
                 category: UserFeedCategory.NOTIFICATION,
@@ -178,6 +178,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
     }
 
     private async fetchNotificationAndUserFeed(): Promise<Notification[]> {
+        type PartialNotification = Exclude<Notification, 'id' | 'displayTime' | 'expiry' | 'isRead'>;
         const fetchNotifications = async () => {
             return this.getAllNotifications({notificationStatus: NotificationStatus.ALL}).toPromise();
         };
@@ -189,7 +190,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
 
                 try {
                     const feed = await this.profileService.getUserFeed().toPromise().then((entries) => {
-                        return entries.filter(e => e.category === UserFeedCategory.NOTIFICATION) as UserFeedEntry<ActionData>[];
+                        return entries.filter(e => e.category === UserFeedCategory.NOTIFICATION) as UserFeedEntry<PartialNotification>[];
                     });
                     this.keyValueStore.setValue(
                         cacheKey,
@@ -217,17 +218,17 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
         ]);
 
         const notifications = result[0];
-        const userFeedEntries = result[1];
+        const userFeedEntries: UserFeedEntry<PartialNotification>[] = result[1];
 
         return notifications.concat(
             userFeedEntries.map((e) => {
                 return {
-                    id: e.identifier,
-                    type: NotificationType.USER_FEED,
+                    id: e['id'],
+                    source: 'USER_FEED',
                     displayTime: new Date(e.createdOn).getTime(),
                     expiry: e.expireOn ? new Date(e.expireOn).getTime() : 0,
                     isRead: e.status === 'read' ? 1 : 0,
-                    actionData: e.data
+                    ...e.data
                 } as Notification;
             })
         ).sort((a, b) => {
