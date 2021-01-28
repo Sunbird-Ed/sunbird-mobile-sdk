@@ -27,7 +27,7 @@ import {CsCourseService} from '@project-sunbird/client-services/services/course'
 import {FileService} from '../../util/file/def/file-service';
 import {NetworkQueue} from '../../api/network-queue';
 import {UpdateContentStateApiHandler} from '../handlers/update-content-state-api-handler';
-import {DownloadCertificateRequest} from '../def/download-certificate-request';
+import {GetCertificateRequest} from '../def/get-certificate-request';
 import {NoCertificateFound} from '../errors/no-certificate-found';
 import {CertificateAlreadyDownloaded} from '../errors/certificate-already-downloaded';
 import {ContentService, DownloadStatus, GenerateAttemptIdRequest} from '../..';
@@ -595,7 +595,7 @@ describe('CourseServiceImpl', () => {
 
     describe('downloadCurrentProfileCourseCertificate', () => {
         it('should return course which does not have certificate', (done) => {
-            const request: DownloadCertificateRequest = {
+            const request: GetCertificateRequest = {
                 courseId: 'sample-course-id',
                 certificate: {
                     name: 'sample-certificate',
@@ -637,7 +637,7 @@ describe('CourseServiceImpl', () => {
         });
 
         it('should return DownloadCertificateResponse if certificate ont found', (done) => {
-            const request: DownloadCertificateRequest = {
+            const request: GetCertificateRequest = {
                 courseId: 'sample-course-id',
                 certificate: {
                     name: 'sample-certificate',
@@ -679,7 +679,7 @@ describe('CourseServiceImpl', () => {
         });
 
         it('should return DownloadCertificateResponse if certificate already downloaded', (done) => {
-            const request: DownloadCertificateRequest = {
+            const request: GetCertificateRequest = {
                 courseId: 'sample-course-id',
                 certificate: {
                     name: 'sample-certificate',
@@ -734,7 +734,7 @@ describe('CourseServiceImpl', () => {
         });
 
         it('should return DownloadCertificateResponse if certificate already downloaded for catch part and enqueue is error', (done) => {
-            const request: DownloadCertificateRequest = {
+            const request: GetCertificateRequest = {
                 courseId: 'sample-course-id',
                 certificate: {
                     name: 'sample-certificate',
@@ -794,7 +794,7 @@ describe('CourseServiceImpl', () => {
         });
 
         it('should return DownloadCertificateResponse if certificate already downloaded for catch part enqueue is downloadId', (done) => {
-            const request: DownloadCertificateRequest = {
+            const request: GetCertificateRequest = {
                 courseId: 'sample-course-id',
                 certificate: {
                     name: 'sample-certificate',
@@ -862,7 +862,7 @@ describe('CourseServiceImpl', () => {
         });
 
         it('should return DownloadCertificateResponse if certificate already downloaded for catch partand quary is entries', (done) => {
-            const request: DownloadCertificateRequest = {
+            const request: GetCertificateRequest = {
                 courseId: 'sample-course-id',
                 certificate: {
                     name: 'sample-certificate',
@@ -998,24 +998,12 @@ describe('CourseServiceImpl', () => {
     describe('downloadCurrentProfileCourseCertificateV2', () => {
         it('should return message if certifacte is not found', (done) => {
             // arrange
-            const request: DownloadCertificateRequest = {
-                courseId: 'sample-course-id',
-                certificate: {
-                    name: 'sample-certificate',
-                    lastIssuedOn: 'some-time',
-                    token: 'some-token'
-                }
-            };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
                 managedSession: {
                     uid: 'sample-uid'
                 },
                 uid: 'sample-uid'
             })) as any;
-            const mockBlob = new Blob();
-            const mockDataProvider = (_, callback) => {
-                callback(mockBlob);
-            };
             jest.spyOn(courseService, 'getEnrolledCourses').mockImplementation(() => {
                 return of([{
                     identifier: 'do-123',
@@ -1028,12 +1016,14 @@ describe('CourseServiceImpl', () => {
                 }]) as any;
             });
             mockFileService.exists = jest.fn(() => Promise.reject({}));
-            mockCsCourseService.getSignedCourseCertificate = jest.fn(() => of({printUri: 'sample-print-uri'}));
             mockFileService.writeFile = jest.fn(() => Promise.resolve('sample-file'));
             // act
-            courseService.downloadCurrentProfileCourseCertificateV2(request, mockDataProvider).subscribe(() => {
+            courseService.downloadCurrentProfileCourseCertificateV2({
+                fileName: 'sample.pdf',
+                mimeType: 'application/pdf',
+                blob: new Blob()
+            }).subscribe(() => {
                 // assert
-                expect(mockCsCourseService.getSignedCourseCertificate).toHaveBeenCalled();
                 expect(mockFileService.writeFile).toHaveBeenCalled();
                 done();
             }, (e) => {
