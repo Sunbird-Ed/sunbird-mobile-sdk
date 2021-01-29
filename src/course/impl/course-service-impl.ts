@@ -36,8 +36,8 @@ import {CourseUtil} from '../course-util';
 import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
+import {GetCertificateRequest} from '../def/get-certificate-request';
 import {DownloadCertificateRequest} from '../def/download-certificate-request';
-import {NoCertificateFound} from '../errors/no-certificate-found';
 import {AppInfo} from '../../util/app';
 import {DownloadStatus} from '../../util/download';
 import {DownloadCertificateResponse} from '../def/download-certificate-response';
@@ -233,34 +233,27 @@ export class CourseServiceImpl implements CourseService {
             );
     }
 
-    public downloadCurrentProfileCourseCertificateV2(
-        request: DownloadCertificateRequest,
-        pdfDataProvider: (pdfSvgData: string, cb: (pdfData: Blob) => void) => void): Observable<DownloadCertificateResponse> {
+    public getCurrentProfileCourseCertificateV2(request: GetCertificateRequest): Observable<string> {
+        return this.csCourseService.getSignedCourseCertificate(request.certificate.identifier!).pipe(
+          map((r) => r.printUri)
+        );
+    }
+
+    public downloadCurrentProfileCourseCertificateV2({ fileName, blob }: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
         return defer(async () => {
-            const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
-            const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
-            const filePath = `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
-            const response = await this.csCourseService.getSignedCourseCertificate(request.certificate.identifier!).toPromise();
-            if (!response['printUri']) {
-                throw new NoCertificateFound(`No certificate found for ${request.courseId}`);
-            }
-            return new Promise<{ path: string }>((resolve, reject) => {
-                pdfDataProvider(response['printUri'], (pdfData: Blob) => {
-                    try {
-                        this.fileService.writeFile(cordova.file.externalRootDirectory +
-                            'Download/', `${request.certificate.name}_${request.courseId}_${userId}.pdf`, pdfData as any, {replace: true});
-                        resolve({
-                            path: `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`
-                        });
-                    } catch (e) {
-                        reject(e);
-                    }
-                });
+            return this.fileService.writeFile(
+                cordova.file.externalRootDirectory + 'Download/',
+                fileName, blob as any,
+                {replace: true}
+            ).then(() => {
+                return {
+                    path: `${cordova.file.externalRootDirectory}Download/${fileName}`
+                };
             });
         });
     }
 
-    public downloadCurrentProfileCourseCertificate(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
+    public downloadCurrentProfileCourseCertificate(request: GetCertificateRequest): Observable<DownloadCertificateResponse> {
         return defer(async () => {
             const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
             const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
@@ -323,8 +316,8 @@ export class CourseServiceImpl implements CourseService {
                         mergeMap(() => {
                             return new Observable((observer: Observer<EnqueuedEntry>) => {
                                 downloadManager.query({ids: [downloadId]}, (err, entries) => {
-                                    if (err) {
-                                        return observer.error(err);
+                                    if (err || (entries[0].status === DownloadStatus.STATUS_FAILED)) {
+                                        return observer.error(err || new Error('Unknown Error'));
                                     }
 
                                     return observer.next(entries[0]! as EnqueuedEntry);

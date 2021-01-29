@@ -14,11 +14,12 @@ import {Observable} from 'rxjs';
 import {Batch} from './batch';
 import {Course} from './course';
 import {UnenrollCourseRequest} from './unenrollCourseRequest';
-import {DownloadCertificateRequest} from './download-certificate-request';
+import {GetCertificateRequest} from './get-certificate-request';
 import {DownloadCertificateResponse} from './download-certificate-response';
 import {SunbirdTelemetry} from '../../telemetry';
 import Telemetry = SunbirdTelemetry.Telemetry;
 import {LearnerCertificate} from './get-learner-certificate-response';
+import {DownloadCertificateRequest} from "./download-certificate-request";
 
 export interface CourseService {
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
@@ -38,7 +39,7 @@ export interface CourseService {
     getContentState(contentStateRequest: GetContentStateRequest): Observable<ContentStateResponse | undefined>;
 
     downloadCurrentProfileCourseCertificate(
-        downloadCertificateRequest: DownloadCertificateRequest
+        downloadCertificateRequest: GetCertificateRequest
     ): Observable<DownloadCertificateResponse>;
 
     /** @internal */
@@ -54,9 +55,9 @@ export interface CourseService {
 
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 
-    downloadCurrentProfileCourseCertificateV2(
-        request: DownloadCertificateRequest,
-        pdfDataProvider: (pdfSvgData: string, cb: (pdfData: Blob) => void) => void): Observable<DownloadCertificateResponse>;
+    getCurrentProfileCourseCertificateV2(request: GetCertificateRequest): Observable<string>;
+
+    downloadCurrentProfileCourseCertificateV2(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse>;
 
     displayDiscussionForum(request: DisplayDiscussionForumRequest): Observable<boolean>;
 
