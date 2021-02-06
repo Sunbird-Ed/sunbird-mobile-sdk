@@ -4,7 +4,6 @@ import {
     ContentAggregatorResponse,
     ContentData, ContentRequest,
     ContentSearchCriteria,
-    ContentSearchResult,
     ContentService,
     ContentsGroupedByPageSection,
 } from '..';
@@ -14,75 +13,88 @@ import {CachedItemStore} from '../../key-value-store';
 import {SearchRequest} from '../def/search-request';
 import {FormRequest, FormService} from '../../form';
 import {SearchContentHandler} from './search-content-handler';
-import {CsContentSortCriteria, CsSortOrder} from '@project-sunbird/client-services/services/content';
+import {CsContentSortCriteria, CsSortOrder, CsContentFilterCriteria} from '@project-sunbird/client-services/services/content';
 import {CsContentsGroupGenerator} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
 import {CourseService} from '../../course';
 import {ProfileService} from '../../profile';
 
-export interface DataSourceMap {
-    'TRACKABLE_COURSE_CONTENTS': {
-        name: 'TRACKABLE_COURSE_CONTENTS'
+interface AggregationConfig {
+    filterBy?: {
+        [field in keyof ContentData]: {
+            operation: any,
+            value: any
+        }
+    }[];
+    sortBy?: {
+        [field in keyof ContentData]: 'asc' | 'desc'
+    }[];
+    groupBy?: keyof ContentData;
+}
+
+export interface DataSourceModelMap {
+    'CONTENTS': {
+        type: 'CONTENTS',
+        tag?: string,
+        request?: Partial<SearchRequest>,
+        mapping: {
+            applyFirstAvailableCombination?: boolean,
+            aggregate?: AggregationConfig
+        }[]
     };
-    'TRACKABLE_CONTENTS': {
-        name: 'TRACKABLE_CONTENTS'
+    'TRACKABLE_COLLECTIONS': {
+        type: 'TRACKABLE_COLLECTIONS',
+        tag?: string,
+        mapping: {
+            aggregate?: AggregationConfig
+        }[]
     };
     'CONTENT_FACETS': {
-        name: 'CONTENT_FACETS',
-        facet: string,
-        aggregate: {
-            sortBy?: {
-                [field in keyof ContentData]: 'asc' | 'desc'
-            }[];
-            groupBy?: keyof ContentData;
-        }
+        type: 'CONTENT_FACETS',
+        tag?: string,
+        values?: DataResponseMap['CONTENT_FACETS']
+        request?: Partial<SearchRequest>,
+        mapping: {
+            facet: string,
+            aggregate?: AggregationConfig
+        }[]
     };
     'RECENTLY_VIEWED_CONTENTS': {
-        name: 'RECENTLY_VIEWED_CONTENTS'
-    };
-    'CONTENTS': {
-        name: 'CONTENTS',
-        applyFirstAvailableCombination?: boolean,
-        search?: SearchRequest;
-        aggregate?: {
-            sortBy?: {
-                [field in keyof ContentData]: 'asc' | 'desc'
-            }[];
-            groupBy?: keyof ContentData;
-        }
+        type: 'RECENTLY_VIEWED_CONTENTS',
+        tag?: string,
+        mapping: {
+            aggregate?: AggregationConfig
+        }[]
     };
 }
 
 export interface DataResponseMap {
-    'TRACKABLE_COURSE_CONTENTS': ContentsGroupedByPageSection;
-    'TRACKABLE_CONTENTS': ContentsGroupedByPageSection;
+    'TRACKABLE_COLLECTIONS': ContentsGroupedByPageSection;
     'CONTENT_FACETS': {
         facet: string;
         searchCriteria: ContentSearchCriteria;
-        aggregate: {
-            sortBy?: {
-                [field in keyof ContentData]: 'asc' | 'desc'
-            }[];
-            groupBy?: keyof ContentData;
-        }
+        primaryFacetFilters?: any;
+        aggregate?: AggregationConfig
     }[];
     'RECENTLY_VIEWED_CONTENTS': ContentsGroupedByPageSection;
     'CONTENTS': ContentsGroupedByPageSection;
 }
 
-export type DataSourceType = keyof DataSourceMap;
+export type DataSourceType = keyof DataSourceModelMap;
 
-interface AggregatorConfigField<T extends DataSourceType = any> {
-    index: number;
-    title: string;
-    isEnabled: boolean;
-    dataSrc: DataSourceMap[T];
-    theme: any;
+export interface AggregatorConfigField<T extends DataSourceType = any> {
+    dataSrc: DataSourceModelMap[T];
+    sections: {
+        index: number;
+        title: string;
+        theme: any;
+    }[];
 }
 
 export interface ContentAggregation<T extends DataSourceType = any> {
+    index: number;
     title: string;
     data: DataResponseMap[T];
-    dataSrc: DataSourceMap[T];
+    dataSrc: DataSourceModelMap[T];
     theme: any;
     meta?: {
         filterCriteria?: ContentSearchCriteria;
@@ -123,61 +135,43 @@ export class ContentAggregator {
             }
 
             fields = fields
-                .filter((field) => field.isEnabled && excludeDataSrc.indexOf(field.dataSrc.name) === -1)
-                .sort((a, b) => a.index - b.index);
+                .filter((field) => excludeDataSrc.indexOf(field.dataSrc.name) === -1);
 
-            const fieldTasks = fields.map(async (field) => {
-                switch (field.dataSrc.name) {
+            const fieldTasks: Promise<ContentAggregation[]>[] = fields.map(async (field) => {
+                if (!field.dataSrc) {
+                    throw new Error('INVALID_CONFIG');
+                }
+
+                switch (field.dataSrc.type) {
                     case 'CONTENT_FACETS':
                         return await this.buildFacetsTask(field, request);
                     case 'RECENTLY_VIEWED_CONTENTS':
                         return await this.buildRecentlyViewedTask(field, request);
                     case 'CONTENTS':
                         return await this.buildContentSearchTask(field, request);
-                    case 'TRACKABLE_CONTENTS':
-                        return await this.buildTrackableTask(field, request, (c) => (c.content.primaryCategory || c.content.contentType || '').toLowerCase() !== 'course');
-                    case 'TRACKABLE_COURSE_CONTENTS':
-                        return await this.buildTrackableTask(field, request, (c) => (c.content.primaryCategory || c.content.contentType || '').toLowerCase() === 'course');
+                    case 'TRACKABLE_COLLECTIONS':
+                        return await this.buildTrackableCollectionsTask(field, request);
                     default:
-                        return await this.buildDefaultTask(field, request);
+                        throw new Error('UNKNOWN_DATA_SRC');
                 }
             });
 
             return {
-                result: await Promise.all<ContentAggregation>(fieldTasks)
+                result: await Promise.all(fieldTasks).then((result: ContentAggregation[][] ) => {
+                    return result
+                        .reduce<ContentAggregation[]>((acc, v) => {
+                            return [...acc, ...v];
+                        }, [])
+                        .sort((a, b) => a.index - b.index);
+                })
             };
         });
-    }
-
-    private async buildDefaultTask(
-      field: AggregatorConfigField,
-      request: ContentAggregatorRequest
-    ): Promise<ContentAggregation> {
-        if (field.dataSrc.search) {
-            return this.buildContentSearchTask(field, request);
-        }
-
-        if (field.dataSrc.values) {
-            return {
-                title: field.title,
-                data: field.dataSrc.values,
-                dataSrc: field.dataSrc,
-                theme: field.theme
-            };
-        }
-
-        return {
-            title: field.title,
-            data: [],
-            dataSrc: field.dataSrc,
-            theme: field.theme
-        };
     }
 
     private async buildRecentlyViewedTask(
         field: AggregatorConfigField<'RECENTLY_VIEWED_CONTENTS'>,
         request: ContentAggregatorRequest
-    ): Promise<ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>> {
+    ): Promise<ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>[]> {
         const profile = await this.profileService.getActiveProfileSession().toPromise();
 
         const requestParams: ContentRequest = {
@@ -189,122 +183,169 @@ export class ContentAggregator {
 
         const contents = await this.contentService.getContents(requestParams).toPromise();
 
-        return {
-            title: field.title,
-            data: {
-                name: field.index + '',
-                sections: [
-                    {
-                        name: field.index + '',
-                        count: contents.length,
-                        contents: contents.map(c => {
-                            c.contentData['cardImg'] = c.contentData.appIcon;
-                            return c;
-                        })
-                    }
-                ]
-            },
-            dataSrc: field.dataSrc,
-            theme: field.theme
-        } as ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>;
+        return field.sections.map((section) => {
+            return {
+                index: section.index,
+                title: section.title,
+                data: {
+                    name: section.index + '',
+                    sections: [
+                        {
+                            name: section.index + '',
+                            count: contents.length,
+                            contents: contents.map(c => {
+                                c.contentData['cardImg'] = c.contentData.appIcon;
+                                return c;
+                            })
+                        }
+                    ]
+                },
+                dataSrc: field.dataSrc,
+                theme: section.theme
+            } as ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>;
+        });
     }
 
     private async buildFacetsTask(
         field: AggregatorConfigField<'CONTENT_FACETS'>,
         request: ContentAggregatorRequest
-    ): Promise<ContentAggregation<'CONTENT_FACETS'>> {
-        let searchCriteria: ContentSearchCriteria = {
-            offset: 0,
-            limit: 0,
-            mode: 'hard',
-            facets: [
-                field.dataSrc.facet
-            ],
-        };
+    ): Promise<ContentAggregation<'CONTENT_FACETS'>[]> {
+        const {searchCriteria} = this.buildSearchRequestAndCriteria(field, request);
 
-        if (request.interceptSearchCriteria) {
-            const impliedSearchCriteria = request.interceptSearchCriteria(searchCriteria);
-            searchCriteria = {
-                ...impliedSearchCriteria, ...searchCriteria
-            };
-        }
+        searchCriteria.facets = field.dataSrc.mapping.map((m) => m.facet);
 
-        const searchResult = await this.fetchOnlineContents(searchCriteria);
-        const facetFilters = searchResult.filterCriteria.facetFilters!.find((x) => x.name === field.dataSrc.facet);
+        const searchResult = await (/* fetch online contents */ async () => {
+            return this.contentService.searchContent(searchCriteria).pipe(
+                catchError((e) => {
+                    console.error(e);
 
-        if (facetFilters) {
-            return {
-                title: field.title,
-                data: facetFilters.values.map((filterValue) => {
-                    return {
-                        facet: filterValue.name,
-                        searchCriteria: {
-                            ...searchCriteria,
-                            [facetFilters.name]: [filterValue.name]
-                        },
-                        aggregate: field.dataSrc['aggregate']
-                    };
-                }),
-                dataSrc: field.dataSrc,
-                theme: field.theme
-            };
-        }
+                    return of({
+                        id: 'OFFLINE_RESPONSE_ID',
+                        responseMessageId: 'OFFLINE_RESPONSE_ID',
+                        filterCriteria: searchCriteria,
+                        contentDataList: []
+                    });
+                })
+            ).toPromise();
+        })();
 
-        return {
-            title: field.title,
-            data: [],
-            dataSrc: field.dataSrc,
-            theme: field.theme
-        };
+        return field.sections.map((section, index) => {
+            const facetFilters = searchResult.filterCriteria.facetFilters && searchResult.filterCriteria.facetFilters.find((x) =>
+                x.name === (field.dataSrc.mapping[index] && field.dataSrc.mapping[index].facet)
+            );
+
+            if (facetFilters) {
+                return {
+                    index: section.index,
+                    title: section.title,
+                    data: facetFilters.values.map((filterValue) => {
+                        return {
+                            facet: filterValue.name,
+                            searchCriteria: {
+                                ...searchCriteria,
+                                [facetFilters.name]: [filterValue.name]
+                            },
+                            aggregate: field.dataSrc.mapping[index].aggregate
+                        };
+                    }),
+                    dataSrc: field.dataSrc,
+                    theme: section.theme
+                };
+            } else {
+                return {
+                    index: section.index,
+                    title: section.title,
+                    data: [],
+                    dataSrc: field.dataSrc,
+                    theme: section.theme
+                };
+            }
+        });
     }
 
-    private async buildTrackableTask(
-        field: AggregatorConfigField<'TRACKABLE_CONTENTS'>,
+    private async buildTrackableCollectionsTask(
+        field: AggregatorConfigField<'TRACKABLE_COLLECTIONS'>,
         request: ContentAggregatorRequest,
-        filter
-    ): Promise<ContentAggregation<'TRACKABLE_CONTENTS'>> {
+    ): Promise<ContentAggregation<'TRACKABLE_COLLECTIONS'>[]> {
         const session = await this.profileService.getActiveProfileSession().toPromise();
         const courses = await this.courseService.getEnrolledCourses({
             userId: session.managedSession ? session.managedSession.uid : session.uid,
             returnFreshCourses: true
         }).toPromise();
 
-        const contents = courses.filter((c) => filter(c));
-
-        return {
-            title: field.title,
-            data: {
-                name: field.index + '',
-                sections: [
-                    {
-                        name: field.index + '',
-                        count: contents.length,
-                        contents
-                    }
-                ]
-            },
-            dataSrc: field.dataSrc,
-            theme: field.theme
-        } as ContentAggregation<'TRACKABLE_CONTENTS'>;
+        return field.sections.map((section, index) => {
+            if (!field.dataSrc.mapping[index] || !field.dataSrc.mapping[index].aggregate) {
+                return {
+                    index: section.index,
+                    title: section.title,
+                    data: {
+                        name: section.index + '',
+                        sections: [
+                            {
+                                name: section.index + '',
+                                count: courses.length,
+                                contents: courses
+                            }
+                        ]
+                    },
+                    dataSrc: field.dataSrc,
+                    theme: section.theme
+                };
+            } else {
+                const aggregate = field.dataSrc.mapping[index].aggregate!;
+                return {
+                    index: section.index,
+                    title: section.title,
+                    data: CsContentsGroupGenerator.generate(
+                        courses as any,
+                        aggregate.groupBy!,
+                        aggregate.sortBy ? this.buildSortByCriteria(aggregate.sortBy) : [],
+                        aggregate.filterBy ? this.buildFilterByCriteria(aggregate.filterBy) : [],
+                    ),
+                    dataSrc: field.dataSrc,
+                    theme: section.theme
+                } as ContentAggregation<'TRACKABLE_COLLECTIONS'>;
+            }
+        });
     }
 
     private async buildContentSearchTask(
         field: AggregatorConfigField<'CONTENTS'>,
         request: ContentAggregatorRequest
-    ): Promise<ContentAggregation<'CONTENTS'>> {
-        if (!field.dataSrc.search) {
-            throw new Error('Expected field.dataSrc.search for dataSrc.name = "TRACKABLE_CONTENTS"');
-        }
-        let searchCriteria: ContentSearchCriteria = this.buildSearchCriteriaFromSearchRequest({
-            request: field.dataSrc.search
-        });
+    ): Promise<ContentAggregation<'CONTENTS'>[]> {
+        const {searchRequest, searchCriteria} = this.buildSearchRequestAndCriteria(field, request);
 
-        if (request.interceptSearchCriteria) {
-            searchCriteria = request.interceptSearchCriteria(searchCriteria);
-        }
+        const offlineSearchContentDataList: ContentData[] = await (/* fetch offline contents */ async () => {
+            return this.contentService.getContents({
+                primaryCategories: searchCriteria.primaryCategories || [],
+                board: searchCriteria.board,
+                medium: searchCriteria.medium,
+                grade: searchCriteria.grade
+            }).pipe(
+                map((contents: Content[]) => contents.map((content) => {
+                    if (content.contentData.appIcon && !content.contentData.appIcon.startsWith('https://')) {
+                        content.contentData.appIcon = content.basePath + content.contentData.appIcon;
+                    }
+                    return content.contentData;
+                }))
+            ).toPromise();
+        })();
 
-        const offlineSearchContentDataList: ContentData[] = await this.fetchOfflineContents(searchCriteria);
-        const onlineContentsResponse = await this.fetchOnlineContents(searchCriteria);
+        const onlineContentsResponse = await (/* fetch online contents */ async () => {
+            return this.contentService.searchContent(searchCriteria).pipe(
+                catchError((e) => {
+                    console.error(e);
+
+                    return of({
+                        id: 'OFFLINE_RESPONSE_ID',
+                        responseMessageId: 'OFFLINE_RESPONSE_ID',
+                        filterCriteria: searchCriteria,
+                        contentDataList: []
+                    });
+                })
+            ).toPromise();
+        })();
+
         const onlineSearchContentDataList: ContentData[] = (
             onlineContentsResponse.contentDataList as ContentData[] || []
         ).filter((contentData) => {
@@ -316,91 +357,114 @@ export class ContentAggregator {
             return c;
         });
 
-        if (!field.dataSrc.aggregate || !field.dataSrc.aggregate.groupBy) {
-            return {
-                title: field.title,
-                meta: {
-                    searchCriteria,
-                    filterCriteria: onlineContentsResponse.filterCriteria,
-                    searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
-                },
-                data: {
-                    name: field.index + '',
-                    sections: [
-                        {
-                            count: combinedContents.length,
-                            contents: combinedContents
-                        }
-                    ]
-                },
-                dataSrc: field.dataSrc,
-                theme: field.theme
-            } as ContentAggregation<'CONTENTS'>;
-        } else {
-            return {
-                title: field.title,
-                meta: {
-                    searchCriteria,
-                    filterCriteria: onlineContentsResponse.filterCriteria,
-                    searchRequest: this.buildSearchRequestFromSearchCriteria(searchCriteria),
-                },
-                data: CsContentsGroupGenerator.generate(
-                    combinedContents,
-                    field.dataSrc.aggregate.groupBy,
-                    field.dataSrc.aggregate.sortBy ?
-                    field.dataSrc.aggregate.sortBy.reduce((agg, s) => {
-                        Object.keys(s).forEach((k) => agg.push({
-                            sortAttribute: k,
-                            sortOrder: s[k] === 'asc' ? CsSortOrder.ASC : CsSortOrder.DESC,
-                        }));
-                        return agg;
-                    }, [] as CsContentSortCriteria[]) : [],
-                    field.dataSrc.applyFirstAvailableCombination && request.applyFirstAvailableCombination as any
-                ),
-                dataSrc: field.dataSrc,
-                theme: field.theme
-            } as ContentAggregation<'CONTENTS'>;
+        return field.sections.map((section, index) => {
+            if (!field.dataSrc.mapping[index] || !field.dataSrc.mapping[index].aggregate) {
+                return {
+                    index: section.index,
+                    title: section.title,
+                    meta: {
+                        searchCriteria,
+                        filterCriteria: onlineContentsResponse.filterCriteria,
+                        searchRequest
+                    },
+                    data: {
+                        name: section.index + '',
+                        sections: [
+                            {
+                                count: combinedContents.length,
+                                contents: combinedContents
+                            }
+                        ]
+                    },
+                    dataSrc: field.dataSrc,
+                    theme: section.theme
+                } as ContentAggregation<'CONTENTS'>;
+            } else {
+                const aggregate = field.dataSrc.mapping[index].aggregate!;
+                return {
+                    index: section.index,
+                    title: section.title,
+                    meta: {
+                        searchCriteria,
+                        filterCriteria: onlineContentsResponse.filterCriteria,
+                        searchRequest
+                    },
+                    data: CsContentsGroupGenerator.generate(
+                        combinedContents,
+                        aggregate.groupBy!,
+                        aggregate.sortBy ? this.buildSortByCriteria(aggregate.sortBy) : [],
+                        aggregate.filterBy ? this.buildFilterByCriteria(aggregate.filterBy) : [],
+                        field.dataSrc.mapping[index].applyFirstAvailableCombination && request.applyFirstAvailableCombination as any
+                    ),
+                    dataSrc: field.dataSrc,
+                    theme: section.theme
+                } as ContentAggregation<'CONTENTS'>;
+            }
+        });
+    }
+
+    private buildFilterByCriteria(config: {
+        [field in keyof ContentData]: {
+            operation: any,
+            value: any
         }
-    }
-
-    private buildSearchCriteriaFromSearchRequest(request): ContentSearchCriteria {
-        return this.searchContentHandler.getSearchCriteria(request);
-    }
-
-    private buildSearchRequestFromSearchCriteria(criteria): SearchRequest {
-        return this.searchContentHandler.getSearchContentRequest(criteria);
-    }
-
-    private async fetchOfflineContents(searchRequest: ContentSearchCriteria): Promise<ContentData[]> {
-        return this.contentService.getContents({
-            primaryCategories: searchRequest.primaryCategories || [],
-            board: searchRequest.board,
-            medium: searchRequest.medium,
-            grade: searchRequest.grade
-        }).pipe(
-            map((contents: Content[]) => contents.map((content) => {
-                if (content.contentData.appIcon && !content.contentData.appIcon.startsWith('https://')) {
-                    content.contentData.appIcon = content.basePath + content.contentData.appIcon;
+    }[]): CsContentFilterCriteria[] {
+        return config.reduce((agg, s) => {
+            Object.keys(s).forEach((k) => agg.push({
+                filterAttribute: k,
+                filterCondition: {
+                    operation: s[k].operation,
+                    value: s[k].value
                 }
-                return content.contentData;
-            }))
-        ).toPromise();
+            }));
+            return agg;
+        }, [] as CsContentFilterCriteria[]);
     }
 
-    private async fetchOnlineContents(
-        searchCriteria: ContentSearchCriteria
-    ): Promise<ContentSearchResult> {
-        return this.contentService.searchContent(searchCriteria).pipe(
-            catchError((e) => {
-                console.error(e);
+    private buildSortByCriteria(config: {
+        [field in keyof ContentData]: 'asc' | 'desc'
+    }[]): CsContentSortCriteria[] {
+        return config.reduce((agg, s) => {
+            Object.keys(s).forEach((k) => agg.push({
+                sortAttribute: k,
+                sortOrder: s[k] === 'asc' ? CsSortOrder.ASC : CsSortOrder.DESC,
+            }));
+            return agg;
+        }, [] as CsContentSortCriteria[]);
+    }
 
-                return of({
-                    id: 'OFFLINE_RESPONSE_ID',
-                    responseMessageId: 'OFFLINE_RESPONSE_ID',
-                    filterCriteria: searchCriteria,
-                    contentDataList: []
+    private buildSearchRequestAndCriteria(field: AggregatorConfigField<'CONTENTS' | 'CONTENT_FACETS'>, request: ContentAggregatorRequest) {
+        const buildSearchCriteriaFromSearchRequest: (r) => ContentSearchCriteria = (r) => {
+            return this.searchContentHandler.getSearchCriteria(r);
+        };
+
+        const buildSearchRequestFromSearchCriteria: (criteria) => SearchRequest = (c) => {
+            return this.searchContentHandler.getSearchContentRequest(c);
+        };
+
+        const tempSearchRequest: SearchRequest = (() => {
+            if (field.dataSrc.request && field.dataSrc.request) {
+                return { filters: {}, ...field.dataSrc.request };
+            } else {
+                return {filters: {}};
+            }
+        })();
+
+        const tempSearchCriteria: ContentSearchCriteria = (() => {
+            if (request.interceptSearchCriteria) {
+                return request.interceptSearchCriteria(buildSearchCriteriaFromSearchRequest({
+                    request: tempSearchRequest
+                }));
+            } else {
+                return buildSearchCriteriaFromSearchRequest({
+                    request: tempSearchRequest
                 });
-            })
-        ).toPromise();
+            }
+        })();
+
+        return {
+            searchRequest: buildSearchRequestFromSearchCriteria(tempSearchCriteria),
+            searchCriteria: tempSearchCriteria
+        };
     }
 }
