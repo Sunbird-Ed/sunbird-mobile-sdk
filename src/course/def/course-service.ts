@@ -19,7 +19,9 @@ import {DownloadCertificateResponse} from './download-certificate-response';
 import {SunbirdTelemetry} from '../../telemetry';
 import Telemetry = SunbirdTelemetry.Telemetry;
 import {LearnerCertificate} from './get-learner-certificate-response';
-import {DownloadCertificateRequest} from "./download-certificate-request";
+import {DownloadCertificateRequest} from './download-certificate-request';
+import {ApiRequestHandler} from '../../api';
+import {GetEnrolledCourseResponse} from './get-enrolled-course-response';
 
 export interface CourseService {
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
@@ -28,7 +30,10 @@ export interface CourseService {
 
     getCourseBatches(request: CourseBatchesRequest): Observable<Batch[]>;
 
-    getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]>;
+    getEnrolledCourses(
+        request: FetchEnrolledCourseRequest,
+        apiHandler?: ApiRequestHandler<{ userId: string }, GetEnrolledCourseResponse>
+    ): Observable<Course[]>;
 
     getUserEnrolledCourses(request: GetUserEnrolledCoursesRequest): Observable<Course[]>;
 

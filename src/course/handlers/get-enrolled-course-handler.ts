@@ -11,10 +11,13 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
     private readonly GET_ENROLLED_COURSES_ENDPOINT = '/user/enrollment/list/';
     private readonly STORED_ENROLLED_COURSES_PREFIX = 'enrolledCourses';
 
-    constructor(private keyValueStore: KeyValueStore,
-                private apiService: ApiService,
-                private courseServiceConfig: CourseServiceConfig,
-                private sharedPreference: SharedPreferences) {
+    constructor(
+        private keyValueStore: KeyValueStore,
+        private apiService: ApiService,
+        private courseServiceConfig: CourseServiceConfig,
+        private sharedPreference: SharedPreferences,
+        private apiHandler?: ApiRequestHandler<{ userId: string }, GetEnrolledCourseResponse>
+    ) {
     }
 
     handle(request: FetchEnrolledCourseRequest): Observable<Course[]> {
@@ -92,6 +95,10 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
     }
 
     private fetchFromServer(request: FetchEnrolledCourseRequest): Observable<GetEnrolledCourseResponse> {
+        if (this.apiHandler) {
+            return this.apiHandler.handle(request);
+        }
+
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
             .withPath(this.courseServiceConfig.apiPath + this.GET_ENROLLED_COURSES_ENDPOINT + request.userId

@@ -3,9 +3,9 @@ import {
     ContentAggregatorRequest,
     ContentAggregatorResponse,
     ContentData, ContentRequest,
-    ContentSearchCriteria,
+    ContentSearchCriteria, ContentSearchResult,
     ContentService,
-    ContentsGroupedByPageSection,
+    ContentsGroupedByPageSection, SearchResponse,
 } from '..';
 import {defer, Observable, of} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
@@ -17,6 +17,8 @@ import {CsContentSortCriteria, CsSortOrder, CsContentFilterCriteria} from '@proj
 import {CsContentsGroupGenerator} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
 import {CourseService} from '../../course';
 import {ProfileService} from '../../profile';
+import {ApiRequestHandler, ApiService, Request, SerializedRequest} from '../../api';
+import {GetEnrolledCourseResponse} from '../../course/def/get-enrolled-course-response';
 
 interface AggregationConfig {
     filterBy?: {
@@ -35,7 +37,7 @@ export interface DataSourceModelMap {
     'CONTENTS': {
         type: 'CONTENTS',
         tag?: string,
-        request?: Partial<SearchRequest>,
+        request: Partial<SerializedRequest>,
         mapping: {
             applyFirstAvailableCombination?: boolean,
             aggregate?: AggregationConfig
@@ -44,6 +46,7 @@ export interface DataSourceModelMap {
     'TRACKABLE_COLLECTIONS': {
         type: 'TRACKABLE_COLLECTIONS',
         tag?: string,
+        request: Partial<SerializedRequest>,
         mapping: {
             aggregate?: AggregationConfig
         }[]
@@ -52,7 +55,7 @@ export interface DataSourceModelMap {
         type: 'CONTENT_FACETS',
         tag?: string,
         values?: DataResponseMap['CONTENT_FACETS']
-        request?: Partial<SearchRequest>,
+        request: Partial<SerializedRequest>,
         mapping: {
             facet: string,
             aggregate?: AggregationConfig
@@ -110,7 +113,8 @@ export class ContentAggregator {
         private contentService: ContentService,
         private cachedItemStore: CachedItemStore,
         private courseService: CourseService,
-        private profileService: ProfileService
+        private profileService: ProfileService,
+        private apiService: ApiService
     ) {
     }
 
@@ -210,24 +214,14 @@ export class ContentAggregator {
         field: AggregatorConfigField<'CONTENT_FACETS'>,
         request: ContentAggregatorRequest
     ): Promise<ContentAggregation<'CONTENT_FACETS'>[]> {
-        const {searchCriteria} = this.buildSearchRequestAndCriteria(field, request);
+        const {searchRequest, searchCriteria} = this.buildSearchRequestAndCriteria(field, request);
 
         searchCriteria.facets = field.dataSrc.mapping.map((m) => m.facet);
+        searchRequest.facets = searchCriteria.facets;
+        searchRequest.limit = 0;
+        searchRequest.offset = 0;
 
-        const searchResult = await (/* fetch online contents */ async () => {
-            return this.contentService.searchContent(searchCriteria).pipe(
-                catchError((e) => {
-                    console.error(e);
-
-                    return of({
-                        id: 'OFFLINE_RESPONSE_ID',
-                        responseMessageId: 'OFFLINE_RESPONSE_ID',
-                        filterCriteria: searchCriteria,
-                        contentDataList: []
-                    });
-                })
-            ).toPromise();
-        })();
+        const searchResult = await this.searchContents(field, searchCriteria, searchRequest);
 
         return field.sections.map((section, index) => {
             const facetFilters = searchResult.filterCriteria.facetFilters && searchResult.filterCriteria.facetFilters.find((x) =>
@@ -267,10 +261,24 @@ export class ContentAggregator {
         field: AggregatorConfigField<'TRACKABLE_COLLECTIONS'>,
         request: ContentAggregatorRequest,
     ): Promise<ContentAggregation<'TRACKABLE_COLLECTIONS'>[]> {
+        const apiService = this.apiService;
         const session = await this.profileService.getActiveProfileSession().toPromise();
         const courses = await this.courseService.getEnrolledCourses({
             userId: session.managedSession ? session.managedSession.uid : session.uid,
             returnFreshCourses: true
+        }, new class implements ApiRequestHandler<{ userId: string }, GetEnrolledCourseResponse> {
+            handle({ userId }: { userId: string }): Observable<GetEnrolledCourseResponse> {
+                if (field.dataSrc.request.path) {
+                    field.dataSrc.request.path = field.dataSrc.request.path.replace('${userId}', userId);
+                }
+                const apiRequest = Request.fromJSON(field.dataSrc.request);
+                return apiService.fetch<GetEnrolledCourseResponse>(apiRequest)
+                    .pipe(
+                        map((response) => {
+                            return response.body;
+                        })
+                    );
+            }
         }).toPromise();
 
         return field.sections.map((section, index) => {
@@ -331,20 +339,7 @@ export class ContentAggregator {
             ).toPromise();
         })();
 
-        const onlineContentsResponse = await (/* fetch online contents */ async () => {
-            return this.contentService.searchContent(searchCriteria).pipe(
-                catchError((e) => {
-                    console.error(e);
-
-                    return of({
-                        id: 'OFFLINE_RESPONSE_ID',
-                        responseMessageId: 'OFFLINE_RESPONSE_ID',
-                        filterCriteria: searchCriteria,
-                        contentDataList: []
-                    });
-                })
-            ).toPromise();
-        })();
+        const onlineContentsResponse = await this.searchContents(field, searchCriteria, searchRequest);
 
         const onlineSearchContentDataList: ContentData[] = (
             onlineContentsResponse.contentDataList as ContentData[] || []
@@ -443,8 +438,8 @@ export class ContentAggregator {
         };
 
         const tempSearchRequest: SearchRequest = (() => {
-            if (field.dataSrc.request && field.dataSrc.request) {
-                return { filters: {}, ...field.dataSrc.request };
+            if (field.dataSrc.request && field.dataSrc.request.body) {
+                return { filters: {}, ...(field.dataSrc.request.body as any).request };
             } else {
                 return {filters: {}};
             }
@@ -466,5 +461,37 @@ export class ContentAggregator {
             searchRequest: buildSearchRequestFromSearchCriteria(tempSearchCriteria),
             searchCriteria: tempSearchCriteria
         };
+    }
+
+    private searchContents(
+        field: AggregatorConfigField<'CONTENTS' | 'CONTENT_FACETS'>, searchCriteria: ContentSearchCriteria, searchRequest: SearchRequest
+    ): Promise<ContentSearchResult> {
+        const apiService = this.apiService;
+        return this.contentService.searchContent(
+            searchCriteria,
+            undefined,
+            new class implements ApiRequestHandler<SearchRequest, SearchResponse> {
+                handle(_: SearchRequest): Observable<SearchResponse> {
+                    field.dataSrc.request.body = {request: searchRequest} as any;
+                    const apiRequest = Request.fromJSON(field.dataSrc.request);
+                    return apiService.fetch<SearchResponse>(apiRequest).pipe(
+                        map((success) => {
+                            return success.body;
+                        })
+                    );
+                }
+            }
+        ).pipe(
+            catchError((e) => {
+                console.error(e);
+
+                return of({
+                    id: 'OFFLINE_RESPONSE_ID',
+                    responseMessageId: 'OFFLINE_RESPONSE_ID',
+                    filterCriteria: searchCriteria,
+                    contentDataList: []
+                });
+            })
+        ).toPromise();
     }
 }
