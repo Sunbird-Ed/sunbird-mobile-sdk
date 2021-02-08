@@ -198,7 +198,7 @@ export class ManagedProfileManager {
                     take(1)
                 ).toPromise();
 
-                const managedProfile = managedProfiles.find((m) => m.identifier === uid)!;
+                const managedProfile = managedProfiles.find((m) => m.id === uid)!;
 
                 const authSession = (await this.authService.getSession().toPromise())!;
                 authSession.managed_access_token = managedProfile['managedToken'];
@@ -260,7 +260,7 @@ export class ManagedProfileManager {
 
     private async persistManagedProfile(serverProfile: ServerProfile) {
         // TODO: adding missing fields; should remove
-        serverProfile.userId = serverProfile.identifier;
+        serverProfile.userId = serverProfile.id;
         serverProfile.rootOrg = {
             hashTagId: serverProfile['rootOrgId']
         };
