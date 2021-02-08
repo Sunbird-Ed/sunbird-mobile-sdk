@@ -100,7 +100,7 @@ describe('FrameworkUtilServiceImpl', () => {
             };
             const serverData: Partial<User> = {
                 userId: 'sample-user-id',
-                identifier: 'sample-id',
+                id: 'sample-id',
                 firstName: 'f-name'
             };
             const response: Framework = {
@@ -126,7 +126,7 @@ describe('FrameworkUtilServiceImpl', () => {
             };
             const serverData: Partial<User> = {
                 userId: 'sample-user-id',
-                identifier: 'sample-id',
+                id: 'sample-id',
                 firstName: 'f-name'
             };
             const response: Framework = {

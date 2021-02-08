@@ -22,7 +22,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     private static getIdForRequest(request: FormRequest): string {
         let id = `${request.type}_${request.subType}_${request.action}`;
 
-        if (request.rootOrgId) {
+        if (request.rootOrgId && request.rootOrgId !== '*') {
             id += ('_' + request.rootOrgId);
         }
 
