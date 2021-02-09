@@ -214,6 +214,18 @@ export class ContentAggregator {
         field: AggregatorConfigField<'CONTENT_FACETS'>,
         request: ContentAggregatorRequest
     ): Promise<ContentAggregation<'CONTENT_FACETS'>[]> {
+        if (field.dataSrc.values) {
+            return field.sections.map((section) => {
+                return {
+                    index: section.index,
+                    title: section.title,
+                    data: field.dataSrc.values as any,
+                    dataSrc: field.dataSrc,
+                    theme: section.theme
+                };
+            });
+        }
+
         const {searchRequest, searchCriteria} = this.buildSearchRequestAndCriteria(field, request);
 
         searchCriteria.facets = field.dataSrc.mapping.map((m) => m.facet);
@@ -304,12 +316,13 @@ export class ContentAggregator {
                 return {
                     index: section.index,
                     title: section.title,
-                    data: CsContentsGroupGenerator.generate(
-                        courses as any,
-                        aggregate.groupBy!,
-                        aggregate.sortBy ? this.buildSortByCriteria(aggregate.sortBy) : [],
-                        aggregate.filterBy ? this.buildFilterByCriteria(aggregate.filterBy) : [],
-                    ),
+                    data: CsContentsGroupGenerator.generate({
+                        contents: courses as any,
+                        groupBy: aggregate.groupBy!,
+                        sortCriteria: aggregate.sortBy ? this.buildSortByCriteria(aggregate.sortBy) : [],
+                        filterCriteria: aggregate.filterBy ? this.buildFilterByCriteria(aggregate.filterBy) : [],
+                        includeSearchable: true
+                    }),
                     dataSrc: field.dataSrc,
                     theme: section.theme
                 } as ContentAggregation<'TRACKABLE_COLLECTIONS'>;
@@ -384,13 +397,15 @@ export class ContentAggregator {
                         filterCriteria: onlineContentsResponse.filterCriteria,
                         searchRequest
                     },
-                    data: CsContentsGroupGenerator.generate(
-                        combinedContents,
-                        aggregate.groupBy!,
-                        aggregate.sortBy ? this.buildSortByCriteria(aggregate.sortBy) : [],
-                        aggregate.filterBy ? this.buildFilterByCriteria(aggregate.filterBy) : [],
-                        field.dataSrc.mapping[index].applyFirstAvailableCombination && request.applyFirstAvailableCombination as any
-                    ),
+                    data: CsContentsGroupGenerator.generate({
+                        contents: combinedContents,
+                        groupBy: aggregate.groupBy!,
+                        sortCriteria: aggregate.sortBy ? this.buildSortByCriteria(aggregate.sortBy) : [],
+                        filterCriteria: aggregate.filterBy ? this.buildFilterByCriteria(aggregate.filterBy) : [],
+                        combination: field.dataSrc.mapping[index].applyFirstAvailableCombination &&
+                            request.applyFirstAvailableCombination as any,
+                        includeSearchable: true
+                    }),
                     dataSrc: field.dataSrc,
                     theme: section.theme
                 } as ContentAggregation<'CONTENTS'>;
