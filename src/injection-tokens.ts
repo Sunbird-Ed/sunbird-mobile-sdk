@@ -52,4 +52,3 @@ export const InjectionTokens = {
     CLASS_ROOM_SERVICE: Symbol.for('CLASS_ROOM_SERVICE'),
     DISCUSSION_SERVICE: Symbol.for('DISCUSSION_SERVICE'),
 };
-
