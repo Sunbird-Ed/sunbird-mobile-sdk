@@ -155,8 +155,10 @@ export class ContentAggregator {
                         return await this.buildContentSearchTask(field, request);
                     case 'TRACKABLE_COLLECTIONS':
                         return await this.buildTrackableCollectionsTask(field, request);
-                    default:
-                        throw new Error('UNKNOWN_DATA_SRC');
+                    default: {
+                        console.error('UNKNOWN_DATA_SRC');
+                        return [];
+                    }
                 }
             });
 

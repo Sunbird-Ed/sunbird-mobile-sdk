@@ -1,3 +1,5 @@
+import {AggregatorConfigField} from './content-aggregator';
+
 export const mockFormResponse = {
     'form': {
         'type': 'config',
@@ -10,191 +12,367 @@ export const mockFormResponse = {
             'action': 'get',
             'fields': [
                 {
-                    'index': 0,
-                    'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
-                    'isEnabled': true,
-                    'dataSrc': {
-                        'name': 'CONTENTS',
-                        'search': {
-                            'facets': [
-                                'board',
-                                'medium',
-                                'gradeLevel',
-                                'subject',
-                                'channel'
-                            ],
-                            'fields': [],
-                            'filters': {
-                                'primaryCategory': [
-                                    'Explanation Content'
-                                ],
-                                'additionalCategories': [
-                                    'TV Lesson'
-                                ]
-                            }
-                        },
-                    },
-                    'theme': {
-                        'orientation': 'horizontal'
-                    }
-                },
-                {
-                    'index': 1,
-                    'title': '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
-                    'isEnabled': true,
-                    'dataSrc': {
-                        'name': 'CONTENTS',
-                        'applyFirstAvailableCombination': true,
-                        'aggregate': {
-                            'groupBy': 'subject',
-                            'orientation': 'vertical',
-                            'sortBy': [
-                                {
-                                    'name': 'asc'
+                    dataSrc: {
+                        type: 'CONTENTS',
+                        request: {
+                            type: 'POST',
+                            path: '/api/content/v1/search',
+                            withBearerToken: true,
+                            body: {
+                                request: {
+                                    'facets': [
+                                        'board',
+                                        'medium',
+                                        'gradeLevel',
+                                        'subject',
+                                        'channel'
+                                    ],
+                                    'fields': [],
+                                    'filters': {
+                                        'primaryCategory': [
+                                            'Explanation Content'
+                                        ],
+                                        'additionalCategories': [
+                                            'TV Lesson'
+                                        ]
+                                    }
                                 }
-                            ]
+                            } as any
                         },
-                        'search': {
-                            'facets': [
-                                'board',
-                                'medium',
-                                'gradeLevel',
-                                'subject',
-                                'channel'
-                            ],
-                            'fields': [
-                                'identifier',
-                                'pkgVersion',
-                                'name',
-                                'appIcon',
-                                'subject',
-                                'medium',
-                                'board',
-                                'framework',
-                                'gradeLevel',
-                                'channel',
-                                'contentType',
-                                'mimeType',
-                                'resourceType',
-                                'status',
-                                'downloadUrl',
-                                'variants',
-                                'createdBy',
-                                'originData',
-                                'origin',
-                                'streamingUrl',
-                                'dialecodes',
-                                'size',
-                                'batches',
-                                'organisation',
-                                'primaryCategory',
-                                'trackable'
-                            ],
-                            'filters': {
-                                'primaryCategory': [
-                                    'Digital Textbook'
-                                ]
+                        mapping: []
+                    },
+                    sections: [
+                        {
+                            'index': 0,
+                            'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
+                            'theme': {
+                                'component': 'sb-course-cards-hlist',
+                                'inputs': {
+                                    'type': 'course_card_grid',
+                                    'hideProgress': true,
+                                    'viewMoreButtonText': '{"en":"View all"}'
+                                }
                             }
                         }
-                    },
-                    'theme': {
-                        'orientation': 'vertical'
-                    }
-                }
-            ]
-        },
-        'created_on': '2020-08-26T15:11:56.149Z',
-        'last_modified_on': null,
-        'rootOrgId': '*'
-    }
-};
-
-export const mockFormResponseWithTrackableCourseDataSrc = {
-    'form': {
-        'type': 'config',
-        'subtype': 'library',
-        'action': 'get',
-        'component': 'app',
-        'framework': '*',
-        'data': {
-            'templateName': 'library',
-            'action': 'get',
-            'fields': [
+                    ]
+                } as AggregatorConfigField<'CONTENTS'>,
                 {
-                    'index': 0,
-                    'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
-                    'isEnabled': true,
-                    'dataSrc': {
-                        'name': 'TRACKABLE_COURSE_CONTENTS'
-                    },
-                    'theme': {
-                        'orientation': 'horizontal',
-                    }
-                },
-            ]
-        },
-        'created_on': '2020-08-26T15:11:56.149Z',
-        'last_modified_on': null,
-        'rootOrgId': '*'
-    }
-};
-
-export const mockFormResponseWithUnknownDataSrcNoValuesNoSearchFields = {
-    'form': {
-        'type': 'config',
-        'subtype': 'library',
-        'action': 'get',
-        'component': 'app',
-        'framework': '*',
-        'data': {
-            'templateName': 'library',
-            'action': 'get',
-            'fields': [
-                {
-                    'index': 0,
-                    'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
-                    'isEnabled': true,
-                    'dataSrc': {
-                        'name': 'UNKNOWN_DATA_SRC'
-                    },
-                    'theme': {
-                        'orientation': 'horizontal',
-                    }
-                },
-            ]
-        },
-        'created_on': '2020-08-26T15:11:56.149Z',
-        'last_modified_on': null,
-        'rootOrgId': '*'
-    }
-};
-
-export const mockFormResponseWithUnknownDataSrcNoSearchField = {
-    'form': {
-        'type': 'config',
-        'subtype': 'library',
-        'action': 'get',
-        'component': 'app',
-        'framework': '*',
-        'data': {
-            'templateName': 'library',
-            'action': 'get',
-            'fields': [
-                {
-                    'index': 0,
-                    'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
-                    'isEnabled': true,
-                    'dataSrc': {
-                        'name': 'UNKNOWN_DATA_SRC',
-                        'values': [
-                            {'some': 'value'},
-                            {'some': 'value'},
+                    dataSrc: {
+                        type: 'CONTENTS',
+                        request: {
+                            type: 'POST',
+                            path: '/api/content/v1/search',
+                            withBearerToken: true,
+                            body: {
+                                request: {
+                                    'facets': [
+                                        'board',
+                                        'medium',
+                                        'gradeLevel',
+                                        'subject',
+                                        'channel'
+                                    ],
+                                    'fields': [
+                                        'identifier',
+                                        'pkgVersion',
+                                        'name',
+                                        'appIcon',
+                                        'subject',
+                                        'medium',
+                                        'board',
+                                        'framework',
+                                        'gradeLevel',
+                                        'channel',
+                                        'contentType',
+                                        'mimeType',
+                                        'resourceType',
+                                        'status',
+                                        'downloadUrl',
+                                        'variants',
+                                        'createdBy',
+                                        'originData',
+                                        'origin',
+                                        'streamingUrl',
+                                        'dialecodes',
+                                        'size',
+                                        'batches',
+                                        'organisation',
+                                        'primaryCategory',
+                                        'trackable'
+                                    ],
+                                    'filters': {
+                                        'primaryCategory': [
+                                            'Digital Textbook'
+                                        ]
+                                    }
+                                }
+                            } as any
+                        },
+                        mapping: [
+                            {
+                                applyFirstAvailableCombination: true,
+                                aggregate: {
+                                    'groupBy': 'subject',
+                                    'sortBy': [
+                                        {
+                                            'name': 'asc'
+                                        }
+                                    ]
+                                }
+                            }
                         ]
                     },
-                    'theme': {
-                        'orientation': 'horizontal',
-                    }
-                },
+                    sections: [
+                        {
+                            'index': 1,
+                            'title': '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
+                            'theme': {
+                                'component': 'sb-course-cards-hlist',
+                                'inputs': {
+                                    'type': 'course_card_grid',
+                                    'hideProgress': true,
+                                    'viewMoreButtonText': '{"en":"View all"}'
+                                }
+                            }
+                        }
+                    ]
+                } as AggregatorConfigField<'CONTENTS'>,
+            ]
+        },
+        'created_on': '2020-08-26T15:11:56.149Z',
+        'last_modified_on': null,
+        'rootOrgId': '*'
+    }
+};
+
+export const mockFormResponseWithExplicitContentFacetValues = {
+    'form': {
+        'type': 'config',
+        'subtype': 'library',
+        'action': 'get',
+        'component': 'app',
+        'framework': '*',
+        'data': {
+            'templateName': 'library',
+            'action': 'get',
+            'fields': [
+                {
+                    dataSrc: {
+                        type: 'CONTENT_FACETS',
+                        request: {},
+                        'values': [
+                            {
+                                'facet': 'Digital Textbook',
+                                'searchCriteria': {
+                                    'facets': [],
+                                    'primaryCategory': [
+                                        'Digital Textbook'
+                                    ],
+                                    'mode': 'soft',
+                                    'searchType': 'search'
+                                },
+                                'primaryFacetFilters': [
+                                    {
+                                        'code': 'board',
+                                        'translations': '{"en":"Board/Syllabus","hi":"बोर्ड","te":"బోర్డు","ta":"வாரியம்","mr":"बोर्ड"}',
+                                        'values': [],
+                                        'name': 'Board/Syllabus',
+                                        'index': 1
+                                    },
+                                    {
+                                        'code': 'gradeLevel',
+                                        'translations': '{"en":"Class","hi":"कक्षा","te":"క్లాసు","ta":"வகுப்பு","mr":"इयत्ता"}',
+                                        'values': [],
+                                        'name': 'Class',
+                                        'index': 2
+                                    }
+                                ],
+                                'aggregate': {
+                                    'groupBy': 'subject'
+                                }
+                            },
+                            {
+                                'facet': 'Courses',
+                                'searchCriteria': {
+                                    'facets': [],
+                                    'primaryCategory': [
+                                        'Course'
+                                    ],
+                                    'mode': 'soft',
+                                    'searchType': 'search'
+                                },
+                                'primaryFacetFilters': [
+                                    {
+                                        'code': 'board',
+                                        'translations': '{"en":"Board/Syllabus","hi":"बोर्ड","te":"బోర్డు","ta":"வாரியம்","mr":"बोर्ड"}',
+                                        'values': [],
+                                        'name': 'Board/Syllabus',
+                                        'index': 1
+                                    },
+                                    {
+                                        'code': 'gradeLevel',
+                                        'translations': '{"en":"Class","hi":"कक्षा","te":"క్లాసు","ta":"வகுப்பு","mr":"इयत्ता"}',
+                                        'values': [],
+                                        'name': 'Class',
+                                        'index': 2
+                                    }
+                                ],
+                                'aggregate': {
+                                    'groupBy': 'subject'
+                                }
+                            },
+                            {
+                                'facet': 'Tv Classes',
+                                'searchCriteria': {
+                                    'facets': [],
+                                    'primaryCategory': [
+                                        'Explanation Content'
+                                    ],
+                                    'mode': 'soft',
+                                    'searchType': 'search'
+                                },
+                                'primaryFacetFilters': [
+                                    {
+                                        'code': 'board',
+                                        'translations': '{"en":"Board/Syllabus","hi":"बोर्ड","te":"బోర్డు","ta":"வாரியம்","mr":"बोर्ड"}',
+                                        'values': [],
+                                        'name': 'Board/Syllabus',
+                                        'index': 1
+                                    },
+                                    {
+                                        'code': 'gradeLevel',
+                                        'translations': '{"en":"Class","hi":"कक्षा","te":"క్లాసు","ta":"வகுப்பு","mr":"इयत्ता"}',
+                                        'values': [],
+                                        'name': 'Class',
+                                        'index': 2
+                                    }
+                                ],
+                                'aggregate': {
+                                    'groupBy': 'subject'
+                                }
+                            }
+                        ] as any,
+                        mapping: []
+                    },
+                    sections: [
+                        {
+                            'index': 0,
+                            'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
+                            'theme': {
+                                'component': 'sb-course-cards-hlist',
+                                'inputs': {
+                                    'type': 'course_card_grid',
+                                    'hideProgress': true,
+                                    'viewMoreButtonText': '{"en":"View all"}'
+                                }
+                            }
+                        }
+                    ]
+                } as AggregatorConfigField<'CONTENT_FACETS'>,
+            ]
+        },
+        'created_on': '2020-08-26T15:11:56.149Z',
+        'last_modified_on': null,
+        'rootOrgId': '*'
+    }
+};
+
+export const mockFormResponseWithTrackableCollectionsDataSrc = {
+    'form': {
+        'type': 'config',
+        'subtype': 'library',
+        'action': 'get',
+        'component': 'app',
+        'framework': '*',
+        'data': {
+            'templateName': 'library',
+            'action': 'get',
+            'fields': [
+                {
+                    'dataSrc': {
+                        'type': 'TRACKABLE_COLLECTIONS',
+                        'request': {
+                            'type': 'GET',
+                            'path': '/api/course/v1/user/enrollment/list/${userId}',
+                            'parameters': {
+                                'orgdetails': 'orgName,email',
+                                'fields': 'contentType,topic,name,channel,pkgVersion,primaryCategory,trackable',
+                                'batchDetails': 'name,endDate,startDate,status,enrollmentType,createdBy,certificates'
+                            },
+                            'withBearerToken': true,
+                            'withUserToken': true
+                        },
+                        'mapping': [
+                            {
+                                aggregate: {
+                                    filterBy: [
+                                        {
+                                            'content.primaryCategory': {
+                                              'operation': '==',
+                                              'value': 'Course'
+                                            }
+                                        } as any
+                                    ]
+                                }
+                            }
+                        ],
+                    },
+                    'sections': [
+                        {
+                            'index': 0,
+                            'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
+                            'theme': {
+                                'orientation': 'horizontal',
+                            }
+                        }
+                    ]
+                } as AggregatorConfigField<'TRACKABLE_COLLECTIONS'>,
+            ]
+        },
+        'created_on': '2020-08-26T15:11:56.149Z',
+        'last_modified_on': null,
+        'rootOrgId': '*'
+    }
+};
+
+export const mockFormResponseWithTrackableCollectionsDataSrcAndNoFilter = {
+    'form': {
+        'type': 'config',
+        'subtype': 'library',
+        'action': 'get',
+        'component': 'app',
+        'framework': '*',
+        'data': {
+            'templateName': 'library',
+            'action': 'get',
+            'fields': [
+                {
+                    'dataSrc': {
+                        'type': 'TRACKABLE_COLLECTIONS',
+                        'request': {
+                            'type': 'GET',
+                            'path': '/api/course/v1/user/enrollment/list/${userId}',
+                            'parameters': {
+                                'orgdetails': 'orgName,email',
+                                'fields': 'contentType,topic,name,channel,pkgVersion,primaryCategory,trackable',
+                                'batchDetails': 'name,endDate,startDate,status,enrollmentType,createdBy,certificates'
+                            },
+                            'withBearerToken': true,
+                            'withUserToken': true
+                        },
+                        'mapping': [
+                        ],
+                    },
+                    'sections': [
+                        {
+                            'index': 0,
+                            'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
+                            'theme': {
+                                'orientation': 'horizontal',
+                            }
+                        }
+                    ]
+                } as AggregatorConfigField<'TRACKABLE_COLLECTIONS'>,
             ]
         },
         'created_on': '2020-08-26T15:11:56.149Z',
@@ -215,62 +393,53 @@ export const mockFormResponseWithUnknownDataSrc = {
             'action': 'get',
             'fields': [
                 {
-                    'index': 0,
-                    'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
-                    'isEnabled': true,
+                    dataSrc: {
+                        type: 'CONTENTS',
+                        request: {
+                            type: 'POST',
+                            path: '/api/content/v1/search',
+                            withBearerToken: true,
+                            body: {
+                                request: {
+                                    'facets': [
+                                        'board',
+                                        'medium',
+                                        'gradeLevel',
+                                        'subject',
+                                        'channel'
+                                    ],
+                                    'fields': [],
+                                    'filters': {
+                                        'primaryCategory': [
+                                            'Explanation Content'
+                                        ],
+                                        'additionalCategories': [
+                                            'TV Lesson'
+                                        ]
+                                    }
+                                }
+                            } as any
+                        },
+                        mapping: []
+                    },
+                    sections: [
+                        {
+                            'index': 0,
+                            'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
+                            'theme': {
+                                'component': 'sb-course-cards-hlist',
+                                'inputs': {
+                                    'type': 'course_card_grid',
+                                    'hideProgress': true,
+                                    'viewMoreButtonText': '{"en":"View all"}'
+                                }
+                            }
+                        }
+                    ]
+                } as AggregatorConfigField<'CONTENTS'>,
+                {
                     'dataSrc': {
                         'name': 'UNKNOWN_DATA_SRC',
-                        'search': {
-                            'facets': [
-                                'board',
-                                'medium',
-                                'gradeLevel',
-                                'subject',
-                                'channel'
-                            ],
-                            'fields': [],
-                            'filters': {
-                                'primaryCategory': [
-                                    'Explanation Content'
-                                ],
-                                'additionalCategories': [
-                                    'TV Lesson'
-                                ]
-                            }
-                        },
-                    },
-                    'theme': {
-                        'orientation': 'horizontal'
-                    }
-                },
-            ]
-        },
-        'created_on': '2020-08-26T15:11:56.149Z',
-        'last_modified_on': null,
-        'rootOrgId': '*'
-    }
-};
-
-export const mockFormResponseWithTrackableDataSrc = {
-    'form': {
-        'type': 'config',
-        'subtype': 'library',
-        'action': 'get',
-        'component': 'app',
-        'framework': '*',
-        'data': {
-            'templateName': 'library',
-            'action': 'get',
-            'fields': [
-                {
-                    'index': 0,
-                    'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
-                    'isEnabled': true,
-                    'dataSrc': {
-                        'name': 'TRACKABLE_CONTENTS'
-                    },
-                    'theme': {
-                        'orientation': 'horizontal',
                     }
                 },
             ]
