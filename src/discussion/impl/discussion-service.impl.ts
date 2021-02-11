@@ -1,4 +1,4 @@
-import { CsDiscussionService } from "@project-sunbird/client-services/services/discussion";
+import { CsAttachForumRequest, CsAttachForumResponse, CsDiscussionService, CsRemoveForumRequest, CsRemoveForumResponse } from "@project-sunbird/client-services/services/discussion";
 import { Container, inject, injectable } from "inversify";
 import { Observable } from "rxjs";
 import { CsInjectionTokens, InjectionTokens } from "../../injection-tokens";
@@ -25,6 +25,14 @@ export class DiscussionServiceImpl implements DiscussionService {
 
     createUser(request: CsCreateUserRequest): Observable<CsCreateUserResponse> {
         return this.discussionServiceDelegate.createUser(request);
+    }
+
+    attachForum(request: CsAttachForumRequest): Observable<CsAttachForumResponse> {
+        return this.discussionServiceDelegate.attachForum(request);
+    }
+
+    removeForum(request: CsRemoveForumRequest): Observable<CsRemoveForumResponse> {
+        return this.discussionServiceDelegate.removeForum(request);
     }
 
 }
