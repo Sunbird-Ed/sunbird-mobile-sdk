@@ -139,7 +139,7 @@ export class ContentAggregator {
             }
 
             fields = fields
-                .filter((field) => excludeDataSrc.indexOf(field.dataSrc.name) === -1);
+                .filter((field) => excludeDataSrc.indexOf(field.dataSrc.type) === -1);
 
             const fieldTasks: Promise<ContentAggregation[]>[] = fields.map(async (field) => {
                 if (!field.dataSrc) {
