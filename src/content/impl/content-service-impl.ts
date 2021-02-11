@@ -37,7 +37,7 @@ import {
     SearchResponse,
 } from '..';
 import {combineLatest, defer, from, Observable, of} from 'rxjs';
-import {ApiService, Response} from '../../api';
+import {ApiRequestHandler, ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
 import {DbService} from '../../db';
@@ -568,7 +568,11 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         throw new Error('Not Implemented yet');
     }
 
-    searchContent(contentSearchCriteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult> {
+    searchContent(
+        contentSearchCriteria: ContentSearchCriteria,
+        request?: { [key: string]: any },
+        apiHandler?: ApiRequestHandler<SearchRequest, SearchResponse>
+    ): Observable<ContentSearchResult> {
         contentSearchCriteria = JSON.parse(JSON.stringify(contentSearchCriteria));
         if (contentSearchCriteria.facetFilters) {
             const mimeTypeFacetFilters = contentSearchCriteria.facetFilters.find(f => (f.name === 'mimeType'));
@@ -599,8 +603,12 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
         return this.sharedPreferences.getString(FrameworkKeys.KEY_ACTIVE_CHANNEL_ACTIVE_FRAMEWORK_ID).pipe(
             mergeMap((frameworkId?: string) => {
-                return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig, frameworkId!,
-                    contentSearchCriteria.languageCode).handle(searchRequest).pipe(
+                if (!apiHandler) {
+                    apiHandler = new ContentSearchApiHandler(this.apiService, this.contentServiceConfig, frameworkId!,
+                        contentSearchCriteria.languageCode);
+                }
+
+                return apiHandler.handle(searchRequest).pipe(
                     map((searchResponse: SearchResponse) => {
                         if (!contentSearchCriteria.facetFilters) {
                             searchRequest.filters.contentType = [];
@@ -726,7 +734,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             this,
             this.cachedItemStore,
             courseService,
-            profileService
+            profileService,
+            this.apiService
         );
     }
 

@@ -24,7 +24,7 @@ import {GetCourseBatchesHandler} from '../handlers/get-course-batches-handler';
 import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
 import {EnrollCourseHandler} from '../handlers/enroll-course-handler';
 import {CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
-import {ApiService, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {UnenrollCourseHandler} from '../handlers/unenroll-course-handler';
 import {DbService} from '../../db';
 import {ContentKeys} from '../../preference-keys';
@@ -54,6 +54,7 @@ import * as qs from 'qs';
 import {GetLearnerCertificateHandler} from '../handlers/get-learner-certificate-handler';
 import {LearnerCertificate} from '../def/get-learner-certificate-response';
 import {OfflineAssessmentScoreProcessor} from './offline-assessment-score-processor';
+import {GetEnrolledCourseResponse} from "../def/get-enrolled-course-response";
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -137,9 +138,12 @@ export class CourseServiceImpl implements CourseService {
         return new GetCourseBatchesHandler(this.apiService, this.courseServiceConfig).handle(request);
     }
 
-    getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]> {
+    getEnrolledCourses(
+        request: FetchEnrolledCourseRequest,
+        apiHandler?: ApiRequestHandler<{ userId: string }, GetEnrolledCourseResponse>
+    ): Observable<Course[]> {
         return new GetEnrolledCourseHandler(
-            this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
+            this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences, apiHandler
         ).handle(request);
     }
 
