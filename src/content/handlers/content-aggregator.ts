@@ -255,7 +255,7 @@ export class ContentAggregator {
                             },
                             aggregate: field.dataSrc.mapping[index].aggregate
                         };
-                    }),
+                    }).sort((a, b) => a.facet.localeCompare(b.facet)),
                     dataSrc: field.dataSrc,
                     theme: section.theme
                 };
