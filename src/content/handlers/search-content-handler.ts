@@ -366,7 +366,7 @@ export class SearchContentHandler {
       let applied = false;
       if (appliedFilters) {
         appliedFilters.forEach((appliedFilter) => {
-          if (appliedFilter && facetValue.name && facetValue.name === appliedFilter.toLowerCase()) {
+          if (appliedFilter && facetValue.name && facetValue.name.toLowerCase() === appliedFilter.toLowerCase()) {
             applied = true;
           }
         });

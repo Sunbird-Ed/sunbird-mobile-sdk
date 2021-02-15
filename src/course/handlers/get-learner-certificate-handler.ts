@@ -17,6 +17,7 @@ export class GetLearnerCertificateHandler implements ApiRequestHandler<GetLearne
       .withUserToken(true)
       .withBody({
         request: {
+          size: 200,
           _source: [
             'data.badge.issuer.name',
             'pdfUrl',
