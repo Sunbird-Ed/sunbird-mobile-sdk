@@ -1,8 +1,13 @@
-import { CsCreateUserRequest, CsCreateUserResponse, CsGetForumIdsRequest, CsGetForumIdsResponse } from "@project-sunbird/client-services/services/discussion";
+import { CsDiscussionServiceConfig } from "@project-sunbird/client-services";
+import { CsAttachForumRequest, CsAttachForumResponse, CsCreateUserRequest, CsCreateUserResponse, CsGetForumIdsRequest, CsGetForumIdsResponse, CsRemoveForumRequest, CsRemoveForumResponse } from "@project-sunbird/client-services/services/discussion";
 import { Observable } from "rxjs";
 
 export interface DiscussionService {
-    getForumIds(data: CsGetForumIdsRequest, config?): Observable<CsGetForumIdsResponse>;
+    getForumIds(data: CsGetForumIdsRequest, config?: CsDiscussionServiceConfig): Observable<CsGetForumIdsResponse>;
 
-    createUser(data: CsCreateUserRequest, config?): Observable<CsCreateUserResponse>
+    createUser(data: CsCreateUserRequest, config?: CsDiscussionServiceConfig): Observable<CsCreateUserResponse>
+
+    attachForum(data: CsAttachForumRequest, config?: CsDiscussionServiceConfig): Observable<CsAttachForumResponse>;
+
+    removeForum(data: CsRemoveForumRequest, config?: CsDiscussionServiceConfig): Observable<CsRemoveForumResponse>;
 };
