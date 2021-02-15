@@ -139,7 +139,7 @@ export class ContentAggregator {
             }
 
             fields = fields
-                .filter((field) => excludeDataSrc.indexOf(field.dataSrc.name) === -1);
+                .filter((field) => excludeDataSrc.indexOf(field.dataSrc.type) === -1);
 
             const fieldTasks: Promise<ContentAggregation[]>[] = fields.map(async (field) => {
                 if (!field.dataSrc) {
@@ -255,7 +255,7 @@ export class ContentAggregator {
                             },
                             aggregate: field.dataSrc.mapping[index].aggregate
                         };
-                    }),
+                    }).sort((a, b) => a.facet.localeCompare(b.facet)),
                     dataSrc: field.dataSrc,
                     theme: section.theme
                 };
