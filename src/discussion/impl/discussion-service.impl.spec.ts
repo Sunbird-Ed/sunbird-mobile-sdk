@@ -89,4 +89,21 @@ describe('GroupServiceImpl', () => {
             done();
         });
     });
+
+    it('should return created forum id', (done) => {
+        // arrange
+        const request = {
+            sbType: 'some_type',
+            sbIdentifier: 'id',
+            cid: 1
+        }
+        mockContainer.get = jest.fn(() => ({
+            createForum: jest.fn(() => of({}))
+        })) as any;
+        // act
+        discussionServiceImpl.createForum(request).subscribe(() => {
+            expect(mockContainer.get).toHaveBeenCalled();
+            done();
+        });
+    });
 });
