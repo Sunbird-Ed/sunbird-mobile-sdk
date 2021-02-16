@@ -55,4 +55,55 @@ describe('GroupServiceImpl', () => {
             done();
         });
     });
+
+    it('should return attached forum id', (done) => {
+        // arrange
+        const request = {
+            sbType: 'some_type',
+            sbIdentifier: 'id',
+            cid: 1
+        }
+        mockContainer.get = jest.fn(() => ({
+            attachForum: jest.fn(() => of({}))
+        })) as any;
+        // act
+        discussionServiceImpl.attachForum(request).subscribe(() => {
+            expect(mockContainer.get).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should remove attached forum id', (done) => {
+        // arrange
+        const request = {
+            sbType: 'some_type',
+            sbIdentifier: 'id',
+            cid: 1
+        }
+        mockContainer.get = jest.fn(() => ({
+            removeForum: jest.fn(() => of({}))
+        })) as any;
+        // act
+        discussionServiceImpl.removeForum(request).subscribe(() => {
+            expect(mockContainer.get).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should return created forum id', (done) => {
+        // arrange
+        const request = {
+            sbType: 'some_type',
+            sbIdentifier: 'id',
+            cid: 1
+        }
+        mockContainer.get = jest.fn(() => ({
+            createForum: jest.fn(() => of({}))
+        })) as any;
+        // act
+        discussionServiceImpl.createForum(request).subscribe(() => {
+            expect(mockContainer.get).toHaveBeenCalled();
+            done();
+        });
+    });
 });
