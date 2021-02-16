@@ -59,4 +59,16 @@ export class ObjectUtil {
     public static toOrderedString(obj: {}): string {
         return JSON.stringify(Object.keys(obj).sort().reduce<{}>((acc, k) => { acc[k] = obj[k]; return acc; }, {}));
     }
+
+    public static withDeeplyOrderedKeys(obj: {}): {} {
+        return Object.keys(obj).sort().reduce<{}>((acc, k) => {
+            if (typeof obj[k] === 'object' && !Array.isArray(obj[k])) {
+                acc[k] = ObjectUtil.withDeeplyOrderedKeys(obj[k]);
+            } else {
+                acc[k] = obj[k];
+            }
+
+            return acc;
+        }, {});
+    }
 }
