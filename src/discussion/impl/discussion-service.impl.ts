@@ -35,4 +35,8 @@ export class DiscussionServiceImpl implements DiscussionService {
         return this.discussionServiceDelegate.removeForum(request);
     }
 
+    createForum(request): Observable<CsAttachForumResponse> {
+        return this.discussionServiceDelegate.createForum(request);
+    }
+
 }

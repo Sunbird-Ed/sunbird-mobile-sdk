@@ -10,4 +10,6 @@ export interface DiscussionService {
     attachForum(data: CsAttachForumRequest, config?: CsDiscussionServiceConfig): Observable<CsAttachForumResponse>;
 
     removeForum(data: CsRemoveForumRequest, config?: CsDiscussionServiceConfig): Observable<CsRemoveForumResponse>;
+
+    createForum(data, config?: CsDiscussionServiceConfig): Observable<CsAttachForumResponse>;
 };
