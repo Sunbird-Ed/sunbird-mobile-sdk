@@ -7,18 +7,18 @@ import {
     ContentService,
     ContentsGroupedByPageSection, SearchResponse,
 } from '..';
-import {defer, Observable, of} from 'rxjs';
-import {catchError, map} from 'rxjs/operators';
-import {CachedItemStore} from '../../key-value-store';
-import {SearchRequest} from '../def/search-request';
-import {FormRequest, FormService} from '../../form';
-import {SearchContentHandler} from './search-content-handler';
-import {CsContentSortCriteria, CsSortOrder, CsContentFilterCriteria} from '@project-sunbird/client-services/services/content';
-import {CsContentsGroupGenerator} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
-import {CourseService} from '../../course';
-import {ProfileService} from '../../profile';
-import {ApiRequestHandler, ApiService, Request, SerializedRequest} from '../../api';
-import {GetEnrolledCourseResponse} from '../../course/def/get-enrolled-course-response';
+import { defer, Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { CachedItemStore } from '../../key-value-store';
+import { SearchRequest } from '../def/search-request';
+import { FormRequest, FormService } from '../../form';
+import { SearchContentHandler } from './search-content-handler';
+import { CsContentSortCriteria, CsSortOrder, CsContentFilterCriteria } from '@project-sunbird/client-services/services/content';
+import { CsContentsGroupGenerator } from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
+import { CourseService } from '../../course';
+import { ProfileService } from '../../profile';
+import { ApiRequestHandler, ApiService, Request, SerializedRequest } from '../../api';
+import { GetEnrolledCourseResponse } from '../../course/def/get-enrolled-course-response';
 
 interface AggregationConfig {
     filterBy?: {
@@ -163,7 +163,7 @@ export class ContentAggregator {
             });
 
             return {
-                result: await Promise.all(fieldTasks).then((result: ContentAggregation[][] ) => {
+                result: await Promise.all(fieldTasks).then((result: ContentAggregation[][]) => {
                     return result
                         .reduce<ContentAggregation[]>((acc, v) => {
                             return [...acc, ...v];
@@ -181,10 +181,10 @@ export class ContentAggregator {
         const profile = await this.profileService.getActiveProfileSession().toPromise();
 
         const requestParams: ContentRequest = {
-          uid: profile ? profile.uid : undefined,
-          primaryCategories: [],
-          recentlyViewed: true,
-          limit: 20
+            uid: profile ? profile.uid : undefined,
+            primaryCategories: [],
+            recentlyViewed: true,
+            limit: 20
         };
 
         const contents = await this.contentService.getContents(requestParams).toPromise();
@@ -228,7 +228,7 @@ export class ContentAggregator {
             });
         }
 
-        const {searchRequest, searchCriteria} = this.buildSearchRequestAndCriteria(field, request);
+        const { searchRequest, searchCriteria } = this.buildSearchRequestAndCriteria(field, request);
 
         searchCriteria.facets = field.dataSrc.mapping.map((m) => m.facet);
         searchRequest.facets = searchCriteria.facets;
@@ -255,7 +255,56 @@ export class ContentAggregator {
                             },
                             aggregate: field.dataSrc.mapping[index].aggregate
                         };
-                    }).sort((a, b) => a.facet.localeCompare(b.facet)),
+                    }).sort((a, b) => {
+                        // if (request.userPreferences && request.userPreferences[facetFilters.name]) {
+                        //     const facetPreferences = request.userPreferences[facetFilters.name];
+                        //   if (facetPreferences === a.facet) {
+                        //       return 1;
+                        //   } else if (Array.isArray(facetPreferences) && ) {
+
+                        //   }
+                        // }
+                        if (request.userPreferences) {
+                            const facetPreferences = request.userPreferences[facetFilters.name];
+                            if (
+                                !facetPreferences ||
+                                (
+                                    Array.isArray(facetPreferences) &&
+                                    facetPreferences.indexOf(a.facet) > -1 &&
+                                    facetPreferences.indexOf(b.facet) > -1
+                                ) ||
+                                (
+                                    facetPreferences === a.facet &&
+                                    facetPreferences === b.facet
+                                )
+                            ) {
+                                return a.facet.localeCompare(b.facet);
+                            }
+                            if (
+                                (
+                                    Array.isArray(facetPreferences) &&
+                                    facetPreferences.indexOf(a.facet) > -1
+                                ) ||
+                                (
+                                    facetPreferences === a.facet
+                                )
+                            ) {
+                               return -1;
+                            }
+                            if (
+                                (
+                                    Array.isArray(facetPreferences) &&
+                                    facetPreferences.indexOf(b.facet) > -1
+                                ) ||
+                                (
+                                    facetPreferences === b.facet
+                                )
+                            ) {
+                               return 1;
+                            }
+                        }
+                        return a.facet.localeCompare(b.facet);
+                    }),
                     dataSrc: field.dataSrc,
                     theme: section.theme
                 };
@@ -336,7 +385,7 @@ export class ContentAggregator {
         field: AggregatorConfigField<'CONTENTS'>,
         request: ContentAggregatorRequest
     ): Promise<ContentAggregation<'CONTENTS'>[]> {
-        const {searchRequest, searchCriteria} = this.buildSearchRequestAndCriteria(field, request);
+        const { searchRequest, searchCriteria } = this.buildSearchRequestAndCriteria(field, request);
 
         const offlineSearchContentDataList: ContentData[] = await (/* fetch offline contents */ async () => {
             return this.contentService.getContents({
@@ -458,7 +507,7 @@ export class ContentAggregator {
             if (field.dataSrc.request && field.dataSrc.request.body) {
                 return { filters: {}, ...(field.dataSrc.request.body as any).request };
             } else {
-                return {filters: {}};
+                return { filters: {} };
             }
         })();
 
@@ -489,7 +538,7 @@ export class ContentAggregator {
             undefined,
             new class implements ApiRequestHandler<SearchRequest, SearchResponse> {
                 handle(_: SearchRequest): Observable<SearchResponse> {
-                    field.dataSrc.request.body = {request: searchRequest} as any;
+                    field.dataSrc.request.body = { request: searchRequest } as any;
                     const apiRequest = Request.fromJSON(field.dataSrc.request);
                     return apiService.fetch<SearchResponse>(apiRequest).pipe(
                         map((success) => {

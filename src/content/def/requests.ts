@@ -10,6 +10,7 @@ export interface ContentAggregatorRequest extends CachedItemRequest {
     applyFirstAvailableCombination?: {
         [key in keyof ContentData]?: string[]
     };
+    userPreferences?: {[key: string]: string[] | string | undefined};
     interceptSearchCriteria?: (searchCriteria: ContentSearchCriteria) => ContentSearchCriteria;
 }
 
