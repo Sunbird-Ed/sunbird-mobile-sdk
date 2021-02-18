@@ -376,7 +376,7 @@ export class ContentAggregator {
                         groupBy: aggregate.groupBy!,
                         sortCriteria: aggregate.sortBy ? this.buildSortByCriteria(aggregate.sortBy) : [],
                         filterCriteria: aggregate.filterBy ? this.buildFilterByCriteria(aggregate.filterBy) : [],
-                        includeSearchable: true
+                        includeSearchable: false
                     }),
                     dataSrc: field.dataSrc,
                     theme: section.theme
@@ -459,7 +459,7 @@ export class ContentAggregator {
                         filterCriteria: aggregate.filterBy ? this.buildFilterByCriteria(aggregate.filterBy) : [],
                         combination: field.dataSrc.mapping[index].applyFirstAvailableCombination &&
                             request.applyFirstAvailableCombination as any,
-                        includeSearchable: true
+                        includeSearchable: false
                     }),
                     dataSrc: field.dataSrc,
                     theme: section.theme
@@ -542,7 +542,18 @@ export class ContentAggregator {
             undefined,
             new class implements ApiRequestHandler<SearchRequest, SearchResponse> {
                 handle(_: SearchRequest): Observable<SearchResponse> {
-                    field.dataSrc.request.body = {request: searchRequest} as any;
+                    if (field.dataSrc.request && field.dataSrc.request.body && (field.dataSrc.request.body as any).request) {
+                        field.dataSrc.request.body = {
+                            request: {
+                                ...(field.dataSrc.request.body as any).request,
+                                ...searchRequest
+                            }
+                        } as any;
+                    } else {
+                        field.dataSrc.request.body = {
+                            request: searchRequest
+                        } as any;
+                    }
                     const cacheKey = JSON.stringify(ObjectUtil.withDeeplyOrderedKeys(field.dataSrc.request));
 
                     if (ContentAggregator.searchContentCache.has(cacheKey)) {
