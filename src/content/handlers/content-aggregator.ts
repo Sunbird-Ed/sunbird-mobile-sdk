@@ -7,18 +7,20 @@ import {
     ContentService,
     ContentsGroupedByPageSection, SearchResponse,
 } from '..';
-import { defer, Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { CachedItemStore } from '../../key-value-store';
-import { SearchRequest } from '../def/search-request';
-import { FormRequest, FormService } from '../../form';
-import { SearchContentHandler } from './search-content-handler';
-import { CsContentSortCriteria, CsSortOrder, CsContentFilterCriteria } from '@project-sunbird/client-services/services/content';
-import { CsContentsGroupGenerator } from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
-import { CourseService } from '../../course';
-import { ProfileService } from '../../profile';
-import { ApiRequestHandler, ApiService, Request, SerializedRequest } from '../../api';
-import { GetEnrolledCourseResponse } from '../../course/def/get-enrolled-course-response';
+import {defer, Observable, of} from 'rxjs';
+import {catchError, map, tap} from 'rxjs/operators';
+import {CachedItemStore} from '../../key-value-store';
+import {SearchRequest} from '../def/search-request';
+import {FormRequest, FormService} from '../../form';
+import {SearchContentHandler} from './search-content-handler';
+import {CsContentSortCriteria, CsSortOrder, CsContentFilterCriteria} from '@project-sunbird/client-services/services/content';
+import {CsContentsGroupGenerator} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
+import {CourseService} from '../../course';
+import {ProfileService} from '../../profile';
+import {ApiRequestHandler, ApiService, Request, SerializedRequest} from '../../api';
+import {GetEnrolledCourseResponse} from '../../course/def/get-enrolled-course-response';
+import {CsResponse} from '@project-sunbird/client-services/core/http-service';
+import {ObjectUtil} from '../../util/object-util';
 
 interface AggregationConfig {
     filterBy?: {
@@ -107,6 +109,8 @@ export interface ContentAggregation<T extends DataSourceType = any> {
 }
 
 export class ContentAggregator {
+    private static searchContentCache = new Map<string, CsResponse<SearchResponse>>();
+
     constructor(
         private searchContentHandler: SearchContentHandler,
         private formService: FormService,
@@ -538,9 +542,22 @@ export class ContentAggregator {
             undefined,
             new class implements ApiRequestHandler<SearchRequest, SearchResponse> {
                 handle(_: SearchRequest): Observable<SearchResponse> {
-                    field.dataSrc.request.body = { request: searchRequest } as any;
+                    field.dataSrc.request.body = {request: searchRequest} as any;
+                    const cacheKey = JSON.stringify(ObjectUtil.withDeeplyOrderedKeys(field.dataSrc.request));
+
+                    if (ContentAggregator.searchContentCache.has(cacheKey)) {
+                        return of(ContentAggregator.searchContentCache.get(cacheKey)!).pipe(
+                            map((success) => {
+                                return success.body;
+                            })
+                        );
+                    }
+
                     const apiRequest = Request.fromJSON(field.dataSrc.request);
                     return apiService.fetch<SearchResponse>(apiRequest).pipe(
+                        tap((r) => {
+                            ContentAggregator.searchContentCache.set(cacheKey, r);
+                        }),
                         map((success) => {
                             return success.body;
                         })
