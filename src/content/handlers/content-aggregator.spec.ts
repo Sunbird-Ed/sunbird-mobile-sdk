@@ -127,7 +127,7 @@ describe('ContentAggregator', () => {
                                     }
                                 ],
                                 filterCriteria: [],
-                                includeSearchable: true
+                                includeSearchable: false
                             }
                         );
 
@@ -253,7 +253,7 @@ describe('ContentAggregator', () => {
                                     'subject': ['Some other Physical Science'],
                                     'gradeLevel': ['Class 1']
                                 },
-                                includeSearchable: true
+                                includeSearchable: false
                             }
                         );
 
@@ -381,7 +381,7 @@ describe('ContentAggregator', () => {
                                     'subject': ['Some other Physical Science'],
                                     'gradeLevel': ['Class 1']
                                 },
-                                includeSearchable: true
+                                includeSearchable: false
                             }
                         );
 
