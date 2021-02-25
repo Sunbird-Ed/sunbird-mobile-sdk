@@ -37,7 +37,6 @@ import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {GetCertificateRequest} from '../def/get-certificate-request';
-import {DownloadCertificateRequest} from '../def/download-certificate-request';
 import {AppInfo} from '../../util/app';
 import {DownloadStatus} from '../../util/download';
 import {DownloadCertificateResponse} from '../def/download-certificate-response';
@@ -54,7 +53,9 @@ import * as qs from 'qs';
 import {GetLearnerCertificateHandler} from '../handlers/get-learner-certificate-handler';
 import {LearnerCertificate} from '../def/get-learner-certificate-response';
 import {OfflineAssessmentScoreProcessor} from './offline-assessment-score-processor';
-import {GetEnrolledCourseResponse} from "../def/get-enrolled-course-response";
+import {GetEnrolledCourseResponse} from '../def/get-enrolled-course-response';
+import {CourseCertificateManager} from '../def/course-certificate-manager';
+import {CourseCertificateManagerImpl} from './course-certificate-manager.impl';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -71,6 +72,8 @@ export class CourseServiceImpl implements CourseService {
     private syncAssessmentEventsHandler: SyncAssessmentEventsHandler;
     private offlineAssessmentScoreProcessor: OfflineAssessmentScoreProcessor;
 
+    certificateManager: CourseCertificateManager;
+
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
         @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
@@ -86,6 +89,11 @@ export class CourseServiceImpl implements CourseService {
         @inject(InjectionTokens.CONTAINER) private container: Container,
         @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService,
     ) {
+        this.certificateManager = new CourseCertificateManagerImpl(
+            this.profileService,
+            this.fileService,
+            this.csCourseService
+        );
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
         this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
 
@@ -235,26 +243,6 @@ export class CourseServiceImpl implements CourseService {
                 }),
                 mapTo(true)
             );
-    }
-
-    public getCurrentProfileCourseCertificateV2(request: GetCertificateRequest): Observable<string> {
-        return this.csCourseService.getSignedCourseCertificate(request.certificate.identifier!).pipe(
-          map((r) => r.printUri)
-        );
-    }
-
-    public downloadCurrentProfileCourseCertificateV2({ fileName, blob }: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
-        return defer(async () => {
-            return this.fileService.writeFile(
-                cordova.file.externalRootDirectory + 'Download/',
-                fileName, blob as any,
-                {replace: true}
-            ).then(() => {
-                return {
-                    path: `${cordova.file.externalRootDirectory}Download/${fileName}`
-                };
-            });
-        });
     }
 
     public downloadCurrentProfileCourseCertificate(request: GetCertificateRequest): Observable<DownloadCertificateResponse> {
