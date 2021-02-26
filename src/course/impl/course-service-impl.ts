@@ -92,6 +92,7 @@ export class CourseServiceImpl implements CourseService {
         this.certificateManager = new CourseCertificateManagerImpl(
             this.profileService,
             this.fileService,
+            this.keyValueStore,
             this.csCourseService
         );
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
