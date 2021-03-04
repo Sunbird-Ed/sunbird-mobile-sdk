@@ -8,8 +8,8 @@ import {catchError, map, tap} from 'rxjs/operators';
 import {ProfileService} from '../../profile';
 import {KeyValueStore} from '../../key-value-store';
 import {FileService} from '../../util/file/def/file-service';
-import {deflate} from 'pako/dist/pako_deflate';
-import {inflate} from 'pako/dist/pako_inflate';
+import {gzip} from 'pako/dist/pako_deflate';
+import {ungzip} from 'pako/dist/pako_inflate';
 
 export class CourseCertificateManagerImpl implements CourseCertificateManager {
     constructor(
@@ -35,7 +35,7 @@ export class CourseCertificateManagerImpl implements CourseCertificateManager {
             tap(async (r) => {
                 await this.keyValueStore.setValue(
                     await this.buildCertificatePersistenceId(request),
-                    deflate(new TextEncoder().encode(r.printUri), {to: 'string'})
+                    gzip(r.printUri, {to: 'string'})
                 ).toPromise();
             }),
             map((r) => r.printUri),
@@ -78,6 +78,6 @@ export class CourseCertificateManagerImpl implements CourseCertificateManager {
             await this.buildCertificatePersistenceId(request),
         ).toPromise();
 
-        return value ? inflate(value) : undefined;
+        return value ? ungzip(value, {to: 'string'}) : undefined;
     }
 }
