@@ -141,10 +141,17 @@ describe('CourseServiceImpl', () => {
         }));
         // act
         courseService.getBatchDetails(request).subscribe(() => {
+            // assert
             expect(mockApiService.fetch).toHaveBeenCalled();
             done();
         });
-        // assert
+    });
+
+    describe('certificateManager', () => {
+        it('should be able to acquire an instance of CourseCertificateManager from courseService', () => {
+            // assert
+            expect(courseService.certificateManager).toBeTruthy();
+        });
     });
 
    describe('updateContentState', () => {
@@ -993,43 +1000,6 @@ describe('CourseServiceImpl', () => {
             userId: 'sample-user-id'
         };
         courseService.generateAssessmentAttemptId(request);
-    });
-
-    describe('downloadCurrentProfileCourseCertificateV2', () => {
-        it('should return message if certifacte is not found', (done) => {
-            // arrange
-            mockProfileService.getActiveProfileSession = jest.fn(() => of({
-                managedSession: {
-                    uid: 'sample-uid'
-                },
-                uid: 'sample-uid'
-            })) as any;
-            jest.spyOn(courseService, 'getEnrolledCourses').mockImplementation(() => {
-                return of([{
-                    identifier: 'do-123',
-                    status: 2,
-                    courseId: 'sample-course-id',
-                    certificates: [{
-                        name: 'sample-certificate',
-                        identifier: 'sample-id'
-                    }]
-                }]) as any;
-            });
-            mockFileService.exists = jest.fn(() => Promise.reject({}));
-            mockFileService.writeFile = jest.fn(() => Promise.resolve('sample-file'));
-            // act
-            courseService.downloadCurrentProfileCourseCertificateV2({
-                fileName: 'sample.pdf',
-                mimeType: 'application/pdf',
-                blob: new Blob()
-            }).subscribe(() => {
-                // assert
-                expect(mockFileService.writeFile).toHaveBeenCalled();
-                done();
-            }, (e) => {
-                fail(e);
-            });
-        });
     });
 
     describe('displayDiscussionForum', () => {

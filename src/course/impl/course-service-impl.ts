@@ -55,7 +55,7 @@ import {LearnerCertificate} from '../def/get-learner-certificate-response';
 import {OfflineAssessmentScoreProcessor} from './offline-assessment-score-processor';
 import {GetEnrolledCourseResponse} from '../def/get-enrolled-course-response';
 import {CourseCertificateManager} from '../def/course-certificate-manager';
-import {CourseCertificateManagerImpl} from './course-certificate-manager.impl';
+import {CourseCertificateManagerImpl} from './course-certificate-manager-impl';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -72,7 +72,18 @@ export class CourseServiceImpl implements CourseService {
     private syncAssessmentEventsHandler: SyncAssessmentEventsHandler;
     private offlineAssessmentScoreProcessor: OfflineAssessmentScoreProcessor;
 
-    certificateManager: CourseCertificateManager;
+    private _certificateManager?: CourseCertificateManager;
+    get certificateManager(): CourseCertificateManager {
+        if (!this._certificateManager) {
+            this._certificateManager = new CourseCertificateManagerImpl(
+                this.profileService,
+                this.fileService,
+                this.keyValueStore,
+                this.csCourseService
+            );
+        }
+        return this._certificateManager;
+    }
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -89,12 +100,6 @@ export class CourseServiceImpl implements CourseService {
         @inject(InjectionTokens.CONTAINER) private container: Container,
         @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService,
     ) {
-        this.certificateManager = new CourseCertificateManagerImpl(
-            this.profileService,
-            this.fileService,
-            this.keyValueStore,
-            this.csCourseService
-        );
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
         this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
 
