@@ -25,6 +25,7 @@ export class CourseCertificateManagerImpl implements CourseCertificateManager {
             try {
                 return !!(await this.getCertificateFromCache(request));
             } catch (e) {
+                console.error(e);
                 return false;
             }
         });
@@ -74,7 +75,7 @@ export class CourseCertificateManagerImpl implements CourseCertificateManager {
     }
 
     private async getCertificateFromCache(request: GetCertificateRequest): Promise<string | undefined> {
-        const value = this.keyValueStore.getValue(
+        const value = await this.keyValueStore.getValue(
             await this.buildCertificatePersistenceId(request),
         ).toPromise();
 
