@@ -7,7 +7,7 @@ export interface DiscussionService {
 
     createUser(data: CsCreateUserRequest, config?: CsDiscussionServiceConfig): Observable<CsCreateUserResponse>
 
-    attachForum(data: CsAttachForumRequest, config?: CsDiscussionServiceConfig): Observable<CsAttachForumResponse>;
+    attachForum(data: CsAttachForumRequest): Observable<CsAttachForumResponse>;
 
     removeForum(data: CsRemoveForumRequest, config?: CsDiscussionServiceConfig): Observable<CsRemoveForumResponse>;
 

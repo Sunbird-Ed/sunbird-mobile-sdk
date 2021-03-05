@@ -59,9 +59,11 @@ describe('GroupServiceImpl', () => {
     it('should return attached forum id', (done) => {
         // arrange
         const request = {
-            sbType: 'some_type',
-            sbIdentifier: 'id',
-            cid: 1
+            type: 'some_type',
+            context: {
+                type: 'some_type',
+                identifier: 'some_id'
+            }
         }
         mockContainer.get = jest.fn(() => ({
             attachForum: jest.fn(() => of({}))
