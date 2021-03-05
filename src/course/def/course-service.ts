@@ -19,11 +19,13 @@ import {DownloadCertificateResponse} from './download-certificate-response';
 import {SunbirdTelemetry} from '../../telemetry';
 import Telemetry = SunbirdTelemetry.Telemetry;
 import {LearnerCertificate} from './get-learner-certificate-response';
-import {DownloadCertificateRequest} from './download-certificate-request';
 import {ApiRequestHandler} from '../../api';
 import {GetEnrolledCourseResponse} from './get-enrolled-course-response';
+import {CourseCertificateManager} from './course-certificate-manager';
 
 export interface CourseService {
+    certificateManager: CourseCertificateManager;
+    
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch>;
 
     updateContentState(request: UpdateContentStateRequest): Observable<boolean>;
@@ -59,10 +61,6 @@ export interface CourseService {
     syncAssessmentEvents(options?: { persistedOnly: boolean }): Observable<undefined>;
 
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
-
-    getCurrentProfileCourseCertificateV2(request: GetCertificateRequest): Observable<string>;
-
-    downloadCurrentProfileCourseCertificateV2(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse>;
 
     displayDiscussionForum(request: DisplayDiscussionForumRequest): Observable<boolean>;
 
