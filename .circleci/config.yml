@@ -42,3 +42,4 @@ jobs:
             else
               npm run build:prod && npm pack ./dist
             fi
+
