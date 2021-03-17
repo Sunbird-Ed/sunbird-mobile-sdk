@@ -45,6 +45,7 @@ export const mockFormResponse = {
                         {
                             'index': 0,
                             'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
+                            'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'theme': {
                                 'component': 'sb-course-cards-hlist',
                                 'inputs': {
@@ -126,6 +127,7 @@ export const mockFormResponse = {
                         {
                             'index': 1,
                             'title': '{"en":"Digital TextBook","hi":"डिजिटल टेक्स्टबुक"}',
+                            'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'theme': {
                                 'component': 'sb-course-cards-hlist',
                                 'inputs': {
@@ -258,6 +260,7 @@ export const mockFormResponseWithExplicitContentFacetValues = {
                         {
                             'index': 0,
                             'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
+                            'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'theme': {
                                 'component': 'sb-course-cards-hlist',
                                 'inputs': {
@@ -321,6 +324,7 @@ export const mockFormResponseWithTrackableCollectionsDataSrc = {
                         {
                             'index': 0,
                             'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
+                            'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'theme': {
                                 'orientation': 'horizontal',
                             }
@@ -367,6 +371,7 @@ export const mockFormResponseWithTrackableCollectionsDataSrcAndNoFilter = {
                         {
                             'index': 0,
                             'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
+                            'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'theme': {
                                 'orientation': 'horizontal',
                             }
@@ -426,6 +431,7 @@ export const mockFormResponseWithUnknownDataSrc = {
                         {
                             'index': 0,
                             'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
+                            'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'theme': {
                                 'component': 'sb-course-cards-hlist',
                                 'inputs': {
