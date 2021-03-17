@@ -7,7 +7,7 @@ import {
     EnrollCourseRequest,
     GetContentStateRequest,
     UnenrollCourseRequest,
-    UpdateContentStateRequest
+    UpdateContentStateRequest, UpdateContentStateResponse, UpdateCourseContentStateRequest
 } from '..';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
@@ -81,7 +81,10 @@ describe('CourseServiceImpl', () => {
         })
     };
     const mockCachedItemStore: Partial<CachedItemStore> = {};
-    const mockCsCourseService: Partial<CsCourseService> = {};
+    const mockCsCourseService: Partial<CsCourseService> = {
+        updateContentState: jest.fn().mockImplementation(() => {
+        })
+    };
     const mockContentService: Partial<ContentService> = {};
 
     const mockNetworkQueue: Partial<NetworkQueue> = {
@@ -1120,6 +1123,27 @@ describe('CourseServiceImpl', () => {
             }).subscribe((result) => {
                 // assert
                 expect(result.length).toEqual(1);
+                done();
+            });
+        });
+    });
+
+    describe('syncCourseProgress', () => {
+        it('should return the updateContentState  response', (done) => {
+            const request: UpdateCourseContentStateRequest = {
+                userId: 'SAMPLE_USER_ID',
+                courseId: 'SAMPLE_COURSE_ID',
+                batchId: 'SAMPLE_BATCH_ID'
+            };
+            // arrange
+            mockCsCourseService.updateContentState = jest.fn(() => of({
+               response: 'SUCCESS'
+            }));
+
+            // act
+            courseService.syncCourseProgress(request).subscribe((result) => {
+                // assert
+                expect(result.response).toEqual('SUCCESS');
                 done();
             });
         });

@@ -35,6 +35,7 @@ import {
     RelevantContentResponse,
     RelevantContentResponsePlayer,
     SearchResponse,
+    SearchType,
 } from '..';
 import {combineLatest, defer, from, Observable, of} from 'rxjs';
 import {ApiRequestHandler, ApiService, Response} from '../../api';
@@ -610,7 +611,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
                 return apiHandler.handle(searchRequest).pipe(
                     map((searchResponse: SearchResponse) => {
-                        if (!contentSearchCriteria.facetFilters) {
+                        if (!contentSearchCriteria.facetFilters && contentSearchCriteria.searchType === SearchType.SEARCH) {
                             searchRequest.filters.contentType = [];
                             searchRequest.filters.primaryCategory = [];
                             searchRequest.filters.audience = [];
