@@ -22,6 +22,8 @@ import {LearnerCertificate} from './get-learner-certificate-response';
 import {ApiRequestHandler} from '../../api';
 import {GetEnrolledCourseResponse} from './get-enrolled-course-response';
 import {CourseCertificateManager} from './course-certificate-manager';
+import {UpdateContentStateResponse} from './update-content-state-response';
+import {UpdateCourseContentStateRequest} from './update-course-content-state-request';
 
 export interface CourseService {
     certificateManager: CourseCertificateManager;
@@ -65,4 +67,6 @@ export interface CourseService {
     displayDiscussionForum(request: DisplayDiscussionForumRequest): Observable<boolean>;
 
     getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<LearnerCertificate[]>;
+
+    syncCourseProgress(request: UpdateCourseContentStateRequest): Observable<UpdateContentStateResponse>;
 }

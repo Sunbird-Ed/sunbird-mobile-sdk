@@ -56,6 +56,8 @@ import {OfflineAssessmentScoreProcessor} from './offline-assessment-score-proces
 import {GetEnrolledCourseResponse} from '../def/get-enrolled-course-response';
 import {CourseCertificateManager} from '../def/course-certificate-manager';
 import {CourseCertificateManagerImpl} from './course-certificate-manager-impl';
+import {UpdateContentStateResponse} from '../def/update-content-state-response';
+import {UpdateCourseContentStateRequest} from '../def/update-course-content-state-request';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -396,5 +398,9 @@ export class CourseServiceImpl implements CourseService {
 
     getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<LearnerCertificate[]> {
         return new GetLearnerCertificateHandler(this.apiService).handle(request);
+    }
+
+    syncCourseProgress(request: UpdateCourseContentStateRequest): Observable<UpdateContentStateResponse> {
+        return this.csCourseService.updateContentState(request, { apiPath : '/api/course/v1'});
     }
 }
