@@ -239,6 +239,61 @@ export namespace SunbirdTelemetry {
         }
     }
 
+    export class Summary extends Telemetry {
+        private static readonly EID = 'SUMMARY';
+
+        constructor(
+            type: string,
+            starttime: number,
+            endtime: number,
+            timespent: number,
+            pageviews: number,
+            interactions: number,
+            env: string,
+            mode?: string,
+            envsummary?: {
+                env: string,
+                timespent: number,
+                visits: number
+            }[],
+            eventsummary?: {
+                id: string,
+                count: number
+            } [],
+            pagesummary?: {
+                id: string,
+                type: string,
+                env: string,
+                timespent: number,
+                visits: number
+            }[],
+            extra?: {
+                id: string,
+                value: string
+            }[],
+            correlationData: Array<CorrelationData> = [],
+            objId: string = '',
+            objType: string = '',
+            objVer: string = '',
+            rollup: Rollup = {},
+        ) {
+            super(Summary.EID);
+            this.edata = {
+                type, starttime, endtime, timespent, pageviews, interactions,
+                ...(mode ? {mode} : {}),
+                ...(envsummary ? {envsummary} : {}),
+                ...(eventsummary ? {eventsummary} : {}),
+                ...(pagesummary ? {pagesummary} : {}),
+                ...(extra ? {extra} : {})
+            };
+            // TODO need to check
+            this.context.cdata = correlationData;
+            this.context.env = env;
+            this.object = new TelemetryObject(objId, objType, objVer);
+            this.object.rollup = rollup ? rollup : {};
+        }
+    }
+
     export class Interact extends Telemetry {
         private static readonly EID = 'INTERACT';
 
