@@ -35,7 +35,7 @@ jest.mock('@project-sunbird/client-services', () => {
 });
 
 describe('AuthServiceImpl', () => {
-  let authService: AuthService;
+  let authServiceTest: AuthService;
   const container: Container = new Container();
   const mockSdkConfig: SdkConfig = {} as Partial<SdkConfig> as SdkConfig;
   const mockApiService: ApiService = instance(mock<ApiService>());
