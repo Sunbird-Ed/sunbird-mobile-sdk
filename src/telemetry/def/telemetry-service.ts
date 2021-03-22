@@ -61,4 +61,6 @@ export interface TelemetryService extends SdkServiceOnInitDelegate, SdkServicePr
     updateCampaignParameters(params: CorrelationData[]);
 
     summary(request: TelemetrySummaryRequest): Observable<boolean>;
+
+    populateGlobalCorRelationData(params: CorrelationData[]);
 }
