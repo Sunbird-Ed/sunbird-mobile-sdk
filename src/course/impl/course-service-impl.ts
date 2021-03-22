@@ -396,7 +396,7 @@ export class CourseServiceImpl implements CourseService {
         });
     }
 
-    getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<LearnerCertificate[]> {
+    getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<{count: number, content: LearnerCertificate[]}> {
         return new GetLearnerCertificateHandler(this.apiService, this.cachedItemStore).handle(request);
     }
 
