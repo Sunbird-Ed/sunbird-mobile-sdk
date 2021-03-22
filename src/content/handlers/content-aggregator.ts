@@ -90,6 +90,7 @@ export interface AggregatorConfigField<T extends DataSourceType = any> {
     dataSrc: DataSourceModelMap[T];
     sections: {
         index: number;
+        description?: string;
         title: string;
         theme: any;
     }[];
@@ -98,6 +99,7 @@ export interface AggregatorConfigField<T extends DataSourceType = any> {
 export interface ContentAggregation<T extends DataSourceType = any> {
     index: number;
     title: string;
+    description?: string;
     data: DataResponseMap[T];
     dataSrc: DataSourceModelMap[T];
     theme: any;
@@ -197,6 +199,7 @@ export class ContentAggregator {
             return {
                 index: section.index,
                 title: section.title,
+                description: section.description,
                 data: {
                     name: section.index + '',
                     sections: [
@@ -227,7 +230,8 @@ export class ContentAggregator {
                     title: section.title,
                     data: field.dataSrc.values as any,
                     dataSrc: field.dataSrc,
-                    theme: section.theme
+                    theme: section.theme,
+                    description: section.description,
                 };
             });
         }
@@ -310,7 +314,8 @@ export class ContentAggregator {
                         return a.facet.localeCompare(b.facet);
                     }),
                     dataSrc: field.dataSrc,
-                    theme: section.theme
+                    theme: section.theme,
+                    description: section.description,
                 };
             } else {
                 return {
@@ -318,7 +323,8 @@ export class ContentAggregator {
                     title: section.title,
                     data: [],
                     dataSrc: field.dataSrc,
-                    theme: section.theme
+                    theme: section.theme,
+                    description: section.description,
                 };
             }
         });
@@ -364,7 +370,8 @@ export class ContentAggregator {
                         ]
                     },
                     dataSrc: field.dataSrc,
-                    theme: section.theme
+                    theme: section.theme,
+                    description: section.description,
                 };
             } else {
                 const aggregate = field.dataSrc.mapping[index].aggregate!;
@@ -379,7 +386,8 @@ export class ContentAggregator {
                         includeSearchable: false
                     }),
                     dataSrc: field.dataSrc,
-                    theme: section.theme
+                    theme: section.theme,
+                    description: section.description,
                 } as ContentAggregation<'TRACKABLE_COLLECTIONS'>;
             }
         });
@@ -440,6 +448,7 @@ export class ContentAggregator {
                         ]
                     },
                     dataSrc: field.dataSrc,
+                    description: section.description,
                     theme: section.theme
                 } as ContentAggregation<'CONTENTS'>;
             } else {
@@ -462,6 +471,7 @@ export class ContentAggregator {
                         includeSearchable: false
                     }),
                     dataSrc: field.dataSrc,
+                    description: section.description,
                     theme: section.theme
                 } as ContentAggregation<'CONTENTS'>;
             }
