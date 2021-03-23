@@ -97,4 +97,5 @@ export interface DisplayDiscussionForumRequest {
 
 export interface GetLearnerCerificateRequest extends CachedItemRequest {
     userId: string;
+    size?: number;
 }
