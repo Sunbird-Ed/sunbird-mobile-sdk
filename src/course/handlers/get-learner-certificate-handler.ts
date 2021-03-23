@@ -21,6 +21,7 @@ export class GetLearnerCertificateHandler implements ApiRequestHandler<GetLearne
 
   private fetchFromServer(request: GetLearnerCerificateRequest): Observable<{count: number, content: LearnerCertificate[]}> {
     let leanrnerRequest = {
+      ...(request.size ? { size: request.size } : null),
       _source: [
         'data.badge.issuer.name',
         'pdfUrl',
@@ -41,7 +42,6 @@ export class GetLearnerCertificateHandler implements ApiRequestHandler<GetLearne
         }
       }
     };
-    request.size ? leanrnerRequest['size'] = request.size : null;
     const searchCertificateRequest = new Request.Builder()
       .withType(HttpRequestType.POST)
       .withPath(GetLearnerCertificateHandler.CERTIFICATE_SEARCH_ENDPOINT)
