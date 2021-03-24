@@ -157,7 +157,8 @@ describe('ContentAggregator', () => {
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
-                                    theme: expect.any(Object)
+                                    theme: expect.any(Object),
+                                    description: expect.any(String),
                                 } as ContentAggregation<'CONTENTS'>,
                                 {
                                     index: expect.any(Number),
@@ -190,7 +191,8 @@ describe('ContentAggregator', () => {
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
-                                    theme: expect.any(Object)
+                                    theme: expect.any(Object),
+                                    description: expect.any(String),
                                 } as ContentAggregation<'CONTENTS'>
                             ]
                         } as ContentAggregatorResponse);
@@ -285,7 +287,8 @@ describe('ContentAggregator', () => {
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
-                                    theme: expect.any(Object)
+                                    theme: expect.any(Object),
+                                    description: expect.any(String),
                                 } as ContentAggregation<'CONTENTS'>,
                                 {
                                     index: expect.any(Number),
@@ -312,7 +315,8 @@ describe('ContentAggregator', () => {
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
-                                    theme: expect.any(Object)
+                                    theme: expect.any(Object),
+                                    description: expect.any(String),
                                 } as ContentAggregation<'CONTENTS'>
                             ]
                         });
@@ -414,7 +418,8 @@ describe('ContentAggregator', () => {
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
-                                    theme: expect.any(Object)
+                                    theme: expect.any(Object),
+                                    description: expect.any(String),
                                 } as ContentAggregation<'CONTENTS'>,
                                 {
                                     index: expect.any(Number),
@@ -441,7 +446,8 @@ describe('ContentAggregator', () => {
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
-                                    theme: expect.any(Object)
+                                    theme: expect.any(Object),
+                                    description: expect.any(String),
                                 } as ContentAggregation<'CONTENTS'>
                             ]
                         });
@@ -529,6 +535,7 @@ describe('ContentAggregator', () => {
                                 'title': expect.any(String),
                                 'dataSrc': expect.any(Object),
                                 'theme': expect.any(Object),
+                                'description': expect.any(String),
                             }]
                         });
                         done();
@@ -589,6 +596,7 @@ describe('ContentAggregator', () => {
                                 'title': expect.any(String),
                                 'dataSrc': expect.any(Object),
                                 'theme': expect.any(Object),
+                                'description': expect.any(String),
                             }]
                         });
                         done();
@@ -645,6 +653,7 @@ describe('ContentAggregator', () => {
                                 'title': expect.any(String),
                                 'dataSrc': expect.any(Object),
                                 'theme': expect.any(Object),
+                                'description': expect.any(String),
                             }]
                         });
                         done();

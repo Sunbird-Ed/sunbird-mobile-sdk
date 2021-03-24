@@ -28,7 +28,8 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         gid?: string,
         offset: number = 0,
         channelId?: string,
-        campaignParameters?: CorrelationData[]
+        campaignParameters?: CorrelationData[],
+        globalCData?: CorrelationData[]
     ): any {
         const {uid, sid} = profileSession;
         event.ets += offset;
@@ -40,7 +41,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         } else {
             this.patchActor(event, '');
         }
-        this.patchContext(event, sid, channelId, campaignParameters);
+        this.patchContext(event, sid, channelId, campaignParameters, globalCData);
         // TODO Add tag patching logic
         event.context.cdata = [
             ...event.context.cdata, {
@@ -64,11 +65,11 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         }
     }
 
-    private patchContext(event: Telemetry, sid, channelId, campaignParameters?: CorrelationData[]) {
+    private patchContext(event: Telemetry, sid, channelId, campaignParameters?: CorrelationData[], globalCdata?: CorrelationData[]) {
         if (!event.context) {
             event.context = new Context();
         }
-        event.context = this.buildContext(sid, channelId, event.context, campaignParameters);
+        event.context = this.buildContext(sid, channelId, event.context, campaignParameters, globalCdata);
     }
 
     private patchPData(event: Context) {
@@ -101,7 +102,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         };
     }
 
-    buildContext(sid: string, channelId: string, context: Context, campaignParameters?: CorrelationData[]): Context {
+    buildContext(sid: string, channelId: string, context: Context, campaignParameters?: CorrelationData[], globalCData?: CorrelationData[]): Context {
         context.channel = channelId;
         this.patchPData(context);
         if (!context.env) {
@@ -118,6 +119,7 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
         }
         // patching cData
         context.cdata = context.cdata ? context.cdata.concat(campaignParameters || []) : (campaignParameters || []);
+        context.cdata = context.cdata ? context.cdata.concat(globalCData || []) : (globalCData || []);
         return context;
     }
 }
