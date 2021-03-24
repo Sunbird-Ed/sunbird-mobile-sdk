@@ -66,7 +66,7 @@ export interface CourseService {
 
     displayDiscussionForum(request: DisplayDiscussionForumRequest): Observable<boolean>;
 
-    getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<LearnerCertificate[]>;
+    getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<{count: number, content: LearnerCertificate[]}>;
 
     syncCourseProgress(request: UpdateCourseContentStateRequest): Observable<UpdateContentStateResponse>;
 }
