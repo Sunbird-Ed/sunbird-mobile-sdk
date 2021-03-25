@@ -99,6 +99,7 @@ import {FormService} from '../../form';
 import {CsMimeTypeFacetToMimeTypeCategoryAggregator} from '@project-sunbird/client-services/services/content/utilities/mime-type-facet-to-mime-type-category-aggregator';
 import {MimeTypeCategory} from '@project-sunbird/client-services/models/content';
 import {CourseService} from '../../course';
+import {NetworkInfoService} from '../../util/network';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -127,7 +128,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
-        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo
+        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
+        @inject(InjectionTokens.NETWORKINFO_SERVICE) private networkInfoService: NetworkInfoService,
     ) {
         this.contentServiceConfig = this.sdkConfig.contentServiceConfig;
         this.appConfig = this.sdkConfig.appConfig;
@@ -736,7 +738,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             this.cachedItemStore,
             courseService,
             profileService,
-            this.apiService
+            this.apiService,
+            this.networkInfoService
         );
     }
 

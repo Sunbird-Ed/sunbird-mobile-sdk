@@ -1,32 +1,40 @@
 import {ContentAggregation, ContentAggregator} from './content-aggregator';
 import {ContentAggregatorResponse, ContentService} from '..';
 import {CachedItemStore} from '../../key-value-store';
-import {of} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {FormService} from '../../form';
 import {CsContentsGroupGenerator} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
 import {
     mockFormResponse,
+    mockFormResponseWithExplicitContentFacetValues,
     mockFormResponseWithTrackableCollectionsDataSrc,
     mockFormResponseWithTrackableCollectionsDataSrcAndNoFilter,
+    mockFormResponseWithUnknownDataSrc,
     mockGetOfflineContentsResponse,
     mockGetOfflineContentsResponseWithTwoSubjects,
-    mockGetOnlineContentsResponse,
-    mockFormResponseWithUnknownDataSrc,
-    mockFormResponseWithExplicitContentFacetValues
+    mockGetOnlineContentsResponse
 } from './content-aggregator.spec.data';
 import {SearchContentHandler} from './search-content-handler';
 import {CourseService} from '../../course';
 import {ProfileService} from '../../profile';
 import {ApiService} from '../../api';
+import {NetworkInfoService, NetworkStatus} from '../../util/network';
 
 describe('ContentAggregator', () => {
     let contentAggregator: ContentAggregator;
     const mockContentService: Partial<ContentService> = {};
-    const mockCachedItemStore: Partial<CachedItemStore> = {};
+    const mockCachedItemStore: Partial<CachedItemStore> = {
+        get<T>(id: string, noSqlkey: string, timeToLiveKey: string, fromServer: () => Observable<T>, initial?: () => Observable<T>, timeToLive?: number, emptyCondition?: (item: T) => boolean): Observable<T> {
+            return fromServer();
+        }
+    };
     const mockFormService: Partial<FormService> = {};
     const mockCourseService: Partial<CourseService> = {};
     const mockProfileService: Partial<ProfileService> = {};
     const mockApiService: Partial<ApiService> = {};
+    const mockNetworkInfoService: Partial<NetworkInfoService> = {
+        networkStatus$: of(NetworkStatus.ONLINE)
+    };
 
     beforeAll(() => {
         const searchContentHandler = new SearchContentHandler(
@@ -42,7 +50,8 @@ describe('ContentAggregator', () => {
             mockCachedItemStore as CachedItemStore,
             mockCourseService as CourseService,
             mockProfileService as ProfileService,
-            mockApiService as ApiService
+            mockApiService as ApiService,
+            mockNetworkInfoService as NetworkInfoService
         );
     });
 
@@ -658,6 +667,38 @@ describe('ContentAggregator', () => {
                         });
                         done();
                     });
+                });
+            });
+        });
+
+        describe('when requesting with cacheable', () => {
+            it('should request and return from cache', (done) => {
+                // arrange
+                spyOn(mockCachedItemStore, 'get').and.callThrough();
+                mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponse));
+                mockContentService.getContents = jest.fn().mockImplementation(() => of(mockGetOfflineContentsResponse));
+                mockContentService.searchContent = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
+                mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of({
+                    uid: 'SOME_UID',
+                    sid: 'SOME_SID'
+                }));
+                mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([]));
+
+                // act
+                contentAggregator.aggregate({}, ['TRACKABLE_COLLECTIONS'], {
+                    type: 'config',
+                    subType: 'library',
+                    action: 'get',
+                    component: 'app',
+                }, undefined, true).subscribe((result) => {
+                    // assert
+                    expect(mockCachedItemStore.get).toHaveBeenCalledWith(
+                        expect.any(String),
+                        expect.any(String),
+                        expect.any(String),
+                        expect.any(Function),
+                    );
+                    done();
                 });
             });
         });

@@ -34,6 +34,7 @@ import {
     ContentMarkerRequest,
     CourseService,
     FormService,
+    NetworkInfoService,
     ProfileService
 } from '../..';
 import {FileService} from '../../util/file/def/file-service';
@@ -139,6 +140,7 @@ describe('ContentServiceImpl', () => {
     const mockAppInfo: Partial<AppInfo> = {
         getAppName: () => 'MOCK_APP_NAME'
     };
+    const mockNetworkInfoService: Partial<NetworkInfoService> = {};
     const mockSharedPreferences = new SharedPreferencesLocalStorage();
     const contentUpdateSizeOnDeviceTimeoutRef: Map<string, NodeJS.Timeout> = new Map();
 
@@ -159,6 +161,7 @@ describe('ContentServiceImpl', () => {
         container.bind<EventsBusService>(InjectionTokens.EVENTS_BUS_SERVICE).toConstantValue(mockEventsBusService as EventsBusService);
         container.bind<CachedItemStore>(InjectionTokens.CACHED_ITEM_STORE).toConstantValue(mockCachedItemStore as CachedItemStore);
         container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
+        container.bind<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE).toConstantValue(mockNetworkInfoService as NetworkInfoService);
 
         contentService = container.get(InjectionTokens.CONTENT_SERVICE);
     });
