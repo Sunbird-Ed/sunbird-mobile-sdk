@@ -161,6 +161,7 @@ export class ContentAggregator {
 
             let fields: AggregatorConfigField[] = [];
             if (formRequest) {
+                formRequest.from = request.from;
                 fields = await this.formService.getForm(
                     formRequest
                 ).toPromise().then((r) => r.form.data.fields);
