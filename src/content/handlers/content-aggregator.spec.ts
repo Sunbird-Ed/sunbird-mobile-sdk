@@ -129,13 +129,15 @@ describe('ContentAggregator', () => {
                                     expect.objectContaining({identifier: 'do_2128458593096499201172'})
                                 ]),
                                 groupBy: 'subject',
-                                sortCriteria: [
+                                sortBy: [
                                     {
                                         sortAttribute: 'name',
                                         sortOrder: 'asc'
                                     }
                                 ],
-                                filterCriteria: [],
+                                filterBy: [],
+                                groupFilterBy: [],
+                                groupSortBy: [],
                                 includeSearchable: false
                             }
                         );
@@ -184,7 +186,7 @@ describe('ContentAggregator', () => {
                                                 count: 1,
                                                 contents: [
                                                     expect.objectContaining({
-                                                        identifier: 'do_2128458593096499201172'
+                                                        identifier: 'do_21280780867130982412259'
                                                     }),
                                                 ]
                                             },
@@ -193,10 +195,10 @@ describe('ContentAggregator', () => {
                                                 count: 1,
                                                 contents: [
                                                     expect.objectContaining({
-                                                        identifier: 'do_21280780867130982412259'
+                                                        identifier: 'do_2128458593096499201172'
                                                     }),
                                                 ]
-                                            }
+                                            },
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
@@ -253,13 +255,15 @@ describe('ContentAggregator', () => {
                                     expect.objectContaining({identifier: 'do_2128458593096499201172'})
                                 ]),
                                 groupBy: 'subject',
-                                sortCriteria: [
+                                sortBy: [
                                     {
                                         sortAttribute: 'name',
                                         sortOrder: 'asc'
                                     }
                                 ],
-                                filterCriteria: [],
+                                filterBy: [],
+                                groupFilterBy: [],
+                                groupSortBy: [],
                                 combination: {
                                     'subject': ['Some other Physical Science'],
                                     'gradeLevel': ['Class 1']
@@ -383,13 +387,15 @@ describe('ContentAggregator', () => {
                                     expect.objectContaining({identifier: 'do_2128458593096499201172'})
                                 ]),
                                 groupBy: 'subject',
-                                sortCriteria: [
+                                sortBy: [
                                     {
                                         sortAttribute: 'name',
                                         sortOrder: 'asc'
                                     }
                                 ],
-                                filterCriteria: [],
+                                filterBy: [],
+                                groupFilterBy: [],
+                                groupSortBy: [],
                                 combination: {
                                     'subject': ['Some other Physical Science'],
                                     'gradeLevel': ['Class 1']
