@@ -17,11 +17,13 @@ import {SearchRequest} from '../def/search-request';
 import {FormRequest, FormService} from '../../form';
 import {SearchContentHandler} from './search-content-handler';
 import {
-    CsContentFilterCriteria,
-    CsContentSortCriteria,
-    CsSortOrder
+    CsSortCriteria,
+    CsFilterCriteria,
 } from '@project-sunbird/client-services/services/content';
-import {CsContentsGroupGenerator} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
+import {
+    CsContentsGroupGenerator,
+    CsContentGroup
+} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
 import {CourseService} from '../../course';
 import {ProfileService} from '../../profile';
 import {ApiRequestHandler, ApiService, Request, SerializedRequest} from '../../api';
@@ -29,8 +31,9 @@ import {GetEnrolledCourseResponse} from '../../course/def/get-enrolled-course-re
 import {CsResponse} from '@project-sunbird/client-services/core/http-service';
 import {ObjectUtil} from '../../util/object-util';
 import * as SHA1 from 'crypto-js/sha1';
-import {NetworkInfoService, NetworkStatus} from "../../util/network";
+import {NetworkInfoService, NetworkStatus} from '../../util/network';
 
+type Primitive = string | number | boolean;
 type RequestHash = string;
 interface AggregationTask<T extends DataSourceType = any> {
     requestHash: RequestHash;
@@ -45,9 +48,18 @@ interface AggregationConfig {
         }
     }[];
     sortBy?: {
-        [field in keyof ContentData]: 'asc' | 'desc'
+        [field in keyof ContentData]: 'asc' | 'desc' | { order: 'asc' | 'desc', preference: Primitive[] }
     }[];
     groupBy?: keyof ContentData;
+    groupSortBy?: {
+        [field in keyof CsContentGroup]: 'asc' | 'desc' | { order: 'asc' | 'desc', preference: Primitive[] }
+    }[];
+    groupFilterBy?: {
+        [field in keyof CsContentGroup]: {
+            operation: any,
+            value: any
+        }
+    }[];
 }
 
 export interface DataSourceModelMap {
@@ -448,8 +460,10 @@ export class ContentAggregator {
                             data: CsContentsGroupGenerator.generate({
                                 contents: courses as any,
                                 groupBy: aggregate.groupBy!,
-                                sortCriteria: aggregate.sortBy ? this.buildSortByCriteria(aggregate.sortBy) : [],
-                                filterCriteria: aggregate.filterBy ? this.buildFilterByCriteria(aggregate.filterBy) : [],
+                                sortBy: aggregate.sortBy ? this.buildSortByCriteria(aggregate.sortBy) : [],
+                                filterBy: aggregate.filterBy ? this.buildFilterByCriteria(aggregate.filterBy) : [],
+                                groupSortBy: aggregate.groupSortBy ? this.buildSortByCriteria(aggregate.groupSortBy) : [],
+                                groupFilterBy: aggregate.groupFilterBy ? this.buildFilterByCriteria(aggregate.groupFilterBy) : [],
                                 includeSearchable: false
                             }),
                             dataSrc: field.dataSrc,
@@ -536,8 +550,10 @@ export class ContentAggregator {
                             data: CsContentsGroupGenerator.generate({
                                 contents: combinedContents,
                                 groupBy: aggregate.groupBy!,
-                                sortCriteria: aggregate.sortBy ? this.buildSortByCriteria(aggregate.sortBy) : [],
-                                filterCriteria: aggregate.filterBy ? this.buildFilterByCriteria(aggregate.filterBy) : [],
+                                sortBy: aggregate.sortBy ? this.buildSortByCriteria(aggregate.sortBy) : [],
+                                filterBy: aggregate.filterBy ? this.buildFilterByCriteria(aggregate.filterBy) : [],
+                                groupSortBy: aggregate.groupSortBy ? this.buildSortByCriteria(aggregate.groupSortBy) : [],
+                                groupFilterBy: aggregate.groupFilterBy ? this.buildFilterByCriteria(aggregate.groupFilterBy) : [],
                                 combination: field.dataSrc.mapping[index].applyFirstAvailableCombination &&
                                     request.applyFirstAvailableCombination as any,
                                 includeSearchable: false
@@ -552,34 +568,34 @@ export class ContentAggregator {
         };
     }
 
-    private buildFilterByCriteria(config: {
-        [field in keyof ContentData]: {
+    private buildFilterByCriteria<T>(config: {
+        [field in keyof T]: {
             operation: any,
             value: any
         }
-    }[]): CsContentFilterCriteria[] {
+    }[]): CsFilterCriteria<T>[] {
         return config.reduce((agg, s) => {
             Object.keys(s).forEach((k) => agg.push({
-                filterAttribute: k,
+                filterAttribute: k as any,
                 filterCondition: {
                     operation: s[k].operation,
                     value: s[k].value
                 }
             }));
             return agg;
-        }, [] as CsContentFilterCriteria[]);
+        }, [] as CsFilterCriteria<T>[]);
     }
 
-    private buildSortByCriteria(config: {
-        [field in keyof ContentData]: 'asc' | 'desc'
-    }[]): CsContentSortCriteria[] {
+    private buildSortByCriteria<T>(config: {
+        [field in keyof T]: 'asc' | 'desc' | { order: 'asc' | 'desc', preference: Primitive[] }
+    }[]): CsSortCriteria<T>[] {
         return config.reduce((agg, s) => {
             Object.keys(s).forEach((k) => agg.push({
-                sortAttribute: k,
-                sortOrder: s[k] === 'asc' ? CsSortOrder.ASC : CsSortOrder.DESC,
+                sortAttribute: k as any,
+                sortOrder: s[k],
             }));
             return agg;
-        }, [] as CsContentSortCriteria[]);
+        }, [] as CsSortCriteria<T>[]);
     }
 
     private buildSearchRequestAndCriteria(field: AggregatorConfigField<'CONTENTS' | 'CONTENT_FACETS'>, request: ContentAggregatorRequest) {
