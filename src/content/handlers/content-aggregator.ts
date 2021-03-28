@@ -117,6 +117,7 @@ export interface AggregatorConfigField<T extends DataSourceType = any> {
     dataSrc: DataSourceModelMap[T];
     sections: {
         index: number;
+        code: string;
         description?: string;
         title: string;
         theme: any;
@@ -302,6 +303,7 @@ export class ContentAggregator {
                     return field.sections.map((section) => {
                         return {
                             index: section.index,
+                            code: section.code,
                             title: section.title,
                             data: field.dataSrc.values as any,
                             dataSrc: field.dataSrc,
@@ -333,6 +335,7 @@ export class ContentAggregator {
                         return {
                             index: section.index,
                             title: section.title,
+                            code: section.code,
                             data: facetFilters.values.map((filterValue) => {
                                 return {
                                     facet: filterValue.name,
@@ -392,6 +395,7 @@ export class ContentAggregator {
                         return {
                             index: section.index,
                             title: section.title,
+                            code: section.code,
                             data: [],
                             dataSrc: field.dataSrc,
                             theme: section.theme,
