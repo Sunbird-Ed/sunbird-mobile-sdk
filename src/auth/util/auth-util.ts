@@ -44,7 +44,7 @@ export class AuthUtil {
                 })
                 .then(async (response: Response) => {
                     if (response.body.result.access_token && response.body.result.refresh_token) {
-                        const jwtPayload: { sub: string } = JWTUtil.getJWTPayload(response.body.result.access_token);
+                        const jwtPayload: { sub: string, exp: number } = JWTUtil.getJWTPayload(response.body.result.access_token);
 
                         const userToken = jwtPayload.sub.split(':').length === 3 ? <string> jwtPayload.sub.split(':').pop() : jwtPayload.sub;
 
@@ -53,7 +53,8 @@ export class AuthUtil {
                         sessionData = {
                             ...response.body.result,
                             userToken: prevSessionData ? prevSessionData.userToken : userToken,
-                            managed_access_token: prevSessionData ? prevSessionData.managed_access_token : undefined
+                            managed_access_token: prevSessionData ? prevSessionData.managed_access_token : undefined,
+                            accessTokenExpiresOn: jwtPayload.exp * 1000
                         };
 
                         return await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();

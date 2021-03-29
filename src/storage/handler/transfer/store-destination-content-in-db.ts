@@ -94,10 +94,10 @@ export class StoreDestinationContentInDb {
             const identifier = element.identifier;
             const mimeType = element.mimeType;
             const contentType = ContentUtil.readContentType(element);
+            const primaryCategory = ContentUtil.readPrimaryCategory(element);
             let visibility = ContentUtil.readVisibility(element);
             const audience = ContentUtil.readAudience(element);
             const pragma = ContentUtil.readPragma(element);
-            const compatibilityLevel = ContentUtil.readCompatibilityLevel(element);
             const pkgVersion = element.pkgVersion;
             let contentState = State.ONLY_SPINE.valueOf();
             const board = element.board;
@@ -119,14 +119,11 @@ export class StoreDestinationContentInDb {
                 }
             } else {
                 doesContentExist = false;
-
-                if (ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
-                    // Add or update the content_state
-                    if (MimeType.COLLECTION.valueOf() === mimeType) {
-                        contentState = State.ARTIFACT_AVAILABLE.valueOf();
-                    } else {
-                        contentState = State.ARTIFACT_AVAILABLE.valueOf();
-                    }
+                // Add or update the content_state
+                if (MimeType.COLLECTION.valueOf() === mimeType) {
+                    contentState = State.ARTIFACT_AVAILABLE.valueOf();
+                } else {
+                    contentState = State.ARTIFACT_AVAILABLE.valueOf();
                 }
             }
             const referenceCount = ContentUtil.getReferenceCount(existingContentModel, visibility);
@@ -137,7 +134,7 @@ export class StoreDestinationContentInDb {
             ContentUtil.addOrUpdateViralityMetadata(element, this.deviceInfo.getDeviceID().toString());
             const newContentModel: ContentEntry.SchemaMap = ContentUtil.constructContentDBModel(identifier, manifestVersion,
                 JSON.stringify(element), mimeType, contentType, visibility, basePath,
-                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade);
+                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade, primaryCategory);
             if (!existingContentModel) {
                 insertNewContentModels.push(newContentModel);
             } else {

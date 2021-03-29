@@ -92,10 +92,10 @@ export class ExtractPayloads {
             const contentEncoding = item.contentEncoding;
             const contentDisposition = item.contentDisposition;
             const contentType = ContentUtil.readContentType(item);
+            const primaryCategory = ContentUtil.readPrimaryCategory(item);
             let visibility = ContentUtil.readVisibility(item);
             const audience = ContentUtil.readAudience(item);
             const pragma = ContentUtil.readPragma(item);
-            const compatibilityLevel = ContentUtil.readCompatibilityLevel(item);
             const pkgVersion = item.pkgVersion;
             const artifactUrl = item.artifactUrl;
             const appIcon = item.appIcon;
@@ -138,40 +138,38 @@ export class ExtractPayloads {
                 }
             } else {
                 doesContentExist = false;
-                if (ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
-                    // let isUnzippingSuccessful = false;
-                    if (artifactUrl) {
-                        if (!contentDisposition || !contentEncoding ||
-                            (contentDisposition === ContentDisposition.INLINE.valueOf()
-                                && contentEncoding === ContentEncoding.GZIP.valueOf())) { // Content with artifact without zip i.e. pfd, mp4
-                            const payload = importContext.tmpLocation!.concat(artifactUrl);
-                            await new Promise((resolve, reject) => {
-                                this.zipService.unzip(payload, {target: payloadDestination!}, () => {
-                                    isUnzippingSuccessful = true;
-                                    resolve();
-                                }, () => {
-                                    resolve();
-                                });
-                            });
-                        } else if (ContentUtil.isInlineIdentity(contentDisposition, contentEncoding)) {
-                            try {
-                                await this.copyAssets(importContext.tmpLocation!, artifactUrl, payloadDestination!);
+                // let isUnzippingSuccessful = false;
+                if (artifactUrl) {
+                    if (!contentDisposition || !contentEncoding ||
+                        (contentDisposition === ContentDisposition.INLINE.valueOf()
+                            && contentEncoding === ContentEncoding.GZIP.valueOf())) { // Content with artifact without zip i.e. pfd, mp4
+                        const payload = importContext.tmpLocation!.concat(artifactUrl);
+                        await new Promise((resolve, reject) => {
+                            this.zipService.unzip(payload, {target: payloadDestination!}, () => {
                                 isUnzippingSuccessful = true;
-                            } catch (e) {
-                                isUnzippingSuccessful = false;
-                            }
-                        } else if (ContentDisposition.ONLINE.valueOf() === contentDisposition) { // Content with no artifact)
+                                resolve();
+                            }, () => {
+                                resolve();
+                            });
+                        });
+                    } else if (ContentUtil.isInlineIdentity(contentDisposition, contentEncoding)) {
+                        try {
+                            await this.copyAssets(importContext.tmpLocation!, artifactUrl, payloadDestination!);
                             isUnzippingSuccessful = true;
+                        } catch (e) {
+                            isUnzippingSuccessful = false;
                         }
+                    } else if (ContentDisposition.ONLINE.valueOf() === contentDisposition) { // Content with no artifact)
+                        isUnzippingSuccessful = true;
                     }
+                }
 
-                    // Add or update the content_state
-                    if (isUnzippingSuccessful    // If unzip is success it means artifact is available.
-                        || MimeType.COLLECTION.valueOf() === mimeType) {
-                        contentState = State.ARTIFACT_AVAILABLE.valueOf();
-                    } else {
-                        contentState = State.ONLY_SPINE.valueOf();
-                    }
+                // Add or update the content_state
+                if (isUnzippingSuccessful    // If unzip is success it means artifact is available.
+                    || MimeType.COLLECTION.valueOf() === mimeType) {
+                    contentState = State.ARTIFACT_AVAILABLE.valueOf();
+                } else {
+                    contentState = State.ONLY_SPINE.valueOf();
                 }
                 if (ContentUtil.isNotUnit(mimeType, visibility)) {
                     try {
@@ -215,7 +213,7 @@ export class ExtractPayloads {
             }
             const newContentModel: ContentEntry.SchemaMap = this.constructContentDBModel(identifier, importContext.manifestVersion,
                 JSON.stringify(item), mimeType, contentType, visibility, basePath,
-                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade, dialcodes, childNodes);
+                referenceCount, contentState, audience, pragma, sizeOnDevice, board, medium, grade, dialcodes, childNodes, primaryCategory);
             if (!existingContentModel) {
                 insertNewContentModels.push(newContentModel);
             } else {
@@ -414,7 +412,7 @@ export class ExtractPayloads {
                                     mimeType, contentType, visibility, path,
                                     refCount, contentState, audience, pragma, sizeOnDevice,
                                     board, medium, grade,
-                                    dialcodes, childNodes): ContentEntry.SchemaMap {
+                                    dialcodes, childNodes, primaryCategory): ContentEntry.SchemaMap {
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
@@ -434,7 +432,8 @@ export class ExtractPayloads {
             [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
             [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade),
             [ContentEntry.COLUMN_NAME_DIALCODES]: ContentUtil.getContentAttribute(dialcodes),
-            [ContentEntry.COLUMN_NAME_CHILD_NODES]: ContentUtil.getContentAttribute(childNodes)
+            [ContentEntry.COLUMN_NAME_CHILD_NODES]: ContentUtil.getContentAttribute(childNodes),
+            [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: primaryCategory
         };
     }
 

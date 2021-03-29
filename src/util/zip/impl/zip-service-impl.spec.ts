@@ -18,53 +18,109 @@ describe('ZipServiceImpl', () => {
         jest.clearAllTimers();
     });
 
-    describe('unzip()', function () {
-        it('should delegate to cordova JJzip.unzip', (done) => {
-            // arrange
-            spyOn(window['JJzip'], 'unzip').and.callFake((a, b, c, d) => {
-                setTimeout(() => c(), 0);
+    describe('unzip()', () => {
+        describe('when successful', () => {
+            it('should delegate to cordova JJzip.unzip', (done) => {
+                // arrange
+                spyOn(window['JJzip'], 'unzip').and.callFake((a, b, c, d) => {
+                    setTimeout(() => c(), 0);
+                });
+
+                // act
+                zipService.unzip('SOME_ZIP', {}, () => {
+                    done();
+                });
             });
 
-            // act
-            zipService.unzip('SOME_ZIP', {}, () => {
+            it('should delegate to cordova JJzip.unzip with optional callback', (done) => {
+                // arrange
+                spyOn(window['JJzip'], 'unzip').and.callFake((a, b, c, d) => {
+                    c();
+                });
+
+                // act
+                zipService.unzip('SOME_ZIP', {});
+
                 done();
             });
         });
 
-        it('should delegate to cordova JJzip.unzip', (done) => {
-            // arrange
-            spyOn(window['JJzip'], 'unzip').and.callFake((a, b, c, d) => {
-                setTimeout(() => d(), 0);
+        describe('when failure', () => {
+            it('should delegate to cordova JJzip.unzip', (done) => {
+                // arrange
+                spyOn(window['JJzip'], 'unzip').and.callFake((a, b, c, d) => {
+                    setTimeout(() => d(), 0);
+                });
+
+                // act
+                zipService.unzip('SOME_ZIP', {}, null, () => {
+                    done();
+                });
             });
 
-            // act
-            zipService.unzip('SOME_ZIP', {}, null, () => {
+            it('should delegate to cordova JJzip.unzip with optional callback', (done) => {
+                // arrange
+                spyOn(window['JJzip'], 'unzip').and.callFake((a, b, c, d) => {
+                    d();
+                });
+
+                // act
+                zipService.unzip('SOME_ZIP', {});
+
                 done();
             });
         });
     });
 
-    describe('zip()', function () {
-        it('should delegate to cordova JJzip.zip', (done) => {
-            // arrange
-            spyOn(window['JJzip'], 'zip').and.callFake((a, b, c, d, e, f) => {
-                setTimeout(() => e(), 0);
+    describe('zip()', () => {
+        describe('when successful', () => {
+            it('should delegate to cordova JJzip.zip', (done) => {
+                // arrange
+                spyOn(window['JJzip'], 'zip').and.callFake((a, b, c, d, e, f) => {
+                    setTimeout(() => e(), 0);
+                });
+
+                // act
+                zipService.zip('SOME_ZIP', {}, [], [], () => {
+                    done();
+                });
             });
 
-            // act
-            zipService.zip('SOME_ZIP', {}, [], [], () => {
+            it('should delegate to cordova JJzip.zip with optional callback', (done) => {
+                // arrange
+                spyOn(window['JJzip'], 'zip').and.callFake((a, b, c, d, e, f) => {
+                    e();
+                });
+
+                // act
+                zipService.zip('SOME_ZIP', {}, [], []);
+
                 done();
             });
         });
 
-        it('should delegate to cordova JJzip.zip', (done) => {
-            // arrange
-            spyOn(window['JJzip'], 'zip').and.callFake((a, b, c, d, e, f) => {
-                setTimeout(() => f(), 0);
+        describe('when failure', () => {
+            it('should delegate to cordova JJzip.zip', (done) => {
+                // arrange
+                spyOn(window['JJzip'], 'zip').and.callFake((a, b, c, d, e, f) => {
+                    setTimeout(() => f(), 0);
+                });
+
+                // act
+                zipService.zip('SOME_ZIP', {}, [], [], null, () => {
+                    done();
+                });
             });
 
-            // act
-            zipService.zip('SOME_ZIP', {}, [], [], null, () => {
+            it('should delegate to cordova JJzip.zip with optional callback', (done) => {
+                // arrange
+                spyOn(window['JJzip'], 'zip').and.callFake((a, b, c, d, e, f) => {
+                    f();
+                });
+
+                // act
+                zipService.zip('SOME_ZIP', {}, [], []);
+
                 done();
             });
         });

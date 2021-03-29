@@ -67,6 +67,9 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                         if (typeof (content.contentData.originData) === 'string') {
                             content.contentData.originData = JSON.parse(content.contentData.originData);
                         }
+                        if (content.contentData.trackable && typeof (content.contentData.trackable) === 'string') {
+                            content.contentData.trackable = JSON.parse(content.contentData.trackable);
+                        }
                         return this.decorateContent({
                             content,
                             attachFeedback: request.attachFeedback,
@@ -123,7 +126,8 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                                         contentId: serverContentData.identifier,
                                         streamingUrl: serverContentData.streamingUrl,
                                         licenseDetails: serverContentData.licenseDetails,
-                                        size: serverContentData.size
+                                        size: serverContentData.size,
+                                        serverContentData: serverContentData,
                                     }
                                 }
                             });

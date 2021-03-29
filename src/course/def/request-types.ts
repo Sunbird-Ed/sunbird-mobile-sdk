@@ -1,5 +1,10 @@
 import {SortOrder} from '../../content';
-import {GetUserEnrolledCoursesRequest as CsGetUserEnrolledCoursesRequest} from '@project-sunbird/client-services/services/course';
+import {
+    GetUserEnrolledCoursesRequest as CsGetUserEnrolledCoursesRequest,
+    GetContentStateRequest as CsGetContentStateRequest,
+    ContentState,
+} from '@project-sunbird/client-services/services/course';
+export {ContentState} from '@project-sunbird/client-services/services/course';
 import {CachedItemRequestSourceFrom} from '../../key-value-store';
 
 export interface FetchEnrolledCourseRequest {
@@ -14,17 +19,23 @@ export interface EnrollCourseRequest {
     batchStatus?: number;
 }
 
+export enum UpdateContentStateTarget {
+    LOCAL = 'LOCAL',
+    SERVER = 'SERVER'
+}
 
 export interface UpdateContentStateRequest {
+    target?: UpdateContentStateTarget[];
     userId: string;
     courseId: string;
     contentId: string;
     batchId: string;
-    status?: number;
-    progress?: number;
     result?: string;
     grade?: string;
-    score?: string;
+    status?: ContentState['status'];
+    progress?: ContentState['progress'];
+    score?: ContentState['score'];
+    bestScore?: ContentState['bestScore'];
 }
 
 export interface CourseBatchesRequest {
@@ -43,11 +54,7 @@ export interface CourseBatchDetailsRequest {
     batchId: string;
 }
 
-export interface GetContentStateRequest {
-    userId: string;
-    batchId: string;
-    courseId: string;
-    contentIds?: string[];
+export interface GetContentStateRequest extends CsGetContentStateRequest {
     returnRefreshedContentStates?: boolean;
 }
 
@@ -68,24 +75,6 @@ export enum CourseBatchStatus {
     COMPLETED = '2'
 }
 
-export interface ContentState {
-    lastAccessTime?: string;
-    contentId?: string;
-    batchId?: string;
-    completedCount?: number;
-    result?: string;
-    score?: string;
-    grade?: string;
-    progress?: number;
-    id?: string;
-    viewCount?: number;
-    contentVersion?: string;
-    courseId?: string;
-    lastCompletedTime?: string;
-    status?: number;
-    userId?: string;
-}
-
 export interface ContentStateResponse {
     contentList: ContentState[];
 }
@@ -100,4 +89,12 @@ export interface GenerateAttemptIdRequest {
 export interface GetUserEnrolledCoursesRequest {
     from?: CachedItemRequestSourceFrom;
     request: CsGetUserEnrolledCoursesRequest;
+}
+
+export interface DisplayDiscussionForumRequest {
+    forumId: string;
+}
+
+export interface GetLearnerCerificateRequest {
+    userId: string;
 }

@@ -22,23 +22,22 @@ import {
     ContentSearchResult,
     ContentService,
     ContentServiceConfig,
-    ContentsGroupedByPageSection,
     ContentSpaceUsageSummaryRequest,
     ContentSpaceUsageSummaryResponse,
     EcarImportRequest,
     ExportContentContext,
     FileExtension,
+    FilterValue,
     HierarchyInfo,
     ImportContentContext,
     MimeType,
     RelevantContentRequest,
     RelevantContentResponse,
     RelevantContentResponsePlayer,
-    SearchAndGroupContentRequest,
     SearchResponse,
 } from '..';
 import {combineLatest, defer, from, Observable, of} from 'rxjs';
-import {ApiService, Response} from '../../api';
+import {ApiRequestHandler, ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
 import {DbService} from '../../db';
@@ -94,7 +93,11 @@ import {CopyToDestination} from '../handlers/export/copy-to-destination';
 import {AppInfo} from '../../util/app';
 import {GetContentHeirarchyHandler} from '../handlers/get-content-heirarchy-handler';
 import {DeleteTempDir} from '../handlers/export/deletete-temp-dir';
-import {SearchAndGroupContentHandler} from '../handlers/search-and-group-content-handler';
+import {ContentAggregator} from '../handlers/content-aggregator';
+import {FormService} from '../../form';
+import {CsMimeTypeFacetToMimeTypeCategoryAggregator} from '@project-sunbird/client-services/services/content/utilities/mime-type-facet-to-mime-type-category-aggregator';
+import {MimeTypeCategory} from '@project-sunbird/client-services/models/content';
+import {CourseService} from '../../course';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -108,8 +111,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     private contentDeleteRequestSet: SharedPreferencesSetCollection<ContentDelete>;
 
     private contentUpdateSizeOnDeviceTimeoutRef: Map<string, NodeJS.Timeout> = new Map();
-
-    private searchAndGroupContentHandler: SearchAndGroupContentHandler;
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -127,10 +128,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
         @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo
     ) {
-        this.searchAndGroupContentHandler = new SearchAndGroupContentHandler(
-            this,
-            this.cachedItemStore
-        );
         this.contentServiceConfig = this.sdkConfig.contentServiceConfig;
         this.appConfig = this.sdkConfig.appConfig;
         this.getContentDetailsHandler = new GetContentDetailsHandler(
@@ -199,6 +196,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                 mimeType: '',
                                 basePath: '',
                                 contentType: '',
+                                primaryCategory: '',
                                 isAvailableLocally: false,
                                 referenceCount: 0,
                                 sizeOnDevice: 0,
@@ -325,7 +323,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         if (!childContentRequest.level) {
             childContentRequest.level = -1;
         }
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.appConfig);
         let hierarchyInfoList: HierarchyInfo[] = childContentRequest.hierarchyInfo;
         if (!hierarchyInfoList) {
             hierarchyInfoList = [];
@@ -506,7 +504,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     nextContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string, shouldConvertBasePath?: boolean): Observable<Content> {
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.appConfig);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier)).pipe(
             mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
@@ -518,7 +516,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     prevContent(hierarchyInfo: HierarchyInfo[], currentContentIdentifier: string, shouldConvertBasePath?: boolean): Observable<Content> {
-        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler);
+        const childContentHandler = new ChildContentsHandler(this.dbService, this.getContentDetailsHandler, this.appConfig);
         return this.dbService.read(GetContentDetailsHandler.getReadContentQuery(hierarchyInfo[0].identifier)).pipe(
             mergeMap(async (rows: ContentEntry.SchemaMap[]) => {
                 const contentKeyList = await childContentHandler.getContentsKeyList(rows[0]);
@@ -570,7 +568,24 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         throw new Error('Not Implemented yet');
     }
 
-    searchContent(contentSearchCriteria: ContentSearchCriteria, request?: { [key: string]: any }): Observable<ContentSearchResult> {
+    searchContent(
+        contentSearchCriteria: ContentSearchCriteria,
+        request?: { [key: string]: any },
+        apiHandler?: ApiRequestHandler<SearchRequest, SearchResponse>
+    ): Observable<ContentSearchResult> {
+        contentSearchCriteria = JSON.parse(JSON.stringify(contentSearchCriteria));
+        if (contentSearchCriteria.facetFilters) {
+            const mimeTypeFacetFilters = contentSearchCriteria.facetFilters.find(f => (f.name === 'mimeType'));
+            if (mimeTypeFacetFilters) {
+                mimeTypeFacetFilters.values = mimeTypeFacetFilters.values
+                  .filter(v => v.apply)
+                  .reduce<FilterValue[]>((acc, v) => {
+                      acc = acc.concat((v['values'] as FilterValue[]).map(f => ({...f, apply: true})));
+                      return acc;
+                  }, []);
+            }
+        }
+
         const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
             this.contentServiceConfig, this.telemetryService);
         const languageCode = contentSearchCriteria.languageCode;
@@ -588,10 +603,33 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
         return this.sharedPreferences.getString(FrameworkKeys.KEY_ACTIVE_CHANNEL_ACTIVE_FRAMEWORK_ID).pipe(
             mergeMap((frameworkId?: string) => {
-                return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig, frameworkId!,
-                    contentSearchCriteria.languageCode).handle(searchRequest).pipe(
+                if (!apiHandler) {
+                    apiHandler = new ContentSearchApiHandler(this.apiService, this.contentServiceConfig, frameworkId!,
+                        contentSearchCriteria.languageCode);
+                }
+
+                return apiHandler.handle(searchRequest).pipe(
                     map((searchResponse: SearchResponse) => {
+                        if (!contentSearchCriteria.facetFilters) {
+                            searchRequest.filters.contentType = [];
+                            searchRequest.filters.primaryCategory = [];
+                            searchRequest.filters.audience = [];
+                        }
                         return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
+                    }),
+                    map((contentSearchResponse) => {
+                        if (!contentSearchResponse.filterCriteria.facetFilters) {
+                            return contentSearchResponse;
+                        }
+
+                        const mimeTypeFacetFilters = contentSearchResponse.filterCriteria.facetFilters.find(f => f.name === 'mimeType');
+
+                        if (mimeTypeFacetFilters) {
+                            mimeTypeFacetFilters.values =
+                                CsMimeTypeFacetToMimeTypeCategoryAggregator.aggregate(mimeTypeFacetFilters.values as any,
+                                    contentSearchCriteria.searchType === 'filter' ? [MimeTypeCategory.ALL] : []) as any;
+                        }
+                        return contentSearchResponse;
                     })
                 );
             })
@@ -654,10 +692,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         );
     }
 
-    searchAndGroupContent(request: SearchAndGroupContentRequest): Observable<ContentsGroupedByPageSection> {
-        return this.searchAndGroupContentHandler.handle(request);
-    }
-
     onDownloadCompletion(request: ContentDownloadRequest): Observable<undefined> {
         const importEcarRequest: EcarImportRequest = {
             isChildContent: request.isChildContent!,
@@ -687,6 +721,22 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         const contentSpaceUsageSummaryList: ContentSpaceUsageSummaryResponse[] = [];
         const storageHandler = new ContentStorageHandler(this.dbService);
         return from(storageHandler.getContentUsageSummary(contentSpaceUsageSummaryRequest.paths));
+    }
+
+    buildContentAggregator(
+        formService: FormService,
+        courseService: CourseService,
+        profileService: ProfileService,
+    ): ContentAggregator {
+        return new ContentAggregator(
+            new SearchContentHandler(this.appConfig, this.contentServiceConfig, this.telemetryService),
+            formService,
+            this,
+            this.cachedItemStore,
+            courseService,
+            profileService,
+            this.apiService
+        );
     }
 
     private cleanupContent(importContentContext: ImportContentContext): Observable<undefined> {

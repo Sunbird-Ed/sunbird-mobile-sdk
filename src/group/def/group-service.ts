@@ -11,24 +11,27 @@ import {
     RemoveMembersRequest,
     UpdateActivitiesRequest,
     UpdateByIdRequest,
-    UpdateMembersRequest
+    UpdateMembersRequest,
+    ActivateAndDeactivateByIdRequest
 } from './requests';
 import {
     GroupAddActivitiesResponse,
     GroupAddMembersResponse,
     GroupCreateResponse,
     GroupDeleteResponse,
+    GroupReactivateResponse,
     GroupRemoveActivitiesResponse,
     GroupRemoveMembersResponse,
     GroupSearchResponse,
     GroupSupportedActivitiesFormField,
+    GroupSuspendResponse,
     GroupUpdateActivitiesResponse,
     GroupUpdateMembersResponse,
     GroupUpdateResponse
 } from './responses';
 import {GroupActivityService} from './group-activity-service';
 import {Form} from '../../form/def/models';
-
+import { CsGroupUpdateGroupGuidelinesRequest, CsGroupUpdateGroupGuidelinesResponse } from '@project-sunbird/client-services/services/group';
 export interface GroupService {
     activityService: GroupActivityService;
 
@@ -55,4 +58,10 @@ export interface GroupService {
     removeActivities(request: RemoveActivitiesRequest): Observable<GroupRemoveActivitiesResponse>;
 
     getSupportedActivities(): Observable<Form<GroupSupportedActivitiesFormField>>;
+
+    suspendById(request: ActivateAndDeactivateByIdRequest): Observable<GroupSuspendResponse>;
+
+    reactivateById(request: ActivateAndDeactivateByIdRequest): Observable<GroupReactivateResponse>;
+
+    updateGroupGuidelines(request: CsGroupUpdateGroupGuidelinesRequest): Observable<CsGroupUpdateGroupGuidelinesResponse>;
 }

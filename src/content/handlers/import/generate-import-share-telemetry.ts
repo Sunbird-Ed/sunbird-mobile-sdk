@@ -13,7 +13,7 @@ export class GenerateImportShareTelemetry {
         const items: Item[] = [];
         for (const element of importContentContext.items!) {
             const item: Item = {
-                type: ContentUtil.readContentType(element),
+                type: ContentUtil.readPrimaryCategoryServer(element),
                 origin: ContentUtil.readOriginFromContentMap(element),
                 identifier: element.identifier,
                 pkgVersion: Number(element.pkgVersion),
@@ -32,7 +32,7 @@ export class GenerateImportShareTelemetry {
                 objId: importContentContext.items && importContentContext.items!.length ?
                     importContentContext.items[0]['identifier'] : '',
                 objType: importContentContext.items && importContentContext.items.length ?
-                    importContentContext.items[0]['contentType'] : '',
+                ContentUtil.readPrimaryCategoryServer(importContentContext.items[0]) : '',
                 objVer: importContentContext.items && importContentContext.items.length ?
                     ContentUtil.readPkgVersion(importContentContext.items[0]) + '' : '',
                 rollUp: importContentContext.rollUp

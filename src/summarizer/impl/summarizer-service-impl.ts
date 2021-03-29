@@ -110,7 +110,7 @@ export class SummarizerServiceImpl implements SummarizerService, EventObserver<T
             return of(this.contentMap);
         } else {
             this.contentMap = new Map<string, ContentCache>();
-            const contentRequest: ContentRequest = {resourcesOnly: true, contentTypes: [], uid: uids};
+            const contentRequest: ContentRequest = {resourcesOnly: true, primaryCategories: [], uid: uids};
             return this.contenService.getContents(contentRequest).pipe(
                 map((results: Content[]) => {
                     results.forEach(element => {

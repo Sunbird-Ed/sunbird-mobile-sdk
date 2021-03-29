@@ -4,6 +4,7 @@ export {
     CsHttpSerializer as HttpSerializer,
     CsRequest as Request,
     CsResponse as Response,
+    CsSerializedRequest as SerializedRequest
 } from '@project-sunbird/client-services/core/http-service';
 export {
     CsNetworkError as NetworkError,

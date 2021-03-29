@@ -28,6 +28,7 @@ export namespace ContentEntry {
     export const COLUMN_NAME_GRADE = 'grade';
     export const COLUMN_NAME_DIALCODES = 'dialcodes';
     export const COLUMN_NAME_CHILD_NODES = 'child_nodes';
+    export const COLUMN_NAME_PRIMARY_CATEGORY = 'primary_category';
 
     export interface SchemaMap {
         [COLUMN_NAME_IDENTIFIER]: string;
@@ -51,6 +52,7 @@ export namespace ContentEntry {
         [COLUMN_NAME_GRADE]?: string;
         [COLUMN_NAME_DIALCODES]?: string;
         [COLUMN_NAME_CHILD_NODES]?: string;
+        [COLUMN_NAME_PRIMARY_CATEGORY]: string;
     }
 
     export const getCreateEntry: (() => string) = () => {
@@ -76,7 +78,8 @@ export namespace ContentEntry {
             COLUMN_NAME_GRADE + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
             COLUMN_NAME_MANIFEST_VERSION + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_DIALCODES + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
-            COLUMN_NAME_CHILD_NODES + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' +
+            COLUMN_NAME_CHILD_NODES + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
+            COLUMN_NAME_PRIMARY_CATEGORY + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' +
             ' )';
     };
 
@@ -112,6 +115,10 @@ export namespace ContentEntry {
     export const getAlterEntryForChildNodes: (() => string) = () => {
         return `ALTER TABLE ${TABLE_NAME} ADD COLUMN ${COLUMN_NAME_CHILD_NODES} TEXT DEFAULT ''`;
     };
+
+    export const getAlterEntryForPrimaryCategory: (() => string) = () => {
+        return `ALTER TABLE ${TABLE_NAME} ADD COLUMN ${COLUMN_NAME_PRIMARY_CATEGORY} TEXT DEFAULT ''`;
+    };
 }
 
 export namespace ContentAccessEntry {
@@ -124,6 +131,7 @@ export namespace ContentAccessEntry {
     export const COLUMN_NAME_STATUS = 'status'; // viewed = 1, partiallyPlayed = 2, fullyPlayed = 3
     export const COLUMN_NAME_CONTENT_TYPE = 'content_type';
     export const COLUMN_NAME_LEARNER_STATE = 'learner_state';
+    export const COLUMN_NAME_PRIMARY_CATEGORY = 'primary_category';
 
     export interface SchemaMap {
         [COLUMN_NAME_UID]: string;
@@ -148,6 +156,10 @@ export namespace ContentAccessEntry {
 
     export const deleteTable: (() => string) = () => {
         return 'DROP TABLE IF EXISTS ' + TABLE_NAME;
+    };
+
+    export const getAlterEntryForPrimaryCategory: (() => string) = () => {
+        return `ALTER TABLE ${TABLE_NAME} ADD COLUMN ${COLUMN_NAME_PRIMARY_CATEGORY} TEXT DEFAULT ''`;
     };
 }
 

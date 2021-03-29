@@ -9,7 +9,6 @@ export class GetContentHeirarchyHandler implements ApiRequestHandler<ContentDeta
     }
 
     handle(request: ContentDetailRequest) {
-        const getContentHeirarchyEndPoint = '/api/course/v1/hierarchy';
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
             .withPath(this.contentServiceConfig.contentHeirarchyAPIPath + this.GET_CONTENT_HEIRARCHY_ENDPOINT + '/' + request.contentId)
