@@ -44,6 +44,7 @@ export const mockFormResponse = {
                     sections: [
                         {
                             'index': 0,
+                            'code': 'sample_code',
                             'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'theme': {
@@ -259,6 +260,7 @@ export const mockFormResponseWithExplicitContentFacetValues = {
                     sections: [
                         {
                             'index': 0,
+                            'code': 'sample_code',
                             'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'theme': {
@@ -323,6 +325,7 @@ export const mockFormResponseWithTrackableCollectionsDataSrc = {
                     'sections': [
                         {
                             'index': 0,
+                            'code': 'sample_code',
                             'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
                             'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'theme': {
@@ -370,6 +373,7 @@ export const mockFormResponseWithTrackableCollectionsDataSrcAndNoFilter = {
                     'sections': [
                         {
                             'index': 0,
+                            'code': 'sample_code',
                             'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
                             'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'theme': {
@@ -430,6 +434,7 @@ export const mockFormResponseWithUnknownDataSrc = {
                     sections: [
                         {
                             'index': 0,
+                            'code': 'sample_code',
                             'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'theme': {
