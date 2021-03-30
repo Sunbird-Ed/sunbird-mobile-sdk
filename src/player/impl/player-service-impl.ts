@@ -62,6 +62,11 @@ export class PlayerServiceImpl implements PlayerService {
                         context.contextRollup = {l1: orgId};
                     }
                 }
+                if (profile && profile.profileType) {
+                    extraInfo['correlationData'] = (extraInfo['correlationData'] || []).concat([
+                        {id: profile.profileType, type: 'UserType'}
+                    ]);
+                }
                 return this.groupService.getActiveGroupSession();
             }),
             mergeMap((groupSession: GroupSessionDeprecated | undefined) => {

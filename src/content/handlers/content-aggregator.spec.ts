@@ -660,6 +660,7 @@ describe('ContentAggregator', () => {
                         expect(result).toEqual({
                             'result': [{
                                 'index': 0,
+                                'code': 'sample_code',
                                 'data': [
                                     expect.objectContaining({'facet': 'Digital Textbook'}),
                                     expect.objectContaining({'facet': 'Courses'}),
