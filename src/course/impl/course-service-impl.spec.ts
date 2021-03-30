@@ -1092,29 +1092,31 @@ describe('CourseServiceImpl', () => {
             // arrange
             (GetLearnerCertificateHandler as any as jest.Mock<GetLearnerCertificateHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of([
-                        {
-                            _index: 'certv3',
-                            _type: '_doc',
-                            _source: {
-                                pdfUrl: 'https://preprod.ntp.net.in/certs/0126796199493140480_01311551965210214433/dba7b300-0d1f-11eb-a8a5-d38095427bb6.pdf',
-                                data: {
-                                    badge: {
-                                        name: 'PDF course -2509',
-                                        issuer: {
-                                            name: 'ncert'
-                                        }
+                    handle: jest.fn(() => of({
+                        content: [
+                            {
+                                _index: 'certv3',
+                                _type: '_doc',
+                                _source: {
+                                    pdfUrl: 'https://preprod.ntp.net.in/certs/0126796199493140480_01311551965210214433/dba7b300-0d1f-11eb-a8a5-d38095427bb6.pdf',
+                                    data: {
+                                        badge: {
+                                            name: 'PDF course -2509',
+                                            issuer: {
+                                                name: 'ncert'
+                                            }
+                                        },
+                                        issuedOn: '2020-10-13T00:00:00Z'
                                     },
-                                    issuedOn: '2020-10-13T00:00:00Z'
+                                    related: {
+                                        courseId: 'do_2131155111898644481643'
+                                    }
                                 },
-                                related: {
-                                    courseId: 'do_2131155111898644481643'
-                                }
-                            },
-                            _id: 'dfea364a-406a-4b15-bda0-7ff42460af36',
-                            _score: 37.907104
-                        }
-                    ])) as any,
+                                _id: 'dfea364a-406a-4b15-bda0-7ff42460af36',
+                                _score: 37.907104
+                            }
+                        ]
+                    })) as any,
                 } as Partial<GetLearnerCertificateHandler> as GetLearnerCertificateHandler;
             });
             mockApiService.fetch = jest.fn(() => of({
@@ -1152,7 +1154,7 @@ describe('CourseServiceImpl', () => {
                 userId: 'sample_user_id'
             }).subscribe((result) => {
                 // assert
-               expect(result.length).toEqual(1);
+               expect(result.content.length).toEqual(1);
                 done();
             });
         });

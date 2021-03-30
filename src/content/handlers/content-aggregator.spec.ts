@@ -1,32 +1,40 @@
 import {ContentAggregation, ContentAggregator} from './content-aggregator';
 import {ContentAggregatorResponse, ContentService} from '..';
 import {CachedItemStore} from '../../key-value-store';
-import {of} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {FormService} from '../../form';
 import {CsContentsGroupGenerator} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
 import {
     mockFormResponse,
+    mockFormResponseWithExplicitContentFacetValues,
     mockFormResponseWithTrackableCollectionsDataSrc,
     mockFormResponseWithTrackableCollectionsDataSrcAndNoFilter,
+    mockFormResponseWithUnknownDataSrc,
     mockGetOfflineContentsResponse,
     mockGetOfflineContentsResponseWithTwoSubjects,
-    mockGetOnlineContentsResponse,
-    mockFormResponseWithUnknownDataSrc,
-    mockFormResponseWithExplicitContentFacetValues
+    mockGetOnlineContentsResponse
 } from './content-aggregator.spec.data';
 import {SearchContentHandler} from './search-content-handler';
 import {CourseService} from '../../course';
 import {ProfileService} from '../../profile';
 import {ApiService} from '../../api';
+import {NetworkInfoService, NetworkStatus} from '../../util/network';
 
 describe('ContentAggregator', () => {
     let contentAggregator: ContentAggregator;
     const mockContentService: Partial<ContentService> = {};
-    const mockCachedItemStore: Partial<CachedItemStore> = {};
+    const mockCachedItemStore: Partial<CachedItemStore> = {
+        get<T>(id: string, noSqlkey: string, timeToLiveKey: string, fromServer: () => Observable<T>, initial?: () => Observable<T>, timeToLive?: number, emptyCondition?: (item: T) => boolean): Observable<T> {
+            return fromServer();
+        }
+    };
     const mockFormService: Partial<FormService> = {};
     const mockCourseService: Partial<CourseService> = {};
     const mockProfileService: Partial<ProfileService> = {};
     const mockApiService: Partial<ApiService> = {};
+    const mockNetworkInfoService: Partial<NetworkInfoService> = {
+        networkStatus$: of(NetworkStatus.ONLINE)
+    };
 
     beforeAll(() => {
         const searchContentHandler = new SearchContentHandler(
@@ -42,7 +50,8 @@ describe('ContentAggregator', () => {
             mockCachedItemStore as CachedItemStore,
             mockCourseService as CourseService,
             mockProfileService as ProfileService,
-            mockApiService as ApiService
+            mockApiService as ApiService,
+            mockNetworkInfoService as NetworkInfoService
         );
     });
 
@@ -120,13 +129,15 @@ describe('ContentAggregator', () => {
                                     expect.objectContaining({identifier: 'do_2128458593096499201172'})
                                 ]),
                                 groupBy: 'subject',
-                                sortCriteria: [
+                                sortBy: [
                                     {
                                         sortAttribute: 'name',
                                         sortOrder: 'asc'
                                     }
                                 ],
-                                filterCriteria: [],
+                                filterBy: [],
+                                groupFilterBy: [],
+                                groupSortBy: [],
                                 includeSearchable: false
                             }
                         );
@@ -157,7 +168,8 @@ describe('ContentAggregator', () => {
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
-                                    theme: expect.any(Object)
+                                    theme: expect.any(Object),
+                                    description: expect.any(String),
                                 } as ContentAggregation<'CONTENTS'>,
                                 {
                                     index: expect.any(Number),
@@ -174,7 +186,7 @@ describe('ContentAggregator', () => {
                                                 count: 1,
                                                 contents: [
                                                     expect.objectContaining({
-                                                        identifier: 'do_2128458593096499201172'
+                                                        identifier: 'do_21280780867130982412259'
                                                     }),
                                                 ]
                                             },
@@ -183,14 +195,15 @@ describe('ContentAggregator', () => {
                                                 count: 1,
                                                 contents: [
                                                     expect.objectContaining({
-                                                        identifier: 'do_21280780867130982412259'
+                                                        identifier: 'do_2128458593096499201172'
                                                     }),
                                                 ]
-                                            }
+                                            },
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
-                                    theme: expect.any(Object)
+                                    theme: expect.any(Object),
+                                    description: expect.any(String),
                                 } as ContentAggregation<'CONTENTS'>
                             ]
                         } as ContentAggregatorResponse);
@@ -242,13 +255,15 @@ describe('ContentAggregator', () => {
                                     expect.objectContaining({identifier: 'do_2128458593096499201172'})
                                 ]),
                                 groupBy: 'subject',
-                                sortCriteria: [
+                                sortBy: [
                                     {
                                         sortAttribute: 'name',
                                         sortOrder: 'asc'
                                     }
                                 ],
-                                filterCriteria: [],
+                                filterBy: [],
+                                groupFilterBy: [],
+                                groupSortBy: [],
                                 combination: {
                                     'subject': ['Some other Physical Science'],
                                     'gradeLevel': ['Class 1']
@@ -285,7 +300,8 @@ describe('ContentAggregator', () => {
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
-                                    theme: expect.any(Object)
+                                    theme: expect.any(Object),
+                                    description: expect.any(String),
                                 } as ContentAggregation<'CONTENTS'>,
                                 {
                                     index: expect.any(Number),
@@ -312,7 +328,8 @@ describe('ContentAggregator', () => {
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
-                                    theme: expect.any(Object)
+                                    theme: expect.any(Object),
+                                    description: expect.any(String),
                                 } as ContentAggregation<'CONTENTS'>
                             ]
                         });
@@ -370,13 +387,15 @@ describe('ContentAggregator', () => {
                                     expect.objectContaining({identifier: 'do_2128458593096499201172'})
                                 ]),
                                 groupBy: 'subject',
-                                sortCriteria: [
+                                sortBy: [
                                     {
                                         sortAttribute: 'name',
                                         sortOrder: 'asc'
                                     }
                                 ],
-                                filterCriteria: [],
+                                filterBy: [],
+                                groupFilterBy: [],
+                                groupSortBy: [],
                                 combination: {
                                     'subject': ['Some other Physical Science'],
                                     'gradeLevel': ['Class 1']
@@ -414,7 +433,8 @@ describe('ContentAggregator', () => {
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
-                                    theme: expect.any(Object)
+                                    theme: expect.any(Object),
+                                    description: expect.any(String),
                                 } as ContentAggregation<'CONTENTS'>,
                                 {
                                     index: expect.any(Number),
@@ -441,7 +461,8 @@ describe('ContentAggregator', () => {
                                         ]
                                     },
                                     dataSrc: expect.any(Object),
-                                    theme: expect.any(Object)
+                                    theme: expect.any(Object),
+                                    description: expect.any(String),
                                 } as ContentAggregation<'CONTENTS'>
                             ]
                         });
@@ -529,6 +550,7 @@ describe('ContentAggregator', () => {
                                 'title': expect.any(String),
                                 'dataSrc': expect.any(Object),
                                 'theme': expect.any(Object),
+                                'description': expect.any(String),
                             }]
                         });
                         done();
@@ -589,6 +611,7 @@ describe('ContentAggregator', () => {
                                 'title': expect.any(String),
                                 'dataSrc': expect.any(Object),
                                 'theme': expect.any(Object),
+                                'description': expect.any(String),
                             }]
                         });
                         done();
@@ -637,6 +660,7 @@ describe('ContentAggregator', () => {
                         expect(result).toEqual({
                             'result': [{
                                 'index': 0,
+                                'code': 'sample_code',
                                 'data': [
                                     expect.objectContaining({'facet': 'Digital Textbook'}),
                                     expect.objectContaining({'facet': 'Courses'}),
@@ -645,10 +669,43 @@ describe('ContentAggregator', () => {
                                 'title': expect.any(String),
                                 'dataSrc': expect.any(Object),
                                 'theme': expect.any(Object),
+                                'description': expect.any(String),
                             }]
                         });
                         done();
                     });
+                });
+            });
+        });
+
+        describe('when requesting with cacheable', () => {
+            it('should request and return from cache', (done) => {
+                // arrange
+                spyOn(mockCachedItemStore, 'get').and.callThrough();
+                mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponse));
+                mockContentService.getContents = jest.fn().mockImplementation(() => of(mockGetOfflineContentsResponse));
+                mockContentService.searchContent = jest.fn().mockImplementation(() => of(mockGetOnlineContentsResponse));
+                mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of({
+                    uid: 'SOME_UID',
+                    sid: 'SOME_SID'
+                }));
+                mockCourseService.getEnrolledCourses = jest.fn().mockImplementation(() => of([]));
+
+                // act
+                contentAggregator.aggregate({}, ['TRACKABLE_COLLECTIONS'], {
+                    type: 'config',
+                    subType: 'library',
+                    action: 'get',
+                    component: 'app',
+                }, undefined, true).subscribe((result) => {
+                    // assert
+                    expect(mockCachedItemStore.get).toHaveBeenCalledWith(
+                        expect.any(String),
+                        expect.any(String),
+                        expect.any(String),
+                        expect.any(Function),
+                    );
+                    done();
                 });
             });
         });

@@ -63,6 +63,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
     private telemetryAutoSyncService?: TelemetryAutoSyncServiceImpl;
     private telemetryConfig: TelemetryConfig;
     private campaignParameters: CorrelationData[] = [];
+    private globalCdata: CorrelationData[] = [];
 
     get autoSync() {
         if (!this.telemetryAutoSyncService) {
@@ -380,7 +381,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
                             table: TelemetryEntry.TABLE_NAME,
                             modelJson: this.decorator.prepare(this.decorator.decorate(
                                 telemetry, profileSession, groupSession && groupSession.gid, Number(offset),
-                                this.frameworkService.activeChannelId, this.campaignParameters
+                                this.frameworkService.activeChannelId, this.campaignParameters, this.globalCdata
                             ), 1)
                         };
                         return this.dbService.insert(insertQuery).pipe(
@@ -401,6 +402,10 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
 
     updateCampaignParameters(params: CorrelationData[]) {
         this.campaignParameters = params;
+    }
+
+    populateGlobalCorRelationData(params: CorrelationData[]) {
+        this.globalCdata = params;
     }
 
     private getInitialUtmParameters(): Promise<CorrelationData[]> {
