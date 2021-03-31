@@ -104,6 +104,7 @@ export interface DataResponseMap {
     'TRACKABLE_COLLECTIONS': ContentsGroupedByPageSection;
     'CONTENT_FACETS': {
         facet: string;
+        index?: number;
         searchCriteria: ContentSearchCriteria;
         primaryFacetFilters?: any;
         aggregate?: AggregationConfig
@@ -306,7 +307,7 @@ export class ContentAggregator {
                             index: section.index,
                             code: section.code,
                             title: section.title,
-                            data: field.dataSrc.values as any,
+                            data: field.dataSrc.values!.sort((a, b) => a.index! - b.index!),
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
@@ -343,7 +344,9 @@ export class ContentAggregator {
                                     facet: filterValue.name,
                                     searchCriteria: {
                                         ...searchCriteria,
-                                        [facetFilters.name]: [filterValue.name]
+                                        primaryCategories:  [],
+                                        impliedFilters: [{name: facetFilters.name, values: [{name: filterValue.name, apply: true}]}],
+                                        // [facetFilters.name]: [filterValue.name]
                                     },
                                     aggregate: field.dataSrc.mapping[index].aggregate
                                 };
