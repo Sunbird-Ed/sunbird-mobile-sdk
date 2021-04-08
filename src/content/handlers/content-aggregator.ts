@@ -87,7 +87,8 @@ export interface DataSourceModelMap {
         request: Partial<SerializedRequest>,
         mapping: {
             facet: string,
-            aggregate?: AggregationConfig
+            aggregate?: AggregationConfig,
+            preference?: string[]
         }[]
     };
     'RECENTLY_VIEWED_CONTENTS': {
@@ -328,8 +329,9 @@ export class ContentAggregator {
             task: defer(async () => {
                 const searchResult = await this.searchContents(field, searchCriteria, searchRequest);
                 return field.sections.map((section, index) => {
+                    const mapping = field.dataSrc.mapping[index];
                     const facetFilters = searchResult.filterCriteria.facetFilters && searchResult.filterCriteria.facetFilters.find((x) =>
-                        x.name === (field.dataSrc.mapping[index] && field.dataSrc.mapping[index].facet)
+                        x.name === (mapping && mapping.facet)
                     );
 
                     if (facetFilters) {
@@ -351,8 +353,18 @@ export class ContentAggregator {
                             }).sort((a, b) => {
                                 if (request.userPreferences) {
                                     const facetPreferences = request.userPreferences[facetFilters.name];
+                                    if (!facetPreferences && mapping && mapping.preference) {
+                                        const preference = mapping.preference!.map(p => p.toLowerCase());
+
+                                        if (preference.indexOf(a.facet) > -1 && preference.indexOf(b.facet) > -1) {
+                                            return preference.indexOf(b.facet) - preference.indexOf(a.facet);
+                                        } else if (preference.indexOf(a.facet) > -1) {
+                                            return -1;
+                                        } else if (preference.indexOf(b.facet) > -1) {
+                                            return 1;
+                                        }
+                                    }
                                     if (
-                                        !facetPreferences ||
                                         (
                                             Array.isArray(facetPreferences) &&
                                             facetPreferences.indexOf(a.facet) > -1 &&
