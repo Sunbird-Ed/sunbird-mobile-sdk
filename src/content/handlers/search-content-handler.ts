@@ -143,7 +143,7 @@ export class SearchContentHandler {
     const filter =  {
       audience: (criteria.audience && criteria.audience.length > 0) ? criteria.audience : [],
       status: criteria.contentStatusArray,
-      objectType: ['Content'],
+      objectType: ['Content', 'QuestionSet'],
       contentType: (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : [],
       primaryCategory: (criteria.primaryCategories && criteria.primaryCategories.length > 0) ? criteria.primaryCategories : [],
       ...((criteria.keywords && criteria.keywords.length) ? {keywords: criteria.keywords} : {}),
@@ -272,13 +272,14 @@ export class SearchContentHandler {
   }
 
   mapSearchResponse(previousContentCriteria: ContentSearchCriteria, searchResponse: SearchResponse,
-                    searchRequest: SearchRequest): ContentSearchResult {
-    const constentSearchResult: ContentSearchResult = {
+      searchRequest: SearchRequest): ContentSearchResult {
+      const contenDataList = (searchResponse.result.content || [] ).concat((searchResponse.result.QuestionSet || [] ));
+      const constentSearchResult: ContentSearchResult = {
       id: searchResponse.id,
       responseMessageId: searchResponse.params.resmsgid,
       filterCriteria: this.createFilterCriteria(previousContentCriteria, searchResponse.result.facets, searchRequest.filters),
       request: searchRequest,
-      contentDataList: searchResponse.result.content,
+      contentDataList: contenDataList,
       collectionDataList: searchResponse.result.collections ? searchResponse.result.collections : []
     };
     return constentSearchResult;
