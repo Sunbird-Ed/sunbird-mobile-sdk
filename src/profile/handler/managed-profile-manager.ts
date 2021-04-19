@@ -295,7 +295,7 @@ export class ManagedProfileManager {
 
         const createManagedProfileRequest = new Request.Builder()
             .withType(HttpRequestType.POST)
-            .withPath(this.profileServiceConfig.profileApiPath + '/manageduser/create')
+            .withPath(this.profileServiceConfig.profileApiPath + '/managed/create')
             .withBearerToken(true)
             .withUserToken(true)
             .withBody({
