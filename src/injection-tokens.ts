@@ -52,4 +52,5 @@ export const InjectionTokens = {
     NETWORK_QUEUE: Symbol.for('NETWORK_QUEUE'),
     CLASS_ROOM_SERVICE: Symbol.for('CLASS_ROOM_SERVICE'),
     DISCUSSION_SERVICE: Symbol.for('DISCUSSION_SERVICE'),
+    SEGMENTATION_SERVICE: Symbol.for('SEGMENTATION_SERVICE')
 };
