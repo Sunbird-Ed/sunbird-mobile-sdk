@@ -344,7 +344,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<UpdateServerProfileResponse> {
-        return this.userService.updateProfile(updateUserInfoRequest, { apiPath : '/api/user/v1'});
+        return this.userService.updateProfile(updateUserInfoRequest, { apiPath : '/api/user/v2'});
     }
 
     getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo> {
