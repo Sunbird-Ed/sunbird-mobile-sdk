@@ -43,7 +43,8 @@ export interface SearchResponse {
         count: number,
         content: ContentData[],
         collections: ContentData[],
-        facets: ContentSearchFilter[]
+        facets: ContentSearchFilter[],
+        QuestionSet?: ContentData[]
     };
 }
 

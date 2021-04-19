@@ -236,7 +236,7 @@ describe('SearchContentHandler', () => {
             expect(searchRequest.filters).toEqual({
                 status: undefined,
                 audience: [],
-                objectType: ['Content'],
+                objectType: ['Content' , 'QuestionSet'],
                 contentType: ['sample_content_type'],
                 keywords: ['sample keyword'],
                 dialcodes: ['sample dialcode'],
