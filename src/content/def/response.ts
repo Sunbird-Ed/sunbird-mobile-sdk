@@ -44,7 +44,7 @@ export interface SearchResponse {
         content: ContentData[],
         collections: ContentData[],
         facets: ContentSearchFilter[],
-        QuestionSet: ContentData[]
+        QuestionSet?: ContentData[]
     };
 }
 
