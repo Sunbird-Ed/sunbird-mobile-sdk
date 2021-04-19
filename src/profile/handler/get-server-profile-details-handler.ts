@@ -50,7 +50,7 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
 
 
     private fetchFromServer(request: ServerProfileDetailsRequest): Observable<ServerProfile> {
-      return this.csUserService.getProfileDetails(request, { apiPath : '/api/user/v3'});
+      return this.csUserService.getProfileDetails(request, { apiPath : '/api/user/v4'});
     }
 
     private fetchFromCache(request: ServerProfileDetailsRequest): Observable<ServerProfile> {
