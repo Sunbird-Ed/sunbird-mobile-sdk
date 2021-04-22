@@ -14,7 +14,7 @@ export class SegmentationServiceImpl implements SegmentationService {
         @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore
     ) {}
 
-    putTags(tags: string, userId: string): Observable<boolean> {
+    saveTags(tags: string, userId: string): Observable<boolean> {
         return new StoreSegmentationTagHandler(this.keyValueStore).handle(tags, userId);
     }
 
@@ -30,11 +30,11 @@ export class SegmentationServiceImpl implements SegmentationService {
         throw new Error("Method not implemented.");
     }
 
-    putCommandList(commandList, userId): Observable<any> {
+    saveCommandList(commandList, userId): Observable<any> {
         return new StoreSegmentationCommandHandler(this.keyValueStore).handle(commandList, userId);
     }
 
-    fetchCommand(userId): Observable<any> {
+    getCommand(userId): Observable<any> {
         return new FetchSegmentationTagHandler(this.keyValueStore).handle(userId);
     }
 

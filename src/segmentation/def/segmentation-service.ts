@@ -1,10 +1,10 @@
 import { Observable } from "rxjs";
 
 export interface SegmentationService {
-    putTags(tags: string, userId: string): Observable<boolean>;
+    saveTags(tags: string, userId: string): Observable<boolean>;
     getTags(userId: string): Observable<any>;
     removeTagsForId(userid: string): Observable<string>;
     clearAllTags(): Observable<string>;
-    putCommandList(commandList: Array<any>, userIdL: string): Observable<any>;
-    fetchCommand(userId: string): Observable<any>;
+    saveCommandList(commandList: Array<any>, userId: string): Observable<any>;
+    getCommand(userId: string): Observable<any>;
 }
