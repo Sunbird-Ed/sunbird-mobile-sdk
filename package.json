@@ -1,11 +1,11 @@
 {
   "name": "@project-sunbird/sunbird-sdk",
-  "version": "3.9.2",
+  "version": "3.9.3",
   "description": "Heart of the sunbird mobile app.",
   "main": "index.js",
   "scripts": {
     "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
-    "test": "jest",
+    "test": "jest /Volumes/Seagate/Work/Sunbird/REPO/sunbird-mobile-sdk/src/segmentation/handler/store-segmentation-command-handler.spec.ts",
     "test:coverage": "jest --coverage --collectCoverageFrom=src/**/*.{ts,tsx}",
     "test:ci": "jest --silent --ci --w 2 --collectCoverage=true --coverageReporters=lcov",
     "test:ci-json": "jest --ci --w 2 --collectCoverage=true --coverageReporters=json",
