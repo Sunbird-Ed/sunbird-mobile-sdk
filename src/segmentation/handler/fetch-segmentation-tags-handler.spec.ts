@@ -25,10 +25,11 @@ describe('FetchSegmentationTagHandler', () => {
     it('should return observable string', (done) => {
         // arrange
         const userid = "userId";
+        const tagKey = "segment-tag_";
         //act
         fetchSegmentationTagHandler.handle(userid).subscribe(() => {
         // assert
-            expect(mockKeyValueStore.getValue).toHaveBeenCalledWith(userid);
+            expect(mockKeyValueStore.getValue).toHaveBeenCalledWith(tagKey + userid);
             done();
         });
     })

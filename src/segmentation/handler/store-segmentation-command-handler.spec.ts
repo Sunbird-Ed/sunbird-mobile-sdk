@@ -27,7 +27,7 @@ describe('StoreSegmentationCommandHandler', () => {
         // arrange
         const userId = "userId";
         const commandList = ["command"];
-        const commandKey = "segment-command";
+        const commandKey = "segment-command_";
         //act
         storeSegmentationCommandHandler.handle(commandList, userId).subscribe(() => {
         // assert

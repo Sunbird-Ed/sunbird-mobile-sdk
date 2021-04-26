@@ -3,7 +3,7 @@ import { KeyValueStore } from "../../key-value-store";
 
 export class StoreSegmentationCommandHandler {
 
-    private COMMAND_KEY = 'segment-command';
+    private COMMAND_KEY = 'segment-command_';
 
     constructor(
         private keyValueStore: KeyValueStore

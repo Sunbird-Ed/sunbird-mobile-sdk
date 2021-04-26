@@ -25,7 +25,7 @@ describe('FetchSegmentationCommandHandler', () => {
     it('should return observable string', (done) => {
         // arrange
         const userid = "userId";
-        const commandKey = "segment-command";
+        const commandKey = "segment-command_";
         //act
         fetchSegmentationCommandHandler.handle(userid).subscribe(() => {
         // assert

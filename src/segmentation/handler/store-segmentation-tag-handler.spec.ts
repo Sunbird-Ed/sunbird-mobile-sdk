@@ -27,10 +27,11 @@ describe('FetchSegmentationTagHandler', () => {
         // arrange
         const userid = "userId";
         const tags = "tags";
+        const tagKey = 'segment-tag_';
         //act
         storeSegmentationTagHandler.handle(tags, userid).subscribe(() => {
         // assert
-            expect(mockKeyValueStore.setValue).toHaveBeenCalledWith(userid, tags);
+            expect(mockKeyValueStore.setValue).toHaveBeenCalledWith(tagKey + userid, tags);
             done();
         });
     })

@@ -3,6 +3,7 @@ import { Observable } from "rxjs";
 import { InjectionTokens } from "../../injection-tokens";
 import { KeyValueStore } from "../../key-value-store";
 import { SegmentationService } from "../def/segmentation-service";
+import { FetchSegmentationCommandHandler } from "../handler/fetch-segmentation-command-handler";
 import { FetchSegmentationTagHandler } from "../handler/fetch-segmentation-tags-handler";
 import { StoreSegmentationCommandHandler } from "../handler/store-segmentation-command-handler";
 import { StoreSegmentationTagHandler } from "../handler/store-segmentation-tag-handler";
@@ -35,7 +36,7 @@ export class SegmentationServiceImpl implements SegmentationService {
     }
 
     getCommand(userId): Observable<any> {
-        return new FetchSegmentationTagHandler(this.keyValueStore).handle(userId);
+        return new FetchSegmentationCommandHandler(this.keyValueStore).handle(userId);
     }
 
 }
