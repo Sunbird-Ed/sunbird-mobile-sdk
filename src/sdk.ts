@@ -388,7 +388,7 @@ export class SunbirdSdk {
                 },
                 services: {
                     contentServiceConfig: {
-                       hierarchyApiPath: '/learner/questionset/v1',
+                       hierarchyApiPath: '/api/questionset/v1',
                        questionListApiPath: '/api/question/v1'
                     },
                     courseServiceConfig: {
