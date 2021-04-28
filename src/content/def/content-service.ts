@@ -92,4 +92,7 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
     
     getQuestionSetHierarchy(data): Observable<any>;
 
+    getQuestionSetRead(contentId:string , params?: any): Observable<any>;
+
+
 }

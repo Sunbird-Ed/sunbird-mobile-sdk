@@ -1504,6 +1504,16 @@ describe('ContentServiceImpl', () => {
                 done();
             })
         })
+
+        it('should return question set read', (done) =>{
+            mockContainerService.get = jest.fn(() => ({
+                getQuestionSetRead: jest.fn(() => of({})) as any
+            }))as any;
+            contentService.getQuestionSetRead('1234' , {}).subscribe(() => {
+                expect(mockContainerService.get).toHaveBeenCalled();
+                done();
+            })
+        })
     })
 
 });

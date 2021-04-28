@@ -753,6 +753,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return this.contentServiceDelegate.getQuestionSetHierarchy(data);
       }
 
+      getQuestionSetRead(contentId:string, params?:any) {
+        return this.contentServiceDelegate.getQuestionSetRead(contentId,params);
+      }
+
     private cleanupContent(importContentContext: ImportContentContext): Observable<undefined> {
         const contentDeleteList: ContentDelete[] = [];
         for (const contentId of Array.from(importContentContext.contentIdsToDelete.values())) {
