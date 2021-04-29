@@ -546,15 +546,8 @@ export class ContentAggregator {
                         } as ContentAggregation<'CONTENTS'>;
                     } else {
                         const aggregate = field.dataSrc.mapping[index].aggregate!;
-                        return {
-                            index: section.index,
-                            title: section.title,
-                            meta: {
-                                searchCriteria,
-                                filterCriteria: onlineContentsResponse.filterCriteria,
-                                searchRequest
-                            },
-                            data: CsContentsGroupGenerator.generate({
+                        const data = (() => {
+                            const d = CsContentsGroupGenerator.generate({
                                 contents: combinedContents,
                                 groupBy: aggregate.groupBy!,
                                 sortBy: aggregate.sortBy ? this.buildSortByCriteria(aggregate.sortBy) : [],
@@ -564,7 +557,33 @@ export class ContentAggregator {
                                 combination: field.dataSrc.mapping[index].applyFirstAvailableCombination &&
                                     request.applyFirstAvailableCombination as any,
                                 includeSearchable: false
-                            }),
+                            });
+                            if (request.userPreferences && request.userPreferences[aggregate.groupBy!]) {
+                                d.sections.sort((a, b) => {
+                                    if (
+                                        request.userPreferences![aggregate.groupBy!]!.indexOf(a.name!.toLocaleLowerCase()!) > -1 &&
+                                        request.userPreferences![aggregate.groupBy!]!.indexOf(b.name!.toLocaleLowerCase()) > -1
+                                    ) { return a.name!.localeCompare(b.name!); }
+                                    if (request.userPreferences![aggregate.groupBy!]!.indexOf(a.name!.toLocaleLowerCase()) > -1) {
+                                         return -1;
+                                        }
+                                    if (request.userPreferences![aggregate.groupBy!]!.indexOf(b.name!.toLocaleLowerCase()) > -1) {
+                                         return 1;
+                                        }
+                                    return 0;
+                                });
+                            }
+                            return d;
+                        })();
+                        return {
+                            index: section.index,
+                            title: section.title,
+                            meta: {
+                                searchCriteria,
+                                filterCriteria: onlineContentsResponse.filterCriteria,
+                                searchRequest
+                            },
+                            data,
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
