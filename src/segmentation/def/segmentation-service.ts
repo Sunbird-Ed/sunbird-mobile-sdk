@@ -5,6 +5,6 @@ export interface SegmentationService {
     getTags(userId: string): Observable<any>;
     removeTagsForId(userid: string): Observable<string>;
     clearAllTags(): Observable<string>;
-    saveCommandList(commandList: Array<any>, userId: string): Observable<any>;
+    saveCommandList(commandList: string, userId: string): Observable<any>;
     getCommand(userId: string): Observable<any>;
 }
