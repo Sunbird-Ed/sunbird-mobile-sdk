@@ -11,7 +11,7 @@ import {
   Actor, AuditState, CorrelationData, Rollup, TelemetryEndRequest,
   TelemetryErrorRequest, TelemetryImpressionRequest, TelemetryInteractRequest,
   TelemetryLogRequest, TelemetryShareRequest, TelemetryStartRequest, DeviceSpecification,
-  TelemetryInterruptRequest, TelemetryImportRequest, TelemetrySyncRequest
+  TelemetryInterruptRequest, TelemetryImportRequest, TelemetrySyncRequest, TelemetrySummaryRequest
 } from '..';
 import { DbService } from '../../db';
 import { ProfileService } from '../../profile';
@@ -635,6 +635,50 @@ describe('TelemetryServiceImpl', () => {
       done();
     });
   });
+
+  it('should return summaryTelemetry telemetry', (done) => {
+    const cData: Array<CorrelationData> = [];
+    cData.push({ id: 'data', type: 'share' });
+    const request: TelemetrySummaryRequest = {
+      type: 'sample-type',
+      starttime: 123,
+      endtime: 456,
+      timespent: 789,
+      pageviews: 3,
+      interactions: 42,
+      mode: 'sample-mode',
+      env: 'home',
+      objId: 'sample-obj-id',
+      objType: 'sample-obj-type',
+      objVer: 'sample-obj-ver',
+      rollup: { l1: 'root-id' },
+      correlationData: cData
+    };
+    mockProfileService.getActiveProfileSession = jest.fn(() => of({
+      uid: 'sample-uid',
+      sid: 'sample-sid',
+      createdTime: Date.now(),
+    }));
+    mockGroupService.getActiveGroupSession = jest.fn(() => of({
+      gid: 'sample-gid',
+      sid: 'sample-sid',
+      createdTime: Date.now(),
+    })) as any;
+    mockKeyValueStore.getValue = jest.fn(() => of('sampe-key-value'));
+    mockTelemetryDecorator.decorate = jest.fn(() => { });
+    mockTelemetryDecorator.prepare = jest.fn(() => { }) as any;
+    mockDbService.insert = jest.fn(() => of(1));
+    mockEventsBusService.emit = jest.fn();
+    // act
+    telemetryService.summary(request).subscribe(() => {
+      expect(mockTelemetryDecorator.decorate).toHaveBeenCalled();
+      expect(mockTelemetryDecorator.prepare).toHaveBeenCalled();
+      expect(mockDbService.insert).toHaveBeenCalled();
+      expect(mockEventsBusService.emit).toHaveBeenCalled();
+      done();
+    });
+  });
+
 
   it('should return interrupt telemetry', (done) => {
     const request: TelemetryInterruptRequest = {
