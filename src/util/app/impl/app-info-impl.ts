@@ -38,24 +38,39 @@ export class AppInfoImpl implements AppInfo {
             return undefined;
         }
         const packageName = this.sdkConfig.appConfig.buildConfigPackage ? this.sdkConfig.appConfig.buildConfigPackage : 'org.sunbird.app';
-        return this.getBuildConfigValue(packageName, 'REAL_VERSION_NAME')
-            .then((versionName) => {
-                this.versionName = versionName;
-                if (CsModule.instance.isInitialised) {
-                    CsModule.instance.updateConfig({
-                        ...CsModule.instance.config,
-                        core: {
-                            ...CsModule.instance.config.core,
-                            global: {
-                                ...CsModule.instance.config.core.global,
-                                appVersion: versionName
+        this.versionName = "3.6.local.0-debug";
+                    alert(this.versionName);
+                    let versionName = this.versionName;
+                    if (CsModule.instance.isInitialised) {
+                        CsModule.instance.updateConfig({
+                            ...CsModule.instance.config,
+                            core: {
+                                ...CsModule.instance.config.core,
+                                global: {
+                                    ...CsModule.instance.config.core.global,
+                                    appVersion: versionName
+                                }
                             }
-                        }
-                    });
-                }
-                console.log('version name', this.versionName);
-                return;
-            });
+                        });
+                    }
+        // return this.getBuildConfigValue(packageName, 'REAL_VERSION_NAME')
+        //     .then((versionName) => {
+        //         this.versionName = versionName;
+        //         if (CsModule.instance.isInitialised) {
+        //             CsModule.instance.updateConfig({
+        //                 ...CsModule.instance.config,
+        //                 core: {
+        //                     ...CsModule.instance.config.core,
+        //                     global: {
+        //                         ...CsModule.instance.config.core.global,
+        //                         appVersion: versionName
+        //                     }
+        //                 }
+        //             });
+        //         }
+        //         console.log('version name', this.versionName);
+        //         return;
+        //     });
     }
 
     /** @internal */

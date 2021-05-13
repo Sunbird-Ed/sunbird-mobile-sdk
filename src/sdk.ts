@@ -436,9 +436,9 @@ export class SunbirdSdk {
         this._container.bind<CsDiscussionService>(CsInjectionTokens.DISCUSSION_SERVICE).toConstantValue(CsModule.instance.discussionService);
         this._container.bind<CsContentService>(CsInjectionTokens.CONTENT_SERVICE).toConstantValue(CsModule.instance.contentService);
 
-        await this.dbService.init();
+        // await this.dbService.init();
         await this.appInfo.init();
-        await this.preInit().toPromise();
+        // await this.preInit().toPromise();
 
         this._isInitialised = true;
 
