@@ -57,12 +57,13 @@ export class CourseCertificateManagerImpl implements CourseCertificateManager {
     downloadCertificate({ fileName, blob }: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
         return defer(async () => {
             return this.fileService.writeFile(
-                cordova.file.externalRootDirectory + 'Download/',
+              cordova.file.externalDataDirectory ,
                 fileName, blob as any,
                 {replace: true}
-            ).then(() => {
+            ).
+            then(() => {
                 return {
-                    path: `${cordova.file.externalRootDirectory}Download/${fileName}`
+                    path: `${cordova.file.externalDataDirectory}${fileName}`
                 };
             });
         });
