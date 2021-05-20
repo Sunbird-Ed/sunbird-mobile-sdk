@@ -44,6 +44,7 @@ export const mockFormResponse = {
                     sections: [
                         {
                             'index': 0,
+                            'isEnabled': true,
                             'code': 'sample_code',
                             'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
@@ -260,6 +261,7 @@ export const mockFormResponseWithExplicitContentFacetValues = {
                     sections: [
                         {
                             'index': 0,
+                            'isEnabled': true,
                             'code': 'sample_code',
                             'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
@@ -274,6 +276,140 @@ export const mockFormResponseWithExplicitContentFacetValues = {
                         }
                     ]
                 } as AggregatorConfigField<'CONTENT_FACETS'>,
+            ]
+        },
+        'created_on': '2020-08-26T15:11:56.149Z',
+        'last_modified_on': null,
+        'rootOrgId': '*'
+    }
+};
+
+export const mockFormResponseWithDiscoveryBannerDataSrc = {
+    'form': {
+        'type': 'config',
+        'subtype': 'library',
+        'action': 'get',
+        'component': 'app',
+        'framework': '*',
+        'data': {
+            'templateName': 'library',
+            'action': 'get',
+            'fields': [
+                {
+                    'dataSrc': {
+                        'type': 'CONTENT_DISCOVERY_BANNER',
+                        'mapping': [],
+                        'values': [
+                            {
+                                'code': 'banner_external_url',
+                                'ui': {
+                                    'background': 'https://cdn.pixabay.com/photo/2015/10/29/14/38/web-1012467_960_720.jpg',
+                                    'text': 'Sample External Url'
+                                },
+                                'action': {
+                                    'type': 'navigate',
+                                    'subType': 'externalUrl',
+                                    'params': {
+                                        'route': 'https://diksha.gov.in/'
+                                    }
+                                },
+                                'expiry': '1653031067'
+                            },
+                            {
+                                'code': 'banner_internal_url',
+                                'ui': {
+                                    'background': 'https://cdn.pixabay.com/photo/2015/10/29/14/38/web-1012467_960_720.jpg',
+                                    'text': 'Sample Internal Url'
+                                },
+                                'action': {
+                                    'type': 'navigate',
+                                    'subType': 'internalUrl',
+                                    'params': {
+                                        'route': 'profile'
+                                    }
+                                },
+                                'expiry': '1653031067'
+                            },
+                            {
+                                'code': 'banner_search',
+                                'ui': {
+                                    'background': 'https://cdn.pixabay.com/photo/2015/10/29/14/38/web-1012467_960_720.jpg',
+                                    'text': 'Sample Search'
+                                },
+                                'action': {
+                                    'type': 'navigate',
+                                    'subType': 'search',
+                                    'params': {
+                                        'filter': {
+                                            'offset': 0,
+                                            'fields': [
+                                                'subject'
+                                            ],
+                                            'facets': [
+                                                'subject',
+                                                'primaryCategory',
+                                                'targetSubjectIds'
+                                            ],
+                                            'filters': {
+                                                'audience': [],
+                                                'objectType': [
+                                                    'Content'
+                                                ],
+                                                'se_gradeLevels': [
+                                                    'class 9',
+                                                    'class 10',
+                                                    'class 11',
+                                                    'class 12'
+                                                ],
+                                                'se_mediums': [
+                                                    'english'
+                                                ],
+                                                'se_boards': [
+                                                    'state (tamil nadu)'
+                                                ]
+                                            },
+                                            'exists': [],
+                                            'sort_by': {}
+                                        }
+                                    }
+                                },
+                                'expiry': '1653031067'
+                            },
+                            {
+                                'code': 'banner_content',
+                                'ui': {
+                                    'background': 'https://cdn.pixabay.com/photo/2015/10/29/14/38/web-1012467_960_720.jpg',
+                                    'text': 'Sample content'
+                                },
+                                'action': {
+                                    'type': 'navigate',
+                                    'subType': 'content',
+                                    'params': {
+                                        'identifier': 'do_21302358976737280014'
+                                    }
+                                },
+                                'expiry': '1653031067'
+                            }
+                        ]
+                    },
+                    'sections': [
+                        {
+                            'index': 1,
+                            'code': '',
+                            'isEnabled': false,
+                            'title': '{\'en\':\'Discovery Banner\'}',
+                            'theme': {
+                                'component': 'sb-library-cards-hlist',
+                                'inputs': {
+                                    'type': 'mobile_textbook',
+                                    'viewMoreButtonText': '{\'en\':\'View all\'}',
+                                    'maxCardCount': 10,
+                                    'viewMoreButtonPosition': 'right'
+                                }
+                            }
+                        }
+                    ]
+                }  as AggregatorConfigField<'CONTENT_DISCOVERY_BANNER'>
             ]
         },
         'created_on': '2020-08-26T15:11:56.149Z',
@@ -325,6 +461,7 @@ export const mockFormResponseWithTrackableCollectionsDataSrc = {
                     'sections': [
                         {
                             'index': 0,
+                            'isEnabled': true,
                             'code': 'sample_code',
                             'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
                             'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
@@ -373,6 +510,7 @@ export const mockFormResponseWithTrackableCollectionsDataSrcAndNoFilter = {
                     'sections': [
                         {
                             'index': 0,
+                            'isEnabled': true,
                             'code': 'sample_code',
                             'title': '{"en":"TV Programs","hi":"टीवी कार्यक्रम"}',
                             'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
@@ -434,6 +572,7 @@ export const mockFormResponseWithUnknownDataSrc = {
                     sections: [
                         {
                             'index': 0,
+                            'isEnabled': true,
                             'code': 'sample_code',
                             'title': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
                             'description': '{"en":"TV classes","hi":"टीवी क्लासेस"}',
