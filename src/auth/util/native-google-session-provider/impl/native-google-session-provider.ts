@@ -7,13 +7,13 @@ import {SunbirdSdk} from '../../../../sdk';
 
 export interface NativeGoogleTokens {
     idToken: string;
-    emailId: string;
+    email: string;
 }
 
 export class NativeGoogleSessionProvider implements SessionProvider {
 
     private static readonly LOGIN_API_ENDPOINT = '/google/auth/android';
-    // private baseUrl = 'https://192.168.1.16:3000';
+    // private baseUrl = 'https://192.168.29.16:3000';
     private apiService: ApiService;
 
     private static parseAccessToken(accessToken: string): {
@@ -35,7 +35,7 @@ export class NativeGoogleSessionProvider implements SessionProvider {
 
     async provide(): Promise<OAuthSession> {
         const nativeGoogleToken = await this.nativeGoogleTokenProvider();
-        return this.callGoogleNativeLogin(nativeGoogleToken.idToken, nativeGoogleToken.emailId).toPromise();
+        return this.callGoogleNativeLogin(nativeGoogleToken.idToken, nativeGoogleToken.email).toPromise();
     }
 
     private callGoogleNativeLogin(idToken: string, emailId: string): Observable<OAuthSession> {
@@ -69,6 +69,5 @@ export class NativeGoogleSessionProvider implements SessionProvider {
                     };
                 })
             );
-
     }
 }
