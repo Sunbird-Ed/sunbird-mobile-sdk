@@ -5,7 +5,7 @@ import {Observable, of} from 'rxjs';
 import {FormService} from '../../form';
 import {CsContentsGroupGenerator} from '@project-sunbird/client-services/services/content/utilities/content-group-generator';
 import {
-    mockFormResponse,
+    mockFormResponse, mockFormResponseWithDiscoveryBannerDataSrc,
     mockFormResponseWithExplicitContentFacetValues,
     mockFormResponseWithTrackableCollectionsDataSrc,
     mockFormResponseWithTrackableCollectionsDataSrcAndNoFilter,
@@ -146,6 +146,7 @@ describe('ContentAggregator', () => {
                             result: [
                                 {
                                     index: expect.any(Number),
+                                    'isEnabled': true,
                                     title: expect.any(String),
                                     meta: {
                                         searchCriteria: expect.anything(),
@@ -277,6 +278,7 @@ describe('ContentAggregator', () => {
                                 {
                                     index: expect.any(Number),
                                     title: expect.any(String),
+                                    'isEnabled': true,
                                     meta: {
                                         searchCriteria: expect.anything(), searchRequest: expect.anything(),
                                     },
@@ -409,6 +411,7 @@ describe('ContentAggregator', () => {
                                 {
                                     index: expect.any(Number),
                                     title: expect.any(String),
+                                    'isEnabled': true,
                                     meta: {
                                         searchCriteria: expect.anything(),
                                         searchRequest: expect.anything(),
@@ -537,6 +540,7 @@ describe('ContentAggregator', () => {
                         expect(result).toEqual({
                             'result': [{
                                 'index': 0,
+                                'isEnabled': true,
                                 'data': {
                                     'name': undefined,
                                     'sections': [
@@ -595,6 +599,7 @@ describe('ContentAggregator', () => {
                         expect(result).toEqual({
                             'result': [{
                                 'index': 0,
+                                'isEnabled': true,
                                 'data': {
                                     'name': '0',
                                     'sections': [
@@ -661,6 +666,7 @@ describe('ContentAggregator', () => {
                             'result': [{
                                 'index': 0,
                                 'code': 'sample_code',
+                                'isEnabled': true,
                                 'data': [
                                     expect.objectContaining({'facet': 'Digital Textbook'}),
                                     expect.objectContaining({'facet': 'Courses'}),
@@ -672,6 +678,25 @@ describe('ContentAggregator', () => {
                                 'description': expect.any(String),
                             }]
                         });
+                        done();
+                    });
+                });
+            });
+
+            describe('when dataSrc is "CONTENT_DISCOVERY_BANNER" and explicit values are passed', () => {
+                it('should avoid any API calls and return explicit values', (done) => {
+                    // arrange
+                    mockFormService.getForm = jest.fn().mockImplementation(() => of(mockFormResponseWithDiscoveryBannerDataSrc));
+
+                    // act
+                    contentAggregator.aggregate({}, [], {
+                        type: 'config',
+                        subType: 'library',
+                        action: 'get',
+                        component: 'app',
+                    }).subscribe((result) => {
+                        // assert
+                        expect(result.result[0].data.length).toEqual(4);
                         done();
                     });
                 });
