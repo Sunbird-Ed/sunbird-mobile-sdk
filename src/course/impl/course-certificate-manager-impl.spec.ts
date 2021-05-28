@@ -186,7 +186,7 @@ describe('CourseCertificateManagerImpl', () => {
 
             // assert
             expect(mockFileService.writeFile).toHaveBeenCalledWith(
-                cordova.file.externalRootDirectory + 'Download/', request.fileName, request.blob,
+                cordova.file.externalDataDirectory , request.fileName, request.blob,
                 {replace: true}
             );
         });
