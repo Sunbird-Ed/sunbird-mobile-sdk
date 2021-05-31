@@ -4,4 +4,6 @@ import {GroupActivityDataAggregation} from './responses';
 
 export interface GroupActivityService {
     getDataAggregation(request: GroupActivityDataAggregationRequest): Observable<GroupActivityDataAggregation>;
+    // getDataForDashlets(request: GroupActivityDataForDashletsRequest): Observable<GroupActivityDataAggregation>;
+    getDataForDashlets(hierarchyData, aggData): Observable<any>;
 }
