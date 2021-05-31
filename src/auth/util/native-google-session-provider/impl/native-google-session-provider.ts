@@ -13,7 +13,6 @@ export interface NativeGoogleTokens {
 export class NativeGoogleSessionProvider implements SessionProvider {
 
     private static readonly LOGIN_API_ENDPOINT = '/google/auth/android';
-    // private baseUrl = 'https://192.168.29.16:3000';
     private apiService: ApiService;
 
     private static parseAccessToken(accessToken: string): {
@@ -41,7 +40,6 @@ export class NativeGoogleSessionProvider implements SessionProvider {
     private callGoogleNativeLogin(idToken: string, emailId: string): Observable<OAuthSession> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
-            // .withHost(this.baseUrl)
             .withPath(NativeGoogleSessionProvider.LOGIN_API_ENDPOINT)
             .withBearerToken(false)
             .withUserToken(false)
@@ -55,13 +53,6 @@ export class NativeGoogleSessionProvider implements SessionProvider {
         return this.apiService.fetch<{ access_token: string, refresh_token: string }>(apiRequest)
             .pipe(
                 map((success) => {
-
-                    const data = {
-                        access_token: success.body.access_token,
-                        refresh_token: success.body.refresh_token,
-                        userToken: NativeGoogleSessionProvider.parseAccessToken(success.body.access_token).userToken
-                    };
-                    console.log('-----------', data);
                     return {
                         access_token: success.body.access_token,
                         refresh_token: success.body.refresh_token,
