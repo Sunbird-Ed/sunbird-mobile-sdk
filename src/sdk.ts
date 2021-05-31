@@ -87,6 +87,7 @@ import { DiscussionServiceImpl } from './discussion/impl/discussion-service.impl
 import { CsDiscussionService } from '@project-sunbird/client-services/services/discussion';
 import { CsContentService } from '@project-sunbird/client-services/services/content';
 import { SegmentationService, SegmentationServiceImpl } from './segmentation';
+import { DebuggingService, DebuggingServiceImpl } from './debugging';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -251,6 +252,10 @@ export class SunbirdSdk {
         return this._container.get<SegmentationService>(InjectionTokens.SEGMENTATION_SERVICE);
     }
 
+    get debuggingService(): DebuggingService {
+        return this._container.get<DebuggingService>(InjectionTokens.DEBUGGING_SERVICE);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
@@ -370,6 +375,8 @@ export class SunbirdSdk {
         this._container.bind<DiscussionService>(InjectionTokens.DISCUSSION_SERVICE).to(DiscussionServiceImpl).inSingletonScope();
 
         this._container.bind<SegmentationService>(InjectionTokens.SEGMENTATION_SERVICE).to(SegmentationServiceImpl).inSingletonScope();
+
+        this._container.bind<DebuggingService>(InjectionTokens.DEBUGGING_SERVICE).to(DebuggingServiceImpl).inSingletonScope();
 
         const sharedPreferences = this.sharedPreferences;
 
