@@ -25,11 +25,16 @@ export class DebuggingDurationHandler {
                     observer.next(false);
                     observer.complete();
                     clearInterval(watch);
+                    this.debuggingServiceImpl.watcher.interval = null;
+                    this.debuggingServiceImpl.watcher.observer = null;
+                    this.debuggingServiceImpl.watcher.debugStatus = false;
                 } else {
                     observer.next(true);
                 }
             }, 60*1000);
-            this.debuggingServiceImpl.watcher = watch;            
+            this.debuggingServiceImpl.watcher.interval = watch;
+            this.debuggingServiceImpl.watcher.observer = observer;
+            this.debuggingServiceImpl.watcher.debugStatus = true;
         } else {
             observer.next(false);
             observer.complete();

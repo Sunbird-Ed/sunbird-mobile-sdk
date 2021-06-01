@@ -13,7 +13,7 @@ export class DebuggingServiceImpl implements DebuggingService {
 
     private _userId: string;
     private _deviceId: string;
-    watcher: any;
+    watcher: {interval,  observer, debugStatus};
 
     set userId(userId) {
         this._userId = userId;
@@ -61,9 +61,14 @@ export class DebuggingServiceImpl implements DebuggingService {
     }
 
     disableDebugging(): Observable<boolean> {
-        if (this.watcher) {
-            clearTimeout(this.watcher);
-            this.watcher = null;
+        if (this.watcher.debugStatus) {
+            clearTimeout(this.watcher.interval);
+            this.watcher.observer.complete();
+            this.watcher = {
+                interval: null,
+                observer: null,
+                debugStatus: false
+            };
             this.sharedPreferences.putString('debug_started_at', '').toPromise();
             this.sharedPreferences.putString(CsClientStorage.TRACE_ID, '').toPromise();
             return of(true);
@@ -72,7 +77,7 @@ export class DebuggingServiceImpl implements DebuggingService {
     }
 
     isDebugOn(): boolean {
-        if (this.watcher) {
+        if (this.watcher.debugStatus) {
             return true;
         } else {
             return false;
