@@ -1,4 +1,10 @@
-import { Observable } from "rxjs";
+import { Observable, Subject } from "rxjs";
+
+export interface DebugWatcher {
+    interval: any;
+    observer:  any;
+    debugStatus: boolean;
+}
 
 export interface DebuggingService {
     deviceId: string;

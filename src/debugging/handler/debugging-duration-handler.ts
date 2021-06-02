@@ -31,7 +31,7 @@ export class DebuggingDurationHandler {
                 } else {
                     observer.next(true);
                 }
-            }, 60*1000);
+            }, 1*60*1000);
             this.debuggingServiceImpl.watcher.interval = watch;
             this.debuggingServiceImpl.watcher.observer = observer;
             this.debuggingServiceImpl.watcher.debugStatus = true;

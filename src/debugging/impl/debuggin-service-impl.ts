@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify";
 import { Observable, of } from "rxjs";
 import { InjectionTokens } from "../../injection-tokens";
 import { JWTokenType, JWTUtil } from "../../api";
-import { DebuggingService } from "../def/debugging-service";
+import { DebuggingService, DebugWatcher } from "../def/debugging-service";
 import { SharedPreferences } from '../../util/shared-preferences';
 import { DebuggingDurationHandler } from "../handler/debugging-duration-handler";
 import { ProfileService } from "../../profile";
@@ -13,8 +13,7 @@ export class DebuggingServiceImpl implements DebuggingService {
 
     private _userId: string;
     private _deviceId: string;
-    watcher: {interval,  observer, debugStatus};
-
+    public watcher: DebugWatcher;
     set userId(userId) {
         this._userId = userId;
     }
@@ -34,7 +33,13 @@ export class DebuggingServiceImpl implements DebuggingService {
     constructor(
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService
-    ) {}
+    ) {
+        this.watcher = {
+            interval: null,
+            observer: null,
+            debugStatus: false
+        };
+    }
 
     enableDebugging(): Observable<boolean> {
         /* TODO
