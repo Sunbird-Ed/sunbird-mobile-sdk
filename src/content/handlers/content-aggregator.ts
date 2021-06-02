@@ -326,7 +326,7 @@ export class ContentAggregator {
                     return {
                         index: section.index,
                         title: section.title,
-                        data: field.dataSrc.values!.filter((value) => Number(value.expiry) < Date.now()),
+                        data: field.dataSrc.values!.filter((value) => Number(value.expiry) > Math.floor(Date.now() / 1000)),
                         dataSrc: field.dataSrc,
                         theme: section.theme,
                         description: section.description,
