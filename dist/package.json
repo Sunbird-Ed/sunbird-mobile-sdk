@@ -1,12 +1,9 @@
 {
   "name": "@project-sunbird/sunbird-sdk",
-  "version": "2.9.2",
+  "version": "3.9.11",
   "description": "Heart of the sunbird mobile app.",
   "main": "index.js",
   "scripts": {
-    "preversion": "rm -rf dist",
-    "version": "npm run build:prod && git add -A dist && git commit -m \"RELEASE\"",
-    "postversion": "git push && git push --tags",
     "lint": "tslint --config ./tslint.json --project ./tsconfig.json",
     "test": "jest",
     "test:coverage": "jest --coverage --collectCoverageFrom=src/**/*.{ts,tsx}",
@@ -19,8 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@project-sunbird/client-services": "^2.8.1",
-    "crypto-js": "^3.1.9-1",
+    "crypto-js": "3.1.9-1",
     "dayjs": "^1.8.20",
     "inversify": "^5.0.1",
     "jsonwebtoken": "^8.5.1",
@@ -32,6 +28,7 @@
     "whatwg-fetch": "^3.0.0"
   },
   "peerDependencies": {
+    "@project-sunbird/client-services": "3.6.x",
     "rxjs": ">=6",
     "cordova-plugin-advanced-http": "^2.0.2",
     "cordova-plugin-file": "^6.0.1",
@@ -40,15 +37,16 @@
     "sb-cordova-plugin-customtabs": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-customtabs.git",
     "sb-cordova-plugin-db": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-db.git",
     "jjdltc-cordova-plugin-zip": "git+https://github.com/swayangjit/jjdltc-cordova-plugin-zip.git",
-    "cordova-plugin-android-downloadmanager": "^0.5.0",
+    "cordova-plugin-android-downloadmanager": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-downloadmanager.git",
     "sb-cordova-plugin-utility": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-utility.git"
   },
   "devDependencies": {
     "@types/jest": "^25.1.1",
-    "@types/node-fetch": "^2.5.4",
+    "@types/node-fetch": "2.5.4",
     "@types/pako": "^1.0.1",
     "@types/websql": "0.0.27",
-    "cordova-plugin-android-downloadmanager": "^0.5.0",
+    "@project-sunbird/client-services": "3.9.7",
+    "cordova-plugin-android-downloadmanager": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-downloadmanager.git",
     "jest": "^25.1.0",
     "rxjs": "^6.5.3",
     "ts-jest": "^25.2.0",
@@ -59,7 +57,11 @@
     "tslint": "^5.20.1",
     "typescript": "2.9.1",
     "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10"
+    "webpack-cli": "^3.3.10",
+    "@types/node": "12.0.2"
+  },
+  "browser": {
+    "crypto": false
   },
   "jest": {
     "globals": {
@@ -81,7 +83,8 @@
     "coveragePathIgnorePatterns": [
       "<rootDir>/src/util/file/impl",
       "<rootDir>/src/codepush-experiment",
-      "<rootDir>/src/util/shared-preferences/impl/shared-preferences-local-storage"
+      "<rootDir>/src/util/shared-preferences/impl/shared-preferences-local-storage",
+      "<rootDir>/src/group-deprecated"
     ],
     "testMatch": [
       "**/?(*.)(spec).ts"

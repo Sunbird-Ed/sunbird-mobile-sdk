@@ -1,7 +1,8 @@
-import { Context, SunbirdTelemetry } from './telemetry-model';
+import { Context, CorrelationData, SunbirdTelemetry } from './telemetry-model';
+import { ProfileSession } from '../../profile';
 import Telemetry = SunbirdTelemetry.Telemetry;
 export declare abstract class TelemetryDecorator {
-    abstract decorate(event: Telemetry, uid: string, sid: string, gid?: string, offset?: number, channelId?: string): any;
+    abstract decorate(event: Telemetry, profileSession: ProfileSession, gid?: string, offset?: number, channelId?: string, campaignParameters?: CorrelationData[], globalCData?: CorrelationData[]): any;
     abstract prepare(event: Telemetry, priority: number): {
         event: any;
         event_type: any;

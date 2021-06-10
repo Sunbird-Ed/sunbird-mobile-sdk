@@ -1,6 +1,5 @@
 export declare class SummarizerQueries {
     static getChildProgressQuery(uids: string[]): string;
-    static getContentProgressQuery(contentId: string): string;
     static getDetailReportsQuery(uids: string[], contentId: string): string;
     static getReportsByUserQuery(uids: string[], contentId: string): string;
     static getQuetsionDetailsQuery(uids: string[], contentId: string, qid: string): string;

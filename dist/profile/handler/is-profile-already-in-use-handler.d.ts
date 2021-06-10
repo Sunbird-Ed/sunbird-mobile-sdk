@@ -1,7 +1,6 @@
 import { ApiRequestHandler, ApiService } from '../../api';
-import { IsProfileAlreadyInUseRequest } from '..';
+import { IsProfileAlreadyInUseRequest, ProfileServiceConfig } from '..';
 import { ProfileExistsResponse } from '../def/profile-exists-response';
-import { ProfileServiceConfig } from '..';
 import { Observable } from 'rxjs';
 export declare class IsProfileAlreadyInUseHandler implements ApiRequestHandler<IsProfileAlreadyInUseRequest, ProfileExistsResponse> {
     private apiService;

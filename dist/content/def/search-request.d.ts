@@ -1,4 +1,4 @@
-import { ContentSortCriteria } from './requests';
+import { SortOrder } from './requests';
 export interface SearchRequest {
     filters: SearchFilter;
     fields?: string[];
@@ -8,7 +8,9 @@ export interface SearchRequest {
     mode?: string;
     exists?: string[];
     facets?: string[];
-    sort_by?: ContentSortCriteria[];
+    sort_by?: {
+        [key: string]: SortOrder;
+    };
 }
 export interface SearchFilter {
     compatibilityLevel?: {
@@ -31,4 +33,5 @@ export interface SearchFilter {
     audience?: string[];
     mimeType?: string[];
     subject?: string[];
+    primaryCategory?: string[];
 }

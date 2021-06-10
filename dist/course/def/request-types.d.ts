@@ -1,3 +1,7 @@
+import { SortOrder } from '../../content';
+import { GetUserEnrolledCoursesRequest as CsGetUserEnrolledCoursesRequest, GetContentStateRequest as CsGetContentStateRequest, ContentState } from '@project-sunbird/client-services/services/course';
+export { ContentState } from '@project-sunbird/client-services/services/course';
+import { CachedItemRequest, CachedItemRequestSourceFrom } from '../../key-value-store';
 export interface FetchEnrolledCourseRequest {
     userId: string;
     returnFreshCourses?: boolean;
@@ -8,20 +12,29 @@ export interface EnrollCourseRequest {
     batchId: string;
     batchStatus?: number;
 }
+export declare enum UpdateContentStateTarget {
+    LOCAL = "LOCAL",
+    SERVER = "SERVER"
+}
 export interface UpdateContentStateRequest {
+    target?: UpdateContentStateTarget[];
     userId: string;
     courseId: string;
     contentId: string;
     batchId: string;
-    status?: number;
-    progress?: number;
     result?: string;
     grade?: string;
-    score?: string;
+    status?: ContentState['status'];
+    progress?: ContentState['progress'];
+    score?: ContentState['score'];
+    bestScore?: ContentState['bestScore'];
 }
 export interface CourseBatchesRequest {
     filters: CourseBatchesRequestFilters;
     fields: string[];
+    sort_by?: {
+        [key: string]: SortOrder;
+    };
 }
 export interface UpdateContentStateAPIRequest {
     userId: string;
@@ -30,24 +43,13 @@ export interface UpdateContentStateAPIRequest {
 export interface CourseBatchDetailsRequest {
     batchId: string;
 }
-export interface GetContentStateRequest {
-    userId: string;
-    batchId: string;
-    courseIds: string[];
-    contentIds?: string[];
+export interface GetContentStateRequest extends CsGetContentStateRequest {
     returnRefreshedContentStates?: boolean;
 }
 export interface CourseBatchesRequestFilters {
     courseId: string[] | string;
     status?: string[];
     enrollmentType?: string;
-    sortBy?: string;
-}
-export interface CourseBatchesRequestFilters {
-    courseId: string[] | string;
-    status?: string[];
-    enrollmentType?: string;
-    sortBy?: string;
 }
 export declare enum CourseEnrollmentType {
     OPEN = "open",
@@ -58,22 +60,6 @@ export declare enum CourseBatchStatus {
     IN_PROGRESS = "1",
     COMPLETED = "2"
 }
-export interface ContentState {
-    lastAccessTime?: string;
-    contentId?: string;
-    batchId?: string;
-    completedCount?: number;
-    result?: string;
-    score?: string;
-    grade?: string;
-    progress?: number;
-    id?: string;
-    viewCount?: number;
-    contentVersion?: string;
-    courseId?: string;
-    lastCompletedTime?: string;
-    status?: number;
-}
 export interface ContentStateResponse {
     contentList: ContentState[];
 }
@@ -82,4 +68,15 @@ export interface GenerateAttemptIdRequest {
     batchId: string;
     contentId: string;
     userId: string;
+}
+export interface GetUserEnrolledCoursesRequest {
+    from?: CachedItemRequestSourceFrom;
+    request: CsGetUserEnrolledCoursesRequest;
+}
+export interface DisplayDiscussionForumRequest {
+    forumId: string;
+}
+export interface GetLearnerCerificateRequest extends CachedItemRequest {
+    userId: string;
+    size?: number;
 }

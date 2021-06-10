@@ -1,10 +1,11 @@
-import { Content as ContentData } from '@project-sunbird/client-services';
-export { Content as ContentData, LicenseDetails, AltMsg as ComingSoonMsg, OriginData } from '@project-sunbird/client-services';
+import { Content as ContentData } from '@project-sunbird/client-services/models';
 import { Rollup } from '../../telemetry';
 import { ContentAccess } from '../../profile';
 import { ContentMarker } from './response';
+export { Content as ContentData, LicenseDetails, OriginData, Trackable, TrackingEnabled } from '@project-sunbird/client-services/models/content';
 export interface Content {
     identifier: string;
+    name: string;
     contentData: ContentData;
     mimeType: string;
     basePath: string;
@@ -21,6 +22,7 @@ export interface Content {
     contentFeedback?: ContentFeedback[];
     contentAccess?: ContentAccess[];
     contentMarker?: ContentMarker[];
+    primaryCategory?: string;
 }
 export interface ContentFeedback {
     contentId: string;
@@ -37,4 +39,5 @@ export interface ContentFeedbackFilterCriteria {
 export interface HierarchyInfo {
     identifier: string;
     contentType: string;
+    primaryCategory?: string;
 }
