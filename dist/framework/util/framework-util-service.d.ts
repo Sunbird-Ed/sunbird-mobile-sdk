@@ -1,8 +1,8 @@
 import { Observable } from 'rxjs';
-import { CategoryTerm, Channel, Framework, GetFrameworkCategoryTermsRequest } from '..';
+import { CategoryTerm, Channel, Framework, GetActiveChannelRequest, GetFrameworkCategoryTermsRequest } from '..';
 import { GetSuggestedFrameworksRequest } from './requests';
 export interface FrameworkUtilService {
-    getActiveChannel(): Observable<Channel>;
+    getActiveChannel(getActiveChannelRequest?: GetActiveChannelRequest): Observable<Channel>;
     getActiveChannelSuggestedFrameworkList(getSuggestedFrameworksRequest: GetSuggestedFrameworksRequest): Observable<Framework[]>;
     /**
      * @param {GetFrameworkCategoryTermsRequest} getFrameworkCategoriesRequest

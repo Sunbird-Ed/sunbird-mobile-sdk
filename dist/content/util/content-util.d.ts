@@ -32,6 +32,8 @@ export declare class ContentUtil {
     static isImportFileExist(oldContentModel: ContentEntry.SchemaMap | undefined, contentData: any): boolean;
     static readPkgVersion(contentData: any): number;
     static readContentType(contentData: any): string;
+    static readPrimaryCategory(contentData: any): string;
+    static readPrimaryCategoryServer(contentData: any): string;
     static readAudience(contentData: any): string;
     static readPragma(contentData: any): string;
     /**
@@ -70,7 +72,7 @@ export declare class ContentUtil {
     static getContentAttribute(data: any): string;
     static getFindAllContentsWithIdentifierQuery(identifiers: string[]): string;
     static getFindAllContentsQuery(): string;
-    static constructContentDBModel(identifier: any, manifestVersion: any, localData: any, mimeType: any, contentType: any, visibility: any, path: any, refCount: any, contentState: any, audience: any, pragma: any, sizeOnDevice: any, board: any, medium: any, grade: any): ContentEntry.SchemaMap;
+    static constructContentDBModel(identifier: any, manifestVersion: any, localData: any, mimeType: any, contentType: any, visibility: any, path: any, refCount: any, contentState: any, audience: any, pragma: any, sizeOnDevice: any, board: any, medium: any, grade: any, primaryCategory: any): ContentEntry.SchemaMap;
     static getReferenceCount(existingContent: any, visibility: string): number;
     /**
      * add or update the reference count for the content
@@ -87,4 +89,5 @@ export declare class ContentUtil {
     private static transferCount;
     private static isContentMetadataAbsent;
     private static isContentMetadataPresentWithoutViralityMetadata;
+    static isTrackable(content: any): number;
 }

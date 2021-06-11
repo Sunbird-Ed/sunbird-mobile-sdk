@@ -1,4 +1,1 @@
-export interface Organization<T> {
-    count: number;
-    content: (keyof T)[];
-}
+export { Organisation as Organization } from '@project-sunbird/client-services/models';

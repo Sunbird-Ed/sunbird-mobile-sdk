@@ -1,1 +1,1 @@
-export { Course, CourseCertificate } from '@project-sunbird/client-services';
+export { Course, CourseCertificate } from '@project-sunbird/client-services/models';

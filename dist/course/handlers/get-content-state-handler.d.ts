@@ -1,11 +1,16 @@
 import { ApiService } from '../../api';
-import { CourseServiceConfig, GetContentStateRequest } from '..';
+import { ContentState, CourseServiceConfig, GetContentStateRequest } from '..';
 import { Observable } from 'rxjs';
+import { Container } from 'inversify';
 export declare class GetContentStateHandler {
     private apiService;
     private courseServiceConfig;
-    private readonly GET_CONTENT_STATE_KEY_PREFIX;
-    private readonly GET_CONTENT_STATE_ENDPOINT;
-    constructor(apiService: ApiService, courseServiceConfig: CourseServiceConfig);
-    handle(contentStateRequest: GetContentStateRequest): Observable<any>;
+    private container;
+    constructor(apiService: ApiService, courseServiceConfig: CourseServiceConfig, container: Container);
+    private readonly csCourseService;
+    private readonly contentService;
+    handle(contentStateRequest: GetContentStateRequest): Observable<{
+        contentList: ContentState[];
+    }>;
+    private fetchFromApi;
 }

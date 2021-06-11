@@ -11,6 +11,7 @@ export declare class ApiTokenHandler {
     refreshAuthToken(): Observable<string>;
     private getMobileDeviceConsumerKey;
     private buildGetMobileDeviceConsumerSecretAPIRequest;
-    private getMobileDeviceConsumerSecret;
+    private getBearerTokenFromKongV2;
+    private getBearerTokenFromFallback;
     private generateMobileAppConsumerBearerToken;
 }
