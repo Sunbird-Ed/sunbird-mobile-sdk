@@ -57,7 +57,7 @@ export class AppInfoImpl implements AppInfo {
         //         return;
         //     });
         this.versionName = "3.6.local.0-debug";
-        alert(this.versionName);
+        console.log("versionName: ", this.versionName);
         let versionName = this.versionName;
         if (CsModule.instance.isInitialised) {
             CsModule.instance.updateConfig({
