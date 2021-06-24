@@ -158,21 +158,52 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
     }
 
     fetchFromServer(request: ContentDetailRequest): Observable<ContentData> {
-        return this.apiService.fetch<{ result: { content: ContentData } }>(
-            new Request.Builder()
-                .withHost(this.contentServiceConfig.host)
-                .withType(HttpRequestType.GET)
-                .withPath(this.contentServiceConfig.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + '/' + request.contentId)
-                .withParameters({
-                    licenseDetails: 'name,url,description'
-                })
-                .withBearerToken(true)
-                .build()
-        ).pipe(
-            map((response) => {
-                return response.body.result.content;
-            })
-        );
+        switch (request.objectType) {
+            case 'QuestionSet':
+                return this.apiService.fetch<{ result: { questionset: ContentData } }>(
+                    new Request.Builder()
+                        .withHost(this.contentServiceConfig.host)
+                        .withType(HttpRequestType.GET)
+                        .withPath(this.contentServiceConfig.questionSetReadApiPath +
+                            this.GET_CONTENT_DETAILS_ENDPOINT + '/' + request.contentId)
+                        .withBearerToken(false)
+                        .build()
+                ).pipe(
+                    map((response) => {
+                        return response.body.result.questionset;
+                    })
+                );
+            case 'Question':
+                return this.apiService.fetch<{ result: { question: ContentData } }>(
+                    new Request.Builder()
+                        .withHost(this.contentServiceConfig.host)
+                        .withType(HttpRequestType.GET)
+                        .withPath(this.contentServiceConfig.questionReadApiPath +
+                            this.GET_CONTENT_DETAILS_ENDPOINT + '/' + request.contentId)
+                        .withBearerToken(false)
+                        .build()
+                ).pipe(
+                    map((response) => {
+                        return response.body.result.question;
+                    })
+                );
+            default:
+                return this.apiService.fetch<{ result: { content: ContentData } }>(
+                    new Request.Builder()
+                        .withHost(this.contentServiceConfig.host)
+                        .withType(HttpRequestType.GET)
+                        .withPath(this.contentServiceConfig.apiPath + this.GET_CONTENT_DETAILS_ENDPOINT + '/' + request.contentId)
+                        .withParameters({
+                            licenseDetails: 'name,url,description'
+                        })
+                        .withBearerToken(true)
+                        .build()
+                ).pipe(
+                    map((response) => {
+                        return response.body.result.content;
+                    })
+                );
+        }
     }
 
     fetchAndDecorate(request: ContentDetailRequest): Observable<Content> {

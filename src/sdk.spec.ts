@@ -53,7 +53,9 @@ const mockSdkConfig: SdkConfig = {
     contentServiceConfig: {
         apiPath: '/api/content/v1',
         searchApiPath: '/api/content/v1',
-        contentHeirarchyAPIPath: '/api/course/v1'
+        contentHeirarchyAPIPath: '/api/course/v1',
+        questionSetReadApiPath: '/api/questionset/v1',
+        questionReadApiPath: '/api/question/v1/'
     },
     courseServiceConfig: {
         apiPath: '/api/course/v1'
