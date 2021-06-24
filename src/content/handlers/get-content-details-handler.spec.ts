@@ -43,51 +43,57 @@ describe('GetContentDetailsHandler', () => {
         expect(getContentDetailsHandler).toBeTruthy();
     });
 
-    it('should handle undefined content with objectType QuestionSet', async (done) => {
+    it ('should fetch data from server if objectType is QuestionSet', (done) => {
         // arrange
-        const request: ContentDetailRequest = {
-            contentId: 'SAMPLE_CONTENT_ID',
+        mockApiService.fetch = jest.fn().mockImplementation(() => {
+            return of({
+                body: {
+                    result: {
+                        questionset: {}
+                    }
+                }
+            });
+        });
+        // act
+        getContentDetailsHandler.fetchFromServer({
+            contentId: 'sample_content_id',
             objectType: 'QuestionSet'
-        };
-        mockDbService.read = jest.fn().mockImplementation(() => of([{content_type: 'course', local_data: '{"contentType":"course"}'}]));
-        mockApiService.fetch = jest.fn().mockImplementation(() => of({
-            body: {
-                result: 'sample_result'
-            }
-        }));
-        spyOn(getContentDetailsHandler, 'fetchFromServer').and.returnValue(of([]));
-        getContentDetailsHandler.handle(request).subscribe(() => {
-            // assert
-            expect(mockDbService.read).toHaveBeenCalled();
-            done();
         });
+        // assert
+        setTimeout(() => {
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            done();
+        }, 0);
     });
 
-    it('should handle undefined content with objectType Question', async (done) => {
+    it ('should fetch data from server if objectType is question', (done) => {
         // arrange
-        const request: ContentDetailRequest = {
-            contentId: 'SAMPLE_CONTENT_ID',
+        mockApiService.fetch = jest.fn().mockImplementation(() => {
+            return of({
+                body: {
+                    result: {
+                        questionset: {}
+                    }
+                }
+            });
+        });
+        // act
+        getContentDetailsHandler.fetchFromServer({
+            contentId: 'sample_content_id',
             objectType: 'Question'
-        };
-        mockDbService.read = jest.fn().mockImplementation(() => of([{content_type: 'course', local_data: '{"contentType":"course"}'}]));
-        mockApiService.fetch = jest.fn().mockImplementation(() => of({
-            body: {
-                result: 'sample_result'
-            }
-        }));
-        spyOn(getContentDetailsHandler, 'fetchFromServer').and.returnValue(of([]));
-        getContentDetailsHandler.handle(request).subscribe(() => {
-            // assert
-            expect(mockDbService.read).toHaveBeenCalled();
-            done();
         });
+        // assert
+        setTimeout(() => {
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            done();
+        }, 0);
     });
 
-    it('should handle undefined content with other objectType', async (done) => {
+
+    it('should handle undefined content', async (done) => {
         // arrange
         const request: ContentDetailRequest = {
-            contentId: 'SAMPLE_CONTENT_ID',
-            objectType: 'content'
+            contentId: 'SAMPLE_CONTENT_ID'
         };
         mockDbService.read = jest.fn().mockImplementation(() => of([{content_type: 'course', local_data: '{"contentType":"course"}'}]));
         mockApiService.fetch = jest.fn().mockImplementation(() => of({
