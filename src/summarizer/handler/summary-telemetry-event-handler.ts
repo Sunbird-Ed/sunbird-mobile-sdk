@@ -31,7 +31,8 @@ class TrackableSessionProxyContentProvider {
     ) {
     }
 
-    provide(request: ContentDetailRequest): Observable<Content> {
+    provide(request: ContentDetailRequest, primaryCategory: string): Observable<Content> {
+        request.objectType = TrackableSessionProxyContentProvider.getCategoryMapper(primaryCategory);
         if (this.trackableSessionContentCache) {
             return iif(
                 () => !!this.trackableSessionContentCache![request.contentId],
@@ -57,6 +58,15 @@ class TrackableSessionProxyContentProvider {
 
     dispose() {
         this.trackableSessionContentCache = undefined;
+    }
+
+    private static getCategoryMapper(primaryCategory: string) {
+        switch (primaryCategory) {
+            case CsPrimaryCategory.PRACTICE_QUESTION_SET:
+                return 'QuestionSet';
+            case 'Multiple Choice Question':
+                return 'Question';
+        }
     }
 }
 
@@ -128,7 +138,8 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                             } else if ((event.eid === 'END' && status === 0) ||
                                 (event.eid === 'END' && status === 1)) {
                                 return this.trackableSessionProxyContentProvider.provide(
-                                    {contentId: event.object.id}
+                                    {contentId: event.object.id},
+                                    event.object.type
                                 ).pipe(
                                     mergeMap((content) => {
                                         return this.validEndEvent(event, content, courseContext).pipe(
@@ -211,7 +222,8 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                         })
                     ).toPromise();
                 } else if (event.object && event.object.id) {
-                    const content = await this.trackableSessionProxyContentProvider.provide({contentId: event.object.id}).toPromise();
+                    const content = await this.trackableSessionProxyContentProvider
+                        .provide({contentId: event.object.id}, event.object.type).toPromise();
 
                     if (SummaryTelemetryEventHandler.isContentTrackable(content)) {
                         this.trackableSessionProxyContentProvider.init();
@@ -256,7 +268,8 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                         })
                     ).toPromise();
                 } else if (event.object && event.object.id) {
-                    const content = await this.trackableSessionProxyContentProvider.provide({contentId: event.object.id}).toPromise();
+                    const content = await this.trackableSessionProxyContentProvider
+                        .provide({contentId: event.object.id}, event.object.type).toPromise();
 
                     if (SummaryTelemetryEventHandler.isContentTrackable(content)) {
                         this.trackableSessionProxyContentProvider.dispose();
@@ -310,7 +323,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         const request: ContentDetailRequest = {
             contentId: identifier
         };
-        return this.trackableSessionProxyContentProvider.provide(request).pipe(
+        return this.trackableSessionProxyContentProvider.provide(request, event.object.type).pipe(
             mergeMap((content: Content) => {
                 const addContentAccessRequest: ContentAccess = {
                     status: ContentAccessStatus.PLAYED,
