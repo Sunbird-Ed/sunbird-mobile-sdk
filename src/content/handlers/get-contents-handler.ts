@@ -192,7 +192,7 @@ export class GetContentsHandler {
                 likeQuery = likeQuery.concat(initialQuery, `'%%~${data[i].toLowerCase().trim()}~%%' `);
             }
         }
-        return likeQuery;
+        return `(${likeQuery})`;
     }
 
 
