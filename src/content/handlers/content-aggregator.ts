@@ -88,7 +88,8 @@ export interface DataSourceModelMap {
         mapping: {
             facet: string,
             aggregate?: AggregationConfig
-        }[]
+        }[],
+        params?: any
     };
     'RECENTLY_VIEWED_CONTENTS': {
         type: 'RECENTLY_VIEWED_CONTENTS',
@@ -373,22 +374,48 @@ export class ContentAggregator {
             task: defer(async () => {
                 const searchResult = await this.searchContents(field, searchCriteria, searchRequest);
                 return field.sections.map((section, index) => {
-                    const facetFilters = searchResult.filterCriteria.facetFilters && searchResult.filterCriteria.facetFilters.find((x) =>
+                    let searchFacetFilters =  searchResult.filterCriteria.facetFilters || [];
+                    const toBeDeletedFacets: string[] = [];
+                    searchFacetFilters.map((x) => {
+                        const facetConfig = (field.dataSrc.params.config.find(element => element.name === x.name));
+                        if (facetConfig) {
+                            facetConfig.mergeableAttributes.map((attribute) => {
+                                toBeDeletedFacets.push(attribute);
+                                const mergeableFacets = searchFacetFilters.find(facet => facet.name === attribute);
+                                x.values = x.values.filter(y =>  facetConfig.values.
+                                    find(z => (z.code === y.name.replace(/\s+/g, '').toLowerCase())));
+                                const configFacets = facetConfig.values.filter(configFacet => configFacet.type = attribute);
+                                mergeableFacets!!.values = mergeableFacets!!.values.
+                                    filter(y => configFacets.find(z => (z.code === y.name.replace(/\s+/g, ''))));
+                                x.values = x.values.concat(mergeableFacets!!.values);
+                            });
+                        }
+                    });
+                    searchFacetFilters = searchFacetFilters.filter(x => toBeDeletedFacets.indexOf(x.name) === -1 );
+                    const facetFilters = searchFacetFilters.find((x) =>
                         x.name === (field.dataSrc.mapping[index] && field.dataSrc.mapping[index].facet)
                     );
 
                     if (facetFilters) {
+                        const facetConfig = field.dataSrc.params && field.dataSrc.params.config &&
+                                   field.dataSrc.params.config.find(x => x.name === facetFilters.name);
                         return {
                             index: section.index,
                             title: section.title,
                             code: section.code,
                             data: facetFilters.values.map((filterValue) => {
+                                const facetCategoryConfig = facetConfig ? facetConfig.values.
+                                            find(x => x.code === filterValue.name.
+                                            replace(/\s+/g, '').toLowerCase()) : [];
                                 return {
-                                    facet: filterValue.name,
+                                    facet: facetCategoryConfig && facetCategoryConfig.name ? facetCategoryConfig.name : filterValue.name,
                                     searchCriteria: {
                                         ...searchCriteria,
                                         primaryCategories:  [],
-                                        impliedFilters: [{name: facetFilters.name, values: [{name: filterValue.name, apply: true}]}],
+                                        impliedFilters: facetCategoryConfig.searchCriteria &&
+                                        facetCategoryConfig.searchCriteria.impliedFilters ?
+                                          facetCategoryConfig.searchCriteria.impliedFilters :
+                                          [{name: facetFilters.name, values: [{name: filterValue.name, apply: true}]}]
                                         // [facetFilters.name]: [filterValue.name]
                                     },
                                     aggregate: field.dataSrc.mapping[index].aggregate
