@@ -543,7 +543,10 @@ export class ContentAggregator {
             task: defer(async () => {
                 const offlineSearchContentDataList: ContentData[] = await (/* fetch offline contents */ async () => {
                     return this.contentService.getContents({
-                        primaryCategories: searchCriteria.primaryCategories || [],
+                        primaryCategories:
+                            (searchCriteria.primaryCategories && searchCriteria.primaryCategories.length && searchCriteria.primaryCategories) ||
+                            (searchRequest.filters && searchRequest.filters.primaryCategory) ||
+                            [],
                         board: searchCriteria.board,
                         medium: searchCriteria.medium,
                         grade: searchCriteria.grade
