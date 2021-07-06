@@ -14,6 +14,7 @@ import {
     ProfileExportRequest,
     ProfileExportResponse,
     ProfileService,
+    ProfileServiceConfig,
     ProfileSession,
     ProfileSource,
     ProfileType,
@@ -99,6 +100,7 @@ export class ProfileServiceImpl implements ProfileService {
     private static readonly MERGE_SERVER_PROFILES_PATH = '/api/user/v1/account/merge';
 
     private readonly apiConfig: ApiConfig;
+    private readonly profileServiceConfig: ProfileServiceConfig;
     readonly managedProfileManager: ManagedProfileManager;
 
     constructor(
@@ -116,6 +118,7 @@ export class ProfileServiceImpl implements ProfileService {
         @inject(CsInjectionTokens.USER_SERVICE) private userService: CsUserService
     ) {
         this.apiConfig = this.sdkConfig.apiConfig;
+        this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
         this.managedProfileManager = new ManagedProfileManager(
             this,
             this.authService,
@@ -398,7 +401,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {
-        return new GetServerProfileDetailsHandler(this.cachedItemStore, this.keyValueStore, this.container)
+        return new GetServerProfileDetailsHandler(this.cachedItemStore, this.keyValueStore, this.container, this.profileServiceConfig)
           .handle(serverProfileDetailsRequest);
     }
 

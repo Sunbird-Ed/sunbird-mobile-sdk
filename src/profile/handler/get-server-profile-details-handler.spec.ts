@@ -14,13 +14,14 @@ describe('GetServerProfileDetailsHandler', () => {
     const mockCsUserService: Partial<CsUserService> = {
         getProfileDetails: jest.fn()
     };
-
+    const mockProfileServiceConfig: Partial<ProfileServiceConfig> = {};
     beforeAll(() => {
         container.bind<CsUserService>(CsInjectionTokens.USER_SERVICE).toConstantValue(mockCsUserService as CsUserService);
         getServerProfileDetailsHandler = new GetServerProfileDetailsHandler(
             mockCachedItemStore as CachedItemStore,
             mockKeyValueStore as KeyValueStore,
-            container
+            container,
+            mockProfileServiceConfig as ProfileServiceConfig
         );
     });
 
