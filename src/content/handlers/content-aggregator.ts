@@ -32,6 +32,7 @@ import {CsResponse} from '@project-sunbird/client-services/core/http-service';
 import {ObjectUtil} from '../../util/object-util';
 import * as SHA1 from 'crypto-js/sha1';
 import {NetworkInfoService, NetworkStatus} from '../../util/network';
+import { MimeTypeCategoryMapping } from '@project-sunbird/client-services/models/content';
 
 type Primitive = string | number | boolean;
 type RequestHash = string;
@@ -749,6 +750,15 @@ export class ContentAggregator {
             undefined,
             new class implements ApiRequestHandler<SearchRequest, SearchResponse> {
                 handle(_: SearchRequest): Observable<SearchResponse> {
+                    if (searchRequest && searchRequest.filters && searchRequest.filters.mimeType) {
+                        const reducer = (acc, cur) => {
+                            if (MimeTypeCategoryMapping[cur]) {
+                                return acc.concat(MimeTypeCategoryMapping[cur])
+                            }
+                            return acc.concat([cur])
+                        };
+                        searchRequest.filters.mimeType = searchRequest.filters.mimeType.reduce(reducer, []);
+                    }
                     if (field.dataSrc.request && field.dataSrc.request.body && (field.dataSrc.request.body as any).request) {
                         field.dataSrc.request.body = {
                             request: {
