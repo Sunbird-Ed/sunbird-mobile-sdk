@@ -1,6 +1,5 @@
 import { ApiRequestHandler, ApiService } from '../../api';
-import { VerifyOtpRequest } from '..';
-import { ProfileServiceConfig } from '..';
+import { ProfileServiceConfig, VerifyOtpRequest } from '..';
 import { Observable } from 'rxjs';
 export declare class VerifyOtpHandler implements ApiRequestHandler<VerifyOtpRequest, boolean> {
     private apiService;

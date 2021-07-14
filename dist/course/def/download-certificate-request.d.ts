@@ -1,4 +1,5 @@
 export interface DownloadCertificateRequest {
-    courseId: string;
-    certificateToken: string;
+    fileName: string;
+    mimeType: string;
+    blob: Blob;
 }

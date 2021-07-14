@@ -1,10 +1,15 @@
 import { ChildContentRequest, ContentDelete, ContentDeleteRequest, ContentDetailRequest, ContentExportRequest, ContentImportRequest, ContentMarkerRequest, ContentRequest, ContentSearchCriteria, ContentSpaceUsageSummaryRequest, ContentSpaceUsageSummaryResponse, EcarImportRequest, RelevantContentRequest } from './requests';
-import { Response } from '../../api';
+import { ApiRequestHandler, Response } from '../../api';
 import { Observable } from 'rxjs';
 import { Content, HierarchyInfo } from './content';
-import { ContentDeleteResponse, ContentExportResponse, ContentImportResponse, ContentSearchResult, ContentsGroupedByPageSection, RelevantContentResponsePlayer } from './response';
+import { ContentDeleteResponse, ContentExportResponse, ContentImportResponse, ContentSearchResult, RelevantContentResponsePlayer, SearchResponse } from './response';
 import { DownloadCompleteDelegate } from '../../util/download/def/download-complete-delegate';
 import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
+import { ContentAggregator } from '../handlers/content-aggregator';
+import { FormService } from '../../form';
+import { CourseService } from '../../course';
+import { ProfileService } from '../../profile';
+import { SearchRequest } from "./search-request";
 export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnInitDelegate {
     getContentDetails(request: ContentDetailRequest): Observable<Content>;
     getContentHeirarchy(request: ContentDetailRequest): Observable<Content>;
@@ -12,8 +17,7 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
     getChildContents(childContentRequest: ChildContentRequest): Observable<Content>;
     searchContent(criteria: ContentSearchCriteria, request?: {
         [key: string]: any;
-    }): Observable<ContentSearchResult>;
-    searchContentGroupedByPageSection(request: ContentSearchCriteria): Observable<ContentsGroupedByPageSection>;
+    }, apiHandler?: ApiRequestHandler<SearchRequest, SearchResponse>): Observable<ContentSearchResult>;
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
     enqueueContentDelete(contentDeleteRequest: ContentDeleteRequest): Observable<void>;
     clearContentDeleteQueue(): Observable<void>;
@@ -30,4 +34,8 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
     cancelDownload(contentId: string): Observable<undefined>;
     setContentMarker(contentMarkerRequest: ContentMarkerRequest): Observable<boolean>;
     getContentSpaceUsageSummary(contentSpaceUsageSummaryRequest: ContentSpaceUsageSummaryRequest): Observable<ContentSpaceUsageSummaryResponse[]>;
+    buildContentAggregator(formService: FormService, courseService: CourseService, profileService: ProfileService): ContentAggregator;
+    getQuestionList(questionIds: string[]): Observable<any>;
+    getQuestionSetHierarchy(data: any): Observable<any>;
+    getQuestionSetRead(contentId: string, params?: any): Observable<any>;
 }

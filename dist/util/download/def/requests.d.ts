@@ -11,3 +11,9 @@ export interface DownloadRequest {
 export interface DownloadCancelRequest {
     identifier: string;
 }
+export interface TrackDownloadRequest {
+    groupBy: {
+        fieldPath: string;
+        value: any;
+    };
+}

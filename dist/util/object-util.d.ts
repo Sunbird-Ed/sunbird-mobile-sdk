@@ -3,4 +3,5 @@ export declare class ObjectUtil {
     static getPropDiff(newObj: {}, oldObj: {}): string[];
     static getTruthyProps(obj: {}): string[];
     static toOrderedString(obj: {}): string;
+    static withDeeplyOrderedKeys(obj: {}): {};
 }

@@ -6,7 +6,7 @@ export declare abstract class WebviewBaseSessionProvider implements SessionProvi
     protected apiConfig: ApiConfig;
     protected apiService: ApiService;
     protected eventsBusService: EventsBusService;
-    private static parseUserTokenFromAccessToken;
+    private static parseAccessToken;
     protected constructor(apiConfig: ApiConfig, apiService: ApiService, eventsBusService: EventsBusService);
     abstract provide(): Promise<OAuthSession>;
     protected buildGoogleTargetUrl(captured: {

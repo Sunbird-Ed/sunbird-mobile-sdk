@@ -1,1 +1,1 @@
-export { Channel } from '@project-sunbird/client-services';
+export { Channel } from '@project-sunbird/client-services/models';

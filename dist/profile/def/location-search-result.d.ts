@@ -1,6 +1,1 @@
-export interface LocationSearchResult {
-    code: string;
-    name: string;
-    id: string;
-    type: string;
-}
+export { Location as LocationSearchResult } from '@project-sunbird/client-services/models';
