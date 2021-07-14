@@ -34,6 +34,7 @@ import {
     ContentMarkerRequest,
     CourseService,
     FormService,
+    NetworkInfoService,
     ProfileService
 } from '../..';
 import {FileService} from '../../util/file/def/file-service';
@@ -139,8 +140,10 @@ describe('ContentServiceImpl', () => {
     const mockAppInfo: Partial<AppInfo> = {
         getAppName: () => 'MOCK_APP_NAME'
     };
+    const mockNetworkInfoService: Partial<NetworkInfoService> = {};
     const mockSharedPreferences = new SharedPreferencesLocalStorage();
     const contentUpdateSizeOnDeviceTimeoutRef: Map<string, NodeJS.Timeout> = new Map();
+    const mockContainerService: Partial<Container> = {};
 
     beforeAll(() => {
         container.bind<ContentService>(InjectionTokens.CONTENT_SERVICE).to(ContentServiceImpl).inTransientScope();
@@ -159,6 +162,10 @@ describe('ContentServiceImpl', () => {
         container.bind<EventsBusService>(InjectionTokens.EVENTS_BUS_SERVICE).toConstantValue(mockEventsBusService as EventsBusService);
         container.bind<CachedItemStore>(InjectionTokens.CACHED_ITEM_STORE).toConstantValue(mockCachedItemStore as CachedItemStore);
         container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
+        container.bind<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE).toConstantValue(mockNetworkInfoService as NetworkInfoService);
+        container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(mockContainerService as Container);
+
+
 
         contentService = container.get(InjectionTokens.CONTENT_SERVICE);
     });
@@ -1471,5 +1478,42 @@ describe('ContentServiceImpl', () => {
             });
         });
     });
+
+    describe('getQuestionList', () => {
+        it('should fetch  question list', (done) => {
+            mockContainerService.get = jest.fn(() => ({
+                getQuestionList: jest.fn(() => of({
+                    id: 'sampleid'
+                })) as any
+            }))as any;
+            contentService.getQuestionList(['1','2']).subscribe(() => {
+                // assert
+                expect(mockContainerService.get).toHaveBeenCalled();
+                done();
+            });
+        })
+        
+        it('should return question set hierarchy', (done) =>{
+            mockContainerService.get = jest.fn(() => ({
+                getQuestionSetHierarchy: jest.fn(() => of({
+                    id: 'sampleid'
+                })) as any
+            }))as any;
+            contentService.getQuestionSetHierarchy('1234').subscribe(() => {
+                expect(mockContainerService.get).toHaveBeenCalled();
+                done();
+            })
+        })
+
+        it('should return question set read', (done) =>{
+            mockContainerService.get = jest.fn(() => ({
+                getQuestionSetRead: jest.fn(() => of({})) as any
+            }))as any;
+            contentService.getQuestionSetRead('1234' , {}).subscribe(() => {
+                expect(mockContainerService.get).toHaveBeenCalled();
+                done();
+            })
+        })
+    })
 
 });

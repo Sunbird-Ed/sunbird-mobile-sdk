@@ -132,9 +132,21 @@ export class SearchContentHandler {
         });
 
         if (filterValueList.length) {
-          searchFilter[facetFilter.name] = filterValueList;
+          let key = facetFilter.name;
+          switch (facetFilter.name) {
+            case 'board':
+              key = 'se_boards';
+              break;
+            case 'medium':
+              key = 'se_mediums';
+              break;
+            case 'gradeLevel':
+            case 'grade':
+              key = 'se_gradeLevels';
+              break;
+          }
+          searchFilter[key] = filterValueList;
         }
-
       });
     }
   }
@@ -143,15 +155,15 @@ export class SearchContentHandler {
     const filter =  {
       audience: (criteria.audience && criteria.audience.length > 0) ? criteria.audience : [],
       status: criteria.contentStatusArray,
-      objectType: ['Content'],
+      objectType: ['Content', 'QuestionSet'],
       contentType: (criteria.contentTypes && criteria.contentTypes.length > 0) ? criteria.contentTypes : [],
       primaryCategory: (criteria.primaryCategories && criteria.primaryCategories.length > 0) ? criteria.primaryCategories : [],
       ...((criteria.keywords && criteria.keywords.length) ? {keywords: criteria.keywords} : {}),
       ...((criteria.dialCodes && criteria.dialCodes.length) ? {dialcodes: criteria.dialCodes} : {}),
       ...((criteria.createdBy && criteria.createdBy.length) ? {createdBy: criteria.createdBy} : {}),
-      ...((criteria.grade && criteria.grade.length) ? {gradeLevel: criteria.grade} : {}),
-      medium: (criteria.medium && criteria.medium.length > 0) ? criteria.medium : [],
-      board: (criteria.board && criteria.board.length > 0) ? criteria.board : [],
+      ...((criteria.grade && criteria.grade.length) ? {se_gradeLevels: criteria.grade} : {}),
+      se_mediums: (criteria.medium && criteria.medium.length > 0) ? criteria.medium : [],
+      se_boards: (criteria.board && criteria.board.length > 0) ? criteria.board : [],
       language: (criteria.language && criteria.language.length > 0) ? criteria.language : [],
       topic: (criteria.topic && criteria.topic.length > 0) ? criteria.topic : [],
       purpose: (criteria.purpose && criteria.purpose.length > 0) ? criteria.purpose : [],
@@ -272,13 +284,14 @@ export class SearchContentHandler {
   }
 
   mapSearchResponse(previousContentCriteria: ContentSearchCriteria, searchResponse: SearchResponse,
-                    searchRequest: SearchRequest): ContentSearchResult {
-    const constentSearchResult: ContentSearchResult = {
+      searchRequest: SearchRequest): ContentSearchResult {
+      const contenDataList = (searchResponse.result.content || [] ).concat((searchResponse.result.QuestionSet || [] ));
+      const constentSearchResult: ContentSearchResult = {
       id: searchResponse.id,
       responseMessageId: searchResponse.params.resmsgid,
       filterCriteria: this.createFilterCriteria(previousContentCriteria, searchResponse.result.facets, searchRequest.filters),
       request: searchRequest,
-      contentDataList: searchResponse.result.content,
+      contentDataList: contenDataList,
       collectionDataList: searchResponse.result.collections ? searchResponse.result.collections : []
     };
     return constentSearchResult;

@@ -86,4 +86,13 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
         courseService: CourseService,
         profileService: ProfileService,
     ): ContentAggregator;
+
+
+    getQuestionList(questionIds: string[]): Observable<any>
+    
+    getQuestionSetHierarchy(data): Observable<any>;
+
+    getQuestionSetRead(contentId:string , params?: any): Observable<any>;
+
+
 }

@@ -13,6 +13,7 @@ import {
     TelemetryLogRequest,
     TelemetryShareRequest,
     TelemetryStartRequest,
+    TelemetrySummaryRequest,
     TelemetrySyncRequest
 } from './requests';
 import {Context, CorrelationData} from './telemetry-model';
@@ -58,4 +59,8 @@ export interface TelemetryService extends SdkServiceOnInitDelegate, SdkServicePr
     buildContext(): Observable<Context>;
 
     updateCampaignParameters(params: CorrelationData[]);
+
+    summary(request: TelemetrySummaryRequest): Observable<boolean>;
+
+    populateGlobalCorRelationData(params: CorrelationData[]);
 }

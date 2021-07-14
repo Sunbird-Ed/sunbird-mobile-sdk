@@ -5,7 +5,7 @@ import {
     ContentState,
 } from '@project-sunbird/client-services/services/course';
 export {ContentState} from '@project-sunbird/client-services/services/course';
-import {CachedItemRequestSourceFrom} from '../../key-value-store';
+import {CachedItemRequest, CachedItemRequestSourceFrom} from '../../key-value-store';
 
 export interface FetchEnrolledCourseRequest {
     userId: string;
@@ -95,6 +95,7 @@ export interface DisplayDiscussionForumRequest {
     forumId: string;
 }
 
-export interface GetLearnerCerificateRequest {
+export interface GetLearnerCerificateRequest extends CachedItemRequest {
     userId: string;
+    size?: number;
 }

@@ -37,7 +37,6 @@ import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {GetCertificateRequest} from '../def/get-certificate-request';
-import {DownloadCertificateRequest} from '../def/download-certificate-request';
 import {AppInfo} from '../../util/app';
 import {DownloadStatus} from '../../util/download';
 import {DownloadCertificateResponse} from '../def/download-certificate-response';
@@ -54,7 +53,11 @@ import * as qs from 'qs';
 import {GetLearnerCertificateHandler} from '../handlers/get-learner-certificate-handler';
 import {LearnerCertificate} from '../def/get-learner-certificate-response';
 import {OfflineAssessmentScoreProcessor} from './offline-assessment-score-processor';
-import {GetEnrolledCourseResponse} from "../def/get-enrolled-course-response";
+import {GetEnrolledCourseResponse} from '../def/get-enrolled-course-response';
+import {CourseCertificateManager} from '../def/course-certificate-manager';
+import {CourseCertificateManagerImpl} from './course-certificate-manager-impl';
+import {UpdateContentStateResponse} from '../def/update-content-state-response';
+import {UpdateCourseContentStateRequest} from '../def/update-course-content-state-request';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -70,6 +73,19 @@ export class CourseServiceImpl implements CourseService {
     private capturedAssessmentEvents: { [key: string]: SunbirdTelemetry.Telemetry[] | undefined } = {};
     private syncAssessmentEventsHandler: SyncAssessmentEventsHandler;
     private offlineAssessmentScoreProcessor: OfflineAssessmentScoreProcessor;
+
+    private _certificateManager?: CourseCertificateManager;
+    get certificateManager(): CourseCertificateManager {
+        if (!this._certificateManager) {
+            this._certificateManager = new CourseCertificateManagerImpl(
+                this.profileService,
+                this.fileService,
+                this.keyValueStore,
+                this.csCourseService
+            );
+        }
+        return this._certificateManager;
+    }
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -237,26 +253,6 @@ export class CourseServiceImpl implements CourseService {
             );
     }
 
-    public getCurrentProfileCourseCertificateV2(request: GetCertificateRequest): Observable<string> {
-        return this.csCourseService.getSignedCourseCertificate(request.certificate.identifier!).pipe(
-          map((r) => r.printUri)
-        );
-    }
-
-    public downloadCurrentProfileCourseCertificateV2({ fileName, blob }: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
-        return defer(async () => {
-            return this.fileService.writeFile(
-                cordova.file.externalRootDirectory + 'Download/',
-                fileName, blob as any,
-                {replace: true}
-            ).then(() => {
-                return {
-                    path: `${cordova.file.externalRootDirectory}Download/${fileName}`
-                };
-            });
-        });
-    }
-
     public downloadCurrentProfileCourseCertificate(request: GetCertificateRequest): Observable<DownloadCertificateResponse> {
         return defer(async () => {
             const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
@@ -400,7 +396,11 @@ export class CourseServiceImpl implements CourseService {
         });
     }
 
-    getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<LearnerCertificate[]> {
-        return new GetLearnerCertificateHandler(this.apiService).handle(request);
+    getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<{count: number, content: LearnerCertificate[]}> {
+        return new GetLearnerCertificateHandler(this.apiService, this.cachedItemStore).handle(request);
+    }
+
+    syncCourseProgress(request: UpdateCourseContentStateRequest): Observable<UpdateContentStateResponse> {
+        return this.csCourseService.updateContentState(request, { apiPath : '/api/course/v1'});
     }
 }

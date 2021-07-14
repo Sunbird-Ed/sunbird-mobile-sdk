@@ -35,6 +35,7 @@ import {
     RelevantContentResponse,
     RelevantContentResponsePlayer,
     SearchResponse,
+    SearchType,
 } from '..';
 import {combineLatest, defer, from, Observable, of} from 'rxjs';
 import {ApiRequestHandler, ApiService, Response} from '../../api';
@@ -84,8 +85,8 @@ import {ContentStorageHandler} from '../handlers/content-storage-handler';
 import {SharedPreferencesSetCollection} from '../../util/shared-preferences/def/shared-preferences-set-collection';
 import {SharedPreferencesSetCollectionImpl} from '../../util/shared-preferences/impl/shared-preferences-set-collection-impl';
 import {SdkServiceOnInitDelegate} from '../../sdk-service-on-init-delegate';
-import {inject, injectable} from 'inversify';
-import {InjectionTokens} from '../../injection-tokens';
+import {Container, inject, injectable} from 'inversify';
+import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
 import {catchError, map, mapTo, mergeMap, tap} from 'rxjs/operators';
@@ -98,6 +99,8 @@ import {FormService} from '../../form';
 import {CsMimeTypeFacetToMimeTypeCategoryAggregator} from '@project-sunbird/client-services/services/content/utilities/mime-type-facet-to-mime-type-category-aggregator';
 import {MimeTypeCategory} from '@project-sunbird/client-services/models/content';
 import {CourseService} from '../../course';
+import {NetworkInfoService} from '../../util/network';
+import { CsContentService } from '@project-sunbird/client-services/services/content';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -126,7 +129,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
         @inject(InjectionTokens.EVENTS_BUS_SERVICE) private eventsBusService: EventsBusService,
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
-        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo
+        @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
+        @inject(InjectionTokens.NETWORKINFO_SERVICE) private networkInfoService: NetworkInfoService,
+        @inject(InjectionTokens.CONTAINER) private container: Container
     ) {
         this.contentServiceConfig = this.sdkConfig.contentServiceConfig;
         this.appConfig = this.sdkConfig.appConfig;
@@ -610,7 +615,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
                 return apiHandler.handle(searchRequest).pipe(
                     map((searchResponse: SearchResponse) => {
-                        if (!contentSearchCriteria.facetFilters) {
+                        if (!contentSearchCriteria.facetFilters && contentSearchCriteria.searchType === SearchType.SEARCH) {
                             searchRequest.filters.contentType = [];
                             searchRequest.filters.primaryCategory = [];
                             searchRequest.filters.audience = [];
@@ -735,9 +740,22 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             this.cachedItemStore,
             courseService,
             profileService,
-            this.apiService
+            this.apiService,
+            this.networkInfoService
         );
     }
+
+      getQuestionList(questionIds: string[]): Observable<any> {
+        return this.contentServiceDelegate.getQuestionList(questionIds);
+      }
+    
+      getQuestionSetHierarchy(data) {
+        return this.contentServiceDelegate.getQuestionSetHierarchy(data);
+      }
+
+      getQuestionSetRead(contentId:string, params?:any) {
+        return this.contentServiceDelegate.getQuestionSetRead(contentId,params);
+      }
 
     private cleanupContent(importContentContext: ImportContentContext): Observable<undefined> {
         const contentDeleteList: ContentDelete[] = [];
@@ -793,5 +811,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return of(undefined);
             })
         );
+    }
+
+    private get contentServiceDelegate(): CsContentService {
+        return this.container.get(CsInjectionTokens.CONTENT_SERVICE);
     }
 }

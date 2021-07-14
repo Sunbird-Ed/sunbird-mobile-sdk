@@ -10,7 +10,7 @@ import {map} from 'rxjs/operators';
 
 export class GetFaqDetailsHandler {
     private readonly FAQ_FILE_KEY_PREFIX = 'faq-';
-    private readonly FAQ_LOCAL_KEY = 'faq-';
+    private readonly FAQ_LOCAL_KEY = 'faq-new-';
 
     constructor(
         private apiService: ApiService,
