@@ -64,6 +64,7 @@ export interface DataSourceModelMap {
             facet: string;
             aggregate?: AggregationConfig;
         }[];
+        params?: any;
     };
     'RECENTLY_VIEWED_CONTENTS': {
         type: 'RECENTLY_VIEWED_CONTENTS';
@@ -71,6 +72,12 @@ export interface DataSourceModelMap {
         mapping: {
             aggregate?: AggregationConfig;
         }[];
+    };
+    'CONTENT_DISCOVERY_BANNER': {
+        type: 'CONTENT_DISCOVERY_BANNER';
+        tag?: string;
+        values?: DataResponseMap['CONTENT_DISCOVERY_BANNER'];
+        mapping: {}[];
     };
 }
 export interface DataResponseMap {
@@ -84,6 +91,19 @@ export interface DataResponseMap {
     }[];
     'RECENTLY_VIEWED_CONTENTS': ContentsGroupedByPageSection;
     'CONTENTS': ContentsGroupedByPageSection;
+    'CONTENT_DISCOVERY_BANNER': {
+        code: string;
+        ui: {
+            background: string;
+            text: string;
+        };
+        action: {
+            type: string;
+            subType: string;
+            params: any;
+        };
+        expiry: string;
+    }[];
 }
 export declare type DataSourceType = keyof DataSourceModelMap;
 export interface AggregatorConfigField<T extends DataSourceType = any> {
@@ -94,6 +114,7 @@ export interface AggregatorConfigField<T extends DataSourceType = any> {
         description?: string;
         title: string;
         theme: any;
+        isEnabled: boolean;
     }[];
 }
 export interface ContentAggregation<T extends DataSourceType = any> {
@@ -124,6 +145,7 @@ export declare class ContentAggregator {
     constructor(searchContentHandler: SearchContentHandler, formService: FormService, contentService: ContentService, cachedItemStore: CachedItemStore, courseService: CourseService, profileService: ProfileService, apiService: ApiService, networkInfoService: NetworkInfoService);
     aggregate(request: ContentAggregatorRequest, excludeDataSrc: DataSourceType[], formRequest?: FormRequest, formFields?: AggregatorConfigField[], cacheable?: boolean): Observable<ContentAggregatorResponse>;
     private buildRecentlyViewedTask;
+    private buildContentDiscoveryBannerTask;
     private buildFacetsTask;
     private buildTrackableCollectionsTask;
     private buildContentSearchTask;

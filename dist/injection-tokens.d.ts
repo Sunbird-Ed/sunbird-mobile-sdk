@@ -52,4 +52,5 @@ export declare const InjectionTokens: {
     CLASS_ROOM_SERVICE: symbol;
     DISCUSSION_SERVICE: symbol;
     SEGMENTATION_SERVICE: symbol;
+    DEBUGGING_SERVICE: symbol;
 };

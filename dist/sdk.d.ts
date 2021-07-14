@@ -33,6 +33,7 @@ import { GroupService } from './group';
 import { GroupServiceDeprecated } from './group-deprecated';
 import { DiscussionService } from './discussion';
 import { SegmentationService } from './segmentation';
+import { DebuggingService } from './debugging';
 export declare class SunbirdSdk {
     private _container;
     private static _instance?;
@@ -75,6 +76,7 @@ export declare class SunbirdSdk {
     readonly networkQueueService: NetworkQueue;
     readonly discussionService: DiscussionService;
     readonly segmentationService: SegmentationService;
+    readonly debuggingService: DebuggingService;
     init(sdkConfig: SdkConfig): Promise<void>;
     updateTelemetryConfig(update: Partial<TelemetryConfig>): void;
     updateDeviceRegisterConfig(update: Partial<DeviceRegisterConfig>): void;

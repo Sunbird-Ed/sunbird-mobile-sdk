@@ -43,6 +43,7 @@ export declare class ProfileServiceImpl implements ProfileService {
     private static readonly KEY_USER_SESSION;
     private static readonly MERGE_SERVER_PROFILES_PATH;
     private readonly apiConfig;
+    private readonly profileServiceConfig;
     readonly managedProfileManager: ManagedProfileManager;
     constructor(container: Container, sdkConfig: SdkConfig, dbService: DbService, apiService: ApiService, cachedItemStore: CachedItemStore, keyValueStore: KeyValueStore, sharedPreferences: SharedPreferences, frameworkService: FrameworkService, fileService: FileService, deviceInfo: DeviceInfo, authService: AuthService, userService: CsUserService);
     private readonly telemetryService;

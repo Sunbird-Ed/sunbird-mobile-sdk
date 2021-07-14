@@ -22,6 +22,7 @@ export interface ContentDecorateRequest {
 }
 export interface ContentDetailRequest {
     contentId: string;
+    objectType?: string;
     emitUpdateIfAny?: boolean;
     attachFeedback?: boolean;
     attachContentAccess?: boolean;

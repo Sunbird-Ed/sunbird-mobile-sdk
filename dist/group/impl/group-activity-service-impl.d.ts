@@ -8,4 +8,5 @@ export declare class GroupActivityServiceImpl implements GroupActivityService {
     private static readonly GROUP_ACTIVITY_DATA_AGGREGATION_KEY;
     constructor(groupActivityService: CsGroupActivityService, cachedItemStore: CachedItemStore);
     getDataAggregation(request: GroupActivityDataAggregationRequest): Observable<GroupActivityDataAggregation>;
+    getDataForDashlets(hierarchyData: any, aggData: any): Observable<any>;
 }
