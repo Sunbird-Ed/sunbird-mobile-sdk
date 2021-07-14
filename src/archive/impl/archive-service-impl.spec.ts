@@ -67,6 +67,78 @@ describe('ArchiveServiceImpl', () => {
             });
         });
 
+        it('should initiate with a content working directory in cache', (done) => {
+            // arrange
+            mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
+
+            (TelemetryExportDelegate as jest.Mock<TelemetryExportDelegate>).mockImplementation(() => {
+                return {
+                    export: () => {
+                        return from([
+                            {
+                                task: 'VALIDATING',
+                                completed: []
+                            }
+                        ]);
+                    }
+                } as Partial<TelemetryExportDelegate> as TelemetryExportDelegate;
+            });
+
+            // act
+            archiveService.export({
+                objects: [{
+                    type: ArchiveObjectType.CONTENT
+                }],
+                filePath: 'some_base_path'
+            }).pipe(
+                take(1)
+            ).toPromise().catch(() => {
+                // assert
+                expect(mockFileService.createDir).toHaveBeenCalledWith(
+                    expect.stringMatching(`${cordova.file.externalCacheDirectory}`),
+                    false
+                );
+
+                done();
+            });
+        });
+
+        it('should initiate with a profile working directory in cache', (done) => {
+            // arrange
+            mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
+
+            (TelemetryExportDelegate as jest.Mock<TelemetryExportDelegate>).mockImplementation(() => {
+                return {
+                    export: () => {
+                        return from([
+                            {
+                                task: 'VALIDATING',
+                                completed: []
+                            }
+                        ]);
+                    }
+                } as Partial<TelemetryExportDelegate> as TelemetryExportDelegate;
+            });
+
+            // act
+            archiveService.export({
+                objects: [{
+                    type: ArchiveObjectType.PROFILE
+                }],
+                filePath: 'some_base_path'
+            }).pipe(
+                take(1)
+            ).toPromise().catch(() => {
+                // assert
+                expect(mockFileService.createDir).toHaveBeenCalledWith(
+                    expect.stringMatching(`${cordova.file.externalCacheDirectory}`),
+                    false
+                );
+
+                done();
+            });
+        });
+
         it('should initiate with a temporary working directory in cache', (done) => {
             // arrange
             mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
@@ -179,6 +251,78 @@ describe('ArchiveServiceImpl', () => {
                 fail(e);
             });
         });
+
+        it('should return progress sequentially till completion for zip error part', (done) => {
+            // arrange
+            mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
+            mockFileService.writeFile = jest.fn().mockImplementation(() => Promise.resolve());
+            mockTelemetryService.buildContext = jest.fn().mockImplementation(() => of({
+                pdata: new ProducerData()
+            }));
+            mockZipService.zip = jest.fn().mockImplementation((_, __, ___, ____, cb, err) => { err(); });
+
+            (TelemetryExportDelegate as jest.Mock<TelemetryExportDelegate>).mockImplementation(() => {
+                return {
+                    export: (_, __) => {
+                        return from([
+                            {
+                                task: 'VALIDATING',
+                                completed: []
+                            },
+                            {
+                                task: 'BUILDING',
+                                completed: [
+                                    {
+                                        file: 'some_file.some_extension',
+                                        contentEncoding: 'gzip'
+                                    }
+                                ]
+                            },
+                            {
+                                task: 'BUILDING',
+                                completed: [
+                                    {
+                                        file: 'some_file.some_extension',
+                                        contentEncoding: 'gzip'
+                                    },
+                                    {
+                                        file: 'some_file.some_extension',
+                                        contentEncoding: 'gzip'
+                                    }
+                                ]
+                            },
+                            {
+                                task: 'BUILDING',
+                                completed: [
+                                    {
+                                        file: 'some_file.some_extension',
+                                        contentEncoding: 'gzip'
+                                    },
+                                    {
+                                        file: 'some_file.some_extension',
+                                        contentEncoding: 'gzip'
+                                    }
+                                ]
+                            }
+                        ]);
+                    }
+                } as Partial<TelemetryExportDelegate> as TelemetryExportDelegate;
+            });
+
+            // act
+            archiveService.export({
+                objects: [{
+                    type: ArchiveObjectType.TELEMETRY
+                }],
+                filePath: 'some_base_path'
+            }).pipe(
+                reduce((acc: ArchiveExportProgress[], v) => { acc.push(v); return acc; }, [])
+            ).toPromise().catch(() => {
+                // assert
+                expect(mockZipService.zip).toHaveBeenCalled();
+                done();
+            });
+        });
     });
 
     describe('import()', () => {
@@ -198,7 +342,7 @@ describe('ArchiveServiceImpl', () => {
 
         it('should initiate with a temporary working directory in cache', (done) => {
             // arrange
-            sbutility.copyFile = jest.fn().mockImplementation((_, __, ___, cb) => { cb(); });
+            sbutility.copyFile = jest.fn().mockImplementation((_, __, ___, cb, err) => { cb(); err(); });
             mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
             mockZipService.unzip = jest.fn().mockImplementation((_, __, cb) => { cb(); });
             mockFileService.readAsText = jest.fn().mockImplementation(() => of(JSON.stringify({

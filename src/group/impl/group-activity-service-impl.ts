@@ -20,4 +20,8 @@ export class GroupActivityServiceImpl implements GroupActivityService {
           () => this.groupActivityService.getDataAggregation(request.groupId, request.activity, request.mergeGroup, request.leafNodesCount),
         );
     }
+
+    getDataForDashlets(hierarchyData, aggData): Observable<any> {
+        return this.groupActivityService.getDataForDashlets(hierarchyData, aggData);
+    }
 }

@@ -10,21 +10,23 @@ describe('ContentMapper', () => {
                 lastUpdatedOn: '12/02/20202',
                 identifier: 'sample-id',
                 mimeType: 'sample-mime-type',
+                contentType: 'Course'
             };
             const manifestVersion = 'sample-manifest-version';
 
             expect(ContentMapper.mapContentDataToContentDBEntry(contentData, manifestVersion)).toEqual(
                 {
                     audience: 'Learner',
-                    content_type: undefined,
+                    content_type: 'course',
                     identifier: 'sample-id',
-                    local_data: '{"lastUpdatedOn":"12/02/20202","identifier":"sample-id","mimeType":"sample-mime-type"}',
+                    local_data: '{"lastUpdatedOn":"12/02/20202","identifier":"sample-id","mimeType":"sample-mime-type","contentType":"Course"}',
                     manifest_version: 'sample-manifest-version',
                     mime_type: 'sample-mime-type',
                     pragma: '',
                     server_data: undefined,
                     server_last_updated_on: undefined,
-                    visibility: 'Default'
+                    visibility: 'Default',
+                    primary_category: 'course'
                 }
             );
         });
@@ -34,21 +36,23 @@ describe('ContentMapper', () => {
                 lastUpdatedOn: '12/02/20202',
                 identifier: 'sample-id',
                 mimeType: 'sample-mime-type',
+                contentType: 'resource'
             };
             const manifestVersion = '';
 
             expect(ContentMapper.mapContentDataToContentDBEntry(contentData, manifestVersion)).toEqual(
                 {
                     audience: 'Learner',
-                    content_type: undefined,
+                    content_type: 'resource',
                     identifier: 'sample-id',
                     local_data: undefined,
                     manifest_version: '',
                     mime_type: 'sample-mime-type',
                     pragma: '',
-                    server_data: '{"lastUpdatedOn":"12/02/20202","identifier":"sample-id","mimeType":"sample-mime-type"}',
+                    server_data: '{"lastUpdatedOn":"12/02/20202","identifier":"sample-id","mimeType":"sample-mime-type","contentType":"resource"}',
                     server_last_updated_on: '12/02/20202',
-                    visibility: 'Default'
+                    visibility: 'Default',
+                    primary_category: 'learning resource'
                 }
             );
         });
@@ -64,11 +68,12 @@ describe('ContentMapper', () => {
                 manifest_version: 'sample-manifest-version',
                 content_type: 'sample-content-type',
                 epoch_timestamp: 5,
-                data: '{"lastUpdatedOn":"12/02/20202","identifier":"sample-id","mimeType":"sample-mime-type", "visibility": true, "content_state": 3}',
+                data: '{"lastUpdatedOn":"12/02/20202","identifier":"sample-id","mimeType":"sample-mime-type", "visibility": true, "content_state": 3, "contentType": "textbook"}',
                 content_state: State.ARTIFACT_AVAILABLE,
                 lastUpdatedOn: '20/02/2020',
                 size_on_device: 30,
-                path: 'base-path'
+                path: 'base-path',
+                primary_category: 'digital textbook'
             };
 
             const shouldConvertBasePath = true;
@@ -77,25 +82,29 @@ describe('ContentMapper', () => {
                 {
                     basePath: '/_app_file_base-path',
                     contentData: {
+                        contentType: 'textbook',
                         content_state: 3,
                         identifier: 'sample-id',
                         lastUpdatedOn: '12/02/20202',
-                        licenseDetails: undefined,
-                        me_averageRating: undefined,
-                        me_totalRatingsCount: undefined,
                         mimeType: 'sample-mime-type',
+                        primaryCategory: 'Digital Textbook',
                         previewUrl: undefined,
                         size: undefined,
                         streamingUrl: undefined,
-                        visibility: true
+                        visibility: true,
+                        trackable: {
+                            enabled: 'No'
+                      }
                     },
-                    contentType: undefined,
+                    contentType: 'textbook',
                     identifier: 'sample-id',
                     isAvailableLocally: true,
                     isUpdateAvailable: false,
                     lastUpdatedTime: 0,
                     lastUsedTime: 5,
                     mimeType: 'sample-mime-type',
+                    name: undefined,
+                    primaryCategory: 'digital textbook',
                     referenceCount: 0,
                     sizeOnDevice: 30
                 }
@@ -111,9 +120,10 @@ describe('ContentMapper', () => {
                 manifest_version: 'sample-manifest-version',
                 content_type: 'sample-content-type',
                 epoch_timestamp: 5,
-                data: '{"size":"10KB","me_averageRating":"3","me_totalRatingsCount": 4, "streamingUrl": "url", "previewUrl": "p-url", "licenseDetails": "license"}',
+                data: '{"size":"10KB","me_averageRating":"3","me_totalRatingsCount": 4, "streamingUrl": "url", "previewUrl": "p-url", "licenseDetails": "license", "contentType": "Course"}',
                 content_state: State.ARTIFACT_AVAILABLE,
-                lastUpdatedOn: '20/02/2020'
+                lastUpdatedOn: '20/02/2020',
+                primary_category: 'textbook'
             };
 
             const shouldConvertBasePath = true;
@@ -122,27 +132,34 @@ describe('ContentMapper', () => {
                 {
                     basePath: '/_app_file_',
                     contentData: {
+                        contentType: 'Course',
                         licenseDetails: 'license',
                         me_averageRating: '3',
                         me_totalRatingsCount: 4,
                         previewUrl: 'p-url',
                         size: '10KB',
-                        streamingUrl: 'url'
+                        streamingUrl: 'url',
+                        primaryCategory: 'Course',
+                        trackable: {
+                            enabled: 'Yes'
+                        }
                     },
-                    contentType: undefined,
+                    contentType: 'course',
                     identifier: undefined,
                     isAvailableLocally: true,
                     isUpdateAvailable: false,
                     lastUpdatedTime: 0,
                     lastUsedTime: 5,
                     mimeType: undefined,
+                    name: undefined,
+                    primaryCategory: 'course',
                     referenceCount: 0,
                     sizeOnDevice: NaN
                 }
             );
         });
 
-        it('should map contentDBEntry to content for serverData', () => {
+       it('should map contentDBEntry to content for serverData', () => {
             const contentEntry = {
                 identifier: 'sample-identifier',
                 server_data: '{"lastUpdatedOn":"12/02/20202","identifier":"sample-id","mimeType":"sample-mime-type"}',
@@ -150,7 +167,8 @@ describe('ContentMapper', () => {
                 mime_type: 'sample-mime-type',
                 manifest_version: 'sample-manifest-version',
                 content_type: 'sample-content-type',
-                local_last_updated_on: '20/02/2020'
+                local_last_updated_on: '20/02/2020',
+                primary_category: 'textbook'
             };
 
             const shouldConvertBasePath = true;
@@ -159,7 +177,11 @@ describe('ContentMapper', () => {
                 contentData: {
                     identifier: 'sample-id',
                     lastUpdatedOn: '12/02/20202',
-                    mimeType: 'sample-mime-type'
+                    mimeType: 'sample-mime-type',
+                    primaryCategory: 'sample-content-type',
+                    trackable: {
+                        enabled: 'No'
+                  }
                 },
                 contentType: 'sample-content-type',
                 identifier: 'sample-identifier',
@@ -169,7 +191,9 @@ describe('ContentMapper', () => {
                 lastUsedTime: 0,
                 mimeType: 'sample-mime-type',
                 referenceCount: 0,
-                sizeOnDevice: NaN
+                sizeOnDevice: NaN,
+                name: undefined,
+                primaryCategory: 'textbook'
             });
         });
 
@@ -177,12 +201,13 @@ describe('ContentMapper', () => {
             const contentEntry = {
                 identifier: 'sample-identifier',
                 server_data: '',
-                local_data: '{"lastUpdatedOn":"12/02/20202","identifier":"sample-id","mimeType":"sample-mime-type"}',
+                local_data: '{"lastUpdatedOn":"12/02/20202","identifier":"sample-id","mimeType":"sample-mime-type","contentType":"Course"}',
                 mime_type: 'sample-mime-type',
                 manifest_version: 'sample-manifest-version',
                 content_type: 'sample-content-type',
                 local_last_updated_on: '20/02/2020',
-                data: 'sample-data'
+                data: 'sample-data',
+                primary_category: 'textbook'
             };
 
             const shouldConvertBasePath = true;
@@ -191,15 +216,22 @@ describe('ContentMapper', () => {
                 contentData: {
                     identifier: 'sample-id',
                     lastUpdatedOn: '12/02/20202',
-                    mimeType: 'sample-mime-type'
+                    mimeType: 'sample-mime-type',
+                    contentType: 'Course',
+                    primaryCategory: 'Course',
+                    trackable: {
+                        enabled: 'Yes'
+                    }
                 },
-                contentType: undefined,
+                contentType: 'course',
                 identifier: 'sample-id',
                 isAvailableLocally: false,
                 isUpdateAvailable: false,
                 lastUpdatedTime: NaN,
                 lastUsedTime: 0,
                 mimeType: 'sample-mime-type',
+                name: undefined,
+                primaryCategory: 'course',
                 referenceCount: 0,
                 sizeOnDevice: 0
             });
@@ -214,13 +246,16 @@ describe('ContentMapper', () => {
                 manifest_version: 'sample-manifest-version',
                 [ContentEntry.COLUMN_NAME_CONTENT_TYPE]: 'sample-content-type',
                 local_last_updated_on: '20/02/2020',
-                data: 'sample-data'
+                data: 'sample-data',
+                primary_category: 'textbook'
             };
 
             const shouldConvertBasePath = true;
             expect(ContentMapper.mapContentDBEntryToContent(contentEntry, shouldConvertBasePath)).toEqual({
                 basePath: '/_app_file_',
-                contentData: {identifier: 'sample-identifier', name: 'some_name', contentType: 'sample-content-type', mimeType: 'sample-mime-type'},
+                contentData: {identifier: 'sample-identifier', name: 'some_name', contentType: 'sample-content-type', mimeType: 'sample-mime-type', primaryCategory: 'sample-content-type', trackable: {
+                    enabled: 'No'
+                  }},
                 contentType: 'sample-content-type',
                 identifier: 'sample-identifier',
                 name: 'some_name',
@@ -229,6 +264,7 @@ describe('ContentMapper', () => {
                 lastUpdatedTime: NaN,
                 lastUsedTime: 0,
                 mimeType: 'sample-mime-type',
+                primaryCategory: 'sample-content-type',
                 referenceCount: 0,
                 sizeOnDevice: 0
             });
@@ -241,6 +277,7 @@ describe('ContentMapper', () => {
                 lastUpdatedOn: '12/02/20202',
                 identifier: 'sample-id',
                 mimeType: 'sample-mime-type',
+                contentType: 'Course'
             };
             const manifestVersion = 'sample-manifest-version';
             expect(ContentMapper.mapServerResponseToContent(contentData, manifestVersion)).toEqual(
@@ -249,15 +286,22 @@ describe('ContentMapper', () => {
                     contentData: {
                         identifier: 'sample-id',
                         lastUpdatedOn: '12/02/20202',
-                        mimeType: 'sample-mime-type'
+                        mimeType: 'sample-mime-type',
+                        contentType: 'Course',
+                        primaryCategory: 'Course',
+                        trackable: {
+                            enabled: 'Yes'
+                        }
                     },
-                    contentType: undefined,
+                    contentType: 'course',
                     identifier: 'sample-id',
                     isAvailableLocally: false,
                     isUpdateAvailable: false,
                     lastUpdatedTime: 0,
                     lastUsedTime: 0,
                     mimeType: 'sample-mime-type',
+                    name: undefined,
+                    primaryCategory: 'course',
                     referenceCount: 0,
                     sizeOnDevice: 0
                 }

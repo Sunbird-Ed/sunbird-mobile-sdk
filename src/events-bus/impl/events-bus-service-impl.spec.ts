@@ -1,16 +1,13 @@
 import {EventsBusServiceImpl} from './events-bus-service-impl';
 import {SdkConfig} from '../../sdk-config';
-import { Subject, of, throwError } from 'rxjs';
-import { EventsBusEvent, EventNamespace } from '..';
-import { RegisterObserverRequest } from '../def/register-observer-request';
-
-interface EventContainer {
-    namespace: string;
-    event: EventsBusEvent;
-}
+import {EventNamespace} from '..';
+import {ContentEvent, ContentEventType} from '../../content';
+import {take} from 'rxjs/operators';
+import {EventObserver} from '../def/event-observer';
+import {Observable, of} from 'rxjs';
 
 describe('EventsBusServiceImpl', () => {
-    let eventsBusServiceImpl: EventsBusServiceImpl;
+    let eventsBusService: EventsBusServiceImpl;
     const mockSdkConfig: Partial<SdkConfig> = {
         eventsBusConfig: {
             debugMode: true
@@ -18,7 +15,7 @@ describe('EventsBusServiceImpl', () => {
     };
 
     beforeAll(() => {
-        eventsBusServiceImpl = new EventsBusServiceImpl(
+        eventsBusService = new EventsBusServiceImpl(
             mockSdkConfig as SdkConfig
         );
     });
@@ -29,32 +26,149 @@ describe('EventsBusServiceImpl', () => {
     });
 
     it('should create a instance of eventsBusServiceImpl', () => {
-        expect(eventsBusServiceImpl).toBeTruthy();
+        expect(eventsBusService).toBeTruthy();
     });
 
-    it('should invoked emit', () => {
-        // arrange
-        const data: EventContainer = {
-            namespace: 'sample-name-space',
-            event: {
-                type: 'sample-type',
-                payload: {}
-            }
-        };
-        const eventbus = new Subject<EventContainer>();
-        eventbus.subscribe({next: jest.fn()});
-        // act
-        eventsBusServiceImpl.emit(data);
+    describe('onInit()', () => {
+        it('should log events if debug mode is enabled', (done) => {
+            // arrange
+            spyOn(console, 'log');
+
+            eventsBusService.onInit().pipe(
+                take(1)
+            ).subscribe(() => {
+                expect(console.log).toHaveBeenCalledWith('SDK Telemetry Events', {
+                    namespace: EventNamespace.CONTENT,
+                    event: {
+                        type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                        payload: {}
+                    }
+                });
+                done();
+            });
+
+            // act
+            eventsBusService.emit<ContentEvent>({
+                namespace: EventNamespace.CONTENT,
+                event: {
+                    type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                    payload: {}
+                }
+            });
+        });
+
+        it('should not log events if debug mode is enabled', (done) => {
+            // arrange
+            eventsBusService = new EventsBusServiceImpl({
+                eventsBusConfig: {
+                    debugMode: false
+                }
+            } as Partial<SdkConfig> as SdkConfig);
+
+            spyOn(console, 'log');
+
+            eventsBusService.onInit().pipe(
+                take(1)
+            ).subscribe(() => {
+                expect(console.log).not.toHaveBeenCalledWith('SDK Telemetry Events', {
+                    namespace: EventNamespace.CONTENT,
+                    event: {
+                        type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                        payload: {}
+                    }
+                });
+                done();
+            });
+
+            // act
+            eventsBusService.emit<ContentEvent>({
+                namespace: EventNamespace.CONTENT,
+                event: {
+                    type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                    payload: {}
+                }
+            });
+        });
+
+        it('should emit events to any registered observers', (done) => {
+            // arrange
+            spyOn(console, 'log');
+
+            eventsBusService.onInit().pipe(
+                take(1)
+            ).subscribe();
+
+            eventsBusService.registerObserver({
+                namespace: EventNamespace.CONTENT,
+                observer: new class implements EventObserver<any> {
+                    onEvent(event: any): Observable<undefined> {
+                        // assert
+                        expect(event).toEqual({
+                            type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                            payload: {}
+                        });
+                        done();
+                        return of(undefined);
+                    }
+                }
+            });
+
+            // act
+            eventsBusService.emit<ContentEvent>({
+                namespace: EventNamespace.CONTENT,
+                event: {
+                    type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                    payload: {}
+                }
+            });
+        });
     });
 
-    it('should invoked emit', () => {
-        // arrange
-        const request: RegisterObserverRequest = {
-            namespace: EventNamespace.AUTH,
-            observer: {onEvent: jest.fn(() => of())}
-        };
-        // act
-        const data = eventsBusServiceImpl.registerObserver(request);
-        expect(data).toBeUndefined();
+    describe('emit()', () => {
+        it('should be able to emit/observe an event with appropriate namespace', (done) => {
+            // arrange
+            eventsBusService.events(EventNamespace.CONTENT).pipe(
+                take(1)
+            ).subscribe((e) => {
+                // assert
+                expect(e).toEqual({
+                    type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                    payload: {}
+                });
+                done();
+            });
+
+            // act
+            eventsBusService.emit<ContentEvent>({
+                namespace: EventNamespace.CONTENT,
+                event: {
+                    type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                    payload: {}
+                }
+            });
+        });
+
+        it('should be able to observe all events without a namespace', (done) => {
+            // arrange
+            eventsBusService.events().pipe(
+                take(1)
+            ).subscribe((e) => {
+                // assert
+                expect(e).toEqual({
+                    type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                    payload: {}
+                });
+                done();
+            });
+
+            // act
+            eventsBusService.emit<ContentEvent>({
+                namespace: EventNamespace.CONTENT,
+                event: {
+                    type: ContentEventType.CONTENT_EXTRACT_COMPLETED,
+                    payload: {}
+                }
+            });
+        });
     });
 });

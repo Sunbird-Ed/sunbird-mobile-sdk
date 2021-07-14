@@ -16,7 +16,7 @@ import {
     TelemetryService,
     TelemetryShareRequest,
     TelemetryStartRequest,
-    TelemetryStat,
+    TelemetryStat, TelemetrySummaryRequest,
     TelemetrySyncRequest,
     TelemetrySyncStat
 } from '..';
@@ -63,10 +63,11 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
     private telemetryAutoSyncService?: TelemetryAutoSyncServiceImpl;
     private telemetryConfig: TelemetryConfig;
     private campaignParameters: CorrelationData[] = [];
+    private globalCdata: CorrelationData[] = [];
 
     get autoSync() {
         if (!this.telemetryAutoSyncService) {
-            this.telemetryAutoSyncService = new TelemetryAutoSyncServiceImpl( this, this.sharedPreferences);
+            this.telemetryAutoSyncService = new TelemetryAutoSyncServiceImpl(this, this.sharedPreferences);
         }
 
         return this.telemetryAutoSyncService;
@@ -108,7 +109,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
     }
 
     onInit(): Observable<undefined> {
-        return  combineLatest([
+        return combineLatest([
             defer(async () => {
                 const lastSyncTimestamp = await this.sharedPreferences.getString(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP).toPromise();
                 if (lastSyncTimestamp) {
@@ -129,22 +130,22 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
                 }, async (error) => {
                 });
             }).pipe(
-              mergeMap((error) => {
-                  if (error === 'API_TOKEN_EXPIRED') {
-                      return new ApiTokenHandler(this.sdkConfig.apiConfig, this.apiService, this.deviceInfo).refreshAuthToken().pipe(
-                        mergeMap((bearerToken) => {
-                            return this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken);
-                        }),
-                        catchError(() => of(undefined))
-                      );
-                  } else {
-                      return from(new AuthUtil(this.sdkConfig.apiConfig, this.apiService,
-                        this.sharedPreferences,
-                        this.eventsBusService).refreshSession()).pipe(
-                        catchError(() => of(undefined))
-                      );
-                  }
-              })
+                mergeMap((error) => {
+                    if (error === 'API_TOKEN_EXPIRED') {
+                        return new ApiTokenHandler(this.sdkConfig.apiConfig, this.apiService, this.deviceInfo).refreshAuthToken().pipe(
+                            mergeMap((bearerToken) => {
+                                return this.sharedPreferences.putString(ApiKeys.KEY_API_TOKEN, bearerToken);
+                            }),
+                            catchError(() => of(undefined))
+                        );
+                    } else {
+                        return from(new AuthUtil(this.sdkConfig.apiConfig, this.apiService,
+                            this.sharedPreferences,
+                            this.eventsBusService).refreshSession()).pipe(
+                            catchError(() => of(undefined))
+                        );
+                    }
+                })
             )
         ]).pipe(mapTo(undefined));
 
@@ -165,7 +166,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
     audit({env, actor, currentState, updatedProperties, type, objId, objType, objVer, correlationData, rollUp}:
               TelemetryAuditRequest): Observable<boolean> {
         const audit = new SunbirdTelemetry.Audit(env, actor, currentState, updatedProperties, type, objId,
-             objType, objVer, correlationData, rollUp);
+            objType, objVer, correlationData, rollUp);
         return this.decorateAndPersist(audit);
     }
 
@@ -228,6 +229,17 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
         const start = new SunbirdTelemetry.Start(type, deviceSpecification, loc, mode, duration, pageId, env, objId,
             objType, objVer, rollup, correlationData);
         return this.decorateAndPersist(start);
+    }
+
+    summary({
+                type, starttime, endtime, timespent, pageviews,
+                interactions, env, mode, envsummary, eventsummary, pagesummary, extra, correlationData,
+        objId, objType, objVer, rollup
+            }: TelemetrySummaryRequest): Observable<boolean> {
+        const summary = new SunbirdTelemetry.Summary(type, starttime, endtime, timespent, pageviews,
+            interactions, env, mode, envsummary, eventsummary, pagesummary, extra, correlationData,
+            objId, objType, objVer, rollup);
+        return this.decorateAndPersist(summary);
     }
 
 
@@ -301,7 +313,10 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
         ).resetDeviceRegisterTTL();
     }
 
-    sync(telemetrySyncRequest: TelemetrySyncRequest = { ignoreSyncThreshold: false, ignoreAutoSyncMode: false }): Observable<TelemetrySyncStat> {
+    sync(telemetrySyncRequest: TelemetrySyncRequest = {
+        ignoreSyncThreshold: false,
+        ignoreAutoSyncMode: false
+    }): Observable<TelemetrySyncStat> {
         return this.networkInfoService.networkStatus$.pipe(
             take(1),
             mergeMap((networkStatus) => {
@@ -366,7 +381,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
                             table: TelemetryEntry.TABLE_NAME,
                             modelJson: this.decorator.prepare(this.decorator.decorate(
                                 telemetry, profileSession, groupSession && groupSession.gid, Number(offset),
-                                this.frameworkService.activeChannelId, this.campaignParameters
+                                this.frameworkService.activeChannelId, this.campaignParameters, this.globalCdata
                             ), 1)
                         };
                         return this.dbService.insert(insertQuery).pipe(
@@ -389,10 +404,14 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
         this.campaignParameters = params;
     }
 
+    populateGlobalCorRelationData(params: CorrelationData[]) {
+        this.globalCdata = params;
+    }
+
     private getInitialUtmParameters(): Promise<CorrelationData[]> {
         return new Promise<CorrelationData[]>((resolve, reject) => {
             try {
-                sbutility.getUtmInfo((response: {val: CorrelationData[]}) => {
+                sbutility.getUtmInfo((response: { val: CorrelationData[] }) => {
                     resolve(response.val);
                 }, err => {
                     reject(err);

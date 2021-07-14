@@ -35,7 +35,7 @@ jest.mock('@project-sunbird/client-services', () => {
 });
 
 describe('AuthServiceImpl', () => {
-  let authService: AuthService;
+  let authServiceTest: AuthService;
   const container: Container = new Container();
   const mockSdkConfig: SdkConfig = {} as Partial<SdkConfig> as SdkConfig;
   const mockApiService: ApiService = instance(mock<ApiService>());
@@ -497,6 +497,121 @@ describe('AuthServiceImpl', () => {
             }
           }));
           done();
+        });
+      });
+    });
+
+    describe('accessTokenNearingExpiry', () => {
+      describe('on app init', () => {
+        it('should check if accessTokenNearingExpiry and not refresh accessToken if accessTokenNearingExpiry missing', (done) => {
+          // arrange
+          const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
+          const mockAuthSession = {access_token: 'some_token', managed_access_token: 'some_managed_token'};
+          const mockProfileSession = {uid: 'some_uid'};
+          mockSharedPreferences.addListener = jest.fn().mockImplementation((_, listener) => {
+          });
+          spyOn(authService, 'getSession').and.returnValue(of(mockAuthSession));
+          spyOn(authService, 'refreshSession').and.returnValue(of());
+          mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify(mockProfileSession)));
+
+          // act
+          authService.onInit().subscribe(() => {
+            // assert
+            expect(authService.refreshSession).not.toHaveBeenCalled();
+            done();
+          });
+        });
+
+        it('should check if accessTokenNearingExpiry and not refresh accessToken if false', (done) => {
+          // arrange
+          const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
+          const mockAuthSession = {
+            access_token: 'some_token',
+            managed_access_token: 'some_managed_token',
+            accessTokenExpiresOn: Date.now() + ((1000 * 60 * 60) * 2)
+          };
+          const mockProfileSession = {uid: 'some_uid'};
+          mockSharedPreferences.addListener = jest.fn().mockImplementation((_, listener) => {
+          });
+          spyOn(authService, 'getSession').and.returnValue(of(mockAuthSession));
+          spyOn(authService, 'refreshSession').and.returnValue(of());
+          mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify(mockProfileSession)));
+
+          // act
+          authService.onInit().subscribe(() => {
+            // assert
+            expect(authService.refreshSession).not.toHaveBeenCalled();
+            done();
+          });
+        });
+
+        it('should check if accessTokenNearingExpiry and refresh accessToken if true', (done) => {
+          // arrange
+          const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
+          const mockAuthSession = {
+            access_token: 'some_token',
+            managed_access_token: 'some_managed_token',
+            accessTokenExpiresOn: Date.now() + ((1000 * 60 * 60) / 2)
+          };
+          const mockProfileSession = {uid: 'some_uid'};
+          mockSharedPreferences.addListener = jest.fn().mockImplementation((_, listener) => {
+          });
+          spyOn(authService, 'getSession').and.returnValue(of(mockAuthSession));
+          spyOn(authService, 'refreshSession').and.returnValue(of());
+          mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify(mockProfileSession)));
+
+          // act
+          authService.onInit().subscribe(() => {
+            // assert
+            expect(authService.refreshSession).toHaveBeenCalled();
+            done();
+          });
+        });
+      });
+
+      describe('on app resume', () => {
+        it('should check if accessTokenNearingExpiry and refresh accessToken if true', (done) => {
+          // arrange
+          let afterResume = false;
+          const authServiceInstance = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
+          const mockProfileSession = {uid: 'some_uid'};
+          mockSharedPreferences.addListener = jest.fn().mockImplementation((_, listener) => {
+          });
+          spyOn(authServiceInstance, 'getSession').and.callFake(() => {
+            if (!afterResume) {
+              return of({
+                access_token: 'some_token',
+                managed_access_token: 'some_managed_token',
+                accessTokenExpiresOn: Date.now() + ((1000 * 60 * 60) * 2)
+              });
+            } else {
+              return of({
+                access_token: 'some_token',
+                managed_access_token: 'some_managed_token',
+                accessTokenExpiresOn: Date.now() + ((1000 * 60 * 60) / 2)
+              });
+            }
+          });
+          spyOn(authServiceInstance, 'refreshSession').and.returnValue(of());
+          mockSharedPreferences.getString = jest.fn().mockImplementation(() => of(JSON.stringify(mockProfileSession)));
+
+          // act
+          authServiceInstance.onInit().subscribe(() => {
+            // assert
+            if (!afterResume) {
+              expect(authServiceInstance.refreshSession).not.toHaveBeenCalled();
+            }
+
+            if (afterResume) {
+              expect(authServiceInstance.refreshSession).toHaveBeenCalled();
+              done();
+            }
+          });
+
+          setTimeout(() => {
+            afterResume = true;
+            document.dispatchEvent(new Event('resume'));
+          }, 1000);
         });
       });
     });

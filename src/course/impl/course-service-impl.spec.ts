@@ -7,7 +7,7 @@ import {
     EnrollCourseRequest,
     GetContentStateRequest,
     UnenrollCourseRequest,
-    UpdateContentStateRequest
+    UpdateContentStateRequest, UpdateContentStateResponse, UpdateCourseContentStateRequest
 } from '..';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
@@ -27,12 +27,13 @@ import {CsCourseService} from '@project-sunbird/client-services/services/course'
 import {FileService} from '../../util/file/def/file-service';
 import {NetworkQueue} from '../../api/network-queue';
 import {UpdateContentStateApiHandler} from '../handlers/update-content-state-api-handler';
-import {DownloadCertificateRequest} from '../def/download-certificate-request';
+import {GetCertificateRequest} from '../def/get-certificate-request';
 import {NoCertificateFound} from '../errors/no-certificate-found';
 import {CertificateAlreadyDownloaded} from '../errors/certificate-already-downloaded';
 import {ContentService, DownloadStatus, GenerateAttemptIdRequest} from '../..';
 import {EnrollCourseHandler} from '../handlers/enroll-course-handler';
 import {GetContentStateHandler} from '../handlers/get-content-state-handler';
+import { GetLearnerCertificateHandler } from '../handlers/get-learner-certificate-handler';
 
 jest.mock('../handlers/offline-content-state-handler');
 jest.mock('../handlers/sync-assessment-events-handler');
@@ -42,6 +43,7 @@ jest.mock('../errors/certificate-already-downloaded');
 jest.mock('../handlers/update-content-state-api-handler');
 jest.mock('../handlers/enroll-course-handler');
 jest.mock('../handlers/get-content-state-handler');
+jest.mock('../handlers/get-learner-certificate-handler');
 
 describe('CourseServiceImpl', () => {
     let courseService: CourseService;
@@ -81,7 +83,10 @@ describe('CourseServiceImpl', () => {
         })
     };
     const mockCachedItemStore: Partial<CachedItemStore> = {};
-    const mockCsCourseService: Partial<CsCourseService> = {};
+    const mockCsCourseService: Partial<CsCourseService> = {
+        updateContentState: jest.fn().mockImplementation(() => {
+        })
+    };
     const mockContentService: Partial<ContentService> = {};
 
     const mockNetworkQueue: Partial<NetworkQueue> = {
@@ -103,6 +108,7 @@ describe('CourseServiceImpl', () => {
         container.bind<NetworkQueue>(InjectionTokens.NETWORK_QUEUE).toConstantValue(mockNetworkQueue as NetworkQueue);
         container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(container);
 
+
         (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockImplementation(() => {
             return mockSyncAssessmentEventsHandler as Partial<SyncAssessmentEventsHandler> as SyncAssessmentEventsHandler;
         });
@@ -120,6 +126,7 @@ describe('CourseServiceImpl', () => {
         (UpdateContentStateApiHandler as any as jest.Mock<UpdateContentStateApiHandler>).mockClear();
         (EnrollCourseHandler as jest.Mock<EnrollCourseHandler>).mockClear();
         (GetContentStateHandler as jest.Mock<GetContentStateHandler>).mockClear();
+        (GetLearnerCertificateHandler as any as jest.Mock<GetLearnerCertificateHandler>).mockClear();
     });
 
     it('should return instance from container', () => {
@@ -140,10 +147,17 @@ describe('CourseServiceImpl', () => {
         }));
         // act
         courseService.getBatchDetails(request).subscribe(() => {
+            // assert
             expect(mockApiService.fetch).toHaveBeenCalled();
             done();
         });
-        // assert
+    });
+
+    describe('certificateManager', () => {
+        it('should be able to acquire an instance of CourseCertificateManager from courseService', () => {
+            // assert
+            expect(courseService.certificateManager).toBeTruthy();
+        });
     });
 
    describe('updateContentState', () => {
@@ -203,7 +217,6 @@ describe('CourseServiceImpl', () => {
             batchId: 'SAMPLE_BATCH_ID',
             result: 'SOME_RESULT',
             grade: 'SOME_GRADE',
-            score: 'SOME_SCORE'
         };
         spyOn(mockApiService, 'fetch').and.returnValue(of({response: {body: {result: 'FAILED'}}}));
         spyOn(mockKeyValueStore, 'getValue').and.returnValue(of('MOCK_KEY_VALUE'));
@@ -313,29 +326,58 @@ describe('CourseServiceImpl', () => {
         });
     });
 
-    it('should enroll a course store it to noSql and update getEnrolledCourses', (done) => {
-        // arrange
-        const request: EnrollCourseRequest = {
-            userId: 'SAMPLE_USER_ID',
-            courseId: 'SAMPLE_COURSE_ID',
-            batchId: 'SAMPLE_BATCH_ID'
-        };
-        sharePreferencesMock.putString = jest.fn(() => of(undefined));
-        (EnrollCourseHandler as any as jest.Mock<EnrollCourseHandler>).mockImplementation(() => {
-            return {
-                handle: jest.fn(() => of(true))
-            } as Partial<EnrollCourseHandler> as EnrollCourseHandler;
+    describe('enrollCourse()', () => {
+        it('should cache context and update getEnrolledCourses when enrol successful', (done) => {
+            // arrange
+            const request: EnrollCourseRequest = {
+                userId: 'SAMPLE_USER_ID',
+                courseId: 'SAMPLE_COURSE_ID',
+                batchId: 'SAMPLE_BATCH_ID'
+            };
+            sharePreferencesMock.putString = jest.fn(() => of(undefined));
+            (EnrollCourseHandler as any as jest.Mock<EnrollCourseHandler>).mockImplementation(() => {
+                return {
+                    handle: jest.fn(() => of(true))
+                } as Partial<EnrollCourseHandler> as EnrollCourseHandler;
+            });
+            jest.spyOn(courseService, 'getEnrolledCourses').mockImplementation(() => {
+                return of([{id: 'do-123'}]);
+            });
+            // act
+            courseService.enrollCourse(request).subscribe((result) => {
+                // assert
+                expect(result).toBeTruthy();
+                expect(sharePreferencesMock.putString).toHaveBeenCalled();
+                expect(courseService.getEnrolledCourses).toHaveBeenCalled();
+                done();
+            });
         });
-        jest.spyOn(courseService, 'getEnrolledCourses').mockImplementation(() => {
-            return of([{id: 'do-123'}]);
+
+        it('should not cache context nor update getEnrolledCourses when enrol fails', (done) => {
+            // arrange
+            const request: EnrollCourseRequest = {
+                userId: 'SAMPLE_USER_ID',
+                courseId: 'SAMPLE_COURSE_ID',
+                batchId: 'SAMPLE_BATCH_ID'
+            };
+            sharePreferencesMock.putString = jest.fn(() => of(undefined));
+            (EnrollCourseHandler as any as jest.Mock<EnrollCourseHandler>).mockImplementation(() => {
+                return {
+                    handle: jest.fn(() => of(false))
+                } as Partial<EnrollCourseHandler> as EnrollCourseHandler;
+            });
+            jest.spyOn(courseService, 'getEnrolledCourses').mockImplementation(() => {
+                return of([{id: 'do-123'}]);
+            });
+            // act
+            courseService.enrollCourse(request).subscribe((result) => {
+                // assert
+                expect(result).toBeFalsy();
+                expect(sharePreferencesMock.putString).not.toHaveBeenCalled();
+                expect(courseService.getEnrolledCourses).not.toHaveBeenCalled();
+                done();
+            });
         });
-        // act
-        courseService.enrollCourse(request).subscribe(() => {
-            expect(sharePreferencesMock.putString).toHaveBeenCalled();
-            expect(courseService.getEnrolledCourses).toHaveBeenCalled();
-            done();
-        });
-        // assert
     });
 
     describe('getContentState', () => {
@@ -356,7 +398,7 @@ describe('CourseServiceImpl', () => {
             mockKeyValueStore.getValue = jest.fn(() => of(undefined));
             (GetContentStateHandler as jest.Mock<GetContentStateHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of('{"id": "do-123"}'))
+                    handle: jest.fn(() => of({ contentList: [] }))
                 } as Partial<GetContentStateHandler> as GetContentStateHandler;
             });
             mockKeyValueStore.setValue = jest.fn(() => of(true));
@@ -386,7 +428,7 @@ describe('CourseServiceImpl', () => {
             mockKeyValueStore.getValue = jest.fn(() => of(undefined));
             (GetContentStateHandler as jest.Mock<GetContentStateHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(undefined))
+                    handle: jest.fn(() => of({ contentList: [] }))
                 } as Partial<GetContentStateHandler> as GetContentStateHandler;
             });
             // act
@@ -442,7 +484,7 @@ describe('CourseServiceImpl', () => {
             mockKeyValueStore.getValue = jest.fn(() => of(JSON.stringify({result: {courses: [{courseId: 'Course-Id'}]}})));
             (GetContentStateHandler as jest.Mock<GetContentStateHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of('{"id": "do-123"}'))
+                    handle: jest.fn(() => of({ contentList: [] }))
                 } as Partial<GetContentStateHandler> as GetContentStateHandler;
             });
             mockKeyValueStore.setValue = jest.fn(() => of(true));
@@ -472,7 +514,7 @@ describe('CourseServiceImpl', () => {
             mockKeyValueStore.getValue = jest.fn(() => of('{"courseId": "do-123"}'));
             (GetContentStateHandler as jest.Mock<GetContentStateHandler>).mockImplementation(() => {
                 return {
-                    handle: jest.fn(() => of(undefined))
+                    handle: jest.fn(() => of(undefined as any))
                 } as Partial<GetContentStateHandler> as GetContentStateHandler;
             });
             // act
@@ -497,7 +539,7 @@ describe('CourseServiceImpl', () => {
                     getLocalContentStateResponse: jest.fn(() => of({contentList: [{
                         status: 2,
                         contentId: 'content-id'
-                    }]}))
+                    }] as any}))
                 } as Partial<OfflineContentStateHandler> as OfflineContentStateHandler;
             });
             mockKeyValueStore.getValue = jest.fn(() => of(JSON.stringify({result: {courses: [{courseId: 'Course-Id',
@@ -566,7 +608,7 @@ describe('CourseServiceImpl', () => {
 
     describe('downloadCurrentProfileCourseCertificate', () => {
         it('should return course which does not have certificate', (done) => {
-            const request: DownloadCertificateRequest = {
+            const request: GetCertificateRequest = {
                 courseId: 'sample-course-id',
                 certificate: {
                     name: 'sample-certificate',
@@ -608,7 +650,7 @@ describe('CourseServiceImpl', () => {
         });
 
         it('should return DownloadCertificateResponse if certificate ont found', (done) => {
-            const request: DownloadCertificateRequest = {
+            const request: GetCertificateRequest = {
                 courseId: 'sample-course-id',
                 certificate: {
                     name: 'sample-certificate',
@@ -650,7 +692,7 @@ describe('CourseServiceImpl', () => {
         });
 
         it('should return DownloadCertificateResponse if certificate already downloaded', (done) => {
-            const request: DownloadCertificateRequest = {
+            const request: GetCertificateRequest = {
                 courseId: 'sample-course-id',
                 certificate: {
                     name: 'sample-certificate',
@@ -705,7 +747,7 @@ describe('CourseServiceImpl', () => {
         });
 
         it('should return DownloadCertificateResponse if certificate already downloaded for catch part and enqueue is error', (done) => {
-            const request: DownloadCertificateRequest = {
+            const request: GetCertificateRequest = {
                 courseId: 'sample-course-id',
                 certificate: {
                     name: 'sample-certificate',
@@ -765,7 +807,7 @@ describe('CourseServiceImpl', () => {
         });
 
         it('should return DownloadCertificateResponse if certificate already downloaded for catch part enqueue is downloadId', (done) => {
-            const request: DownloadCertificateRequest = {
+            const request: GetCertificateRequest = {
                 courseId: 'sample-course-id',
                 certificate: {
                     name: 'sample-certificate',
@@ -833,7 +875,7 @@ describe('CourseServiceImpl', () => {
         });
 
         it('should return DownloadCertificateResponse if certificate already downloaded for catch partand quary is entries', (done) => {
-            const request: DownloadCertificateRequest = {
+            const request: GetCertificateRequest = {
                 courseId: 'sample-course-id',
                 certificate: {
                     name: 'sample-certificate',
@@ -966,50 +1008,175 @@ describe('CourseServiceImpl', () => {
         courseService.generateAssessmentAttemptId(request);
     });
 
-    describe('downloadCurrentProfileCourseCertificateV2', () => {
-        it('should return message if certifacte is not found', (done) => {
-            // arrange
-            const request: DownloadCertificateRequest = {
-                courseId: 'sample-course-id',
-                certificate: {
-                    name: 'sample-certificate',
-                    lastIssuedOn: 'some-time',
-                    token: 'some-token'
-                }
-            };
-            mockProfileService.getActiveProfileSession = jest.fn(() => of({
-                managedSession: {
-                    uid: 'sample-uid'
-                },
-                uid: 'sample-uid'
-            })) as any;
-            const mockBlob = new Blob();
-            const mockDataProvider = (_, callback) => {
-                callback(mockBlob);
-            };
-            jest.spyOn(courseService, 'getEnrolledCourses').mockImplementation(() => {
-                return of([{
-                    identifier: 'do-123',
-                    status: 2,
-                    courseId: 'sample-course-id',
-                    certificates: [{
-                        name: 'sample-certificate',
-                        identifier: 'sample-id'
-                    }]
-                }]) as any;
+    describe('displayDiscussionForum', () => {
+        describe('when no loggedIn session found', () => {
+            it('should do nothing and resolve with false', (done) => {
+                // arrange
+                mockAuthService.getSession = jest.fn(() => of(undefined));
+                spyOn(cordova.InAppBrowser, 'open').and.callThrough();
+
+                // act
+                courseService.displayDiscussionForum({
+                    forumId: '17'
+                }).subscribe((result) => {
+                    // assert
+                    expect(result).toEqual(false);
+                    expect(cordova.InAppBrowser.open).not.toHaveBeenCalled();
+                    done();
+                });
             });
-            mockFileService.exists = jest.fn(() => Promise.reject({}));
-            mockCsCourseService.getSignedCourseCertificate = jest.fn(() => of({printUri: 'sample-print-uri'}));
-            mockFileService.writeFile = jest.fn(() => Promise.resolve('sample-file'));
+        });
+
+        describe('when MUA loggedIn session found', () => {
+            it('should open inAppBrowser with appropriate url and resolve with true', (done) => {
+                // arrange
+                mockAuthService.getSession = jest.fn(() => of({
+                    access_token: 'SOME_LUA_ACCESS_TOKEN',
+                    refresh_token: 'SOME_LUA_REFRESH_TOKEN',
+                    userToken: 'SOME_LUA_USER_TOKEN',
+                    managed_access_token: 'SOME_MUA_ACCESS_TOKEN',
+                }));
+                spyOn(cordova.InAppBrowser, 'open').and.callThrough();
+
+                // act
+                courseService.displayDiscussionForum({
+                    forumId: '17'
+                }).subscribe((result) => {
+                    // assert
+                    expect(result).toEqual(true);
+                    expect(cordova.InAppBrowser.open).toHaveBeenCalledWith(
+                        'SAMPLE_HOST/discussions/auth/sunbird-oidc/callback?access_token=SOME_MUA_ACCESS_TOKEN&returnTo=%2Fcategory%2F17',
+                        expect.any(String),
+                        expect.any(String),
+                    );
+                    done();
+                });
+            });
+        });
+
+        describe('when LUA loggedIn session found', () => {
+            it('should open inAppBrowser with appropriate url and resolve with true', (done) => {
+                // arrange
+                mockAuthService.getSession = jest.fn(() => of({
+                    access_token: 'SOME_LUA_ACCESS_TOKEN',
+                    refresh_token: 'SOME_LUA_REFRESH_TOKEN',
+                    userToken: 'SOME_LUA_USER_TOKEN',
+                }));
+                spyOn(cordova.InAppBrowser, 'open').and.callThrough();
+
+                // act
+                courseService.displayDiscussionForum({
+                    forumId: '17'
+                }).subscribe((result) => {
+                    // assert
+                    expect(result).toEqual(true);
+                    expect(cordova.InAppBrowser.open).toHaveBeenCalledWith(
+                        'SAMPLE_HOST/discussions/auth/sunbird-oidc/callback?access_token=SOME_LUA_ACCESS_TOKEN&returnTo=%2Fcategory%2F17',
+                        expect.any(String),
+                        expect.any(String),
+                    );
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('getLearnerCertificates', () => {
+        it('should return the learner certificate response', (done) => {
+            const request: CourseBatchesRequest = {
+                filters: {
+                    courseId: 'SAMPLE_COURSE_ID'
+                },
+                fields: ['SAMPLE_FIELDS']
+            };
+            // arrange
+            (GetLearnerCertificateHandler as any as jest.Mock<GetLearnerCertificateHandler>).mockImplementation(() => {
+                return {
+                    handle: jest.fn(() => of({
+                        content: [
+                            {
+                                _index: 'certv3',
+                                _type: '_doc',
+                                _source: {
+                                    pdfUrl: 'https://preprod.ntp.net.in/certs/0126796199493140480_01311551965210214433/dba7b300-0d1f-11eb-a8a5-d38095427bb6.pdf',
+                                    data: {
+                                        badge: {
+                                            name: 'PDF course -2509',
+                                            issuer: {
+                                                name: 'ncert'
+                                            }
+                                        },
+                                        issuedOn: '2020-10-13T00:00:00Z'
+                                    },
+                                    related: {
+                                        courseId: 'do_2131155111898644481643'
+                                    }
+                                },
+                                _id: 'dfea364a-406a-4b15-bda0-7ff42460af36',
+                                _score: 37.907104
+                            }
+                        ]
+                    })) as any,
+                } as Partial<GetLearnerCertificateHandler> as GetLearnerCertificateHandler;
+            });
+            mockApiService.fetch = jest.fn(() => of({
+                body: {
+                    result: {
+                        response: { content: [
+                            {
+                                _index: 'certv3',
+                                _type: '_doc',
+                                _source: {
+                                    pdfUrl: 'https://preprod.ntp.net.in/certs/0126796199493140480_01311551965210214433/dba7b300-0d1f-11eb-a8a5-d38095427bb6.pdf',
+                                    data: {
+                                        badge: {
+                                            name: 'PDF course -2509',
+                                            issuer: {
+                                                name: 'ncert'
+                                            }
+                                        },
+                                        issuedOn: '2020-10-13T00:00:00Z'
+                                    },
+                                    related: {
+                                        courseId: 'do_2131155111898644481643'
+                                    }
+                                },
+                                _id: 'dfea364a-406a-4b15-bda0-7ff42460af36',
+                                _score: 37.907104
+                            }
+                        ]}
+                    }
+                }
+            }))as any;
+
             // act
-            courseService.downloadCurrentProfileCourseCertificateV2(request, mockDataProvider).subscribe(() => {
+            courseService.getLearnerCertificates({
+                userId: 'sample_user_id'
+            }).subscribe((result) => {
                 // assert
-                expect(mockFileService.exists).toHaveBeenCalled();
-                expect(mockCsCourseService.getSignedCourseCertificate).toHaveBeenCalled();
-                expect(mockFileService.writeFile).toHaveBeenCalled();
+               expect(result.content.length).toEqual(1);
                 done();
-            }, (e) => {
-                fail(e);
+            });
+        });
+    });
+
+    describe('syncCourseProgress', () => {
+        it('should return the updateContentState  response', (done) => {
+            const request: UpdateCourseContentStateRequest = {
+                userId: 'SAMPLE_USER_ID',
+                courseId: 'SAMPLE_COURSE_ID',
+                batchId: 'SAMPLE_BATCH_ID'
+            };
+            // arrange
+            mockCsCourseService.updateContentState = jest.fn(() => of({
+               response: 'SUCCESS'
+            }));
+
+            // act
+            courseService.syncCourseProgress(request).subscribe((result) => {
+                // assert
+                expect(result.response).toEqual('SUCCESS');
+                done();
             });
         });
     });

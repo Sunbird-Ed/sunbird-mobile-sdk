@@ -66,13 +66,6 @@ export class ValidateEcar {
             const item = e as any;
             const identifier = item.identifier;
             const visibility = ContentUtil.readVisibility(item);
-            const compatibilityLevel = ContentUtil.readCompatibilityLevel(item);
-            if (visibility === Visibility.DEFAULT
-                && !ContentUtil.isCompatible(this.appConfig, compatibilityLevel)) {
-                this.skipContent(importContext, identifier, visibility, ContentImportStatus.NOT_COMPATIBLE, items);
-                continue;
-            }
-
             const status = item.status;
             const isDraftContent: boolean = ContentUtil.isDraftContent(status);
             // Draft content expiry .To prevent import of draft content if the expires date is lesser than from the current date.

@@ -1,20 +1,20 @@
 import {AuthService, OAuthSession, SessionProvider} from '..';
 import {ApiConfig, ApiService} from '../../api';
 import {AuthUtil} from '../util/auth-util';
-import {from, Observable} from 'rxjs';
+import {combineLatest, defer, EMPTY, from, fromEvent, merge, Observable} from 'rxjs';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {EventsBusService} from '../../events-bus';
 import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
-import {mergeMap} from 'rxjs/operators';
+import {distinctUntilChanged, map, mapTo, mergeMap} from 'rxjs/operators';
 import {CsModule} from '@project-sunbird/client-services';
 import {AuthKeys, ProfileKeys} from '../../preference-keys';
 import {ProfileSession} from '../../profile';
 
 @injectable()
 export class AuthServiceImpl implements AuthService {
-
+    private static readonly ACCESS_TOKEN_NEARING_EXPIRY_DELTA = 1000 * 60 * 60;
     private authUtil: AuthUtil;
     private apiConfig: ApiConfig;
 
@@ -69,7 +69,8 @@ export class AuthServiceImpl implements AuthService {
             CsModule.instance.updateConfig(CsModule.instance.config);
         });
 
-        return this.getSession().pipe(
+        return combineLatest([
+          defer(() => this.getSession()).pipe(
             mergeMap(async (session) => {
                 if (!session) {
                     return undefined;
@@ -82,6 +83,18 @@ export class AuthServiceImpl implements AuthService {
 
                 return undefined;
             })
+          ),
+          defer(() => this.onAccessTokenNearingExpiry()).pipe(
+            mergeMap(async (shouldRefresh) => {
+                if (shouldRefresh) {
+                    return this.refreshSession().toPromise();
+                }
+
+                return undefined;
+            })
+          )
+        ]).pipe(
+          mapTo(undefined)
         );
     }
 
@@ -102,5 +115,32 @@ export class AuthServiceImpl implements AuthService {
 
     refreshSession(): Observable<void> {
         return from(this.authUtil.refreshSession());
+    }
+
+    onAccessTokenNearingExpiry(): Observable<boolean> {
+        const initialSession$ = defer(() => this.getSession());
+        const consecutiveSession$ = new Observable((observer) => {
+            document.addEventListener('resume', () => {
+                setTimeout(() => {
+                    observer.next();
+                }, 0);
+            }, false);
+        }).pipe(
+          mergeMap(() => this.getSession())
+        );
+
+        return merge(
+          initialSession$,
+          consecutiveSession$
+        ).pipe(
+          map((session) => {
+              if (!session || !session.accessTokenExpiresOn) {
+                  return false;
+              }
+
+              return session.accessTokenExpiresOn - Date.now() < AuthServiceImpl.ACCESS_TOKEN_NEARING_EXPIRY_DELTA;
+          }),
+          distinctUntilChanged()
+        );
     }
 }

@@ -25,6 +25,9 @@ export * from './error';
 export * from './codepush-experiment';
 export * from './faq';
 export * from './archive';
+export * from './discussion';
+export * from './segmentation';
+export * from './debugging';
 // utils
 export * from './util/shared-preferences';
 export * from './util/download';

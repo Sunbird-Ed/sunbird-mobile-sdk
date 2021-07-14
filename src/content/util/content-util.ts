@@ -1,4 +1,4 @@
-import {ContentData, HierarchyInfo} from '../def/content';
+import {ContentData, HierarchyInfo, TrackingEnabled} from '../def/content';
 import {ContentDisposition, ContentEncoding, ContentStatus, MimeType, State, Visibility} from './content-constants';
 import {Rollup} from '../../telemetry';
 import {AppConfig} from '../../api/config/app-config';
@@ -7,6 +7,8 @@ import {NumberUtil} from '../../util/number-util';
 import {ArrayUtil} from '../../util/array-util';
 import * as dayjs from 'dayjs';
 import {ChildContent} from '..';
+import {CsPrimaryCategoryMapper} from '@project-sunbird/client-services/services/content/utilities/primary-category-mapper';
+import { CsContentType } from '@project-sunbird/client-services/services/content';
 
 export class ContentUtil {
     public static defaultCompatibilityLevel = 1;
@@ -169,6 +171,29 @@ export class ContentUtil {
         }
         return contentType;
     }
+
+    public static readPrimaryCategory(contentData): string {
+        let primaryCategory: string = contentData.primaryCategory;
+        if (primaryCategory) {
+            primaryCategory = primaryCategory.toLowerCase();
+        } else {
+            primaryCategory = CsPrimaryCategoryMapper.getPrimaryCategory(
+              contentData.contentType.toLowerCase(), contentData.mimeType, contentData.resourceType).toLowerCase();
+        }
+        return primaryCategory;
+    }
+
+    public static readPrimaryCategoryServer(contentData): string {
+        let primaryCategory: string = contentData.primaryCategory;
+        if (primaryCategory) {
+            primaryCategory = primaryCategory;
+        } else {
+            primaryCategory = CsPrimaryCategoryMapper.getPrimaryCategory(
+              contentData.contentType.toLowerCase(), contentData.mimeType, contentData.resourceType);
+        }
+        return primaryCategory;
+    }
+
 
     public static readAudience(contentData): string {
         const audience = contentData.audience;
@@ -488,7 +513,7 @@ export class ContentUtil {
     }
 
     public static constructContentDBModel(identifier, manifestVersion, localData, mimeType, contentType, visibility, path, refCount,
-                                          contentState, audience, pragma, sizeOnDevice, board, medium, grade): ContentEntry.SchemaMap {
+        contentState, audience, pragma, sizeOnDevice, board, medium, grade, primaryCategory): ContentEntry.SchemaMap {
         return {
             [ContentEntry.COLUMN_NAME_IDENTIFIER]: identifier,
             [ContentEntry.COLUMN_NAME_SERVER_DATA]: '',
@@ -506,7 +531,8 @@ export class ContentUtil {
             [ContentEntry.COLUMN_NAME_LOCAL_LAST_UPDATED_ON]: dayjs().format(),
             [ContentEntry.COLUMN_NAME_BOARD]: ContentUtil.getContentAttribute(board),
             [ContentEntry.COLUMN_NAME_MEDIUM]: ContentUtil.getContentAttribute(medium),
-            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade)
+            [ContentEntry.COLUMN_NAME_GRADE]: ContentUtil.getContentAttribute(grade),
+            [ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY]: primaryCategory
         };
     }
 
@@ -575,6 +601,29 @@ export class ContentUtil {
 
     private static isContentMetadataPresentWithoutViralityMetadata(localData): boolean {
         return !Boolean((localData['contentMetaData'])['virality']);
+    }
+
+    public static isTrackable(content): number {
+        if (content.trackable && typeof (content.trackable) === 'string') {
+            content.trackable = JSON.parse(content.trackable);
+        }
+        if (content.trackable && content.trackable.enabled) {
+            if (content.trackable.enabled === TrackingEnabled.YES) {
+                return 1;
+            } else if (content.mimeType === MimeType.COLLECTION) {
+                return 0;
+            } else {
+                return -1;
+            }
+        } else {
+            if (content.contentType.toLowerCase() === CsContentType.COURSE.toLowerCase()) {
+                return 1;
+            } else if (content.mimeType === MimeType.COLLECTION) {
+                return 0;
+            } else {
+                return -1;
+            }
+        }
     }
 
 }

@@ -46,7 +46,8 @@ describe('DeviceMemoryCheck', () => {
             manifest_version: 'MAINFEST_VERSION',
             content_type: 'CONTENT_TYPE',
             content_state: 2,
-            path: 'SAMPLE_PATH'
+            path: 'SAMPLE_PATH',
+            primary_category: 'textbook'
         }];
         const dupContents: MoveContentResponse[] = [
             {

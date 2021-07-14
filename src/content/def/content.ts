@@ -3,7 +3,9 @@ import {Rollup} from '../../telemetry';
 import {ContentAccess} from '../../profile';
 import {ContentMarker} from './response';
 
-export {Content as ContentData, LicenseDetails, OriginData} from '@project-sunbird/client-services/models';
+export {
+    Content as ContentData, LicenseDetails, OriginData, Trackable, TrackingEnabled
+} from '@project-sunbird/client-services/models/content';
 
 export interface Content {
     identifier: string;
@@ -24,6 +26,7 @@ export interface Content {
     contentFeedback?: ContentFeedback[];
     contentAccess?: ContentAccess[];
     contentMarker?: ContentMarker[];
+    primaryCategory?: string;
 }
 
 export interface ContentFeedback {
@@ -43,6 +46,7 @@ export interface ContentFeedbackFilterCriteria {
 export interface HierarchyInfo {
     identifier: string;
     contentType: string;
+    primaryCategory?: string;
 }
 
 

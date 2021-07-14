@@ -6,8 +6,18 @@ export class GetContentsHandler {
 
 
     getAllLocalContentQuery(request: ContentRequest): string {
-        if (!request.contentTypes || !request.contentTypes.length) {
-            request.contentTypes = ['Story', 'Worksheet', 'Game', 'Resource', 'Collection', 'TextBook'];
+        if (!request.primaryCategories || !request.primaryCategories.length) {
+            request.primaryCategories = [
+                'Course',
+                'Learning Resource',
+                'Explanation Content',
+                'Teacher Resource',
+                'Content Playlist',
+                'Digital Textbook',
+                'Practice Question Set',
+                'eTextBook',
+                'Course Assessment'
+            ];
         }
         const uid = request.uid;
 
@@ -20,9 +30,9 @@ export class GetContentsHandler {
             const mimeTypeFilter = `c.${ContentEntry.COLUMN_NAME_MIME_TYPE} != '${MimeType.COLLECTION.valueOf()}'`;
             filter = `${filter}  AND (${mimeTypeFilter})`;
         } else {
-            const contentTypesStr = ArrayUtil.joinPreservingQuotes(request.contentTypes);
-            const contentTypeFilter = `c.${ContentEntry.COLUMN_NAME_CONTENT_TYPE} IN(${contentTypesStr.toLowerCase()})`;
-            filter = `${filter}  AND (${contentTypeFilter})`;
+            const primaryCategoryString = ArrayUtil.joinPreservingQuotes(request.primaryCategories);
+            const primaryCategoryFilter = `c.${ContentEntry.COLUMN_NAME_PRIMARY_CATEGORY} IN(${primaryCategoryString.toLowerCase()})`;
+            filter = `${filter}  AND (${primaryCategoryFilter})`;
         }
 
         const audienceFilter = this.getAudienceFilter(request.audience!);
@@ -182,7 +192,7 @@ export class GetContentsHandler {
                 likeQuery = likeQuery.concat(initialQuery, `'%%~${data[i].toLowerCase().trim()}~%%' `);
             }
         }
-        return likeQuery;
+        return `(${likeQuery})`;
     }
 
 

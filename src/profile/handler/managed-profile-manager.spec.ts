@@ -235,7 +235,7 @@ describe('ManagedProfileManager', () => {
             mockAuthService.setSession = jest.fn(() => of(undefined));
 
             spyOn(managedProfileManager, 'getManagedServerProfiles').and.returnValue(
-                of([{identifier: 'some_uid', managedToken: 'some_managed_token'}])
+                of([{id: 'some_uid', managedToken: 'some_managed_token'}])
             );
 
             mockAuthService.getSession = jest.fn(() => of({

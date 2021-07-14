@@ -1,19 +1,20 @@
 import {
     Batch,
-    CertificateAlreadyDownloaded,
     ContentStateResponse,
     Course,
     CourseBatchDetailsRequest,
     CourseBatchesRequest,
     CourseService,
     CourseServiceConfig,
+    DisplayDiscussionForumRequest,
     EnrollCourseRequest,
     FetchEnrolledCourseRequest,
     GenerateAttemptIdRequest,
-    GetContentStateRequest,
+    GetContentStateRequest, GetLearnerCerificateRequest,
     GetUserEnrolledCoursesRequest,
     UnenrollCourseRequest,
-    UpdateContentStateRequest
+    UpdateContentStateRequest,
+    UpdateContentStateTarget
 } from '..';
 import {defer, interval, Observable, Observer, of} from 'rxjs';
 import {ProfileService, ProfileServiceConfig} from '../../profile';
@@ -23,7 +24,7 @@ import {GetCourseBatchesHandler} from '../handlers/get-course-batches-handler';
 import {GetEnrolledCourseHandler} from '../handlers/get-enrolled-course-handler';
 import {EnrollCourseHandler} from '../handlers/enroll-course-handler';
 import {CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
-import {ApiService, HttpRequestType, Request} from '../../api';
+import {ApiRequestHandler, ApiService, HttpRequestType, Request} from '../../api';
 import {UnenrollCourseHandler} from '../handlers/unenroll-course-handler';
 import {DbService} from '../../db';
 import {ContentKeys} from '../../preference-keys';
@@ -32,12 +33,10 @@ import {GetContentStateHandler} from '../handlers/get-content-state-handler';
 import {UpdateEnrolledCoursesHandler} from '../handlers/update-enrolled-courses-handler';
 import {OfflineContentStateHandler} from '../handlers/offline-content-state-handler';
 import {CourseUtil} from '../course-util';
-import {ProcessingError} from '../../auth/errors/processing-error';
 import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
-import {DownloadCertificateRequest} from '../def/download-certificate-request';
-import {NoCertificateFound} from '../errors/no-certificate-found';
+import {GetCertificateRequest} from '../def/get-certificate-request';
 import {AppInfo} from '../../util/app';
 import {DownloadStatus} from '../../util/download';
 import {DownloadCertificateResponse} from '../def/download-certificate-response';
@@ -49,6 +48,16 @@ import {catchError, concatMap, delay, filter, map, mapTo, mergeMap, take} from '
 import {FileService} from '../../util/file/def/file-service';
 import {CsCourseService} from '@project-sunbird/client-services/services/course';
 import {NetworkQueue} from '../../api/network-queue';
+import {AuthService} from '../../auth';
+import * as qs from 'qs';
+import {GetLearnerCertificateHandler} from '../handlers/get-learner-certificate-handler';
+import {LearnerCertificate} from '../def/get-learner-certificate-response';
+import {OfflineAssessmentScoreProcessor} from './offline-assessment-score-processor';
+import {GetEnrolledCourseResponse} from '../def/get-enrolled-course-response';
+import {CourseCertificateManager} from '../def/course-certificate-manager';
+import {CourseCertificateManagerImpl} from './course-certificate-manager-impl';
+import {UpdateContentStateResponse} from '../def/update-content-state-response';
+import {UpdateCourseContentStateRequest} from '../def/update-course-content-state-request';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -58,10 +67,25 @@ export class CourseServiceImpl implements CourseService {
     public static readonly UPDATE_CONTENT_STATE_KEY_PREFIX = 'updateContentState';
     public static readonly LAST_READ_CONTENTID_PREFIX = 'lastReadContentId';
     private static readonly CERTIFICATE_SIGN_ENDPOINT = '/api/certreg/v1/certs/download';
+    private static readonly DISCUSSION_FORUM_ENDPOINT = '/discussions/auth/sunbird-oidc/callback';
     private readonly courseServiceConfig: CourseServiceConfig;
     private readonly profileServiceConfig: ProfileServiceConfig;
     private capturedAssessmentEvents: { [key: string]: SunbirdTelemetry.Telemetry[] | undefined } = {};
     private syncAssessmentEventsHandler: SyncAssessmentEventsHandler;
+    private offlineAssessmentScoreProcessor: OfflineAssessmentScoreProcessor;
+
+    private _certificateManager?: CourseCertificateManager;
+    get certificateManager(): CourseCertificateManager {
+        if (!this._certificateManager) {
+            this._certificateManager = new CourseCertificateManagerImpl(
+                this.profileService,
+                this.fileService,
+                this.keyValueStore,
+                this.csCourseService
+            );
+        }
+        return this._certificateManager;
+    }
 
     constructor(
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
@@ -76,6 +100,7 @@ export class CourseServiceImpl implements CourseService {
         @inject(CsInjectionTokens.COURSE_SERVICE) private csCourseService: CsCourseService,
         @inject(InjectionTokens.NETWORK_QUEUE) private networkQueue: NetworkQueue,
         @inject(InjectionTokens.CONTAINER) private container: Container,
+        @inject(InjectionTokens.AUTH_SERVICE) private authService: AuthService,
     ) {
         this.courseServiceConfig = this.sdkConfig.courseServiceConfig;
         this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
@@ -86,6 +111,13 @@ export class CourseServiceImpl implements CourseService {
             this.dbService,
             this.networkQueue
         );
+        this.offlineAssessmentScoreProcessor = new OfflineAssessmentScoreProcessor(
+            this.keyValueStore
+        );
+    }
+
+    static buildUrl(host: string, path: string, params: { [p: string]: string }) {
+        return `${host}${path}?${qs.stringify(params)}`;
     }
 
     getBatchDetails(request: CourseBatchDetailsRequest): Observable<Batch> {
@@ -94,36 +126,40 @@ export class CourseServiceImpl implements CourseService {
     }
 
     updateContentState(request: UpdateContentStateRequest): Observable<boolean> {
-        const offlineContentStateHandler: OfflineContentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
-        return new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig)
-            .handle(CourseUtil.getUpdateContentStateRequest(request))
-            .pipe(
-                map((response: { [key: string]: any }) => {
-                    if (response.hasOwnProperty(request.contentId) ||
-                        response[request.contentId] !== 'FAILED') {
-                        return true;
-                    }
-                    throw new ProcessingError('Request processing failed');
-                }),
-                catchError((error) => {
-                    return of(true);
-                }),
-                mergeMap(() => {
-                    return offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request);
-                }),
-                mergeMap(() => {
-                    return offlineContentStateHandler.manipulateGetContentStateResponseLocally(request);
-                })
-            );
+        if (!request.target) {
+            request.target = [UpdateContentStateTarget.LOCAL, UpdateContentStateTarget.SERVER];
+        }
+
+        return defer(async () => {
+            const offlineContentStateHandler: OfflineContentStateHandler = new OfflineContentStateHandler(this.keyValueStore);
+
+            if (request.target!.indexOf(UpdateContentStateTarget.SERVER) > -1) {
+                try {
+                    await (new UpdateContentStateApiHandler(this.networkQueue, this.sdkConfig)
+                        .handle(CourseUtil.getUpdateContentStateRequest(request))).toPromise();
+                } catch (e) {
+                }
+            }
+
+            if (request.target!.indexOf(UpdateContentStateTarget.LOCAL) > -1) {
+                await offlineContentStateHandler.manipulateEnrolledCoursesResponseLocally(request).toPromise();
+                await offlineContentStateHandler.manipulateGetContentStateResponseLocally(request).toPromise();
+            }
+
+            return true;
+        });
     }
 
     getCourseBatches(request: CourseBatchesRequest): Observable<Batch[]> {
         return new GetCourseBatchesHandler(this.apiService, this.courseServiceConfig).handle(request);
     }
 
-    getEnrolledCourses(request: FetchEnrolledCourseRequest): Observable<Course[]> {
+    getEnrolledCourses(
+        request: FetchEnrolledCourseRequest,
+        apiHandler?: ApiRequestHandler<{ userId: string }, GetEnrolledCourseResponse>
+    ): Observable<Course[]> {
         return new GetEnrolledCourseHandler(
-            this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences
+            this.keyValueStore, this.apiService, this.courseServiceConfig, this.sharedPreferences, apiHandler
         ).handle(request);
     }
 
@@ -140,17 +176,23 @@ export class CourseServiceImpl implements CourseService {
         return new EnrollCourseHandler(this.apiService, this.courseServiceConfig)
             .handle(request)
             .pipe(
-                mergeMap(() => {
-                    const courseContext: { [key: string]: any } = {};
-                    courseContext['userId'] = request.userId;
-                    courseContext['batchStatus'] = request.batchStatus;
-                    return this.sharedPreferences.putString(ContentKeys.COURSE_CONTEXT, JSON.stringify(courseContext));
-                }),
-                delay(2000),
-                concatMap(() => {
-                    return this.getEnrolledCourses({userId: request.userId, returnFreshCourses: true});
-                }),
-                mapTo(true)
+                mergeMap((isEnrolled) => {
+                    if (isEnrolled) {
+                        const courseContext: { [key: string]: any } = {};
+                        courseContext['userId'] = request.userId;
+                        courseContext['batchStatus'] = request.batchStatus;
+
+                        return this.sharedPreferences.putString(ContentKeys.COURSE_CONTEXT, JSON.stringify(courseContext)).pipe(
+                            delay(2000),
+                            concatMap(() => {
+                                return this.getEnrolledCourses({userId: request.userId, returnFreshCourses: true});
+                            }),
+                            mapTo(isEnrolled)
+                        );
+                    }
+
+                    return of(isEnrolled);
+                })
             );
     }
 
@@ -169,7 +211,7 @@ export class CourseServiceImpl implements CourseService {
                             this.container
                         ).handle(request)
                             .pipe(
-                                mergeMap((response: any) => {
+                                mergeMap((response) => {
                                     if (response) {
                                         return this.keyValueStore.setValue(key, JSON.stringify(response))
                                             .pipe(
@@ -211,56 +253,11 @@ export class CourseServiceImpl implements CourseService {
             );
     }
 
-    public downloadCurrentProfileCourseCertificateV2(
-        request: DownloadCertificateRequest,
-        pdfDataProvider: (pdfSvgData: string, cb: (pdfData: Blob) => void) => void): Observable<DownloadCertificateResponse> {
+    public downloadCurrentProfileCourseCertificate(request: GetCertificateRequest): Observable<DownloadCertificateResponse> {
         return defer(async () => {
             const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
             const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
             const filePath = `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
-            try {
-                await this.fileService.exists(filePath);
-                throw new CertificateAlreadyDownloaded('Certificate already downloaded', filePath);
-            } catch (e) {
-                if (e instanceof CertificateAlreadyDownloaded) {
-                    throw e;
-                }
-            }
-
-            const response = await this.csCourseService.getSignedCourseCertificate(request.certificate.identifier!).toPromise();
-            if (!response['printUri']) {
-                throw new NoCertificateFound(`No certificate found for ${request.courseId}`);
-            }
-            return new Promise<{ path: string }>((resolve, reject) => {
-                pdfDataProvider(response['printUri'], (pdfData: Blob) => {
-                    try {
-                        this.fileService.writeFile(cordova.file.externalRootDirectory +
-                            'Download/', `${request.certificate.name}_${request.courseId}_${userId}.pdf`, pdfData as any, {replace: true});
-                        resolve({
-                            path: `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`
-                        });
-                    } catch (e) {
-                        reject(e);
-                    }
-                });
-            });
-        });
-    }
-
-    public downloadCurrentProfileCourseCertificate(request: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
-        return defer(async () => {
-            const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
-            const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
-            const filePath = `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
-            try {
-                await this.fileService.exists(filePath);
-                throw new CertificateAlreadyDownloaded('Certificate already downloaded', filePath);
-            } catch (e) {
-                if (e instanceof CertificateAlreadyDownloaded) {
-                    throw e;
-                }
-            }
-
             return {userId};
         }).pipe(
             mergeMap(({userId}) => {
@@ -319,8 +316,8 @@ export class CourseServiceImpl implements CourseService {
                         mergeMap(() => {
                             return new Observable((observer: Observer<EnqueuedEntry>) => {
                                 downloadManager.query({ids: [downloadId]}, (err, entries) => {
-                                    if (err) {
-                                        return observer.error(err);
+                                    if (err || (entries[0].status === DownloadStatus.STATUS_FAILED)) {
+                                        return observer.error(err || new Error('Unknown Error'));
                                     }
 
                                     return observer.next(entries[0]! as EnqueuedEntry);
@@ -359,6 +356,7 @@ export class CourseServiceImpl implements CourseService {
 
             this.resetCapturedAssessmentEvents();
         }
+        this.offlineAssessmentScoreProcessor.process(capturedAssessmentEvents);
 
         return this.syncAssessmentEventsHandler.handle(
             capturedAssessmentEvents
@@ -373,5 +371,36 @@ export class CourseServiceImpl implements CourseService {
         return MD5(
             [request.courseId, request.batchId, request.contentId, request.userId, Date.now()].join('-')
         ).toString();
+    }
+
+    displayDiscussionForum(request: DisplayDiscussionForumRequest): Observable<boolean> {
+        return defer(async () => {
+            const session = await this.authService.getSession().toPromise();
+
+            if (!session) {
+                return false;
+            }
+
+            const accessToken = session.managed_access_token || session.access_token;
+
+            cordova.InAppBrowser.open(
+                CourseServiceImpl.buildUrl(this.sdkConfig.apiConfig.host, CourseServiceImpl.DISCUSSION_FORUM_ENDPOINT, {
+                    'access_token': accessToken,
+                    'returnTo': `/category/${request.forumId}`
+                }),
+                '_blank',
+                'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes,hideurlbar=yes,hidenavigationbuttons=true'
+            );
+
+            return true;
+        });
+    }
+
+    getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<{count: number, content: LearnerCertificate[]}> {
+        return new GetLearnerCertificateHandler(this.apiService, this.cachedItemStore).handle(request);
+    }
+
+    syncCourseProgress(request: UpdateCourseContentStateRequest): Observable<UpdateContentStateResponse> {
+        return this.csCourseService.updateContentState(request, { apiPath : '/api/course/v1'});
     }
 }

@@ -69,6 +69,42 @@ export class TelemetryStartRequest {
     correlationData?: Array<CorrelationData>;
 }
 
+export class TelemetrySummaryRequest {
+    type: string;
+    starttime: number;
+    endtime: number;
+    timespent: number;
+    pageviews: number;
+    interactions: number;
+    env: Environment;
+    mode?: string;
+    envsummary?: {
+        env: string,
+        timespent: number,
+        visits: number
+    }[];
+    eventsummary?: {
+        id: string,
+        count: number
+    } [];
+    pagesummary?: {
+        id: string,
+        type: string,
+        env: string,
+        timespent: number,
+        visits: number
+    }[];
+    extra?: {
+        id: string,
+        value: string
+    }[];
+    correlationData?: Array<CorrelationData>;
+    objId?: string;
+    objType?: string;
+    objVer?: string;
+    rollup?: Rollup;
+}
+
 export class TelemetryEndRequest {
     env: Environment;
     type?: string;

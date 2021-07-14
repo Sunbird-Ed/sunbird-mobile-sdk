@@ -1,27 +1,31 @@
-import { inject, injectable, Container } from 'inversify';
-import { NotificationService } from '../def/notification-service';
-import { of } from 'rxjs';
-import { Notification, NotificationFilterCriteria, ActionData, NotificationStatus } from '../def/requests';
-import { InjectionTokens } from '../../injection-tokens';
-import { DbService } from '../../db';
-import { NotificationEntry } from '../db/schema';
-import { NotificationHandler } from '../handler/notification-handler';
-import { SharedPreferences } from '../../util/shared-preferences';
-import COLUMN_NAME_NOTIFICATION_JSON = NotificationEntry.COLUMN_NAME_NOTIFICATION_JSON;
-import { CodePush } from '../../preference-keys';
-import { NotificationServiceImpl } from './notification-service-impl';
-import { instance, mock } from 'ts-mockito';
+import {Container} from 'inversify';
+import {of} from 'rxjs';
+import {ActionData, Notification, NotificationFilterCriteria, NotificationStatus, NotificationType} from '../def/requests';
+import {InjectionTokens} from '../../injection-tokens';
+import {DbService} from '../../db';
+import {NotificationEntry} from '../db/schema';
+import {SharedPreferences} from '../../util/shared-preferences';
+import {CodePush} from '../../preference-keys';
+import {NotificationServiceImpl} from './notification-service-impl';
+import {instance, mock} from 'ts-mockito';
+import {KeyValueStore} from '../../key-value-store';
+import {ProfileService} from '../../profile';
+
 describe('NotificationServiceImpl', () => {
 
     let notificationServiceImpl: NotificationServiceImpl;
     const container = new Container();
     const mockDbService: Partial<DbService> = {};
     const mockSharedPreferences: SharedPreferences = instance(mock<SharedPreferences>());
+    const mockKeyValueStore: KeyValueStore = instance(mock<KeyValueStore>());
+    const mockProfileService: ProfileService = instance(mock<ProfileService>());
     beforeAll(() => {
         container.bind<NotificationServiceImpl>(InjectionTokens.NOTIFICATION_SERVICE).to(NotificationServiceImpl);
         container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(container);
         container.bind<DbService>(InjectionTokens.DB_SERVICE).toConstantValue(mockDbService as DbService);
         container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).toConstantValue(mockSharedPreferences);
+        container.bind<KeyValueStore>(InjectionTokens.KEY_VALUE_STORE).toConstantValue(mockKeyValueStore);
+        container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).toConstantValue(mockProfileService);
 
         notificationServiceImpl = container.get(InjectionTokens.NOTIFICATION_SERVICE);
     });
@@ -73,10 +77,18 @@ describe('NotificationServiceImpl', () => {
 
     it('should call deleteNotification method on NotificationServiceImpl', () => {
         // arrange
+        const fcmNotification: Notification = {
+            id: 0,
+            type: NotificationType.ACTIONABLE_NOTIFICATION,
+            displayTime: Date.now(),
+            expiry: Date.now(),
+            isRead: 0,
+            actionData: {} as any
+        };
         mockDbService.execute = jest.fn().mockImplementation(() => of([]));
 
         // act
-        notificationServiceImpl.deleteNotification().subscribe(() => {
+        notificationServiceImpl.deleteNotification(fcmNotification).subscribe(() => {
             expect(mockDbService.execute).toHaveBeenCalled();
         });
 

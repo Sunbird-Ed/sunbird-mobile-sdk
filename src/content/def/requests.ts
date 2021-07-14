@@ -6,12 +6,12 @@ import {ContentEntry} from '../db/schema';
 import {DownloadRequest} from '../../util/download';
 import {CachedItemRequest} from '../../key-value-store';
 
-export interface SearchAndGroupContentRequest extends CachedItemRequest {
-    groupBy: keyof ContentData;
-    combination?: {
+export interface ContentAggregatorRequest extends CachedItemRequest {
+    applyFirstAvailableCombination?: {
         [key in keyof ContentData]?: string[]
     };
-    searchCriteria: ContentSearchCriteria;
+    userPreferences?: {[key: string]: string[] | string | undefined};
+    interceptSearchCriteria?: (searchCriteria: ContentSearchCriteria) => ContentSearchCriteria;
 }
 
 export interface ContentDecorateRequest {
@@ -31,7 +31,7 @@ export interface ContentDetailRequest {
 
 export interface ContentRequest {
     uid?: string | string[];
-    contentTypes: string[];
+    primaryCategories: string[];
     audience?: string[];
     pragma?: string[];
     exclPragma?: string[];
@@ -155,6 +155,7 @@ export interface ContentSearchCriteria {
     mimeType?: string[];
     subject?: string[];
     fields?: string[];
+    primaryCategories?: string[];
 }
 
 export interface ContentSearchFilter {
@@ -169,6 +170,7 @@ export interface FilterValue {
     translations?: string;
     description?: string;
     index?: number;
+    values?: FilterValue[];
 }
 
 export interface ContentSortCriteria {

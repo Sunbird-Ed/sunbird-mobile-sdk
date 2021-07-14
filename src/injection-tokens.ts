@@ -3,6 +3,8 @@ export const CsInjectionTokens = {
     GROUP_SERVICE: Symbol.for('CS_GROUP_SERVICE'),
     COURSE_SERVICE: Symbol.for('CS_COURSE_SERVICE'),
     USER_SERVICE: Symbol.for('CS_USER_SERVICE'),
+    DISCUSSION_SERVICE: Symbol.for('CS_DISCUSSION_SERVICE'),
+    CONTENT_SERVICE: Symbol.for('CS_CONTENT_SERVICE')
 };
 
 export const InjectionTokens = {
@@ -48,6 +50,8 @@ export const InjectionTokens = {
     CONTENT_RATING_SERVICE: Symbol.for('CONTENT_RATING_SERVICE'),
     ARCHIVE_SERVICE: Symbol.for('ARCHIVE_SERVICE'),
     NETWORK_QUEUE: Symbol.for('NETWORK_QUEUE'),
-    CLASS_ROOM_SERVICE: Symbol.for('CLASS_ROOM_SERVICE')
+    CLASS_ROOM_SERVICE: Symbol.for('CLASS_ROOM_SERVICE'),
+    DISCUSSION_SERVICE: Symbol.for('DISCUSSION_SERVICE'),
+    SEGMENTATION_SERVICE: Symbol.for('SEGMENTATION_SERVICE'),
+    DEBUGGING_SERVICE: Symbol.for('DEBUGGING_SERVICE')
 };
-

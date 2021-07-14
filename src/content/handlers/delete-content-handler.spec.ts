@@ -50,7 +50,8 @@ describe('DeleteContentHandler', () => {
                 mime_type: 'MIME_TYPE',
                 manifest_version: 'MAINFEST_VERSION',
                 content_type: 'CONTENT_TYPE',
-                path: 'http://sample-path'
+                path: 'http://sample-path',
+                primary_category: 'textbook'
             };
             mockDbService.execute = jest.fn().mockImplementation(() => {
             });
@@ -107,7 +108,8 @@ describe('DeleteContentHandler', () => {
                 mime_type: 'MIME_TYPE',
                 manifest_version: 'MAINFEST_VERSION',
                 content_type: 'CONTENT_TYPE',
-                path: 'http://sample-path'
+                path: 'http://sample-path',
+                primary_category: 'textbook'
             };
             mockDbService.execute = jest.fn().mockImplementation(() => {
             });
@@ -162,7 +164,8 @@ describe('DeleteContentHandler', () => {
                 mime_type: 'MIME_TYPE',
                 manifest_version: 'MAINFEST_VERSION',
                 content_type: 'CONTENT_TYPE',
-                path: 'http://sample-path'
+                path: 'http://sample-path',
+                primary_category: 'textbook'
             };
             mockDbService.execute = jest.fn().mockImplementation(() => {
             });
@@ -207,7 +210,8 @@ describe('DeleteContentHandler', () => {
                 mime_type: 'MIME_TYPE',
                 manifest_version: 'MAINFEST_VERSION',
                 content_type: 'CONTENT_TYPE',
-                path: 'http://sample-path'
+                path: 'http://sample-path',
+                primary_category: 'textbook'
             };
             mockDbService.execute = jest.fn().mockImplementation(() => {
             });
@@ -249,7 +253,8 @@ describe('DeleteContentHandler', () => {
                 local_data: 'LOCAL_DATA',
                 mime_type: 'MIME_TYPE',
                 manifest_version: 'MAINFEST_VERSION',
-                content_type: 'CONTENT_TYPE'
+                content_type: 'CONTENT_TYPE',
+                primary_category: 'textbook'
             };
             mockFileService.readAsText = jest.fn().mockImplementation(() => {
             });
@@ -284,7 +289,8 @@ describe('DeleteContentHandler', () => {
                 manifest_version: 'MAINFEST_VERSION',
                 content_type: 'CONTENT_TYPE',
                 ref_count: 2,
-                visibility: Visibility.DEFAULT
+                visibility: Visibility.DEFAULT,
+                primary_category: 'textbook'
             };
             const isChildItems = true;
             const isChildContent = true;
@@ -306,7 +312,8 @@ describe('DeleteContentHandler', () => {
                 manifest_version: 'MAINFEST_VERSION',
                 content_type: 'CONTENT_TYPE',
                 ref_count: 2,
-                visibility: Visibility.DEFAULT
+                visibility: Visibility.DEFAULT,
+                primary_category: 'textbook'
             };
             const isChildItems = true;
             const isChildContent = true;
@@ -328,7 +335,8 @@ describe('DeleteContentHandler', () => {
                 manifest_version: 'MAINFEST_VERSION',
                 content_type: 'CONTENT_TYPE',
                 ref_count: 2,
-                visibility: Visibility.DEFAULT
+                visibility: Visibility.DEFAULT,
+                primary_category: 'textbook'
             };
             const isChildItems = false;
             const isChildContent = false;
@@ -352,6 +360,7 @@ describe('DeleteContentHandler', () => {
                 ref_count: 2,
                 visibility: Visibility.DEFAULT,
                 path: 'http://sample-path',
+                primary_category: 'textbook'
             };
             const isChildItems = true;
             const isChildContent = false;
@@ -373,7 +382,8 @@ describe('DeleteContentHandler', () => {
                 manifest_version: 'MAINFEST_VERSION',
                 content_type: 'CONTENT_TYPE',
                 ref_count: 2,
-                visibility: Visibility.DEFAULT.valueOf()
+                visibility: Visibility.DEFAULT.valueOf(),
+                primary_category: 'textbook'
             };
             const isChildItems = false;
             const isChildContent = false;
@@ -397,7 +407,8 @@ describe('DeleteContentHandler', () => {
                 ref_count: 2,
                 visibility: '',
                 path: 'http://sample-path',
-                size_on_device: 2
+                size_on_device: 2,
+                primary_category: 'textbook'
             };
             const isChildItems = false;
             const isChildContent = false;

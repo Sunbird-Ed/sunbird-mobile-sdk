@@ -1,6 +1,5 @@
-import {CourseCertificate} from './course';
-
 export interface DownloadCertificateRequest {
-  courseId: string;
-  certificate: CourseCertificate;
+  fileName: string;
+  mimeType: string;
+  blob: Blob;
 }

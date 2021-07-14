@@ -205,8 +205,6 @@ describe('SearchContentHandler', () => {
             const searchRequest = searchContentHandler.getSearchContentRequest(criteria);
             // assert
             expect(searchRequest.filters).toEqual({
-                compatibilityLevel: { min: 1, max: undefined },
-                contentType: [],
                 SAMPLE_CONTENT: ['SAMPLE_NAME'],
                 filter: 'sample-filter'
             });
@@ -236,22 +234,23 @@ describe('SearchContentHandler', () => {
             console.log('searchRequest.filters: ', searchRequest.filters);
             // assert
             expect(searchRequest.filters).toEqual({
-                compatibilityLevel: { min: 1, max: undefined },
                 status: undefined,
-                objectType: ['Content'],
+                audience: [],
+                objectType: ['Content' , 'QuestionSet'],
                 contentType: ['sample_content_type'],
                 keywords: ['sample keyword'],
                 dialcodes: ['sample dialcode'],
                 createdBy: ['sample createdBy'],
-                gradeLevel: ['sample grade'],
-                medium: ['Sample Medium'],
-                board: ['Sample board'],
+                se_gradeLevels: ['sample grade'],
+                se_mediums: ['Sample Medium'],
+                se_boards: ['Sample board'],
                 language: ['Sample language'],
                 topic: ['Sample topic'],
                 purpose: ['Sample purpose'],
                 channel: ['Sample channel'],
                 mimeType: ['sample mimeType'],
-                subject: ['sample subject']
+                subject: ['sample subject'],
+                primaryCategory: []
             }
             );
         });

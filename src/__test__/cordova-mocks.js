@@ -84,6 +84,7 @@ global.sbutility = {
     },
     writeFile: () => {},
     getUtmInfo: () => {},
+    renameDirectory: () => {}
 };
 
 global.sbutility = {
@@ -116,6 +117,12 @@ global.sbsync = {
     enqueue: () => {
     }
 };
+
+global.downloadManager = {
+    fetchSpeedLog: () => {
+    }
+};
+
 
 global.db = {
     update: () => {

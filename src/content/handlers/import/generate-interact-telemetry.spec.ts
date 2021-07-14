@@ -33,7 +33,7 @@ describe('GenerateInteractTelemetry', () => {
             ecarFilePath: 'file-path',
             destinationFolder: '',
             skippedItemsIdentifier: [],
-            items: [{'identifier': 'sample-id'}],
+            items: [{'identifier': 'sample-id', contentType: 'Course'}],
             contentImportResponseList: [],
             correlationData: corr,
             rollUp: {},
@@ -54,7 +54,7 @@ describe('GenerateInteractTelemetry', () => {
                 id: 'ImportContent',
                 env: 'sdk',
                 objId: 'sample-id',
-                objType: undefined,
+                objType: 'Course',
                 objVer: 'undefined',
                 correlationData: [ { id: 'SAMPLE_ID', type: 'SAMPLE_TYPE' } ] });
             done();
