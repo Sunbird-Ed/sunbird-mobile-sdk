@@ -103,16 +103,12 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     }
 
     onInit(): Observable<undefined> {
-        if(window.device.platform.toLowerCase() === "ios") { 
-            return this.switchToNextDownloadRequest()
-        } else {
-            return this.switchToNextDownloadRequest()
-                .pipe(
-                    mergeMap(() => {
-                            return this.listenForDownloadProgressChanges();
-                    })
-                );
-        }
+        return this.switchToNextDownloadRequest()
+            .pipe(
+                mergeMap(() => {
+                        return this.listenForDownloadProgressChanges();
+                })
+            );
     }
 
     download(downloadRequests: DownloadRequest[]): Observable<undefined> {
