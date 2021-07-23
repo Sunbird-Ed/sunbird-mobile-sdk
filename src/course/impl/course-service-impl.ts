@@ -257,7 +257,9 @@ export class CourseServiceImpl implements CourseService {
         return defer(async () => {
             const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
             const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
-            const filePath = `${cordova.file.externalRootDirectory}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
+            
+            const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalRootDirectory;
+            const filePath = `${folderPath}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
             return {userId};
         }).pipe(
             mergeMap(({userId}) => {
