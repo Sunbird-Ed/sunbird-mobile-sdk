@@ -103,12 +103,12 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     }
 
     onInit(): Observable<undefined> {
-        return this.switchToNextDownloadRequest()
-            .pipe(
-                mergeMap(() => {
-                        return this.listenForDownloadProgressChanges();
-                })
-            );
+            return this.switchToNextDownloadRequest()
+                .pipe(
+                    mergeMap(() => {
+                            return this.listenForDownloadProgressChanges();
+                    })
+                );
     }
 
     download(downloadRequests: DownloadRequest[]): Observable<undefined> {

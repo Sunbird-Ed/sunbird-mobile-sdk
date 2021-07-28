@@ -36,6 +36,7 @@ export class DbCordovaService implements DbService {
 
     public async init(): Promise<undefined> {
         return new Promise<undefined>(((resolve) => {
+            alert(db);
             db.init(this.context.dbName,
                 this.dBVersion,
                 [],
