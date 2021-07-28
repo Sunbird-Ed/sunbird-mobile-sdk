@@ -509,6 +509,7 @@ export class ContentAggregator {
                         return apiService.fetch<GetEnrolledCourseResponse>(apiRequest)
                             .pipe(
                                 map((response) => {
+                                    response.body.result.courses.sort((a, b) => (a.enrolledDate! > b.enrolledDate! ? -1 : 1));
                                     return response.body;
                                 })
                             );
