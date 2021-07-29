@@ -130,26 +130,6 @@ export declare namespace SunbirdTelemetry {
         private static readonly EID;
         constructor(type: string | undefined, dspec: DeviceSpecification | undefined, loc: string | undefined, mode: string | undefined, duration: number | undefined, pageid: string | undefined, env: string, objId?: string, objType?: string, objVer?: string, rollup?: Rollup, correlationData?: Array<CorrelationData>);
     }
-    class Summary extends Telemetry {
-        private static readonly EID;
-        constructor(type: string, starttime: number, endtime: number, timespent: number, pageviews: number, interactions: number, env: string, mode?: string, envsummary?: {
-            env: string;
-            timespent: number;
-            visits: number;
-        }[], eventsummary?: {
-            id: string;
-            count: number;
-        }[], pagesummary?: {
-            id: string;
-            type: string;
-            env: string;
-            timespent: number;
-            visits: number;
-        }[], extra?: {
-            id: string;
-            value: string;
-        }[], correlationData?: Array<CorrelationData>, objId?: string, objType?: string, objVer?: string, rollup?: Rollup);
-    }
     class Interact extends Telemetry {
         private static readonly EID;
         constructor(type: string, subtype: string, id: string | undefined, pageid: string | undefined, pos: {
@@ -188,6 +168,6 @@ export declare namespace SunbirdTelemetry {
     }
     class Audit extends Telemetry {
         private static readonly EID;
-        constructor(env: string, actor: Actor, currentState: AuditState, updatedProperties: string[] | undefined, type: string | undefined, objId?: string, objType?: string, objVer?: string, correlationData?: Array<CorrelationData>, rollup?: Rollup);
+        constructor(env: string, actor: Actor, currentState: AuditState, updatedProperties: string[] | undefined, objId?: string, objType?: string, objVer?: string, correlationData?: Array<CorrelationData>);
     }
 }

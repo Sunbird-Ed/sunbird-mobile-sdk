@@ -21,9 +21,6 @@ export declare namespace ContentEntry {
     const COLUMN_NAME_BOARD = "board";
     const COLUMN_NAME_MEDIUM = "medium";
     const COLUMN_NAME_GRADE = "grade";
-    const COLUMN_NAME_DIALCODES = "dialcodes";
-    const COLUMN_NAME_CHILD_NODES = "child_nodes";
-    const COLUMN_NAME_PRIMARY_CATEGORY = "primary_category";
     interface SchemaMap {
         [COLUMN_NAME_IDENTIFIER]: string;
         [COLUMN_NAME_SERVER_DATA]: string;
@@ -44,9 +41,6 @@ export declare namespace ContentEntry {
         [COLUMN_NAME_BOARD]?: string;
         [COLUMN_NAME_MEDIUM]?: string;
         [COLUMN_NAME_GRADE]?: string;
-        [COLUMN_NAME_DIALCODES]?: string;
-        [COLUMN_NAME_CHILD_NODES]?: string;
-        [COLUMN_NAME_PRIMARY_CATEGORY]: string;
     }
     const getCreateEntry: (() => string);
     const getDeleteEntry: (() => string);
@@ -55,9 +49,6 @@ export declare namespace ContentEntry {
     const getAlterEntryForBoard: (() => string);
     const getAlterEntryForMedium: (() => string);
     const getAlterEntryForGrade: (() => string);
-    const getAlterEntryForDialCode: (() => string);
-    const getAlterEntryForChildNodes: (() => string);
-    const getAlterEntryForPrimaryCategory: (() => string);
 }
 export declare namespace ContentAccessEntry {
     const _ID = "_id";
@@ -68,7 +59,6 @@ export declare namespace ContentAccessEntry {
     const COLUMN_NAME_STATUS = "status";
     const COLUMN_NAME_CONTENT_TYPE = "content_type";
     const COLUMN_NAME_LEARNER_STATE = "learner_state";
-    const COLUMN_NAME_PRIMARY_CATEGORY = "primary_category";
     interface SchemaMap {
         [COLUMN_NAME_UID]: string;
         [COLUMN_NAME_CONTENT_IDENTIFIER]: string;
@@ -79,7 +69,6 @@ export declare namespace ContentAccessEntry {
     }
     const getCreateEntry: (() => string);
     const deleteTable: (() => string);
-    const getAlterEntryForPrimaryCategory: (() => string);
 }
 export declare namespace ContentFeedbackEntry {
     const _ID = "_id";

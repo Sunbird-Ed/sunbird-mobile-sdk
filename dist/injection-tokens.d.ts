@@ -1,11 +1,3 @@
-export declare const CsInjectionTokens: {
-    HTTP_SERVICE: symbol;
-    GROUP_SERVICE: symbol;
-    COURSE_SERVICE: symbol;
-    USER_SERVICE: symbol;
-    DISCUSSION_SERVICE: symbol;
-    CONTENT_SERVICE: symbol;
-};
 export declare const InjectionTokens: {
     CONTAINER: symbol;
     DB_VERSION: symbol;
@@ -23,7 +15,6 @@ export declare const InjectionTokens: {
     FRAMEWORK_SERVICE: symbol;
     PROFILE_SERVICE: symbol;
     GROUP_SERVICE: symbol;
-    GROUP_SERVICE_DEPRECATED: symbol;
     ZIP_SERVICE: symbol;
     TELEMETRY_SERVICE: symbol;
     CONTENT_FEEDBACK_SERVICE: symbol;
@@ -48,9 +39,4 @@ export declare const InjectionTokens: {
     DEVICE_REGISTER_SERVICE: symbol;
     CONTENT_RATING_SERVICE: symbol;
     ARCHIVE_SERVICE: symbol;
-    NETWORK_QUEUE: symbol;
-    CLASS_ROOM_SERVICE: symbol;
-    DISCUSSION_SERVICE: symbol;
-    SEGMENTATION_SERVICE: symbol;
-    DEBUGGING_SERVICE: symbol;
 };

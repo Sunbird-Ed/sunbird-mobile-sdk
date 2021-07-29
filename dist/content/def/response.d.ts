@@ -1,8 +1,6 @@
 import { ContentSearchCriteria, ContentSearchFilter } from './requests';
 import { Content, ContentData } from './content';
-import { ContentImportStatus } from '..';
-import { Course } from '../../course/def/course';
-import { ContentAggregation } from '../handlers/content-aggregator';
+import { ContentImportStatus } from '../util/content-constants';
 export interface ContentSearchResult {
     id: string;
     responseMessageId: string;
@@ -13,20 +11,14 @@ export interface ContentSearchResult {
     contentDataList: ContentData[];
     collectionDataList?: ContentData[];
 }
-export interface ContentAggregatorResponse {
-    result: ContentAggregation[];
-}
 export interface ContentsGroupedByPageSection {
     name: string;
-    combination?: {
-        [key in keyof Content]?: string;
-    };
     sections: PageSection[];
 }
 export interface PageSection {
     count?: number;
     name?: string;
-    contents?: ContentData[] | Course[];
+    contents?: ContentData[];
     display?: Display;
 }
 export interface Display {
@@ -44,7 +36,6 @@ export interface SearchResponse {
         content: ContentData[];
         collections: ContentData[];
         facets: ContentSearchFilter[];
-        QuestionSet?: ContentData[];
     };
 }
 export interface ChildContent {

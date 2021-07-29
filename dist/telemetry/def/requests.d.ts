@@ -5,12 +5,10 @@ export interface TelemetryAuditRequest {
     actor: Actor;
     currentState: AuditState;
     updatedProperties?: string[];
-    type?: string;
     objId?: string;
     objType?: string;
     objVer?: string;
     correlationData?: Array<CorrelationData>;
-    rollUp?: Rollup;
 }
 export declare class TelemetryInteractRequest {
     type: InteractType;
@@ -65,41 +63,6 @@ export declare class TelemetryStartRequest {
     objVer?: string;
     rollup?: Rollup;
     correlationData?: Array<CorrelationData>;
-}
-export declare class TelemetrySummaryRequest {
-    type: string;
-    starttime: number;
-    endtime: number;
-    timespent: number;
-    pageviews: number;
-    interactions: number;
-    env: Environment;
-    mode?: string;
-    envsummary?: {
-        env: string;
-        timespent: number;
-        visits: number;
-    }[];
-    eventsummary?: {
-        id: string;
-        count: number;
-    }[];
-    pagesummary?: {
-        id: string;
-        type: string;
-        env: string;
-        timespent: number;
-        visits: number;
-    }[];
-    extra?: {
-        id: string;
-        value: string;
-    }[];
-    correlationData?: Array<CorrelationData>;
-    objId?: string;
-    objType?: string;
-    objVer?: string;
-    rollup?: Rollup;
 }
 export declare class TelemetryEndRequest {
     env: Environment;

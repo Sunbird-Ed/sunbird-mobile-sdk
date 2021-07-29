@@ -1,12 +1,11 @@
 import { TelemetryStat } from './telemetry-stat';
 import { TelemetrySyncStat } from './telemetry-sync-stat';
 import { Observable } from 'rxjs';
-import { TelemetryAuditRequest, TelemetryEndRequest, TelemetryErrorRequest, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryInterruptRequest, TelemetryLogRequest, TelemetryShareRequest, TelemetryStartRequest, TelemetrySummaryRequest, TelemetrySyncRequest } from './requests';
-import { Context, CorrelationData } from './telemetry-model';
+import { TelemetryAuditRequest, TelemetryEndRequest, TelemetryErrorRequest, TelemetryFeedbackRequest, TelemetryImportRequest, TelemetryImpressionRequest, TelemetryInteractRequest, TelemetryInterruptRequest, TelemetryLogRequest, TelemetryShareRequest, TelemetryStartRequest, TelemetrySyncRequest } from './requests';
+import { Context } from './telemetry-model';
 import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
 import { TelemetryAutoSyncService } from '..';
-import { SdkServicePreInitDelegate } from '../../sdk-service-pre-init-delegate';
-export interface TelemetryService extends SdkServiceOnInitDelegate, SdkServicePreInitDelegate {
+export interface TelemetryService extends SdkServiceOnInitDelegate {
     autoSync: TelemetryAutoSyncService;
     saveTelemetry(request: string): Observable<boolean>;
     audit(request: TelemetryAuditRequest): Observable<boolean>;
@@ -25,7 +24,4 @@ export interface TelemetryService extends SdkServiceOnInitDelegate, SdkServicePr
     lastSyncedTimestamp(): Observable<number | undefined>;
     resetDeviceRegisterTTL(): Observable<undefined>;
     buildContext(): Observable<Context>;
-    updateCampaignParameters(params: CorrelationData[]): any;
-    summary(request: TelemetrySummaryRequest): Observable<boolean>;
-    populateGlobalCorRelationData(params: CorrelationData[]): any;
 }

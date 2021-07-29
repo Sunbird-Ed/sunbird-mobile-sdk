@@ -9,14 +9,11 @@ export declare class AuthServiceImpl implements AuthService {
     private apiService;
     private sharedPreferences;
     private eventsBusService;
-    private static readonly ACCESS_TOKEN_NEARING_EXPIRY_DELTA;
     private authUtil;
     private apiConfig;
     constructor(sdkConfig: SdkConfig, apiService: ApiService, sharedPreferences: SharedPreferences, eventsBusService: EventsBusService);
-    onInit(): Observable<undefined>;
     setSession(sessionProvider: SessionProvider): Observable<undefined>;
     getSession(): Observable<OAuthSession | undefined>;
     resignSession(): Observable<void>;
     refreshSession(): Observable<void>;
-    onAccessTokenNearingExpiry(): Observable<boolean>;
 }

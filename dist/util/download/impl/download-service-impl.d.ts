@@ -1,12 +1,10 @@
-import { DownloadCancelRequest, DownloadRequest, DownloadService, TrackDownloadRequest } from '..';
+import { DownloadCancelRequest, DownloadRequest, DownloadService } from '..';
 import { Observable } from 'rxjs';
 import { SdkServiceOnInitDelegate } from '../../../sdk-service-on-init-delegate';
 import { EventsBusService } from '../../../events-bus';
 import { SharedPreferences } from '../../shared-preferences';
 import { DownloadCompleteDelegate } from '../def/download-complete-delegate';
-import { ContentDeleteListener } from '../../../content/def/content-delete-listener';
-import { DownloadTracking } from '../def/response';
-export declare class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate, ContentDeleteListener {
+export declare class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDelegate {
     private eventsBusService;
     private sharedPreferences;
     private static readonly KEY_TO_DOWNLOAD_LIST;
@@ -14,7 +12,6 @@ export declare class DownloadServiceImpl implements DownloadService, SdkServiceO
     private currentDownloadRequest$;
     private downloadCompleteDelegate?;
     private sharedPreferencesSetCollection;
-    private completedDownloadRequestsCache;
     constructor(eventsBusService: EventsBusService, sharedPreferences: SharedPreferences);
     private static generateDownloadStartTelemetry;
     private static generateDownloadCompleteTelemetry;
@@ -33,6 +30,4 @@ export declare class DownloadServiceImpl implements DownloadService, SdkServiceO
     private emitProgressInEventBus;
     private getDownloadProgress;
     private listenForDownloadProgressChanges;
-    trackDownloads(downloadStatRequest: TrackDownloadRequest): Observable<DownloadTracking>;
-    onContentDelete(identifier: string): void;
 }

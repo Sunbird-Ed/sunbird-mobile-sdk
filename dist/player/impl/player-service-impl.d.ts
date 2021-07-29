@@ -1,7 +1,7 @@
 import { PlayerService } from '..';
 import { Content } from '../../content';
 import { ProfileService } from '../../profile';
-import { GroupServiceDeprecated } from '../../group-deprecated';
+import { GroupService } from '../../group';
 import { PlayerInput } from '../def/response';
 import { DeviceInfo } from '../../util/device';
 import { SdkConfig } from '../../sdk-config';
@@ -15,7 +15,7 @@ export declare class PlayerServiceImpl implements PlayerService {
     private frameworkService;
     private deviceInfo;
     private appInfo;
-    constructor(profileService: ProfileService, groupService: GroupServiceDeprecated, config: SdkConfig, frameworkService: FrameworkService, deviceInfo: DeviceInfo, appInfo: AppInfo);
+    constructor(profileService: ProfileService, groupService: GroupService, config: SdkConfig, frameworkService: FrameworkService, deviceInfo: DeviceInfo, appInfo: AppInfo);
     getPlayerConfig(content: Content, extraInfo: {
         [key: string]: any;
     }): Observable<PlayerInput>;

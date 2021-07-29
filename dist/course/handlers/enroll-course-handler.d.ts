@@ -7,5 +7,4 @@ export declare class EnrollCourseHandler implements ApiRequestHandler<EnrollCour
     private readonly ENROL_ENDPOINT;
     constructor(apiService: ApiService, courseServiceConfig: CourseServiceConfig);
     handle(request: EnrollCourseRequest): Observable<boolean>;
-    private generateAuditTelemetry;
 }

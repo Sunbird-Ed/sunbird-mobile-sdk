@@ -7,6 +7,6 @@ export declare class GetContentsHandler {
     private getLocalOnlyQuery;
     private generateSortByQuery;
     private generateOrderByQuery;
-    private generateFieldMatchQuery;
+    private generateBoardMediumGradeQuery;
     private generateLikeQuery;
 }

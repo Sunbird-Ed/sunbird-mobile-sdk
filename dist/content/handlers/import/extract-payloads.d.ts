@@ -18,7 +18,7 @@ export declare class ExtractPayloads {
     private eventsBusService;
     private sharedPreferences;
     constructor(fileService: FileService, zipService: ZipService, appConfig: AppConfig, dbService: DbService, deviceInfo: DeviceInfo, getContentDetailsHandler: GetContentDetailsHandler, eventsBusService: EventsBusService, sharedPreferences: SharedPreferences);
-    execute(importContext: ImportContentContext): Promise<[Response, NodeJS.Timeout]>;
+    execute(importContext: ImportContentContext): Promise<Response>;
     updateContentFileSizeInDB(importContext: ImportContentContext, commonContentModelsMap: any, payloadDestinationPathMap: any, result: any): Promise<void>;
     updateContentDB(insertNewContentModels: any, updateNewContentModels: any, updateSize?: boolean): Promise<void>;
     copyAssets(tempLocationPath: string, asset: string, payloadDestinationPath: string, useSubDirectories?: boolean): Promise<void>;

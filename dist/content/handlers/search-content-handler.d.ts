@@ -1,4 +1,4 @@
-import { ContentData, ContentImport, ContentSearchCriteria, ContentSearchFilter, ContentSearchResult, ContentServiceConfig, ContentSortCriteria, FilterValue, SearchResponse, SortOrder } from '..';
+import { ContentData, ContentImport, ContentSearchCriteria, ContentSearchFilter, ContentSearchResult, ContentServiceConfig, ContentSortCriteria, FilterValue, SearchResponse } from '..';
 import { AppConfig } from '../../api/config/app-config';
 import { SearchFilter, SearchRequest } from '../def/search-request';
 import { TelemetryService } from '../../telemetry';
@@ -11,14 +11,12 @@ export declare class SearchContentHandler {
         [key: string]: any;
     }): ContentSearchCriteria;
     getSearchContentRequest(criteria: ContentSearchCriteria): SearchRequest;
-    private getSearchFilter;
-    private getFilterRequest;
-    private addFiltersToRequest;
-    private getSearchRequest;
-    private getImpliedFilterValues;
-    getSortByRequest(sortCriteria?: ContentSortCriteria[]): {
-        [key: string]: SortOrder;
-    };
+    getSearchFilter(criteria: ContentSearchCriteria): SearchFilter;
+    getFilterRequest(criteria: ContentSearchCriteria): SearchFilter;
+    addFiltersToRequest(searchFilter: SearchFilter, filter: ContentSearchFilter[]): void;
+    getSearchRequest(criteria: ContentSearchCriteria): SearchFilter;
+    getSortByRequest(sortCriteria: ContentSortCriteria[]): any;
+    getCompatibilityLevelFilter(): any;
     createFilterCriteria(previouscriteria: ContentSearchCriteria, facets: ContentSearchFilter[], appliedFilterMap: SearchFilter): ContentSearchCriteria;
     addFilterValue(facets: ContentSearchFilter[], filters: any): void;
     getFilterValuesWithAppliedFilter(facetValues: FilterValue[], appliedFilter: string[]): FilterValue[];

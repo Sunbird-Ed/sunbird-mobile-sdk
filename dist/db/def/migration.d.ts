@@ -1,5 +1,4 @@
 import { DbService } from './db-service';
-export declare type MigrationFactory = () => Migration;
 export declare abstract class Migration {
     targetDbVersion: number;
     migrationNumber: number;

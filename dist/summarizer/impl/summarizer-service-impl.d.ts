@@ -1,4 +1,4 @@
-import { LearnerAssessmentSummary, ReportDetailPerUser, SummarizerService, SummaryRequest } from '..';
+import { ContentCache, LearnerAssessmentSummary, ReportDetailPerUser, SummarizerService, SummaryRequest } from '..';
 import { DbService } from '../../db';
 import { SunbirdTelemetry } from '../../telemetry';
 import { EventsBusService } from '../../events-bus';
@@ -32,7 +32,7 @@ export declare class SummarizerServiceImpl implements SummarizerService, EventOb
         [p: string]: any;
     }[]>;
     getSummary(request: SummaryRequest): Observable<LearnerAssessmentSummary[]>;
-    private getContentCache;
+    getContentCache(uids: string[]): Observable<Map<string, ContentCache>>;
     saveLearnerAssessmentDetails(event: Telemetry): Observable<boolean>;
     saveLearnerContentSummaryDetails(event: Telemetry): Observable<boolean>;
     deletePreviousAssessmentDetails(uid: string, contentId: string): Observable<undefined>;

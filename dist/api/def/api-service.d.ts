@@ -1,8 +1,10 @@
+import { Request } from './request';
 import { Observable } from 'rxjs';
+import { Response } from './response';
+import { Authenticator } from './authenticator';
 import { SdkServiceOnInitDelegate } from '../../sdk-service-on-init-delegate';
-import { CsRequest, CsRequestInterceptor, CsResponse, CsResponseInterceptor } from '@project-sunbird/client-services/core/http-service';
 export interface ApiService extends SdkServiceOnInitDelegate {
-    fetch<T = any>(request: CsRequest): Observable<CsResponse<T>>;
-    setDefaultRequestInterceptors(interceptors: CsRequestInterceptor[]): any;
-    setDefaultResponseInterceptors(interceptors: CsResponseInterceptor[]): any;
+    fetch<T = any>(request: Request): Observable<Response<T>>;
+    setDefaultApiAuthenticators(authenticators: Authenticator[]): void;
+    setDefaultSessionAuthenticators(authenticators: Authenticator[]): void;
 }

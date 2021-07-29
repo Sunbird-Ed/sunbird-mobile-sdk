@@ -2,7 +2,7 @@ export declare namespace AppInfoKeys {
     const KEY_FIRST_ACCESS_TIMESTAMP = "first_access_timestamp";
 }
 export declare namespace ApiKeys {
-    const KEY_API_TOKEN = "api_bearer_token_v2";
+    const KEY_API_TOKEN = "api_bearer_token";
 }
 export declare namespace AuthKeys {
     const KEY_OAUTH_SESSION = "oauth_token";
@@ -48,7 +48,4 @@ export declare namespace DeviceRegister {
 export declare namespace TelemetryKeys {
     const KEY_LAST_SYNCED_TIME_STAMP = "telemetry_last_synced_time_stamp";
     const KEY_AUTO_SYNC_MODE = "telemetry_auto_sync_mode";
-}
-export declare namespace PageAssembleKeys {
-    const KEY_ORGANISATION_ID = "page_assemble_organisation_id";
 }

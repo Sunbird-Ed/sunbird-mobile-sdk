@@ -11,6 +11,6 @@ export declare class EventsBusServiceImpl implements EventsBusService {
     constructor(sdkConfig: SdkConfig);
     onInit(): Observable<undefined>;
     events(eventFilter?: string): Observable<any>;
-    emit<T extends EventsBusEvent = any>({ namespace, event }: EmitRequest<T>): void;
+    emit({ namespace, event }: EmitRequest<EventsBusEvent>): void;
     registerObserver({ namespace, observer }: RegisterObserverRequest): void;
 }

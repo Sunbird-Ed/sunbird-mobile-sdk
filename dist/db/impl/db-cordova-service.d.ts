@@ -1,4 +1,4 @@
-import { DbService, DeleteQuery, InsertQuery, Migration, MigrationFactory, ReadQuery, UpdateQuery } from '..';
+import { DbService, DeleteQuery, InsertQuery, Migration, ReadQuery, UpdateQuery } from '..';
 import { SdkConfig } from '../../sdk-config';
 import { Observable } from 'rxjs';
 export declare class DbCordovaService implements DbService {
@@ -6,7 +6,7 @@ export declare class DbCordovaService implements DbService {
     private dBVersion;
     private appMigrationList;
     private context;
-    constructor(sdkConfig: SdkConfig, dBVersion: number, appMigrationList: (Migration | MigrationFactory)[]);
+    constructor(sdkConfig: SdkConfig, dBVersion: number, appMigrationList: Migration[]);
     update(updateQuery: UpdateQuery): Observable<number>;
     init(): Promise<undefined>;
     private hasInitialized;
