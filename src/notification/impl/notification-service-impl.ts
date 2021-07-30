@@ -227,7 +227,8 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                     source: 'USER_FEED',
                     displayTime: new Date(e.createdOn).getTime(),
                     expiry: e.expireOn ? new Date(e.expireOn).getTime() : 0,
-                    isRead: e.status === 'read' ? 1 : 0
+                    isRead: e.status === 'read' ? 1 : 0,
+                    ...e.data
                 } as Notification;
             })
         ).sort((a, b) => {
