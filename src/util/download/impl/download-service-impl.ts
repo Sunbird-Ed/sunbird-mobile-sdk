@@ -103,12 +103,12 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
     }
 
     onInit(): Observable<undefined> {
-        return this.switchToNextDownloadRequest()
-            .pipe(
-                mergeMap(() => {
-                    return this.listenForDownloadProgressChanges();
-                })
-            );
+            return this.switchToNextDownloadRequest()
+                .pipe(
+                    mergeMap(() => {
+                            return this.listenForDownloadProgressChanges();
+                    })
+                );
     }
 
     download(downloadRequests: DownloadRequest[]): Observable<undefined> {
@@ -237,10 +237,11 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         });
                     }).pipe(
                         tap((downloadId) => {
-                            anyDownloadRequest.downloadedFilePath = cordova.file.externalDataDirectory +
-                                DownloadServiceImpl.DOWNLOAD_DIR_NAME + '/' + anyDownloadRequest.filename;
+                            let dataDirectory = window.device.platform.toLowerCase() === "ios" ? cordova.file.documentsDirectory : cordova.file.externalDataDirectory
+                            anyDownloadRequest.downloadedFilePath = dataDirectory +
+                            DownloadServiceImpl.DOWNLOAD_DIR_NAME + '/' + anyDownloadRequest.filename;
                             anyDownloadRequest.downloadId = downloadId;
-                            this.currentDownloadRequest$.next(anyDownloadRequest);
+                            this.currentDownloadRequest$.next(anyDownloadRequest);                           
                         }),
                         tap(async () => await DownloadServiceImpl.generateDownloadStartTelemetry(anyDownloadRequest!)),
                         mapTo(undefined),

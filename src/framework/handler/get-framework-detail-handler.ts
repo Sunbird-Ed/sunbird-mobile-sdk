@@ -65,7 +65,7 @@ export class GetFrameworkDetailsHandler implements ApiRequestHandler<FrameworkDe
     }
 
     private fetchFromFile(request: FrameworkDetailsRequest): Observable<Framework> {
-        const dir = Path.ASSETS_PATH + this.frameworkServiceConfig.frameworkConfigDirPath;
+        const dir = Path.getAssetPath() + this.frameworkServiceConfig.frameworkConfigDirPath;
         const file = this.FRAMEWORK_FILE_KEY_PREFIX + request.frameworkId + '.json';
 
         return from(this.fileService.readFileFromAssets(dir.concat('/', file))).pipe(

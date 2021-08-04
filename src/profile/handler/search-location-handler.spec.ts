@@ -57,6 +57,7 @@ describe('SearchLocationHandler', () => {
 
     it('should run handle function from the searchLocation Handler using fetchFromFile', () => {
         // arrange
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
         const request: LocationSearchCriteria = {
             filters: {
                 type: 'sample',

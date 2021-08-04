@@ -88,7 +88,7 @@ export namespace UserEntry {
     }
 
     export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE ' + UserEntry.TABLE_NAME + ' (' +
+        return 'CREATE TABLE IF NOT EXISTS ' + UserEntry.TABLE_NAME + ' (' +
             UserEntry._ID + ' INTEGER PRIMARY KEY,' +
             UserEntry.COLUMN_NAME_UID + DbConstants.SPACE + DbConstants.TEXT_TYPE +
             ' )';
