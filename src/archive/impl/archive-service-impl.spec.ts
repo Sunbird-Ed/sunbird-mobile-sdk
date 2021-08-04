@@ -326,6 +326,10 @@ describe('ArchiveServiceImpl', () => {
     });
 
     describe('import()', () => {
+        window['device'] = {
+            uuid:'some_id',
+            platform: 'android'
+        }
         it('should throw InvalidRequestError if no objects to import in request', (done) => {
             // act
             archiveService.import({
