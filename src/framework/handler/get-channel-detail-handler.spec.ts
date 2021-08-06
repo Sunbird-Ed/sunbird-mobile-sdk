@@ -108,6 +108,7 @@ describe('GetChannelDetailHandler', () => {
 
     it('should run handle function from the GetChannelDetailHandler', () => {
         // arrange
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
         const request: ChannelDetailsRequest = {
             channelId: 'SAMPLE_CHANNEL_ID'
         };

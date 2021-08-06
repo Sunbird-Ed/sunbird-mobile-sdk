@@ -57,6 +57,7 @@ describe('GetSystemSettingsHandler', () => {
     });
     it('should handle cachedItem when called with fileService', () => {
         // arrange
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
         const request: GetSystemSettingsRequest = {
             id: 'sample_id'
         };

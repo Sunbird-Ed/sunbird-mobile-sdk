@@ -25,7 +25,10 @@ describe('DownloadServiceImpl', () => {
             mockSharedPreferences
         );
     });
-
+    window['device'] = {
+        uuid:'some_id',
+        platform: 'android'
+    }
 
     beforeEach(async (done) => {
         jest.clearAllMocks();

@@ -23,6 +23,7 @@ describe('CopyToDestination', () => {
 
     it('should be copied a file by invoked exicute() for error MEssage', (done) => {
         // arrange
+        window['device'] = { uuid: 'some_uuid', platform:'aandroid' };
         const contentEntrySchema: ContentEntry.SchemaMap[] = [{
             identifier: 'IDENTIFIER',
             server_data: 'SERVER_DATA',
