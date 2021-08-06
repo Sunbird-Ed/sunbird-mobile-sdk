@@ -577,7 +577,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         contentSearchCriteria: ContentSearchCriteria,
         request?: { [key: string]: any },
         apiHandler?: ApiRequestHandler<SearchRequest, SearchResponse>,
-        isSampleName?: boolean,
+        isFromContentAggregator?: boolean,
     ): Observable<ContentSearchResult> {
         contentSearchCriteria = JSON.parse(JSON.stringify(contentSearchCriteria));
         if (contentSearchCriteria.facetFilters) {
@@ -617,7 +617,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return apiHandler.handle(searchRequest).pipe(
                     map((searchResponse: SearchResponse) => {
                         if (!contentSearchCriteria.facetFilters && contentSearchCriteria.searchType === SearchType.SEARCH) {
-                            if (!isSampleName) {
+                            if (!isFromContentAggregator) {
                                 searchRequest.filters.contentType = [];
                                 searchRequest.filters.primaryCategory = [];
                             }

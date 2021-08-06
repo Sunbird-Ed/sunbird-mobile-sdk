@@ -46,7 +46,7 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
         criteria: ContentSearchCriteria,
         request?: { [key: string]: any },
         apiHandler?: ApiRequestHandler<SearchRequest, SearchResponse>,
-        isSampleName?: boolean
+        isFromContentAggregator?: boolean
     ): Observable<ContentSearchResult>;
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
