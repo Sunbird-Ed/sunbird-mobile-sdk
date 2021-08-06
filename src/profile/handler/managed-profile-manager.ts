@@ -188,6 +188,13 @@ export class ManagedProfileManager {
 
             if (profileSession.uid === uid) {
                 profileSession.managedSession = undefined;
+                const authSession = (await this.authService.getSession().toPromise())!;
+                authSession.managed_access_token = undefined;
+                await this.authService.setSession(new class implements SessionProvider {
+                    async provide(): Promise<OAuthSession> {
+                        return authSession;
+                    }
+                }).toPromise();
             } else {
                 profileSession.managedSession = new ProfileSession(uid);
 
