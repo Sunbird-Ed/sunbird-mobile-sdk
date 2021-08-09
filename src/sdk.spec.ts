@@ -143,7 +143,7 @@ describe('sdk', () => {
 
     describe('init()', () => {
         it('should rebind client-services services on configuration update', (done) => {
-            window['device'] = {uuid: 'some_uuid'};
+            window['device'] = {uuid: 'some_uuid', platform:'android'};
 
             jest.spyOn(sdkInstance, 'dbService', 'get').mockImplementation(() => {
                 return {

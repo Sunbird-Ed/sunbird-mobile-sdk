@@ -446,7 +446,6 @@ export class SunbirdSdk {
         await this.dbService.init();
         await this.appInfo.init();
         await this.preInit().toPromise();
-
         this._isInitialised = true;
 
         this.postInit().subscribe();
