@@ -327,6 +327,7 @@ export class ContentAggregator {
                 return field.sections.map((section) => {
                     return {
                         index: section.index,
+                        code: section.code,
                         title: section.title,
                         data: field.dataSrc.values!.filter((value) => Number(value.expiry) > Math.floor(Date.now() / 1000)),
                         dataSrc: field.dataSrc,
