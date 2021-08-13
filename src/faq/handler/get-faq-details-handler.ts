@@ -52,7 +52,7 @@ export class GetFaqDetailsHandler {
     }
 
     private fetchFromFile(language: string): Observable<Faq> {
-        const dir = Path.ASSETS_PATH + this.faqServiceConfig.faqConfigDirPath;
+        const dir = Path.getAssetPath() + this.faqServiceConfig.faqConfigDirPath;
         const file = this.FAQ_FILE_KEY_PREFIX + language + '.json';
 
         return from(this.fileservice.readFileFromAssets(dir.concat('/', file)))

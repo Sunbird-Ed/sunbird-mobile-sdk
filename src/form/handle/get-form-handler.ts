@@ -63,7 +63,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     }
 
     private fetchFromFile(request: FormRequest): Observable<{ [key: string]: {} }> {
-        const dir = Path.ASSETS_PATH + this.formServiceConfig.formConfigDirPath;
+        const dir = Path.getAssetPath() + this.formServiceConfig.formConfigDirPath;
         const file = this.FORM_FILE_KEY_PREFIX + GetFormHandler.getIdForRequest(request) + '.json';
 
         return from(this.fileService.readFileFromAssets(dir.concat('/', file))).pipe(

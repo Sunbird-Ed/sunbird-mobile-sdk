@@ -8,4 +8,7 @@ export class Path {
     public static fileNameFromFilePath(filePath: string): string {
         return filePath.substring(filePath.lastIndexOf('/') + 1);
     }
+    public static getAssetPath() : string {
+        return (window.device.platform.toLowerCase() === "ios" ?  cordova.file.applicationDirectory + 'www/assets': Path.ASSETS_PATH)
+    }
 }
