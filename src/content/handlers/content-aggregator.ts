@@ -88,7 +88,8 @@ export interface DataSourceModelMap {
         request: Partial<SerializedRequest>,
         mapping: {
             facet: string,
-            aggregate?: AggregationConfig
+            aggregate?: AggregationConfig,
+            filterPillBy?: string
         }[],
         params?: any
     };
@@ -420,7 +421,8 @@ export class ContentAggregator {
                                           [{name: facetFilters.name, values: [{name: filterValue.name, apply: true}]}]
                                         // [facetFilters.name]: [filterValue.name]
                                     },
-                                    aggregate: field.dataSrc.mapping[index].aggregate
+                                    aggregate: field.dataSrc.mapping[index].aggregate,
+                                    filterPillBy: field.dataSrc.mapping[index].filterPillBy
                                 };
                             }).sort((a, b) => {
                                 if (request.userPreferences) {
