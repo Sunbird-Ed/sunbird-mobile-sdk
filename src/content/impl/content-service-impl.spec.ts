@@ -1516,4 +1516,28 @@ describe('ContentServiceImpl', () => {
         })
     })
 
+    describe('formatSearchCriteria', ()=>{
+        it('should convert search filter object to contant search criteria.', (done) =>{
+            // arrange
+            const request = {
+                request: {
+                    query: 'Sample_query',
+                    mode: 'mode',
+                    filters: 'filters'
+                }
+            };
+            (SearchContentHandler as jest.Mock<SearchContentHandler>).mockImplementation(() => {
+                return {
+                    getSearchCriteria: jest.fn(() => ({languageCode: 'bn'}))
+                } as Partial<SearchContentHandler> as SearchContentHandler;
+            });
+            //act
+            
+            contentService.formatSearchCriteria(request);
+            // assert
+            expect(request.request.query).toBe('Sample_query');
+            done();
+        })
+    })
+
 });
