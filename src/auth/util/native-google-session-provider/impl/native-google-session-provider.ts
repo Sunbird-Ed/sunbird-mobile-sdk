@@ -38,13 +38,15 @@ export class NativeGoogleSessionProvider implements SessionProvider {
     }
 
     private callGoogleNativeLogin(idToken: string, emailId: string): Observable<OAuthSession> {
+        const platform = window.device.platform.toLowerCase() ==='ios' ? 'ios' :null;
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(NativeGoogleSessionProvider.LOGIN_API_ENDPOINT)
             .withBearerToken(false)
             .withUserToken(false)
             .withBody({
-                emailId: emailId
+                emailId: emailId,
+                platform: platform
             })
             .withHeaders({
                 'X-GOOGLE-ID-TOKEN': idToken

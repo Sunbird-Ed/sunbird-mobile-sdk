@@ -17,7 +17,7 @@ export namespace TelemetryEntry {
     }
 
     export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE ' + TelemetryEntry.TABLE_NAME + ' (' +
+        return 'CREATE TABLE IF NOT EXISTS ' + TelemetryEntry.TABLE_NAME + ' (' +
             TelemetryEntry._ID + DbConstants.SPACE + ' INTEGER PRIMARY KEY,' +
             TelemetryEntry.COLUMN_NAME_EVENT_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             TelemetryEntry.COLUMN_NAME_EVENT + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
@@ -51,7 +51,7 @@ export namespace TelemetryProcessedEntry {
     }
 
     export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE ' + TelemetryProcessedEntry.TABLE_NAME + ' (' +
+        return 'CREATE TABLE IF NOT EXISTS ' + TelemetryProcessedEntry.TABLE_NAME + ' (' +
             TelemetryProcessedEntry._ID + ' INTEGER PRIMARY KEY,' +
             TelemetryProcessedEntry.COLUMN_NAME_MSG_ID + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             TelemetryProcessedEntry.COLUMN_NAME_DATA + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
@@ -74,7 +74,7 @@ export namespace EventPriorityEntry {
 
 
     export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE ' + EventPriorityEntry.TABLE_NAME + ' (' +
+        return 'CREATE TABLE IF NOT EXISTS ' + EventPriorityEntry.TABLE_NAME + ' (' +
             EventPriorityEntry._ID + ' INTEGER PRIMARY KEY,' +
             EventPriorityEntry.COLUMN_NAME_EVENT + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             EventPriorityEntry.COLUMN_NAME_PRIORITY + DbConstants.SPACE + DbConstants.INT_TYPE +
@@ -98,7 +98,7 @@ export namespace TelemetryTagEntry {
 
 
     export const getCreateEntry: (() => string) = () => {
-        return 'CREATE TABLE ' + TABLE_NAME + ' (' +
+        return 'CREATE TABLE IF NOT EXISTS ' + TABLE_NAME + ' (' +
             _ID + ' INTEGER PRIMARY KEY,' +
             COLUMN_NAME_NAME + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_HASH + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +

@@ -795,8 +795,7 @@ export class ContentAggregator {
                         })
                     );
                 }
-            }
-        ).pipe(
+            }, true).pipe(
             catchError((e) => {
                 console.error(e);
 

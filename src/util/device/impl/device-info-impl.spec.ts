@@ -7,7 +7,7 @@ declare const sbutility;
 
 describe('DeviceInfoImpl', () => {
     let deviceInfoImpl: DeviceInfoImpl;
-    window['device'] = { uuid: 'some_uuid' };
+    window['device'] = { uuid: 'some_uuid', platform:'android' };
 
     beforeAll(() => {
         deviceInfoImpl = new DeviceInfoImpl();
