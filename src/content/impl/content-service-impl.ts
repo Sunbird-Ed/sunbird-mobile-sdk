@@ -745,17 +745,23 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         );
     }
 
-      getQuestionList(questionIds: string[]): Observable<any> {
+    getQuestionList(questionIds: string[]): Observable<any> {
         return this.contentServiceDelegate.getQuestionList(questionIds);
-      }
-    
-      getQuestionSetHierarchy(data) {
-        return this.contentServiceDelegate.getQuestionSetHierarchy(data);
-      }
+    }
 
-      getQuestionSetRead(contentId:string, params?:any) {
+    getQuestionSetHierarchy(data) {
+        return this.contentServiceDelegate.getQuestionSetHierarchy(data);
+    }
+
+    getQuestionSetRead(contentId:string, params?:any) {
         return this.contentServiceDelegate.getQuestionSetRead(contentId,params);
-      }
+    }
+
+    formatSearchCriteria(requestMap: { [key: string]: any }): ContentSearchCriteria {
+        const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
+            this.contentServiceConfig, this.telemetryService);
+        return searchHandler.getSearchCriteria(requestMap);
+    }
 
     private cleanupContent(importContentContext: ImportContentContext): Observable<undefined> {
         const contentDeleteList: ContentDelete[] = [];
