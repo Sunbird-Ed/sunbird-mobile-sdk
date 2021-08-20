@@ -69,4 +69,6 @@ export interface CourseService {
     getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<{count: number, content: LearnerCertificate[]}>;
 
     syncCourseProgress(request: UpdateCourseContentStateRequest): Observable<UpdateContentStateResponse>;
+
+    clearAssessments(): Observable<undefined>;
 }

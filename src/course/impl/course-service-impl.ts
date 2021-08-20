@@ -257,8 +257,8 @@ export class CourseServiceImpl implements CourseService {
         return defer(async () => {
             const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
             const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
-            
-            const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalRootDirectory;
+
+            const folderPath = (window.device.platform.toLowerCase() === 'ios') ? cordova.file.documentsDirectory : cordova.file.externalRootDirectory;
             const filePath = `${folderPath}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
             return {userId};
         }).pipe(
@@ -398,11 +398,27 @@ export class CourseServiceImpl implements CourseService {
         });
     }
 
-    getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<{count: number, content: LearnerCertificate[]}> {
+    getLearnerCertificates(request: GetLearnerCerificateRequest): Observable<{ count: number, content: LearnerCertificate[] }> {
         return new GetLearnerCertificateHandler(this.apiService, this.cachedItemStore).handle(request);
     }
 
     syncCourseProgress(request: UpdateCourseContentStateRequest): Observable<UpdateContentStateResponse> {
-        return this.csCourseService.updateContentState(request, { apiPath : '/api/course/v1'});
+        return this.csCourseService.updateContentState(request, {apiPath: '/api/course/v1'});
+    }
+
+    clearAssessments(): Observable<undefined> {
+        return this.sharedPreferences.getString(ContentKeys.COURSE_CONTEXT).pipe(
+            map((value) => {
+                const result = value ? JSON.parse(value) : {};
+                if (result) {
+                    const key = ObjectUtil.toOrderedString(result);
+                    if (this.capturedAssessmentEvents[key]) {
+                        this.capturedAssessmentEvents[key] = [];
+                    }
+
+                }
+                return undefined;
+            })
+        );
     }
 }
