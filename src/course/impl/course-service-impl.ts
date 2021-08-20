@@ -406,7 +406,7 @@ export class CourseServiceImpl implements CourseService {
         return this.csCourseService.updateContentState(request, {apiPath: '/api/course/v1'});
     }
 
-    clearAssessmentEvents(): Observable<undefined> {
+    clearAssessments(): Observable<undefined> {
         return this.sharedPreferences.getString(ContentKeys.COURSE_CONTEXT).pipe(
             map((value) => {
                 const result = value ? JSON.parse(value) : {};

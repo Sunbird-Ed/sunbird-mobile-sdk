@@ -1187,7 +1187,7 @@ describe('CourseServiceImpl', () => {
             // arrange
             sharePreferencesMock.getString = jest.fn(() => of('sample_context'));
             // act
-            courseService.clearAssessmentEvents();
+            courseService.clearAssessments();
             setTimeout(() => {
                 expect(sharePreferencesMock.getString).toHaveBeenCalled();
                 done();

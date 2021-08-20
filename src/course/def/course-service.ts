@@ -70,5 +70,5 @@ export interface CourseService {
 
     syncCourseProgress(request: UpdateCourseContentStateRequest): Observable<UpdateContentStateResponse>;
 
-    clearAssessmentEvents(): Observable<undefined>;
+    clearAssessments(): Observable<undefined>;
 }
