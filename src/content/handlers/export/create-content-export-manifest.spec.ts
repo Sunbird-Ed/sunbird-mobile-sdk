@@ -13,6 +13,7 @@ describe('CreateContentExportManifest', () => {
     const mockImportNExportHandler: Partial<ImportNExportHandler> = {};
 
     beforeAll(() => {
+       
         createContentExportManifest = new CreateContentExportManifest(
             mockDbService as DbService,
             mockImportNExportHandler as ImportNExportHandler
@@ -20,6 +21,7 @@ describe('CreateContentExportManifest', () => {
     });
 
     beforeEach(() => {
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
         jest.clearAllMocks();
     });
 
