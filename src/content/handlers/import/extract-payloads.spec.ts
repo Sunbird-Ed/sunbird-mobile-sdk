@@ -52,6 +52,7 @@ describe('ExtractPayloads', () => {
     });
 
     beforeEach(() => {
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
         jest.clearAllMocks();
         (UpdateSizeOnDevice as jest.Mock<UpdateSizeOnDevice>).mockClear();
     });

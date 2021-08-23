@@ -19,7 +19,6 @@ export class ValidateEcar {
     public async execute(importContext: ImportContentContext): Promise<Response> {
         const response: Response = new Response();
         const data = await this.fileService.readAsText(importContext.tmpLocation!, FileName.MANIFEST.valueOf());
-
         if (!data) {
             response.errorMesg = ContentErrorCode.IMPORT_FAILED_MANIFEST_FILE_NOT_FOUND.valueOf();
             await this.fileService.removeRecursively(importContext.tmpLocation!);
