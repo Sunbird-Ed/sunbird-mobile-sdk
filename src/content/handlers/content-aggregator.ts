@@ -646,13 +646,17 @@ export class ContentAggregator {
                             if (request.userPreferences && request.userPreferences[aggregate.groupBy!]) {
                                 d.sections.sort((a, b) => {
                                     if (
-                                        request.userPreferences![aggregate.groupBy!]!.indexOf(a.name!.toLocaleLowerCase()!) > -1 &&
-                                        request.userPreferences![aggregate.groupBy!]!.indexOf(b.name!.toLocaleLowerCase()) > -1
+                                        request.userPreferences![aggregate.groupBy!]!.
+                                        indexOf(a.name!.replace(/[^A-Z0-9]/ig, '')!.toLocaleLowerCase()!) > -1 &&
+                                        request.userPreferences![aggregate.groupBy!]!.
+                                        indexOf(b.name!.replace(/[^A-Z0-9]/ig, '')!.toLocaleLowerCase()) > -1
                                     ) { return a.name!.localeCompare(b.name!); }
-                                    if (request.userPreferences![aggregate.groupBy!]!.indexOf(a.name!.toLocaleLowerCase()) > -1) {
+                                    if (request.userPreferences![aggregate.groupBy!]!.
+                                        indexOf(a.name!.replace(/[^A-Z0-9]/ig, '')!.toLocaleLowerCase()) > -1) {
                                          return -1;
                                         }
-                                    if (request.userPreferences![aggregate.groupBy!]!.indexOf(b.name!.toLocaleLowerCase()) > -1) {
+                                    if (request.userPreferences![aggregate.groupBy!]!.
+                                        indexOf(b.name!.replace(/[^A-Z0-9]/ig, '')!.toLocaleLowerCase()) > -1) {
                                          return 1;
                                         }
                                     return 0;
