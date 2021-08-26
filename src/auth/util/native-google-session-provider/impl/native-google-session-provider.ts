@@ -57,8 +57,7 @@ export class NativeGoogleSessionProvider implements SessionProvider {
             .pipe(
                 map((success) => {
                     if (success.body) {
-                        CsModule.instance.config.core.api.authentication.userToken = success.body.access_token;
-                        CsModule.instance.updateAuthTokenConfig(CsModule.instance.config);
+                        CsModule.instance.updateAuthTokenConfig(success.body.access_token);
                     }
                     return {
                         access_token: success.body.access_token,
