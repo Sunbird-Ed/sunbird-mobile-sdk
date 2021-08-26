@@ -46,7 +46,6 @@ export class ExtractPayloads {
         const commonContentModelsMap: Map<string, ContentEntry.SchemaMap> = new Map<string, ContentEntry.SchemaMap>();
         const payloadDestinationPathMap: Map<string, string | undefined> = new Map();
         let rootContentPath;
-
         // this count is for maintaining how many contents are imported so far
         let currentCount = 0;
         // post event before starting with how many imports are to be done totally
@@ -123,8 +122,11 @@ export class ExtractPayloads {
                 if (createdDirectories[identifier] && createdDirectories[identifier].path) {
                     payloadDestination = createdDirectories[identifier].path;
                 } else {
-                    const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(
-                        ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier), false);
+                    let payloadDirectory = (window.device.platform.toLowerCase() === "ios") ? 
+                        ContentUtil.getContentRootDir(importContext.destinationFolder).concat(identifier):
+                        ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier);
+                    const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(payloadDirectory
+                                                , false);
                     payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
                 }
             }
