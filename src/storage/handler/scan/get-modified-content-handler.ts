@@ -6,11 +6,10 @@ import {ContentUtil} from '../../../content/util/content-util';
 import {ArrayUtil} from '../../../util/array-util';
 import {defer, Observable} from 'rxjs';
 import {map, mapTo} from 'rxjs/operators';
-import { platform } from '@ionic/angular';
 
 export class GetModifiedContentHandler {
     constructor(private fileService: FileService,
-                private dbService: DbService,platform: Platform) {
+                private dbService: DbService) {
 
     }
 
