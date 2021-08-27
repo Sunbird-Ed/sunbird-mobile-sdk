@@ -264,7 +264,7 @@ export class ContentUtil {
     }
 
     public static getContentRootDir(rootFilePath: string): string {
-        let url = (window.device.platform.toLowerCase() === "ios") ? rootFilePath : rootFilePath.concat('content')
+        let url = (window.device.platform.toLowerCase() === "ios") ? rootFilePath.concat("/content/") : rootFilePath.concat('content')
         return url;
     }
 

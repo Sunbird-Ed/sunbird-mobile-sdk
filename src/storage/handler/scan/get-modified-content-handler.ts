@@ -6,18 +6,23 @@ import {ContentUtil} from '../../../content/util/content-util';
 import {ArrayUtil} from '../../../util/array-util';
 import {defer, Observable} from 'rxjs';
 import {map, mapTo} from 'rxjs/operators';
+import { platform } from '@ionic/angular';
 
 export class GetModifiedContentHandler {
     constructor(private fileService: FileService,
-                private dbService: DbService) {
+                private dbService: DbService,platform: Platform) {
 
     }
 
     public execute(context: ScanContentContext): Observable<ScanContentContext> {
         return defer(async () => {
+            alert("Hello");
             const dbContentIdentifiers = await this.getContentsInDb();
             if (context.currentStoragePath) {
-                const destination = ContentUtil.getContentRootDir(context.currentStoragePath).concat('/');
+                let destination = ContentUtil.getContentRootDir(context.currentStoragePath).concat('/');
+                if(window.device.platform.toLowerCase() === "ios") {
+                    destination = "file://"+destination;
+                }
                 const folderList = await this.getFolderList(destination);
                 context.newlyAddedIdentifiers = await this.getNewlyAddedContents(folderList, dbContentIdentifiers);
                 context.deletedIdentifiers = await this.getDeletedContents(folderList, dbContentIdentifiers);
