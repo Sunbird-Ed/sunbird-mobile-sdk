@@ -15,7 +15,6 @@ export class GetModifiedContentHandler {
 
     public execute(context: ScanContentContext): Observable<ScanContentContext> {
         return defer(async () => {
-            alert("Hello");
             const dbContentIdentifiers = await this.getContentsInDb();
             if (context.currentStoragePath) {
                 let destination = ContentUtil.getContentRootDir(context.currentStoragePath).concat('/');
