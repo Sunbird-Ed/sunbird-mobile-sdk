@@ -427,7 +427,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     importEcar(ecarImportRequest: EcarImportRequest): Observable<ContentImportResponse[]> {
-        ecarImportRequest.destinationFolder = (window.device.platform.toLowerCase() === "ios") ?"file://"+ecarImportRequest.destinationFolder+"/":ecarImportRequest.destinationFolder;
         return from(this.fileService.exists(ecarImportRequest.sourceFilePath).then((entry: Entry) => {
             const importContentContext: ImportContentContext = {
                 isChildContent: ecarImportRequest.isChildContent,
