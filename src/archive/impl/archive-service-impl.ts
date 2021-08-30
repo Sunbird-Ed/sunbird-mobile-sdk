@@ -77,7 +77,7 @@ export class ArchiveServiceImpl implements ArchiveService {
     }
 
     export(exportRequest: ArchiveExportRequest): Observable<ArchiveExportProgress> {
-        const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.cacheDirectory : cordova.file.externalCacheDirectory;
+        const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
         const workspacePath = `${folderPath}${UniqueId.generateUniqueId()}`;
         let lastResult: ArchiveExportProgress | undefined;
 
@@ -163,7 +163,7 @@ export class ArchiveServiceImpl implements ArchiveService {
     }
 
     private generateZipArchive(progress: ArchiveExportProgress, workspacePath: string): Observable<ArchiveExportProgress> {
-        const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.cacheDirectory : cordova.file.externalCacheDirectory;
+        const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
         const zipFilePath = `${folderPath}archive-${new Date().toISOString()}.zip`;
         return new Observable((observer) => {
             this.zipService.zip(workspacePath, { target: zipFilePath }, [], [], () => {
@@ -218,7 +218,7 @@ export class ArchiveServiceImpl implements ArchiveService {
     }
 
     import(importRequest: ArchiveImportRequest): Observable<ArchiveImportProgress> {
-        const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.cacheDirectory : cordova.file.externalCacheDirectory;
+        const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
         const workspacePath = `${folderPath}${UniqueId.generateUniqueId()}`;
 
         if (!importRequest.objects.length) {

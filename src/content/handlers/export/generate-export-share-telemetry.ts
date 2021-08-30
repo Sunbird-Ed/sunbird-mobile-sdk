@@ -32,7 +32,7 @@ export class GenerateExportShareTelemetry {
                 if (contentExportRequest.saveLocally) {
                     exportedFilePath = contentExportRequest.destinationFolder.concat(fileName);
                 } else {
-                    const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.cacheDirectory : cordova.file.externalCacheDirectory;
+                    const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
                     exportedFilePath = folderPath.concat(fileName);
                 }
                 const exportResponse: ContentExportResponse = {exportedFilePath: exportedFilePath};

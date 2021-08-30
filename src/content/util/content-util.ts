@@ -264,7 +264,7 @@ export class ContentUtil {
     }
 
     public static getContentRootDir(rootFilePath: string): string {
-        let url = (window.device.platform.toLowerCase() === "ios") ? rootFilePath.concat("/content/") : rootFilePath.concat('content')
+        let url = (window.device.platform.toLowerCase() === "ios") ? rootFilePath.concat("content/") : rootFilePath.concat('content')
         return url;
     }
 
@@ -324,7 +324,7 @@ export class ContentUtil {
         return contentDisposition
             && contentEncoding
             && ContentDisposition.INLINE.valueOf() === contentDisposition
-            && ContentEncoding.IDENTITY === contentEncoding;
+            && ContentEncoding.IDENTITY.valueOf() === contentEncoding;
     }
 
     public static isOnlineContent(contentData): boolean {
