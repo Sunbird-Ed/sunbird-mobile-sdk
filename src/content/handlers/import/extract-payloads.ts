@@ -245,10 +245,15 @@ export class ExtractPayloads {
         }, 5000);
 
         if (rootContentPath) {
-            await this.fileService.copyFile(importContext.tmpLocation!,
-                FileName.MANIFEST.valueOf(),
-                rootContentPath,
-                FileName.MANIFEST.valueOf());
+            try {
+                await this.fileService.copyFile(importContext.tmpLocation!,
+                    FileName.MANIFEST.valueOf(),
+                    rootContentPath,
+                    FileName.MANIFEST.valueOf());
+            } catch(e) {
+                console.log("Exception Raised During Import");
+            }
+            
         }
 
         response.body = importContext;
