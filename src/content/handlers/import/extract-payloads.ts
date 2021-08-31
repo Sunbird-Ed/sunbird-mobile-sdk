@@ -120,7 +120,7 @@ export class ExtractPayloads {
             }
             if (ContentUtil.isNotUnit(mimeType, visibility)) {
                 if (createdDirectories[identifier] && createdDirectories[identifier].path) {
-                    payloadDestination = createdDirectories[identifier].path;
+                    payloadDestination = (window.device.platform.toLowerCase() === "ios") ? createdDirectories[identifier].path!.concat("/"): createdDirectories[identifier].path;
                 } else {
                     let payloadDirectory = (window.device.platform.toLowerCase() === "ios") ? 
                         ContentUtil.getContentRootDir(importContext.destinationFolder).concat(identifier):
