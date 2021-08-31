@@ -171,6 +171,7 @@ describe('ContentServiceImpl', () => {
     });
 
     beforeEach(() => {
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
         jest.clearAllMocks();
         (SearchContentHandler as jest.Mock<SearchContentHandler>).mockClear();
         (GetContentDetailsHandler as any as jest.Mock<GetContentDetailsHandler>).mockClear();

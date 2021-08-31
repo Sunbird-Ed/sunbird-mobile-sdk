@@ -23,6 +23,9 @@ describe('CreateContentImportManifest', () => {
             mockFileService as FileService
         );
     });
+    beforeEach(() => {
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
+    });
 
     it('should be create a instance of createContentImportManifest', () => {
         expect(createContentImportManifest).toBeTruthy();

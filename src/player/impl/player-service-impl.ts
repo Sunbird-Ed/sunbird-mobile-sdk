@@ -37,7 +37,11 @@ export class PlayerServiceImpl implements PlayerService {
         const playerInput: PlayerInput = {};
         content.rollup = ContentUtil.getRollup(content.identifier, content.hierarchyInfo!);
         context.objectRollup = content.rollup;
-        content.basePath = content.basePath.replace(/\/$/, '');
+        if (window.device.platform.toLowerCase() === "ios") {
+            content.basePath = (content.basePath || (content.basePath = '')).replace(/\/$/, '');
+        } else {
+            content.basePath = content.basePath.replace(/\/$/, '');
+        }
         if (content.isAvailableLocally) {
             content.contentData.streamingUrl = content.basePath;
             content.contentData.previewUrl = content.basePath;

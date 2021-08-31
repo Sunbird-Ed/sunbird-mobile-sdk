@@ -1180,4 +1180,18 @@ describe('CourseServiceImpl', () => {
             });
         });
     });
+
+    describe('clearAssessmentEvents', () => {
+        it('should fetch course context and' +
+            'checks data is available and empty capturedAssessment Events', (done) => {
+            // arrange
+            sharePreferencesMock.getString = jest.fn(() => of('sample_context'));
+            // act
+            courseService.clearAssessments();
+            setTimeout(() => {
+                expect(sharePreferencesMock.getString).toHaveBeenCalled();
+                done();
+            }, 0);
+        });
+    });
 });
