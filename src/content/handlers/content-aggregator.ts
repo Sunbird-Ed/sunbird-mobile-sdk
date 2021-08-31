@@ -88,7 +88,8 @@ export interface DataSourceModelMap {
         request: Partial<SerializedRequest>,
         mapping: {
             facet: string,
-            aggregate?: AggregationConfig
+            aggregate?: AggregationConfig,
+            filterPillBy?: string
         }[],
         params?: any
     };
@@ -327,6 +328,7 @@ export class ContentAggregator {
                 return field.sections.map((section) => {
                     return {
                         index: section.index,
+                        code: section.code,
                         title: section.title,
                         data: field.dataSrc.values!.filter((value) => Number(value.expiry) > Math.floor(Date.now() / 1000)),
                         dataSrc: field.dataSrc,
@@ -419,7 +421,8 @@ export class ContentAggregator {
                                           [{name: facetFilters.name, values: [{name: filterValue.name, apply: true}]}]
                                         // [facetFilters.name]: [filterValue.name]
                                     },
-                                    aggregate: field.dataSrc.mapping[index].aggregate
+                                    aggregate: field.dataSrc.mapping[index].aggregate,
+                                    filterPillBy: field.dataSrc.mapping[index].filterPillBy
                                 };
                             }).sort((a, b) => {
                                 if (request.userPreferences) {
@@ -643,13 +646,17 @@ export class ContentAggregator {
                             if (request.userPreferences && request.userPreferences[aggregate.groupBy!]) {
                                 d.sections.sort((a, b) => {
                                     if (
-                                        request.userPreferences![aggregate.groupBy!]!.indexOf(a.name!.toLocaleLowerCase()!) > -1 &&
-                                        request.userPreferences![aggregate.groupBy!]!.indexOf(b.name!.toLocaleLowerCase()) > -1
+                                        request.userPreferences![aggregate.groupBy!]!.
+                                        indexOf(a.name!.replace(/[^A-Z0-9]/ig, '')!.toLocaleLowerCase()!) > -1 &&
+                                        request.userPreferences![aggregate.groupBy!]!.
+                                        indexOf(b.name!.replace(/[^A-Z0-9]/ig, '')!.toLocaleLowerCase()) > -1
                                     ) { return a.name!.localeCompare(b.name!); }
-                                    if (request.userPreferences![aggregate.groupBy!]!.indexOf(a.name!.toLocaleLowerCase()) > -1) {
+                                    if (request.userPreferences![aggregate.groupBy!]!.
+                                        indexOf(a.name!.replace(/[^A-Z0-9]/ig, '')!.toLocaleLowerCase()) > -1) {
                                          return -1;
                                         }
-                                    if (request.userPreferences![aggregate.groupBy!]!.indexOf(b.name!.toLocaleLowerCase()) > -1) {
+                                    if (request.userPreferences![aggregate.groupBy!]!.
+                                        indexOf(b.name!.replace(/[^A-Z0-9]/ig, '')!.toLocaleLowerCase()) > -1) {
                                          return 1;
                                         }
                                     return 0;

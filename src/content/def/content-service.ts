@@ -95,5 +95,5 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
 
     getQuestionSetRead(contentId:string , params?: any): Observable<any>;
 
-
+    formatSearchCriteria(requestMap: { [key: string]: any }): ContentSearchCriteria;
 }
