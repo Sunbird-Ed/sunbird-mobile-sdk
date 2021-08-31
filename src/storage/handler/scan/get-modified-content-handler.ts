@@ -17,7 +17,10 @@ export class GetModifiedContentHandler {
         return defer(async () => {
             const dbContentIdentifiers = await this.getContentsInDb();
             if (context.currentStoragePath) {
-                const destination = ContentUtil.getContentRootDir(context.currentStoragePath).concat('/');
+                let destination = ContentUtil.getContentRootDir(context.currentStoragePath).concat('/');
+                if(window.device.platform.toLowerCase() === "ios") {
+                    destination = "file://"+destination;
+                }
                 const folderList = await this.getFolderList(destination);
                 context.newlyAddedIdentifiers = await this.getNewlyAddedContents(folderList, dbContentIdentifiers);
                 context.deletedIdentifiers = await this.getDeletedContents(folderList, dbContentIdentifiers);
