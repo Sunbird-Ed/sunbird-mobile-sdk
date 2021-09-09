@@ -124,6 +124,7 @@ describe('WebviewLoginSessionProvider', () => {
         describe('when config case passes', () => {
             describe('when config case:password', () => {
                 it('should resolve session when API succeeds', (done) => {
+                    window['device'] = { uuid: 'some_uuid', platform:'ios' };
                     webviewLoginSessionProvider = new WebviewLoginSessionProvider(
                         loginConfigForPassword,
                         mergeConfig,
