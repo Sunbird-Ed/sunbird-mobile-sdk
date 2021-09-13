@@ -101,6 +101,7 @@ export class AuthServiceImpl implements AuthService {
     setSession(sessionProvider: SessionProvider): Observable<undefined> {
         return from(sessionProvider.provide().then((sessionData) => {
             this.authUtil.startSession(sessionData);
+            this.authUtil.refreshSession();
             return undefined;
         }));
     }
