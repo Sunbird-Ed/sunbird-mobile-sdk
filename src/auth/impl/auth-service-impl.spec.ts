@@ -71,9 +71,11 @@ describe('AuthServiceImpl', () => {
     const mockSessionProvider = instance(MockSessionProvider);
 
     const startSession = jest.fn().mockImplementation(() => Promise.resolve(undefined));
+    const refreshSession = jest.fn().mockImplementation(() => Promise.resolve());
     (AuthUtil as jest.Mock<AuthUtil>).mockImplementation(() => {
       return {
-        startSession
+        startSession,
+        refreshSession
       } as Partial<AuthUtil> as AuthUtil;
     });
     const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
@@ -82,6 +84,7 @@ describe('AuthServiceImpl', () => {
     authService.setSession(mockSessionProvider).subscribe(() => {
       // assert
       expect(startSession).toHaveBeenCalled();
+      expect(refreshSession).toHaveBeenCalled();
       done();
     });
   });
