@@ -71,7 +71,11 @@ export class CreateContentImportManifest {
             const manifest: { [key: string]: any } = importnExportHandler.generateManifestForArchive(items);
 
             const fileMap: { [key: string]: any } = {};
-            fileMap['path'] = ContentUtil.getBasePath(ContentUtil.getContentRootDir(destinationFolder).concat('/', identifier, '/'));
+            if(items && items[0] && items[0].parent && items[0].mimeType === 'application/vnd.sunbird.question'){
+                fileMap['path'] = ContentUtil.getBasePath(ContentUtil.getContentRootDir(destinationFolder).concat('/', items[0].parent, '/', identifier, '/'));
+            } else{
+                fileMap['path'] = ContentUtil.getBasePath(ContentUtil.getContentRootDir(destinationFolder).concat('/', identifier, '/'));
+            }
             fileMap['fileName'] = FileName.MANIFEST.valueOf();
             fileMap['data'] = JSON.stringify(manifest);
 

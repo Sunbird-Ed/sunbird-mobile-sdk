@@ -575,7 +575,7 @@ export class ProfileServiceImpl implements ProfileService {
                             identifier: contentAccess.contentId,
                             epoch_timestamp: Date.now(),
                             status: ContentAccessStatus.PLAYED.valueOf(),
-                            content_type: contentAccess.contentType.toLowerCase(),
+                            content_type: contentAccess.contentType && contentAccess.contentType.toLowerCase(),
                             learner_state: contentAccess.contentLearnerState! &&
                                 JSON.stringify(contentAccess.contentLearnerState!.learnerState)
                         };
