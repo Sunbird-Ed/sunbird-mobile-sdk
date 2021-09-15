@@ -60,6 +60,7 @@ describe('AuthUtil', () => {
   describe('startSession()', () => {
     it('should save sessionData to sharedPreferences', (done) => {
       // arrange
+      window['device'] = {uuid: 'some_uuid', platform:'android'};
       const mockApConfig: ApiConfig = {} as Partial<ApiConfig> as ApiConfig;
       const mockApiService: ApiService = instance(MockApiService);
 
