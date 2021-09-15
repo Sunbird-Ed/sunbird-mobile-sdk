@@ -68,10 +68,22 @@ export class ExtractPayloads {
         }
         // await this.fileService.createDir(ContentUtil.getContentRootDir(importContext.destinationFolder), false);
         // Create all the directories for content.
-        const createdDirectories = await this.createDirectories(ContentUtil.getContentRootDir(importContext.destinationFolder),
-            nonUnitContentIds);
+        const destinationRootDir = ContentUtil.getContentRootDir(importContext.destinationFolder)
+        let createdDirectories;
+        if(importContext.items![0].mimeType === "application/vnd.sunbird.questionset"){
+            createdDirectories = await this.createDirectories(destinationRootDir,
+            [nonUnitContentIds[0]]);
+            if(createdDirectories && createdDirectories.hasOwnProperty(nonUnitContentIds[0])){
+                const createdChildDirectories = await this.createDirectories(`${destinationRootDir}/${nonUnitContentIds[0]}`,
+                nonUnitContentIds.slice(1));
+                createdDirectories = {...createdDirectories, ...createdChildDirectories};
+            }
+        } else{
+            createdDirectories = await this.createDirectories(destinationRootDir,
+                nonUnitContentIds);
+        }
         // create subdirectories for the contents which has appIcons
-        const createSubDirectories = await this.createDirectories(ContentUtil.getContentRootDir(importContext.destinationFolder), appIcons);
+        const createSubDirectories = await this.createDirectories(destinationRootDir, appIcons);
         const query = ArrayUtil.joinPreservingQuotes(contentIds);
         const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
 
@@ -167,8 +179,9 @@ export class ExtractPayloads {
                 }
 
                 // Add or update the content_state
-                if (isUnzippingSuccessful    // If unzip is success it means artifact is available.
-                    || MimeType.COLLECTION.valueOf() === mimeType) {
+                if (isUnzippingSuccessful
+                || mimeType === 'application/vnd.sunbird.questionset'
+                || MimeType.COLLECTION.valueOf() === mimeType) {
                     contentState = State.ARTIFACT_AVAILABLE.valueOf();
                 } else {
                     contentState = State.ONLY_SPINE.valueOf();
@@ -287,7 +300,8 @@ export class ExtractPayloads {
     }
 
     async updateContentDB(insertNewContentModels, updateNewContentModels, updateSize?: boolean) {
-
+        insertNewContentModels = (insertNewContentModels && insertNewContentModels.length) ? this.filterQuestionSetContent(insertNewContentModels): insertNewContentModels;
+        updateNewContentModels = (updateNewContentModels && updateNewContentModels.length) ? this.filterQuestionSetContent(updateNewContentModels): updateNewContentModels;
         if (insertNewContentModels.length || updateNewContentModels.length) {
             this.dbService.beginTransaction();
             // Insert into DB
@@ -456,6 +470,11 @@ export class ExtractPayloads {
                     reject(err);
                 });
         });
+    }
+
+    filterQuestionSetContent(items){
+        const filterdItems = items.filter(i => (i.mimeType !=='application/vnd.sunbird.question' && i.mime_type !=='application/vnd.sunbird.question'));
+        return filterdItems
     }
 
 }

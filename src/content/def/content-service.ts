@@ -89,7 +89,7 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
     ): ContentAggregator;
 
 
-    getQuestionList(questionIds: string[]): Observable<any>
+    getQuestionList(questionIds: string[], parentId?: string): Observable<any>
     
     getQuestionSetHierarchy(data): Observable<any>;
 
