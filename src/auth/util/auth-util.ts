@@ -21,8 +21,22 @@ export class AuthUtil {
         if (!sessionData) {
             throw new NoActiveSessionError('No Active Sessions found');
         }
-
-        const request = new Request.Builder()
+        let request ;
+        if(window.device.platform.toLowerCase() === "ios"){
+            request = new Request.Builder()
+            .withPath('/auth/v1/refresh/token')
+            .withType(HttpRequestType.POST)
+            .withSerializer(HttpSerializer.URLENCODED)
+            .withHeaders({
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+              })
+            .withBearerToken(true)
+            .withBody({
+                refresh_token: sessionData.refresh_token
+            })
+            .build();
+        } else {
+            request = new Request.Builder()
             .withPath('/auth/v1/refresh/token')
             .withType(HttpRequestType.POST)
             .withSerializer(HttpSerializer.URLENCODED)
@@ -31,7 +45,7 @@ export class AuthUtil {
                 refresh_token: sessionData.refresh_token
             })
             .build();
-
+        }
 
         try {
             await this.apiService.fetch(request).toPromise()
