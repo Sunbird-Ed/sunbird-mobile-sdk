@@ -25,7 +25,7 @@ export interface NativeAppleTokens {
 
 export class NativeAppleSessionProvider implements SessionProvider {
 
-    private static readonly LOGIN_API_ENDPOINT = '/apple/auth/android';
+    private static readonly LOGIN_API_ENDPOINT = '/apple/auth/ios';
     private apiService: ApiService;
 
     private static parseAccessToken(accessToken: string): {
