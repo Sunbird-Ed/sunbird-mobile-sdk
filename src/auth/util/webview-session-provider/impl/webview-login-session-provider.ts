@@ -39,6 +39,16 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
            key: 'pdata',
            value: JSON.stringify(telemetryContext.pdata)
         });
+        if(window.device.platform.toLowerCase() === 'ios' && this.loginConfig.context === "login") {
+            await dsl.launchWebview({
+                host: this.loginConfig.target.host,
+                path: 'logoff',
+                params: this.loginConfig.target.params.reduce((acc, p) => {
+                    acc[p.key] = p.value;
+                    return acc;
+                }, {...this.resetParams})
+            });
+        }
 
         return dsl.launchWebview({
             host: this.loginConfig.target.host,
