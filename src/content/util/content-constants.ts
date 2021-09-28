@@ -24,6 +24,8 @@ export enum MimeType {
     VIDEO = 'video/mp4',
     YOUTUBE = 'video/x-youtube',
     WEBM = 'video/webm',
+    QUESTION = 'application/vnd.sunbird.question',
+    QUESTION_SET = 'application/vnd.sunbird.questionset',
 
     ZIP = 'application/zip',
     TXT = 'text/plain',
