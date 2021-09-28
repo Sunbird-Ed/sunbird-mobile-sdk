@@ -70,7 +70,7 @@ export class ExtractPayloads {
         // Create all the directories for content.
         const destinationRootDir = ContentUtil.getContentRootDir(importContext.destinationFolder)
         let createdDirectories;
-        if(importContext.items![0].mimeType === "application/vnd.sunbird.questionset"){
+        if(importContext.items![0].mimeType === MimeType.QUESTION_SET){
             createdDirectories = await this.createDirectories(destinationRootDir,
             [nonUnitContentIds[0]]);
             if(createdDirectories && createdDirectories.hasOwnProperty(nonUnitContentIds[0])){
@@ -180,7 +180,7 @@ export class ExtractPayloads {
 
                 // Add or update the content_state
                 if (isUnzippingSuccessful
-                || mimeType === 'application/vnd.sunbird.questionset'
+                || (mimeType === MimeType.QUESTION_SET && visibility === Visibility.DEFAULT)
                 || MimeType.COLLECTION.valueOf() === mimeType) {
                     contentState = State.ARTIFACT_AVAILABLE.valueOf();
                 } else {
@@ -473,7 +473,7 @@ export class ExtractPayloads {
     }
 
     filterQuestionSetContent(items){
-        const filterdItems = items.filter(i => (i.mimeType !=='application/vnd.sunbird.question' && i.mime_type !=='application/vnd.sunbird.question'));
+        const filterdItems = items.filter(i => (i.mimeType !==MimeType.QUESTION && i.mime_type !==MimeType.QUESTION));
         return filterdItems
     }
 

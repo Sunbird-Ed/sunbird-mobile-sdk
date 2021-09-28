@@ -7,6 +7,7 @@ import {ImportNExportHandler} from '../import-n-export-handler';
 import {DeviceInfo} from '../../../util/device';
 import {FileService} from '../../../util/file/def/file-service';
 import {Response} from '../../../api';
+import {MimeType} from '../../util/content-constants';
 
 export class CreateContentImportManifest {
 
@@ -71,7 +72,7 @@ export class CreateContentImportManifest {
             const manifest: { [key: string]: any } = importnExportHandler.generateManifestForArchive(items);
 
             const fileMap: { [key: string]: any } = {};
-            if(items && items[0] && items[0].parent && items[0].mimeType === 'application/vnd.sunbird.question'){
+            if(items && items[0] && items[0].parent && items[0].mimeType === MimeType.QUESTION){
                 fileMap['path'] = ContentUtil.getBasePath(ContentUtil.getContentRootDir(destinationFolder).concat('/', items[0].parent, '/', identifier, '/'));
             } else{
                 fileMap['path'] = ContentUtil.getBasePath(ContentUtil.getContentRootDir(destinationFolder).concat('/', identifier, '/'));

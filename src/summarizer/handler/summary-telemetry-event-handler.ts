@@ -291,7 +291,8 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
             return courseContext &&
                 (
                     SummaryTelemetryEventHandler.isCourseAssessmentContent(content) ||
-                    content.contentType.toLowerCase() === 'onboardingresource'
+                    (content.contentType && content.contentType.toLowerCase() === 'onboardingresource') ||
+                    (content.primaryCategory && content.primaryCategory.toLowerCase() === 'onboardingresource')
                 ) &&
                 this.courseService.hasCapturedAssessmentEvent({courseContext});
         };
@@ -328,7 +329,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
                 const addContentAccessRequest: ContentAccess = {
                     status: ContentAccessStatus.PLAYED,
                     contentId: identifier,
-                    contentType: content.contentType
+                    contentType: content.contentType || content.primaryCategory!
                 };
                 return this.profileService.addContentAccess(addContentAccessRequest).pipe(
                     mergeMap(() => {
