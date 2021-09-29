@@ -23,6 +23,7 @@ describe('GetFormHandler', () => {
     });
 
     beforeEach(() => {
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
         jest.clearAllMocks();
     });
 
