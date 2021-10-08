@@ -88,6 +88,9 @@ import { CsDiscussionService } from '@project-sunbird/client-services/services/d
 import { CsContentService } from '@project-sunbird/client-services/services/content';
 import { SegmentationService, SegmentationServiceImpl } from './segmentation';
 import { DebuggingService, DebuggingServiceImpl } from './debugging';
+import { NotificationServiceV2Impl } from './notification-v2/impl/notification-service-v2-impl';
+import { NotificationServiceV2 } from './notification-v2/def/notification-service-v2';
+import { CsNotificationService } from '@project-sunbird/client-services/services/notification/interface/cs-notification-service';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -256,6 +259,10 @@ export class SunbirdSdk {
         return this._container.get<DebuggingService>(InjectionTokens.DEBUGGING_SERVICE);
     }
 
+    get notificationServiceV2(): NotificationServiceV2 {
+        return this._container.get<NotificationServiceV2>(InjectionTokens.NOTIFICATION_SERVICE_V2);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
@@ -378,6 +385,8 @@ export class SunbirdSdk {
 
         this._container.bind<DebuggingService>(InjectionTokens.DEBUGGING_SERVICE).to(DebuggingServiceImpl).inSingletonScope();
 
+        this._container.bind<NotificationServiceV2>(InjectionTokens.NOTIFICATION_SERVICE_V2).to(NotificationServiceV2Impl).inSingletonScope();
+
         const sharedPreferences = this.sharedPreferences;
 
         await CsModule.instance.init({
@@ -415,6 +424,9 @@ export class SunbirdSdk {
                     },
                     discussionServiceConfig: {
                         apiPath: '/discussion'
+                    },
+                    notificationServiceConfig: {
+                        apiPath: '/api/notification/v1/feed'
                     }
                 }
             }, (() => {
@@ -424,6 +436,7 @@ export class SunbirdSdk {
                 this._container.rebind<CsUserService>(CsInjectionTokens.USER_SERVICE).toConstantValue(CsModule.instance.userService);
                 this._container.rebind<CsDiscussionService>(CsInjectionTokens.DISCUSSION_SERVICE).toConstantValue(CsModule.instance.discussionService);
                 this._container.rebind<CsContentService>(CsInjectionTokens.CONTENT_SERVICE).toConstantValue(CsModule.instance.contentService);
+                this._container.rebind<CsNotificationService>(CsInjectionTokens.NOTIFICATION_SERVICE_V2).toConstantValue(CsModule.instance.notificationService);
             }).bind(this),
             new class implements CsClientStorage {
 
@@ -442,6 +455,7 @@ export class SunbirdSdk {
         this._container.bind<CsUserService>(CsInjectionTokens.USER_SERVICE).toConstantValue(CsModule.instance.userService);
         this._container.bind<CsDiscussionService>(CsInjectionTokens.DISCUSSION_SERVICE).toConstantValue(CsModule.instance.discussionService);
         this._container.bind<CsContentService>(CsInjectionTokens.CONTENT_SERVICE).toConstantValue(CsModule.instance.contentService);
+        this._container.bind<CsNotificationService>(CsInjectionTokens.NOTIFICATION_SERVICE_V2).toConstantValue(CsModule.instance.notificationService);
 
         await this.dbService.init();
         await this.appInfo.init();

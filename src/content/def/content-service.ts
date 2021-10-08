@@ -89,11 +89,11 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
     ): ContentAggregator;
 
 
-    getQuestionList(questionIds: string[]): Observable<any>
+    getQuestionList(questionIds: string[], parentId?: string): Observable<any>
     
     getQuestionSetHierarchy(data): Observable<any>;
 
     getQuestionSetRead(contentId:string , params?: any): Observable<any>;
 
-
+    formatSearchCriteria(requestMap: { [key: string]: any }): ContentSearchCriteria;
 }

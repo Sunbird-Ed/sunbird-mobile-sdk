@@ -560,6 +560,144 @@ describe('SearchContentHandler', () => {
                 done();
             });
         });
+
+        it('should parse the varients data if the api response is stringified JSON', (done) => {
+            // arrange
+            const contentData = {
+                mimeType: MimeType.COLLECTION.valueOf(),
+                variants: "{\"online\":{\"ecarUrl\":\"http://sample-ecar-url\"}}",
+                contentType: 'ecar',
+                pkgVersion: 'v-1'
+            } as any;
+            const contentImport = {
+                contentId: 'do-123',
+                rollUp: { l1: 'do-123' },
+                correlationData: [{ id: 'do-123', type: 'collection' }]
+            } as any;
+            mockTelemetryService.interact = jest.fn(() => of(true));
+            // act
+            searchContentHandler.getDownloadUrl(contentData, contentImport).then(() => {
+                expect(mockTelemetryService.interact).toHaveBeenCalledWith({
+                    correlationData: [{ id: 'do-123', type: 'collection' }],
+                    id: 'ImportContent',
+                    objId: contentImport.contentId,
+                    objType: contentData.contentType,
+                    objVer: contentData.pkgVersion,
+                    pageId: 'ImportContent',
+                    pos: [],
+                    rollup: { l1: 'do-123' },
+                    subType: 'online',
+                    type: InteractType.OTHER
+                });
+                done();
+            });
+        });
+
+        it('should return contentData downloadUrl the varient is not stringified JSON', (done) => {
+            // arrange
+            const contentData = {
+                mimeType: MimeType.ECAR,
+                variants: "http://sample-ecar-url",
+                downloadUrl: '  https://sample/download/url',
+                contentType: 'ecar',
+                pkgVersion: 'v-1'
+            } as any;
+            const contentImport = {
+                contentId: 'do-123',
+                rollUp: { l1: 'do-123' },
+                correlationData: [{ id: 'do-123', type: 'collection' }]
+            } as any;
+            mockTelemetryService.interact = jest.fn(() => of(true));
+            // act
+            searchContentHandler.getDownloadUrl(contentData, contentImport).then(() => {
+                expect(mockTelemetryService.interact).toHaveBeenCalledWith({
+                    correlationData: [{ id: 'do-123', type: 'collection' }],
+                    id: 'ImportContent',
+                    objId: contentImport.contentId,
+                    objType: contentData.contentType,
+                    objVer: contentData.pkgVersion,
+                    pageId: 'ImportContent',
+                    pos: [],
+                    rollup: { l1: 'do-123' },
+                    subType: 'full',
+                    type: InteractType.OTHER
+                });
+                done();
+            });
+        });
+
+        it('should return downloadUrl for full scenario for QuestionSet', (done) => {
+            // arrange
+            const contentData = {
+                mimeType: MimeType.QUESTION_SET,
+                variants: {
+                    full: {
+                        ecarUrl: 'http://sample-ecar-url'
+                    }
+                },
+                contentType: 'ecar',
+                pkgVersion: 'v-1'
+            } as any;
+            const contentImport = {
+                contentId: 'do-123',
+                rollUp: { l1: 'do-123' },
+                correlationData: [{ id: 'do-123', type: 'question-set' }]
+            } as any;
+            mockTelemetryService.interact = jest.fn(() => of(true));
+            // act
+            searchContentHandler.getDownloadUrl(contentData, contentImport).then(() => {
+                expect(mockTelemetryService.interact).toHaveBeenCalledWith({
+                    correlationData: [{ id: 'do-123', type: 'question-set' }],
+                    id: 'ImportContent',
+                    objId: contentImport.contentId,
+                    objType: contentData.contentType,
+                    objVer: contentData.pkgVersion,
+                    pageId: 'ImportContent',
+                    pos: [],
+                    rollup: { l1: 'do-123' },
+                    subType: 'full',
+                    type: InteractType.OTHER
+                });
+                done();
+            });
+        });
+
+        it('should return downloadUrl for online scenario for QuestionSet', (done) => {
+            // arrange
+            const contentData = {
+                mimeType: MimeType.QUESTION_SET,
+                variants: {
+                    online: {
+                        ecarUrl: 'http://sample-ecar-url'
+                    }
+                },
+                contentType: 'ecar',
+                pkgVersion: 'v-1'
+            } as any;
+            const contentImport = {
+                contentId: 'do-123',
+                rollUp: { l1: 'do-123' },
+                correlationData: [{ id: 'do-123', type: 'question-set' }]
+            } as any;
+            mockTelemetryService.interact = jest.fn(() => of(true));
+            // act
+            searchContentHandler.getDownloadUrl(contentData, contentImport).then(() => {
+                expect(mockTelemetryService.interact).toHaveBeenCalledWith({
+                    correlationData: [{ id: 'do-123', type: 'question-set' }],
+                    id: 'ImportContent',
+                    objId: contentImport.contentId,
+                    objType: contentData.contentType,
+                    objVer: contentData.pkgVersion,
+                    pageId: 'ImportContent',
+                    pos: [],
+                    rollup: { l1: 'do-123' },
+                    subType: 'online',
+                    type: InteractType.OTHER
+                });
+                done();
+            });
+        });
+
     });
 
     it('should return constentSearchResult', () => {

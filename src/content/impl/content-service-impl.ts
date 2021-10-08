@@ -37,7 +37,7 @@ import {
     SearchResponse,
     SearchType,
 } from '..';
-import {combineLatest, defer, from, Observable, of} from 'rxjs';
+import {combineLatest, defer, forkJoin, from, Observable, of} from 'rxjs';
 import {ApiRequestHandler, ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
@@ -89,7 +89,7 @@ import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
-import {catchError, map, mapTo, mergeMap, tap} from 'rxjs/operators';
+import {catchError, filter, map, mapTo, mergeMap, switchMap, tap} from 'rxjs/operators';
 import {CopyToDestination} from '../handlers/export/copy-to-destination';
 import {AppInfo} from '../../util/app';
 import {GetContentHeirarchyHandler} from '../handlers/get-content-heirarchy-handler';
@@ -101,6 +101,7 @@ import {MimeTypeCategory} from '@project-sunbird/client-services/models/content'
 import {CourseService} from '../../course';
 import {NetworkInfoService} from '../../util/network';
 import { CsContentService } from '@project-sunbird/client-services/services/content';
+import { StorageService } from '../../storage/def/storage-service';
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -131,7 +132,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
         @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
         @inject(InjectionTokens.NETWORKINFO_SERVICE) private networkInfoService: NetworkInfoService,
-        @inject(InjectionTokens.CONTAINER) private container: Container
+        @inject(InjectionTokens.CONTAINER) private container: Container,
+        @inject(InjectionTokens.STORAGE_SERVICE) private storageService: StorageService
     ) {
         this.contentServiceConfig = this.sdkConfig.contentServiceConfig;
         this.appConfig = this.sdkConfig.appConfig;
@@ -384,7 +386,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             searchContentHandler.getContentSearchFilter(contentIds, contentImportRequest.contentStatusArray, contentImportRequest.fields);
         return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig).handle(filter).pipe(
             map((searchResponse: SearchResponse) => {
-                return searchResponse.result.content;
+                return searchResponse.result.content || searchResponse.result.QuestionSet;
             }),
             mergeMap((contents: ContentData[]) => defer(async () => {
                 const contentImportResponses: ContentImportResponse[] = [];
@@ -747,17 +749,53 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         );
     }
 
-      getQuestionList(questionIds: string[]): Observable<any> {
-        return this.contentServiceDelegate.getQuestionList(questionIds);
-      }
-    
-      getQuestionSetHierarchy(data) {
-        return this.contentServiceDelegate.getQuestionSetHierarchy(data);
-      }
+    getQuestionList(questionIds: string[], parentId?): Observable<any> {
+        return this.getContentDetails({ contentId: parentId }).pipe(
+            switchMap((content: Content) => {
+                if (content.isAvailableLocally && parentId) {
+                    const path = this.storageService.getStorageDestinationDirectoryPath();
+                    let questionList: any = [];
+                    questionIds.forEach(async id => {
+                        const textData = this.fileService.readAsText(`${path}content/${parentId}/${id}`, 'index.json');
+                        questionList.push(textData);
+                    });
+                    return from(Promise.all(questionList)).pipe(
+                        map(questions => {
+                            return {
+                                questions: questions.map((q: any) => {
+                                    if (q && (typeof q === 'string')) {
+                                        const data = JSON.parse(q);
+                                        return data.archive.items[0];
+                                    }
+                                    return q;
+                                }),
+                                count: questions.length
+                            }
+                        })
+                    );
+                } else {
+                    return this.contentServiceDelegate.getQuestionList(questionIds);
+                }
+            }),
+            catchError(() => {
+                return this.contentServiceDelegate.getQuestionList(questionIds);
+            })
+        );
+    }
 
-      getQuestionSetRead(contentId:string, params?:any) {
+    getQuestionSetHierarchy(data) {
+        return this.contentServiceDelegate.getQuestionSetHierarchy(data);
+    }
+
+    getQuestionSetRead(contentId:string, params?:any) {
         return this.contentServiceDelegate.getQuestionSetRead(contentId,params);
-      }
+    }
+
+    formatSearchCriteria(requestMap: { [key: string]: any }): ContentSearchCriteria {
+        const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
+            this.contentServiceConfig, this.telemetryService);
+        return searchHandler.getSearchCriteria(requestMap);
+    }
 
     private cleanupContent(importContentContext: ImportContentContext): Observable<undefined> {
         const contentDeleteList: ContentDelete[] = [];
