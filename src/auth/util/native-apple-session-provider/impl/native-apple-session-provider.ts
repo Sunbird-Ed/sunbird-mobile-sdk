@@ -60,6 +60,7 @@ export class NativeAppleSessionProvider implements SessionProvider {
             .withUserToken(false)
             .withBody({
                 emailId: appleSignInRes.email,
+                platform,
                 ...appleSignInRes
             })
             .build();
