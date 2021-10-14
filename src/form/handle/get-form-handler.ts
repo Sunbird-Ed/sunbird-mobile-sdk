@@ -52,6 +52,9 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
             .withType(HttpRequestType.POST)
             .withPath(this.formServiceConfig.apiPath + this.GET_FORM_DETAILS_ENDPOINT)
             .withBearerToken(true)
+            .withHeaders({
+                'X-Platform-Id': window.device.platform
+            })
             .withBody({request})
             .build();
         return this.apiService.fetch <{ result: { [key: string]: {} } }>(apiRequest)

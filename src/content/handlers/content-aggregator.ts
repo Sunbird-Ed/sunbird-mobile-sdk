@@ -574,9 +574,14 @@ export class ContentAggregator {
             requestHash: 'CONTENTS_' + ContentAggregator.buildRequestHash(searchRequest),
             task: defer(async () => {
                 const offlineSearchContentDataList: ContentData[] = await (/* fetch offline contents */ async () => {
+                    if ((searchRequest.filters && searchRequest.filters.primaryCategory) ||
+                        (searchCriteria.primaryCategories && searchCriteria.primaryCategories.length === 0)) {
+                        return [];
+                    }
                     return this.contentService.getContents({
                         primaryCategories:
-                            (searchCriteria.primaryCategories && searchCriteria.primaryCategories.length && searchCriteria.primaryCategories) ||
+                            (searchCriteria.primaryCategories && searchCriteria.primaryCategories.length
+                                && searchCriteria.primaryCategories) ||
                             (searchRequest.filters && searchRequest.filters.primaryCategory) ||
                             [],
                         board: searchCriteria.board,

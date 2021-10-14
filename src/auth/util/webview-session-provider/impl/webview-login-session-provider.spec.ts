@@ -51,7 +51,7 @@ describe('WebviewLoginSessionProvider', () => {
         jest.resetAllMocks();
         jest.clearAllMocks();
         jest.restoreAllMocks();
-
+        window['device'] = {uuid: 'some_uuid', platform:'android'};
         const mockPdata = {'id': 'staging.diksha.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'};
         mockTelemetryService.buildContext = jest.fn().mockImplementation(() => {
             return of({
@@ -124,6 +124,7 @@ describe('WebviewLoginSessionProvider', () => {
         describe('when config case passes', () => {
             describe('when config case:password', () => {
                 it('should resolve session when API succeeds', (done) => {
+                    window['device'] = { uuid: 'some_uuid', platform:'ios' };
                     webviewLoginSessionProvider = new WebviewLoginSessionProvider(
                         loginConfigForPassword,
                         mergeConfig,
