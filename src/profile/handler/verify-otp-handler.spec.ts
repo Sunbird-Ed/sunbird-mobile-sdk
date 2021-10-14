@@ -39,7 +39,8 @@ describe('VerifyOtpHandler', () => {
         const request = {
             'key': 'SOME_KEY',
             'type': 'SOME_TYPE',
-            'otp': 'SOME_OTP'
+            'otp': 'SOME_OTP',
+            'userId': 'SOME_USER_ID'
         };
 
         // act
