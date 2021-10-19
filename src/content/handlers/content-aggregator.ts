@@ -33,6 +33,7 @@ import {ObjectUtil} from '../../util/object-util';
 import * as SHA1 from 'crypto-js/sha1';
 import {NetworkInfoService, NetworkStatus} from '../../util/network';
 import { MimeTypeCategoryMapping } from '@project-sunbird/client-services/models/content';
+import { Certificate } from 'crypto';
 
 type Primitive = string | number | boolean;
 type RequestHash = string;
@@ -144,7 +145,11 @@ export interface AggregatorConfigField<T extends DataSourceType = any> {
         description?: string;
         title: string;
         theme: any;
-        isEnabled: boolean
+        isEnabled: boolean;
+        landingDetails? : {
+            title?: string;
+            description?: string;
+        }
     }[];
 }
 
@@ -152,6 +157,10 @@ export interface ContentAggregation<T extends DataSourceType = any> {
     index: number;
     title: string;
     description?: string;
+    landingDetails? : {
+        title?: string;
+        description?: string;
+    }
     data: DataResponseMap[T];
     dataSrc: DataSourceModelMap[T];
     theme: any;
@@ -312,6 +321,7 @@ export class ContentAggregator {
                         dataSrc: field.dataSrc,
                         theme: section.theme,
                         description: section.description,
+                        landingDetails: section.landingDetails,
                         isEnabled: section.isEnabled
                     } as ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>;
                 });
@@ -334,6 +344,7 @@ export class ContentAggregator {
                         dataSrc: field.dataSrc,
                         theme: section.theme,
                         description: section.description,
+                        landingDetails: section.landingDetails,
                         isEnabled: section.isEnabled
                     } as ContentAggregation<'CONTENT_DISCOVERY_BANNER'>;
                 });
@@ -358,6 +369,7 @@ export class ContentAggregator {
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
+                            landingDetails: section.landingDetails,
                             isEnabled: section.isEnabled
                         };
                     });
@@ -469,6 +481,7 @@ export class ContentAggregator {
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
+                            landingDetails: section.landingDetails,
                             isEnabled: section.isEnabled
                         };
                     } else {
@@ -537,6 +550,7 @@ export class ContentAggregator {
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
+                            landingDetails: section.landingDetails,
                             isEnabled: section.isEnabled
                         };
                     } else {
@@ -556,6 +570,7 @@ export class ContentAggregator {
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
+                            landingDetails: section.landingDetails,
                             isEnabled: section.isEnabled
                         } as ContentAggregation<'TRACKABLE_COLLECTIONS'>;
                     }
@@ -632,6 +647,7 @@ export class ContentAggregator {
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
+                            landingDetails: section.landingDetails,
                             isEnabled: section.isEnabled
                         } as ContentAggregation<'CONTENTS'>;
                     } else {
@@ -681,6 +697,7 @@ export class ContentAggregator {
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
+                            landingDetails: section.landingDetails,
                             isEnabled: section.isEnabled
                         } as ContentAggregation<'CONTENTS'>;
                     }
