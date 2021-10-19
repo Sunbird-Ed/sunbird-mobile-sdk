@@ -47,6 +47,10 @@ export class ChildContentsHandler {
                         currentLevel + 1,
                         level,
                         hierarchyInfoList);
+                    if (childContent.contentData.appIcon && !childContent.contentData.appIcon.startsWith('http')) {
+                        childContent.contentData.appIcon =
+                            '_app_file_'.concat(childContent.basePath).concat(childContent.contentData.appIcon);
+                    }
                     childContents.push(childContent);
                 }
                 content.children = childContents;
