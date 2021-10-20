@@ -102,6 +102,8 @@ import {CourseService} from '../../course';
 import {NetworkInfoService} from '../../util/network';
 import { CsContentService } from '@project-sunbird/client-services/services/content';
 import { StorageService } from '../../storage/def/storage-service';
+import { QuestionSetFileReadHandler } from '../handlers/question-set-file-read-handler';
+import { GetChildQuestionSetHandler } from '../handlers/get-child-question-set-handler'
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -111,6 +113,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     private readonly getContentHeirarchyHandler: GetContentHeirarchyHandler;
     private readonly contentServiceConfig: ContentServiceConfig;
     private readonly appConfig: AppConfig;
+    private readonly questionSetFileReadHandler: QuestionSetFileReadHandler;
+    private readonly getChildQuestionSetHandler: GetChildQuestionSetHandler;
 
     private contentDeleteRequestSet: SharedPreferencesSetCollection<ContentDelete>;
 
@@ -142,6 +146,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
 
         this.getContentHeirarchyHandler = new GetContentHeirarchyHandler(this.apiService, this.contentServiceConfig);
+
+        this.questionSetFileReadHandler = new QuestionSetFileReadHandler(this.storageService, this.fileService);
+
+        this.getChildQuestionSetHandler = new GetChildQuestionSetHandler(this, this.dbService, this.storageService, this.fileService);
 
         this.contentDeleteRequestSet = new SharedPreferencesSetCollectionImpl(
             this.sharedPreferences,
@@ -750,34 +758,18 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     getQuestionList(questionIds: string[], parentId?): Observable<any> {
-        return this.getContentDetails({ contentId: parentId }).pipe(
+        return this.getContentDetails({ 
+            contentId: parentId,
+            objectType: 'QuestionSet'
+         }).pipe(
             switchMap((content: Content) => {
                 if (content.isAvailableLocally && parentId) {
-                    const path = this.storageService.getStorageDestinationDirectoryPath();
-                    let questionList: any = [];
-                    questionIds.forEach(async id => {
-                        const textData = this.fileService.readAsText(`${path}content/${parentId}/${id}`, 'index.json');
-                        questionList.push(textData);
-                    });
-                    return from(Promise.all(questionList)).pipe(
-                        map(questions => {
-                            return {
-                                questions: questions.map((q: any) => {
-                                    if (q && (typeof q === 'string')) {
-                                        const data = JSON.parse(q);
-                                        return data.archive.items[0];
-                                    }
-                                    return q;
-                                }),
-                                count: questions.length
-                            }
-                        })
-                    );
+                    return this.questionSetFileReadHandler.getLocallyAvailableQuestion(questionIds, parentId);
                 } else {
                     return this.contentServiceDelegate.getQuestionList(questionIds);
                 }
             }),
-            catchError(() => {
+            catchError((e) => {
                 return this.contentServiceDelegate.getQuestionList(questionIds);
             })
         );
@@ -789,6 +781,14 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     getQuestionSetRead(contentId:string, params?:any) {
         return this.contentServiceDelegate.getQuestionSetRead(contentId,params);
+    }
+
+    async getQuestionSetChildren(questionSetId: string) {
+        try{
+            return await this.getChildQuestionSetHandler.handle(questionSetId);
+        } catch(e){
+            return [];
+        }
     }
 
     formatSearchCriteria(requestMap: { [key: string]: any }): ContentSearchCriteria {

@@ -71,13 +71,10 @@ export class ExtractPayloads {
         const destinationRootDir = ContentUtil.getContentRootDir(importContext.destinationFolder)
         let createdDirectories;
         if(importContext.items![0].mimeType === MimeType.QUESTION_SET){
-            createdDirectories = await this.createDirectories(destinationRootDir,
-            [nonUnitContentIds[0]]);
-            if(createdDirectories && createdDirectories.hasOwnProperty(nonUnitContentIds[0])){
-                const createdChildDirectories = await this.createDirectories(`${destinationRootDir}/${nonUnitContentIds[0]}`,
-                nonUnitContentIds.slice(1));
-                createdDirectories = {...createdDirectories, ...createdChildDirectories};
-            }
+
+            createdDirectories = await this.segregateQuestions(
+                destinationRootDir, JSON.parse(JSON.stringify(importContext.items))
+            );
         } else{
             createdDirectories = await this.createDirectories(destinationRootDir,
                 nonUnitContentIds);
@@ -180,7 +177,7 @@ export class ExtractPayloads {
 
                 // Add or update the content_state
                 if (isUnzippingSuccessful
-                || (mimeType === MimeType.QUESTION_SET && visibility === Visibility.DEFAULT)
+                || this.shouldDownloadQuestionSet(importContext.items!, item)
                 || MimeType.COLLECTION.valueOf() === mimeType) {
                     contentState = State.ARTIFACT_AVAILABLE.valueOf();
                 } else {
@@ -475,6 +472,63 @@ export class ExtractPayloads {
     filterQuestionSetContent(items){
         const filterdItems = items.filter(i => (i.mimeType !==MimeType.QUESTION && i.mime_type !==MimeType.QUESTION));
         return filterdItems
+    }
+
+    async segregateQuestions(destinationRootDir, flattenedList) {
+        let segregatedQuestions = {};
+        for (let count = 0; count < flattenedList.length; count++) {
+            if (flattenedList[count].mimeType === MimeType.QUESTION_SET &&
+                !segregatedQuestions[flattenedList[count].identifier]) {
+                segregatedQuestions[flattenedList[count].identifier] = [];
+            } else if (flattenedList[count].mimeType === MimeType.QUESTION) {
+                if (segregatedQuestions[flattenedList[count].parent]) {
+                    segregatedQuestions[flattenedList[count].parent].push(flattenedList[count].identifier);
+                } else {
+                    segregatedQuestions[flattenedList[count].identifier] = [flattenedList[count].identifier];
+                }
+            }
+        }
+        const dirArr = Object.keys(segregatedQuestions);
+        let createdDir = await this.createDirectories(destinationRootDir, dirArr);
+        const segregatedArr: any = [];
+
+        for (const key in segregatedQuestions) {
+            segregatedArr.push(
+                {
+                    idArr: segregatedQuestions[key],
+                    dir: `${destinationRootDir}/${key}`
+                }
+            );
+        }
+
+        for await (const iterator of segregatedArr) {
+            const childDir = await this.createDirectories(iterator.dir, iterator.idArr);
+            createdDir = { ...createdDir, ...childDir };
+        }
+
+        return createdDir;
+    }
+
+    private shouldDownloadQuestionSet(contentItems, item){
+        if(item.mimeType === MimeType.QUESTION_SET && ContentUtil.readVisibility(item) === Visibility.DEFAULT.valueOf()){
+            return true;
+        }
+        return this.checkParentQustionSet(contentItems, item)
+    }
+
+    // recursive function
+    private checkParentQustionSet(contentItems, content) {
+        if(!content || !content.parent){
+            return false;
+        }
+        const parentContent = contentItems.find(i => (i.identifier === content.parent));
+        if(!parentContent || parentContent.mimeType !== MimeType.QUESTION_SET){
+            return false;
+        } else if(parentContent.mimeType === MimeType.QUESTION_SET && 
+            ContentUtil.readVisibility(parentContent) === Visibility.DEFAULT.valueOf()){
+                return true;
+        }
+        return this.checkParentQustionSet(contentItems, parentContent)
     }
 
 }
