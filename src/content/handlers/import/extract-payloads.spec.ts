@@ -1013,4 +1013,94 @@ describe('ExtractPayloads', () => {
         // assert
         expect(data).toBe(contentState);
     });
+
+    describe('segregateQuestions()', ()=>{
+        it('should seggregate the questions based on questionset sections', ()=>{
+            // arrange
+            const destinationRootDir = 'app_storage_path';
+            const flattenedList = [
+                {
+                    identifier: 'parent_question_set_id',
+                    mimeType: MimeType.QUESTION_SET
+                },
+                {
+                    identifier: 'child_question_set_id_1',
+                    mimeType: MimeType.QUESTION_SET,
+                    parent: 'parent_question_set_id'
+                },
+                {
+                    identifier: 'sub_child_question_id_1',
+                    mimeType: MimeType.QUESTION,
+                    parent: 'child_question_set_id_1'
+                },
+                {
+                    identifier: 'sub_child_question_id_2',
+                    mimeType: MimeType.QUESTION,
+                    parent: 'child_question_set_id_1'
+                },
+                {
+                    identifier: 'child_question_set_id_2',
+                    mimeType: MimeType.QUESTION_SET,
+                    parent: 'parent_question_set_id'
+                },
+                {
+                    identifier: 'sub_child_question_id_1',
+                    mimeType: MimeType.QUESTION,
+                    parent: 'child_question_set_id_2'
+                },
+                {
+                    identifier: 'sub_child_question_id_2',
+                    mimeType: MimeType.QUESTION,
+                    parent: 'child_question_set_id_2'
+                },
+                {
+                    identifier: 'child_question_id_new_1',
+                    mimeType: MimeType.QUESTION
+                }
+            ]
+
+            extractPayloads['createDirectories'] = jest.fn(()=>Promise.resolve({'id_1':{path:'path'}}));
+            // act
+            extractPayloads.segregateQuestions(destinationRootDir, flattenedList).then(()=>{
+                expect(extractPayloads['createDirectories']).toHaveBeenCalled();
+            })
+        })
+    })
+
+    describe('shouldDownloadQuestionSet', ()=>{
+        it('should retun true if mimetype is question-set and visibility is Default', ()=>{
+            // arrange
+            const contentItems = [{
+                mimeType: MimeType.QUESTION_SET,
+                visibility: 'Default'
+            }]
+            const item = {
+                mimeType: MimeType.QUESTION_SET,
+                visibility: 'Default'
+            } 
+            extractPayloads['checkParentQustionSet'] = jest.fn(()=>true);
+            // act
+            const condition = extractPayloads['shouldDownloadQuestionSet'](contentItems, item);
+            // assert
+            expect(condition).toEqual(true);
+        });
+
+        it('should download questionsets if mimetype is question-set and visibility is Default', ()=>{
+            // arrange
+            const contentItems = [{
+                mimeType: MimeType.QUESTION_SET,
+                visibility: 'Default'
+            }]
+            const item = {
+                mimeType: MimeType.QUESTION_SET,
+                visibility: 'Parent'
+            } 
+            extractPayloads['checkParentQustionSet'] = jest.fn(()=>true);
+            // act
+            const condition = extractPayloads['shouldDownloadQuestionSet'](contentItems, item);
+            // assert
+            expect(extractPayloads['checkParentQustionSet']).toHaveBeenCalled();
+        });
+    });
+
 });

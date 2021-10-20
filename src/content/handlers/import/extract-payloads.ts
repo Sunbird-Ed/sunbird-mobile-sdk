@@ -509,7 +509,7 @@ export class ExtractPayloads {
         return createdDir;
     }
 
-    shouldDownloadQuestionSet(contentItems, item){
+    private shouldDownloadQuestionSet(contentItems, item){
         if(item.mimeType === MimeType.QUESTION_SET && ContentUtil.readVisibility(item) === Visibility.DEFAULT.valueOf()){
             return true;
         }
@@ -517,7 +517,7 @@ export class ExtractPayloads {
     }
 
     // recursive function
-    checkParentQustionSet(contentItems, content) {
+    private checkParentQustionSet(contentItems, content) {
         if(!content || !content.parent){
             return false;
         }
