@@ -35,6 +35,7 @@ describe('ErrorStackSyncRequestDecorator', () => {
             id: 'p-id',
             ver: '2.7.0',
             pid: 'sample-pid',
+            platform: '',
             ProducerData: jest.fn().mockImplementation((a, b, c) => c)
         };
         const request = {

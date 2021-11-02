@@ -77,6 +77,10 @@ export class TelemetryDecoratorImpl implements TelemetryDecorator {
             event.pdata = new ProducerData();
         }
         const pData: ProducerData = event.pdata;
+        const devicePlatform = window.device.platform.toLowerCase();
+        if (devicePlatform === 'ios') {
+            pData.platform = devicePlatform;
+        }
         if (!pData.id) {
             pData.id = this.apiConfig.api_authentication.producerId;
         }

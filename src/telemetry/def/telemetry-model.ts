@@ -101,11 +101,13 @@ export class ProducerData {
     id: string;
     pid: string;
     ver: string;
+    platform: string;
 
     ProducerData() {
         this.id = '';
         this.pid = '';
         this.ver = '';
+        this.platform = '';
     }
 }
 
