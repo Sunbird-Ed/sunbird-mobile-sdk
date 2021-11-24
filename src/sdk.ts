@@ -91,6 +91,7 @@ import { DebuggingService, DebuggingServiceImpl } from './debugging';
 import { NotificationServiceV2Impl } from './notification-v2/impl/notification-service-v2-impl';
 import { NotificationServiceV2 } from './notification-v2/def/notification-service-v2';
 import { CsNotificationService } from '@project-sunbird/client-services/services/notification/interface/cs-notification-service';
+import {PlayerConfigDataMigrations} from './db/migrations/player-config-data-migrations';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -280,6 +281,7 @@ export class SunbirdSdk {
             new SearchHistoryMigration(),
             new RecentlyViewedMigration(),
             new CourseAssessmentMigration(),
+            new PlayerConfigDataMigrations(),
             () => {
                 return new NetworkQueueMigration(
                     sdkConfig, this._container.get<NetworkQueue>(InjectionTokens.NETWORK_QUEUE)
