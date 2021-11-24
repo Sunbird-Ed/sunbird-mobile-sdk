@@ -11,6 +11,7 @@ import {AppInfo} from '../../util/app';
 import {of} from 'rxjs';
 import {Content} from '../../content';
 import {Rollup} from '../../telemetry';
+import {DbService} from '../../db';
 
 describe('PlayerServiceImpl', () => {
     let playerService: PlayerService;
@@ -18,7 +19,8 @@ describe('PlayerServiceImpl', () => {
     const container = new Container();
 
     const mockDeviceInfoService: Partial<DeviceInfo> = {
-        getDeviceID: jest.fn().mockImplementation(() => {})
+        getDeviceID: jest.fn().mockImplementation(() => {
+        })
     };
     const mockProfileService: Partial<ProfileService> = {
         getActiveSessionProfile: jest.fn().mockImplementation(() => {
@@ -31,8 +33,10 @@ describe('PlayerServiceImpl', () => {
         })
     };
     const mockAppInfo: Partial<AppInfo> = {
-        getVersionName: jest.fn().mockImplementation(() => {})
+        getVersionName: jest.fn().mockImplementation(() => {
+        })
     };
+    const mockDbService: Partial<DbService> = {};
 
     beforeAll(() => {
         container.bind<PlayerService>(InjectionTokens.PLAYER_SERVICE).to(PlayerServiceImpl);
@@ -42,12 +46,13 @@ describe('PlayerServiceImpl', () => {
         container.bind<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE).toConstantValue(mockFrameWorkService as FrameworkService);
         container.bind<DeviceInfo>(InjectionTokens.DEVICE_INFO).toConstantValue(mockDeviceInfoService as DeviceInfo);
         container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
+        container.bind<DbService>(InjectionTokens.DB_SERVICE).toConstantValue(mockDbService as DbService);
 
         playerService = container.get(InjectionTokens.PLAYER_SERVICE);
     });
 
     beforeEach(() => {
-        window['device'] = { uuid: 'some_uuid', platform:'android' };
+        window['device'] = {uuid: 'some_uuid', platform: 'android'};
         jest.clearAllMocks();
     });
 
@@ -80,6 +85,17 @@ describe('PlayerServiceImpl', () => {
             expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
             expect(mockGroupService.getActiveGroupSession).toHaveBeenCalled();
             expect(mockFrameWorkService.getActiveChannelId).toHaveBeenCalled();
+        });
+    });
+
+    describe('savePlayerState()', () => {
+        it('should read the db and data is present if present update the db', () => {
+            // arrange
+            mockDbService.read = jest.fn().mockImplementation(() => of([{
+
+            }]));
+            // act
+            // assert
         });
     });
 });

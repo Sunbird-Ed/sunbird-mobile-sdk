@@ -10,6 +10,7 @@ import {ErrorStackEntry} from '../../error/db/schema';
 import {SearchHistoryEntry} from '../../util/search-history/db/schema';
 import {CourseAssessmentEntry} from '../../summarizer/db/schema';
 import {NetworkQueueEntry} from '../../api/network-queue';
+import {PlayerConfigEntry} from '../../player/db/schema';
 
 export class InitialMigration extends Migration {
 
@@ -45,7 +46,8 @@ export class InitialMigration extends Migration {
             ErrorStackEntry.getCreateEntry(),
             SearchHistoryEntry.getCreateEntry(),
             CourseAssessmentEntry.getCreateEntry(),
-            NetworkQueueEntry.getCreateEntry()
+            NetworkQueueEntry.getCreateEntry(),
+            PlayerConfigEntry.getCreateEntry()
         ];
     }
 
