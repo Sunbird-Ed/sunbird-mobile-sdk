@@ -26,6 +26,7 @@ export enum MimeType {
     WEBM = 'video/webm',
     QUESTION = 'application/vnd.sunbird.question',
     QUESTION_SET = 'application/vnd.sunbird.questionset',
+    EPUB = 'application/epub',
 
     ZIP = 'application/zip',
     TXT = 'text/plain',

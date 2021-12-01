@@ -151,6 +151,14 @@ export class ExtractPayloads {
                 doesContentExist = false;
                 // let isUnzippingSuccessful = false;
                 if (artifactUrl) {
+                    if (!ContentUtil.isInlineIdentity(contentDisposition, contentEncoding) && mimeType === MimeType.EPUB) {
+                        try {
+                            await this.copyAssets(importContext.tmpLocation!, artifactUrl, payloadDestination!);
+                            isUnzippingSuccessful = true;
+                        } catch (e) {
+                            isUnzippingSuccessful = false;
+                        }
+                    }
                     if (!contentDisposition || !contentEncoding ||
                         (contentDisposition === ContentDisposition.INLINE.valueOf()
                             && contentEncoding === ContentEncoding.GZIP.valueOf())) { // Content with artifact without zip i.e. pfd, mp4
