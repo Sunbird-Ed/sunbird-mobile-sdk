@@ -112,7 +112,7 @@ export class CourseServiceImpl implements CourseService {
             this.networkQueue
         );
         this.offlineAssessmentScoreProcessor = new OfflineAssessmentScoreProcessor(
-            this.keyValueStore
+            this.keyValueStore, this.sharedPreferences
         );
     }
 
