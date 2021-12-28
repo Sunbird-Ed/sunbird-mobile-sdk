@@ -92,7 +92,9 @@ export class OfflineAssessmentScoreProcessor {
                     // append attempt
                     if (contentScores[c.contentId!]) {
                         c.score.push(contentScores[c.contentId!]);
-                        c.bestScore = contentScores[c.contentId!];
+                        if (c.bestScore && (c.bestScore!.totalScore < contentScores[c.contentId!].totalScore)) {
+                            c.bestScore = contentScores[c.contentId!];
+                        }
                         return c;
                     }
                     return c;
