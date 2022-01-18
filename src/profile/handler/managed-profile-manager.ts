@@ -274,7 +274,7 @@ export class ManagedProfileManager {
 
         this.profileService.createProfile({
             uid: serverProfile.id,
-            profileType: ProfileType.NONE,
+            profileType: ProfileType.NONE, 
             source: ProfileSource.SERVER,
             handle: serverProfile.firstName,
             board: (serverProfile.framework && serverProfile.framework['board']) || [],
