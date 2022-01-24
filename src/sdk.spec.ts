@@ -69,14 +69,11 @@ const mockSdkConfig: SdkConfig = {
         frameworkApiPath: '/api/framework/v1',
         frameworkConfigDirPath: '/data/framework',
         channelConfigDirPath: '/data/channel',
-        searchOrganizationApiPath: '/api/org/v1',
+        searchOrganizationApiPath: '/api/org/v2',
         systemSettingsDefaultChannelIdKey: 'custodianOrgId'
     },
     profileServiceConfig: {
-        profileApiPath: '/api/user/v1',
-        profileApiPath_V2: '/api/user/v2',
-        profileApiPath_V3: '/api/user/v3',
-        profileApiPath_V4: '/api/user/v4',
+        profileApiPath: '/api/user/v5',
         profileApiPath_V5: '/api/user/v5',
         tenantApiPath: '/v1/tenant',
         otpApiPath: '/api/otp/v1',
