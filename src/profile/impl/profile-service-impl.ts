@@ -709,7 +709,7 @@ export class ProfileServiceImpl implements ProfileService {
         return this.getActiveProfileSession().pipe(
             mergeMap((session) => {
                 return this.userService.getUserFeed(session.managedSession ? session.managedSession.uid : session.uid, {
-                    apiPath: this.sdkConfig.profileServiceConfig.profileApiPath
+                    apiPath: this.sdkConfig.profileServiceConfig.profileApiPath_V5
                 });
             })
         );
@@ -724,7 +724,7 @@ export class ProfileServiceImpl implements ProfileService {
                     updateUserFeedRequest.category,
                     updateUserFeedRequest.request,
                     {
-                        apiPath: this.sdkConfig.profileServiceConfig.profileApiPath
+                        apiPath: this.sdkConfig.profileServiceConfig.profileApiPath_V5
                     }
                 ).pipe(
                     mapTo(true),
@@ -758,15 +758,16 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     updateServerProfileDeclarations(request: UpdateServerProfileDeclarationsRequest): Observable<UpdateServerProfileDeclarationsResponse> {
-        return this.userService.updateUserDeclarations(request.declarations, {apiPath: this.sdkConfig.profileServiceConfig.profileApiPath});
+        return this.userService.updateUserDeclarations(request.declarations,
+            {apiPath : this.sdkConfig.profileServiceConfig.profileApiPath});
     }
 
     getConsent(userConsent: Consent): Observable<ReadConsentResponse> {
-        return this.userService.getConsent(userConsent, { apiPath : '/api/user/v5'});
+        return this.userService.getConsent(userConsent, { apiPath : this.sdkConfig.profileServiceConfig.profileApiPath});
     }
 
     updateConsent(userConsent: Consent): Observable<UpdateConsentResponse> {
-        return this.userService.updateConsent(userConsent, { apiPath : '/api/user/v5'});
+        return this.userService.updateConsent(userConsent, { apiPath : this.sdkConfig.profileServiceConfig.profileApiPath});
     }
 
     private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {
