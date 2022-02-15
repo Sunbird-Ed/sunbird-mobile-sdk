@@ -75,7 +75,6 @@ const mockSdkConfig: SdkConfig = {
     profileServiceConfig: {
         profileApiPath: '/api/user/v5',
         profileApiPath_V5: '/api/user/v5',
-        profileApiPath_v1: '/api/user/v1',
         tenantApiPath: '/v1/tenant',
         otpApiPath: '/api/otp/v1',
         searchLocationApiPath: '/api/data/v1',

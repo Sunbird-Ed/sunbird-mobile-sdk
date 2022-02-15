@@ -758,8 +758,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     updateServerProfileDeclarations(request: UpdateServerProfileDeclarationsRequest): Observable<UpdateServerProfileDeclarationsResponse> {
-        return this.userService.updateUserDeclarations(request.declarations,
-            {apiPath: this.sdkConfig.profileServiceConfig.profileApiPath_v1});
+        return this.userService.updateUserDeclarations(request.declarations, {apiPath : '/api/user/v1'});
     }
 
     getConsent(userConsent: Consent): Observable<ReadConsentResponse> {
