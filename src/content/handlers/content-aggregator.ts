@@ -623,6 +623,7 @@ export class ContentAggregator {
                     c['cardImg'] = c.appIcon;
                     return c;
                 });
+                combinedContents.sort((a, b) => (a.lastPublishedOn! > b.lastPublishedOn! ? -1 : 1));
 
                 return field.sections.map((section, index) => {
                     if (!field.dataSrc.mapping[index] || !field.dataSrc.mapping[index].aggregate) {
