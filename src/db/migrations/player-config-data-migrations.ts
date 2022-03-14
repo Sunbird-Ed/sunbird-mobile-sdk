@@ -6,7 +6,7 @@ export class PlayerConfigDataMigrations extends Migration {
 
 
     constructor() {
-        super(15, 28);
+        super(16, 29);
     }
 
     public async apply(dbService: DbService) {
