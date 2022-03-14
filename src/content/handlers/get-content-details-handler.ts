@@ -65,7 +65,7 @@ export class GetContentDetailsHandler implements ApiRequestHandler<ContentDetail
                 return of(ContentMapper.mapContentDBEntryToContent(contentDbEntry)).pipe(
                     mergeMap((content: Content) => {
                         if (typeof (content.contentData.originData) === 'string') {
-                            content.contentData.originData = JSON.parse(content.contentData.originData);
+                            content.contentData.originData = ContentUtil.getParseErrorObject(content.contentData.originData);
                         }
                         if (content.contentData.trackable && typeof (content.contentData.trackable) === 'string') {
                             content.contentData.trackable = JSON.parse(content.contentData.trackable);
