@@ -627,4 +627,12 @@ export class ContentUtil {
         }
     }
 
+    public static getParseErrorObject(data): any {
+        try {
+            return JSON.parse(data);
+        } catch {
+            return undefined;
+        }
+    }
+
 }

@@ -169,7 +169,7 @@ export class ContentMapper {
     }
     const basePath = contentEntry[ContentEntry.COLUMN_NAME_PATH]! || '';
     if (typeof (contentData.originData) === 'string') {
-      contentData.originData = JSON.parse(contentData.originData);
+      contentData.originData = ContentUtil.getParseErrorObject(contentData.originData);
     }
     if (contentData.trackable && typeof (contentData.trackable) === 'string') {
       contentData.trackable = JSON.parse(contentData.trackable);
