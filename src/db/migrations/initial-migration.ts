@@ -11,6 +11,7 @@ import {SearchHistoryEntry} from '../../util/search-history/db/schema';
 import {CourseAssessmentEntry} from '../../summarizer/db/schema';
 import {NetworkQueueEntry} from '../../api/network-queue';
 import {PlayerConfigEntry} from '../../player/db/schema';
+import { CertificatePublicKeyEntry } from '../../certificate/db/schema';
 
 export class InitialMigration extends Migration {
 
@@ -47,7 +48,8 @@ export class InitialMigration extends Migration {
             SearchHistoryEntry.getCreateEntry(),
             CourseAssessmentEntry.getCreateEntry(),
             NetworkQueueEntry.getCreateEntry(),
-            PlayerConfigEntry.getCreateEntry()
+            PlayerConfigEntry.getCreateEntry(),
+            CertificatePublicKeyEntry.getCreateEntry()
         ];
     }
 

@@ -92,6 +92,9 @@ import { NotificationServiceV2Impl } from './notification-v2/impl/notification-s
 import { NotificationServiceV2 } from './notification-v2/def/notification-service-v2';
 import { CsNotificationService } from '@project-sunbird/client-services/services/notification/interface/cs-notification-service';
 import {PlayerConfigDataMigrations} from './db/migrations/player-config-data-migrations';
+import { CertificatePublicKeyMigration } from './db/migrations/certificate-public-key-migration';
+import { CsCertificateService } from '@project-sunbird/client-services/services/certificate';
+import { CertificateService, CertificateServiceImpl } from './certificate';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -264,12 +267,16 @@ export class SunbirdSdk {
         return this._container.get<NotificationServiceV2>(InjectionTokens.NOTIFICATION_SERVICE_V2);
     }
 
+    get certificateService(): CertificateService {
+        return this._container.get<CertificateService>(InjectionTokens.CERTIFICATE_SERVICE);
+    }
+
     public async init(sdkConfig: SdkConfig) {
         this._container = new Container();
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(28);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(30);
 
         this._container.bind<(Migration | MigrationFactory)[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
             new ProfileSyllabusMigration(),
@@ -281,13 +288,14 @@ export class SunbirdSdk {
             new SearchHistoryMigration(),
             new RecentlyViewedMigration(),
             new CourseAssessmentMigration(),
-            new PlayerConfigDataMigrations(),
             () => {
                 return new NetworkQueueMigration(
                     sdkConfig, this._container.get<NetworkQueue>(InjectionTokens.NETWORK_QUEUE)
                 );
             },
             new ContentGeneralizationMigration(),
+            new PlayerConfigDataMigrations(),
+            new CertificatePublicKeyMigration()
         ]);
 
         switch (sdkConfig.platform) {
@@ -389,6 +397,8 @@ export class SunbirdSdk {
 
         this._container.bind<NotificationServiceV2>(InjectionTokens.NOTIFICATION_SERVICE_V2).to(NotificationServiceV2Impl).inSingletonScope();
 
+        this._container.bind<CertificateService>(InjectionTokens.CERTIFICATE_SERVICE).to(CertificateServiceImpl).inSingletonScope();
+
         const sharedPreferences = this.sharedPreferences;
 
         await CsModule.instance.init({
@@ -429,6 +439,11 @@ export class SunbirdSdk {
                     },
                     notificationServiceConfig: {
                         apiPath: '/api/notification/v1/feed'
+                    },
+                    certificateServiceConfig: {
+                        apiPath: sdkConfig.certificateServiceConfig.apiPath,
+                        apiPathLegacy: sdkConfig.certificateServiceConfig.apiPathLegacy,
+                        rcApiPath: sdkConfig.certificateServiceConfig.rcApiPath
                     }
                 }
             }, (() => {
@@ -439,6 +454,7 @@ export class SunbirdSdk {
                 this._container.rebind<CsDiscussionService>(CsInjectionTokens.DISCUSSION_SERVICE).toConstantValue(CsModule.instance.discussionService);
                 this._container.rebind<CsContentService>(CsInjectionTokens.CONTENT_SERVICE).toConstantValue(CsModule.instance.contentService);
                 this._container.rebind<CsNotificationService>(CsInjectionTokens.NOTIFICATION_SERVICE_V2).toConstantValue(CsModule.instance.notificationService);
+                this._container.rebind<CsCertificateService>(CsInjectionTokens.CERTIFICATE_SERVICE).toConstantValue(CsModule.instance.certificateService);
             }).bind(this),
             new class implements CsClientStorage {
 
@@ -458,6 +474,7 @@ export class SunbirdSdk {
         this._container.bind<CsDiscussionService>(CsInjectionTokens.DISCUSSION_SERVICE).toConstantValue(CsModule.instance.discussionService);
         this._container.bind<CsContentService>(CsInjectionTokens.CONTENT_SERVICE).toConstantValue(CsModule.instance.contentService);
         this._container.bind<CsNotificationService>(CsInjectionTokens.NOTIFICATION_SERVICE_V2).toConstantValue(CsModule.instance.notificationService);
+        this._container.bind<CsCertificateService>(CsInjectionTokens.CERTIFICATE_SERVICE).toConstantValue(CsModule.instance.certificateService);
 
         await this.dbService.init();
         await this.appInfo.init();
