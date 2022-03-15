@@ -421,7 +421,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                     rollUp: contentImport.rollUp,
                                     contentMeta: contentData,
                                     withPriority: contentImportRequest.withPriority ||
-                                        (contentData.mimeType === MimeType.COLLECTION.valueOf() ? 1 : 0)
+                                        (contentData.mimeType === MimeType.COLLECTION.valueOf() ? 1 : 0),
+                                    title: contentData.name ?
+                                      contentData.name.concat('.', FileExtension.CONTENT) : contentId.concat('.', FileExtension.CONTENT)
                                 };
                                 downloadRequestList.push(downloadRequest);
                             }

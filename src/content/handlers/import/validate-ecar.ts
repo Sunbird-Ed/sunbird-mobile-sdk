@@ -7,6 +7,7 @@ import {DbService} from '../../../db';
 import {GetContentDetailsHandler} from '../get-content-details-handler';
 import {ContentEntry} from '../../db/schema';
 import {ArrayUtil} from '../../../util/array-util';
+import { HierarchyManifestConversion } from './hierarchy-manifest-conversion';
 
 export class ValidateEcar {
 
@@ -18,7 +19,20 @@ export class ValidateEcar {
 
     public async execute(importContext: ImportContentContext): Promise<Response> {
         const response: Response = new Response();
-        const data = await this.fileService.readAsText(importContext.tmpLocation!, FileName.MANIFEST.valueOf());
+        let data;
+        try{
+            data = await this.fileService.readAsText(importContext.tmpLocation!, FileName.HIERARCHY.valueOf());
+
+            if(data){
+                const newData = JSON.parse(data);
+                newData['archive'] = new HierarchyManifestConversion().hierarchyToManifestConversion(newData.content);
+                delete newData.content;
+                data = JSON.stringify(newData);
+            }
+        } catch {
+            data = await this.fileService.readAsText(importContext.tmpLocation!, FileName.MANIFEST.valueOf());
+        }
+
         if (!data) {
             response.errorMesg = ContentErrorCode.IMPORT_FAILED_MANIFEST_FILE_NOT_FOUND.valueOf();
             await this.fileService.removeRecursively(importContext.tmpLocation!);

@@ -102,5 +102,6 @@ export enum ErrorCode {
 }
 
 export enum FileName {
-    MANIFEST = 'manifest.json'
+    MANIFEST = 'manifest.json',
+    HIERARCHY = 'hierarchy.json'
 }
