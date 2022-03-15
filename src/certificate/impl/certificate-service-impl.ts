@@ -1,7 +1,7 @@
 import { Container, inject, injectable } from "inversify";
-import { CertificateService, GetPublicKeyRequest, GetPublicKeyResponse } from "../def/certificate-service";
-import {defer, interval, Observable, Observer, of} from 'rxjs';
-import {catchError, concatMap, delay, filter, map, mapTo, mergeMap, tap} from 'rxjs/operators';
+import { CertificateService, CsLearnerCertificate, GetPublicKeyRequest, GetPublicKeyResponse } from "../def/certificate-service";
+import {defer, Observable} from 'rxjs';
+import {catchError, map, tap} from 'rxjs/operators';
 import { CsInjectionTokens, InjectionTokens } from "../../injection-tokens";
 import { DbService } from "../../db";
 import { GetPublicKeyHandler } from "../handlers/get-public-key-handler";
@@ -9,7 +9,7 @@ import { SdkConfig } from "../../sdk-config";
 import {ProfileService} from '../../profile';
 import {DownloadCertificateResponse} from '../../course/def/download-certificate-response';
 import {GetCertificateRequest} from '../../course/def/get-certificate-request';
-import { CsCertificateService, FetchCertificateRequest } from "@project-sunbird/client-services/services/certificate";
+import { CsCertificateService, CSGetLearnerCerificateRequest } from "@project-sunbird/client-services/services/certificate";
 import {KeyValueStore} from '../../key-value-store';
 import {FileService} from '../../util/file/def/file-service';
 import {gzip} from 'pako/dist/pako_deflate';
@@ -25,6 +25,9 @@ export class CertificateServiceImpl implements CertificateService {
         @inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
         @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
         @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService) {
+    }
+    getCertificates(req: CSGetLearnerCerificateRequest): Observable<CsLearnerCertificate[]> {
+        return this.csCertificateService.fetchCertificates(req);
     }
    
     getPublicKey(request: GetPublicKeyRequest): Observable<GetPublicKeyResponse> {
@@ -46,18 +49,16 @@ export class CertificateServiceImpl implements CertificateService {
             catchError((e) => {
                 return defer(async () => {
                     const cached = await this.getCertificateFromCache(request);
-
                     if (cached) {
                         return cached;
                     }
-
                     throw e;
                 });
             })
         );
     }
 
-    private downloadCertificate({ fileName, blob }: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
+   downloadCertificate({ fileName, blob }: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
         return defer(async () => {
             return this.fileService.writeFile(
               cordova.file.externalDataDirectory ,
@@ -72,10 +73,6 @@ export class CertificateServiceImpl implements CertificateService {
         });
     }
 
-    private get csCertificateService(): CsCertificateService {
-        return this.container.get(CsInjectionTokens.CERTIFICATE_SERVICE);
-    }
-
     isCertificateCached(request: GetCertificateRequest): Observable<boolean> {
         return defer(async () => {
             try {
@@ -85,6 +82,10 @@ export class CertificateServiceImpl implements CertificateService {
                 return false;
             }
         });
+    }
+
+    private get csCertificateService(): CsCertificateService {
+        return this.container.get(CsInjectionTokens.CERTIFICATE_SERVICE);
     }
 
     private async buildCertificatePersistenceId(request: GetCertificateRequest): Promise<string> {

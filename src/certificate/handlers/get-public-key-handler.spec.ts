@@ -1,9 +1,9 @@
 
-import {GetPublicKeyHandler} from './get-public-key-handler';
-import {of, throwError} from 'rxjs';
-import {Container} from 'inversify';
-import {CsUserService} from '@project-sunbird/client-services/services/user';
-import {CsInjectionTokens} from '../../injection-tokens';
+import { GetPublicKeyHandler } from './get-public-key-handler';
+import { of, throwError } from 'rxjs';
+import { Container } from 'inversify';
+import { CsUserService } from '@project-sunbird/client-services/services/user';
+import { CsInjectionTokens } from '../../injection-tokens';
 import { CertificateServiceConfig } from '../config/certificate-service-config';
 import { ApiConfig, DbService } from '../..';
 import { CsCertificateService } from '@project-sunbird/client-services/services/certificate';
@@ -17,8 +17,8 @@ describe('GetPublicKeyHandler', () => {
     };
     const mockCertificateServiceConfig: Partial<CertificateServiceConfig> = {};
     const mockApiConfig: Partial<ApiConfig> = {
-        cached_requests : {
-            timeToLive : 2 * 60 * 60 * 1000
+        cached_requests: {
+            timeToLive: 2 * 60 * 60 * 1000
         }
     };
     beforeAll(() => {
@@ -40,36 +40,46 @@ describe('GetPublicKeyHandler', () => {
     });
 
     it('should insert into Db and return the response if already its not available', (done) => {
-    
+
         mockDbService.read = jest.fn().mockImplementation(() => of([]));
         mockDbService.insert = jest.fn().mockImplementation(() => of(1));
         mockCsCertificateService.getPublicKey = jest.fn().mockImplementation(() => of({
             osid: 'SAMPLE_PUBLIC_KEY'
         }));
 
-        getPublicKeyHandler.handle({signingKey: 'SAMPLE_KEY', algorithim: 'RSA'}).subscribe((response) => {
+        getPublicKeyHandler.handle({ osid: 'SAMPLE_KEY', alg: 'RSA' }).subscribe((response) => {
             // assert
             expect(mockCsCertificateService.getPublicKey).toHaveBeenCalled();
             expect(mockDbService.insert).toHaveBeenCalled();
-            expect(response).toEqual({osid: 'SAMPLE_PUBLIC_KEY'})
+            expect(response).toEqual({ osid: 'SAMPLE_PUBLIC_KEY' })
             done();
         });
     });
     it('should return the key if its already available in db and ttl is not expired', (done) => {
         mockDbService.read = jest.fn().mockImplementation(() => of([{
-            identifier: '',
+            identifier: 'SAMPLE_OS_ID',
             public_key: 'SAMPLE_PUBLIC_KEY',
+            alg: 'RSA',
+            osOwner: '',
             expiry_time: 0
         }]));
         mockDbService.update = jest.fn().mockImplementation(() => of(1));
         mockCsCertificateService.getPublicKey = jest.fn().mockImplementation(() => of({
-            osid: 'SAMPLE_PUBLIC_KEY'
+            osid: 'SAMPLE_OS_ID',
+            value: 'SAMPLE_PUBLIC_KEY',
+            alg: 'RSA',
+            osOwner: []
         }));
 
-        getPublicKeyHandler.handle({signingKey: 'SAMPLE_KEY', algorithim: 'RSA'}).subscribe((response) => {
+        getPublicKeyHandler.handle({ osid: 'SAMPLE_KEY', alg: 'RSA' }).subscribe((response) => {
             // assert
             expect(mockCsCertificateService.getPublicKey).not.toHaveBeenCalled();
-            expect(response).toEqual({osid: 'SAMPLE_PUBLIC_KEY'})
+            expect(response).toEqual({
+                osid: 'SAMPLE_OS_ID',
+                value: 'SAMPLE_PUBLIC_KEY',
+                alg: 'RSA',
+                osOwner: []
+            })
             done();
         });
     });
@@ -85,11 +95,11 @@ describe('GetPublicKeyHandler', () => {
             osid: 'SAMPLE_PUBLIC_KEY'
         }));
 
-        getPublicKeyHandler.handle({signingKey: 'SAMPLE_KEY', algorithim: 'RSA'}).subscribe((response) => {
+        getPublicKeyHandler.handle({ osid: 'SAMPLE_KEY', alg: 'RSA' }).subscribe((response) => {
             // assert
             expect(mockCsCertificateService.getPublicKey).toHaveBeenCalled();
             expect(mockDbService.update).toHaveBeenCalled();
-            expect(response).toEqual({osid: 'SAMPLE_PUBLIC_KEY'})
+            expect(response).toEqual({ osid: 'SAMPLE_PUBLIC_KEY' })
             done();
         });
     });
