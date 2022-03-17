@@ -1,6 +1,6 @@
 
 import { CsLearnerCertificate } from '@project-sunbird/client-services/models';
-import { GetPublicKeyRequest, GetPublicKeyResponse, CSGetLearnerCerificateRequest } from '@project-sunbird/client-services/services/certificate';
+import { GetPublicKeyRequest, GetPublicKeyResponse, CSGetLearnerCerificateRequest, CsVerifyCertificateRequest } from '@project-sunbird/client-services/services/certificate';
 import { Observable } from 'rxjs';
 import { DownloadCertificateRequest } from '../../course/def/download-certificate-request';
 import { DownloadCertificateResponse } from '../../course/def/download-certificate-response';
@@ -22,6 +22,8 @@ export interface CertificateService {
     getPublicKey(request: GetPublicKeyRequest): Observable<GetPublicKeyResponse>;
     getCertificate(downloadCertificateRequest: GetCertificateRequest): Observable<string>;
     downloadCertificate(downloadCertificateRequest: DownloadCertificateRequest): Observable<DownloadCertificateResponse>;
+    downloadLegacyeCertificate( downloadCertificateRequest: GetCertificateRequest): Observable<DownloadCertificateResponse>;
     isCertificateCached(request: GetCertificateRequest): Observable<boolean>;
+    verifyCertificate(req: CsVerifyCertificateRequest): Promise<any>;
 
 }
