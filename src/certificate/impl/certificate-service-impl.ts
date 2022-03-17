@@ -1,7 +1,7 @@
 import { Container, inject, injectable } from "inversify";
 import { CertificateService, CsLearnerCertificate, GetPublicKeyRequest, GetPublicKeyResponse } from "../def/certificate-service";
-import {defer, Observable} from 'rxjs';
-import {catchError, map, tap} from 'rxjs/operators';
+import {defer, Observable, interval, Observer} from 'rxjs';
+import {catchError, map, tap,  concatMap, delay, filter, mergeMap, take} from 'rxjs/operators';
 import { CsInjectionTokens, InjectionTokens } from "../../injection-tokens";
 import { DbService } from "../../db";
 import { GetPublicKeyHandler } from "../handlers/get-public-key-handler";
@@ -15,6 +15,7 @@ import {FileService} from '../../util/file/def/file-service';
 import {gzip} from 'pako/dist/pako_deflate';
 import {ungzip} from 'pako/dist/pako_inflate';
 import { DownloadCertificateRequest } from "../../course/def/download-certificate-request";
+
 
 @injectable()
 export class CertificateServiceImpl implements CertificateService {
@@ -36,8 +37,9 @@ export class CertificateServiceImpl implements CertificateService {
 
     getCertificate(request: GetCertificateRequest): Observable<string> {
         return this.csCertificateService.getCerificateDownloadURI({
-            certificateId: request.courseId,
-            type:request.type
+            certificateId: request.certificate.identifier!,
+            type:request.certificate.type,
+            schemaName: 'certificate'
         }).pipe(
             tap(async (r) => {
                 await this.keyValueStore.setValue(
@@ -73,6 +75,76 @@ export class CertificateServiceImpl implements CertificateService {
         });
     }
 
+    public downloadLegacyeCertificate(request: GetCertificateRequest): Observable<DownloadCertificateResponse> {
+        return defer(async () => {
+            const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
+            const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
+
+            const folderPath = (window.device.platform.toLowerCase() === 'ios') ? cordova.file.documentsDirectory : cordova.file.externalRootDirectory;
+            const filePath = `${folderPath}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
+            return { userId };
+        }).pipe(
+            mergeMap(({ userId }) => {
+
+                return this.csCertificateService.getLegacyCerificateDownloadURI({
+                    pdfUrl: request.certificate.url!,
+                }).pipe(
+                    map((response) => {
+                        return {
+                            signedPdfUrl: response.signedUrl,
+                            userId
+                        };
+                    })
+                );
+            }),
+            mergeMap(({ signedPdfUrl, userId }) => {
+                const downloadRequest: EnqueueRequest = {
+                    uri: signedPdfUrl,
+                    title: request.certificate.token,
+                    description: '',
+                    mimeType: 'application/pdf',
+                    visibleInDownloadsUi: true,
+                    notificationVisibility: 1,
+                    destinationInExternalPublicDir: {
+                        dirType: 'Download',
+                        subPath: `/${request.certificate.name}_${request.courseId}_${userId}.pdf`
+                    },
+                    headers: []
+                };
+
+                return new Observable<string>((observer: Observer<string>) => {
+                    downloadManager.enqueue(downloadRequest, (err, id: string) => {
+                        if (err) {
+                            return observer.error(err);
+                        }
+
+                        observer.next(id);
+                        observer.complete();
+                    });
+                }) as Observable<string>;
+            }),
+            mergeMap((downloadId: string) => {
+                return interval(1000)
+                    .pipe(
+                        mergeMap(() => {
+                            return new Observable((observer: Observer<EnqueuedEntry>) => {
+                                downloadManager.query({ ids: [downloadId] }, (err, entries) => {
+                                    if (err || (entries[0].status === DownloadStatus.STATUS_FAILED)) {
+                                        return observer.error(err || new Error('Unknown Error'));
+                                    }
+
+                                    return observer.next(entries[0]! as EnqueuedEntry);
+                                });
+                            });
+                        }),
+                        filter((entry: EnqueuedEntry) => entry.status === DownloadStatus.STATUS_SUCCESSFUL),
+                        take(1)
+                    );
+            }),
+            map((entry) => ({ path: entry.localUri }))
+        );
+    }
+
     isCertificateCached(request: GetCertificateRequest): Observable<boolean> {
         return defer(async () => {
             try {
@@ -83,6 +155,10 @@ export class CertificateServiceImpl implements CertificateService {
             }
         });
     }
+
+    // verifyCertificate(req){
+    //     return this.csCertificateService.verifyCertificate(req)
+    // }
 
     private get csCertificateService(): CsCertificateService {
         return this.container.get(CsInjectionTokens.CERTIFICATE_SERVICE);

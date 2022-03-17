@@ -5,6 +5,5 @@ export { CertificateType } from '@project-sunbird/client-services/services/certi
 
 export interface GetCertificateRequest {
   courseId: string;
-  type?: CertificateType;
   certificate: CourseCertificate;
 }

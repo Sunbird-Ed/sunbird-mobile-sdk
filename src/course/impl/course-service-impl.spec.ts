@@ -614,7 +614,8 @@ describe('CourseServiceImpl', () => {
                 certificate: {
                     name: 'sample-certificate',
                     lastIssuedOn: 'some-time',
-                    token: 'some-token'
+                    token: 'some-token',
+                    id: 'some-id'
                 }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
@@ -656,7 +657,8 @@ describe('CourseServiceImpl', () => {
                 certificate: {
                     name: 'sample-certificate',
                     lastIssuedOn: 'some-time',
-                    token: 'some-token'
+                    token: 'some-token',
+                    id: 'some-id'
                 }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
@@ -698,7 +700,8 @@ describe('CourseServiceImpl', () => {
                 certificate: {
                     name: 'sample-certificate',
                     lastIssuedOn: 'some-time',
-                    token: 'some-token'
+                    token: 'some-token',
+                    id: 'some-id'
                 }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
@@ -753,7 +756,8 @@ describe('CourseServiceImpl', () => {
                 certificate: {
                     name: 'sample-certificate',
                     lastIssuedOn: 'some-time',
-                    token: 'some-token'
+                    token: 'some-token',
+                    id: 'some-id'
                 }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
@@ -813,7 +817,8 @@ describe('CourseServiceImpl', () => {
                 certificate: {
                     name: 'sample-certificate',
                     lastIssuedOn: 'some-time',
-                    token: 'some-token'
+                    token: 'some-token',
+                    id: 'some-id'
                 }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
@@ -881,7 +886,8 @@ describe('CourseServiceImpl', () => {
                 certificate: {
                     name: 'sample-certificate',
                     lastIssuedOn: 'some-time',
-                    token: 'some-token'
+                    token: 'some-token',
+                    id: 'some-id'
                 }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
