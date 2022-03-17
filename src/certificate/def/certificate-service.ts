@@ -24,6 +24,6 @@ export interface CertificateService {
     downloadCertificate(downloadCertificateRequest: DownloadCertificateRequest): Observable<DownloadCertificateResponse>;
     downloadLegacyeCertificate( downloadCertificateRequest: GetCertificateRequest): Observable<DownloadCertificateResponse>;
     isCertificateCached(request: GetCertificateRequest): Observable<boolean>;
-    verifyCertificate(req: CsVerifyCertificateRequest): Promise<any>;
+    // verifyCertificate(req: CsVerifyCertificateRequest): Promise<any>;
 
 }

@@ -156,9 +156,9 @@ export class CertificateServiceImpl implements CertificateService {
         });
     }
 
-    verifyCertificate(req){
-        return this.csCertificateService.verifyCertificate(req)
-    }
+    // verifyCertificate(req){
+    //     return this.csCertificateService.verifyCertificate(req)
+    // }
 
     private get csCertificateService(): CsCertificateService {
         return this.container.get(CsInjectionTokens.CERTIFICATE_SERVICE);
