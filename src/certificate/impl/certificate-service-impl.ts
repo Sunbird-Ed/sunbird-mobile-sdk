@@ -9,7 +9,7 @@ import { SdkConfig } from "../../sdk-config";
 import {ProfileService} from '../../profile';
 import {DownloadCertificateResponse} from '../../course/def/download-certificate-response';
 import {GetCertificateRequest} from '../../course/def/get-certificate-request';
-import { CsCertificateService, CSGetLearnerCerificateRequest } from "@project-sunbird/client-services/services/certificate";
+import { CsCertificateService, CSGetLearnerCerificateRequest, CsVerifyCertificateResponse, CsLearnerCertificateResponse, CsVerifyCertificateRequest } from "@project-sunbird/client-services/services/certificate";
 import {KeyValueStore} from '../../key-value-store';
 import {FileService} from '../../util/file/def/file-service';
 import {gzip} from 'pako/dist/pako_deflate';
@@ -27,7 +27,8 @@ export class CertificateServiceImpl implements CertificateService {
         @inject(InjectionTokens.KEY_VALUE_STORE) private keyValueStore: KeyValueStore,
         @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService) {
     }
-    getCertificates(req: CSGetLearnerCerificateRequest): Observable<CsLearnerCertificate[]> {
+
+    getCertificates(req: CSGetLearnerCerificateRequest): Observable<CsLearnerCertificateResponse> {
         return this.csCertificateService.fetchCertificates(req);
     }
    
@@ -39,7 +40,8 @@ export class CertificateServiceImpl implements CertificateService {
         return this.csCertificateService.getCerificateDownloadURI({
             certificateId: request.certificate.identifier!,
             type:request.certificate.type,
-            schemaName: 'certificate'
+            schemaName: 'certificate',
+            templateUrl: request.certificate.templateUrl
         }).pipe(
             tap(async (r) => {
                 await this.keyValueStore.setValue(
@@ -156,9 +158,25 @@ export class CertificateServiceImpl implements CertificateService {
         });
     }
 
-    // verifyCertificate(req){
-    //     return this.csCertificateService.verifyCertificate(req)
-    // }
+    getEncodedData(req): Promise<any> {
+        return this.csCertificateService.getEncodedData(req)
+    }
+
+    verifyCertificate(req: CsVerifyCertificateRequest): Observable<CsVerifyCertificateResponse>{
+        const getPublicKeyRequest: GetPublicKeyRequest = {
+            osid: req.certificateData.issuer.publicKey[0],
+            schemaName: req.schemaName
+        }
+        return this.getPublicKey(getPublicKeyRequest).pipe(
+            mergeMap((result) => {
+                req.publicKey = result.value;
+                return this.csCertificateService.verifyCertificate(req)
+            }),
+            catchError((e) => {
+                return this.csCertificateService.verifyCertificate(req)
+            })
+        )
+    }
 
     private get csCertificateService(): CsCertificateService {
         return this.container.get(CsInjectionTokens.CERTIFICATE_SERVICE);
