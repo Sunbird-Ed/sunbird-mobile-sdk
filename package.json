@@ -45,7 +45,7 @@
     "@types/node-fetch": "2.5.4",
     "@types/pako": "^1.0.1",
     "@types/websql": "0.0.27",
-    "@project-sunbird/client-services": "4.8.3",
+    "@project-sunbird/client-services": "4.8.8",
     "cordova-plugin-android-downloadmanager": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-downloadmanager.git",
     "jest": "^25.1.0",
     "rxjs": "^6.5.3",
