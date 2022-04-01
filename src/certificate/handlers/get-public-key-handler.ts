@@ -31,7 +31,7 @@ export class GetPublicKeyHandler {
         }).pipe(
             mergeMap((publicKeyInDb: CertificatePublicKeyEntry.SchemaMap[]) => {
                 if (publicKeyInDb && publicKeyInDb.length) {
-                    if (publicKeyInDb[0].expiry_time > Date.now()) {
+                    if (publicKeyInDb[0].expiry_time < Date.now()) {
                         return this.fetchFromServer(request).pipe(
                             mergeMap((response: GetPublicKeyResponse) => {
                                 return this.updatePublicKey(response)
