@@ -61,7 +61,7 @@ describe('GetPublicKeyHandler', () => {
             public_key: 'SAMPLE_PUBLIC_KEY',
             alg: 'RSA',
             osOwner: '',
-            expiry_time: 0
+            expiry_time: Date.now()+1000
         }]));
         mockDbService.update = jest.fn().mockImplementation(() => of(1));
         mockCsCertificateService.getPublicKey = jest.fn().mockImplementation(() => of({
@@ -88,7 +88,7 @@ describe('GetPublicKeyHandler', () => {
         mockDbService.read = jest.fn().mockImplementation(() => of([{
             identifier: '',
             public_key: 'SAMPLE_PUBLIC_KEY',
-            expiry_time: Date.now() * 2
+            expiry_time: Date.now() - 1000
         }]));
         mockDbService.update = jest.fn().mockImplementation(() => of(1));
         mockCsCertificateService.getPublicKey = jest.fn().mockImplementation(() => of({
