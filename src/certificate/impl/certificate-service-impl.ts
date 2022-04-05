@@ -163,19 +163,7 @@ export class CertificateServiceImpl implements CertificateService {
     }
 
     verifyCertificate(req: CsVerifyCertificateRequest): Observable<CsVerifyCertificateResponse>{
-        const getPublicKeyRequest: GetPublicKeyRequest = {
-            osid: req.certificateData.issuer.publicKey[0],
-            schemaName: req.schemaName
-        }
-        return this.getPublicKey(getPublicKeyRequest).pipe(
-            mergeMap((result) => {
-                req.publicKey = result.value;
-                return this.csCertificateService.verifyCertificate(req)
-            }),
-            catchError((e) => {
-                return this.csCertificateService.verifyCertificate(req)
-            })
-        )
+        return this.csCertificateService.verifyCertificate(req)
     }
 
     private get csCertificateService(): CsCertificateService {
