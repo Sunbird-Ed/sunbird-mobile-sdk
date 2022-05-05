@@ -218,7 +218,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     return new Observable<string>((observer) => {
                         downloadManager.enqueue({
                             uri: anyDownloadRequest.downloadUrl,
-                            title: anyDownloadRequest.title ? anyDownloadRequest.title : anyDownloadRequest.filename,
+                            title: anyDownloadRequest.filename,
                             description: '',
                             mimeType: anyDownloadRequest.mimeType,
                             visibleInDownloadsUi: true,
