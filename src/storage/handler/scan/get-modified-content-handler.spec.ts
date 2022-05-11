@@ -10,6 +10,7 @@ describe('GetModifiedContentHandler', () => {
     const mockDbService: Partial<DbService> = {};
 
     beforeAll(() => {
+       
         getModifiedContentHandler = new GetModifiedContentHandler(
             mockFileService as FileService,
             mockDbService as DbService
@@ -17,6 +18,7 @@ describe('GetModifiedContentHandler', () => {
     });
 
     beforeEach(() => {
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
         jest.clearAllMocks();
     });
 

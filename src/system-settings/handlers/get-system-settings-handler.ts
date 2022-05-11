@@ -42,7 +42,7 @@ export class GetSystemSettingsHandler implements ApiRequestHandler<GetSystemSett
     }
 
     private fetchFromFile(request: GetSystemSettingsRequest): Observable<SystemSettings> {
-        const dir = Path.ASSETS_PATH + this.systemSettingsConfig.systemSettingsDirPath;
+        const dir = Path.getAssetPath() + this.systemSettingsConfig.systemSettingsDirPath;
         const file = this.SYSTEM_SETTINGS_FILE_KEY_PREFIX + request.id + '.json';
         return from(this.fileservice.readFileFromAssets(dir.concat('/', file))).pipe(
             map((fileContent: string) => {

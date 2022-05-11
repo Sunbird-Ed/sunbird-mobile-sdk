@@ -52,6 +52,9 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
             .withType(HttpRequestType.POST)
             .withPath(this.formServiceConfig.apiPath + this.GET_FORM_DETAILS_ENDPOINT)
             .withBearerToken(true)
+            .withHeaders({
+                'X-Platform-Id': window.device.platform
+            })
             .withBody({request})
             .build();
         return this.apiService.fetch <{ result: { [key: string]: {} } }>(apiRequest)
@@ -63,7 +66,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     }
 
     private fetchFromFile(request: FormRequest): Observable<{ [key: string]: {} }> {
-        const dir = Path.ASSETS_PATH + this.formServiceConfig.formConfigDirPath;
+        const dir = Path.getAssetPath() + this.formServiceConfig.formConfigDirPath;
         const file = this.FORM_FILE_KEY_PREFIX + GetFormHandler.getIdForRequest(request) + '.json';
 
         return from(this.fileService.readFileFromAssets(dir.concat('/', file))).pipe(

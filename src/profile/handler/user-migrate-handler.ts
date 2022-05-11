@@ -30,7 +30,7 @@ export class UserMigrateHandler implements ApiRequestHandler<UserMigrateRequest,
         const apiRequest: Request = new Request.Builder()
             .withHost(this.apiConfig.host)
             .withType(HttpRequestType.POST)
-            .withPath(this.profileServiceConfig.profileApiPath + UserMigrateHandler.USER_MIGRATE)
+            .withPath(this.profileServiceConfig.profileApiPath_V5 + UserMigrateHandler.USER_MIGRATE)
             .withBearerToken(true)
             .withUserToken(true)
                 .withBody({request: request})

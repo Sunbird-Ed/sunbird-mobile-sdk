@@ -4,6 +4,7 @@ import {ApiService, HttpRequestType, JWTUtil, Request} from '../../../../api';
 import {map} from 'rxjs/operators';
 import {OAuthSession} from '../../../def/o-auth-session';
 import {SunbirdSdk} from '../../../../sdk';
+import {CsModule} from '@project-sunbird/client-services';
 
 export interface NativeGoogleTokens {
     idToken: string;
@@ -38,13 +39,15 @@ export class NativeGoogleSessionProvider implements SessionProvider {
     }
 
     private callGoogleNativeLogin(idToken: string, emailId: string): Observable<OAuthSession> {
+        const platform = window.device.platform.toLowerCase() ==='ios' ? 'ios' :null;
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(NativeGoogleSessionProvider.LOGIN_API_ENDPOINT)
             .withBearerToken(false)
             .withUserToken(false)
             .withBody({
-                emailId: emailId
+                emailId: emailId,
+                platform: platform
             })
             .withHeaders({
                 'X-GOOGLE-ID-TOKEN': idToken
@@ -53,6 +56,9 @@ export class NativeGoogleSessionProvider implements SessionProvider {
         return this.apiService.fetch<{ access_token: string, refresh_token: string }>(apiRequest)
             .pipe(
                 map((success) => {
+                    if (success.body) {
+                        CsModule.instance.updateAuthTokenConfig(success.body.access_token);
+                    }
                     return {
                         access_token: success.body.access_token,
                         refresh_token: success.body.refresh_token,

@@ -84,6 +84,7 @@ export interface GenerateAttemptIdRequest {
     batchId: string;
     contentId: string;
     userId: string;
+    date?: number;
 }
 
 export interface GetUserEnrolledCoursesRequest {

@@ -14,6 +14,7 @@ import {
     ProfileExportRequest,
     ProfileExportResponse,
     ProfileService,
+    ProfileServiceConfig,
     ProfileSession,
     ProfileSource,
     ProfileType,
@@ -99,6 +100,7 @@ export class ProfileServiceImpl implements ProfileService {
     private static readonly MERGE_SERVER_PROFILES_PATH = '/api/user/v1/account/merge';
 
     private readonly apiConfig: ApiConfig;
+    private readonly profileServiceConfig: ProfileServiceConfig;
     readonly managedProfileManager: ManagedProfileManager;
 
     constructor(
@@ -116,6 +118,7 @@ export class ProfileServiceImpl implements ProfileService {
         @inject(CsInjectionTokens.USER_SERVICE) private userService: CsUserService
     ) {
         this.apiConfig = this.sdkConfig.apiConfig;
+        this.profileServiceConfig = this.sdkConfig.profileServiceConfig;
         this.managedProfileManager = new ManagedProfileManager(
             this,
             this.authService,
@@ -344,7 +347,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     updateServerProfile(updateUserInfoRequest: UpdateServerProfileInfoRequest): Observable<UpdateServerProfileResponse> {
-        return this.userService.updateProfile(updateUserInfoRequest, { apiPath : '/api/user/v2'});
+        return this.userService.updateProfile(updateUserInfoRequest, { apiPath : '/api/user/v3'});
     }
 
     getTenantInfo(tenantInfoRequest: TenantInfoRequest): Observable<TenantInfo> {
@@ -398,7 +401,7 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     getServerProfilesDetails(serverProfileDetailsRequest: ServerProfileDetailsRequest): Observable<ServerProfile> {
-        return new GetServerProfileDetailsHandler(this.cachedItemStore, this.keyValueStore, this.container)
+        return new GetServerProfileDetailsHandler(this.cachedItemStore, this.keyValueStore, this.container, this.profileServiceConfig)
           .handle(serverProfileDetailsRequest);
     }
 
@@ -572,7 +575,7 @@ export class ProfileServiceImpl implements ProfileService {
                             identifier: contentAccess.contentId,
                             epoch_timestamp: Date.now(),
                             status: ContentAccessStatus.PLAYED.valueOf(),
-                            content_type: contentAccess.contentType.toLowerCase(),
+                            content_type: contentAccess.contentType && contentAccess.contentType.toLowerCase(),
                             learner_state: contentAccess.contentLearnerState! &&
                                 JSON.stringify(contentAccess.contentLearnerState!.learnerState)
                         };
@@ -706,7 +709,7 @@ export class ProfileServiceImpl implements ProfileService {
         return this.getActiveProfileSession().pipe(
             mergeMap((session) => {
                 return this.userService.getUserFeed(session.managedSession ? session.managedSession.uid : session.uid, {
-                    apiPath: this.sdkConfig.profileServiceConfig.profileApiPath
+                    apiPath: this.sdkConfig.profileServiceConfig.profileApiPath_V5
                 });
             })
         );
@@ -721,7 +724,7 @@ export class ProfileServiceImpl implements ProfileService {
                     updateUserFeedRequest.category,
                     updateUserFeedRequest.request,
                     {
-                        apiPath: this.sdkConfig.profileServiceConfig.profileApiPath
+                        apiPath: this.sdkConfig.profileServiceConfig.profileApiPath_V5
                     }
                 ).pipe(
                     mapTo(true),
@@ -755,15 +758,16 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     updateServerProfileDeclarations(request: UpdateServerProfileDeclarationsRequest): Observable<UpdateServerProfileDeclarationsResponse> {
-        return this.userService.updateUserDeclarations(request.declarations, {apiPath: this.sdkConfig.profileServiceConfig.profileApiPath});
+        return this.userService.updateUserDeclarations(request.declarations,
+            {apiPath : this.sdkConfig.profileServiceConfig.profileApiPath});
     }
 
     getConsent(userConsent: Consent): Observable<ReadConsentResponse> {
-        return this.userService.getConsent(userConsent, { apiPath : '/api/user/v1'});
+        return this.userService.getConsent(userConsent, { apiPath : this.sdkConfig.profileServiceConfig.profileApiPath});
     }
 
     updateConsent(userConsent: Consent): Observable<UpdateConsentResponse> {
-        return this.userService.updateConsent(userConsent, { apiPath : '/api/user/v1'});
+        return this.userService.updateConsent(userConsent, { apiPath : this.sdkConfig.profileServiceConfig.profileApiPath});
     }
 
     private mapDbProfileEntriesToProfiles(profiles: ProfileEntry.SchemaMap[]): Profile[] {

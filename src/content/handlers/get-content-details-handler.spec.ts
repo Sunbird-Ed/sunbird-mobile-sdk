@@ -43,7 +43,54 @@ describe('GetContentDetailsHandler', () => {
         expect(getContentDetailsHandler).toBeTruthy();
     });
 
-    it('should handle undefind content', async (done) => {
+    it ('should fetch data from server if objectType is QuestionSet', (done) => {
+        // arrange
+        mockApiService.fetch = jest.fn().mockImplementation(() => {
+            return of({
+                body: {
+                    result: {
+                        questionset: {}
+                    }
+                }
+            });
+        });
+        // act
+        getContentDetailsHandler.fetchFromServer({
+            contentId: 'sample_content_id',
+            objectType: 'QuestionSet'
+        });
+        // assert
+        setTimeout(() => {
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            done();
+        }, 0);
+    });
+
+    it ('should fetch data from server if objectType is question', (done) => {
+        // arrange
+        mockApiService.fetch = jest.fn().mockImplementation(() => {
+            return of({
+                body: {
+                    result: {
+                        questionset: {}
+                    }
+                }
+            });
+        });
+        // act
+        getContentDetailsHandler.fetchFromServer({
+            contentId: 'sample_content_id',
+            objectType: 'Question'
+        });
+        // assert
+        setTimeout(() => {
+            expect(mockApiService.fetch).toHaveBeenCalled();
+            done();
+        }, 0);
+    });
+
+
+    it('should handle undefined content', async (done) => {
         // arrange
         const request: ContentDetailRequest = {
             contentId: 'SAMPLE_CONTENT_ID'

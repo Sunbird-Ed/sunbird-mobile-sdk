@@ -41,7 +41,7 @@ export class DebuggingServiceImpl implements DebuggingService {
         };
     }
 
-    enableDebugging(): Observable<boolean> {
+    enableDebugging(traceID?: string): Observable<boolean> {
         /* TODO
          * generateJWT token and set it
          * set startTimestamp store it in preferences
@@ -52,9 +52,12 @@ export class DebuggingServiceImpl implements DebuggingService {
             this.profileService.getActiveProfileSession().toPromise().then(async (profile) => {
                 if (profile && profile.uid) {
                     this._userId = profile.uid;
-                    let _jwt = JWTUtil.createJWToken(this._deviceId, this.userId, JWTokenType.HS256);
-                    await this.sharedPreferences.putString(CsClientStorage.TRACE_ID, _jwt).toPromise();
-                    console.log('JWT', _jwt);
+                    const _jwt = JWTUtil.createJWToken(this._deviceId, this.userId, JWTokenType.HS256);
+                    if (traceID) {
+                        await this.sharedPreferences.putString(CsClientStorage.TRACE_ID, traceID).toPromise();
+                    } else {
+                        await this.sharedPreferences.putString(CsClientStorage.TRACE_ID, _jwt).toPromise();
+                    }
                     new DebuggingDurationHandler(
                         this.sharedPreferences,
                         this

@@ -32,6 +32,7 @@ import {CsResponse} from '@project-sunbird/client-services/core/http-service';
 import {ObjectUtil} from '../../util/object-util';
 import * as SHA1 from 'crypto-js/sha1';
 import {NetworkInfoService, NetworkStatus} from '../../util/network';
+import { MimeTypeCategoryMapping } from '@project-sunbird/client-services/models/content';
 
 type Primitive = string | number | boolean;
 type RequestHash = string;
@@ -87,8 +88,10 @@ export interface DataSourceModelMap {
         request: Partial<SerializedRequest>,
         mapping: {
             facet: string,
-            aggregate?: AggregationConfig
-        }[]
+            aggregate?: AggregationConfig,
+            filterPillBy?: string
+        }[],
+        params?: any
     };
     'RECENTLY_VIEWED_CONTENTS': {
         type: 'RECENTLY_VIEWED_CONTENTS',
@@ -141,7 +144,11 @@ export interface AggregatorConfigField<T extends DataSourceType = any> {
         description?: string;
         title: string;
         theme: any;
-        isEnabled: boolean
+        isEnabled: boolean;
+        landingDetails? : {
+            title?: string;
+            description?: string;
+        }
     }[];
 }
 
@@ -149,6 +156,10 @@ export interface ContentAggregation<T extends DataSourceType = any> {
     index: number;
     title: string;
     description?: string;
+    landingDetails? : {
+        title?: string;
+        description?: string;
+    }
     data: DataResponseMap[T];
     dataSrc: DataSourceModelMap[T];
     theme: any;
@@ -309,6 +320,7 @@ export class ContentAggregator {
                         dataSrc: field.dataSrc,
                         theme: section.theme,
                         description: section.description,
+                        landingDetails: section.landingDetails,
                         isEnabled: section.isEnabled
                     } as ContentAggregation<'RECENTLY_VIEWED_CONTENTS'>;
                 });
@@ -325,11 +337,13 @@ export class ContentAggregator {
                 return field.sections.map((section) => {
                     return {
                         index: section.index,
+                        code: section.code,
                         title: section.title,
                         data: field.dataSrc.values!.filter((value) => Number(value.expiry) > Math.floor(Date.now() / 1000)),
                         dataSrc: field.dataSrc,
                         theme: section.theme,
                         description: section.description,
+                        landingDetails: section.landingDetails,
                         isEnabled: section.isEnabled
                     } as ContentAggregation<'CONTENT_DISCOVERY_BANNER'>;
                 });
@@ -354,6 +368,7 @@ export class ContentAggregator {
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
+                            landingDetails: section.landingDetails,
                             isEnabled: section.isEnabled
                         };
                     });
@@ -373,25 +388,52 @@ export class ContentAggregator {
             task: defer(async () => {
                 const searchResult = await this.searchContents(field, searchCriteria, searchRequest);
                 return field.sections.map((section, index) => {
-                    const facetFilters = searchResult.filterCriteria.facetFilters && searchResult.filterCriteria.facetFilters.find((x) =>
+                    let searchFacetFilters =  searchResult.filterCriteria.facetFilters || [];
+                    const toBeDeletedFacets: string[] = [];
+                    searchFacetFilters.map((x) => {
+                        const facetConfig = (field.dataSrc.params.config.find(element => element.name === x.name));
+                        if (facetConfig) {
+                            facetConfig.mergeableAttributes.map((attribute) => {
+                                toBeDeletedFacets.push(attribute);
+                                const mergeableFacets = searchFacetFilters.find(facet => facet.name === attribute);
+                                x.values = x.values.filter(y =>  facetConfig.values.
+                                    find(z => (z.code === y.name.replace(/\s+/g, '').toLowerCase())));
+                                const configFacets = facetConfig.values.filter(configFacet => configFacet.type = attribute);
+                                mergeableFacets!!.values = mergeableFacets!!.values.
+                                    filter(y => configFacets.find(z => (z.code === y.name.replace(/\s+/g, ''))));
+                                x.values = x.values.concat(mergeableFacets!!.values);
+                            });
+                        }
+                    });
+                    searchFacetFilters = searchFacetFilters.filter(x => toBeDeletedFacets.indexOf(x.name) === -1 );
+                    const facetFilters = searchFacetFilters.find((x) =>
                         x.name === (field.dataSrc.mapping[index] && field.dataSrc.mapping[index].facet)
                     );
 
                     if (facetFilters) {
+                        const facetConfig = field.dataSrc.params && field.dataSrc.params.config &&
+                                   field.dataSrc.params.config.find(x => x.name === facetFilters.name);
                         return {
                             index: section.index,
                             title: section.title,
                             code: section.code,
                             data: facetFilters.values.map((filterValue) => {
+                                const facetCategoryConfig = facetConfig ? facetConfig.values.
+                                            find(x => x.code === filterValue.name.
+                                            replace(/\s+/g, '').toLowerCase()) : [];
                                 return {
-                                    facet: filterValue.name,
+                                    facet: facetCategoryConfig && facetCategoryConfig.name ? facetCategoryConfig.name : filterValue.name,
                                     searchCriteria: {
                                         ...searchCriteria,
                                         primaryCategories:  [],
-                                        impliedFilters: [{name: facetFilters.name, values: [{name: filterValue.name, apply: true}]}],
+                                        impliedFilters: facetCategoryConfig.searchCriteria &&
+                                        facetCategoryConfig.searchCriteria.impliedFilters ?
+                                          facetCategoryConfig.searchCriteria.impliedFilters :
+                                          [{name: facetFilters.name, values: [{name: filterValue.name, apply: true}]}]
                                         // [facetFilters.name]: [filterValue.name]
                                     },
-                                    aggregate: field.dataSrc.mapping[index].aggregate
+                                    aggregate: field.dataSrc.mapping[index].aggregate,
+                                    filterPillBy: field.dataSrc.mapping[index].filterPillBy
                                 };
                             }).sort((a, b) => {
                                 if (request.userPreferences) {
@@ -438,6 +480,7 @@ export class ContentAggregator {
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
+                            landingDetails: section.landingDetails,
                             isEnabled: section.isEnabled
                         };
                     } else {
@@ -481,6 +524,7 @@ export class ContentAggregator {
                         return apiService.fetch<GetEnrolledCourseResponse>(apiRequest)
                             .pipe(
                                 map((response) => {
+                                   // response.body.result.courses.sort((a, b) => (a.enrolledDate! > b.enrolledDate! ? -1 : 1));
                                     return response.body;
                                 })
                             );
@@ -505,6 +549,7 @@ export class ContentAggregator {
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
+                            landingDetails: section.landingDetails,
                             isEnabled: section.isEnabled
                         };
                     } else {
@@ -524,6 +569,7 @@ export class ContentAggregator {
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
+                            landingDetails: section.landingDetails,
                             isEnabled: section.isEnabled
                         } as ContentAggregation<'TRACKABLE_COLLECTIONS'>;
                     }
@@ -542,9 +588,14 @@ export class ContentAggregator {
             requestHash: 'CONTENTS_' + ContentAggregator.buildRequestHash(searchRequest),
             task: defer(async () => {
                 const offlineSearchContentDataList: ContentData[] = await (/* fetch offline contents */ async () => {
+                    if ((searchRequest.filters && searchRequest.filters.primaryCategory) ||
+                        (searchCriteria.primaryCategories && searchCriteria.primaryCategories.length === 0)) {
+                        return [];
+                    }
                     return this.contentService.getContents({
                         primaryCategories:
-                            (searchCriteria.primaryCategories && searchCriteria.primaryCategories.length && searchCriteria.primaryCategories) ||
+                            (searchCriteria.primaryCategories && searchCriteria.primaryCategories.length
+                                && searchCriteria.primaryCategories) ||
                             (searchRequest.filters && searchRequest.filters.primaryCategory) ||
                             [],
                         board: searchCriteria.board,
@@ -572,6 +623,7 @@ export class ContentAggregator {
                     c['cardImg'] = c.appIcon;
                     return c;
                 });
+                combinedContents.sort((a, b) => (a.lastPublishedOn! > b.lastPublishedOn! ? -1 : 1));
 
                 return field.sections.map((section, index) => {
                     if (!field.dataSrc.mapping[index] || !field.dataSrc.mapping[index].aggregate) {
@@ -595,6 +647,7 @@ export class ContentAggregator {
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
+                            landingDetails: section.landingDetails,
                             isEnabled: section.isEnabled
                         } as ContentAggregation<'CONTENTS'>;
                     } else {
@@ -614,13 +667,17 @@ export class ContentAggregator {
                             if (request.userPreferences && request.userPreferences[aggregate.groupBy!]) {
                                 d.sections.sort((a, b) => {
                                     if (
-                                        request.userPreferences![aggregate.groupBy!]!.indexOf(a.name!.toLocaleLowerCase()!) > -1 &&
-                                        request.userPreferences![aggregate.groupBy!]!.indexOf(b.name!.toLocaleLowerCase()) > -1
+                                        request.userPreferences![aggregate.groupBy!]!.
+                                        indexOf(a.name!.replace(/[^A-Z0-9]/ig, '')!.toLocaleLowerCase()!) > -1 &&
+                                        request.userPreferences![aggregate.groupBy!]!.
+                                        indexOf(b.name!.replace(/[^A-Z0-9]/ig, '')!.toLocaleLowerCase()) > -1
                                     ) { return a.name!.localeCompare(b.name!); }
-                                    if (request.userPreferences![aggregate.groupBy!]!.indexOf(a.name!.toLocaleLowerCase()) > -1) {
+                                    if (request.userPreferences![aggregate.groupBy!]!.
+                                        indexOf(a.name!.replace(/[^A-Z0-9]/ig, '')!.toLocaleLowerCase()) > -1) {
                                          return -1;
                                         }
-                                    if (request.userPreferences![aggregate.groupBy!]!.indexOf(b.name!.toLocaleLowerCase()) > -1) {
+                                    if (request.userPreferences![aggregate.groupBy!]!.
+                                        indexOf(b.name!.replace(/[^A-Z0-9]/ig, '')!.toLocaleLowerCase()) > -1) {
                                          return 1;
                                         }
                                     return 0;
@@ -640,6 +697,7 @@ export class ContentAggregator {
                             dataSrc: field.dataSrc,
                             theme: section.theme,
                             description: section.description,
+                            landingDetails: section.landingDetails,
                             isEnabled: section.isEnabled
                         } as ContentAggregation<'CONTENTS'>;
                     }
@@ -722,6 +780,15 @@ export class ContentAggregator {
             undefined,
             new class implements ApiRequestHandler<SearchRequest, SearchResponse> {
                 handle(_: SearchRequest): Observable<SearchResponse> {
+                    if (searchRequest && searchRequest.filters && searchRequest.filters.mimeType) {
+                        const reducer = (acc, cur) => {
+                            if (MimeTypeCategoryMapping[cur]) {
+                                return acc.concat(MimeTypeCategoryMapping[cur])
+                            }
+                            return acc.concat([cur])
+                        };
+                        searchRequest.filters.mimeType = searchRequest.filters.mimeType.reduce(reducer, []);
+                    }
                     if (field.dataSrc.request && field.dataSrc.request.body && (field.dataSrc.request.body as any).request) {
                         field.dataSrc.request.body = {
                             request: {
@@ -754,8 +821,7 @@ export class ContentAggregator {
                         })
                     );
                 }
-            }
-        ).pipe(
+            }, true).pipe(
             catchError((e) => {
                 console.error(e);
 

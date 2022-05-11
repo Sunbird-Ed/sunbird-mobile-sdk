@@ -23,6 +23,7 @@ describe('GetFormHandler', () => {
     });
 
     beforeEach(() => {
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
         jest.clearAllMocks();
     });
 
@@ -56,6 +57,7 @@ describe('GetFormHandler', () => {
 
     it('should handle cachedItem when called with fileService', () => {
         // arrange
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
         const request: FormRequest = {
             type: 'sample_type',
             subType: 'sample_subType',

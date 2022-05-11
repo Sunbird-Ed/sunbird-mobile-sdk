@@ -313,19 +313,34 @@ export class SearchContentHandler {
 
   public async getDownloadUrl(contentData: ContentData, contentImport?: ContentImport): Promise<string> {
     let downloadUrl;
+    let varientType;
+    let variants;
+
+    try{
+      variants = (contentData.variants && typeof contentData.variants==='string') ? JSON.parse(contentData.variants) : contentData.variants;
+    } catch{
+      variants = contentData.variants;
+    }
+
     if (contentData.mimeType === MimeType.COLLECTION.valueOf()) {
-      const variants = contentData.variants;
       if (variants && variants['online']) {
-        const spineData = variants['online'];
-        downloadUrl = spineData && spineData['ecarUrl'];
-        await this.buildContentLoadingEvent('online', contentImport!,
-          contentData.primaryCategory || contentData.contentType, contentData.pkgVersion);
+        varientType = 'online';
       } else if (variants && variants['spine']) {
-        const spineData = variants['spine'];
-        downloadUrl = spineData && spineData['ecarUrl'];
-        await this.buildContentLoadingEvent('spine', contentImport!,
-          contentData.primaryCategory || contentData.contentType, contentData.pkgVersion);
+        varientType = 'spine';
       }
+    } else if(contentData.mimeType === MimeType.QUESTION_SET){
+      if (variants && variants['full']) {
+        varientType = 'full';
+      } else if(variants && variants['online']){
+        varientType = 'online';
+      }
+    }
+
+    if (variants && varientType && variants[varientType]) {
+      const spineData = variants[varientType];
+      downloadUrl = spineData && spineData['ecarUrl'];
+      await this.buildContentLoadingEvent(varientType, contentImport!,
+        contentData.primaryCategory || contentData.contentType, contentData.pkgVersion);
     }
 
     if (!downloadUrl) {
