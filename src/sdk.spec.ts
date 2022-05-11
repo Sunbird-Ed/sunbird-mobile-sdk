@@ -53,7 +53,9 @@ const mockSdkConfig: SdkConfig = {
     contentServiceConfig: {
         apiPath: '/api/content/v1',
         searchApiPath: '/api/content/v1',
-        contentHeirarchyAPIPath: '/api/course/v1'
+        contentHeirarchyAPIPath: '/api/course/v1',
+        questionSetReadApiPath: '/api/questionset/v1',
+        questionReadApiPath: '/api/question/v1/'
     },
     courseServiceConfig: {
         apiPath: '/api/course/v1'
@@ -67,14 +69,12 @@ const mockSdkConfig: SdkConfig = {
         frameworkApiPath: '/api/framework/v1',
         frameworkConfigDirPath: '/data/framework',
         channelConfigDirPath: '/data/channel',
-        searchOrganizationApiPath: '/api/org/v1',
+        searchOrganizationApiPath: '/api/org/v2',
         systemSettingsDefaultChannelIdKey: 'custodianOrgId'
     },
     profileServiceConfig: {
         profileApiPath: '/api/user/v1',
-        profileApiPath_V2: '/api/user/v2',
-        profileApiPath_V3: '/api/user/v3',
-        profileApiPath_V4: '/api/user/v4',
+        profileApiPath_V5: '/api/user/v5',
         tenantApiPath: '/v1/tenant',
         otpApiPath: '/api/otp/v1',
         searchLocationApiPath: '/api/data/v1',
@@ -99,6 +99,11 @@ const mockSdkConfig: SdkConfig = {
     },
     sharedPreferencesConfig: {
     },
+    certificateServiceConfig: {
+        apiPath: 'api/certreg/v2',
+        apiPathLegacy: 'api/certreg/v1',
+        rcApiPath: 'api/rc/${schemaName}/v1',
+      },
     playerConfig: {
         showEndPage: false,
         endPage: [{
@@ -140,7 +145,7 @@ describe('sdk', () => {
 
     describe('init()', () => {
         it('should rebind client-services services on configuration update', (done) => {
-            window['device'] = {uuid: 'some_uuid'};
+            window['device'] = {uuid: 'some_uuid', platform:'android'};
 
             jest.spyOn(sdkInstance, 'dbService', 'get').mockImplementation(() => {
                 return {

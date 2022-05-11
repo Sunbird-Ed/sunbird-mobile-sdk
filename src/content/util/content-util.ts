@@ -264,7 +264,8 @@ export class ContentUtil {
     }
 
     public static getContentRootDir(rootFilePath: string): string {
-        return rootFilePath.concat('content');
+        let url = (window.device.platform.toLowerCase() === "ios") ? rootFilePath.concat("content/") : rootFilePath.concat('content')
+        return url;
     }
 
     public static addOrUpdateViralityMetadata(localData, origin: string) {
@@ -323,7 +324,7 @@ export class ContentUtil {
         return contentDisposition
             && contentEncoding
             && ContentDisposition.INLINE.valueOf() === contentDisposition
-            && ContentEncoding.IDENTITY === contentEncoding;
+            && ContentEncoding.IDENTITY.valueOf() === contentEncoding;
     }
 
     public static isOnlineContent(contentData): boolean {
@@ -623,6 +624,14 @@ export class ContentUtil {
             } else {
                 return -1;
             }
+        }
+    }
+
+    public static getParseErrorObject(data): any {
+        try {
+            return JSON.parse(data);
+        } catch {
+            return undefined;
         }
     }
 

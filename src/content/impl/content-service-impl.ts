@@ -37,7 +37,7 @@ import {
     SearchResponse,
     SearchType,
 } from '..';
-import {combineLatest, defer, from, Observable, of} from 'rxjs';
+import {combineLatest, defer, forkJoin, from, Observable, of} from 'rxjs';
 import {ApiRequestHandler, ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
@@ -89,7 +89,7 @@ import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
-import {catchError, map, mapTo, mergeMap, tap} from 'rxjs/operators';
+import {catchError, filter, map, mapTo, mergeMap, switchMap, tap} from 'rxjs/operators';
 import {CopyToDestination} from '../handlers/export/copy-to-destination';
 import {AppInfo} from '../../util/app';
 import {GetContentHeirarchyHandler} from '../handlers/get-content-heirarchy-handler';
@@ -101,6 +101,9 @@ import {MimeTypeCategory} from '@project-sunbird/client-services/models/content'
 import {CourseService} from '../../course';
 import {NetworkInfoService} from '../../util/network';
 import { CsContentService } from '@project-sunbird/client-services/services/content';
+import { StorageService } from '../../storage/def/storage-service';
+import { QuestionSetFileReadHandler } from '../handlers/question-set-file-read-handler';
+import { GetChildQuestionSetHandler } from '../handlers/get-child-question-set-handler'
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
@@ -110,6 +113,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     private readonly getContentHeirarchyHandler: GetContentHeirarchyHandler;
     private readonly contentServiceConfig: ContentServiceConfig;
     private readonly appConfig: AppConfig;
+    private readonly questionSetFileReadHandler: QuestionSetFileReadHandler;
+    private readonly getChildQuestionSetHandler: GetChildQuestionSetHandler;
 
     private contentDeleteRequestSet: SharedPreferencesSetCollection<ContentDelete>;
 
@@ -131,7 +136,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
         @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
         @inject(InjectionTokens.NETWORKINFO_SERVICE) private networkInfoService: NetworkInfoService,
-        @inject(InjectionTokens.CONTAINER) private container: Container
+        @inject(InjectionTokens.CONTAINER) private container: Container,
+        @inject(InjectionTokens.STORAGE_SERVICE) private storageService: StorageService
     ) {
         this.contentServiceConfig = this.sdkConfig.contentServiceConfig;
         this.appConfig = this.sdkConfig.appConfig;
@@ -140,6 +146,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             this.apiService, this.contentServiceConfig, this.dbService, this.eventsBusService);
 
         this.getContentHeirarchyHandler = new GetContentHeirarchyHandler(this.apiService, this.contentServiceConfig);
+
+        this.questionSetFileReadHandler = new QuestionSetFileReadHandler(this.storageService, this.fileService);
+
+        this.getChildQuestionSetHandler = new GetChildQuestionSetHandler(this, this.dbService, this.storageService, this.fileService);
 
         this.contentDeleteRequestSet = new SharedPreferencesSetCollectionImpl(
             this.sharedPreferences,
@@ -384,7 +394,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             searchContentHandler.getContentSearchFilter(contentIds, contentImportRequest.contentStatusArray, contentImportRequest.fields);
         return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig).handle(filter).pipe(
             map((searchResponse: SearchResponse) => {
-                return searchResponse.result.content;
+                return searchResponse.result.content || searchResponse.result.QuestionSet;
             }),
             mergeMap((contents: ContentData[]) => defer(async () => {
                 const contentImportResponses: ContentImportResponse[] = [];
@@ -411,7 +421,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                     rollUp: contentImport.rollUp,
                                     contentMeta: contentData,
                                     withPriority: contentImportRequest.withPriority ||
-                                        (contentData.mimeType === MimeType.COLLECTION.valueOf() ? 1 : 0)
+                                        (contentData.mimeType === MimeType.COLLECTION.valueOf() ? 1 : 0),
+                                    title: contentData.name ?
+                                      contentData.name.concat('.', FileExtension.CONTENT) : contentId.concat('.', FileExtension.CONTENT)
                                 };
                                 downloadRequestList.push(downloadRequest);
                             }
@@ -427,7 +439,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     }
 
     importEcar(ecarImportRequest: EcarImportRequest): Observable<ContentImportResponse[]> {
-
         return from(this.fileService.exists(ecarImportRequest.sourceFilePath).then((entry: Entry) => {
             const importContentContext: ImportContentContext = {
                 isChildContent: ecarImportRequest.isChildContent,
@@ -576,7 +587,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
     searchContent(
         contentSearchCriteria: ContentSearchCriteria,
         request?: { [key: string]: any },
-        apiHandler?: ApiRequestHandler<SearchRequest, SearchResponse>
+        apiHandler?: ApiRequestHandler<SearchRequest, SearchResponse>,
+        isFromContentAggregator?: boolean,
     ): Observable<ContentSearchResult> {
         contentSearchCriteria = JSON.parse(JSON.stringify(contentSearchCriteria));
         if (contentSearchCriteria.facetFilters) {
@@ -616,8 +628,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 return apiHandler.handle(searchRequest).pipe(
                     map((searchResponse: SearchResponse) => {
                         if (!contentSearchCriteria.facetFilters && contentSearchCriteria.searchType === SearchType.SEARCH) {
-                            searchRequest.filters.contentType = [];
-                            searchRequest.filters.primaryCategory = [];
+                            if (!isFromContentAggregator) {
+                                searchRequest.filters.contentType = [];
+                                searchRequest.filters.primaryCategory = [];
+                            }
                             searchRequest.filters.audience = [];
                         }
                         return searchHandler.mapSearchResponse(contentSearchCriteria, searchResponse, searchRequest);
@@ -745,17 +759,45 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         );
     }
 
-      getQuestionList(questionIds: string[]): Observable<any> {
-        return this.contentServiceDelegate.getQuestionList(questionIds);
-      }
-    
-      getQuestionSetHierarchy(data) {
-        return this.contentServiceDelegate.getQuestionSetHierarchy(data);
-      }
+    getQuestionList(questionIds: string[], parentId?): Observable<any> {
+        return this.getContentDetails({ 
+            contentId: parentId,
+            objectType: 'QuestionSet'
+         }).pipe(
+            switchMap((content: Content) => {
+                if (content.isAvailableLocally && parentId) {
+                    return this.questionSetFileReadHandler.getLocallyAvailableQuestion(questionIds, parentId);
+                } else {
+                    return this.contentServiceDelegate.getQuestionList(questionIds);
+                }
+            }),
+            catchError((e) => {
+                return this.contentServiceDelegate.getQuestionList(questionIds);
+            })
+        );
+    }
 
-      getQuestionSetRead(contentId:string, params?:any) {
+    getQuestionSetHierarchy(data) {
+        return this.contentServiceDelegate.getQuestionSetHierarchy(data);
+    }
+
+    getQuestionSetRead(contentId:string, params?:any) {
         return this.contentServiceDelegate.getQuestionSetRead(contentId,params);
-      }
+    }
+
+    async getQuestionSetChildren(questionSetId: string) {
+        try{
+            return await this.getChildQuestionSetHandler.handle(questionSetId);
+        } catch(e){
+            return [];
+        }
+    }
+
+    formatSearchCriteria(requestMap: { [key: string]: any }): ContentSearchCriteria {
+        const searchHandler: SearchContentHandler = new SearchContentHandler(this.appConfig,
+            this.contentServiceConfig, this.telemetryService);
+        return searchHandler.getSearchCriteria(requestMap);
+    }
 
     private cleanupContent(importContentContext: ImportContentContext): Observable<undefined> {
         const contentDeleteList: ContentDelete[] = [];

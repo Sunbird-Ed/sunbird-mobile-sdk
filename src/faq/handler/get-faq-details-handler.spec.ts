@@ -54,6 +54,7 @@ describe('GetFaqDetailsHandler', () => {
 
     it('should fetch data from file', (done) => {
         // arrange
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
         const request: GetFaqRequest = {
             language: 'english',
             faqUrl: 'http://faq/url'

@@ -13,7 +13,7 @@ export class CopyToDestination {
             if (contentExportRequest.saveLocally) {
                 destinationFolder = contentExportRequest.destinationFolder;
             } else {
-                destinationFolder = cordova.file.externalCacheDirectory;
+                destinationFolder = (window.device.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;;
             }
             sbutility.copyFile(FileUtil.getDirecory(exportResponse.body.ecarFilePath), destinationFolder,
                 FileUtil.getFileName(exportResponse.body.ecarFilePath),

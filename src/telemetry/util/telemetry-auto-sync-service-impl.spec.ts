@@ -82,6 +82,10 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                 })
             };
 
+            window['device'] = {
+                uuid:'some_id',
+                platform: 'android'
+            }
             mockTelemetryService.sync = jest.fn().mockImplementation(() => {
                 return of({
                     syncedEventCount: 0,

@@ -28,6 +28,7 @@ export * from './archive';
 export * from './discussion';
 export * from './segmentation';
 export * from './debugging';
+export * from './certificate';
 // utils
 export * from './util/shared-preferences';
 export * from './util/download';

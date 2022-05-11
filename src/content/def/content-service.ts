@@ -45,7 +45,8 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
     searchContent(
         criteria: ContentSearchCriteria,
         request?: { [key: string]: any },
-        apiHandler?: ApiRequestHandler<SearchRequest, SearchResponse>
+        apiHandler?: ApiRequestHandler<SearchRequest, SearchResponse>,
+        isFromContentAggregator?: boolean
     ): Observable<ContentSearchResult>;
 
     deleteContent(contentDeleteRequest: ContentDeleteRequest): Observable<ContentDeleteResponse[]>;
@@ -88,11 +89,13 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
     ): ContentAggregator;
 
 
-    getQuestionList(questionIds: string[]): Observable<any>
+    getQuestionList(questionIds: string[], parentId?: string): Observable<any>
     
     getQuestionSetHierarchy(data): Observable<any>;
 
     getQuestionSetRead(contentId:string , params?: any): Observable<any>;
 
+    getQuestionSetChildren(questionSetId: string): Promise<any[]>
 
+    formatSearchCriteria(requestMap: { [key: string]: any }): ContentSearchCriteria;
 }

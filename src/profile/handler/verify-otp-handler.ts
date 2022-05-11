@@ -17,11 +17,7 @@ export class VerifyOtpHandler implements ApiRequestHandler<VerifyOtpRequest, boo
             .withBearerToken(true)
             .withUserToken(true)
             .withBody({
-                request: {
-                    key: request.key,
-                    type: request.type,
-                    otp: request.otp
-                }
+                request: request
             })
             .build();
 

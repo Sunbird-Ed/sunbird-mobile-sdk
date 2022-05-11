@@ -51,7 +51,7 @@ export class GetChannelDetailsHandler implements ApiRequestHandler<ChannelDetail
     }
 
     private fetchFromFile(request: ChannelDetailsRequest): Observable<Channel> {
-        const dir = Path.ASSETS_PATH + this.frameworkServiceConfig.channelConfigDirPath;
+        const dir = Path.getAssetPath() + this.frameworkServiceConfig.channelConfigDirPath;
         const file = this.CHANNEL_FILE_KEY_PREFIX + request.channelId + '.json';
 
         return from(this.fileService.readFileFromAssets(dir.concat('/', file))).pipe(

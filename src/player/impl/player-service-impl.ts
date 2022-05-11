@@ -13,6 +13,8 @@ import {inject, injectable} from 'inversify';
 import {InjectionTokens} from '../../injection-tokens';
 import {Observable, of} from 'rxjs';
 import {mergeMap} from 'rxjs/operators';
+import {DbService} from '../../db';
+import {PlayerConfigEntry, PlayerDbEntryMapper} from '../db/schema';
 
 @injectable()
 export class PlayerServiceImpl implements PlayerService {
@@ -21,7 +23,9 @@ export class PlayerServiceImpl implements PlayerService {
                 @inject(InjectionTokens.SDK_CONFIG) private config: SdkConfig,
                 @inject(InjectionTokens.FRAMEWORK_SERVICE) private frameworkService: FrameworkService,
                 @inject(InjectionTokens.DEVICE_INFO) private deviceInfo: DeviceInfo,
-                @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo) {
+                @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
+                @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
+    ) {
     }
 
     getPlayerConfig(content: Content, extraInfo: { [key: string]: any }): Observable<PlayerInput> {
@@ -37,7 +41,11 @@ export class PlayerServiceImpl implements PlayerService {
         const playerInput: PlayerInput = {};
         content.rollup = ContentUtil.getRollup(content.identifier, content.hierarchyInfo!);
         context.objectRollup = content.rollup;
-        content.basePath = content.basePath.replace(/\/$/, '');
+        if (window.device.platform.toLowerCase() === 'ios') {
+            content.basePath = (content.basePath || (content.basePath = '')).replace(/\/$/, '');
+        } else {
+            content.basePath = content.basePath.replace(/\/$/, '');
+        }
         if (content.isAvailableLocally) {
             content.contentData.streamingUrl = content.basePath;
             content.contentData.previewUrl = content.basePath;
@@ -52,6 +60,14 @@ export class PlayerServiceImpl implements PlayerService {
                 context.actor = actor;
                 const deeplinkBasePath = this.config.appConfig.deepLinkBasePath;
                 context.deeplinkBasePath = deeplinkBasePath ? deeplinkBasePath : '';
+                const parentId: string = (content.rollup && content.rollup.l1) ? content.rollup.l1 : content.identifier;
+                this.fetchPlayerState(actor.id, parentId, content.identifier).then((result) => {
+                    if (result && playerInput.config) {
+                        playerInput.config = {
+                            ...playerInput.config, ...JSON.parse(result.saveState)
+                        };
+                    }
+                });
                 return this.profileService.getActiveSessionProfile({requiredFields: []});
             }),
             mergeMap((profile: Profile) => {
@@ -95,5 +111,49 @@ export class PlayerServiceImpl implements PlayerService {
                 return of(playerInput);
             })
         );
+    }
+
+    savePlayerState(userId: string, parentId: string,  identifier: string, saveState: string) {
+        return this.dbService.read({
+            table: PlayerConfigEntry.TABLE_NAME,
+            selection: `${PlayerConfigEntry.COLUMN_NAME_USER_ID} = ? AND ${PlayerConfigEntry.COLUMN_PARENT_IDENTIFIER} = ?
+                 AND ${PlayerConfigEntry.COLUMN_IDENTIFIER} = ?`,
+            selectionArgs: [userId, parentId, identifier]
+        }).toPromise().then(async (rows) => {
+            if (rows && rows.length) {
+                return this.dbService.update({
+                    table: PlayerConfigEntry.TABLE_NAME,
+                    selection: `${PlayerConfigEntry.COLUMN_NAME_USER_ID} = ? AND ${PlayerConfigEntry.COLUMN_PARENT_IDENTIFIER} = ?
+                        AND ${PlayerConfigEntry.COLUMN_IDENTIFIER} = ?`,
+                    selectionArgs: [userId, parentId, identifier],
+                    modelJson: PlayerDbEntryMapper.mapPlayerStateToPlayerDbEntry(userId, parentId, identifier, saveState)
+                }).toPromise();
+            } else {
+                return this.dbService.insert({
+                    table: PlayerConfigEntry.TABLE_NAME,
+                    modelJson: PlayerDbEntryMapper.mapPlayerStateToPlayerDbEntry(userId, parentId, identifier, saveState)
+                }).toPromise();
+            }
+        });
+    }
+
+    private fetchPlayerState(userId: string, parentId: string, contentId: string) {
+        return this.dbService.read({
+            table: PlayerConfigEntry.TABLE_NAME,
+            selection: `${PlayerConfigEntry.COLUMN_NAME_USER_ID} = ? AND ${PlayerConfigEntry.COLUMN_PARENT_IDENTIFIER} = ?
+             AND ${PlayerConfigEntry.COLUMN_IDENTIFIER} = ?`,
+            selectionArgs: [userId, parentId, contentId],
+        }).toPromise().then((rows) =>
+            rows && rows[0] && PlayerDbEntryMapper.mapPlayerDbEntryToPlayer(rows[0])
+        );
+    }
+
+    deletePlayerSaveState(userId: string, parentId: string, contentId: string) {
+        return this.dbService.delete({
+            table: PlayerConfigEntry.TABLE_NAME,
+            selection: `${PlayerConfigEntry.COLUMN_NAME_USER_ID} =? AND ${PlayerConfigEntry.COLUMN_PARENT_IDENTIFIER} = ?
+            AND ${PlayerConfigEntry.COLUMN_IDENTIFIER} = ?`,
+            selectionArgs: [userId, parentId, contentId]
+        }).toPromise();
     }
 }

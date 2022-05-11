@@ -46,7 +46,6 @@ export class ExtractPayloads {
         const commonContentModelsMap: Map<string, ContentEntry.SchemaMap> = new Map<string, ContentEntry.SchemaMap>();
         const payloadDestinationPathMap: Map<string, string | undefined> = new Map();
         let rootContentPath;
-
         // this count is for maintaining how many contents are imported so far
         let currentCount = 0;
         // post event before starting with how many imports are to be done totally
@@ -69,10 +68,19 @@ export class ExtractPayloads {
         }
         // await this.fileService.createDir(ContentUtil.getContentRootDir(importContext.destinationFolder), false);
         // Create all the directories for content.
-        const createdDirectories = await this.createDirectories(ContentUtil.getContentRootDir(importContext.destinationFolder),
-            nonUnitContentIds);
+        const destinationRootDir = ContentUtil.getContentRootDir(importContext.destinationFolder)
+        let createdDirectories;
+        if(importContext.items![0].mimeType === MimeType.QUESTION_SET){
+
+            createdDirectories = await this.segregateQuestions(
+                destinationRootDir, JSON.parse(JSON.stringify(importContext.items))
+            );
+        } else{
+            createdDirectories = await this.createDirectories(destinationRootDir,
+                nonUnitContentIds);
+        }
         // create subdirectories for the contents which has appIcons
-        const createSubDirectories = await this.createDirectories(ContentUtil.getContentRootDir(importContext.destinationFolder), appIcons);
+        const createSubDirectories = await this.createDirectories(destinationRootDir, appIcons);
         const query = ArrayUtil.joinPreservingQuotes(contentIds);
         const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
 
@@ -121,10 +129,13 @@ export class ExtractPayloads {
             }
             if (ContentUtil.isNotUnit(mimeType, visibility)) {
                 if (createdDirectories[identifier] && createdDirectories[identifier].path) {
-                    payloadDestination = createdDirectories[identifier].path;
+                    payloadDestination = (window.device.platform.toLowerCase() === "ios") ? createdDirectories[identifier].path!.concat("/"): createdDirectories[identifier].path;
                 } else {
-                    const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(
-                        ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier), false);
+                    let payloadDirectory = (window.device.platform.toLowerCase() === "ios") ? 
+                        ContentUtil.getContentRootDir(importContext.destinationFolder).concat(identifier):
+                        ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier);
+                    const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(payloadDirectory
+                                                , false);
                     payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
                 }
             }
@@ -140,6 +151,14 @@ export class ExtractPayloads {
                 doesContentExist = false;
                 // let isUnzippingSuccessful = false;
                 if (artifactUrl) {
+                    if (!ContentUtil.isInlineIdentity(contentDisposition, contentEncoding) && mimeType === MimeType.EPUB) {
+                        try {
+                            await this.copyAssets(importContext.tmpLocation!, artifactUrl, payloadDestination!);
+                            isUnzippingSuccessful = true;
+                        } catch (e) {
+                            isUnzippingSuccessful = false;
+                        }
+                    }
                     if (!contentDisposition || !contentEncoding ||
                         (contentDisposition === ContentDisposition.INLINE.valueOf()
                             && contentEncoding === ContentEncoding.GZIP.valueOf())) { // Content with artifact without zip i.e. pfd, mp4
@@ -165,8 +184,9 @@ export class ExtractPayloads {
                 }
 
                 // Add or update the content_state
-                if (isUnzippingSuccessful    // If unzip is success it means artifact is available.
-                    || MimeType.COLLECTION.valueOf() === mimeType) {
+                if (isUnzippingSuccessful
+                || this.shouldDownloadQuestionSet(importContext.items!, item)
+                || MimeType.COLLECTION.valueOf() === mimeType) {
                     contentState = State.ARTIFACT_AVAILABLE.valueOf();
                 } else {
                     contentState = State.ONLY_SPINE.valueOf();
@@ -243,10 +263,15 @@ export class ExtractPayloads {
         }, 5000);
 
         if (rootContentPath) {
-            await this.fileService.copyFile(importContext.tmpLocation!,
-                FileName.MANIFEST.valueOf(),
-                rootContentPath,
-                FileName.MANIFEST.valueOf());
+            try {
+                await this.fileService.copyFile(importContext.tmpLocation!,
+                    FileName.MANIFEST.valueOf(),
+                    rootContentPath,
+                    FileName.MANIFEST.valueOf());
+            } catch(e) {
+                console.log("Exception Raised During Import");
+            }
+            
         }
 
         response.body = importContext;
@@ -280,7 +305,8 @@ export class ExtractPayloads {
     }
 
     async updateContentDB(insertNewContentModels, updateNewContentModels, updateSize?: boolean) {
-
+        insertNewContentModels = (insertNewContentModels && insertNewContentModels.length) ? this.filterQuestionSetContent(insertNewContentModels): insertNewContentModels;
+        updateNewContentModels = (updateNewContentModels && updateNewContentModels.length) ? this.filterQuestionSetContent(updateNewContentModels): updateNewContentModels;
         if (insertNewContentModels.length || updateNewContentModels.length) {
             this.dbService.beginTransaction();
             // Insert into DB
@@ -449,6 +475,68 @@ export class ExtractPayloads {
                     reject(err);
                 });
         });
+    }
+
+    filterQuestionSetContent(items){
+        const filterdItems = items.filter(i => (i.mimeType !==MimeType.QUESTION && i.mime_type !==MimeType.QUESTION));
+        return filterdItems
+    }
+
+    async segregateQuestions(destinationRootDir, flattenedList) {
+        let segregatedQuestions = {};
+        for (let count = 0; count < flattenedList.length; count++) {
+            if (flattenedList[count].mimeType === MimeType.QUESTION_SET &&
+                !segregatedQuestions[flattenedList[count].identifier]) {
+                segregatedQuestions[flattenedList[count].identifier] = [];
+            } else if (flattenedList[count].mimeType === MimeType.QUESTION) {
+                if (segregatedQuestions[flattenedList[count].parent]) {
+                    segregatedQuestions[flattenedList[count].parent].push(flattenedList[count].identifier);
+                } else {
+                    segregatedQuestions[flattenedList[count].identifier] = [flattenedList[count].identifier];
+                }
+            }
+        }
+        const dirArr = Object.keys(segregatedQuestions);
+        let createdDir = await this.createDirectories(destinationRootDir, dirArr);
+        const segregatedArr: any = [];
+
+        for (const key in segregatedQuestions) {
+            segregatedArr.push(
+                {
+                    idArr: segregatedQuestions[key],
+                    dir: `${destinationRootDir}/${key}`
+                }
+            );
+        }
+
+        for await (const iterator of segregatedArr) {
+            const childDir = await this.createDirectories(iterator.dir, iterator.idArr);
+            createdDir = { ...createdDir, ...childDir };
+        }
+
+        return createdDir;
+    }
+
+    private shouldDownloadQuestionSet(contentItems, item){
+        if(item.mimeType === MimeType.QUESTION_SET && ContentUtil.readVisibility(item) === Visibility.DEFAULT.valueOf()){
+            return true;
+        }
+        return this.checkParentQustionSet(contentItems, item)
+    }
+
+    // recursive function
+    private checkParentQustionSet(contentItems, content) {
+        if(!content || !content.parent){
+            return false;
+        }
+        const parentContent = contentItems.find(i => (i.identifier === content.parent));
+        if(!parentContent || parentContent.mimeType !== MimeType.QUESTION_SET){
+            return false;
+        } else if(parentContent.mimeType === MimeType.QUESTION_SET && 
+            ContentUtil.readVisibility(parentContent) === Visibility.DEFAULT.valueOf()){
+                return true;
+        }
+        return this.checkParentQustionSet(contentItems, parentContent)
     }
 
 }

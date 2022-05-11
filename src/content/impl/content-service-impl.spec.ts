@@ -35,7 +35,8 @@ import {
     CourseService,
     FormService,
     NetworkInfoService,
-    ProfileService
+    ProfileService,
+    StorageService
 } from '../..';
 import {FileService} from '../../util/file/def/file-service';
 import {ZipService} from '../../util/zip/def/zip-service';
@@ -74,6 +75,8 @@ import {ExtractPayloads} from '../handlers/import/extract-payloads';
 import {CreateContentImportManifest} from '../handlers/import/create-content-import-manifest';
 import {SharedPreferencesLocalStorage} from '../../util/shared-preferences/impl/shared-preferences-local-storage';
 import {ContentAggregator} from '../handlers/content-aggregator';
+import { QuestionSetFileReadHandler } from '../handlers/question-set-file-read-handler';
+import { GetChildQuestionSetHandler } from '../handlers/get-child-question-set-handler';
 
 
 jest.mock('../handlers/search-content-handler');
@@ -141,6 +144,7 @@ describe('ContentServiceImpl', () => {
         getAppName: () => 'MOCK_APP_NAME'
     };
     const mockNetworkInfoService: Partial<NetworkInfoService> = {};
+    const mockStorageService: Partial<StorageService> = {};
     const mockSharedPreferences = new SharedPreferencesLocalStorage();
     const contentUpdateSizeOnDeviceTimeoutRef: Map<string, NodeJS.Timeout> = new Map();
     const mockContainerService: Partial<Container> = {};
@@ -163,6 +167,7 @@ describe('ContentServiceImpl', () => {
         container.bind<CachedItemStore>(InjectionTokens.CACHED_ITEM_STORE).toConstantValue(mockCachedItemStore as CachedItemStore);
         container.bind<AppInfo>(InjectionTokens.APP_INFO).toConstantValue(mockAppInfo as AppInfo);
         container.bind<NetworkInfoService>(InjectionTokens.NETWORKINFO_SERVICE).toConstantValue(mockNetworkInfoService as NetworkInfoService);
+        container.bind<StorageService>(InjectionTokens.STORAGE_SERVICE).toConstantValue(mockStorageService as StorageService);
         container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(mockContainerService as Container);
 
 
@@ -171,6 +176,7 @@ describe('ContentServiceImpl', () => {
     });
 
     beforeEach(() => {
+        window['device'] = { uuid: 'some_uuid', platform:'android' };
         jest.clearAllMocks();
         (SearchContentHandler as jest.Mock<SearchContentHandler>).mockClear();
         (GetContentDetailsHandler as any as jest.Mock<GetContentDetailsHandler>).mockClear();
@@ -1480,19 +1486,65 @@ describe('ContentServiceImpl', () => {
     });
 
     describe('getQuestionList', () => {
-        it('should fetch  question list', (done) => {
+        it('should fetch locally available question list', (done) => {
+            // arrange
+            const questionIds = ['do_id1', 'do_id2'];
+            const parentId = 'do_parent_id1';
+
+            contentService.getContentDetails = jest.fn(()=>of({identifier: 'do_parent_id1', isAvailableLocally: true} as Content));
+            contentService['questionSetFileReadHandler'].getLocallyAvailableQuestion = jest.fn(()=>of([{identifier: 'some Id'}]));
+            // act
+            contentService.getQuestionList(questionIds, parentId).subscribe(() => {
+                // assert
+                expect(contentService['questionSetFileReadHandler'].getLocallyAvailableQuestion).toBeCalled();
+                done();
+            })
+        });
+
+        it('should fetch question list from server', (done) => {
+            // arrange
+            const questionIds = ['do_id1', 'do_id2'];
+            const parentId = 'do_parent_id1';
+
+            contentService.getContentDetails = jest.fn(()=>of({identifier: 'do_parent_id1', isAvailableLocally: false} as Content));
+            contentService['questionSetFileReadHandler'].getLocallyAvailableQuestion = jest.fn(()=>of([{identifier: 'some Id'}]));
+            
             mockContainerService.get = jest.fn(() => ({
-                getQuestionList: jest.fn(() => of({
+                getQuestionList: jest.fn(() => of([{
                     id: 'sampleid'
-                })) as any
+                }])) as any
             }))as any;
-            contentService.getQuestionList(['1','2']).subscribe(() => {
+            
+            // act
+            contentService.getQuestionList(questionIds, parentId).subscribe(() => {
                 // assert
                 expect(mockContainerService.get).toHaveBeenCalled();
                 done();
-            });
-        })
-        
+            })
+        });
+
+        it('should fetch question list from server if question set throws error', (done) => {
+            // arrange
+            const questionIds = ['do_id1', 'do_id2'];
+            const parentId = 'do_parent_id1';
+
+            contentService.getContentDetails = jest.fn(()=>throwError('error'));
+            contentService['questionSetFileReadHandler'].getLocallyAvailableQuestion = jest.fn(()=>of([{identifier: 'some Id'}]));
+            
+            mockContainerService.get = jest.fn(() => ({
+                getQuestionList: jest.fn(() => of([{
+                    id: 'sampleid'
+                }])) as any
+            }))as any;
+            
+            // act
+            contentService.getQuestionList(questionIds, parentId).subscribe(() => {
+                // assert
+                expect(mockContainerService.get).toHaveBeenCalled();
+                done();
+            })
+        });
+
         it('should return question set hierarchy', (done) =>{
             mockContainerService.get = jest.fn(() => ({
                 getQuestionSetHierarchy: jest.fn(() => of({
@@ -1513,6 +1565,54 @@ describe('ContentServiceImpl', () => {
                 expect(mockContainerService.get).toHaveBeenCalled();
                 done();
             })
+        })
+    })
+
+    describe('getQuestionSetChildren()', ()=>{
+        it('should return questionSet children', (done) =>{
+            // arrange
+            contentService['getChildQuestionSetHandler'].handle = jest.fn(()=>Promise.resolve([{identifier: 'do_id'}]));
+            // act
+            contentService.getQuestionSetChildren('1234').then(() => {
+                // assert
+                expect(contentService['getChildQuestionSetHandler'].handle).toHaveBeenCalled();
+                done();
+            })
+        })
+
+        it('should return questionSet children as empty array if it throws error', (done) =>{
+            // arrange
+            contentService['getChildQuestionSetHandler'].handle = jest.fn(()=>Promise.reject('some error'));
+            // act
+            contentService.getQuestionSetChildren('1234').then(() => {
+                // assert
+                expect(contentService['getChildQuestionSetHandler'].handle).toHaveBeenCalled();
+                done();
+            })
+        })
+    })
+
+    describe('formatSearchCriteria', ()=>{
+        it('should convert search filter object to contant search criteria.', (done) =>{
+            // arrange
+            const request = {
+                request: {
+                    query: 'Sample_query',
+                    mode: 'mode',
+                    filters: 'filters'
+                }
+            };
+            (SearchContentHandler as jest.Mock<SearchContentHandler>).mockImplementation(() => {
+                return {
+                    getSearchCriteria: jest.fn(() => ({languageCode: 'bn'}))
+                } as Partial<SearchContentHandler> as SearchContentHandler;
+            });
+            //act
+            
+            contentService.formatSearchCriteria(request);
+            // assert
+            expect(request.request.query).toBe('Sample_query');
+            done();
         })
     })
 

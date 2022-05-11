@@ -156,8 +156,11 @@ export class SyncAssessmentEventsHandler {
                   acc.contents.push(contentState);
               }
 
+              const assessmentTs = events.reduce((etsAcc, e) =>
+                  e.ets < etsAcc ? e.ets : etsAcc, events[0].ets);
+
               acc.assessments.push({
-                  assessmentTs: events.reduce((etsAcc, e) => e.ets < etsAcc ? e.ets : etsAcc, events[0].ets),
+                  assessmentTs: assessmentTs,
                   userId: context['userId'],
                   contentId: events[0].object.id,
                   courseId: context['courseId'],
@@ -166,11 +169,11 @@ export class SyncAssessmentEventsHandler {
                       courseId: context['courseId'],
                       batchId: context['batchId'],
                       contentId: events[0].object.id,
-                      userId: context['userId']
+                      userId: context['userId'],
+                      date: assessmentTs
                   }),
                   events
               });
-
               return acc;
           }, {userId: '', contents: [], assessments: []});
 

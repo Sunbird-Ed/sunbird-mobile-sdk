@@ -1,3 +1,4 @@
+import { MockSharedPreferences } from './../../__test__/mocks';
 import {CourseServiceImpl} from './course-service-impl';
 import {Container} from 'inversify';
 import {
@@ -613,7 +614,8 @@ describe('CourseServiceImpl', () => {
                 certificate: {
                     name: 'sample-certificate',
                     lastIssuedOn: 'some-time',
-                    token: 'some-token'
+                    token: 'some-token',
+                    id: 'some-id'
                 }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
@@ -655,7 +657,8 @@ describe('CourseServiceImpl', () => {
                 certificate: {
                     name: 'sample-certificate',
                     lastIssuedOn: 'some-time',
-                    token: 'some-token'
+                    token: 'some-token',
+                    id: 'some-id'
                 }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
@@ -697,7 +700,8 @@ describe('CourseServiceImpl', () => {
                 certificate: {
                     name: 'sample-certificate',
                     lastIssuedOn: 'some-time',
-                    token: 'some-token'
+                    token: 'some-token',
+                    id: 'some-id'
                 }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
@@ -752,7 +756,8 @@ describe('CourseServiceImpl', () => {
                 certificate: {
                     name: 'sample-certificate',
                     lastIssuedOn: 'some-time',
-                    token: 'some-token'
+                    token: 'some-token',
+                    id: 'some-id'
                 }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
@@ -812,7 +817,8 @@ describe('CourseServiceImpl', () => {
                 certificate: {
                     name: 'sample-certificate',
                     lastIssuedOn: 'some-time',
-                    token: 'some-token'
+                    token: 'some-token',
+                    id: 'some-id'
                 }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
@@ -880,7 +886,8 @@ describe('CourseServiceImpl', () => {
                 certificate: {
                     name: 'sample-certificate',
                     lastIssuedOn: 'some-time',
-                    token: 'some-token'
+                    token: 'some-token',
+                    id: 'some-id'
                 }
             };
             mockProfileService.getActiveProfileSession = jest.fn(() => of({
@@ -945,6 +952,8 @@ describe('CourseServiceImpl', () => {
             // arrange
             const options = {persistedOnly: false};
             jest.spyOn(courseService, 'resetCapturedAssessmentEvents').mockImplementation();
+            (sharePreferencesMock.getString as jest.Mock)
+            .mockReturnValue(of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id", "batchStatus": 1}'));
             (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockImplementation(() => {
                 return {
                     handle: jest.fn(() => of(undefined))
@@ -963,6 +972,8 @@ describe('CourseServiceImpl', () => {
             // arrange
             const options = {persistedOnly: true};
             const handleFn = jest.fn(() => of(undefined));
+            (sharePreferencesMock.getString as jest.Mock)
+            .mockReturnValue(of('{"userId": "user_id","courseId": "course_Id","batchId": "batch_id", "batchStatus": 1}'));
             (SyncAssessmentEventsHandler as any as jest.Mock<SyncAssessmentEventsHandler>).mockImplementation(() => {
                 return {
                     handle: jest.fn(() => of(undefined))
@@ -1178,6 +1189,20 @@ describe('CourseServiceImpl', () => {
                 expect(result.response).toEqual('SUCCESS');
                 done();
             });
+        });
+    });
+
+    describe('clearAssessmentEvents', () => {
+        it('should fetch course context and' +
+            'checks data is available and empty capturedAssessment Events', (done) => {
+            // arrange
+            sharePreferencesMock.getString = jest.fn(() => of('sample_context'));
+            // act
+            courseService.clearAssessments();
+            setTimeout(() => {
+                expect(sharePreferencesMock.getString).toHaveBeenCalled();
+                done();
+            }, 0);
         });
     });
 });

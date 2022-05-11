@@ -1,5 +1,5 @@
 import {ApiRequestHandler} from '../../api';
-import {ServerProfile, ServerProfileDetailsRequest} from '..';
+import {ProfileServiceConfig, ServerProfile, ServerProfileDetailsRequest} from '..';
 import {CachedItemRequest, CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
 import {Observable, of} from 'rxjs';
 import {catchError, mergeMap, tap} from 'rxjs/operators';
@@ -17,7 +17,9 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
     constructor(
         private cachedItemStore: CachedItemStore,
         private keyValueStore: KeyValueStore,
-        private container: Container) {
+        private container: Container,
+        private profileServiceConfig: ProfileServiceConfig
+        ) {
     }
 
   private get csUserService(): CsUserService {
@@ -50,7 +52,7 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
 
 
     private fetchFromServer(request: ServerProfileDetailsRequest): Observable<ServerProfile> {
-      return this.csUserService.getProfileDetails(request, { apiPath : '/api/user/v4'});
+      return this.csUserService.getProfileDetails(request, { apiPath : this.profileServiceConfig.profileApiPath_V5});
     }
 
     private fetchFromCache(request: ServerProfileDetailsRequest): Observable<ServerProfile> {

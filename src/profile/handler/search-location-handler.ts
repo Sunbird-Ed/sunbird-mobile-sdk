@@ -52,7 +52,7 @@ export class SearchLocationHandler implements ApiRequestHandler<LocationSearchCr
     }
 
     private fetchFromFile(request: LocationSearchCriteria): Observable<LocationSearchResult[]> {
-        const dir = Path.ASSETS_PATH + this.profileServiceConfig.locationDirPath;
+        const dir = Path.getAssetPath() + this.profileServiceConfig.locationDirPath;
 
         let file = request.filters.type;
         if (request.filters.parentId) {

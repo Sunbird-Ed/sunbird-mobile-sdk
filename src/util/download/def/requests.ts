@@ -1,6 +1,7 @@
 export interface DownloadRequest {
     withPriority?: number;
     downloadId?: string;
+    title?: string;
     identifier: string;
     downloadUrl: string;
     mimeType: string;
