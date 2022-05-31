@@ -1688,6 +1688,29 @@ describe('ContentServiceImpl', () => {
             });
         });
 
+        it('should not download for catch part', (done) => {
+            // arrange
+            const transcriptReq = {
+                downloadUrl: 'http//:sample-download-url',
+                fileName: 'Transcript-file',
+                destinationUrl: 'sample/files/fileName',
+                identifier: 'sample-id'
+            };
+            mockFileService.exists = jest.fn(() => Promise.reject({
+                nativeURL: 'sample-native-URL'
+            })) as any;
+            const data = undefined;
+            window['downloadManager'] = {
+                enqueue: jest.fn(({}, fn) => fn({err: 'error'}))
+            };
+            // act
+            contentService.downloadTranscriptFile(transcriptReq).catch(() => {
+                // assert
+                expect(mockFileService.exists).toHaveBeenCalled();
+                done();
+            });
+        });
+
         it('should be download but not copied copy for catch part', (done) => {
             // arrange
             const transcriptReq = {
@@ -1760,29 +1783,6 @@ describe('ContentServiceImpl', () => {
                 expect(window['downloadManager'].query).toHaveBeenCalled();
                 expect(sbutility.copyFile).toHaveBeenCalled();
                 expect(sbutility.rm).toHaveBeenCalled();
-                done();
-            });
-        });
-
-        it('should not download for catch part', (done) => {
-            // arrange
-            const transcriptReq = {
-                downloadUrl: 'http//:sample-download-url',
-                fileName: 'Transcript-file',
-                destinationUrl: 'sample/files/fileName',
-                identifier: 'sample-id'
-            };
-            mockFileService.exists = jest.fn(() => Promise.reject({
-                nativeURL: 'sample-native-URL'
-            })) as any;
-            const data = undefined;
-            window['downloadManager'] = {
-                enqueue: jest.fn(({}, fn) => fn({err: 'error'}))
-            };
-            // act
-            contentService.downloadTranscriptFile(transcriptReq).catch(() => {
-                // assert
-                expect(mockFileService.exists).toHaveBeenCalled();
                 done();
             });
         });
