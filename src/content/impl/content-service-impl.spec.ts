@@ -1682,7 +1682,6 @@ describe('ContentServiceImpl', () => {
                 expect(window['downloadManager'].enqueue).toHaveBeenCalled();
                 expect(window['downloadManager'].query).toHaveBeenCalled();
                 expect(sbutility.copyFile).toHaveBeenCalled();
-                expect(sbutility.rm).toHaveBeenCalled();
                 done();
             });
         });
