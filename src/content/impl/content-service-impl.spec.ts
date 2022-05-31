@@ -1645,7 +1645,6 @@ describe('ContentServiceImpl', () => {
                 expect(window['downloadManager'].enqueue).toHaveBeenCalled();
                 expect(window['downloadManager'].query).toHaveBeenCalled();
                 expect(sbutility.copyFile).toHaveBeenCalled();
-                expect(sbutility.rm).toHaveBeenCalled();
                 done();
             });
         });
@@ -1734,7 +1733,6 @@ describe('ContentServiceImpl', () => {
                 }]))
             };
             sbutility.copyFile = jest.fn(((_, __, ___, cb, err) => { err(); }));
-            sbutility.rm = jest.fn((_, __, cb) => cb());
             // act
             contentService.downloadTranscriptFile(transcriptReq).then(() => {
                 // assert
@@ -1744,7 +1742,6 @@ describe('ContentServiceImpl', () => {
                 expect(window['downloadManager'].enqueue).toHaveBeenCalled();
                 expect(window['downloadManager'].query).toHaveBeenCalled();
                 expect(sbutility.copyFile).toHaveBeenCalled();
-                expect(sbutility.rm).toHaveBeenCalled();
                 done();
             });
         });
@@ -1782,7 +1779,6 @@ describe('ContentServiceImpl', () => {
                 expect(window['downloadManager'].enqueue).toHaveBeenCalled();
                 expect(window['downloadManager'].query).toHaveBeenCalled();
                 expect(sbutility.copyFile).toHaveBeenCalled();
-                expect(sbutility.rm).toHaveBeenCalled();
                 done();
             });
         });
