@@ -42,7 +42,7 @@ import {FileService} from '../../util/file/def/file-service';
 import {ZipService} from '../../util/zip/def/zip-service';
 import {DeviceInfo} from '../../util/device';
 import {CorrelationData, TelemetryService} from '../../telemetry';
-import {DownloadService} from '../../util/download';
+import {DownloadService, DownloadStatus} from '../../util/download';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {EventsBusService} from '../../events-bus';
 import {CachedItemStore} from '../../key-value-store';
@@ -1613,7 +1613,173 @@ describe('ContentServiceImpl', () => {
             // assert
             expect(request.request.query).toBe('Sample_query');
             done();
-        })
-    })
+        });
+    });
 
+    describe('downloadTranscriptFile', () => {
+        it('should be download file and copy inside internal space If folder is exists', (done) => {
+            // arrange
+            const transcriptReq = {
+                downloadUrl: 'http//:sample-download-url',
+                fileName: 'Transcript-file',
+                destinationUrl: 'sample/files/fileName',
+                identifier: 'sample-id'
+            };
+            mockFileService.exists = jest.fn(() => Promise.resolve({
+                nativeURL: 'sample-native-URL'
+            })) as any;
+            const data = undefined;
+            window['downloadManager'] = {
+                enqueue: jest.fn(({ }, fn) => fn(data, { id: 'sample-id' })),
+                query: jest.fn((_, fn) => fn(data, [{
+                    status: DownloadStatus.STATUS_SUCCESSFUL,
+                    localUri: 'http//:sample-path/do_id/fileName'
+                }]))
+            };
+            sbutility.copyFile = jest.fn(((_, __, ___, cb) => { cb(); }));
+            sbutility.rm = jest.fn((_, __, cb, err) => cb());
+            // act
+            contentService.downloadTranscriptFile(transcriptReq).then(() => {
+                // assert
+                expect(mockFileService.exists).toHaveBeenCalled();
+                expect(window['downloadManager'].enqueue).toHaveBeenCalled();
+                expect(window['downloadManager'].query).toHaveBeenCalled();
+                expect(sbutility.copyFile).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it('should be download file and copy inside internal space If folder is not exists', (done) => {
+            // arrange
+            const transcriptReq = {
+                downloadUrl: 'http//:sample-download-url',
+                fileName: 'Transcript-file',
+                destinationUrl: 'sample/files/fileName',
+                identifier: 'sample-id'
+            };
+            mockFileService.exists = jest.fn(() => Promise.reject({
+                nativeURL: 'sample-native-URL'
+            })) as any;
+            mockFileService.createDir = jest.fn(() => Promise.resolve({
+                nativeURL: 'sample-native-URL'
+            })) as any;
+            const data = undefined;
+            window['downloadManager'] = {
+                enqueue: jest.fn(({ }, fn) => fn(data, { id: 'sample-id' })),
+                query: jest.fn((_, fn) => fn(data, [{
+                    status: DownloadStatus.STATUS_SUCCESSFUL,
+                    localUri: 'http//:sample-path/do_id/fileName'
+                }]))
+            };
+            sbutility.copyFile = jest.fn(((_, __, ___, cb) => { cb(); }));
+            sbutility.rm = jest.fn((_, __, cb, err) => cb());
+            // act
+            contentService.downloadTranscriptFile(transcriptReq).then(() => {
+                // assert
+                expect(mockFileService.exists).toHaveBeenCalled();
+                expect(mockFileService.createDir).toHaveBeenNthCalledWith(1, 'undefinedtranscript', false);
+                expect(mockFileService.createDir).toHaveBeenNthCalledWith(2, 'undefinedtranscript/sample-id', false);
+                expect(window['downloadManager'].enqueue).toHaveBeenCalled();
+                expect(window['downloadManager'].query).toHaveBeenCalled();
+                expect(sbutility.copyFile).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it('should not download for catch part', (done) => {
+            // arrange
+            const transcriptReq = {
+                downloadUrl: 'http//:sample-download-url',
+                fileName: 'Transcript-file',
+                destinationUrl: 'sample/files/fileName',
+                identifier: 'sample-id'
+            };
+            mockFileService.exists = jest.fn(() => Promise.reject({
+                nativeURL: 'sample-native-URL'
+            })) as any;
+            const data = undefined;
+            window['downloadManager'] = {
+                enqueue: jest.fn(({}, fn) => fn({err: 'error'}))
+            };
+            // act
+            contentService.downloadTranscriptFile(transcriptReq).catch(() => {
+                // assert
+                expect(mockFileService.exists).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it('should be download but not copied copy for catch part', (done) => {
+            // arrange
+            const transcriptReq = {
+                downloadUrl: 'http//:sample-download-url',
+                fileName: 'Transcript-file',
+                destinationUrl: 'sample/files/fileName',
+                identifier: 'sample-id'
+            };
+            mockFileService.exists = jest.fn(() => Promise.reject({
+                nativeURL: 'sample-native-URL'
+            })) as any;
+            mockFileService.createDir = jest.fn(() => Promise.resolve({
+                nativeURL: 'sample-native-URL'
+            })) as any;
+            const data = undefined;
+            window['downloadManager'] = {
+                enqueue: jest.fn(({ }, fn) => fn(data, { id: 'sample-id' })),
+                query: jest.fn((_, fn) => fn(data, [{
+                    status: DownloadStatus.STATUS_SUCCESSFUL,
+                    localUri: 'http//:sample-path/do_id/fileName'
+                }]))
+            };
+            sbutility.copyFile = jest.fn(((_, __, ___, cb, err) => { err(); }));
+            // act
+            contentService.downloadTranscriptFile(transcriptReq).then(() => {
+                // assert
+                expect(mockFileService.exists).toHaveBeenCalled();
+                expect(mockFileService.createDir).toHaveBeenNthCalledWith(1, 'undefinedtranscript', false);
+                expect(mockFileService.createDir).toHaveBeenNthCalledWith(2, 'undefinedtranscript/sample-id', false);
+                expect(window['downloadManager'].enqueue).toHaveBeenCalled();
+                expect(window['downloadManager'].query).toHaveBeenCalled();
+                expect(sbutility.copyFile).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it('should be download and copied but not delete from storage for delete catch part', (done) => {
+            // arrange
+            const transcriptReq = {
+                downloadUrl: 'http//:sample-download-url',
+                fileName: 'Transcript-file',
+                destinationUrl: 'sample/files/fileName',
+                identifier: 'sample-id'
+            };
+            mockFileService.exists = jest.fn(() => Promise.reject({
+                nativeURL: 'sample-native-URL'
+            })) as any;
+            mockFileService.createDir = jest.fn(() => Promise.resolve({
+                nativeURL: 'sample-native-URL'
+            })) as any;
+            const data = undefined;
+            window['downloadManager'] = {
+                enqueue: jest.fn(({ }, fn) => fn(data, { id: 'sample-id' })),
+                query: jest.fn((_, fn) => fn(data, [{
+                    status: DownloadStatus.STATUS_SUCCESSFUL,
+                    localUri: 'http//:sample-path/do_id/fileName'
+                }]))
+            };
+            sbutility.copyFile = jest.fn(((_, __, ___, cb, err) => { cb(); }));
+            sbutility.rm = jest.fn((_, __, cb, err) => err());
+            // act
+            contentService.downloadTranscriptFile(transcriptReq).then(() => {
+                // assert
+                expect(mockFileService.exists).toHaveBeenCalled();
+                expect(mockFileService.createDir).toHaveBeenNthCalledWith(1, 'undefinedtranscript', false);
+                expect(mockFileService.createDir).toHaveBeenNthCalledWith(2, 'undefinedtranscript/sample-id', false);
+                expect(window['downloadManager'].enqueue).toHaveBeenCalled();
+                expect(window['downloadManager'].query).toHaveBeenCalled();
+                expect(sbutility.copyFile).toHaveBeenCalled();
+                done();
+            });
+        });
+    });
 });
