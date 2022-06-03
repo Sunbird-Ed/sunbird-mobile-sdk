@@ -394,7 +394,9 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             searchContentHandler.getContentSearchFilter(contentIds, contentImportRequest.contentStatusArray, contentImportRequest.fields);
         return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig).handle(filter).pipe(
             map((searchResponse: SearchResponse) => {
-                return searchResponse.result.content || searchResponse.result.QuestionSet;
+                return (searchResponse.result.content.length && searchResponse.result.QuestionSet) ?
+                  searchResponse.result.content.concat(searchResponse.result.QuestionSet) :
+                   searchResponse.result.content || searchResponse.result.QuestionSet;
             }),
             mergeMap((contents: ContentData[]) => defer(async () => {
                 const contentImportResponses: ContentImportResponse[] = [];
