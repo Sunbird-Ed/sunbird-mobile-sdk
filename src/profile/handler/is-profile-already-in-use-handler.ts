@@ -14,7 +14,7 @@ export class IsProfileAlreadyInUseHandler implements ApiRequestHandler<IsProfile
     handle(request: IsProfileAlreadyInUseRequest): Observable<ProfileExistsResponse> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)
-            .withPath(this.profileAlreadyInUseConfig.profileApiPath_V5 +
+            .withPath(this.profileAlreadyInUseConfig.profileApiPath +
                 this.GET_PROFILE_ALREADY_IN_USE_ENDPOINT + '/' + request.type + '/' + request.key)
             .withBearerToken(true)
             .withUserToken(true)
