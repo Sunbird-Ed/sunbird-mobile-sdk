@@ -467,6 +467,7 @@ export class ExtractPayloads {
     private async createDirectories(parentDirectoryPath: string,
                                     listOfFolder: string[]): Promise<{ [key: string]: { path: string | undefined } }> {
         return new Promise<{ [key: string]: { path: string | undefined } }>((resolve, reject) => {
+            parentDirectoryPath = (window.device.platform.toLowerCase() === "ios") ? parentDirectoryPath.concat('/') : parentDirectoryPath;
             sbutility.createDirectories(ContentUtil.getBasePath(parentDirectoryPath), listOfFolder,
                 (entry) => {
                     resolve(entry);
