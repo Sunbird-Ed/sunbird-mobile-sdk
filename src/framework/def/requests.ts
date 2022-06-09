@@ -16,7 +16,8 @@ export interface OrganizationSearchCriteria<T> {
         locationIds?: string[];
         slug?: string;
         'orgLocation.id'?: string;
-        isSchool?: boolean
+        isSchool?: boolean;
+        isTenant?: boolean;
     };
     fields?: (keyof T)[];
 }
