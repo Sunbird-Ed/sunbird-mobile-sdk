@@ -331,10 +331,9 @@ export class FileServiceImpl implements FileService {
      * @returns {Promise<Entry>}
      */
     resolveLocalFilesystemUrl(fileUrl: string): Promise<Entry> {
-        if (!fileUrl.includes('file://')) {
+        if (window.device.platform.toLowerCase() === 'ios' && !fileUrl.includes('file://')) {
             fileUrl = 'file://' + fileUrl;
         }
-        console.log(fileUrl);
         return new Promise<Entry>((resolve, reject) => {
             try {
                 resolveLocalFileSystemURL(
