@@ -27,6 +27,7 @@ export const mockSdkConfigWithSampleApiConfig: Partial<SdkConfig> = {
     },
     profileServiceConfig: {
         profileApiPath: '',
+        profileApiPath_V2: '',
         profileApiPath_V5: '',
         tenantApiPath: '',
         otpApiPath: '',
