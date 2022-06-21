@@ -34,7 +34,9 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
         const dsl = this.webviewRunner;
 
         const telemetryContext = await this.telemetryService.buildContext().toPromise();
-
+        if(this.loginConfig.context == "password") {
+            this.loginConfig.target.path = "/recover/identify/account";
+        }
         this.loginConfig.target.params.push({
            key: 'pdata',
            value: JSON.stringify(telemetryContext.pdata)
