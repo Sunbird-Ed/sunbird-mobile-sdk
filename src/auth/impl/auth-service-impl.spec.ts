@@ -143,6 +143,30 @@ describe('AuthServiceImpl', () => {
     });
   });
 
+  it('should call AuthUtil.endSession() on sessionProvider resolve of setSession()', () => {
+    const MockSessionProvider = mock<SessionProvider>();
+    when(MockSessionProvider.provide()).thenResolve({
+      access_token: '',
+      refresh_token: 'SAMPLE_REFRESH_TOKEN',
+      userToken: 'SAMPLE_USER_TOKEN'
+    });
+    const mockSessionProvider = instance(MockSessionProvider);
+    
+    const endSession = jest.fn().mockImplementation(() => Promise.resolve());
+    (AuthUtil as jest.Mock<AuthUtil>).mockImplementation(() => {
+      return {
+        endSession
+      } as Partial<AuthUtil> as AuthUtil;
+    });
+    const authService = container.get<AuthService>(InjectionTokens.AUTH_SERVICE);
+
+    // act
+    authService.setSession(mockSessionProvider).subscribe(() => {
+      // assert
+      expect(endSession).toHaveBeenCalled();
+    });
+  });
+
   describe('onInit', () => {
     describe('should setup sharePreferences listener to update CsModule tokens when OAuthSession changes', () => {
       beforeEach(() => {

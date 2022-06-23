@@ -29,7 +29,6 @@ export class NativeKeycloakSessionProvider implements SessionProvider {
     
     constructor(
         private loginConfig: WebviewSessionProviderConfig,
-        private autoMergeConfig: WebviewSessionProviderConfig,
         private nativeKeycloakTokenProvider: NativeKeycloakTokens
     ) {
         this.apiService = SunbirdSdk.instance.apiService;
