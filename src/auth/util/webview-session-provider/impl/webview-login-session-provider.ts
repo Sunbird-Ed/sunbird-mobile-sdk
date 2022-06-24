@@ -65,7 +65,11 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
                     switch (forCase.type) {
                         case 'password': acc.push(
                             this.buildPasswordSessionProvider(dsl, forCase)
-                        ); break;
+                        );
+                        if (this.resetParams && this.loginConfig.context == "password") {
+                            dsl.closeWebview()
+                        } 
+                        break;
 
                         case 'state': acc.push(
                             this.buildStateSessionProvider(dsl, forCase)
