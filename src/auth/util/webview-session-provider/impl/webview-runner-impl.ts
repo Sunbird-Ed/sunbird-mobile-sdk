@@ -83,7 +83,7 @@ export class WebviewRunnerImpl implements WebviewRunner {
         ).toPromise();
     }
 
-    launchCustomTab({host, path, params}: { host: string; path: string; params: { [p: string]: string } }): Promise<void> {
+    launchCustomTab({host, path, params, extraParams}: { host: string; path: string; params: { [p: string]: string }; extraParams: string }): Promise<void> {
         const url = WebviewRunnerImpl.buildUrl(host, path, params);
 
         return new Promise<void>((resolve, reject) => {
@@ -99,7 +99,7 @@ export class WebviewRunnerImpl implements WebviewRunner {
                     reject(error);
                 });
             }, () => {
-                customtabs.launchInBrowser(url, resolved => {
+                customtabs.launchInBrowser(url, extraParams, resolved => {
                     this.captured = {
                         ...this.captured,
                         ...qs.parse(resolved)

@@ -125,6 +125,7 @@ describe('WebviewRunnerImpl', () => {
                Promise.resolve(1),
                Promise.resolve(2),
                Promise.resolve(3),
+               Promise.resolve(4)
            ).then((v) => {
                expect(v).toBe(1);
                done();
@@ -138,6 +139,7 @@ describe('WebviewRunnerImpl', () => {
                 Promise.resolve(1),
                 Promise.resolve(2),
                 Promise.resolve(3),
+                Promise.resolve(4)
             ).then((v) => {
                 expect(v).toBe(undefined);
                 done();
@@ -174,6 +176,33 @@ describe('WebviewRunnerImpl', () => {
             });
         });
 
+        it('should launch customtabs if available and throws error', () => {
+            // arrange
+            spyOn(window['customtabs'], 'isAvailable').and.callFake((success, error) => {
+                setTimeout(() => {
+                    success();
+                });
+            });
+
+            spyOn(window['customtabs'], 'launch').and.callFake((url, success, error) => {
+                setTimeout(() => {
+                    error({ 'ERROR': 'VALUE' });
+                });
+            });
+
+            // act
+            webviewRunner.launchCustomTab({
+                host: 'SAMPLE_HOST',
+                path: 'SOME_PATH',
+                params: {
+                    'PARAM1': 'VALUE1'
+                }
+            }).then((v) => {
+                expect(window['customtabs']['isAvailable']).toBeCalled();
+                expect(window['customtabs']['launch']).toBeCalled();
+            });
+        });
+
         it('should launch in browser if not available', (done) => {
             // arrange
             spyOn(window['customtabs'], 'isAvailable').and.callFake((success, error) => {
@@ -182,7 +211,7 @@ describe('WebviewRunnerImpl', () => {
                 });
             });
 
-            spyOn(window['customtabs'], 'launchInBrowser').and.callFake((url, success, error) => {
+            spyOn(window['customtabs'], 'launchInBrowser').and.callFake((url, extraParams, success, error) => {
                 setTimeout(() => {
                     success({ 'PARAM': 'VALUE' });
                 });
@@ -199,6 +228,33 @@ describe('WebviewRunnerImpl', () => {
                 expect(window['customtabs']['isAvailable']).toBeCalled();
                 expect(window['customtabs']['launchInBrowser']).toBeCalled();
                 done();
+            });
+        });
+
+        it('should launch in browser if not available and throw error', () => {
+            // arrange
+            spyOn(window['customtabs'], 'isAvailable').and.callFake((success, error) => {
+                setTimeout(() => {
+                    success();
+                });
+            });
+
+            spyOn(window['customtabs'], 'launchInBrowser').and.callFake((url, extraParams, success, error) => {
+                setTimeout(() => {
+                    error({ 'ERROR': 'VALUE' });
+                });
+            });
+
+            // act
+            webviewRunner.launchCustomTab({
+                host: 'SAMPLE_HOST',
+                path: 'SOME_PATH',
+                params: {
+                    'PARAM1': 'VALUE1'
+                }
+            }).then((v) => {
+                expect(window['customtabs']['isAvailable']).toBeCalled();
+                expect(window['customtabs']['launchInBrowser']).toBeCalled();
             });
         });
     });

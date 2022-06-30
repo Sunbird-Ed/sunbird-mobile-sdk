@@ -18,6 +18,7 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
     constructor(
         private loginConfig: WebviewSessionProviderConfig,
         private autoMergeConfig: WebviewSessionProviderConfig,
+        private customWebViewConfig?: any,
         webviewRunner?: WebviewRunner
     ) {
         super(
@@ -70,7 +71,7 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
                         ); break;
 
                         case 'google': acc.push(
-                            this.buildGoogleSessionProvider(dsl, forCase)
+                            this.buildGoogleSessionProvider(dsl, forCase, this.customWebViewConfig)
                         ); break;
 
                         case 'state-error': acc.push(dsl.capture({

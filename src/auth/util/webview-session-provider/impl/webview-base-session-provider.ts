@@ -67,7 +67,7 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
         });
     }
 
-    protected buildGoogleSessionProvider(dsl, forCase) {
+    protected buildGoogleSessionProvider(dsl, forCase, customWebViewConfig?) {
         return dsl.capture({
             host: forCase.when.host,
             path: forCase.when.path,
@@ -83,7 +83,8 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
                 return dsl.launchCustomTab({
                     host: url.origin,
                     path: url.pathname,
-                    params: qs.parse(url.searchParams.toString(), {ignoreQueryPrefix: true})
+                    params: qs.parse(url.searchParams.toString(), {ignoreQueryPrefix: true}),
+                    customView: customWebViewConfig.get('extraParam')
                 }).then(() =>
                     dsl.success()
                 ).then((cap) => {
