@@ -168,7 +168,8 @@ describe('WebviewRunnerImpl', () => {
                 path: 'SOME_PATH',
                 params: {
                     'PARAM1': 'VALUE1'
-                }
+                },
+                extraParams: ""
             }).then((v) => {
                 expect(window['customtabs']['isAvailable']).toBeCalled();
                 expect(window['customtabs']['launch']).toBeCalled();
@@ -196,7 +197,8 @@ describe('WebviewRunnerImpl', () => {
                 path: 'SOME_PATH',
                 params: {
                     'PARAM1': 'VALUE1'
-                }
+                },
+                extraParams: ""
             }).then((v) => {
                 expect(window['customtabs']['isAvailable']).toBeCalled();
                 expect(window['customtabs']['launch']).toBeCalled();
@@ -223,7 +225,8 @@ describe('WebviewRunnerImpl', () => {
                 path: 'SOME_PATH',
                 params: {
                     'PARAM1': 'VALUE1'
-                }
+                },
+                extraParams: ""
             }).then((v) => {
                 expect(window['customtabs']['isAvailable']).toBeCalled();
                 expect(window['customtabs']['launchInBrowser']).toBeCalled();
@@ -251,7 +254,8 @@ describe('WebviewRunnerImpl', () => {
                 path: 'SOME_PATH',
                 params: {
                     'PARAM1': 'VALUE1'
-                }
+                },
+                extraParams: ""
             }).then((v) => {
                 expect(window['customtabs']['isAvailable']).toBeCalled();
                 expect(window['customtabs']['launchInBrowser']).toBeCalled();
