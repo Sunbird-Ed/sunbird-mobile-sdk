@@ -35,7 +35,9 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
         const dsl = this.webviewRunner;
 
         const telemetryContext = await this.telemetryService.buildContext().toPromise();
-
+        if(this.loginConfig.context == "password") {
+            this.loginConfig.target.path = "/recover/identify/account";
+        }
         this.loginConfig.target.params.push({
            key: 'pdata',
            value: JSON.stringify(telemetryContext.pdata)
@@ -64,7 +66,11 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
                     switch (forCase.type) {
                         case 'password': acc.push(
                             this.buildPasswordSessionProvider(dsl, forCase)
-                        ); break;
+                        );
+                        if (this.resetParams && this.loginConfig.context == "password") {
+                            dsl.closeWebview()
+                        } 
+                        break;
 
                         case 'state': acc.push(
                             this.buildStateSessionProvider(dsl, forCase)

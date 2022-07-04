@@ -160,6 +160,38 @@ describe('WebviewLoginSessionProvider', () => {
             });
         });
 
+        it('should set path for context type password when launching webview', (done) => {
+            const loginConfigWithNoReturn = {...loginConfig};
+            loginConfigWithNoReturn.context = "password"
+            loginConfigWithNoReturn.target.path = "/recover/identify/account";
+            loginConfigWithNoReturn.return = [];
+
+            webviewLoginSessionProvider = new WebviewLoginSessionProvider(
+                loginConfigWithNoReturn,
+                mergeConfig,
+                mockWebviewRunner as WebviewRunner
+            );
+
+            const mockSession = {
+                access_token: 'SOME_ACCESS_TOKEN',
+                refresh_token: 'SOME_REFRESH_TOKEN',
+                userToken: 'SOME_USER_TOKEN'
+            };
+            mockWebviewRunner.launchWebview = jest.fn().mockImplementation(() => Promise.resolve());
+            mockWebviewRunner.any = jest.fn().mockImplementation(() => Promise.resolve(mockSession));
+
+            webviewLoginSessionProvider.provide().then(() => {
+                expect(mockWebviewRunner.launchWebview).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        params: expect.objectContaining({
+                            pdata: JSON.stringify({'id': 'staging.diksha.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'})
+                        })
+                    })
+                );
+                done();
+            });
+        });
+
         describe('when config case passes', () => {
             describe('when config case:password', () => {
                 it('should resolve session when API succeeds', (done) => {
