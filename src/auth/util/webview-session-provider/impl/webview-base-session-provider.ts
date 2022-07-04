@@ -84,7 +84,7 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
                     host: url.origin,
                     path: url.pathname,
                     params: qs.parse(url.searchParams.toString(), {ignoreQueryPrefix: true}),
-                    customView: customBrowserConfig.get('extraParam')
+                    extraParams: customBrowserConfig.get('extraParam')
                 }).then(() =>
                     dsl.success()
                 ).then((cap) => {
