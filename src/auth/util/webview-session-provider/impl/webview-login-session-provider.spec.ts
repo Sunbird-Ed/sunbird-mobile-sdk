@@ -160,7 +160,7 @@ describe('WebviewLoginSessionProvider', () => {
             });
         });
 
-        it('should set path for context type password when launching webview', (done) => {
+        it('should set path for context type password when launching webview', () => {
             const loginConfigWithNoReturn = {...loginConfig};
             loginConfigWithNoReturn.context = "password"
             loginConfigWithNoReturn.target.path = "/recover/identify/account";
@@ -180,7 +180,8 @@ describe('WebviewLoginSessionProvider', () => {
             mockWebviewRunner.launchWebview = jest.fn().mockImplementation(() => Promise.resolve());
             mockWebviewRunner.any = jest.fn().mockImplementation(() => Promise.resolve(mockSession));
 
-            webviewLoginSessionProvider.provide().then(() => {
+            webviewLoginSessionProvider.provide();
+            setTimeout(() => {
                 expect(mockWebviewRunner.launchWebview).toHaveBeenCalledWith(
                     expect.objectContaining({
                         params: expect.objectContaining({
@@ -188,8 +189,7 @@ describe('WebviewLoginSessionProvider', () => {
                         })
                     })
                 );
-                done();
-            });
+            }, 0);
         });
 
         describe('when config case passes', () => {

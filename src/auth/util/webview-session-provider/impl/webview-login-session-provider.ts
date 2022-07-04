@@ -52,7 +52,24 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
                 }, {...this.resetParams})
             });
         }
-
+        // if(this.customWebViewConfig.get('extraParam').includes("jio")) {
+        //         console.log('jio implemnetation ', this.loginConfig.target);
+        //         const url = this.buildGoogleTargetUrl({googleRedirectUrl: "https://staging.sunbirded.org/google/auth?redirect_uri=https://staging.sunbirded.org/oauth2callback"}, this.loginConfig.target.params);
+        //             console.log('captured ', this.loginConfig.target.host)
+        //             console.log('extras ', this.loginConfig.target)
+        //             console.log('url ', "https://staging.sunbirded.org/google/auth?redirect_uri=staging.diksha.app%3A%2F%2Fmobile&error_callback=staging.diksha.app%3A%2F%2Fmobile&response_type=code&scope=offline_access&client_id=android&version=4&pdata=%7B%22id%22%3A%22staging.diksha.app%22%2C%22pid%22%3A%22sunbird.app%22%2C%22ver%22%3A%224.8.local.0-debug%22%7D ")
+        //             console.log('customBrowserConfig ', this.customWebViewConfig.get('extraParam'))
+        //         return dsl.launchCustomTab({
+        //             host: url.origin,
+        //             path: url.pathname,
+        //             params: qs.parse(url.searchParams.toString(), {ignoreQueryPrefix: true}),
+        //             extraParams: this.customWebViewConfig.get('extraParam')
+        //         }).then(() =>
+        //             dsl.success()
+        //         ).then((cap) => {
+        //             return this.resolveGoogleSession(cap);
+        //         });
+        //     }
         return dsl.launchWebview({
             host: this.loginConfig.target.host,
             path: this.loginConfig.target.path,
