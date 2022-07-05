@@ -18,6 +18,7 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
     constructor(
         private loginConfig: WebviewSessionProviderConfig,
         private autoMergeConfig: WebviewSessionProviderConfig,
+        private customWebViewConfig?: any,
         webviewRunner?: WebviewRunner
     ) {
         super(
@@ -51,7 +52,6 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
                 }, {...this.resetParams})
             });
         }
-
         return dsl.launchWebview({
             host: this.loginConfig.target.host,
             path: this.loginConfig.target.path,
@@ -76,7 +76,7 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
                         ); break;
 
                         case 'google': acc.push(
-                            this.buildGoogleSessionProvider(dsl, forCase)
+                            this.buildGoogleSessionProvider(dsl, forCase, this.customWebViewConfig)
                         ); break;
 
                         case 'state-error': acc.push(dsl.capture({
