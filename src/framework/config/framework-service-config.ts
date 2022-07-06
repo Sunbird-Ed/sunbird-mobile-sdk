@@ -5,4 +5,5 @@ export interface FrameworkServiceConfig {
     channelConfigDirPath: string;
     searchOrganizationApiPath: string;
     systemSettingsDefaultChannelIdKey: string;
+    overriddenDefaultChannelId?: string;
 }
