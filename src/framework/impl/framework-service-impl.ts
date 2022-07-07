@@ -11,7 +11,7 @@ import {
 import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
 import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
 import {FileService} from '../../util/file/def/file-service';
-import {Observable} from 'rxjs';
+import {defer, iif, Observable, of} from 'rxjs';
 import {Organization} from '../def/organization';
 import {ApiService, HttpRequestType, Request} from '../../api';
 import {SharedPreferences} from '../../util/shared-preferences';
@@ -58,11 +58,19 @@ export class FrameworkServiceImpl implements FrameworkService {
     }
 
     getDefaultChannelId(): Observable<string> {
-        return this.systemSettingsService.getSystemSettings({
-            id: this.sdkConfig.frameworkServiceConfig.systemSettingsDefaultChannelIdKey
-        }).pipe(
-            map((r) => r.value)
-        );
+        return iif(
+            () => (!this.sdkConfig.frameworkServiceConfig.overriddenDefaultChannelId),
+            defer(() => {
+                return this.systemSettingsService.getSystemSettings({
+                    id: this.sdkConfig.frameworkServiceConfig.systemSettingsDefaultChannelIdKey
+                }).pipe(
+                    map((r) => r.value)
+                );
+            }),
+            defer(() => {
+               return of(this.sdkConfig.frameworkServiceConfig.overriddenDefaultChannelId as string)
+            })
+        );        
     }
 
     getDefaultChannelDetails(request = { from: CachedItemRequestSourceFrom.CACHE }): Observable<Channel> {
