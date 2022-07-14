@@ -81,7 +81,7 @@ export class FrameworkServiceImpl implements FrameworkService {
             mergeMap((channelId: string) => {
                 return this.getChannelDetails({
                     from: request.from,
-                    channelId: channelId
+                    channelId: this.sdkConfig.frameworkServiceConfig.overriddenDefaultChannelId || channelId
                 });
             })
         );
