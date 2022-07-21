@@ -11,6 +11,7 @@ export interface ContentSearchResult {
     request?: { [key: string]: any };
     contentDataList: ContentData[];
     collectionDataList?: ContentData[];
+    count?: number;
 }
 
 export interface ContentAggregatorResponse {
