@@ -345,6 +345,20 @@ export class ExtractPayloads {
                 if (!useSubDirectories) {
                     await this.fileService.createDir(payloadDestinationPath.concat(folderContainingFile), false);
                 }
+
+                // * only in case of iOS ****
+                if(window.device.platform.toLowerCase() === "ios") {
+                    // * checking if file exist, then delete the file
+                    await this.fileService.exists(payloadDestinationPath.concat('/', asset))
+                    .then(entry => {
+                        if (entry) {
+                            this.fileService.removeFile(payloadDestinationPath.concat('/', asset)).then();
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Error =>', error);
+                    });
+                }
                 // If source icon is not available then copy assets is failing and throwing exception.
                 await this.fileService.copyFile(tempLocationPath.concat(folderContainingFile), FileUtil.getFileName(asset),
                     payloadDestinationPath.concat(folderContainingFile), FileUtil.getFileName(asset));
