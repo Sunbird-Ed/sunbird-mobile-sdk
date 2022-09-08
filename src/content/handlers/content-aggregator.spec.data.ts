@@ -800,7 +800,7 @@ export const mockGetOnlineContentsResponse = {
         'node_id': 521527
     }],
     'filterCriteria': {
-        'facetFilters': [{'name': 'subject', 'values':[]}] 
+        'facetFilters': [{'name': 'subject', 'values':[{'name': 'English', 'count': 3}, {'name': 'Accountancy', 'count': 13}]}] 
     }
 };
 

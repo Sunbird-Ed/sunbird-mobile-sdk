@@ -73,7 +73,11 @@ describe('ContentAggregator', () => {
             });
 
             // act
-            contentAggregator.aggregate({}, ['CONTENTS'], {
+            contentAggregator.aggregate({userPreferences: {
+                board: ["statetamilnadu"],
+                gradeLevel: ["class1"],
+                medium: ["english"],
+                subject: []}}, ['CONTENTS'], {
                 type: 'config',
                 subType: 'library',
                 action: 'get',
@@ -483,7 +487,11 @@ describe('ContentAggregator', () => {
                     ]));
 
                     // act
-                    contentAggregator.aggregate({}, ['CONTENTS'], {
+                    contentAggregator.aggregate({userPreferences: {
+                        board: ["statetamilnadu"],
+                        gradeLevel: ["class1"],
+                        medium: ["english"],
+                        subject: []}}, ['CONTENTS'], {
                         type: 'config',
                         subType: 'library',
                         action: 'get',
