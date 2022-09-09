@@ -798,7 +798,10 @@ export const mockGetOnlineContentsResponse = {
         'board': 'State (Andhra Pradesh)',
         'resourceType': 'Book',
         'node_id': 521527
-    }]
+    }],
+    'filterCriteria': {
+        'facetFilters': [{'name': 'subject', 'values':[{'name': 'English', 'count': 3}, {'name': 'Accountancy', 'count': 13}]}] 
+    }
 };
 
 export const mockGetOfflineContentsResponseWithTwoSubjects = [

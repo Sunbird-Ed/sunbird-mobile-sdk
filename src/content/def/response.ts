@@ -31,6 +31,7 @@ export interface PageSection {
     name?: string;
     contents?: ContentData[] | Course[];
     display?: Display;
+    totalCount?: number;
 }
 
 export interface Display {
