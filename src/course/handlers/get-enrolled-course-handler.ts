@@ -86,10 +86,12 @@ export class GetEnrolledCourseHandler implements ApiRequestHandler<FetchEnrolled
                 .concat(course['userId']!).concat('_')
                 .concat(course['contentId']!).concat('_')
                 .concat(course['batchId']!);
-            const lastReadContentId = course['lastReadContentId'] ? course['lastReadContentId'] : '';
-            await this.sharedPreference.putString(key, lastReadContentId!).toPromise();
+            const lastReadContentId = course['lastReadContentId'];
+            if (course['lastReadContentId']) {
+                await this.sharedPreference.putString(key, lastReadContentId!).toPromise();
+            }
         }
-        return true;
+        return Promise.resolve(true);
     }
 
     private fetchFromServer(request: FetchEnrolledCourseRequest): Observable<GetEnrolledCourseResponse> {
