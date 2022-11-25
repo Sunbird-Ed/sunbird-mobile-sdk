@@ -1,11 +1,10 @@
 import { Container } from 'inversify';
 import { of, throwError } from 'rxjs';
-import { DbService, SdkConfig, ProfileService, KeyValueStore, CourseCertificate, DownloadStatus } from '../..';
+import { DbService, SdkConfig, ProfileService, KeyValueStore, DownloadStatus } from '../..';
 import { FileService } from '../../util/file/def/file-service';
 import { CertificateServiceImpl } from './certificate-service-impl';
 import { CsCertificateService, GetPublicKeyRequest, GetPublicKeyResponse } from '@project-sunbird/client-services/services/certificate';
 import { CsInjectionTokens } from '../../injection-tokens';
-import { doesNotReject } from 'assert';
 import { GetPublicKeyHandler } from '../handlers/get-public-key-handler';
 
 jest.mock('../handlers/get-public-key-handler');
