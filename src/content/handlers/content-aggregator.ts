@@ -683,6 +683,20 @@ export class ContentAggregator {
                                     return 0;
                                 });
                             }
+                            if (d.name) {
+                                let facetDet = onlineContentsResponse.filterCriteria.facetFilters || []
+                                facetDet.map((facet) => {
+                                    let facetVal = (facet.name == d.name) ? facet.values : [];
+                                    return d.sections.filter((o1) => {
+                                        return facetVal.some((o2) => {
+                                            if ((o1.name)!.toLocaleLowerCase() === (o2.name)!.toLowerCase()) {
+                                                o1.totalCount = o2.count;
+                                            }
+                                            return o1.name === o2.name;          
+                                        });
+                                    })
+                                })
+                            }
                             return d;
                         })();
                         return {

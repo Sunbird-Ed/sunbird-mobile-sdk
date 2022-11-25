@@ -292,6 +292,7 @@ export class SearchContentHandler {
       filterCriteria: this.createFilterCriteria(previousContentCriteria, searchResponse.result.facets, searchRequest.filters),
       request: searchRequest,
       contentDataList: contenDataList,
+      count: searchResponse.result.count,
       collectionDataList: searchResponse.result.collections ? searchResponse.result.collections : []
     };
     return constentSearchResult;

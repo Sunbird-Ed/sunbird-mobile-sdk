@@ -37,7 +37,7 @@ import {
     SearchResponse,
     SearchType,
 } from '..';
-import {combineLatest, defer, forkJoin, from, Observable, of} from 'rxjs';
+import {combineLatest, defer, forkJoin, from, interval, Observable, Observer, of} from 'rxjs';
 import {ApiRequestHandler, ApiService, Response} from '../../api';
 import {ProfileService} from '../../profile';
 import {GetContentDetailsHandler} from '../handlers/get-content-details-handler';
@@ -89,7 +89,7 @@ import {Container, inject, injectable} from 'inversify';
 import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {SdkConfig} from '../../sdk-config';
 import {DeviceInfo} from '../../util/device';
-import {catchError, filter, map, mapTo, mergeMap, switchMap, tap} from 'rxjs/operators';
+import {catchError, filter, map, mapTo, mergeMap, switchMap, take, tap} from 'rxjs/operators';
 import {CopyToDestination} from '../handlers/export/copy-to-destination';
 import {AppInfo} from '../../util/app';
 import {GetContentHeirarchyHandler} from '../handlers/get-content-heirarchy-handler';
@@ -107,6 +107,7 @@ import { GetChildQuestionSetHandler } from '../handlers/get-child-question-set-h
 
 @injectable()
 export class ContentServiceImpl implements ContentService, DownloadCompleteDelegate, SdkServiceOnInitDelegate {
+    private static readonly DOWNLOAD_DIR_NAME = 'transcript';
     private static readonly KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL = ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL;
     private static readonly KEY_CONTENT_DELETE_REQUEST_LIST = ContentKeys.KEY_CONTENT_DELETE_REQUEST_LIST;
     private readonly getContentDetailsHandler: GetContentDetailsHandler;
@@ -394,7 +395,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             searchContentHandler.getContentSearchFilter(contentIds, contentImportRequest.contentStatusArray, contentImportRequest.fields);
         return new ContentSearchApiHandler(this.apiService, this.contentServiceConfig).handle(filter).pipe(
             map((searchResponse: SearchResponse) => {
-                return searchResponse.result.content || searchResponse.result.QuestionSet;
+                return (searchResponse.result.content && searchResponse.result.content.length &&
+                     searchResponse.result.QuestionSet && searchResponse.result.QuestionSet.length) ?
+                  searchResponse.result.content.concat(searchResponse.result.QuestionSet) :
+                   searchResponse.result.content || searchResponse.result.QuestionSet;
             }),
             mergeMap((contents: ContentData[]) => defer(async () => {
                 const contentImportResponses: ContentImportResponse[] = [];
@@ -857,5 +861,105 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
 
     private get contentServiceDelegate(): CsContentService {
         return this.container.get(CsInjectionTokens.CONTENT_SERVICE);
+    }
+
+    downloadTranscriptFile(transcriptReq) {
+        const dataDirectory = window.device.platform.toLowerCase() === 'ios' ?
+         cordova.file.documentsDirectory : cordova.file.externalDataDirectory + ContentServiceImpl.DOWNLOAD_DIR_NAME;
+        return this.createTranscriptDir(transcriptReq, dataDirectory).then(() => {
+            const downloadRequest: EnqueueRequest = {
+                uri: transcriptReq.downloadUrl,
+                title: transcriptReq.fileName,
+                description: '',
+                mimeType: '',
+                visibleInDownloadsUi: true,
+                notificationVisibility: 1,
+                destinationInExternalPublicDir: {
+                    dirType: 'Download',
+                    subPath: transcriptReq.fileName
+                },
+                headers: [],
+                destinationUri: transcriptReq.destinationUrl
+            };
+            return this.downloadTranscript(downloadRequest).toPromise()
+            .then((sourceUrl) => {
+                if (sourceUrl && sourceUrl.path) {
+                    this.copyFile(sourceUrl.path.split(/\/(?=[^\/]+$)/)[0], dataDirectory.concat('/' + transcriptReq.identifier),
+                    transcriptReq.fileName).then(() => {
+                        this.deleteFolder(sourceUrl.path);
+                    });
+                    return sourceUrl.path;
+                }
+            });
+        });
+    }
+
+    createTranscriptDir(req, dataDirectory) {
+        return this.fileService.exists(dataDirectory.concat('/' + req.identifier)).then((entry: Entry) => {
+            return entry.nativeURL;
+            }).catch(() => {
+                 return this.fileService.createDir(dataDirectory, false).then((directoryEntry: DirectoryEntry) => {
+                    this.fileService.createDir(dataDirectory.concat('/' + req.identifier), false).then((directory) => {
+                        return directory.nativeURL;
+                    });
+                });
+            });
+    }
+
+    downloadTranscript(downloadRequest) {
+        return new Observable<string>((observer: Observer<string>) => {
+            downloadManager.enqueue(downloadRequest, (err, id: string) => {
+                if (err) {
+                    return observer.error(err);
+                }
+
+                observer.next(id);
+                observer.complete();
+            });
+        }).pipe(
+            mergeMap((downloadId: string) => {
+                return interval(1000)
+                    .pipe(
+                        mergeMap(() => {
+                            return new Observable((observer: Observer<EnqueuedEntry>) => {
+                                downloadManager.query({ids: [downloadId]}, (err, entries) => {
+                                    if (err || (entries[0].status === 16)) {
+                                        return observer.error(err || new Error('Unknown Error'));
+                                    }
+                                    return observer.next(entries[0]! as EnqueuedEntry);
+                                });
+                            });
+                        }),
+                        filter((entry: EnqueuedEntry) => entry.status === 8),
+                        take(1)
+                    );
+            }),
+            map((entry) => ({path: entry.localUri}))
+        );
+    }
+
+    private async copyFile(sourcePath: string, destinationPath: string, fileName: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            sbutility.copyFile(sourcePath, destinationPath, fileName,
+                () => {
+                    resolve();
+                }, err => {
+                    console.error(err);
+                    resolve(err);
+                });
+        });
+    }
+
+    private async deleteFolder(deletedirectory: string): Promise<undefined> {
+        if (!deletedirectory) {
+            return;
+        }
+        return new Promise<undefined>((resolve, reject) => {
+            sbutility.rm(deletedirectory, '', () => {
+                resolve();
+            }, (e) => {
+                reject(e);
+            });
+        });
     }
 }

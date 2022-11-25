@@ -98,4 +98,6 @@ export interface ContentService extends DownloadCompleteDelegate, SdkServiceOnIn
     getQuestionSetChildren(questionSetId: string): Promise<any[]>
 
     formatSearchCriteria(requestMap: { [key: string]: any }): ContentSearchCriteria;
+
+    downloadTranscriptFile(directory): Promise<any>;
 }

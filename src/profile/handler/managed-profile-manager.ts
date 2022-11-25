@@ -302,7 +302,7 @@ export class ManagedProfileManager {
 
         const createManagedProfileRequest = new Request.Builder()
             .withType(HttpRequestType.POST)
-            .withPath(this.profileServiceConfig.profileApiPath + '/managed/create')
+            .withPath(this.profileServiceConfig.profileApiPath_V2 + '/managed/create')
             .withBearerToken(true)
             .withUserToken(true)
             .withBody({

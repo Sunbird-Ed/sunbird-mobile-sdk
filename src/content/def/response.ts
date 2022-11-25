@@ -11,6 +11,7 @@ export interface ContentSearchResult {
     request?: { [key: string]: any };
     contentDataList: ContentData[];
     collectionDataList?: ContentData[];
+    count?: number;
 }
 
 export interface ContentAggregatorResponse {
@@ -30,6 +31,7 @@ export interface PageSection {
     name?: string;
     contents?: ContentData[] | Course[];
     display?: Display;
+    totalCount?: number;
 }
 
 export interface Display {
