@@ -48,7 +48,7 @@
     "@types/websql": "0.0.27",
     "@project-sunbird/client-services": "5.0.0",
     "cordova-plugin-android-downloadmanager": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-downloadmanager.git",
-    "jest": "^25.1.0",
+    "jest": "^29.3.1",
     "rxjs": "^6.5.3",
     "ts-jest": "^25.2.0",
     "ts-loader": "^5.4.5",
