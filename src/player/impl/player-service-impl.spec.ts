@@ -61,17 +61,32 @@ describe('PlayerServiceImpl', () => {
         expect(playerService).toBeTruthy();
     });
 
-    it('should return playerConfig when getPlayerConfig() invoked', () => {
+    it('should return playerConfig when getPlayerConfig() invoked', (done) => {
         // arrange
         const content: Content = {
             rollup: Rollup,
             basePath: 'sample_base_path',
-
+            isAvailableLocally: true,
+            identifier: 'do_123',
+            hierarchyInfo: [{
+                contentType: 'sample-contentType',
+                identifier: 'do_456'
+            }],
+            contentData: {
+                streamingUrl: 'sample-url'
+            } as any
         } as Partial<Content> as Content;
 
         const mockProfileSession: ProfileSession = new ProfileSession('SAMPLE_UID');
         mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of(mockProfileSession));
-        (mockProfileService.getActiveSessionProfile as jest.Mock).mockReturnValue(of('MOCK_PROFILE'));
+        (mockProfileService.getActiveSessionProfile as jest.Mock).mockReturnValue(of({
+            serverProfile: {
+                organisations: [{
+                    organisationId: 'org-id'
+                }]
+            },
+            profileType: 'teacher'
+        }));
 
         const mockGroupSession: GroupSessionDeprecated = new GroupSessionDeprecated('MOCK_GID');
         mockGroupService.getActiveGroupSession = jest.fn().mockImplementation(() => of(mockGroupSession));
@@ -79,23 +94,106 @@ describe('PlayerServiceImpl', () => {
         (mockFrameWorkService.getActiveChannelId as jest.Mock).mockReturnValue(of('MOCK_CHANNEL_ID'));
         (mockDeviceInfoService.getDeviceID as jest.Mock).mockReturnValue('SAMPLE_DEVICE_ID');
         (mockAppInfo.getVersionName as jest.Mock).mockReturnValue('SAMPLE_APP_VERSION_NAME');
+        mockDbService.read = jest.fn(() => of([{saveState: 1}]));
         // act
         playerService.getPlayerConfig(content, {}).subscribe(() => {
             // assert
+            expect(mockDbService.read).toHaveBeenCalled();
             expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
             expect(mockGroupService.getActiveGroupSession).toHaveBeenCalled();
             expect(mockFrameWorkService.getActiveChannelId).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it('should return playerConfig when getPlayerConfig() invoked for ios', (done) => {
+        // arrange
+        window['device'] = {
+            platform: 'ios'
+        } as any;
+        const content: Content = {
+            rollup: Rollup,
+            basePath: 'sample_base_path',
+            isAvailableLocally: true,
+            identifier: 'do_123',
+            hierarchyInfo: [{
+                contentType: 'sample-contentType',
+                identifier: 'do_456'
+            }],
+            contentData: {
+                streamingUrl: 'sample-url'
+            } as any
+        } as Partial<Content> as Content;
+
+        const mockProfileSession: ProfileSession = new ProfileSession('SAMPLE_UID');
+        mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of(mockProfileSession));
+        (mockProfileService.getActiveSessionProfile as jest.Mock).mockReturnValue(of({
+            serverProfile: {
+                organisations: [{
+                    organisationId: 'org-id'
+                }]
+            },
+            profileType: 'teacher'
+        }));
+
+        const mockGroupSession: GroupSessionDeprecated = new GroupSessionDeprecated('MOCK_GID');
+        mockGroupService.getActiveGroupSession = jest.fn().mockImplementation(() => of(mockGroupSession));
+
+        (mockFrameWorkService.getActiveChannelId as jest.Mock).mockReturnValue(of('MOCK_CHANNEL_ID'));
+        (mockDeviceInfoService.getDeviceID as jest.Mock).mockReturnValue('SAMPLE_DEVICE_ID');
+        (mockAppInfo.getVersionName as jest.Mock).mockReturnValue('SAMPLE_APP_VERSION_NAME');
+        mockDbService.read = jest.fn(() => of([{saveState: 1}]));
+        // act
+        playerService.getPlayerConfig(content, {}).subscribe(() => {
+            // assert
+            expect(mockDbService.read).toHaveBeenCalled();
+            expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
+            expect(mockGroupService.getActiveGroupSession).toHaveBeenCalled();
+            expect(mockFrameWorkService.getActiveChannelId).toHaveBeenCalled();
+            done();
         });
     });
 
     describe('savePlayerState()', () => {
-        it('should read the db and data is present if present update the db', () => {
+        it('should read the db and data is present if present update the db', (done) => {
             // arrange
-            mockDbService.read = jest.fn().mockImplementation(() => of([{
-
-            }]));
+            const userId = 'sample-uid';
+            const parentId = 'sample-parentId',  identifier = 'do_123', saveState = 'state';
+            mockDbService.read = jest.fn(() => of());
+            mockDbService.update = jest.fn(() => of(1));
+            mockDbService.insert = jest.fn(() => of(1));
             // act
+            playerService.savePlayerState(userId, parentId, identifier, saveState).then(() => {
+                 // assert
+                 expect(mockDbService.read).toHaveBeenCalled();
+                 expect(mockDbService.insert).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it('should read the db and data is present if present update the db', (done) => {
+            // arrange
+            const userId = 'sample-uid';
+            const parentId = 'sample-parentId',  identifier = 'do_123', saveState = 'state';
+            mockDbService.read = jest.fn(() => of([{saveState: 1}]));
+            mockDbService.update = jest.fn(() => of(1));
+            // act
+            playerService.savePlayerState(userId, parentId, identifier, saveState).then(() => {
+                 // assert
+                 expect(mockDbService.read).toHaveBeenCalled();
+                 expect(mockDbService.update).toHaveBeenCalled();
+                done();
+            });
+        });
+    });
+
+    it('should be delete save content state', (done) => {
+        const userId = 'sample-userid', parentId = 'sample-parentid', contentId = 'sample-contentId';
+        mockDbService.delete = jest.fn(() => of(undefined));
+        playerService.deletePlayerSaveState(userId, parentId, contentId).then(() => {
             // assert
+            expect(mockDbService.delete).toHaveBeenCalled();
+            done();
         });
     });
 });
