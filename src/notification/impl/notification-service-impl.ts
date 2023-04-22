@@ -1,5 +1,5 @@
 import {inject, injectable} from 'inversify';
-import {Notification, NotificationFilterCriteria, NotificationService, NotificationStatus} from '..';
+import {ActionData, Notification, NotificationFilterCriteria, NotificationService, NotificationStatus} from '..';
 import {InjectionTokens} from '../../injection-tokens';
 import {DbService} from '../../db';
 import {NotificationEntry} from '../db/schema';
@@ -228,7 +228,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                     displayTime: new Date(e.createdOn).getTime(),
                     expiry: e.expireOn ? new Date(e.expireOn).getTime() : 0,
                     isRead: e.status === 'read' ? 1 : 0,
-                    ...e.data
+                    actionData: e.data as unknown as ActionData
                 } as Notification;
             })
         ).sort((a, b) => {
