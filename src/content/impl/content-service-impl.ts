@@ -97,7 +97,7 @@ import {DeleteTempDir} from '../handlers/export/deletete-temp-dir';
 import {ContentAggregator} from '../handlers/content-aggregator';
 import {FormService} from '../../form';
 import {CsMimeTypeFacetToMimeTypeCategoryAggregator} from '@project-sunbird/client-services/services/content/utilities/mime-type-facet-to-mime-type-category-aggregator';
-import {MimeTypeCategory} from '@project-sunbird/client-services/models/content';
+import {MimeTypeCategory} from '@project-sunbird/client-services/models/content/index';
 import {CourseService} from '../../course';
 import {NetworkInfoService} from '../../util/network';
 import { CsContentService } from '@project-sunbird/client-services/services/content';
@@ -942,7 +942,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return new Promise<boolean>((resolve, reject) => {
             sbutility.copyFile(sourcePath, destinationPath, fileName,
                 () => {
-                    resolve();
+                    resolve(true);
                 }, err => {
                     console.error(err);
                     resolve(err);
@@ -954,9 +954,10 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         if (!deletedirectory) {
             return;
         }
+        let res;
         return new Promise<undefined>((resolve, reject) => {
             sbutility.rm(deletedirectory, '', () => {
-                resolve();
+                resolve(res);
             }, (e) => {
                 reject(e);
             });

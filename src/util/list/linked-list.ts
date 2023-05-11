@@ -19,7 +19,7 @@ export class LinkedList<T extends Comparator<T>> {
         if (this.head) {
             this.head = node;
         } else {
-            let counter = this.head!;
+            let counter: any = this.head!;
             while (counter.next) {
                 counter = counter.next;
             }

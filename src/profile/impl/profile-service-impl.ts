@@ -331,7 +331,7 @@ export class ProfileServiceImpl implements ProfileService {
                 ).toPromise();
             }),
             mergeMap(() => {
-                const profileDBEntry = ProfileDbEntryMapper.mapProfileToProfileDBEntry(profile);
+                const profileDBEntry: any = ProfileDbEntryMapper.mapProfileToProfileDBEntry(profile);
                 delete profileDBEntry[ProfileEntry.COLUMN_NAME_CREATED_AT];
 
                 return this.dbService.update({

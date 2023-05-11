@@ -1,4 +1,4 @@
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import {ProcessedEventModel} from '..';
 import {UniqueId} from '../../db/util/unique-id';
 

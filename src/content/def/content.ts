@@ -1,11 +1,11 @@
-import {Content as ContentData} from '@project-sunbird/client-services/models';
+import {Content as ContentData} from '@project-sunbird/client-services/models/content/index';
 import {Rollup} from '../../telemetry';
 import {ContentAccess} from '../../profile';
 import {ContentMarker} from './response';
 
 export {
     Content as ContentData, LicenseDetails, OriginData, Trackable, TrackingEnabled
-} from '@project-sunbird/client-services/models/content';
+} from '@project-sunbird/client-services/models/content/index';
 
 export interface Content {
     identifier: string;

@@ -47,9 +47,9 @@ export class DbCordovaService implements DbService {
                     }
                 });
 
-
+            let res;
             this.hasInitialized().subscribe(() => {
-                resolve();
+                resolve(res);
             });
         }));
     }
@@ -160,7 +160,7 @@ export class DbCordovaService implements DbService {
         return new Promise<undefined>(((resolve, reject) => {
             db.open(dbFilePath,
                 (value) => {
-                    resolve();
+                    resolve(value);
                 }, (value) => {
                     reject();
                 });

@@ -27,19 +27,20 @@ export class ValidateDestinationFolder {
     }
 
     private createDirectory(directory: string): Promise<string> {
-        return this.fileService.exists(directory).then((entry: Entry) => {
+        return this.fileService.exists(directory).then((entry: any) => {
             return entry.nativeURL;
         }).catch(() => {
-            return this.fileService.createDir(directory, false).then((directoryEntry: DirectoryEntry) => {
+            return this.fileService.createDir(directory, false).then((directoryEntry: any) => {
                 return directoryEntry.nativeURL;
             });
         });
     }
 
     private async canWrite(directory: string): Promise<undefined> {
+        let res;
         return new Promise<undefined>((resolve, reject) => {
             sbutility.canWrite(directory, () => {
-                resolve();
+                resolve(res);
             }, (e) => {
                 reject(e);
             });

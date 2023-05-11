@@ -5,7 +5,7 @@ import {AppConfig} from '../../api/config/app-config';
 import {ContentEntry} from '../db/schema';
 import {NumberUtil} from '../../util/number-util';
 import {ArrayUtil} from '../../util/array-util';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import {ChildContent} from '..';
 import {CsPrimaryCategoryMapper} from '@project-sunbird/client-services/services/content/utilities/primary-category-mapper';
 import { CsContentType } from '@project-sunbird/client-services/services/content';

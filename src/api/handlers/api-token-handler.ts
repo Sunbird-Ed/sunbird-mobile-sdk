@@ -1,9 +1,8 @@
 import {ApiConfig, ApiService, JWTokenType, JWTUtil, ResponseCode} from '..';
 import {from, Observable} from 'rxjs';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import {DeviceInfo} from '../../util/device';
 import {CsHttpRequestType, CsNetworkError, CsRequest} from '@project-sunbird/client-services/core/http-service';
-import {map} from 'rxjs/operators';
 
 export class ApiTokenHandler {
 

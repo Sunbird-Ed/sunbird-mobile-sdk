@@ -77,8 +77,9 @@ export class DeleteSourceFolder {
             return;
         }
         return new Promise<undefined>((resolve, reject) => {
+            let res;
             sbutility.rm(deletedirectory, '', () => {
-                resolve();
+                resolve(res);
             }, (e) => {
                 reject(e);
             });
@@ -91,8 +92,9 @@ export class DeleteSourceFolder {
         }
 
         return new Promise<undefined>((resolve, reject) => {
+            let res;
             sbutility.copyDirectory(sourceDirectory, destinationDirectory, () => {
-                resolve();
+                resolve(res);
             }, (e) => {
                 reject(e);
             });
@@ -104,8 +106,9 @@ export class DeleteSourceFolder {
             return;
         }
         return new Promise<undefined>((resolve, reject) => {
+            let res;
             sbutility.renameDirectory(sourceDirectory, toDirectoryName, () => {
-                resolve();
+                resolve(res);
             }, (e) => {
                 reject(e);
             });

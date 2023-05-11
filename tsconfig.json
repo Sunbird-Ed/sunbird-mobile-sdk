@@ -1,7 +1,8 @@
 {
+  "compileOnSave": false,
   "compilerOptions": {
-    "target": "es5",
-    "module": "es2015",
+    "target": "es6",
+    "module": "es2020",
     "noImplicitAny": false,
     "declaration": true,
     "inlineSourceMap": true,
@@ -20,10 +21,13 @@
     "allowSyntheticDefaultImports": true,
     "preserveSymlinks": true,
     "skipLibCheck": true,
+    "strictNullChecks": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "lib": [
       "dom",
       "es6",
-      "es2015"
+      "es2020"
     ],
     "types": [
       "node-fetch",

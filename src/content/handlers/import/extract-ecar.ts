@@ -20,7 +20,7 @@ export class ExtractEcar {
             return this.fileService.createDir(importContext.tmpLocation!.concat(UniqueId.generateUniqueId()), true);
         }).then(async (directoryEntry) => {
             importContext.tmpLocation = directoryEntry.nativeURL;
-            await new Promise((resolve, reject) => {
+            await new Promise<void>((resolve, reject) => {
                 this.zipService.unzip(importContext.ecarFilePath, {target: directoryEntry.nativeURL}, () => {
                     resolve();
                 }, (e) => {

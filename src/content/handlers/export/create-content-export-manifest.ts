@@ -1,7 +1,7 @@
 import {DbService} from '../../../db';
 import {ExportContentContext} from '../..';
 import {Response} from '../../../api';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import {ImportNExportHandler} from '../import-n-export-handler';
 
 export class CreateContentExportManifest {

@@ -119,7 +119,7 @@ export class TelemetryExportDelegate implements ArchiveExportDelegate {
     }
 
     private async createWorkspace(): Promise<DirectoryEntry> {
-        return this.fileService.createDir(this.workspaceSubPath, false);
+        return this.fileService.createDir(this.workspaceSubPath, false) as any;
     }
 
     private async getMessageIds(): Promise<string[]> {

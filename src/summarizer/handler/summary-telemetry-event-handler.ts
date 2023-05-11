@@ -20,7 +20,7 @@ import {delay, map, mapTo, mergeMap, tap} from 'rxjs/operators';
 import {CsContentProgressCalculator} from '@project-sunbird/client-services/services/content/utilities/content-progress-calculator';
 import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
 import {CsPrimaryCategory} from '@project-sunbird/client-services/services/content';
-import {TrackingEnabled} from '@project-sunbird/client-services/models';
+import {TrackingEnabled} from '@project-sunbird/client-services/models/content/index';
 import Telemetry = SunbirdTelemetry.Telemetry;
 
 class TrackableSessionProxyContentProvider {
