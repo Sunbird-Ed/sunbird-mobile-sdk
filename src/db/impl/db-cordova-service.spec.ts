@@ -431,7 +431,7 @@ describe('DbCordovaService', () => {
     describe('init()', () => {
       it('should call onCreate method if plugin init method returns onCreate response', (done) => {
         // arrange
-        db.init = jest.fn((_, __, [], success) => {
+        db.init = jest.fn((_, __, ___, success) => {
           success({method: 'onCreate'});
         });
         jest.spyOn(db, 'execute').mockImplementation((_, __, success, error) => {
@@ -446,7 +446,7 @@ describe('DbCordovaService', () => {
 
       it('should call onUpgrade method if plugin init method returns onUpgrade response', (done) => {
         // arrange
-        db.init = jest.fn((_, __, [], success) => {
+        db.init = jest.fn((_, __, ___, success) => {
           success({method: 'onUpgrade', oldVersion: 26, newVersion: 27});
         });
         jest.spyOn(db, 'execute').mockImplementation((_, __, success, error) => {
@@ -461,7 +461,7 @@ describe('DbCordovaService', () => {
 
       it('should call onUpgrade method if plugin init method returns onUpgrade response', (done) => {
         // arrange
-        db.init = jest.fn((_, __, [], success) => {
+        db.init = jest.fn((_, __, ___, success) => {
           success({method: 'onTest', oldVersion: 26, newVersion: 27});
         });
         jest.spyOn(db, 'execute').mockImplementation((_, __, success, error) => {
@@ -476,7 +476,7 @@ describe('DbCordovaService', () => {
 
       it('should call onUpgrade method if plugin init method returns onUpgrade response', (done) => {
         // arrange
-        db.init = jest.fn((_, __, [], success) => {
+        db.init = jest.fn((_, __, ___, success) => {
           success({method: 'onUpgrade', oldVersion: 26, newVersion: 27});
         });
         jest.spyOn(db, 'execute').mockImplementation((_, __, success, error) => {
@@ -491,7 +491,7 @@ describe('DbCordovaService', () => {
 
       it('should call onUpgrade method if plugin init method returns onUpgrade response', (done) => {
         // arrange
-        db.init = jest.fn((_, __, [], success) => {
+        db.init = jest.fn((_, __, ___, success) => {
           success({method: 'onUpgrade', oldVersion: 26, newVersion: 27});
         });
         jest.spyOn(db, 'execute').mockImplementation((_, __, success, error) => {

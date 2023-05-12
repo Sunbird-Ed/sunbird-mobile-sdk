@@ -22,7 +22,7 @@ import {AppConfig} from '../../../api/config/app-config';
 import {FileUtil} from '../../../util/file/util/file-util';
 import {DeviceInfo} from '../../../util/device';
 import {EventNamespace, EventsBusService} from '../../../events-bus';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import {ArrayUtil} from '../../../util/array-util';
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 
@@ -134,7 +134,7 @@ export class ExtractPayloads {
                     let payloadDirectory = (window.device.platform.toLowerCase() === "ios") ? 
                         ContentUtil.getContentRootDir(importContext.destinationFolder).concat(identifier):
                         ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier);
-                    const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(payloadDirectory
+                    const payloadDestinationDirectoryEntry: any = await this.fileService.createDir(payloadDirectory
                                                 , false);
                     payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
                 }
@@ -163,7 +163,7 @@ export class ExtractPayloads {
                         (contentDisposition === ContentDisposition.INLINE.valueOf()
                             && contentEncoding === ContentEncoding.GZIP.valueOf())) { // Content with artifact without zip i.e. pfd, mp4
                         const payload = importContext.tmpLocation!.concat(artifactUrl);
-                        await new Promise((resolve, reject) => {
+                        await new Promise<void>((resolve, reject) => {
                             this.zipService.unzip(payload, {target: payloadDestination!}, () => {
                                 isUnzippingSuccessful = true;
                                 resolve();

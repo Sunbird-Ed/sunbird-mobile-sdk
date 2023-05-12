@@ -799,7 +799,7 @@ describe('CourseServiceImpl', () => {
             mockCsCourseService.getSignedCourseCertificate = jest.fn(() => of({printUri: 'https://'}));
             window['downloadManager'] = {
                 enqueue: jest.fn(({}, fn) => fn({err: 'error'}))
-            };
+            } as any;
             // act
             courseService.downloadCurrentProfileCourseCertificate(request).subscribe(() => {
                 expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
@@ -868,7 +868,7 @@ describe('CourseServiceImpl', () => {
             window['downloadManager'] = {
                 enqueue: jest.fn(({}, fn) => fn(data, {id: 'sample-id'})),
                 query: jest.fn((_, fn) => fn({err: 'error'}))
-            };
+            } as any;
             // act
             courseService.downloadCurrentProfileCourseCertificate(request).subscribe(() => {
                 expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
@@ -934,7 +934,7 @@ describe('CourseServiceImpl', () => {
                     status: DownloadStatus.STATUS_SUCCESSFUL,
                     localUri: 'sample-local-uri'
                 }]))
-            };
+            } as any;
             // act
             courseService.downloadCurrentProfileCourseCertificate(request).subscribe(() => {
                 expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();

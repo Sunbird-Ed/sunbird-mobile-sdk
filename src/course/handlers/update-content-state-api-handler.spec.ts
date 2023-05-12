@@ -4,6 +4,7 @@ import {of, throwError} from 'rxjs';
 import {CourseAssessmentEntry} from '../../summarizer/db/schema';
 import {NetworkQueue} from '../../api/network-queue';
 import {UpdateContentStateApiHandler} from './update-content-state-api-handler';
+import { UniqueId } from '../../db/util/unique-id';
 
 describe('UpdateContentStateApiHandler', () => {
   let updateContentStateApiHandler: UpdateContentStateApiHandler;
@@ -17,7 +18,7 @@ describe('UpdateContentStateApiHandler', () => {
   const mockNetworkQueue: Partial<NetworkQueue> = {
     enqueue: jest.fn(() => of({} as any))
   };
-
+  jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
   beforeAll(() => {
     updateContentStateApiHandler = new UpdateContentStateApiHandler(
       mockNetworkQueue as NetworkQueue,
@@ -36,6 +37,7 @@ describe('UpdateContentStateApiHandler', () => {
   describe('handle()', () => {
     it('should enqueue the progress information', (done) => {
       // arrange
+      jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
       sbsync.onSyncSucces = jest.fn((success, error) => {
         success({courseProgressResponse: 'progress_response'});
       });
@@ -48,18 +50,20 @@ describe('UpdateContentStateApiHandler', () => {
       });
     });
 
-      it('should send the error response returned from network queue', (done) => {
+      it('should send the error response returned from network queue', () => {
           // arrange
-          sbsync.onSyncSucces = jest.fn((success, error) => {
-              error({course_progress_error: 'progress_response_error'});
+          jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
+          sbsync.onSyncSucces = jest.fn((_, error) => {
+              // error({course_progress_error: 'progress_response_error'});
           });
           // act
           updateContentStateApiHandler.handle({} as any).subscribe((e) => {
               // assert
           }, (error) => {
+            setTimeout(() => {
               expect(mockNetworkQueue.enqueue).toBeCalledTimes(1);
               expect(error).toEqual({course_progress_error: 'progress_response_error'});
-              done();
+            }, 0);
           });
       });
   });

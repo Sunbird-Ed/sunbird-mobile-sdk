@@ -32,7 +32,7 @@ import {CsResponse} from '@project-sunbird/client-services/core/http-service';
 import {ObjectUtil} from '../../util/object-util';
 import * as SHA1 from 'crypto-js/sha1';
 import {NetworkInfoService, NetworkStatus} from '../../util/network';
-import { MimeTypeCategoryMapping } from '@project-sunbird/client-services/models/content';
+import { MimeTypeCategoryMapping } from '@project-sunbird/client-services/models/content/index';
 
 type Primitive = string | number | boolean;
 type RequestHash = string;

@@ -272,7 +272,7 @@ export class SearchContentHandler {
     }
   }
 
-  getFilterValuesWithAppliedFilter(facetValues: FilterValue[], appliedFilter: string[]): FilterValue[] {
+  getFilterValuesWithAppliedFilter(facetValues: FilterValue[], appliedFilter: any): FilterValue[] {
     facetValues.forEach(facetValue => {
       let isApplied = false;
       if (appliedFilter && appliedFilter.indexOf(name) > -1) {

@@ -1,6 +1,6 @@
 import {ContentEntry} from '../db/schema';
 import {ContentUtil} from '../util/content-util';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import {DbService} from '../../db';
 import {ArrayUtil} from '../../util/array-util';
 import {FileService} from '../../util/file/def/file-service';

@@ -86,26 +86,26 @@ describe('DownloadServiceImpl', () => {
                 };
 
                 const downloadId = Date.now().toString();
-                jest.spyOn(downloadManager, 'enqueue').mockImplementation((_, cb) => {
-                    cb!(undefined, downloadId);
-                });
-                jest.spyOn(downloadManager, 'query').mockImplementation((_, cb) => {
-                    cb!(undefined, [{
-                        id: downloadId,
-                        title: 'SAMPLE_TITLE',
-                        description: 'SAMPLE_MIME_TYPE',
-                        mediaType: 'SAMPLE_MIME_TYPE',
-                        localFilename: 'SOME_LOCAL_FILE_NAME',
-                        localUri: 'SOME_LOCAL_FILE_URI',
-                        mediaproviderUri: 'SOME_MEDIA_PROVIDER_URI',
-                        uri: 'SOME_URI',
-                        lastModifiedTimestamp: Date.now(),
-                        status: 0x00000008,
-                        reason: 0,
-                        bytesDownloadedSoFar: 100,
-                        totalSizeBytes: 100
-                    }]);
-                });
+                window['downloadManager'] = {
+                    enqueue: jest.fn(() => {}),
+                    query: jest.fn((_, cb) => {
+                        cb!(undefined, [{
+                            id: downloadId,
+                            title: 'SAMPLE_TITLE',
+                            description: 'SAMPLE_MIME_TYPE',
+                            mediaType: 'SAMPLE_MIME_TYPE',
+                            localFilename: 'SOME_LOCAL_FILE_NAME',
+                            localUri: 'SOME_LOCAL_FILE_URI',
+                            mediaproviderUri: 'SOME_MEDIA_PROVIDER_URI',
+                            uri: 'SOME_URI',
+                            lastModifiedTimestamp: Date.now(),
+                            status: 0x00000008,
+                            reason: 0,
+                            bytesDownloadedSoFar: 100,
+                            totalSizeBytes: 100
+                        }]);
+                    })
+                } as any
 
                 downloadService['sharedPreferencesSetCollection'].add(downloadRequest).toPromise();
 
@@ -125,6 +125,9 @@ describe('DownloadServiceImpl', () => {
 
                 // act
                 downloadService.onInit().pipe(take(1)).toPromise();
+                setTimeout(() => {
+                    done()
+                }, 500);
             });
 
             it('should cancel and dequeue download if it fails ', async (done) => {
@@ -147,9 +150,11 @@ describe('DownloadServiceImpl', () => {
 
                 const orderStack_2 = [Date.now().toString(), (Date.now() + 1).toString()];
                 const downloadId = Date.now().toString();
-                jest.spyOn(downloadManager, 'enqueue').mockImplementation((_, cb) => {
-                    cb!(undefined, orderStack_2.pop()!);
-                });
+                window['downloadManager'] = {
+                    enqueue: jest.fn((_, cb) => {
+                        cb!(undefined, orderStack_2.pop()!);
+                    })
+                } as any
                 const orderStack = [
                     [{
                         id: downloadId,
@@ -168,18 +173,20 @@ describe('DownloadServiceImpl', () => {
                     }],
                     new Error('SOME_ERROR')
                 ];
-                jest.spyOn(downloadManager, 'remove').mockImplementation((_, cb) => {
-                    cb!(undefined, 1);
-                });
-                jest.spyOn(downloadManager, 'query').mockImplementation((_, cb) => {
-                    const res = orderStack.pop();
+                window['downloadManager'] = {
+                    'remove':jest.fn((_, cb) => {
+                        cb!(undefined, 1);
+                    }),
+                    'query': jest.fn((_, cb) => {
+                        const res = orderStack.pop();
 
-                    if (res instanceof Error) {
-                        cb!(res, []);
-                    }
+                        if (res instanceof Error) {
+                            cb!(res, []);
+                        }
 
-                    cb!(_, res as any);
-                });
+                        cb!(_, res as any);
+                    })
+                } as any
 
                 downloadService['sharedPreferencesSetCollection'].add(downloadRequest_1).toPromise();
                 downloadService['sharedPreferencesSetCollection'].add(downloadRequest_2).toPromise();
@@ -222,10 +229,11 @@ describe('DownloadServiceImpl', () => {
             };
 
             const downloadId = Date.now().toString();
-            jest.spyOn(downloadManager, 'enqueue').mockImplementation((_, cb) => {
-                cb!(undefined, downloadId);
-            });
-            jest.spyOn(downloadManager, 'query').mockImplementation((_, cb) => {
+            window['downloadManager'] = {
+                enqueue: jest.fn((_, cb) => {
+                    cb!(undefined, downloadId);
+                }),
+                query: jest.fn((_, cb) => {
                 cb!(undefined, [{
                     id: downloadId,
                     title: 'SAMPLE_TITLE',
@@ -241,7 +249,8 @@ describe('DownloadServiceImpl', () => {
                     bytesDownloadedSoFar: 100,
                     totalSizeBytes: 100
                 }]);
-            });
+            })
+        } as any
 
             const onDownloadCompleteDelegate: DownloadCompleteDelegate = {
                 onDownloadCompletion: (request) => {
@@ -283,13 +292,14 @@ describe('DownloadServiceImpl', () => {
             const downloadId_2 = Date.now().toString();
             const orderStack_1 = [downloadId_2, downloadId_1];
             const orderStack_2 = [downloadId_2, downloadId_1, downloadId_1];
-            jest.spyOn(downloadManager, 'remove').mockImplementation((_, cb) => {
-                cb!(undefined, 1);
-            });
-            jest.spyOn(downloadManager, 'enqueue').mockImplementation((_, cb) => {
-                cb!(undefined, orderStack_1.pop()!);
-            });
-            jest.spyOn(downloadManager, 'query').mockImplementation((_, cb) => {
+            window['downloadManager'] = {
+                'remove': jest.fn((_, cb) => {
+                    cb!(undefined, 1);
+                }),
+                'enqueue': jest.fn((_, cb) => {
+                    cb!(undefined, orderStack_1.pop()!);
+                }),
+                'query': jest.fn((_, cb) => {
                 setTimeout(() => {
                     if (orderStack_2.length === 3) {
                         cb!(undefined, [{
@@ -325,7 +335,8 @@ describe('DownloadServiceImpl', () => {
                         totalSizeBytes: 100
                     }]);
                 }, 500);
-            });
+            })
+        } as any
 
             const orderStack_3 = [downloadId_2, downloadId_1];
             const orderStack_4 = [downloadRequest_2, downloadRequest_1];
@@ -400,27 +411,29 @@ describe('DownloadServiceImpl', () => {
                 (Date.now() + 2).toString()
             ];
 
-            jest.spyOn(downloadManager, 'enqueue').mockImplementation((_, cb) => {
-                cb!(undefined, orderStack_1.pop()!);
-            });
+            window['downloadManager'] = {
+                'enqueue': jest.fn((_, cb) => {
+                    cb!(undefined, orderStack_1.pop()!);
+                }),
+                'remove': jest.fn((_, cb) => {
+                    cb!(undefined, 1);
+                }),
+
+                'query': jest.fn((_, cb) => {
+                })
+            } as any
 
             downloadService['sharedPreferencesSetCollection'].add(downloadRequest_1).toPromise();
             downloadService['sharedPreferencesSetCollection'].add(downloadRequest_2).toPromise();
             downloadService['sharedPreferencesSetCollection'].add(downloadRequest_3).toPromise();
 
-            jest.spyOn(downloadManager, 'remove').mockImplementation((_, cb) => {
-                cb!(undefined, 1);
-            });
-
-            jest.spyOn(downloadManager, 'query').mockImplementation((_, cb) => {
-            });
 
             downloadService.onInit().subscribe();
 
             downloadService.getActiveDownloadRequests().subscribe((v) => {
                 if (!v.length) {
                     // assert
-                    expect(downloadManager.remove).toBeCalledTimes(1);
+                    expect(window['downloadManager'].remove).toBeCalledTimes(1);
                     done();
                 }
             });

@@ -2,7 +2,7 @@ import {ContentAccessEntry, ContentEntry, ContentMarkerEntry} from '../db/schema
 import {Content, ContentData} from '..';
 import {ContentUtil} from './content-util';
 import {CsContentType} from '@project-sunbird/client-services/services/content';
-import {TrackingEnabled} from '@project-sunbird/client-services/models';
+import {TrackingEnabled} from '@project-sunbird/client-services/models/content/index';
 import {CsPrimaryCategoryMapper} from '@project-sunbird/client-services/services/content/utilities/primary-category-mapper';
 
 export class ContentMapper {

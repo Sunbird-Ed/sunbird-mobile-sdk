@@ -3,9 +3,9 @@ import {GroupSessionDeprecated} from '..';
 
 describe('GroupSession', () => {
     const gid = 'SAMPLE_GID';
-    const sid = UniqueId.generateUniqueId();
-    const createdTime = Date.now();
-    let groupSession: GroupSessionDeprecated;
+    let groupSession: GroupSessionDeprecated
+    jest.spyOn(UniqueId, 'generateUniqueId')
+        .mockImplementation(() => 'SECRET')
     beforeAll(() => {
         groupSession = new GroupSessionDeprecated(gid);
     });

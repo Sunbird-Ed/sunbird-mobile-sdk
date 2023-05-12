@@ -9,6 +9,7 @@ import {InjectionTokens} from '../../injection-tokens';
 import {GroupServiceDeprecatedImpl} from './group-service-deprecated-impl';
 import {instance, mock} from 'ts-mockito';
 import {of} from 'rxjs';
+import { UniqueId } from '../../db/util/unique-id';
 
 describe('GroupServiceImpl', () => {
 
@@ -55,6 +56,7 @@ describe('GroupServiceImpl', () => {
         };
         mockDbService.insert = jest.fn().mockImplementation(() => of([]));
         mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of([]));
+        jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
         // act
          groupService.createGroup(group).subscribe(() => {
              // assert

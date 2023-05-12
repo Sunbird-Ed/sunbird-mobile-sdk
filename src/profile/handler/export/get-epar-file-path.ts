@@ -1,7 +1,7 @@
 import {Response} from '../../../api';
 import {FileService} from '../../../util/file/def/file-service';
 import {ExportProfileContext} from '../../def/export-profile-context';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 export class GetEparFilePath {
     constructor(private fileService: FileService) {
@@ -11,9 +11,9 @@ export class GetEparFilePath {
         const response: Response = new Response();
         const fileName = `profiles_${dayjs().format('YYYYMMDDhhmmss')}.epar`;
         return this.fileService.createDir(exportContext.destinationFolder!.concat('Profile'), false)
-            .then((directoryEntry: DirectoryEntry) => {
+            .then((directoryEntry: any) => {
                 return this.fileService.createFile(directoryEntry.nativeURL, fileName, true);
-            }).then((fileEntry: FileEntry) => {
+            }).then((fileEntry: any) => {
                 exportContext.destinationDBFilePath = fileEntry.nativeURL;
                 response.body = exportContext;
                 return response;

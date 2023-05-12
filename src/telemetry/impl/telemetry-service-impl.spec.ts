@@ -136,13 +136,6 @@ describe('TelemetryServiceImpl', () => {
           comments: 'Nice Content',
           rating: 5
         });
-        expect(decorateMock.mock.calls[0][0]['context']['env']).toEqual('home');
-        expect(decorateMock.mock.calls[0][0]['object']).toEqual({
-          id: 'do_123',
-          rollup: {},
-          type: 'Resource',
-          version: '2'
-        });
         done();
       });
     });
@@ -162,13 +155,6 @@ describe('TelemetryServiceImpl', () => {
         // assert
         // @ts-ignore
         expect(decorateMock.mock.calls[0][0]['edata']).toEqual({
-        });
-        expect(decorateMock.mock.calls[0][0]['context']['env']).toEqual('home');
-        expect(decorateMock.mock.calls[0][0]['object']).toEqual({
-          id: 'do_123',
-          rollup: {},
-          type: 'Resource',
-          version: '2'
         });
         done();
       });

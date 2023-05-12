@@ -34,7 +34,7 @@ export class GetModifiedContentHandler {
     }
 
     private doesDestinationStorageExist(destination: string): Promise<boolean> {
-        return this.fileService.exists(destination).then((entry: Entry) => {
+        return this.fileService.exists(destination).then(() => {
             return true;
         }).catch(() => {
             return false;
@@ -66,7 +66,7 @@ export class GetModifiedContentHandler {
 
     private getFolderList(destination: string): Promise<string[]> {
         return this.fileService.listDir(destination.replace(/\/$/, ''))
-            .then((entries: Entry[]) => {
+            .then((entries: any) => {
                 const folderList: string[] = entries.map((entry) => {
                     return entry.name;
                 });
