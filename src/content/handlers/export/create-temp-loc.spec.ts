@@ -2,6 +2,7 @@ import {CreateTempLoc} from './create-temp-loc';
 import {FileService} from '../../../util/file/def/file-service';
 import {ContentEntry} from '../../db/schema';
 import {ExportContentContext} from '../..';
+import { UniqueId } from '../../../db/util/unique-id';
 
 describe('CreateTempLoc', () => {
     let createTempLoc: CreateTempLoc;
@@ -9,7 +10,8 @@ describe('CreateTempLoc', () => {
         createDir: jest.fn().mockImplementation(() => {
         })
     };
-
+    jest.spyOn(UniqueId, 'generateUniqueId')
+        .mockImplementation(() => 'SECRET')
     beforeAll(() => {
         createTempLoc = new CreateTempLoc(
             mockFileService as FileService
@@ -45,6 +47,7 @@ describe('CreateTempLoc', () => {
 
         };
         (mockFileService.createDir as jest.Mock).mockResolvedValue('SAMPLE_TEMP_PATHuuui4d');
+        jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
         // act
         createTempLoc.execute(request).then(() => {
 
@@ -73,6 +76,7 @@ describe('CreateTempLoc', () => {
 
         };
         (mockFileService.createDir as jest.Mock).mockRejectedValue([]);
+        jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
         // act
         createTempLoc.execute(request).catch(() => {
 

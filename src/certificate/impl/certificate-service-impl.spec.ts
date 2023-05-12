@@ -170,12 +170,12 @@ describe('CertificateServiceImpl', () => {
                 }
             } as any));
             window['downloadManager'] = {
-                enqueue: jest.fn(({ }, fn) => fn(undefined, { id: 'sample-id' })),
+                enqueue: jest.fn((_, fn) => fn(undefined, { id: 'sample-id' } as any)),
                 query: jest.fn((_, fn) => fn(undefined, [{
                     status: DownloadStatus.STATUS_SUCCESSFUL,
                     localUri: 'http//:sample-path/do_id/fileName'
-                }]))
-            };
+                }])) as any
+            } as any;
             mockCsCertificateService.getLegacyCerificateDownloadURI = jest.fn(() => of({ signedUrl: 'url' }));
             certificateServiceImpl.downloadLegacyeCertificate(request).subscribe(() => {
                 expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();

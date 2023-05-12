@@ -12,6 +12,7 @@ import {of} from 'rxjs';
 import {Content} from '../../content';
 import {Rollup} from '../../telemetry';
 import {DbService} from '../../db';
+import { UniqueId } from '../../db/util/unique-id';
 
 describe('PlayerServiceImpl', () => {
     let playerService: PlayerService;
@@ -68,7 +69,7 @@ describe('PlayerServiceImpl', () => {
             basePath: 'sample_base_path',
 
         } as Partial<Content> as Content;
-
+        jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
         const mockProfileSession: ProfileSession = new ProfileSession('SAMPLE_UID');
         mockProfileService.getActiveProfileSession = jest.fn().mockImplementation(() => of(mockProfileSession));
         (mockProfileService.getActiveSessionProfile as jest.Mock).mockReturnValue(of('MOCK_PROFILE'));

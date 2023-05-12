@@ -8,6 +8,7 @@ import {CodePushExperimentService} from '../../codepush-experiment';
 import {TelemetryDecorator} from '..';
 import {of} from 'rxjs';
 import {ProfileSession} from '../../profile';
+import { UniqueId } from '../../db/util/unique-id';
 
 describe('decorator-impl', () => {
     let decoratorImpl: TelemetryDecoratorImpl;
@@ -86,6 +87,8 @@ describe('decorator-impl', () => {
                     type: 'user'
                 }
             } as any;
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
+
             // act
             decoratorImpl.decorate(event, new ProfileSession('sample_uid'), 'sampleGid', 0, 'sampleChannelId');
             // assert
@@ -112,6 +115,8 @@ describe('decorator-impl', () => {
                 edata: 'any',
                 tags: ['1', '2'],
             } as any;
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
+
             // act
             decoratorImpl.decorate(event, new ProfileSession('sample_uid'), 'sampleGid', 0, 'sampleChannelId');
             // assert
@@ -139,6 +144,8 @@ describe('decorator-impl', () => {
                     type: undefined
                 }
             } as any;
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
+
             // act
             decoratorImpl.decorate(event, new ProfileSession('sample_uid'), 'sampleGid', 0, 'sampleChannelId');
             // assert
@@ -171,6 +178,8 @@ describe('decorator-impl', () => {
                     type: 'user'
                 }
             } as any;
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
+
             // act
             decoratorImpl.decorate(event, new ProfileSession('sample_uid'), 'sampleGid', 0, undefined);
             // assert

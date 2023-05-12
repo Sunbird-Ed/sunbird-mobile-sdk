@@ -43,6 +43,7 @@
   "exclude": [
     "node_modules",
     "src/**/*.spec.ts",
+    "src/**/*.specx.ts",
     "src/**/*.spec.data.ts",
     "src/**/__tests__/*.ts",
     "dist",

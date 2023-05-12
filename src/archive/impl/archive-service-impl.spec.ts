@@ -12,6 +12,7 @@ import {TelemetryImportDelegate} from '../import/impl/telemetry-import-delegate'
 import {DeviceInfo} from '../../util/device';
 import {NetworkQueue} from '../../api/network-queue';
 import {SdkConfig} from '../../sdk-config';
+import { UniqueId } from '../../db/util/unique-id';
 
 jest.mock('../export/impl/telemetry-export-delegate');
 jest.mock('../import/impl/telemetry-import-delegate');
@@ -54,7 +55,7 @@ describe('ArchiveServiceImpl', () => {
         it('should throw InvalidRequestError if no objects to export in request', (done) => {
             // arrange
             mockFileService.createDir = jest.fn().mockImplementation(() => of(undefined));
-
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
             // act
             archiveService.export({
                 objects: [],
@@ -83,7 +84,7 @@ describe('ArchiveServiceImpl', () => {
                     }
                 } as Partial<TelemetryExportDelegate> as TelemetryExportDelegate;
             });
-
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
             // act
             archiveService.export({
                 objects: [{
@@ -119,7 +120,7 @@ describe('ArchiveServiceImpl', () => {
                     }
                 } as Partial<TelemetryExportDelegate> as TelemetryExportDelegate;
             });
-
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
             // act
             archiveService.export({
                 objects: [{
@@ -155,7 +156,7 @@ describe('ArchiveServiceImpl', () => {
                     }
                 } as Partial<TelemetryExportDelegate> as TelemetryExportDelegate;
             });
-
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
             // act
             archiveService.export({
                 objects: [{
@@ -231,7 +232,7 @@ describe('ArchiveServiceImpl', () => {
                     }
                 } as Partial<TelemetryExportDelegate> as TelemetryExportDelegate;
             });
-
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
             // act
             archiveService.export({
                 objects: [{
@@ -308,7 +309,7 @@ describe('ArchiveServiceImpl', () => {
                     }
                 } as Partial<TelemetryExportDelegate> as TelemetryExportDelegate;
             });
-
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
             // act
             archiveService.export({
                 objects: [{
@@ -331,6 +332,7 @@ describe('ArchiveServiceImpl', () => {
             platform: 'android'
         }
         it('should throw InvalidRequestError if no objects to import in request', (done) => {
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
             // act
             archiveService.import({
                 objects: [],
@@ -378,7 +380,7 @@ describe('ArchiveServiceImpl', () => {
                     }
                 } as Partial<TelemetryImportDelegate> as TelemetryImportDelegate;
             });
-
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
             // act
             archiveService.import({
                 objects: [{
@@ -457,7 +459,7 @@ describe('ArchiveServiceImpl', () => {
                     }
                 } as Partial<TelemetryImportDelegate> as TelemetryImportDelegate;
             });
-
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
             // act
             archiveService.import({
                 objects: [{

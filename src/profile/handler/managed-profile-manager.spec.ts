@@ -11,6 +11,7 @@ import {TelemetryLogger} from '../../telemetry/util/telemetry-logger';
 import {TelemetryService} from '../../telemetry';
 import {ProfileEntry} from '../db/schema';
 import {tap} from 'rxjs/operators';
+import { UniqueId } from '../../db/util/unique-id';
 
 jest.mock('../../telemetry/util/telemetry-logger');
 
@@ -185,7 +186,7 @@ describe('ManagedProfileManager', () => {
                 sid: 'sample_sid',
                 createdTime: 12345,
             }));
-
+            jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
             const mockTelemetryService: Partial<TelemetryService> = {
                 end: jest.fn().mockImplementation(() => of(undefined)),
                 start: jest.fn().mockImplementation(() => of(undefined))
@@ -251,10 +252,12 @@ describe('ManagedProfileManager', () => {
             managedProfileManager.switchSessionToManagedProfile({
                 uid: 'some_uid'
             }).subscribe(() => {
-                expect(mockAuthService.setSession).toBeCalled();
-                expect(mockFrameworkService.setActiveChannelId).toBeCalledWith('some_root_org_id');
-                expect(mockAuthService.setSession).toHaveBeenCalled();
-                done();
+                setTimeout(() => {
+                    expect(mockAuthService.setSession).toBeCalled();
+                    expect(mockFrameworkService.setActiveChannelId).toBeCalledWith('some_root_org_id');
+                    expect(mockAuthService.setSession).toHaveBeenCalled();
+                    done();
+                }, 0);
             }, (e) => {
                 fail(e);
             });

@@ -6,6 +6,7 @@ import {DbService} from '../../../db';
 import {ProfileService, ProfileSession} from '../../../profile';
 import {Observable, of} from 'rxjs';
 import {SearchHistoryEntry} from '../db/schema';
+import { UniqueId } from '../../../db/util/unique-id';
 
 describe('SearchHistoryServiceImpl', () => {
     let searchHistoryService: SearchHistoryService;
@@ -13,7 +14,8 @@ describe('SearchHistoryServiceImpl', () => {
     const container = new Container();
     const dbServiceMock: Partial<DbService> = {};
     const profileServiceMock: Partial<ProfileService> = {};
-
+    jest.spyOn(UniqueId, 'generateUniqueId')
+        .mockImplementation(() => 'SECRET')
     beforeAll(() => {
         container.bind<SearchHistoryService>(InjectionTokens.SEARCH_HISTORY_SERVICE).to(SearchHistoryServiceImpl);
         container.bind<ProfileService>(InjectionTokens.PROFILE_SERVICE).toConstantValue(profileServiceMock as ProfileService);
@@ -29,6 +31,7 @@ describe('SearchHistoryServiceImpl', () => {
 
     it('should add entry to db for current profile on addEntry()', (done) => {
         // arrange
+        jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
         const mockSession: ProfileSession = new ProfileSession('SAMPLE_UID');
         profileServiceMock.getActiveProfileSession = jest.fn().mockImplementation(() => of(mockSession));
         dbServiceMock.insert = jest.fn().mockImplementation(() => of(undefined));
@@ -53,6 +56,7 @@ describe('SearchHistoryServiceImpl', () => {
 
     it('should return entries for current Profile on getEntries()', (done) => {
         // arrange
+        jest.spyOn(UniqueId, 'generateUniqueId').mockImplementation(() => 'SECRET')
         const mockSession: ProfileSession = new ProfileSession('SAMPLE_UID');
         profileServiceMock.getActiveProfileSession = jest.fn().mockImplementation(() => of(mockSession));
         dbServiceMock.execute = jest.fn().mockImplementation(() => of(<SearchHistoryEntry.SchemaMap[]>[
