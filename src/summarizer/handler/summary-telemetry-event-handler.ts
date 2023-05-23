@@ -185,8 +185,8 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
 
                             return of(undefined);
                         }),
-                        tap(() => {
-                            this.updateLastReadContentId(userId, courseId, batchId, contentId).toPromise();
+                        tap(async () => {
+                            await this.updateLastReadContentId(userId, courseId, batchId, contentId).toPromise();
                         })
                     );
                 } else {
@@ -411,7 +411,7 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
         return of(undefined);
     }
 
-    private generateAuditTelemetry(userId: string, courseId: string, batchId: string, content: Content, rollup: Rollup) {
+    private async generateAuditTelemetry(userId: string, courseId: string, batchId: string, content: Content, rollup: Rollup) {
         const actor = new Actor();
         actor.id = userId;
         actor.type = Actor.TYPE_USER;
@@ -446,6 +446,6 @@ export class SummaryTelemetryEventHandler implements ApiRequestHandler<Telemetry
             correlationData: cdata,
             type: 'content-progress'
         };
-        TelemetryLogger.log.audit(auditRequest).toPromise();
+        await TelemetryLogger.log.audit(auditRequest).toPromise();
     }
 }

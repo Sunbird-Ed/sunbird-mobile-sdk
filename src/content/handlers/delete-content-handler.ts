@@ -31,7 +31,7 @@ export class DeleteContentHandler {
                     childIdentifiers.push(element.identifier);
                 });
                 const childContentsFromDb: ContentEntry.SchemaMap[] = await this.findAllContentsFromDbWithIdentifiers(childIdentifiers);
-                childContentsFromDb.forEach(async child => {
+                for(const child of childContentsFromDb) {
                     await this.deleteOrUpdateContent(child, true, isChildContent);
                     isUpdateLastModifiedTime = true;
                     const path: string = child[ContentEntry.COLUMN_NAME_PATH]!;
@@ -40,14 +40,14 @@ export class DeleteContentHandler {
                         if (contentRootPath) {
                             try {
                                 // Update last modified time
-                                this.sharedPreferences.putString(ContentKeys.KEY_LAST_MODIFIED,
+                                await this.sharedPreferences.putString(ContentKeys.KEY_LAST_MODIFIED,
                                     new Date().getMilliseconds() + '').toPromise();
                             } catch (e) {
                                 console.log('Error', e);
                             }
                         }
                     }
-                });
+                };
             }).catch((err) => {
                 console.log('fileread err', err);
             });
@@ -131,7 +131,7 @@ export class DeleteContentHandler {
                     appIcon = localContentData.appIcon ? FileUtil.getFileName(localContentData.appIcon) : '';
                     itemSetPreviewUrl = localContentData.itemSetPreviewUrl ? FileUtil.getFileName(localContentData.itemSetPreviewUrl) : '';
                 }
-                this.rm(ContentUtil.getBasePath(path), [appIcon, itemSetPreviewUrl].join(':'));
+                await this.rm(ContentUtil.getBasePath(path), [appIcon, itemSetPreviewUrl].join(':'));
             }
             contentInDb[ContentEntry.COLUMN_NAME_VISIBILITY] = visibility;
             contentInDb[ContentEntry.COLUMN_NAME_REF_COUNT] = ContentUtil.addOrUpdateRefCount(refCount);

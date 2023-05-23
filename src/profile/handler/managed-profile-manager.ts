@@ -129,7 +129,7 @@ export class ManagedProfileManager {
                                 );
 
                                 for (const managedProfile of nonPersistedProfiles) {
-                                    this.persistManagedProfile(managedProfile);
+                                    await this.persistManagedProfile(managedProfile);
                                 }
                             })
                         );
@@ -220,7 +220,7 @@ export class ManagedProfileManager {
                 ProfileKeys.KEY_USER_SESSION, JSON.stringify(profileSession)
             ).toPromise();
 
-            TelemetryLogger.log.start({
+            await TelemetryLogger.log.start({
                 type: 'session',
                 env: 'sdk',
                 mode: 'switch-user',
@@ -272,7 +272,7 @@ export class ManagedProfileManager {
             hashTagId: serverProfile['rootOrgId']
         };
 
-        this.profileService.createProfile({
+        await this.profileService.createProfile({
             uid: serverProfile.id,
             profileType: ProfileType.STUDENT,
             source: ProfileSource.SERVER,
@@ -285,7 +285,7 @@ export class ManagedProfileManager {
             serverProfile: serverProfile
         }, ProfileSource.SERVER).toPromise();
 
-        this.cachedItemStore.getCached(
+        await this.cachedItemStore.getCached(
             serverProfile.id,
             ManagedProfileManager.USER_PROFILE_DETAILS_KEY_PREFIX,
             ManagedProfileManager.USER_PROFILE_DETAILS_KEY_PREFIX,

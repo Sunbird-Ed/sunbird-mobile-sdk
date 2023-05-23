@@ -47,7 +47,7 @@ export class UpdateSizeOnDevice {
                         updateContentModels.push(item);
                     }
                 }));
-                this.updateInDb(updateContentModels);
+                await this.updateInDb(updateContentModels);
             }),
             tap(async () =>
                 this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, true).toPromise()
@@ -80,7 +80,7 @@ export class UpdateSizeOnDevice {
             const contentInDb = element as ContentEntry.SchemaMap;
             const identifier = contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER];
 
-            this.dbService.update({
+            await this.dbService.update({
                 table: ContentEntry.TABLE_NAME,
                 selection: `${ContentEntry.COLUMN_NAME_IDENTIFIER} = ?`,
                 selectionArgs: [identifier],
@@ -123,7 +123,7 @@ export class UpdateSizeOnDevice {
                         updateContentModels.push(item);
                     }
                 }));
-                this.updateInDb(updateContentModels);
+                await this.updateInDb(updateContentModels);
             }),
             tap(async () =>
                 this.sharedPreferences.putBoolean(ContentKeys.KEY_IS_UPDATE_SIZE_ON_DEVICE_SUCCESSFUL, true).toPromise()

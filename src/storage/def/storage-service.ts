@@ -17,7 +17,7 @@ export interface StorageService extends SdkServiceOnInitDelegate {
 
     transferContents(transferContentsRequest: TransferContentsRequest): Observable<undefined>;
 
-    scanStorage(): Observable<boolean>;
+    scanStorage(): Promise<Observable<boolean>>;
 
     cancelTransfer(): Observable<undefined>;
 

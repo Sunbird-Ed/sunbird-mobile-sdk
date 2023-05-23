@@ -350,7 +350,7 @@ export class CourseServiceImpl implements CourseService {
         this.capturedAssessmentEvents[key]!.push(event);
     }
 
-    public syncAssessmentEvents(options = {persistedOnly: false}): Observable<undefined> {
+    public async syncAssessmentEvents(options = {persistedOnly: false}): Promise<Observable<undefined>> {
         let capturedAssessmentEvents = {};
 
         if (!options.persistedOnly) {
@@ -358,7 +358,7 @@ export class CourseServiceImpl implements CourseService {
 
             this.resetCapturedAssessmentEvents();
         }
-        this.offlineAssessmentScoreProcessor.process(capturedAssessmentEvents);
+        await this.offlineAssessmentScoreProcessor.process(capturedAssessmentEvents);
 
         return this.syncAssessmentEventsHandler.handle(
             capturedAssessmentEvents

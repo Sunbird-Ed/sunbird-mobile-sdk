@@ -122,7 +122,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
 
                     return this.addToDownloadList(downloadRequests)
                         .pipe(
-                            tap(() => this.switchToNextDownloadRequest().toPromise())
+                            tap(async () => await this.switchToNextDownloadRequest().toPromise())
                         );
                 })
             );
@@ -145,7 +145,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                             });
                         }).pipe(
                             mergeMap(() => this.removeFromDownloadList(downloadCancelRequest, generateTelemetry)),
-                            tap(() => this.switchToNextDownloadRequest().toPromise())
+                            tap(async () => await this.switchToNextDownloadRequest().toPromise())
                         );
                     }
 
@@ -314,8 +314,8 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                         return iif(
                             () => !!this.downloadCompleteDelegate,
                             defer(async () => {
-                                DownloadServiceImpl.generateDownloadCompleteTelemetry(currentDownloadRequest!);
-                                this.downloadCompleteDelegate!.onDownloadCompletion(currentDownloadRequest!).toPromise();
+                                await DownloadServiceImpl.generateDownloadCompleteTelemetry(currentDownloadRequest!);
+                                await this.downloadCompleteDelegate!.onDownloadCompletion(currentDownloadRequest!).toPromise();
                             }),
                             defer(() => of(undefined))
                         ).pipe(
@@ -341,7 +341,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
 
     private getDownloadProgress(downloadRequest: DownloadRequest): Observable<DownloadProgress> {
         return new Observable((observer) => {
-            downloadManager.query({ids: [downloadRequest.downloadId!]}, (err, entries) => {
+            downloadManager.query({ids: [downloadRequest.downloadId!]}, async (err, entries) => {
                 if (err) {
                     observer.next({
                         type: DownloadEventType.PROGRESS,
@@ -356,7 +356,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                     } as DownloadProgress);
                     observer.complete();
 
-                    this.cancel({identifier: downloadRequest.identifier}).toPromise();
+                    await this.cancel({identifier: downloadRequest.identifier}).toPromise();
 
                     return;
                 }

@@ -63,15 +63,15 @@ export class SyncAssessmentEventsHandler {
         .then(() => {
           this.capturedAssessmentEvents = {};
         })
-        .then(() => {
-          return this.syncPersistedAssessmentEvents();
+        .then(async () => {
+          return await this.syncPersistedAssessmentEvents();
         })
         .catch((e) => {
           Object.keys(this.capturedAssessmentEvents).forEach((key) => {
             const context = JSON.parse(key);
-            this.capturedAssessmentEvents[key]!.forEach((event) => {
+            this.capturedAssessmentEvents[key]!.forEach(async (event) => {
               if (context.batchStatus !== 2) {
-                this.persistAssessEvent(event, context).toPromise();
+                await this.persistAssessEvent(event, context).toPromise();
               }
             });
           });
@@ -103,7 +103,7 @@ export class SyncAssessmentEventsHandler {
       true).pipe(
       mergeMap(() => {
         return new Observable((observer: Observer<{ [key: string]: any }>) => {
-          sbsync.onSyncSucces(async (response) => {
+          sbsync.onSyncSucces((response) => {
             const courseAssesmentResponse = response.courseAssesmentResponse;
             const error = response.course_assesment_error;
             if (courseAssesmentResponse) {
@@ -112,7 +112,7 @@ export class SyncAssessmentEventsHandler {
               observer.error(error);
             }
             observer.complete();
-          }, async (error) => {
+          }, (error) => {
             observer.error(error);
           });
         });
@@ -189,7 +189,7 @@ export class SyncAssessmentEventsHandler {
   }
 
   private async syncPersistedAssessmentEvents() {
-    this.dbService.execute(`
+    await this.dbService.execute(`
             SELECT
                 ${CourseAssessmentEntry.COLUMN_NAME_USER_ID},
                 ${CourseAssessmentEntry.COLUMN_NAME_CONTENT_ID},
