@@ -35,8 +35,8 @@ export class PageAssembleServiceImpl implements PageAssembleService {
         this.pageAssembleServiceConfig = this.sdkConfig.pageServiceConfig;
     }
 
-    setPageAssembleChannel(request: SetPageAssembleChannelRequest): void {
-        this.sharedPreferences.putString(PageAssembleKeys.KEY_ORGANISATION_ID, request.channelId).toPromise();
+    async setPageAssembleChannel(request: SetPageAssembleChannelRequest): Promise<void> {
+        await this.sharedPreferences.putString(PageAssembleKeys.KEY_ORGANISATION_ID, request.channelId).toPromise();
     }
 
     getPageAssemble(criteria: PageAssembleCriteria): Observable<PageAssemble> {

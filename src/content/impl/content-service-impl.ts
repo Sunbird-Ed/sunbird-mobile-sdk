@@ -265,7 +265,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     });
                 }
             }
-            new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute();
+            await new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute();
             return contentDeleteResponse;
         }).pipe(
             tap(() => contentDeleteRequest.contentDeleteList.forEach((c) => {
@@ -434,7 +434,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             contentImportResponses.push({identifier: contentId, status: status});
                         }
                     }
-                    this.downloadService.download(downloadRequestList).toPromise().then();
+                    await this.downloadService.download(downloadRequestList).toPromise().then();
                 }
 
                 return contentImportResponses;
@@ -882,11 +882,11 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 destinationUri: transcriptReq.destinationUrl
             };
             return this.downloadTranscript(downloadRequest).toPromise()
-            .then((sourceUrl) => {
+            .then(async (sourceUrl) => {
                 if (sourceUrl && sourceUrl.path) {
-                    this.copyFile(sourceUrl.path.split(/\/(?=[^\/]+$)/)[0], dataDirectory.concat('/' + transcriptReq.identifier),
-                    transcriptReq.fileName).then(() => {
-                        this.deleteFolder(sourceUrl.path);
+                    await this.copyFile(sourceUrl.path.split(/\/(?=[^\/]+$)/)[0], dataDirectory.concat('/' + transcriptReq.identifier),
+                    transcriptReq.fileName).then(async () => {
+                        await this.deleteFolder(sourceUrl.path);
                     });
                     return sourceUrl.path;
                 }
@@ -898,8 +898,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return this.fileService.exists(dataDirectory.concat('/' + req.identifier)).then((entry: Entry) => {
             return entry.nativeURL;
             }).catch(() => {
-                 return this.fileService.createDir(dataDirectory, false).then((directoryEntry: DirectoryEntry) => {
-                    this.fileService.createDir(dataDirectory.concat('/' + req.identifier), false).then((directory) => {
+                 return this.fileService.createDir(dataDirectory, false).then(async (directoryEntry: DirectoryEntry) => {
+                    await this.fileService.createDir(dataDirectory.concat('/' + req.identifier), false).then((directory) => {
                         return directory.nativeURL;
                     });
                 });

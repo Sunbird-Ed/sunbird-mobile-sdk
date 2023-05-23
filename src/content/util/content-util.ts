@@ -186,7 +186,7 @@ export class ContentUtil {
     public static readPrimaryCategoryServer(contentData): string {
         let primaryCategory: string = contentData.primaryCategory;
         if (primaryCategory) {
-            primaryCategory = primaryCategory;
+            primaryCategory = primaryCategory.toLowerCase();
         } else {
             primaryCategory = CsPrimaryCategoryMapper.getPrimaryCategory(
               contentData.contentType.toLowerCase(), contentData.mimeType, contentData.resourceType);

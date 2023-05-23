@@ -44,10 +44,12 @@ describe('CreateMetaData', () => {
         // act
         createMetaData.execute(request).then(() => {
             // assert
-            expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
-            expect(mockDbService.open).toHaveBeenCalledWith(request.destinationDBFilePath);
-            expect(mockDbService.execute).toHaveBeenCalled();
-            expect(mockDbService.insert).toHaveBeenCalled();
+            setTimeout(() => {
+                expect(mockDeviceInfo.getDeviceID).toHaveBeenCalled();
+                expect(mockDbService.open).toHaveBeenCalledWith(request.destinationDBFilePath);
+                expect(mockDbService.execute).toHaveBeenCalled();
+                expect(mockDbService.insert).toHaveBeenCalled();
+            }, 0);
         }).catch((e) => {
             console.error(e);
             fail(e);

@@ -39,10 +39,10 @@ export class CachedItemStoreImpl implements CachedItemStore {
         emptyCondition?: (item: T) => boolean
     ): Observable<T> {
         return fromServer().pipe(
-            tap((response) => {
-                this.saveItemTTL(id, timeToLiveKey).toPromise();
+            tap(async (response) => {
+                await this.saveItemTTL(id, timeToLiveKey).toPromise();
 
-                this.saveItemToDb(id, noSqlkey, response).toPromise();
+                await this.saveItemToDb(id, noSqlkey, response).toPromise();
             }),
             catchError(() => {
                 return this.getCached<T>(

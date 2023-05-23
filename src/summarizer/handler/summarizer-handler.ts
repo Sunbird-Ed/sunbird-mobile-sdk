@@ -74,7 +74,7 @@ export class SummarizerHandler {
     public static mapDBEntriesToLearnerAssesmentDetails(assesmentDetailsInDb: LearnerAssessmentsEntry.SchemaMap[]):
         Map<string, ReportDetailPerUser> {
         const map = new Map<string, ReportDetailPerUser>();
-        assesmentDetailsInDb.map((assesmentDetailInDb: LearnerAssessmentsEntry.SchemaMap) => {
+        assesmentDetailsInDb.forEach((assesmentDetailInDb: LearnerAssessmentsEntry.SchemaMap) => {
             const assesmentDetails: LearnerAssessmentDetails = {
                 uid: assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_UID],
                 contentId: assesmentDetailInDb[LearnerAssessmentsEntry.COLUMN_NAME_CONTENT_ID],
@@ -143,7 +143,7 @@ export class SummarizerHandler {
     public static mapDBEntriesToAccuracy(accuracyReportsInDb: LearnerAssessmentsEntry.AccuracySchema[]):
         { [key: string]: string } {
         const accuracy: { [key: string]: any } = {};
-        accuracyReportsInDb.map((accuracyReport: LearnerAssessmentsEntry.AccuracySchema) => {
+        accuracyReportsInDb.forEach((accuracyReport: LearnerAssessmentsEntry.AccuracySchema) => {
             accuracy[accuracyReport[LearnerAssessmentsEntry.COLUMN_NAME_QID]] =
                 NumberUtil.parseInt(accuracyReport[LearnerAssessmentsEntry.COLUMN_NAME_USERS_COUNT]);
         });

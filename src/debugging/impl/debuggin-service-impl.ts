@@ -41,7 +41,7 @@ export class DebuggingServiceImpl implements DebuggingService {
         };
     }
 
-    enableDebugging(traceID?: string): Observable<boolean> {
+    async enableDebugging(traceID?: string): Promise<Observable<boolean>> {
         /* TODO
          * generateJWT token and set it
          * set startTimestamp store it in preferences
@@ -58,17 +58,17 @@ export class DebuggingServiceImpl implements DebuggingService {
                     } else {
                         await this.sharedPreferences.putString(CsClientStorage.TRACE_ID, _jwt).toPromise();
                     }
-                    new DebuggingDurationHandler(
+                    await new DebuggingDurationHandler(
                         this.sharedPreferences,
                         this
                     ).handle(observer);
                     console.log('Watcher Value:', this.watcher);
                 }
-            });
+            }).catch(err => console.error(err));
         });
     }
 
-    disableDebugging(): Observable<boolean> {
+    async disableDebugging(): Promise<Observable<boolean>> {
         if (this.watcher.debugStatus) {
             clearTimeout(this.watcher.interval);
             this.watcher.observer.complete();
@@ -77,8 +77,8 @@ export class DebuggingServiceImpl implements DebuggingService {
                 observer: null,
                 debugStatus: false
             };
-            this.sharedPreferences.putString('debug_started_at', '').toPromise();
-            this.sharedPreferences.putString(CsClientStorage.TRACE_ID, '').toPromise();
+            await this.sharedPreferences.putString('debug_started_at', '').toPromise();
+            await this.sharedPreferences.putString(CsClientStorage.TRACE_ID, '').toPromise();
             return of(true);
         }
         return of(false);

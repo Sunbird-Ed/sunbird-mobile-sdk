@@ -55,10 +55,10 @@ export class StorageServiceImpl implements StorageService {
             this.deviceInfo.getStorageVolumes(),
             this.getStorageDestination()
         ).pipe(
-            tap((r) => {
+            tap(async (r) => {
                 this.availableStorageVolumes = r[0];
                 this.currentStorageDestination = r[1];
-                this.scanStorage().toPromise();
+                (await this.scanStorage()).toPromise();
             }),
             mapTo(undefined)
         );
@@ -128,11 +128,11 @@ export class StorageServiceImpl implements StorageService {
         );
     }
 
-    scanStorage(): Observable<boolean> {
+    async scanStorage(): Promise<Observable<boolean>> {
         const storageDestinationPath = this.getStorageDestinationDirectoryPath()!;
         const scanContext: ScanContentContext = {currentStoragePath: storageDestinationPath};
         if (!storageDestinationPath) {
-            this.resetStorageDestination();
+            await this.resetStorageDestination();
         }
         return new GetModifiedContentHandler(this.fileService, this.dbService).execute(scanContext).pipe(
             mergeMap((scanContentContext: ScanContentContext) => {

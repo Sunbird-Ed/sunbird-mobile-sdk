@@ -71,7 +71,7 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
                                 ) {
                                     delete request.userDeclaredLocation;
 
-                                    this.sharedPreferences.putString(
+                                    await this.sharedPreferences.putString(
                                         DeviceRegister.DEVICE_LOCATION,
                                         ''
                                     ).toPromise();
@@ -100,9 +100,9 @@ export class DeviceRegisterHandler implements ApiRequestHandler<DeviceRegisterRe
                             map((res) => {
                                 return res.body;
                             }),
-                            tap(() => {
+                            tap(async () => {
                                 if (request!.userDeclaredLocation) {
-                                    this.sharedPreferences.putString(
+                                    await this.sharedPreferences.putString(
                                         DeviceRegister.DEVICE_LOCATION,
                                         JSON.stringify(request!.userDeclaredLocation)
                                     ).toPromise();

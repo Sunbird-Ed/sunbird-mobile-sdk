@@ -1747,7 +1747,7 @@ describe('ContentServiceImpl', () => {
             });
         });
 
-        it('should be download and copied but not delete from storage for delete catch part', (done) => {
+        it('should be download and copied but not delete from storage for delete catch part', () => {
             // arrange
             const transcriptReq = {
                 downloadUrl: 'http//:sample-download-url',
@@ -1780,7 +1780,6 @@ describe('ContentServiceImpl', () => {
                 expect(window['downloadManager'].enqueue).toHaveBeenCalled();
                 expect(window['downloadManager'].query).toHaveBeenCalled();
                 expect(sbutility.copyFile).toHaveBeenCalled();
-                done();
             });
         });
     });

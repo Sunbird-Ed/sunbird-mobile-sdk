@@ -178,9 +178,9 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
         return this.deviceRegisterService.registerDevice().pipe(
           tap(async (res) => {
             const actions = res.result.actions;
-            actions.forEach(element => {
+            actions.forEach(async element => {
               if (element.type === 'experiment' && element.key) {
-                this.sharedPreferences.putString(CodePush.DEPLOYMENT_KEY,
+                await this.sharedPreferences.putString(CodePush.DEPLOYMENT_KEY,
                   element.data.key).toPromise();
               }
             });

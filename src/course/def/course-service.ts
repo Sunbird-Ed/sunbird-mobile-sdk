@@ -60,7 +60,7 @@ export interface CourseService {
     /** @internal */
     resetCapturedAssessmentEvents();
 
-    syncAssessmentEvents(options?: { persistedOnly: boolean }): Observable<undefined>;
+    syncAssessmentEvents(options?: { persistedOnly: boolean }): Promise<Observable<undefined>>;
 
     generateAssessmentAttemptId(request: GenerateAttemptIdRequest): string;
 

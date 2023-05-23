@@ -8,7 +8,7 @@ export interface DebugWatcher {
 
 export interface DebuggingService {
     deviceId: string;
-    enableDebugging(traceID?: string): Observable<boolean>;
-    disableDebugging(): Observable<boolean>;
+    enableDebugging(traceID?: string): Promise<Observable<boolean>>;
+    disableDebugging(): Promise<Observable<boolean>>;
     isDebugOn(): boolean;
 }

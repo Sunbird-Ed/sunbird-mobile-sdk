@@ -23,7 +23,7 @@ export class TransportGroup {
     private async saveGroupsToDb(importContext: ImportProfileContext, groups: GroupEntry.SchemaMap[]) {
         let imported = 0;
         let failed = 0;
-        groups.forEach(async (group: GroupEntry.SchemaMap) => {
+        for(const group of groups) {
             const existingGroup: GroupEntry.SchemaMap[] = await this.dbService.read({
                 table: GroupEntry.TABLE_NAME,
                 selection: `${GroupEntry.COLUMN_NAME_GID} = ?`,
@@ -44,7 +44,7 @@ export class TransportGroup {
                 failed++;
             }
 
-        });
+        };
         importContext.failed = importContext.failed ? importContext.failed + failed : failed;
         importContext.imported = importContext.imported ? importContext.imported + imported : imported;
     }

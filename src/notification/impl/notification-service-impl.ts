@@ -92,7 +92,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                     );
                 }
             }),
-            tap(() => this.triggerNotificationChange())
+            tap(async () => await this.triggerNotificationChange())
         );
     }
 
@@ -102,7 +102,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                 feedEntryId: notification.id as string,
                 category: UserFeedCategory.NOTIFICATION,
             }).pipe(
-                tap(() => this.triggerNotificationChange())
+                tap(async () => await this.triggerNotificationChange())
             );
         }
 
@@ -110,7 +110,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
             .concat(notification.id ? `WHERE ${NotificationEntry.COLUMN_NAME_MESSAGE_ID} = ${notification.id}` : '');
         return this.dbService.execute(query).pipe(
             mapTo(true),
-            tap(() => this.triggerNotificationChange())
+            tap(async () => await this.triggerNotificationChange())
         );
     }
 
@@ -135,7 +135,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                     status: notification.isRead ? UserFeedStatus.READ : UserFeedStatus.UNREAD
                 }
             }).pipe(
-                tap(() => this.triggerNotificationChange())
+                tap(async () => await this.triggerNotificationChange())
             );
         }
 
@@ -159,7 +159,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                     return of(false);
                 }
             }),
-            tap(() => this.triggerNotificationChange())
+            tap(async () => await this.triggerNotificationChange())
         );
     }
 
@@ -192,7 +192,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                     const feed = await this.profileService.getUserFeed().toPromise().then((entries) => {
                         return entries.filter(e => e.category === UserFeedCategory.NOTIFICATION) as UserFeedEntry<PartialNotification>[];
                     });
-                    this.keyValueStore.setValue(
+                    await this.keyValueStore.setValue(
                         cacheKey,
                         gzip(JSON.stringify(feed))
                     ).toPromise();

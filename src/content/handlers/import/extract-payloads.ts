@@ -194,7 +194,7 @@ export class ExtractPayloads {
                 if (ContentUtil.isNotUnit(mimeType, visibility)) {
                     try {
                         if (!appIcon.startsWith('https:')) {
-                            this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination!, true);
+                            await this.copyAssets(importContext.tmpLocation!, appIcon, payloadDestination!, true);
                         }
                     } catch (e) {
                     }
@@ -202,7 +202,7 @@ export class ExtractPayloads {
 
                 try {
                     if (!itemSetPreviewUrl.startsWith('https:')) {
-                        this.copyAssets(importContext.tmpLocation!, itemSetPreviewUrl, payloadDestination!, false);
+                        await this.copyAssets(importContext.tmpLocation!, itemSetPreviewUrl, payloadDestination!, false);
                     }
                 } catch (e) {
                 }
@@ -256,10 +256,10 @@ export class ExtractPayloads {
             }
         }
         // Update/create contents in DB with size_on_device as 0 initially
-        this.updateContentDB(insertNewContentModels, updateNewContentModels);
-        const updateContentFileSizeInDBTimeOutRef = setTimeout(() => {
+        await this.updateContentDB(insertNewContentModels, updateNewContentModels);
+        const updateContentFileSizeInDBTimeOutRef = setTimeout(async () => {
             // Update the contents in DB with actual size
-            this.updateContentFileSizeInDB(importContext, commonContentModelsMap, payloadDestinationPathMap, result);
+            await this.updateContentFileSizeInDB(importContext, commonContentModelsMap, payloadDestinationPathMap, result);
         }, 5000);
 
         if (rootContentPath) {
@@ -292,16 +292,12 @@ export class ExtractPayloads {
                 try {
                     sizeOnDevice = await this.fileService.getDirectorySize(payloadDestination!);
                     commonContentModelsMap.get(identifier).size_on_device = sizeOnDevice;
-                    if (!existingContentModel) {
-                        updateNewContentModels.push(commonContentModelsMap.get(identifier));
-                    } else {
-                        updateNewContentModels.push(commonContentModelsMap.get(identifier));
-                    }
+                    updateNewContentModels.push(commonContentModelsMap.get(identifier));
                 } catch (e) {
                 }
             }
         }
-        this.updateContentDB([], updateNewContentModels, true);
+        await this.updateContentDB([], updateNewContentModels, true);
     }
 
     async updateContentDB(insertNewContentModels, updateNewContentModels, updateSize?: boolean) {
@@ -331,7 +327,7 @@ export class ExtractPayloads {
             this.dbService.endTransaction(true);
         }
         if (updateSize) {
-            new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute();
+            await new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute();
         }
     }
 
@@ -350,9 +346,9 @@ export class ExtractPayloads {
                 if(window.device.platform.toLowerCase() === "ios") {
                     // * checking if file exist, then delete the file
                     await this.fileService.exists(payloadDestinationPath.concat('/', asset))
-                    .then(entry => {
+                    .then(async entry => {
                         if (entry) {
-                            this.fileService.removeFile(payloadDestinationPath.concat('/', asset)).then();
+                            await this.fileService.removeFile(payloadDestinationPath.concat('/', asset)).then();
                         }
                     })
                     .catch(error => {

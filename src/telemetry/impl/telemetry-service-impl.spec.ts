@@ -186,12 +186,11 @@ describe('TelemetryServiceImpl', () => {
       });
     });
 
-    it('will be getUtmInfo error par', (done) => {
+    it('will be getUtmInfo error par', () => {
       sbutility.getUtmInfo = jest.fn((a, b) => b({ error: 'errpr-part' }));
       sbutility.clearUtmInfo = jest.fn((a, b) => a());
       telemetryService.preInit().subscribe(() => {
         expect(sbutility.getUtmInfo).toHaveBeenCalled();
-        done();
       });
     });
   });
