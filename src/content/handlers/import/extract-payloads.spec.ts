@@ -28,6 +28,9 @@ describe('ExtractPayloads', () => {
         buildConfigPackage: 'package'
     };
     const mockDbService: Partial<DbService> = {
+        beginTransaction: jest.fn(),
+        update: jest.fn(() => of()),
+        endTransaction: jest.fn()
     };
     const mockDeviceInfo: Partial<DeviceInfo> = {};
     const mockGetContentDetailsHandler: Partial<GetContentDetailsHandler> = {
@@ -50,7 +53,9 @@ describe('ExtractPayloads', () => {
             mockSharedPreferences as SharedPreferences
         );
     });
-
+    window.console = {
+        error: jest.fn()
+    } as any 
     beforeEach(() => {
         window['device'] = { uuid: 'some_uuid', platform:'android' };
         jest.clearAllMocks();

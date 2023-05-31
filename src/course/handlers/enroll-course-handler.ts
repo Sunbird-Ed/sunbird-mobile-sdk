@@ -27,13 +27,13 @@ export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseReques
             .pipe(
                 map((success) => {
                     return success.body.result.response === 'SUCCESS';
-                }), tap(() => {
-                    this.generateAuditTelemetry(request);
+                }), tap(async () => {
+                    await this.generateAuditTelemetry(request);
                 })
             );
     }
 
-    private generateAuditTelemetry(request: EnrollCourseRequest) {
+    private async generateAuditTelemetry(request: EnrollCourseRequest) {
         const actor = new Actor();
         actor.id = request.userId;
         actor.type = Actor.TYPE_USER;
@@ -63,6 +63,6 @@ export class EnrollCourseHandler implements ApiRequestHandler<EnrollCourseReques
             correlationData : cdata,
             type: 'enrollment'
         };
-        TelemetryLogger.log.audit(auditRequest).toPromise();
+        await TelemetryLogger.log.audit(auditRequest).toPromise();
     }
 }

@@ -125,7 +125,7 @@ export class ArchiveServiceImpl implements ArchiveService {
     }
 
     private generateExportTelemetries(progress: ArchiveExportProgress, workspacePath: string): Observable<ArchiveExportProgress> {
-        progress.progress.forEach((v, k) => {
+        progress.progress.forEach(async (v, k) => {
            switch (k) {
                case ArchiveObjectType.CONTENT:
                    // TODO
@@ -152,7 +152,7 @@ export class ArchiveServiceImpl implements ArchiveService {
                        env: 'sdk'
                    };
 
-                   this.telemetryService.share(req).toPromise();
+                   await this.telemetryService.share(req).toPromise();
                }
            }
         });
@@ -283,7 +283,7 @@ export class ArchiveServiceImpl implements ArchiveService {
     }
 
     private generateImportTelemetries(progress: ArchiveImportProgress, workspacePath: string): Observable<ArchiveImportProgress> {
-        progress.progress.forEach((v, k) => {
+        progress.progress.forEach(async (v, k) => {
             switch (k) {
                 case ArchiveObjectType.CONTENT:
                     // TODO
@@ -310,7 +310,7 @@ export class ArchiveServiceImpl implements ArchiveService {
                         env: 'sdk'
                     };
 
-                    this.telemetryService.share(req).toPromise();
+                    await this.telemetryService.share(req).toPromise();
                 }
             }
         });

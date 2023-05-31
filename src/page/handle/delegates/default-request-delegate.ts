@@ -120,14 +120,14 @@ export class DefaultRequestDelegate implements ApiRequestHandler<PageAssembleCri
             map((success) => {
                 return success.body.result.response;
             }),
-            tap((pageAssembleRes) => {
+            tap(async (pageAssembleRes) => {
                 const pageAssemble = JSON.stringify(pageAssembleRes);
 
-                this.sharedPreferences.putString(
+                await this.sharedPreferences.putString(
                     ('ttl_' + this.PAGE_ASSEMBLE_LOCAL_KEY + '-' + DefaultRequestDelegate.getIdForDb(request)), Date.now() + ''
                 ).toPromise();
 
-                this.keyValueStore.setValue(
+                await this.keyValueStore.setValue(
                     this.PAGE_ASSEMBLE_LOCAL_KEY + '-' + DefaultRequestDelegate.getIdForDb(request), pageAssemble
                 ).toPromise();
             }),

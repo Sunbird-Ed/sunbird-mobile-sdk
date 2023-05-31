@@ -21,7 +21,7 @@ export class TransportGroupProfile {
     }
 
     private async saveGroupProfilesToDb(importContext: ImportProfileContext, groupProfiles: GroupProfileEntry.SchemaMap[]) {
-        groupProfiles.forEach(async (groupProfile: GroupProfileEntry.SchemaMap) => {
+        for(const groupProfile of groupProfiles) {
             delete groupProfile[GroupProfileEntry._ID];
             const existingGroupProfile: GroupProfileEntry.SchemaMap[] = await this.dbService.read({
                 table: GroupProfileEntry.TABLE_NAME,
@@ -30,12 +30,12 @@ export class TransportGroupProfile {
                 limit: '1'
             }).toPromise();
             if (!existingGroupProfile || !existingGroupProfile.length) {
-                await this.dbService.insert({
+                this.dbService.insert({
                     table: GroupProfileEntry.TABLE_NAME,
                     modelJson: groupProfile
                 });
             }
-        });
+        };
 
     }
 

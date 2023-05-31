@@ -55,10 +55,10 @@ export class StorageServiceImpl implements StorageService {
             this.deviceInfo.getStorageVolumes(),
             this.getStorageDestination()
         ).pipe(
-            tap((r) => {
+            tap(async (r) => {
                 this.availableStorageVolumes = r[0];
                 this.currentStorageDestination = r[1];
-                this.scanStorage().toPromise();
+                await this.scanStorage().toPromise();
             }),
             mapTo(undefined)
         );
@@ -144,7 +144,7 @@ export class StorageServiceImpl implements StorageService {
 
     }
 
-    private async resetStorageDestination() {
+    private resetStorageDestination() {
         this.currentStorageDestination = StorageDestination.INTERNAL_STORAGE;
         return this.sharedPreferences.putString(StorageServiceImpl.STORAGE_DESTINATION, StorageDestination.INTERNAL_STORAGE).toPromise();
     }

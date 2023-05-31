@@ -390,7 +390,7 @@ export class ContentAggregator {
                 return field.sections.map((section, index) => {
                     let searchFacetFilters =  searchResult.filterCriteria.facetFilters || [];
                     const toBeDeletedFacets: string[] = [];
-                    searchFacetFilters.map((x) => {
+                    searchFacetFilters.forEach((x) => {
                         const facetConfig = (field.dataSrc.params.config.find(element => element.name === x.name));
                         if (facetConfig) {
                             facetConfig.mergeableAttributes.map((attribute) => {
@@ -685,7 +685,7 @@ export class ContentAggregator {
                             }
                             if (d.name) {
                                 let facetDet = onlineContentsResponse.filterCriteria.facetFilters || []
-                                facetDet.map((facet) => {
+                                facetDet.forEach((facet) => {
                                     let facetVal = (facet.name == d.name) ? facet.values : [];
                                     return d.sections.filter((o1) => {
                                         return facetVal.some((o2) => {
