@@ -79,7 +79,10 @@ describe('TelemetryAutoSyncServiceImpl', () => {
             window['downloadManager'] = {
                 fetchSpeedLog: jest.fn().mockImplementation(() => {
                     return {};
-                })
+                }),
+                enqueue: jest.fn(),
+                query: jest.fn(),
+                remove: jest.fn()
             };
 
             window['device'] = {
@@ -114,7 +117,10 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                 window['downloadManager'] = {
                     fetchSpeedLog: jest.fn().mockImplementation(() => {
                         return {};
-                    })
+                    }),
+                    enqueue: jest.fn(),
+                    query: jest.fn(),
+                    remove: jest.fn()
                 };
 
                 mockTelemetryService.sync = jest.fn().mockImplementation(() => {
@@ -144,7 +150,10 @@ describe('TelemetryAutoSyncServiceImpl', () => {
                 window['downloadManager'] = {
                     fetchSpeedLog: jest.fn().mockImplementation(() => {
                         return {};
-                    })
+                    }),
+                    enqueue: jest.fn(),
+                    query: jest.fn(),
+                    remove: jest.fn()
                 };
 
                 mockTelemetryService.sync = jest.fn().mockImplementation(() => {
@@ -176,7 +185,10 @@ describe('TelemetryAutoSyncServiceImpl', () => {
             window['downloadManager'] = {
                 fetchSpeedLog: jest.fn().mockImplementation(() => {
                     return {};
-                })
+                }),
+                enqueue: jest.fn(),
+                query: jest.fn(),
+                remove: jest.fn()
             };
 
             mockTelemetryService.sync = jest.fn().mockImplementation(() => {
@@ -217,7 +229,10 @@ describe('TelemetryAutoSyncServiceImpl', () => {
             window['downloadManager'] = {
                 fetchSpeedLog: jest.fn().mockImplementation(() => {
                     return {};
-                })
+                }),
+                enqueue: jest.fn(),
+                query: jest.fn(),
+                remove: jest.fn()
             };
 
             mockTelemetryService.sync = jest.fn().mockImplementation(() => {

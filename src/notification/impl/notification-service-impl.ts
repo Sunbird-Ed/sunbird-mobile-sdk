@@ -221,7 +221,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
         const userFeedEntries: UserFeedEntry<PartialNotification>[] = result[1];
 
         return notifications.concat(
-            userFeedEntries.map((e) => {
+            userFeedEntries.map((e: any) => {
                 return {
                     id: e['id'],
                     source: 'USER_FEED',

@@ -798,8 +798,8 @@ describe('CourseServiceImpl', () => {
             });
             mockCsCourseService.getSignedCourseCertificate = jest.fn(() => of({printUri: 'https://'}));
             window['downloadManager'] = {
-                enqueue: jest.fn(({}, fn) => fn({err: 'error'}))
-            };
+                enqueue: jest.fn((_, fn) => fn({err: 'error'}))
+            } as any;
             // act
             courseService.downloadCurrentProfileCourseCertificate(request).subscribe(() => {
                 expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
@@ -866,9 +866,9 @@ describe('CourseServiceImpl', () => {
             })) as any;
             const data = undefined;
             window['downloadManager'] = {
-                enqueue: jest.fn(({}, fn) => fn(data, {id: 'sample-id'})),
-                query: jest.fn((_, fn) => fn({err: 'error'}))
-            };
+                enqueue: jest.fn((_, fn) => fn(data, {id: 'sample-id'})),
+                query: jest.fn((_, fn) => fn(data, {err: 'error'}))
+            } as any;
             // act
             courseService.downloadCurrentProfileCourseCertificate(request).subscribe(() => {
                 expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();
@@ -929,12 +929,12 @@ describe('CourseServiceImpl', () => {
             mockCsCourseService.getSignedCourseCertificate = jest.fn(() => of({printUri: 'https://'}));
             const data = undefined;
             window['downloadManager'] = {
-                enqueue: jest.fn(({}, fn) => fn(data, {id: 'sample-id'})),
+                enqueue: jest.fn((_, fn) => fn(data, {id: 'sample-id'})),
                 query: jest.fn((_, fn) => fn(data, [{
                     status: DownloadStatus.STATUS_SUCCESSFUL,
                     localUri: 'sample-local-uri'
-                }]))
-            };
+                }])) as any
+            } as any;
             // act
             courseService.downloadCurrentProfileCourseCertificate(request).subscribe(() => {
                 expect(mockProfileService.getActiveProfileSession).toHaveBeenCalled();

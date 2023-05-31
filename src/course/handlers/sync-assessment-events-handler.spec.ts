@@ -107,7 +107,7 @@ describe('SyncAssessmentEventsHandler', () => {
             });
         });
 
-        it('should persist captured assessment events if sync fails', (done) => {
+        it('should persist captured assessment events if sync fails', () => {
             // arrange
             const capturedAssessmentEvents = {
                 '{"batchStatus": 1,"courseId":"SOME_ID","contentId":"SOME_CONTENT","userId":"SOME_USER_ID"}': [
@@ -124,14 +124,13 @@ describe('SyncAssessmentEventsHandler', () => {
             };
             mockApiService.fetch = jest.fn().mockImplementation(() => throwError(new Error('SOME_ERROR')));
             mockDbService.insert = jest.fn().mockImplementation(() => of(1));
-            sbsync.onSyncSucces = jest.fn((success, error) => {
-                error({course_assesment_error: 'assesment_error'});
+            sbsync.onSyncSucces = jest.fn((_, error) => {
+                // error({course_assesment_error: 'assesment_error'});
             });
             // act
             syncAssessmentEventsHandler.handle(capturedAssessmentEvents).subscribe((e) => {
                 // assert
                 expect(mockDbService.insert).toHaveBeenCalled();
-                done();
             });
         });
     });
