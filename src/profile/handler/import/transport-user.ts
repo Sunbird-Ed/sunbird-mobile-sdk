@@ -21,7 +21,7 @@ export class TransportUser {
     }
 
     private async saveUsersToDb(importContext: ImportProfileContext, users: UserEntry.SchemaMap[]) {
-        users.forEach(async (user: UserEntry.SchemaMap) => {
+        for(const user of users) {
             delete user[UserEntry._ID];
             const existingUser: UserEntry.SchemaMap[] = await this.dbService.read({
                 table: ProfileEntry.TABLE_NAME,
@@ -35,7 +35,7 @@ export class TransportUser {
                     modelJson: user
                 }).toPromise();
             }
-        });
+        };
 
     }
 

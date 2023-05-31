@@ -685,7 +685,7 @@ export class ContentAggregator {
                             }
                             if (d.name) {
                                 let facetDet = onlineContentsResponse.filterCriteria.facetFilters || []
-                                facetDet.map((facet) => {
+                                facetDet.forEach((facet) => {
                                     let facetVal = (facet.name == d.name) ? facet.values : [];
                                     return d.sections.filter((o1) => {
                                         return facetVal.some((o2) => {

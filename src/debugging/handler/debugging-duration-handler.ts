@@ -19,8 +19,8 @@ export class DebuggingDurationHandler {
                 diff /= 60;
                 console.log('diff', Math.abs(Math.round(diff)));
                 if (Math.abs(Math.round(diff)) >= 10) {
-                    this.sharedPreferences.putString('debug_started_at', '').toPromise();
-                    this.debuggingServiceImpl.disableDebugging();
+                    await this.sharedPreferences.putString('debug_started_at', '').toPromise();
+                    await this.debuggingServiceImpl.disableDebugging();
                     await this.sharedPreferences.putString(CsClientStorage.TRACE_ID,'').toPromise();
                     observer.next(false);
                     observer.complete();

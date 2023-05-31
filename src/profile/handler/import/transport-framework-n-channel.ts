@@ -22,7 +22,7 @@ export class TransportFrameworkNChannel {
     }
 
     private async saveNoSqlEntryToDb(keyValueStoreEntriesInExternalDb: KeyValueStoreEntry.SchemaMap[]) {
-        keyValueStoreEntriesInExternalDb.forEach(async (keyValueStoreEntryInExternalDb: KeyValueStoreEntry.SchemaMap) => {
+        for(const keyValueStoreEntryInExternalDb of keyValueStoreEntriesInExternalDb) {
             delete keyValueStoreEntryInExternalDb[KeyValueStoreEntry._ID];
             const existingKeyvalueStore: GroupProfileEntry.SchemaMap[] = await this.dbService.read({
                 table: KeyValueStoreEntry.TABLE_NAME,
@@ -36,7 +36,7 @@ export class TransportFrameworkNChannel {
                     modelJson: keyValueStoreEntryInExternalDb
                 }).toPromise();
             }
-        });
+        };
 
     }
 

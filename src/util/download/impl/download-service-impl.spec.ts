@@ -262,7 +262,7 @@ describe('DownloadServiceImpl', () => {
             downloadService.download([downloadRequest]).pipe().toPromise();
         });
 
-        it('should enqueue multiple download requests to be downloaded', (done) => {
+        it('should enqueue multiple download requests to be downloaded', () => {
             // arrange
             const downloadRequest_1: DownloadRequest = {
                 identifier: 'SAMPLE_ID_1',
@@ -338,7 +338,6 @@ describe('DownloadServiceImpl', () => {
                     }));
 
                     if (!orderStack_3.length) {
-                        done();
                         return of(undefined);
                     }
 

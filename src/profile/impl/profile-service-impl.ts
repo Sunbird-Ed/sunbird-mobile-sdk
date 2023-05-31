@@ -688,7 +688,7 @@ export class ProfileServiceImpl implements ProfileService {
 
                 const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', 'zoom=no,hidden=yes');
 
-                inAppBrowserRef.addEventListener('loadstart', async (event) => {
+                inAppBrowserRef.addEventListener('loadstart', (event) => {
                     if ((<string> event.url).indexOf('/oauth2callback') > -1) {
                         inAppBrowserRef.close();
                     }
