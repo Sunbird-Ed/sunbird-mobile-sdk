@@ -1,6 +1,6 @@
 {
   "name": "@project-sunbird/sunbird-sdk",
-  "version": "5.1.1",
+  "version": "6.0.2",
   "description": "Heart of the sunbird mobile app.",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "crypto-js": "3.1.9-1",
-    "dayjs": "^1.8.20",
+    "dayjs": "^1.9.8",
     "inversify": "^5.1.1",
     "jsonwebtoken": "^8.5.1",
     "node-fetch": "2.6.7",
@@ -29,12 +29,12 @@
     "whatwg-fetch": "^3.6.2"
   },
   "peerDependencies": {
-    "@project-sunbird/client-services": "3.6.x",
+    "@project-sunbird/client-services": "6.0.1",
     "rxjs": ">=6",
     "cordova-plugin-advanced-http": "^2.0.2",
-    "cordova-plugin-file": "^6.0.1",
+    "cordova-plugin-file": "^7.0.0",
     "cordova-plugin-awesome-shared-preferences": "^0.1.0",
-    "cordova-plugin-inappbrowser": "3.0.0",
+    "cordova-plugin-inappbrowser": "5.0.0",
     "sb-cordova-plugin-customtabs": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-customtabs.git",
     "sb-cordova-plugin-db": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-db.git",
     "jjdltc-cordova-plugin-zip": "git+https://github.com/swayangjit/jjdltc-cordova-plugin-zip.git",
@@ -42,7 +42,7 @@
     "sb-cordova-plugin-utility": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-utility.git"
   },
   "devDependencies": {
-    "@project-sunbird/client-services": "5.1.0",
+    "@project-sunbird/client-services": "6.0.1",
     "@types/jest": "^25.2.3",
     "@types/node": "12.0.2",
     "@types/node-fetch": "2.5.4",
@@ -57,7 +57,7 @@
     "tsickle": "^0.27.2",
     "tslib": "^1.14.1",
     "tslint": "^5.20.1",
-    "typescript": "2.9.1",
+    "typescript": "3.9.10",
     "webpack": "^4.46.0",
     "webpack-cli": "^3.3.12"
   },

@@ -74,7 +74,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
             limit: '1'
         }).pipe(
             mergeMap((notificationInDb: NotificationEntry.SchemaMap[]) => {
-                if (notificationInDb && notificationInDb.length) {
+                if (notificationInDb?.length) {
                     return this.dbService.update({
                         table: NotificationEntry.TABLE_NAME,
                         selection: `${NotificationEntry.COLUMN_NAME_MESSAGE_ID}= ?`,
@@ -146,7 +146,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
             limit: '1'
         }).pipe(
             mergeMap((notificationInDb: NotificationEntry.SchemaMap[]) => {
-                if (notificationInDb && notificationInDb.length) {
+                if (notificationInDb?.length) {
                     return this.dbService.update({
                         table: NotificationEntry.TABLE_NAME,
                         selection: `${NotificationEntry.COLUMN_NAME_MESSAGE_ID}= ?`,
@@ -192,7 +192,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                     const feed = await this.profileService.getUserFeed().toPromise().then((entries) => {
                         return entries.filter(e => e.category === UserFeedCategory.NOTIFICATION) as UserFeedEntry<PartialNotification>[];
                     });
-                    this.keyValueStore.setValue(
+                    await this.keyValueStore.setValue(
                         cacheKey,
                         gzip(JSON.stringify(feed))
                     ).toPromise();
@@ -221,7 +221,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
         const userFeedEntries: UserFeedEntry<PartialNotification>[] = result[1];
 
         return notifications.concat(
-            userFeedEntries.map((e) => {
+            userFeedEntries.map((e: any) => {
                 return {
                     id: e['id'],
                     source: 'USER_FEED',

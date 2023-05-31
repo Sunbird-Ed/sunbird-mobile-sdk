@@ -40,7 +40,7 @@ describe('AppInfoImpl', () => {
     };
 
     beforeAll(() => {
-        window['cordova'] = {getAppVersion: {getAppName: (cb) => cb('SOME_APP_NAME')}};
+        window['cordova'] = {getAppVersion: {getAppName: (cb) => cb('SOME_APP_NAME')}} as any;
         appInfoImpl = new AppInfoImpl(
             mockSdkConfig as SdkConfig,
             mockSharedPreferences as SharedPreferences
@@ -106,10 +106,10 @@ describe('AppInfoImpl', () => {
         it('should update CsModule app version configuration', (done) => {
             // arrange
             window['sbutility'] = {
-                getBuildConfigValue: (packageName, property, cb) => {
+                getBuildConfigValue: (_, __, cb) => {
                     cb('SOME_APP_NAME');
                 }
-            };
+            } as any;
             mockSharedPreferences.getString = jest.fn().mockImplementation(() => of('first_access_timestamp'));
             jest.spyOn(CsModule.instance, 'isInitialised', 'get').mockReturnValue(true);
             jest.spyOn(CsModule.instance, 'config', 'get').mockReturnValue({
