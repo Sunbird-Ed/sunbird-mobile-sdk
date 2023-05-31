@@ -11,7 +11,7 @@ describe('DebuggingDurationHandler', () => {
             observer: {},
             debugStatus: true
         },
-        disableDebugging: jest.fn(() => Promise.resolve(of(true)))
+        disableDebugging: jest.fn(() => Promise.resolve(of(true))) as any
     };
     const mockSharedPreferences: Partial<SharedPreferences> = {}
 
@@ -40,7 +40,7 @@ describe('DebuggingDurationHandler', () => {
             mockSharedPreferences.getString = jest.fn(() => of('2022-11-11'));
             mockSharedPreferences.putString = jest.fn(() => of(undefined));
             mockDebuggingServiceImpl.disableDebugging = jest.fn(() => of(true));
-            mockDebuggingServiceImpl.disableDebugging = jest.fn(() => Promise.resolve(of(true)));
+            mockDebuggingServiceImpl.disableDebugging = jest.fn(() => Promise.resolve(of(true))) as any;
             debuggingDurationHandler.handle(observer).then(() => {
                 expect(mockSharedPreferences.getString).toHaveBeenCalledWith('debug_started_at');
                 jest.advanceTimersByTime(1000 * 60);
