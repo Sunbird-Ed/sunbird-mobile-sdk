@@ -358,7 +358,9 @@ export class CourseServiceImpl implements CourseService {
 
             this.resetCapturedAssessmentEvents();
         }
-        this.offlineAssessmentScoreProcessor.process(capturedAssessmentEvents);
+        (async () => {
+            await this.offlineAssessmentScoreProcessor.process(capturedAssessmentEvents);
+        })
 
         return this.syncAssessmentEventsHandler.handle(
             capturedAssessmentEvents

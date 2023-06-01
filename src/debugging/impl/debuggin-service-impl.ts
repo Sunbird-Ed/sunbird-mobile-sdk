@@ -58,13 +58,13 @@ export class DebuggingServiceImpl implements DebuggingService {
                     } else {
                         await this.sharedPreferences.putString(CsClientStorage.TRACE_ID, _jwt).toPromise();
                     }
-                    new DebuggingDurationHandler(
+                    await new DebuggingDurationHandler(
                         this.sharedPreferences,
                         this
                     ).handle(observer);
                     console.log('Watcher Value:', this.watcher);
                 }
-            });
+            }).catch(err => console.error(err));
         });
     }
 

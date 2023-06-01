@@ -178,12 +178,12 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
         return this.deviceRegisterService.registerDevice().pipe(
           tap(async (res) => {
             const actions = res.result.actions;
-            actions.forEach(element => {
+            for(const element of actions) {
               if (element.type === 'experiment' && element.key) {
-                this.sharedPreferences.putString(CodePush.DEPLOYMENT_KEY,
+                await this.sharedPreferences.putString(CodePush.DEPLOYMENT_KEY,
                   element.data.key).toPromise();
               }
-            });
+            };
             const serverTime = new Date(res.ts).getTime();
             const now = Date.now();
             const currentOffset = serverTime - now;
