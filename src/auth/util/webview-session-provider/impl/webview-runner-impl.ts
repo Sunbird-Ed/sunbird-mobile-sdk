@@ -135,6 +135,9 @@ export class WebviewRunnerImpl implements WebviewRunner {
             const onLoadStart = (event) => {
                 if (event.url) {
                     const url = new URL(event.url);
+                    if (url && url.pathname === '/undefined') {
+                        this.closeWebview();
+                    }
 
                     if (
                         isHostMatching(url) &&
