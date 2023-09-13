@@ -112,7 +112,7 @@ const mockManualLoginConfig: WebviewSessionProviderConfig = {
 
 const mockTelemetryService: Partial<TelemetryService> = {
     buildContext: () => of({
-        pdata: {'id': 'staging.diksha.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'}
+        pdata: {'id': 'staging.sample.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'}
     })
 } as any;
 
@@ -147,7 +147,7 @@ describe('NativeCustomBrowserSessionProvider', () => {
         jest.resetAllMocks();
         jest.restoreAllMocks();
         window['device'] = {uuid: 'some_uuid', platform:'android'};
-        const mockPdata = {'id': 'staging.diksha.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'};
+        const mockPdata = {'id': 'staging.sample.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'};
         mockTelemetryService.buildContext = jest.fn().mockImplementation(() => {
             return of({
                 pdata: mockPdata

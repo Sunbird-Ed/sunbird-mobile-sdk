@@ -310,7 +310,7 @@ export const mockFormResponseWithDiscoveryBannerDataSrc = {
                                     'type': 'navigate',
                                     'subType': 'externalUrl',
                                     'params': {
-                                        'route': 'https://diksha.gov.in/'
+                                        'route': 'https://sample.app.in/'
                                     }
                                 },
                                 'expiry': '1653031067'
@@ -623,7 +623,7 @@ export const mockGetOfflineContentsResponse = [
             'gradeLevel': [
                 'Class 1'
             ],
-            'appId': 'staging.diksha.portal',
+            'appId': 'staging.sample.portal',
             'contentEncoding': 'gzip',
             'lockKey': '9497b6ba-2a74-41cf-bf72-cdd0d117cde4',
             'totalCompressedSize': 0,
@@ -726,7 +726,7 @@ export const mockGetOnlineContentsResponse = {
             'do_2128267047888322561514',
             'do_2126138215303577601484'
         ],
-        'appId': 'staging.diksha.portal',
+        'appId': 'staging.sample.portal',
         'contentEncoding': 'gzip',
         'lockKey': 'ccb9c713-3a2d-4db4-9474-58df071f2133',
         'totalCompressedSize': 3565898,
@@ -827,7 +827,7 @@ export const mockGetOfflineContentsResponseWithTwoSubjects = [
             'gradeLevel': [
                 'Class 1'
             ],
-            'appId': 'staging.diksha.portal',
+            'appId': 'staging.sample.portal',
             'contentEncoding': 'gzip',
             'lockKey': '9497b6ba-2a74-41cf-bf72-cdd0d117cde4',
             'totalCompressedSize': 0,
@@ -911,7 +911,7 @@ export const mockGetOfflineContentsResponseWithTwoSubjects = [
             'gradeLevel': [
                 'Class 1'
             ],
-            'appId': 'staging.diksha.portal',
+            'appId': 'staging.sample.portal',
             'contentEncoding': 'gzip',
             'lockKey': '9497b6ba-2a74-41cf-bf72-cdd0d117cde4',
             'totalCompressedSize': 0,

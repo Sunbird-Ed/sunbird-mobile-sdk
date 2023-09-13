@@ -45,7 +45,7 @@ export const searchResult = {
                 'gradeLevel': [
                     'Class 1'
                 ],
-                'appId': 'staging.diksha.portal',
+                'appId': 'staging.sample.portal',
                 'contentEncoding': 'gzip',
                 'lockKey': '9497b6ba-2a74-41cf-bf72-cdd0d117cde4',
                 'totalCompressedSize': 0,
@@ -158,7 +158,7 @@ export const searchResult = {
                     'do_2128267047888322561514',
                     'do_2126138215303577601484'
                 ],
-                'appId': 'staging.diksha.portal',
+                'appId': 'staging.sample.portal',
                 'contentEncoding': 'gzip',
                 'lockKey': 'ccb9c713-3a2d-4db4-9474-58df071f2133',
                 'totalCompressedSize': 3565898,
@@ -262,7 +262,7 @@ export const searchResult = {
                     'do_2126228660142080001326',
                     'do_2126228575209799681316'
                 ],
-                'appId': 'staging.diksha.portal',
+                'appId': 'staging.sample.portal',
                 'contentEncoding': 'gzip',
                 'mimeTypesCount': '{"application/vnd.ekstep.content-collection":2,"application/vnd.ekstep.ecml-archive":3}',
                 'contentType': 'TextBook',

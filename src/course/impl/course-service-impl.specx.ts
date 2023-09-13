@@ -1114,7 +1114,7 @@ describe('CourseServiceImpl', () => {
                                         badge: {
                                             name: 'PDF course -2509',
                                             issuer: {
-                                                name: 'ncert'
+                                                name: 'syllabus'
                                             }
                                         },
                                         issuedOn: '2020-10-13T00:00:00Z'
@@ -1143,7 +1143,7 @@ describe('CourseServiceImpl', () => {
                                         badge: {
                                             name: 'PDF course -2509',
                                             issuer: {
-                                                name: 'ncert'
+                                                name: 'syllabus'
                                             }
                                         },
                                         issuedOn: '2020-10-13T00:00:00Z'

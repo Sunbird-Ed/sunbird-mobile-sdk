@@ -2,7 +2,7 @@ import { ProducerData, SunbirdTelemetry, TelemetryObject } from '../../telemetry
 import Telemetry = SunbirdTelemetry.Telemetry;
 
 const data = new ProducerData();
-data.id = 'staging.diksha.app';
+data.id = 'staging.sample.app';
 data.pid = 'contentplayer';
 data.ver = '2.4.local.0-debug';
 const setData = new TelemetryObject('836e43c400f286df82f489e7ea90fe26be64fdc6', 'course', '');
