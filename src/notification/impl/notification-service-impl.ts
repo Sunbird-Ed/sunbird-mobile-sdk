@@ -187,7 +187,7 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
             try {
                 const session = await this.profileService.getActiveProfileSession().toPromise();
                 const cacheKey = `${NotificationServiceImpl.USER_NOTIFICATION_FEED_KEY}_${session.managedSession ? session.managedSession.uid : session.uid}`;
-
+                console.log('cacheKey ', cacheKey);
                 try {
                     const feed = await this.profileService.getUserFeed().toPromise().then((entries) => {
                         return entries.filter(e => e.category === UserFeedCategory.NOTIFICATION) as UserFeedEntry<PartialNotification>[];
@@ -196,12 +196,15 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                         cacheKey,
                         gzip(JSON.stringify(feed))
                     ).toPromise();
+                    console.log('return feed ', feed);
                     return feed;
                 } catch (e) {
+                    console.log('error getValue ', e);
                     return this.keyValueStore.getValue(
                         cacheKey
                     ).toPromise()
-                        .then((r) => JSON.parse(ungzip(r, {to: 'string'})))
+                        .then((r) => {console.log("r ", r);
+                        return JSON.parse(ungzip(r, {to: 'string'}))})
                         .catch((e) => {
                             console.error(e);
                             return [];

@@ -17,7 +17,7 @@ export class PerformActoinOnContentHandler {
             if (context.newlyAddedIdentifiers!.length) {
                 for (const element of context.newlyAddedIdentifiers!) {
                     await this.storageHandler.addDestinationContentInDb(element,
-                        ContentUtil.getContentRootDir(context.currentStoragePath).concat('/'), false);
+                        (await ContentUtil.getContentRootDir(context.currentStoragePath)).concat('/'), false);
                 }
             }
         }).pipe(

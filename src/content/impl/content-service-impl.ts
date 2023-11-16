@@ -863,9 +863,13 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return this.container.get(CsInjectionTokens.CONTENT_SERVICE);
     }
 
-    downloadTranscriptFile(transcriptReq) {
-        const dataDirectory = window.device.platform.toLowerCase() === 'ios' ?
-         cordova.file.documentsDirectory : cordova.file.externalDataDirectory + ContentServiceImpl.DOWNLOAD_DIR_NAME;
+    async downloadTranscriptFile(transcriptReq) {
+        let devicePlatform = "";
+        await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            devicePlatform = val.platform
+        })
+        const dataDirectory = devicePlatform.toLowerCase() === 'ios' ?
+        window['Capacitor']['Plugins'].Directory.Documents : window['Capacitor']['Plugins'].Directory.Data + ContentServiceImpl.DOWNLOAD_DIR_NAME;
         return this.createTranscriptDir(transcriptReq, dataDirectory).then(() => {
             const downloadRequest: EnqueueRequest = {
                 uri: transcriptReq.downloadUrl,
@@ -942,7 +946,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return new Promise<boolean>((resolve, reject) => {
             sbutility.copyFile(sourcePath, destinationPath, fileName,
                 () => {
-                    resolve();
+                    resolve(true);
                 }, err => {
                     console.error(err);
                     resolve(err);
@@ -950,11 +954,11 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         });
     }
 
-    private async deleteFolder(deletedirectory: string): Promise<undefined> {
+    private async deleteFolder(deletedirectory: string): Promise<undefined | void> {
         if (!deletedirectory) {
             return;
         }
-        return new Promise<undefined>((resolve, reject) => {
+        return new Promise<undefined | void>((resolve, reject) => {
             sbutility.rm(deletedirectory, '', () => {
                 resolve();
             }, (e) => {

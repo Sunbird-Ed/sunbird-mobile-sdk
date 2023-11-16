@@ -12,7 +12,11 @@ export class DeviceInfoImpl implements DeviceInfo {
     private deviceSpec: DeviceSpec;
 
     constructor() {
-        this.deviceId = SHA1(window.device.uuid).toString();
+        let uuid = "";
+        window['Capacitor']['Plugins'].Device.getId().then((val) => {
+            uuid = val.identifier
+        })
+        this.deviceId = SHA1(uuid).toString();
     }
 
     getDeviceID(): string {

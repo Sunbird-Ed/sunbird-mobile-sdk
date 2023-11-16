@@ -9,11 +9,15 @@ export class QuestionSetFileReadHandler{
         private fileService: FileService
     ){}
 
-    public getLocallyAvailableQuestion(questionIds, parentId){
+    public async getLocallyAvailableQuestion(questionIds, parentId){
         const path = this.storageService.getStorageDestinationDirectoryPath();
         let questionList: any = [];
+        let devicePlatform = "";
+        await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            devicePlatform = val.platform
+        })
         questionIds.forEach(async id => {
-            const textData = this.fileService.readAsText((window.device.platform.toLowerCase() === "ios") 
+            const textData = this.fileService.readAsText((devicePlatform.toLowerCase() === "ios") 
                             ? `${path}/content/${parentId}/${id}` : `${path}content/${parentId}/${id}`, 'index.json');
             questionList.push(textData);
         });

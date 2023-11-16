@@ -1,5 +1,5 @@
 import {SharedPreferences} from '..';
-import {Observable} from 'rxjs';
+import {Observable, from, of} from 'rxjs';
 import {injectable} from 'inversify';
 import {mapTo} from 'rxjs/operators';
 
@@ -9,11 +9,12 @@ export class SharedPreferencesAndroid implements SharedPreferences {
 
     private listeners: Map<string, ((v: any) => void)[]> = new Map();
 
-    private sharedPreferences = plugins.SharedPreferences.getInstance(SharedPreferencesAndroid.sharedPreferncesName);
+    private sharedPreferences = window['Capacitor']['Plugins'].Preferences.configure({group: SharedPreferencesAndroid.sharedPreferncesName});
 
     public getString(key: string): Observable<string | undefined> {
+        window['Capacitor']['Plugins'].Preferences.configure({group: SharedPreferencesAndroid.sharedPreferncesName})
         const value = localStorage.getItem(key);
-
+        console.log('*** get string ', key, value);
         if (value) {
             localStorage.removeItem(key);
 
@@ -22,43 +23,44 @@ export class SharedPreferencesAndroid implements SharedPreferences {
             );
         } else {
             return new Observable((observer) => {
-                this.sharedPreferences.getString(key, '', (v) => {
-                    observer.next(v);
-                    observer.complete();
-                }, (e) => {
-                    observer.error(e);
-                });
-            });
+                window['Capacitor']['Plugins'].Preferences.get({key})
+                .then(v => {observer.next(v.value);
+                observer.complete()})
+                .catch(e => observer.next(undefined))
+            })
         }
     }
 
     public putString(key: string, value: string): Observable<undefined> {
+        window['Capacitor']['Plugins'].Preferences.configure({group: SharedPreferencesAndroid.sharedPreferncesName})
         return new Observable((observer) => {
-            this.sharedPreferences.putString(key, value, () => {
+            console.log('key , value ', key, value);
+            window['Capacitor']['Plugins'].Preferences.set({key, value}).then(() => {
                 (this.listeners.get(key) || []).forEach((listener) => listener(value));
                 observer.next(undefined);
                 observer.complete();
-            }, (e) => {
+            }).catch((e) => {
                 observer.error(e);
             });
         });
     }
 
     public putBoolean(key: string, value: boolean): Observable<boolean> {
+        window['Capacitor']['Plugins'].Preferences.configure({group: SharedPreferencesAndroid.sharedPreferncesName})
         return new Observable((observer) => {
-            this.sharedPreferences.putBoolean(key, value, () => {
+            window['Capacitor']['Plugins'].Preferences.set({key, value}).then(() => {
                 (this.listeners.get(key) || []).forEach((listener) => listener(value));
                 observer.next(true);
                 observer.complete();
-            }, (e) => {
+            }).catch((e) => {
                 observer.error(e);
             });
         });
     }
 
     public getBoolean(key: string): Observable<boolean> {
+        window['Capacitor']['Plugins'].Preferences.configure({group: SharedPreferencesAndroid.sharedPreferncesName})
         const value = localStorage.getItem(key);
-
         if (value) {
             localStorage.removeItem(key);
 
@@ -67,10 +69,10 @@ export class SharedPreferencesAndroid implements SharedPreferences {
             );
         } else {
             return new Observable((observer) => {
-                this.sharedPreferences.getBoolean(key, false, (v) => {
-                    observer.next(v);
-                    observer.complete();
-                }, (e) => {
+                window['Capacitor']['Plugins'].Preferences.get({key}).then((v) => {
+                        observer.next(v.value);
+                        observer.complete();
+                }).catch((e) => {
                     observer.error(e);
                 });
             });

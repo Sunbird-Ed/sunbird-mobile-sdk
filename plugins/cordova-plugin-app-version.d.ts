@@ -1,5 +1,12 @@
-interface Cordova {
-    getAppVersion: {
-        getAppName: (cb: (name: string) => void) => void;
-    };
+interface Capacitor {
+    Plugins: {
+        App: {
+            getInfo:  (cb: ({
+                name: string,
+                id: string,
+                build: string,
+                version: string
+            }) => void) => void;
+        }
+    }
 }

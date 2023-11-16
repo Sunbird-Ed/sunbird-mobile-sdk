@@ -147,10 +147,11 @@ export class ManagedProfileManager {
     }
 
     switchSessionToManagedProfile({uid}: { uid: string }): Observable<undefined> {
+        console.log('switch session to managed profile');
         return defer(async () => {
             const profileSession = await this.profileService.getActiveProfileSession().toPromise();
             const initialSession = {...profileSession};
-
+            console.log('switch session to managed profile - profileSession ', profileSession);
             await TelemetryLogger.log.end({
                 type: 'session',
                 env: 'sdk',

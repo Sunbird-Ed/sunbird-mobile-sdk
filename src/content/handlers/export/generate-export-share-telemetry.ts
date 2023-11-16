@@ -32,8 +32,12 @@ export class GenerateExportShareTelemetry {
                 if (contentExportRequest.saveLocally) {
                     exportedFilePath = contentExportRequest.destinationFolder.concat(fileName);
                 } else {
-                    const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
-                    exportedFilePath = folderPath.concat(fileName);
+                    let devicePlatform = "";
+                    window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+                        devicePlatform = val.platform
+                        const folderPath = (devicePlatform.toLowerCase() === "ios") ? window['Capacitor']['Plugins'].Directory.Documents : window['Capacitor']['Plugins'].Directory.Cache;
+                        exportedFilePath = folderPath.concat(fileName);
+                    })
                 }
                 const exportResponse: ContentExportResponse = {exportedFilePath: exportedFilePath};
                 response.body = exportResponse;

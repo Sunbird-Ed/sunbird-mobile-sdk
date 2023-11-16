@@ -139,8 +139,9 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     preInit(): Observable<undefined> {
+        console.log('pre init profile service ');
         return this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION).pipe(
-            map((s) => s && JSON.parse(s)),
+            map((s) => !s && JSON.parse(s)),
             mergeMap((profileSession?: ProfileSession) => {
                 if (!profileSession) {
                     const request: Profile = {
@@ -426,7 +427,7 @@ export class ProfileServiceImpl implements ProfileService {
                         return ProfileDbEntryMapper.mapProfileDBEntryToProfile(profileDBEntry);
                     }),
                     mergeMap((profile: Profile) => {
-                        if (profile.source === ProfileSource.SERVER) {
+                    if (profile.source === ProfileSource.SERVER) {
                             return this.getServerProfilesDetails({
                                 userId: profile.uid,
                                 requiredFields
@@ -686,7 +687,7 @@ export class ProfileServiceImpl implements ProfileService {
                     this.sdkConfig.apiConfig.user_authentication.authUrl + '/logout' + '?redirect_uri=' +
                     this.sdkConfig.apiConfig.host + '/oauth2callback';
 
-                const inAppBrowserRef = cordova.InAppBrowser.open(launchUrl, '_blank', 'zoom=no,hidden=yes');
+                const inAppBrowserRef = window['capacitor']['plugins'].Browser.open(launchUrl, '_blank', 'zoom=no,hidden=yes');
 
                 inAppBrowserRef.addEventListener('loadstart', (event) => {
                     if ((<string> event.url).indexOf('/oauth2callback') > -1) {
@@ -785,7 +786,7 @@ export class ProfileServiceImpl implements ProfileService {
 
     private async generateSessionEndTelemetry() {
         const sessionString = await this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION).toPromise();
-
+        console.log("session string ", sessionString);
         if (sessionString) {
             const profileSession = JSON.parse(sessionString);
 

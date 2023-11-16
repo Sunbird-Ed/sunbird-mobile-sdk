@@ -257,8 +257,11 @@ export class CourseServiceImpl implements CourseService {
         return defer(async () => {
             const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
             const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
-
-            const folderPath = (window.device.platform.toLowerCase() === 'ios') ? cordova.file.documentsDirectory : cordova.file.externalRootDirectory;
+            let devicePlatform = "";
+            await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+                devicePlatform = val.platform
+            })
+            const folderPath = (devicePlatform.toLowerCase() === 'ios') ? window['Capacitor']['Plugins'].Directory.Documents : window['Capacitor']['Plugins'].Directory.External;
             const filePath = `${folderPath}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
             return {userId};
         }).pipe(
@@ -388,7 +391,7 @@ export class CourseServiceImpl implements CourseService {
 
             const accessToken = session.managed_access_token || session.access_token;
 
-            cordova.InAppBrowser.open(
+            window['Capacitor']['plugins'].Browser.open(
                 CourseServiceImpl.buildUrl(this.sdkConfig.apiConfig.host, CourseServiceImpl.DISCUSSION_FORUM_ENDPOINT, {
                     'access_token': accessToken,
                     'returnTo': `/category/${request.forumId}`

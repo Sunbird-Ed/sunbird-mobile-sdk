@@ -14,7 +14,7 @@ export class EcarBundle {
 
     public async execute(exportContentContext: ExportContentContext): Promise<Response> {
         const response: Response = new Response();
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             this.zipService.zip(exportContentContext.tmpLocationPath!,
                 {target: exportContentContext.ecarFilePath!!},
                 [],

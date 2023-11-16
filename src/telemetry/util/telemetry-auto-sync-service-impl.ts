@@ -87,10 +87,13 @@ export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
         return interval(intervalTime).pipe(
             tap(async (iteration: number) => {
                 const timeCovered = iteration * intervalTime;
-
+                let devicePlatform = "";
+                await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+                    devicePlatform = val.platform
+                })
                 if (timeCovered % TelemetryAutoSyncServiceImpl.DOWNLOAD_SPEED_TELEMETRY_SYNC_INTERVAL === 0) {
-                    if(window.device.platform.toLowerCase() !== "ios") {
-                        await TelemetryAutoSyncServiceImpl.generateDownloadSpeedTelemetry(intervalTime);
+                    if(devicePlatform.toLowerCase() !== "ios") {
+                        TelemetryAutoSyncServiceImpl.generateDownloadSpeedTelemetry(intervalTime);
                     }
                 }
             }),

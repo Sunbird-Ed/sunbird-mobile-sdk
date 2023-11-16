@@ -27,6 +27,7 @@ import {ArrayUtil} from '../../../util/array-util';
 import COLUMN_NAME_VISIBILITY = ContentEntry.COLUMN_NAME_VISIBILITY;
 
 export class ExtractPayloads {
+    devicePlatform = "";
 
     constructor(private fileService: FileService,
                 private zipService: ZipService,
@@ -36,6 +37,9 @@ export class ExtractPayloads {
                 private getContentDetailsHandler: GetContentDetailsHandler,
                 private eventsBusService: EventsBusService,
                 private sharedPreferences: SharedPreferences) {
+        window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            this.devicePlatform = val.platform
+        })
     }
 
     public async execute(importContext: ImportContentContext): Promise<[Response, NodeJS.Timeout]> {
@@ -76,11 +80,11 @@ export class ExtractPayloads {
                 destinationRootDir, JSON.parse(JSON.stringify(importContext.items))
             );
         } else{
-            createdDirectories = await this.createDirectories(destinationRootDir,
+            createdDirectories = await this.createDirectories(await destinationRootDir,
                 nonUnitContentIds);
         }
         // create subdirectories for the contents which has appIcons
-        const createSubDirectories = await this.createDirectories(destinationRootDir, appIcons);
+        const createSubDirectories = await this.createDirectories(await destinationRootDir, appIcons);
         const query = ArrayUtil.joinPreservingQuotes(contentIds);
         const existingContentModels = await this.getContentDetailsHandler.fetchFromDBForAll(query).toPromise();
 
@@ -129,12 +133,12 @@ export class ExtractPayloads {
             }
             if (ContentUtil.isNotUnit(mimeType, visibility)) {
                 if (createdDirectories[identifier] && createdDirectories[identifier].path) {
-                    payloadDestination = (window.device.platform.toLowerCase() === "ios") ? createdDirectories[identifier].path!.concat("/"): createdDirectories[identifier].path;
+                    payloadDestination = (this.devicePlatform.toLowerCase() === "ios") ? createdDirectories[identifier].path!.concat("/"): createdDirectories[identifier].path;
                 } else {
-                    let payloadDirectory = (window.device.platform.toLowerCase() === "ios") ? 
-                        ContentUtil.getContentRootDir(importContext.destinationFolder).concat(identifier):
-                        ContentUtil.getContentRootDir(importContext.destinationFolder).concat('/', identifier);
-                    const payloadDestinationDirectoryEntry: DirectoryEntry = await this.fileService.createDir(payloadDirectory
+                    let payloadDirectory = (this.devicePlatform.toLowerCase() === "ios") ? 
+                        (await ContentUtil.getContentRootDir(importContext.destinationFolder)).concat(identifier):
+                        (await ContentUtil.getContentRootDir(importContext.destinationFolder)).concat('/', identifier);
+                    const payloadDestinationDirectoryEntry: any = await this.fileService.createDir(payloadDirectory
                                                 , false);
                     payloadDestination = payloadDestinationDirectoryEntry.nativeURL;
                 }
@@ -163,7 +167,7 @@ export class ExtractPayloads {
                         (contentDisposition === ContentDisposition.INLINE.valueOf()
                             && contentEncoding === ContentEncoding.GZIP.valueOf())) { // Content with artifact without zip i.e. pfd, mp4
                         const payload = importContext.tmpLocation!.concat(artifactUrl);
-                        await new Promise((resolve, reject) => {
+                        await new Promise<void>((resolve, reject) => {
                             this.zipService.unzip(payload, {target: payloadDestination!}, () => {
                                 isUnzippingSuccessful = true;
                                 resolve();
@@ -343,7 +347,7 @@ export class ExtractPayloads {
                 }
 
                 // * only in case of iOS ****
-                if(window.device.platform.toLowerCase() === "ios") {
+                if(this.devicePlatform.toLowerCase() === "ios") {
                     // * checking if file exist, then delete the file
                     await this.fileService.exists(payloadDestinationPath.concat('/', asset))
                     .then(async entry => {
@@ -477,7 +481,7 @@ export class ExtractPayloads {
     private async createDirectories(parentDirectoryPath: string,
                                     listOfFolder: string[]): Promise<{ [key: string]: { path: string | undefined } }> {
         return new Promise<{ [key: string]: { path: string | undefined } }>((resolve, reject) => {
-            parentDirectoryPath = (window.device.platform.toLowerCase() === "ios") ? parentDirectoryPath.concat('/') : parentDirectoryPath;
+            parentDirectoryPath = (this.devicePlatform.toLowerCase() === "ios") ? parentDirectoryPath.concat('/') : parentDirectoryPath;
             sbutility.createDirectories(ContentUtil.getBasePath(parentDirectoryPath), listOfFolder,
                 (entry) => {
                     resolve(entry);

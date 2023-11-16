@@ -263,8 +263,12 @@ export class ContentUtil {
         return doestExist;
     }
 
-    public static getContentRootDir(rootFilePath: string): string {
-        let url = (window.device.platform.toLowerCase() === "ios") ? rootFilePath.concat("content/") : rootFilePath.concat('content')
+    public static async getContentRootDir(rootFilePath: string): Promise<string> {
+        let devicePlatform = "";
+        await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            devicePlatform = val.platform
+        })
+        let url = (devicePlatform.toLowerCase() === "ios") ? rootFilePath.concat("content/") : rootFilePath.concat('content')
         return url;
     }
 

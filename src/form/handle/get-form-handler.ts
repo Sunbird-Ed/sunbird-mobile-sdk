@@ -10,6 +10,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     private readonly FORM_FILE_KEY_PREFIX = 'form-';
     private readonly FORM_LOCAL_KEY = 'form-';
     private readonly GET_FORM_DETAILS_ENDPOINT = '/read';
+    devicePlatform = "";
 
     constructor(
         private apiService: ApiService,
@@ -17,9 +18,13 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
         private fileService: FileService,
         private cachedItemStore: CachedItemStore
     ) {
+        window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            this.devicePlatform = val.platform
+        })
     }
 
     private static getIdForRequest(request: FormRequest): string {
+        console.log('get id req ', request);
         let id = `${request.type}_${request.subType}_${request.action}`;
 
         if (request.rootOrgId && request.rootOrgId !== '*') {
@@ -33,7 +38,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
         if (request.component) {
             id += ('_' + request.component);
         }
-
+        console.log('get id ', id)
         return id;
     }
 
@@ -42,24 +47,31 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
             GetFormHandler.getIdForRequest(request),
             this.FORM_LOCAL_KEY,
             'ttl_' + this.FORM_LOCAL_KEY,
-            () => this.fetchFormServer(request),
-            () => this.fetchFromFile(request)
+            () => {
+                console.log("***** from server");
+                return this.fetchFormServer(request)},
+            () => {
+                console.log("***** from file");
+                return this.fetchFromFile(request)}
         );
     }
 
     private fetchFormServer(request: FormRequest): Observable<{ [key: string]: {} }> {
+        console.log("fetch form server ", request, this.devicePlatform);
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.formServiceConfig.apiPath + this.GET_FORM_DETAILS_ENDPOINT)
             .withBearerToken(true)
             .withHeaders({
-                'X-Platform-Id': window.device.platform
+                'X-Platform-Id': this.devicePlatform
             })
             .withBody({request})
             .build();
+            console.log("fetch form server api req ", apiRequest);
         return this.apiService.fetch <{ result: { [key: string]: {} } }>(apiRequest)
             .pipe(
                 map((success) => {
+                    console.log("fetch form server api req success ", success);
                     return success.body.result;
                 })
             );
@@ -68,10 +80,11 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     private fetchFromFile(request: FormRequest): Observable<{ [key: string]: {} }> {
         const dir = Path.getAssetPath() + this.formServiceConfig.formConfigDirPath;
         const file = this.FORM_FILE_KEY_PREFIX + GetFormHandler.getIdForRequest(request) + '.json';
-
+        console.log("fetchFromFile ", file, dir);
         return from(this.fileService.readFileFromAssets(dir.concat('/', file))).pipe(
             map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
+                console.log("fetchFromFile result ", result);
                 return (result.result);
             })
         );

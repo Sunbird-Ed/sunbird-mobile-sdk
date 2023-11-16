@@ -97,7 +97,9 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
                     error: new Error('AUTO_SYNC_MODE: ' + TelemetryAutoSyncModes.OFF)
                   };
                 case TelemetryAutoSyncModes.OVER_WIFI:
-                  if (navigator.connection.type !== Connection.WIFI) {
+                  let connectionType;
+                  window['Capacitor']['Plugins'].Network.getStatus().then(status => connectionType = status.connectionType)
+                  if (connectionType !== 'wifi') {
                     return {
                       syncedEventCount: 0,
                       syncTime: Date.now(),

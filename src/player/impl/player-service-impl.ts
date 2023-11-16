@@ -37,80 +37,83 @@ export class PlayerServiceImpl implements PlayerService {
         pData.pid = this.config.apiConfig.api_authentication.producerUniqueId;
         pData.ver = this.appInfo.getVersionName();
         context.pdata = pData;
-
-        const playerInput: PlayerInput = {};
-        content.rollup = ContentUtil.getRollup(content.identifier, content.hierarchyInfo!);
-        context.objectRollup = content.rollup;
-        if (window.device.platform.toLowerCase() === 'ios') {
-            content.basePath = (content.basePath || (content.basePath = '')).replace(/\/$/, '');
-        } else {
-            content.basePath = content.basePath.replace(/\/$/, '');
-        }
-        if (content.isAvailableLocally) {
-            content.contentData.streamingUrl = content.basePath;
-            content.contentData.previewUrl = content.basePath;
-        }
-        playerInput.metadata = content;
-        playerInput.config = this.config.playerConfig;
-        return this.profileService.getActiveProfileSession().pipe(
-            mergeMap((session: ProfileSession | undefined) => {
-                context.sid = session ? session.sid : '';
-                const actor = new Actor();
-                actor.id = session ? session.uid : '';
-                context.actor = actor;
-                const deeplinkBasePath = this.config.appConfig.deepLinkBasePath;
-                context.deeplinkBasePath = deeplinkBasePath ? deeplinkBasePath : '';
-                const parentId: string = (content.rollup && content.rollup.l1) ? content.rollup.l1 : content.identifier;
-                this.fetchPlayerState(actor.id, parentId, content.identifier).then((result) => {
-                    if (result && playerInput.config) {
-                        playerInput.config = {
-                            ...playerInput.config, ...JSON.parse(result.saveState)
-                        };
+        let devicePlatform = "";
+        return window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            devicePlatform = val.platform
+            const playerInput: PlayerInput = {};
+            content.rollup = ContentUtil.getRollup(content.identifier, content.hierarchyInfo!);
+            context.objectRollup = content.rollup;
+            if (devicePlatform.toLowerCase() === 'ios') {
+                content.basePath = (content.basePath || (content.basePath = '')).replace(/\/$/, '');
+            } else {
+                content.basePath = content.basePath.replace(/\/$/, '');
+            }
+            if (content.isAvailableLocally) {
+                content.contentData.streamingUrl = content.basePath;
+                content.contentData.previewUrl = content.basePath;
+            }
+            playerInput.metadata = content;
+            playerInput.config = this.config.playerConfig;
+            return this.profileService.getActiveProfileSession().pipe(
+                mergeMap((session: ProfileSession | undefined) => {
+                    context.sid = session ? session.sid : '';
+                    const actor = new Actor();
+                    actor.id = session ? session.uid : '';
+                    context.actor = actor;
+                    const deeplinkBasePath = this.config.appConfig.deepLinkBasePath;
+                    context.deeplinkBasePath = deeplinkBasePath ? deeplinkBasePath : '';
+                    const parentId: string = (content.rollup && content.rollup.l1) ? content.rollup.l1 : content.identifier;
+                    this.fetchPlayerState(actor.id, parentId, content.identifier).then((result) => {
+                        if (result && playerInput.config) {
+                            playerInput.config = {
+                                ...playerInput.config, ...JSON.parse(result.saveState)
+                            };
+                        }
+                    });
+                    return this.profileService.getActiveSessionProfile({requiredFields: []});
+                }),
+                mergeMap((profile: Profile) => {
+                    if (profile && profile.serverProfile) {
+                        const organisations = profile.serverProfile['organisations'];
+                        if (organisations) {
+                            const orgId = organisations[0] && organisations[0]['organisationId'];
+                            context.contextRollup = {l1: orgId};
+                        }
                     }
-                });
-                return this.profileService.getActiveSessionProfile({requiredFields: []});
-            }),
-            mergeMap((profile: Profile) => {
-                if (profile && profile.serverProfile) {
-                    const organisations = profile.serverProfile['organisations'];
-                    if (organisations) {
-                        const orgId = organisations[0] && organisations[0]['organisationId'];
-                        context.contextRollup = {l1: orgId};
+                    if (profile && profile.profileType) {
+                        extraInfo['correlationData'] = (extraInfo['correlationData'] || []).concat([
+                            {id: profile.profileType, type: 'UserType'}
+                        ]);
                     }
-                }
-                if (profile && profile.profileType) {
-                    extraInfo['correlationData'] = (extraInfo['correlationData'] || []).concat([
-                        {id: profile.profileType, type: 'UserType'}
-                    ]);
-                }
-                return this.groupService.getActiveGroupSession();
-            }),
-            mergeMap((groupSession: GroupSessionDeprecated | undefined) => {
-                let corRelationList: CorrelationData[] = [];
-                if (groupSession && groupSession.gid) {
-                    corRelationList.push({id: groupSession.gid, type: 'group'});
-                }
-                const isStreaming = extraInfo && extraInfo.hasOwnProperty('streaming');
-                const appCorrelationData: CorrelationData[] = extraInfo['correlationData'];
-                if (appCorrelationData && appCorrelationData.length) {
-                    corRelationList = corRelationList.concat(appCorrelationData);
-                }
-                corRelationList.push({id: isStreaming ? 'streaming' : 'offline', type: 'PlayerLaunch'});
-                context.cdata = corRelationList;
-                playerInput.context = context;
-                const appContext: { [key: string]: any } = {};
-                appContext['local'] = true;
-                appContext['server'] = false;
-                appContext['groupId'] = groupSession ? groupSession.gid : '';
-                playerInput.appContext = appContext;
-                return this.frameworkService.getActiveChannelId();
-            }),
-            mergeMap((channelId: string) => {
-                context.channel = channelId ? channelId : this.config.apiConfig.api_authentication.channelId;
-                playerInput.context = context;
-                return of(playerInput);
-            })
-        );
+                    return this.groupService.getActiveGroupSession();
+                }),
+                mergeMap((groupSession: GroupSessionDeprecated | undefined) => {
+                    let corRelationList: CorrelationData[] = [];
+                    if (groupSession && groupSession.gid) {
+                        corRelationList.push({id: groupSession.gid, type: 'group'});
+                    }
+                    const isStreaming = extraInfo && extraInfo.hasOwnProperty('streaming');
+                    const appCorrelationData: CorrelationData[] = extraInfo['correlationData'];
+                    if (appCorrelationData && appCorrelationData.length) {
+                        corRelationList = corRelationList.concat(appCorrelationData);
+                    }
+                    corRelationList.push({id: isStreaming ? 'streaming' : 'offline', type: 'PlayerLaunch'});
+                    context.cdata = corRelationList;
+                    playerInput.context = context;
+                    const appContext: { [key: string]: any } = {};
+                    appContext['local'] = true;
+                    appContext['server'] = false;
+                    appContext['groupId'] = groupSession ? groupSession.gid : '';
+                    playerInput.appContext = appContext;
+                    return this.frameworkService.getActiveChannelId();
+                }),
+                mergeMap((channelId: string) => {
+                    context.channel = channelId ? channelId : this.config.apiConfig.api_authentication.channelId;
+                    playerInput.context = context;
+                    return of(playerInput);
+                })
+            );
+        })
     }
 
     savePlayerState(userId: string, parentId: string,  identifier: string, saveState: string) {

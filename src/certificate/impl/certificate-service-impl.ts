@@ -65,13 +65,13 @@ export class CertificateServiceImpl implements CertificateService {
    downloadCertificate({ fileName, blob }: DownloadCertificateRequest): Observable<DownloadCertificateResponse> {
         return defer(async () => {
             return this.fileService.writeFile(
-              cordova.file.externalDataDirectory ,
+                window['Capacitor']['Plugins'].Directory.Data,
                 fileName, blob as any,
                 {replace: true}
             ).
             then(() => {
                 return {
-                    path: `${cordova.file.externalDataDirectory}${fileName}`
+                    path: `${window['Capacitor']['Plugins'].Directory.Data}${fileName}`
                 };
             });
         });
@@ -81,8 +81,11 @@ export class CertificateServiceImpl implements CertificateService {
         return defer(async () => {
             const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
             const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
-
-            const folderPath = (window.device.platform.toLowerCase() === 'ios') ? cordova.file.documentsDirectory : cordova.file.externalRootDirectory;
+            let devicePlatform = "";
+            await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+                devicePlatform = val.platform
+            })
+            const folderPath = (devicePlatform.toLowerCase() === 'ios') ? window['Capacitor']['Plugins'].Directory.Documents : window['Capacitor']['Plugins'].Directory.EXTERNAL;
             const filePath = `${folderPath}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
             return { userId };
         }).pipe(

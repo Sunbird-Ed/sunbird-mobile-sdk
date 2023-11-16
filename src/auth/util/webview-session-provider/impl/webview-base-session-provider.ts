@@ -134,9 +134,13 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
             });
     }
 
-    private resolveStateSession(captured: {[key: string]: string}): Promise<OAuthSession> {
+    private async resolveStateSession(captured: {[key: string]: string}): Promise<OAuthSession> {
+        let devicePlatform = "";
+        await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            devicePlatform = val.platform
+        })
         const apiUrl="/v1/sso/create/session?id="
-        let params = window.device.platform.toLowerCase() ==='ios' ? encodeURIComponent(captured.id) :captured['id'];
+        let params = devicePlatform.toLowerCase() ==='ios' ? encodeURIComponent(captured.id) :captured['id'];
         const completeUrl = apiUrl + params;
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.GET)

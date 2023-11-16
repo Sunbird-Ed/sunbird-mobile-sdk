@@ -17,8 +17,12 @@ export class GetModifiedContentHandler {
         return defer(async () => {
             const dbContentIdentifiers = await this.getContentsInDb();
             if (context.currentStoragePath) {
-                let destination = ContentUtil.getContentRootDir(context.currentStoragePath).concat('/');
-                if(window.device.platform.toLowerCase() === "ios") {
+                let devicePlatform = "";
+                await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+                    devicePlatform = val.platform
+                })
+                let destination = (await ContentUtil.getContentRootDir(context.currentStoragePath)).concat('/');
+                if(devicePlatform.toLowerCase() === "ios") {
                     destination = "file://"+destination;
                 }
                 const folderList = await this.getFolderList(destination);
@@ -34,7 +38,7 @@ export class GetModifiedContentHandler {
     }
 
     private doesDestinationStorageExist(destination: string): Promise<boolean> {
-        return this.fileService.exists(destination).then((entry: Entry) => {
+        return this.fileService.exists(destination).then((entry: any) => {
             return true;
         }).catch(() => {
             return false;
@@ -66,7 +70,7 @@ export class GetModifiedContentHandler {
 
     private getFolderList(destination: string): Promise<string[]> {
         return this.fileService.listDir(destination.replace(/\/$/, ''))
-            .then((entries: Entry[]) => {
+            .then((entries: any[]) => {
                 const folderList: string[] = entries.map((entry) => {
                     return entry.name;
                 });

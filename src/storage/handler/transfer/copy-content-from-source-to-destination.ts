@@ -97,11 +97,11 @@ export class CopyContentFromSourceToDestination {
         });
     }
 
-    private async deleteFolder(deletedirectory: string): Promise<undefined> {
+    private async deleteFolder(deletedirectory: string): Promise<undefined | void> {
         if (!deletedirectory) {
             return;
         }
-        return new Promise<undefined>((resolve, reject) => {
+        return new Promise<undefined | void>((resolve, reject) => {
             sbutility.rm(deletedirectory, '', () => {
                 resolve();
             }, (e) => {
@@ -110,12 +110,12 @@ export class CopyContentFromSourceToDestination {
         });
     }
 
-    private async copyFolder(sourceDirectory: string, destinationDirectory: string): Promise<undefined> {
+    private async copyFolder(sourceDirectory: string, destinationDirectory: string): Promise<undefined | void> {
         if (!sourceDirectory || !destinationDirectory) {
             return;
         }
 
-        return new Promise<undefined>((resolve, reject) => {
+        return new Promise<undefined | void>((resolve, reject) => {
             sbutility.copyDirectory(sourceDirectory, destinationDirectory, () => {
                 resolve();
             }, (e) => {
@@ -124,11 +124,11 @@ export class CopyContentFromSourceToDestination {
         });
     }
 
-    private async renameFolder(sourceDirectory: string, toDirectoryName: string): Promise<undefined> {
+    private async renameFolder(sourceDirectory: string, toDirectoryName: string): Promise<undefined | void> {
         if (!sourceDirectory) {
             return;
         }
-        return new Promise<undefined>((resolve, reject) => {
+        return new Promise<undefined | void>((resolve, reject) => {
             sbutility.renameDirectory(sourceDirectory, toDirectoryName, () => {
                 resolve();
             }, (e) => {

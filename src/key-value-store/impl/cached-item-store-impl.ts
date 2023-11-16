@@ -122,13 +122,33 @@ export class CachedItemStoreImpl implements CachedItemStore {
     }
 
     private isItemCachedInDb(timeToLiveKey: string, id: string): Observable<boolean> {
+        console.log("is item cacheed ", id);
+        // return window['Capacitor']['Plugins'].Preferences.get({key: timeToLiveKey + '-' + id}).then(ttl => {
+        //     console.log("value ", ttl.value);
+        //         return iif(
+        //             () => !!ttl.value,
+        //             defer(() => {
+        //                 console.log("**** res item cached");
+        //                 return of(true)}),
+        //             defer(() => {
+        //                 console.log("**** res item cached false")
+        //                 return of(false)})
+        //         );
+        //     })
         return this.sharedPreferences.getString(timeToLiveKey + '-' + id).pipe(
             mergeMap((ttl) => {
                 return iif(
                     () => !!ttl,
-                    defer(() => of(true)),
-                    defer(() => of(false))
+                    defer(() => {
+                        console.log("**** res item cached");
+                        return of(true)}),
+                    defer(() => {
+                        console.log("**** res item cached false")
+                        return of(false)})
                 );
+            }),catchError((e: any) => {
+                console.log("**** res item error ", e);
+                return of(false);
             })
         );
     }

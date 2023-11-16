@@ -1,4 +1,4 @@
-import {NetworkInfoService, NetworkStatus} from '..';
+import {Connection, NetworkInfoService, NetworkStatus} from '..';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {injectable} from 'inversify';
 
@@ -8,20 +8,26 @@ export class NetworkInfoServiceImpl implements NetworkInfoService {
     private networkStatusSource: BehaviorSubject<NetworkStatus>;
 
     constructor() {
-        if (navigator.connection.type === Connection.NONE) {
-            this.networkStatusSource = new BehaviorSubject<NetworkStatus>(NetworkStatus.OFFLINE);
-        } else {
-            this.networkStatusSource = new BehaviorSubject<NetworkStatus>(NetworkStatus.ONLINE);
-        }
-
-        window.addEventListener('online', () => {
-            this.networkStatusSource.next(NetworkStatus.ONLINE);
-        }, false);
-
-        window.addEventListener('offline', () => {
-            this.networkStatusSource.next(NetworkStatus.OFFLINE);
-        }, false);
-
-        this.networkStatus$ = this.networkStatusSource.asObservable();
+        let networkType;
+        window['Capacitor']['Plugins'].Network.getStatus().then(status => {
+            networkType = status.connectionType
+            console.log("connection ", Connection);
+            if (networkType === 'none') {
+                this.networkStatusSource = new BehaviorSubject<NetworkStatus>(NetworkStatus.OFFLINE);
+            } else {
+                this.networkStatusSource = new BehaviorSubject<NetworkStatus>(NetworkStatus.ONLINE);
+            }
+            window.addEventListener('online', () => {
+                this.networkStatusSource.next(NetworkStatus.ONLINE);
+            }, false);
+    
+            window.addEventListener('offline', () => {
+                this.networkStatusSource.next(NetworkStatus.OFFLINE);
+            }, false);
+    
+            this.networkStatus$ = this.networkStatusSource.asObservable();
+        }).catch(err => {
+            console.log("Error on network call")
+        })
     }
 }

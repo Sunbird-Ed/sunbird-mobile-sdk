@@ -9,6 +9,10 @@ export class Path {
         return filePath.substring(filePath.lastIndexOf('/') + 1);
     }
     public static getAssetPath() : string {
-        return (window.device.platform.toLowerCase() === "ios" ?  cordova.file.applicationDirectory + 'www/assets': Path.ASSETS_PATH)
+        let devicePlatform = "";
+        return window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            devicePlatform = val.platform
+            return (devicePlatform.toLowerCase() === "ios" ? window['Capacitor']['Plugins'].Directory.Data + 'www/assets': Path.ASSETS_PATH)
+        })
     }
 }

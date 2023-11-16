@@ -33,7 +33,10 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
 
     public async provide(): Promise<OAuthSession> {
         const dsl = this.webviewRunner;
-
+        let devicePlatform = "";
+        await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            devicePlatform = val.platform
+        })
         const telemetryContext = await this.telemetryService.buildContext().toPromise();
         if(this.loginConfig.context == "password") {
             this.loginConfig.target.path = "/recover/identify/account";
@@ -42,7 +45,7 @@ export class WebviewLoginSessionProvider extends WebviewBaseSessionProvider {
            key: 'pdata',
            value: JSON.stringify(telemetryContext.pdata)
         });
-        if(window.device.platform.toLowerCase() === 'ios' && this.loginConfig.context === "login") {
+        if(devicePlatform.toLowerCase() === 'ios' && this.loginConfig.context === "login") {
             await dsl.launchWebview({
                 host: this.loginConfig.target.host,
                 path: 'logoff',

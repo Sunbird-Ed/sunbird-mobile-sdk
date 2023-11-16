@@ -321,7 +321,7 @@ export class FileServiceImpl implements FileService {
 
     getFreeDiskSpace(): Promise<number> {
         return new Promise<any>((resolve, reject) => {
-            cordova.exec(resolve, reject, 'File', 'getFreeDiskSpace', []);
+            cordova.exec(() => resolve, reject, 'File', 'getFreeDiskSpace', []);
         });
     }
 
@@ -363,7 +363,7 @@ export class FileServiceImpl implements FileService {
         return new Promise<Metadata>((resolve) => {
             fileEntry.getMetadata(metadata => {
                 resolve(metadata);
-            }, () => resolve());
+            }, () => resolve({modificationTime: new Date(), size: 1}));
         });
     }
 
