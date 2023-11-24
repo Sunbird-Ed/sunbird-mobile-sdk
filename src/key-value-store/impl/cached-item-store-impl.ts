@@ -75,7 +75,7 @@ export class CachedItemStoreImpl implements CachedItemStore {
                         mergeMap((isItemTTLExpired: boolean) => {
                             if (isItemTTLExpired) {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id).pipe(
-                                    map((v) => JSON.parse(v!)),
+                                    map((v) => typeof(v) == 'string' ? JSON.parse(v!): v),
                                     tap(async () => {
                                         try {
                                             await fromServer().pipe(
@@ -90,7 +90,7 @@ export class CachedItemStoreImpl implements CachedItemStore {
                                 );
                             } else {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id).pipe(
-                                    map((v) => JSON.parse(v!))
+                                    map((v) => typeof(v) == 'string' ? JSON.parse(v!): v)
                                 );
                             }
                         })
@@ -123,18 +123,6 @@ export class CachedItemStoreImpl implements CachedItemStore {
 
     private isItemCachedInDb(timeToLiveKey: string, id: string): Observable<boolean> {
         console.log("is item cacheed ", id);
-        // return window['Capacitor']['Plugins'].Preferences.get({key: timeToLiveKey + '-' + id}).then(ttl => {
-        //     console.log("value ", ttl.value);
-        //         return iif(
-        //             () => !!ttl.value,
-        //             defer(() => {
-        //                 console.log("**** res item cached");
-        //                 return of(true)}),
-        //             defer(() => {
-        //                 console.log("**** res item cached false")
-        //                 return of(false)})
-        //         );
-        //     })
         return this.sharedPreferences.getString(timeToLiveKey + '-' + id).pipe(
             mergeMap((ttl) => {
                 return iif(

@@ -35,7 +35,7 @@ export class GenerateExportShareTelemetry {
                     let devicePlatform = "";
                     window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
                         devicePlatform = val.platform
-                        const folderPath = (devicePlatform.toLowerCase() === "ios") ? window['Capacitor']['Plugins'].Directory.Documents : window['Capacitor']['Plugins'].Directory.Cache;
+                        const folderPath = (devicePlatform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
                         exportedFilePath = folderPath.concat(fileName);
                     })
                 }

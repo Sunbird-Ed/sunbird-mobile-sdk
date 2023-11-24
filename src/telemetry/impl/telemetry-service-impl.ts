@@ -411,11 +411,16 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
     private getInitialUtmParameters(): Promise<CorrelationData[]> {
         return new Promise<CorrelationData[]>((resolve, reject) => {
             try {
-                sbutility.getUtmInfo((response: { val: CorrelationData[] }) => {
-                    resolve(response.val);
-                }, err => {
-                    reject(err);
-                });
+                // TODO: Capacitor temp fix
+                resolve([{id: "",
+                        type: ""}])
+                // window.sbutility.getUtmInfo((response: { val: CorrelationData[] }) => {
+                //     resolve(response.val);
+                // }, err => {
+                //     resolve([{id: "",
+                //         type: ""}])
+                //     // reject(err);
+                // });
             } catch (xc) {
                 reject(xc);
             }

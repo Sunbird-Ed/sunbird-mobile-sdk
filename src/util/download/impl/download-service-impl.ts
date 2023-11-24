@@ -241,7 +241,7 @@ export class DownloadServiceImpl implements DownloadService, SdkServiceOnInitDel
                             await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
                                 devicePlatform = val.platform
                             })
-                            let dataDirectory = devicePlatform.toLowerCase() === "ios" ? window['Capacitor']['Plugins'].Directory.Documents : window['Capacitor']['Plugins'].Directory.External;
+                            let dataDirectory = devicePlatform.toLowerCase() === "ios" ? cordova.file.documentsDirectory : cordova.file.externalRootDirectory;
                             anyDownloadRequest.downloadedFilePath = dataDirectory +
                             DownloadServiceImpl.DOWNLOAD_DIR_NAME + '/' + anyDownloadRequest.filename;
                             anyDownloadRequest.downloadId = downloadId;

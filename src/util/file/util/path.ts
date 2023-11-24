@@ -12,7 +12,7 @@ export class Path {
         let devicePlatform = "";
         return window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
             devicePlatform = val.platform
-            return (devicePlatform.toLowerCase() === "ios" ? window['Capacitor']['Plugins'].Directory.Data + 'www/assets': Path.ASSETS_PATH)
+            return (devicePlatform.toLowerCase() === "ios" ? cordova.file.applicationDirectory + 'www/assets': Path.ASSETS_PATH)
         })
     }
 }

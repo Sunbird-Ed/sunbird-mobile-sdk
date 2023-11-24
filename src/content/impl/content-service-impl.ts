@@ -869,7 +869,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
             devicePlatform = val.platform
         })
         const dataDirectory = devicePlatform.toLowerCase() === 'ios' ?
-        window['Capacitor']['Plugins'].Directory.Documents : window['Capacitor']['Plugins'].Directory.Data + ContentServiceImpl.DOWNLOAD_DIR_NAME;
+        cordova.file.documentsDirectory : cordova.file.externalDataDirectory + ContentServiceImpl.DOWNLOAD_DIR_NAME;
         return this.createTranscriptDir(transcriptReq, dataDirectory).then(() => {
             const downloadRequest: EnqueueRequest = {
                 uri: transcriptReq.downloadUrl,

@@ -520,9 +520,9 @@ export class ProfileServiceImpl implements ProfileService {
             map((response) => {
                 if (response) {
                     return JSON.parse(response);
+                } else {
+                    throw new NoActiveSessionError('No active session available');
                 }
-
-                throw new NoActiveSessionError('No active session available');
             })
         );
     }

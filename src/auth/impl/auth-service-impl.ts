@@ -35,8 +35,8 @@ export class AuthServiceImpl implements AuthService {
                 try {
                     const profileSession: ProfileSession = JSON.parse((await this.sharedPreferences.getString(ProfileKeys.KEY_USER_SESSION).toPromise())!);
                     const authSession: OAuthSession = JSON.parse(value);
-                    CsModule.instance.config.core.api.authentication.userToken = authSession.access_token;
-                    CsModule.instance.config.core.api.authentication.managedUserToken = profileSession.managedSession ? authSession.managed_access_token : undefined;
+                        CsModule.instance.config.core.api.authentication.userToken = authSession.access_token ?? "";
+                        CsModule.instance.config.core.api.authentication.managedUserToken = profileSession.managedSession ? authSession.managed_access_token : undefined;
                 } catch (e) {
                     console.error(e);
                     CsModule.instance.config.core.api.authentication.userToken = undefined;
@@ -58,7 +58,7 @@ export class AuthServiceImpl implements AuthService {
                     let val = (await this.sharedPreferences.getString(AuthKeys.KEY_OAUTH_SESSION).toPromise());
                     console.log('val for get string after 2 ', val);
                     const authSession: OAuthSession = JSON.parse(val!);
-                    CsModule.instance.config.core.api.authentication.userToken = authSession.access_token;
+                    CsModule.instance.config.core.api.authentication.userToken = authSession.access_token ?? "";
                     CsModule.instance.config.core.api.authentication.managedUserToken = profileSession.managedSession ? authSession.managed_access_token : undefined;
                 } catch (e) {
                     console.error(e);
@@ -83,7 +83,7 @@ export class AuthServiceImpl implements AuthService {
                 console.log('val before parse ', val);
                 const profileSession: ProfileSession = JSON.parse(val!);
                 console.log("profilesession ", profileSession);
-                CsModule.instance.config.core.api.authentication.userToken = session.access_token;
+                CsModule.instance.config.core.api.authentication.userToken = session.access_token ?? "";
                 CsModule.instance.config.core.api.authentication.managedUserToken = profileSession.managedSession ? session.managed_access_token : undefined;
                 CsModule.instance.updateConfig(CsModule.instance.config);
 

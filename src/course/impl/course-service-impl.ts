@@ -261,7 +261,7 @@ export class CourseServiceImpl implements CourseService {
             await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
                 devicePlatform = val.platform
             })
-            const folderPath = (devicePlatform.toLowerCase() === 'ios') ? window['Capacitor']['Plugins'].Directory.Documents : window['Capacitor']['Plugins'].Directory.External;
+            const folderPath = (devicePlatform.toLowerCase() === 'ios') ? cordova.file.documentsDirectory : cordova.file.externalRootDirectory;
             const filePath = `${folderPath}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
             return {userId};
         }).pipe(

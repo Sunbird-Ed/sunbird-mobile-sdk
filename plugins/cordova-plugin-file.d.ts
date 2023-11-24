@@ -1,720 +1,414 @@
-import type {
-    HttpOptions,
-    PermissionState,
-    PluginListenerHandle,
-  } from '@capacitor/core';
-  
-  export interface PermissionStatus {
-    publicStorage: PermissionState;
-  }
-  
-  export enum Directory {
-    /**
-     * The Documents directory.
-     * On iOS it's the app's documents directory.
-     * Use this directory to store user-generated content.
-     * On Android it's the Public Documents folder, so it's accessible from other apps.
-     * It's not accesible on Android 10 unless the app enables legacy External Storage
-     * by adding `android:requestLegacyExternalStorage="true"` in the `application` tag
-     * in the `AndroidManifest.xml`.
-     * On Android 11 or newer the app can only access the files/folders the app created.
-     *
-     * @since 1.0.0
-     */
-    Documents = 'DOCUMENTS',
-  
-    /**
-     * The Data directory.
-     * On iOS it will use the Documents directory.
-     * On Android it's the directory holding application files.
-     * Files will be deleted when the application is uninstalled.
-     *
-     * @since 1.0.0
-     */
-    Data = 'DATA',
-  
-    /**
-     * The Library directory.
-     * On iOS it will use the Library directory.
-     * On Android it's the directory holding application files.
-     * Files will be deleted when the application is uninstalled.
-     *
-     * @since 1.1.0
-     */
-    Library = 'LIBRARY',
-  
-    /**
-     * The Cache directory.
-     * Can be deleted in cases of low memory, so use this directory to write app-specific files.
-     * that your app can re-create easily.
-     *
-     * @since 1.0.0
-     */
-    Cache = 'CACHE',
-  
-    /**
-     * The external directory.
-     * On iOS it will use the Documents directory.
-     * On Android it's the directory on the primary shared/external
-     * storage device where the application can place persistent files it owns.
-     * These files are internal to the applications, and not typically visible
-     * to the user as media.
-     * Files will be deleted when the application is uninstalled.
-     *
-     * @since 1.0.0
-     */
-    External = 'EXTERNAL',
-  
-    /**
-     * The external storage directory.
-     * On iOS it will use the Documents directory.
-     * On Android it's the primary shared/external storage directory.
-     * It's not accesible on Android 10 unless the app enables legacy External Storage
-     * by adding `android:requestLegacyExternalStorage="true"` in the `application` tag
-     * in the `AndroidManifest.xml`.
-     * It's not accesible on Android 11 or newer.
-     *
-     * @since 1.0.0
-     */
-    ExternalStorage = 'EXTERNAL_STORAGE',
-  }
-  
-  export enum Encoding {
-    /**
-     * Eight-bit UCS Transformation Format
-     *
-     * @since 1.0.0
-     */
-    UTF8 = 'utf8',
-  
-    /**
-     * Seven-bit ASCII, a.k.a. ISO646-US, a.k.a. the Basic Latin block of the
-     * Unicode character set
-     * This encoding is only supported on Android.
-     *
-     * @since 1.0.0
-     */
-    ASCII = 'ascii',
-  
-    /**
-     * Sixteen-bit UCS Transformation Format, byte order identified by an
-     * optional byte-order mark
-     * This encoding is only supported on Android.
-     *
-     * @since 1.0.0
-     */
-    UTF16 = 'utf16',
-  }
-  
-  export interface WriteFileOptions {
-    /**
-     * The path of the file to write
-     *
-     * @since 1.0.0
-     */
-    path: string;
-  
-    /**
-     * The data to write
-     *
-     * Note: Blob data is only supported on Web.
-     *
-     * @since 1.0.0
-     */
-    data: string | Blob;
-  
-    /**
-     * The `Directory` to store the file in
-     *
-     * @since 1.0.0
-     */
-    directory?: Directory;
-  
-    /**
-     * The encoding to write the file in. If not provided, data
-     * is written as base64 encoded.
-     *
-     * Pass Encoding.UTF8 to write data as string
-     *
-     * @since 1.0.0
-     */
-    encoding?: Encoding;
-  
-    /**
-     * Whether to create any missing parent directories.
-     *
-     * @default false
-     * @since 1.0.0
-     */
-    recursive?: boolean;
-  }
-  
-  export interface AppendFileOptions {
-    /**
-     * The path of the file to append
-     *
-     * @since 1.0.0
-     */
-    path: string;
-  
-    /**
-     * The data to write
-     *
-     * @since 1.0.0
-     */
-    data: string;
-  
-    /**
-     * The `Directory` to store the file in
-     *
-     * @since 1.0.0
-     */
-    directory?: Directory;
-  
-    /**
-     * The encoding to write the file in. If not provided, data
-     * is written as base64 encoded.
-     *
-     * Pass Encoding.UTF8 to write data as string
-     *
-     * @since 1.0.0
-     */
-    encoding?: Encoding;
-  }
-  
-  export interface ReadFileOptions {
-    /**
-     * The path of the file to read
-     *
-     * @since 1.0.0
-     */
-    path: string;
-  
-    /**
-     * The `Directory` to read the file from
-     *
-     * @since 1.0.0
-     */
-    directory?: Directory;
-  
-    /**
-     * The encoding to read the file in, if not provided, data
-     * is read as binary and returned as base64 encoded.
-     *
-     * Pass Encoding.UTF8 to read data as string
-     *
-     * @since 1.0.0
-     */
-    encoding?: Encoding;
-  }
-  
-  export interface DeleteFileOptions {
-    /**
-     * The path of the file to delete
-     *
-     * @since 1.0.0
-     */
-    path: string;
-  
-    /**
-     * The `Directory` to delete the file from
-     *
-     * @since 1.0.0
-     */
-    directory?: Directory;
-  }
-  
-  export interface MkdirOptions {
-    /**
-     * The path of the new directory
-     *
-     * @since 1.0.0
-     */
-    path: string;
-  
-    /**
-     * The `Directory` to make the new directory in
-     *
-     * @since 1.0.0
-     */
-    directory?: Directory;
-  
-    /**
-     * Whether to create any missing parent directories as well.
-     *
-     * @default false
-     * @since 1.0.0
-     */
-    recursive?: boolean;
-  }
-  
-  export interface RmdirOptions {
-    /**
-     * The path of the directory to remove
-     *
-     * @since 1.0.0
-     */
-    path: string;
-  
-    /**
-     * The `Directory` to remove the directory from
-     *
-     * @since 1.0.0
-     */
-    directory?: Directory;
-  
-    /**
-     * Whether to recursively remove the contents of the directory
-     *
-     * @default false
-     * @since 1.0.0
-     */
-    recursive?: boolean;
-  }
-  
-  export interface ReaddirOptions {
-    /**
-     * The path of the directory to read
-     *
-     * @since 1.0.0
-     */
-    path: string;
-  
-    /**
-     * The `Directory` to list files from
-     *
-     * @since 1.0.0
-     */
-    directory?: Directory;
-  }
-  
-  export interface GetUriOptions {
-    /**
-     * The path of the file to get the URI for
-     *
-     * @since 1.0.0
-     */
-    path: string;
-  
-    /**
-     * The `Directory` to get the file under
-     *
-     * @since 1.0.0
-     */
-    directory: Directory;
-  }
-  
-  export interface StatOptions {
-    /**
-     * The path of the file to get data about
-     *
-     * @since 1.0.0
-     */
-    path: string;
-  
-    /**
-     * The `Directory` to get the file under
-     *
-     * @since 1.0.0
-     */
-    directory?: Directory;
-  }
-  
-  export interface CopyOptions {
-    /**
-     * The existing file or directory
-     *
-     * @since 1.0.0
-     */
-    from: string;
-  
-    /**
-     * The destination file or directory
-     *
-     * @since 1.0.0
-     */
-    to: string;
-  
-    /**
-     * The `Directory` containing the existing file or directory
-     *
-     * @since 1.0.0
-     */
-    directory?: Directory;
-  
-    /**
-     * The `Directory` containing the destination file or directory. If not supplied will use the 'directory'
-     * parameter as the destination
-     *
-     * @since 1.0.0
-     */
-    toDirectory?: Directory;
-  }
-  
-  export type RenameOptions = CopyOptions;
-  
-  export interface ReadFileResult {
-    /**
-     * The representation of the data contained in the file
-     *
-     * Note: Blob is only available on Web. On native, the data is returned as a string.
-     *
-     * @since 1.0.0
-     */
-    data: string | Blob;
-  }
-  
-  export interface WriteFileResult {
-    /**
-     * The uri where the file was written into
-     *
-     * @since 1.0.0
-     */
-    uri: string;
-  }
-  
-  export interface ReaddirResult {
-    /**
-     * List of files and directories inside the directory
-     *
-     * @since 1.0.0
-     */
-    files: FileInfo[];
-  }
-  
-  export interface FileInfo {
-    /**
-     * Name of the file or directory.
-     */
-    name: string;
-    /**
-     * Type of the file.
-     *
-     * @since 4.0.0
-     */
-    type: 'directory' | 'file';
-  
-    /**
-     * Size of the file in bytes.
-     *
-     * @since 4.0.0
-     */
-    size: number;
-  
-    /**
-     * Time of creation in milliseconds.
-     *
-     * It's not available on Android 7 and older devices.
-     *
-     * @since 4.0.0
-     */
-    ctime?: number;
-  
-    /**
-     * Time of last modification in milliseconds.
-     *
-     * @since 4.0.0
-     */
-    mtime: number;
-  
-    /**
-     * The uri of the file.
-     *
-     * @since 4.0.0
-     */
-    uri: string;
-  }
-  
-  export interface GetUriResult {
-    /**
-     * The uri of the file
-     *
-     * @since 1.0.0
-     */
-    uri: string;
-  }
-  
-  export interface StatResult {
-    /**
-     * Type of the file.
-     *
-     * @since 1.0.0
-     */
-    type: 'directory' | 'file';
-  
-    /**
-     * Size of the file in bytes.
-     *
-     * @since 1.0.0
-     */
-    size: number;
-  
-    /**
-     * Time of creation in milliseconds.
-     *
-     * It's not available on Android 7 and older devices.
-     *
-     * @since 1.0.0
-     */
-    ctime?: number;
-  
-    /**
-     * Time of last modification in milliseconds.
-     *
-     * @since 1.0.0
-     */
-    mtime: number;
-  
-    /**
-     * The uri of the file
-     *
-     * @since 1.0.0
-     */
-    uri: string;
-  }
-  
-  export interface CopyResult {
-    /**
-     * The uri where the file was copied into
-     *
-     * @since 4.0.0
-     */
-    uri: string;
-  }
-  
-  export interface DownloadFileOptions extends HttpOptions {
-    /**
-     * The path the downloaded file should be moved to.
-     *
-     * @since 5.1.0
-     */
-    path: string;
-    /**
-     * The directory to write the file to.
-     * If this option is used, filePath can be a relative path rather than absolute.
-     * The default is the `DATA` directory.
-     *
-     * @since 5.1.0
-     */
-    directory?: Directory;
-    /**
-     * An optional listener function to receive downloaded progress events.
-     * If this option is used, progress event should be dispatched on every chunk received.
-     * Chunks are throttled to every 100ms on Android/iOS to avoid slowdowns.
-     *
-     * @since 5.1.0
-     */
-    progress?: boolean;
-    /**
-     * Whether to create any missing parent directories.
-     *
-     * @default false
-     * @since 5.1.2
-     */
-    recursive?: boolean;
-  }
-  
-  export interface DownloadFileResult {
-    /**
-     * The path the file was downloaded to.
-     *
-     * @since 5.1.0
-     */
-    path?: string;
-    /**
-     * The blob data of the downloaded file.
-     * This is only available on web.
-     *
-     * @since 5.1.0
-     */
-    blob?: Blob;
-  }
-  export interface ProgressStatus {
-    /**
-     * The url of the file being downloaded.
-     *
-     * @since 5.1.0
-     */
-    url: string;
-    /**
-     * The number of bytes downloaded so far.
-     *
-     * @since 5.1.0
-     */
-    bytes: number;
-    /**
-     * The total number of bytes to download for this file.
-     *
-     * @since 5.1.0
-     */
-    contentLength: number;
-  }
-  
+/** This interface represents a file system. */
+interface FileSystem {
+  /* The name of the file system, unique across the list of exposed file systems. */
+  name: string;
+  /** The root directory of the file system. */
+  root: DirectoryEntry;
+}
+
+/**
+ * An abstract interface representing entries in a file system,
+ * each of which may be a File or DirectoryEntry.
+ */
+interface Entry {
+  /** Entry is a file. */
+  isFile: boolean;
+  /** Entry is a directory. */
+  isDirectory: boolean;
+  /** The name of the entry, excluding the path leading to it. */
+  name: string;
+  /** The full absolute path from the root to the entry. */
+  fullPath: string;
+  /** The file system on which the entry resides. */
+  filesystem: FileSystem;
+  nativeURL: string;
+
   /**
-   * A listener function that receives progress events.
-   *
-   * @since 5.1.0
+   * Look up metadata about this entry.
+   * @param successCallback A callback that is called with the time of the last modification.
+   * @param errorCallback   A callback that is called when errors happen.
    */
-  export type ProgressListener = (progress: ProgressStatus) => void;
-  
-  export interface FilesystemPlugin {
-    /**
-     * Read a file from disk
-     *
-     * @since 1.0.0
-     */
-    readFile(options: ReadFileOptions): Promise<ReadFileResult>;
-  
-    /**
-     * Write a file to disk in the specified location on device
-     *
-     * @since 1.0.0
-     */
-    writeFile(options: WriteFileOptions): Promise<WriteFileResult>;
-  
-    /**
-     * Append to a file on disk in the specified location on device
-     *
-     * @since 1.0.0
-     */
-    appendFile(options: AppendFileOptions): Promise<void>;
-  
-    /**
-     * Delete a file from disk
-     *
-     * @since 1.0.0
-     */
-    deleteFile(options: DeleteFileOptions): Promise<void>;
-  
-    /**
-     * Create a directory.
-     *
-     * @since 1.0.0
-     */
-    mkdir(options: MkdirOptions): Promise<void>;
-  
-    /**
-     * Remove a directory
-     *
-     * @since 1.0.0
-     */
-    rmdir(options: RmdirOptions): Promise<void>;
-  
-    /**
-     * Return a list of files from the directory (not recursive)
-     *
-     * @since 1.0.0
-     */
-    readdir(options: ReaddirOptions): Promise<ReaddirResult>;
-  
-    /**
-     * Return full File URI for a path and directory
-     *
-     * @since 1.0.0
-     */
-    getUri(options: GetUriOptions): Promise<GetUriResult>;
-  
-    /**
-     * Return data about a file
-     *
-     * @since 1.0.0
-     */
-    stat(options: StatOptions): Promise<StatResult>;
-  
-    /**
-     * Rename a file or directory
-     *
-     * @since 1.0.0
-     */
-    rename(options: RenameOptions): Promise<void>;
-  
-    /**
-     * Copy a file or directory
-     *
-     * @since 1.0.0
-     */
-    copy(options: CopyOptions): Promise<CopyResult>;
-  
-    /**
-     * Check read/write permissions.
-     * Required on Android, only when using `Directory.Documents` or
-     * `Directory.ExternalStorage`.
-     *
-     * @since 1.0.0
-     */
-    checkPermissions(): Promise<PermissionStatus>;
-  
-    /**
-     * Request read/write permissions.
-     * Required on Android, only when using `Directory.Documents` or
-     * `Directory.ExternalStorage`.
-     *
-     * @since 1.0.0
-     */
-    requestPermissions(): Promise<PermissionStatus>;
-  
-    /**
-     * Perform a http request to a server and download the file to the specified destination.
-     *
-     * @since 5.1.0
-     */
-    downloadFile(options: DownloadFileOptions): Promise<DownloadFileResult>;
-  
-    /**
-     * Add a listener to file download progress events.
-     *
-     * @since 5.1.0
-     */
-    addListener(
-      eventName: 'progress',
-      listenerFunc: ProgressListener,
-    ): Promise<PluginListenerHandle> & PluginListenerHandle;
-  }
-  
+  getMetadata(
+    successCallback: (metadata: Metadata) => void,
+    errorCallback?: (error: FileError) => void): void;
+
   /**
-   * @deprecated Use `ReadFileOptions`.
-   * @since 1.0.0
+   * Move an entry to a different location on the file system. It is an error to try to:
+   *     move a directory inside itself or to any child at any depth;move an entry into its parent if a name different
+   *     from its current one isn't provided;
+   *     move a file to a path occupied by a directory;
+   *     move a directory to a path occupied by a file;
+   *     move any element to a path occupied by a directory which is not empty.
+   * A move of a file on top of an existing file must attempt to delete and replace that file.
+   * A move of a directory on top of an existing empty directory must attempt to delete and replace that directory.
+   * @param parent  The directory to which to move the entry.
+   * @param newName The new name of the entry. Defaults to the Entry's current name if unspecified.
+   * @param successCallback A callback that is called with the Entry for the new location.
+   * @param errorCallback   A callback that is called when errors happen.
    */
-  export type FileReadOptions = ReadFileOptions;
-  
+  moveTo(parent: DirectoryEntry,
+         newName?: string,
+         successCallback?: (entry: Entry) => void,
+         errorCallback?: (error: FileError) => void): void;
+
   /**
-   * @deprecated Use `ReadFileResult`.
-   * @since 1.0.0
+   * Copy an entry to a different location on the file system. It is an error to try to:
+   *     copy a directory inside itself or to any child at any depth;
+   *     copy an entry into its parent if a name different from its current one isn't provided;
+   *     copy a file to a path occupied by a directory;
+   *     copy a directory to a path occupied by a file;
+   *     copy any element to a path occupied by a directory which is not empty.
+   *     A copy of a file on top of an existing file must attempt to delete and replace that file.
+   *     A copy of a directory on top of an existing empty directory must attempt to delete and replace that directory.
+   * Directory copies are always recursive--that is, they copy all contents of the directory.
+   * @param parent The directory to which to move the entry.
+   * @param newName The new name of the entry. Defaults to the Entry's current name if unspecified.
+   * @param successCallback A callback that is called with the Entry for the new object.
+   * @param errorCallback A callback that is called when errors happen.
    */
-  export type FileReadResult = ReadFileResult;
-  
+  copyTo(parent: DirectoryEntry,
+         newName?: string,
+         successCallback?: (entry: Entry) => void,
+         errorCallback?: (error: FileError) => void): void;
+
   /**
-   * @deprecated Use `WriteFileOptions`.
-   * @since 1.0.0
+   * Returns a URL that can be used as the src attribute of a <video> or <audio> tag.
+   * If that is not possible, construct a cdvfile:// URL.
+   * @return string URL
    */
-  export type FileWriteOptions = WriteFileOptions;
-  
+  toURL(): string;
+
   /**
-   * @deprecated Use `WriteFileResult`.
-   * @since 1.0.0
+   * Return a URL that can be passed across the bridge to identify this entry.
+   * @return string URL that can be passed across the bridge to identify this entry
    */
-  export type FileWriteResult = WriteFileResult;
-  
+  toInternalURL(): string;
+
   /**
-   * @deprecated Use `AppendFileOptions`.
-   * @since 1.0.0
+   * Deletes a file or directory. It is an error to attempt to delete a directory that is not empty. It is an error to attempt to delete
+   * the root directory of a filesystem.
+   * @param successCallback A callback that is called on success.
+   * @param errorCallback   A callback that is called when errors happen.
    */
-  export type FileAppendOptions = AppendFileOptions;
-  
+  remove(successCallback: () => void,
+         errorCallback?: (error: FileError) => void): void;
+
   /**
-   * @deprecated Use `DeleteFileOptions`.
-   * @since 1.0.0
+   * Look up the parent DirectoryEntry containing this Entry. If this Entry is the root of its filesystem, its parent is itself.
+   * @param successCallback A callback that is called with the time of the last modification.
+   * @param errorCallback   A callback that is called when errors happen.
    */
-  export type FileDeleteOptions = DeleteFileOptions;
-  
+  getParent(successCallback: (entry: Entry) => void,
+            errorCallback?: (error: FileError) => void): void;
+}
+
+/** This interface supplies information about the state of a file or directory. */
+interface Metadata {
+  /** This is the time at which the file or directory was last modified. */
+  modificationTime: Date;
+  /** The size of the file, in bytes. This must return 0 for directories. */
+  size: number;
+}
+
+/** This interface represents a directory on a file system. */
+interface DirectoryEntry extends Entry {
   /**
-   * @deprecated Use `Directory`.
-   * @since 1.0.0
+   * Creates a new DirectoryReader to read Entries from this Directory.
    */
-  export const FilesystemDirectory = Directory;
-  
+  createReader(): DirectoryReader;
+
   /**
-   * @deprecated Use `Encoding`.
-   * @since 1.0.0
+   * Creates or looks up a file.
+   * @param path    Either an absolute path or a relative path from this DirectoryEntry
+   *                to the file to be looked up or created.
+   *                It is an error to attempt to create a file whose immediate parent does not yet exist.
+   * @param options If create and exclusive are both true, and the path already exists, getFile must fail.
+   *                If create is true, the path doesn't exist, and no other error occurs, getFile must create it as a zero-length file
+   *                and return a corresponding FileEntry.
+   *                If create is not true and the path doesn't exist, getFile must fail.
+   *                If create is not true and the path exists, but is a directory, getFile must fail.
+   *                Otherwise, if no other error occurs, getFile must return a FileEntry corresponding to path.
+   * @param successCallback A callback that is called to return the File selected or created.
+   * @param errorCallback   A callback that is called when errors happen.
    */
-  export const FilesystemEncoding = Encoding;
+  getFile(path: string, options?: Flags,
+          successCallback?: (entry: FileEntry) => void,
+          errorCallback?: (error: FileError) => void): void;
+
+  /**
+   * Creates or looks up a directory.
+   * @param path    Either an absolute path or a relative path from this DirectoryEntry
+   *                to the directory to be looked up or created.
+   *                It is an error to attempt to create a directory whose immediate parent does not yet exist.
+   * @param options If create and exclusive are both true and the path already exists, getDirectory must fail.
+   *                If create is true, the path doesn't exist, and no other error occurs, getDirectory must create and return a
+   *                corresponding DirectoryEntry.
+   *                If create is not true and the path doesn't exist, getDirectory must fail.
+   *                If create is not true and the path exists, but is a file, getDirectory must fail.
+   *                Otherwise, if no other error occurs, getDirectory must return a DirectoryEntry corresponding to path.
+   * @param successCallback A callback that is called to return the Directory selected or created.
+   * @param errorCallback   A callback that is called when errors happen.
+   */
+  getDirectory(path: string, options?: Flags,
+               successCallback?: (entry: DirectoryEntry) => void,
+               errorCallback?: (error: FileError) => void): void;
+
+  /**
+   * Deletes a directory and all of its contents, if any. In the event of an error (e.g. trying
+   * to delete a directory that contains a file that cannot be removed), some of the contents
+   * of the directory may be deleted. It is an error to attempt to delete the root directory of a filesystem.
+   * @param successCallback A callback that is called on success.
+   * @param errorCallback   A callback that is called when errors happen.
+   */
+  removeRecursively(successCallback: () => void,
+                    errorCallback?: (error: FileError) => void): void;
+}
+
+/**
+ * This dictionary is used to supply arguments to methods
+ * that look up or create files or directories.
+ */
+interface Flags {
+  /** Used to indicate that the user wants to create a file or directory if it was not previously there. */
+  create?: boolean;
+  /** By itself, exclusive must have no effect. Used with create, it must cause getFile and getDirectory to fail if the target path
+   * already exists. */
+  exclusive?: boolean;
+}
+
+/**
+ * This interface lets a user list files and directories in a directory. If there are
+ * no additions to or deletions from a directory between the first and last call to
+ * readEntries, and no errors occur, then:
+ *     A series of calls to readEntries must return each entry in the directory exactly once.
+ *     Once all entries have been returned, the next call to readEntries must produce an empty array.
+ *     If not all entries have been returned, the array produced by readEntries must not be empty.
+ *     The entries produced by readEntries must not include the directory itself ["."] or its parent [".."].
+ */
+interface DirectoryReader {
+  /**
+   * Read the next block of entries from this directory.
+   * @param successCallback Called once per successful call to readEntries to deliver the next
+   *                        previously-unreported set of Entries in the associated Directory.
+   *                        If all Entries have already been returned from previous invocations
+   *                        of readEntries, successCallback must be called with a zero-length array as an argument.
+   * @param errorCallback   A callback indicating that there was an error reading from the Directory.
+   */
+  readEntries(
+    successCallback: (entries: Entry[]) => void,
+    errorCallback?: (error: FileError) => void): void;
+}
+
+/** This interface represents a file on a file system. */
+interface FileEntry extends Entry {
+  /**
+   * Creates a new FileWriter associated with the file that this FileEntry represents.
+   * @param successCallback A callback that is called with the new FileWriter.
+   * @param errorCallback   A callback that is called when errors happen.
+   */
+  createWriter(successCallback: (
+    writer: FileWriter) => void,
+               errorCallback?: (error: FileError) => void): void;
+
+  /**
+   * Returns a File that represents the current state of the file that this FileEntry represents.
+   * @param successCallback A callback that is called with the File.
+   * @param errorCallback   A callback that is called when errors happen.
+   */
+  file(successCallback: (file: File) => void,
+       errorCallback?: (error: FileError) => void): void;
+}
+
+/**
+ * This interface provides methods to monitor the asynchronous writing of blobs
+ * to disk using progress events and event handler attributes.
+ */
+interface FileSaver extends EventTarget {
+  /**
+   * The FileSaver object can be in one of 3 states. The readyState attribute, on getting,
+   * must return the current state, which must be one of the following values:
+   *     INIT
+   *     WRITING
+   *     DONE
+   */
+  readyState: number;
+  /** Handler for writestart events. */
+  onwritestart: (event: ProgressEvent) => void;
+  /** Handler for progress events. */
+  onprogress: (event: ProgressEvent) => void;
+  /** Handler for write events. */
+  onwrite: (event: ProgressEvent) => void;
+  /** Handler for abort events. */
+  onabort: (event: ProgressEvent) => void;
+  /** Handler for error events. */
+  onerror: (event: ProgressEvent) => void;
+  /** Handler for writeend events. */
+  onwriteend: (event: ProgressEvent) => void;
+  /** The last error that occurred on the FileSaver. */
+  error: Error;
+
+  /** Terminate file operation */
+  abort(): void;
+}
+
+/**
+ * This interface expands on the FileSaver interface to allow for multiple write
+ * actions, rather than just saving a single Blob.
+ */
+interface FileWriter extends FileSaver {
+  /**
+   * The byte offset at which the next write to the file will occur. This always less or equal than length.
+   * A newly-created FileWriter will have position set to 0.
+   */
+  position: number;
+  /**
+   * The length of the file. If the user does not have read access to the file,
+   * this will be the highest byte offset at which the user has written.
+   */
+  length: number;
+
+  /**
+   * Write the supplied data to the file at position.
+   * @param {Blob|string} data The blob to write.
+   */
+  write(data: Blob | string): void;
+
+  /**
+   * The file position at which the next write will occur.
+   * @param offset If nonnegative, an absolute byte offset into the file.
+   *               If negative, an offset back from the end of the file.
+   */
+  seek(offset: number): void;
+
+  /**
+   * Changes the length of the file to that specified. If shortening the file, data beyond the new length
+   * will be discarded. If extending the file, the existing data will be zero-padded up to the new length.
+   * @param size The size to which the length of the file is to be adjusted, measured in bytes.
+   */
+  truncate(size: number): void;
+}
+
+interface FileError {
+  /** Error code */
+  code: number;
+}
+
+interface RemoveResult {
+  success: boolean;
+  fileRemoved: Entry;
+}
+
+/**
+ * When an error occurs, the following callback is made.
+ */
+type ErrorCallback = (err: FileError) => void;
+
+/**
+ * This interface is the callback used to look up Entry objects.
+ */
+type EntryCallback = (entry: Entry) => void;
+
+
+declare enum LocalFileSystem {
+  PERSISTENT = 1,
+  TEMPORARY = 0
+}
+
+interface IWriteOptions {
+  replace?: boolean;
+  append?: boolean;
+  truncate?: number; // if present, number of bytes to truncate file to before writing
+}
+
+interface Window {
+  TEMPORARY: number;
+  PERSISTENT: number;
+
+  /**
+   * Requests a filesystem in which to store application data.
+   * @param type              Whether the filesystem requested should be persistent, as defined above. Use one of TEMPORARY or PERSISTENT.
+   * @param size              This is an indicator of how much storage space, in bytes, the application expects to need.
+   * @param successCallback   The callback that is called when the user agent provides a filesystem.
+   * @param errorCallback     A callback that is called when errors happen, or when the request to obtain the filesystem is denied.
+   */
+  requestFileSystem(
+    type: LocalFileSystem,
+    size: number,
+    successCallback: (fileSystem: FileSystem) => void,
+    errorCallback?: (fileError: FileError) => void): void;
+
+  /**
+   * Look up file system Entry referred to by local URL.
+   * @param string url       URL referring to a local file or directory
+   * @param successCallback  invoked with Entry object corresponding to URL
+   * @param errorCallback    invoked if error occurs retrieving file system entry
+   */
+  resolveLocalFileSystemURL(url: string,
+                            successCallback: (entry: Entry) => void,
+                            errorCallback?: (error: FileError) => void): void;
+
+  /**
+   * Look up file system Entry referred to by local URI.
+   * @param string uri       URI referring to a local file or directory
+   * @param successCallback  invoked with Entry object corresponding to URI
+   * @param errorCallback    invoked if error occurs retrieving file system entry
+   */
+  resolveLocalFileSystemURI(uri: string,
+                            successCallback: (entry: Entry) => void,
+                            errorCallback?: (error: FileError) => void): void;
+}
+
+/*
+ * Constants defined in fileSystemPaths
+ */
+interface Cordova {
+  file: {
+    /* Read-only directory where the application is installed. */
+    applicationDirectory: string;
+    /* Root of app's private writable storage */
+    applicationStorageDirectory: string;
+    /* Where to put app-specific data files. */
+    dataDirectory: string;
+    /* Cached files that should survive app restarts. Apps should not rely on the OS to delete files in here. */
+    cacheDirectory: string;
+    /* Android: the application space on external storage. */
+    externalApplicationStorageDirectory: string;
+    /* Android: Where to put app-specific data files on external storage. */
+    externalDataDirectory: string;
+    /* Android: the application cache on external storage. */
+    externalCacheDirectory: string;
+    /* Android: the external storage (SD card) root. */
+    externalRootDirectory: string;
+    /* iOS: Temp directory that the OS can clear at will. */
+    tempDirectory: string;
+    /* iOS: Holds app-specific files that should be synced (e.g. to iCloud). */
+    syncedDataDirectory: string;
+    /* iOS: Files private to the app, but that are meaningful to other applciations (e.g. Office files) */
+    documentsDirectory: string;
+    /* BlackBerry10: Files globally available to all apps */
+    sharedDirectory: string
+  };
+}
+
+declare var FileError: {
+  new(code: number): FileError;
+  NOT_FOUND_ERR: number;
+  SECURITY_ERR: number;
+  ABORT_ERR: number;
+  NOT_READABLE_ERR: number;
+  ENCODING_ERR: number;
+  NO_MODIFICATION_ALLOWED_ERR: number;
+  INVALID_STATE_ERR: number;
+  SYNTAX_ERR: number;
+  INVALID_MODIFICATION_ERR: number;
+  QUOTA_EXCEEDED_ERR: number;
+  TYPE_MISMATCH_ERR: number;
+  PATH_EXISTS_ERR: number;
+};
+
+/* FileWriter states */
+declare var FileWriter: {
+  INIT: number;
+  WRITING: number;
+  DONE: number
+};
