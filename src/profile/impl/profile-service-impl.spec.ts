@@ -60,6 +60,7 @@ import {UserMigrateHandler} from '../handler/user-migrate-handler';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
 import {CsModule} from '@project-sunbird/client-services';
 import { UniqueId } from '../../db/util/unique-id';
+import { DeleteProfileDataHandler } from '../handler/delete-profile-data.handler';
 
 jest.mock('../handler/tenant-info-handler');
 jest.mock('../handler/get-server-profile-details-handler');
@@ -1239,4 +1240,20 @@ describe.only('ProfileServiceImpl', () => {
             });
         });
     });
+
+    describe('deleteProfileData', () => {
+        it('should delete profile data successfully', (done) => {
+            //arrange
+            const uid = 'testUid';
+            jest.spyOn(DeleteProfileDataHandler.prototype, 'delete').mockReturnValueOnce(of(true));
+    
+            //act
+            profileService.deleteProfileData(uid).subscribe((result: boolean) => {
+                //assert
+                expect(result).toBe(true);
+                expect(DeleteProfileDataHandler.prototype.delete).toHaveBeenCalledWith(uid);
+                done();
+            });
+        });
+    })
 });
