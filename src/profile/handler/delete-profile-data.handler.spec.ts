@@ -35,7 +35,15 @@ describe('DeleteProfileDataHandler', () => {
     const uid = 'testUid'; 
     mockDbService.beginTransaction = jest.fn();
     mockDbService.delete = jest.fn(() => of(undefined));
-    mockDbService.execute = jest.fn(() => of({value: 'sample-data'}))
+    mockDbService.execute = jest.fn(() => of([{value: JSON.stringify({
+        managedBy: 'sample',
+        userId: 'sampleUser'
+    })},
+    {value: JSON.stringify({
+        managedBy: 'sample',
+        userId: 'sampleUser'
+    })}
+]))
 
     //act
     deleteProfileDataHandler.delete(uid).subscribe((data) => {
@@ -56,7 +64,14 @@ describe('DeleteProfileDataHandler', () => {
     //arrange
     mockDbService.beginTransaction = jest.fn();
     mockDbService.delete = jest.fn(() => of(undefined));
-    mockDbService.execute = jest.fn(() => of({value : "sample"}))
+    mockDbService.execute = jest.fn(() => of([{value: JSON.stringify({
+        managedBy: 'sample',
+        userId: 'sampleUser'
+    })},
+    {value: JSON.stringify({
+        managedBy: 'sample',
+        userId: 'sampleUser'
+    })}]))
     const uid = 'testUid';
 
     //act
@@ -66,9 +81,9 @@ describe('DeleteProfileDataHandler', () => {
 
         //assert
         setTimeout(() => {
-        expect(mockDbService.endTransaction).toHaveBeenCalledWith(false);
-        expect(mockDbService.execute).not.toHaveBeenCalled();
-        expect(data).toBe(false);
+        expect(mockDbService.endTransaction).toHaveBeenCalledWith(true);
+        expect(mockDbService.execute).toHaveBeenCalled();
+        expect(data).toBe(true);
             done();
           }, 10); 
           })   
