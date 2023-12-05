@@ -1,4 +1,4 @@
-import {CachedItemRequestSourceFrom, CachedItemStore} from '../../key-value-store';
+import { CachedItemRequestSourceFrom, CachedItemStore } from '../../key-value-store';
 import {
     Channel,
     ChannelDetailsRequest,
@@ -8,21 +8,24 @@ import {
     OrganizationSearchCriteria,
     OrganizationSearchResponse
 } from '..';
-import {GetChannelDetailsHandler} from '../handler/get-channel-detail-handler';
-import {GetFrameworkDetailsHandler} from '../handler/get-framework-detail-handler';
-import {FileService} from '../../util/file/def/file-service';
-import {defer, iif, Observable, of} from 'rxjs';
-import {Organization} from '../def/organization';
-import {ApiService, HttpRequestType, Request} from '../../api';
-import {SharedPreferences} from '../../util/shared-preferences';
-import {NoActiveChannelFoundError} from '../errors/no-active-channel-found-error';
-import {SystemSettingsService} from '../../system-settings';
-import {SdkConfig} from '../../sdk-config';
-import {FrameworkKeys} from '../../preference-keys';
-import {inject, injectable} from 'inversify';
-import {InjectionTokens} from '../../injection-tokens';
-import {catchError, map, mapTo, mergeMap, tap} from 'rxjs/operators';
-import {CsModule} from '@project-sunbird/client-services';
+import { GetChannelDetailsHandler } from '../handler/get-channel-detail-handler';
+import { GetFrameworkDetailsHandler } from '../handler/get-framework-detail-handler';
+import { FileService } from '../../util/file/def/file-service';
+import { defer, iif, Observable, of } from 'rxjs';
+import { Organization } from '../def/organization';
+import { ApiService, HttpRequestType, Request } from '../../api';
+import { SharedPreferences } from '../../util/shared-preferences';
+import { NoActiveChannelFoundError } from '../errors/no-active-channel-found-error';
+import { SystemSettingsService } from '../../system-settings';
+import { SdkConfig } from '../../sdk-config';
+import { FrameworkKeys } from '../../preference-keys';
+import { inject, injectable, Container } from 'inversify';
+import { CsInjectionTokens, InjectionTokens } from "../../injection-tokens";
+import { catchError, map, mapTo, mergeMap, tap } from 'rxjs/operators';
+import { CsModule } from '@project-sunbird/client-services';
+import { CsFrameworkService } from '@project-sunbird/client-services/services/framework/interface';
+import { FormParams } from '@project-sunbird/client-services/services/form/interface/cs-form-service';
+import { FormRequest } from 'src';
 
 @injectable()
 export class FrameworkServiceImpl implements FrameworkService {
@@ -32,11 +35,13 @@ export class FrameworkServiceImpl implements FrameworkService {
     private _activeChannelId?: string;
 
     constructor(@inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig,
-                @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
-                @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
-                @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
-                @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
-                @inject(InjectionTokens.SYSTEM_SETTINGS_SERVICE) private systemSettingsService: SystemSettingsService) {
+        @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
+        @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
+        @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
+        @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
+        @inject(InjectionTokens.SYSTEM_SETTINGS_SERVICE) private systemSettingsService: SystemSettingsService,
+        @inject(InjectionTokens.CONTAINER) private container: Container,
+        @inject(CsInjectionTokens.FRAMEWORK_SERVICE) private csFrameworkService: CsFrameworkService) {
     }
 
     get activeChannelId(): string | undefined {
@@ -57,6 +62,7 @@ export class FrameworkServiceImpl implements FrameworkService {
         );
     }
 
+
     getDefaultChannelId(): Observable<string> {
         return iif(
             () => (!this.sdkConfig.frameworkServiceConfig.overriddenDefaultChannelId),
@@ -68,9 +74,9 @@ export class FrameworkServiceImpl implements FrameworkService {
                 );
             }),
             defer(() => {
-               return of(this.sdkConfig.frameworkServiceConfig.overriddenDefaultChannelId as string)
+                return of(this.sdkConfig.frameworkServiceConfig.overriddenDefaultChannelId as string)
             })
-        );        
+        );
     }
 
     getDefaultChannelDetails(request = { from: CachedItemRequestSourceFrom.CACHE }): Observable<Channel> {
@@ -106,11 +112,21 @@ export class FrameworkServiceImpl implements FrameworkService {
         ).handle(request);
     }
 
+    getFrameworkConfig(frameworkId: string, formRequest?: FormRequest): Observable<any> {
+        let params;
+        if(formRequest){
+            params = { type: formRequest.type, subType: formRequest.subType, action: formRequest.action, rootOrgId: formRequest.rootOrgId, framework: formRequest.framework, component: formRequest.component }
+        }
+        return this.csFrameworkService.getFrameworkConfig(frameworkId,
+            { apiPath: "/api/framework/v1" },
+            { apiPath: "/api/data/v1/form", params })
+    }
+
     searchOrganization<T extends Partial<Organization>>(request: OrganizationSearchCriteria<T>): Observable<OrganizationSearchResponse<T>> {
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.sdkConfig.frameworkServiceConfig.searchOrganizationApiPath + FrameworkServiceImpl.SEARCH_ORGANIZATION_ENDPOINT)
-            .withBody({request})
+            .withBody({ request })
             .withBearerToken(true)
             .build();
 

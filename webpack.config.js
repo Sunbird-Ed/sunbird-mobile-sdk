@@ -67,7 +67,8 @@ const config = {
         fallback: { 
             "crypto": false,
             "stream": false,
-            "buffer": false
+            "buffer": false,
+            util: require.resolve("util/")
         }
     },
     optimization: {

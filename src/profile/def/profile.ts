@@ -31,5 +31,6 @@ export interface Profile {
     source: ProfileSource;
     gradeValue?: { [key: string]: any };
     serverProfile?: ServerProfile;
+    categories?: string;
 }
 
