@@ -40,7 +40,7 @@ export const DialcodeRequestData = {
                     'Class 5'
                 ],
                 'children': [],
-                'appId': 'prod.diksha.app',
+                'appId': 'prod.sample.app',
                 'contentEncoding': 'gzip',
                 'mimeTypesCount': '{"application/vnd.ekstep.content-collection":28,"application/vnd.ekstep.ecml-archive":5}',
                 'contentType': 'TextBook',
@@ -200,7 +200,7 @@ export const DialcodeRequestData = {
                 'children':
                     [],
                 'appId':
-                    'prod.diksha.app',
+                    'prod.sample.app',
                 'contentEncoding':
                     'gzip',
                 'mimeTypesCount':
@@ -414,7 +414,7 @@ export const DialcodeRequestData = {
                 'children':
                     [],
                 'appId':
-                    'prod.diksha.app',
+                    'prod.sample.app',
                 'contentEncoding':
                     'gzip',
                 'mimeTypesCount':
@@ -690,7 +690,7 @@ export const DialcodeRequestData = {
                             'do_2122952073430794241288',
                             'do_212504092616179712112413'
                         ],
-                        'appId': 'staging.diksha.portal',
+                        'appId': 'staging.sample.portal',
                         'contentEncoding': 'gzip',
                         'lockKey': '5e860e08-7840-4f8c-ba25-1cb1de580e93',
                         'mimeTypesCount': '{"application/vnd.ekstep.content-collection":2,"application/vnd.ekstep.ecml-archive":2}',
@@ -823,7 +823,7 @@ export const DialcodeRequestData = {
                             'do_21288777763980083213435',
                             'do_2129314570511400961343'
                         ],
-                        'appId': 'staging.diksha.portal',
+                        'appId': 'staging.sample.portal',
                         'contentEncoding': 'gzip',
                         'lockKey': '91f0e077-995f-4bd4-9f1c-9283be0eebff',
                         'mimeTypesCount': '{"application/pdf":1,"application/vnd.ekstep.content-collection":3,"application/vnd.ekstep.ecml-archive":3,"video/x-youtube":1}',
@@ -1055,7 +1055,7 @@ export const DialcodeRequestData = {
                         'children':
                             [],
                         'appId':
-                            'prod.diksha.app',
+                            'prod.sample.app',
                         'contentEncoding':
                             'gzip',
                         'mimeTypesCount':
@@ -1252,7 +1252,7 @@ export const DialcodeRequestData = {
                             'do_2122952073430794241288',
                             'do_212504092616179712112413'
                         ],
-                        'appId': 'staging.diksha.portal',
+                        'appId': 'staging.sample.portal',
                         'contentEncoding': 'gzip',
                         'lockKey': '5e860e08-7840-4f8c-ba25-1cb1de580e93',
                         'mimeTypesCount': '{"application/vnd.ekstep.content-collection":2,"application/vnd.ekstep.ecml-archive":2}',
@@ -1385,7 +1385,7 @@ export const DialcodeRequestData = {
                             'do_21288777763980083213435',
                             'do_2129314570511400961343'
                         ],
-                        'appId': 'staging.diksha.portal',
+                        'appId': 'staging.sample.portal',
                         'contentEncoding': 'gzip',
                         'lockKey': '91f0e077-995f-4bd4-9f1c-9283be0eebff',
                         'mimeTypesCount': '{"application/pdf":1,"application/vnd.ekstep.content-collection":3,"application/vnd.ekstep.ecml-archive":3,"video/x-youtube":1}',

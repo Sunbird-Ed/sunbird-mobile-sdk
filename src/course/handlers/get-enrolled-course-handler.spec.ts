@@ -60,7 +60,7 @@ describe('GetEnrolledCourseHandler', () => {
             userId: 'uid-1234589',
             returnFreshCourses: true
         };
-        mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('diksha-user'));
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('sample-user'));
         mockApiService.fetch = jest.fn().mockImplementation(() => of({body: {  result: {
             courses: {result: {}},
         }}}));
@@ -94,7 +94,7 @@ describe('GetEnrolledCourseHandler', () => {
                 courses: [{}],
             }
         };
-        mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('diksha-user'));
+        mockKeyValueStore.getValue = jest.fn().mockImplementation(() => of('sample-user'));
         mockApiService.fetch = jest.fn().mockImplementation(() => of(data));
         JSON.parse = jest.fn().mockImplementation().mockImplementationOnce(() => {
             return data;

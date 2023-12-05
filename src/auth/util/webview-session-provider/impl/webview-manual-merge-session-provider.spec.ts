@@ -46,7 +46,7 @@ describe('WebviewManualMergeSessionProvider', () => {
                 refresh_token: 'SOME_REFRESH_TOKEN',
                 userToken: 'SOME_USER_TOKEN'
             };
-            const mockPdata = {'id': 'staging.diksha.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'};
+            const mockPdata = {'id': 'staging.sample.app', 'pid': 'sunbird.app', 'ver': '2.6.local.0-debug'};
             mockTelemetryService.buildContext = jest.fn().mockImplementation(() => {
                 return of({
                     pdata: mockPdata
