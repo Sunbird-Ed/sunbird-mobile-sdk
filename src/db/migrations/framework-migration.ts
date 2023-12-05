@@ -42,7 +42,7 @@ export class FrameworkMigration extends Migration {
         }
     }
 
-    getUpdateQueries(entries) {
+    private getUpdateQueries(entries) {
         const categories = {};
         categories['fwCategory1'] = entries.board;
         categories['fwCategory2'] = entries.medium;

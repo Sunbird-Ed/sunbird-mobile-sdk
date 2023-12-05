@@ -28,6 +28,7 @@ import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migrati
 import {GroupProfileMigration} from './db/migrations/group-profile-migration';
 import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
 import {ErrorStackMigration} from './db/migrations/error-stack-migration';
+import {FrameworkMigration} from './db/migrations/framework-migration';
 import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
 import {SystemSettingsService, SystemSettingsServiceImpl} from './system-settings';
 import {ZipService} from './util/zip/def/zip-service';
@@ -277,7 +278,7 @@ export class SunbirdSdk {
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(30);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(31);
 
         this._container.bind<(Migration | MigrationFactory)[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
             new ProfileSyllabusMigration(),
@@ -296,7 +297,8 @@ export class SunbirdSdk {
             },
             new ContentGeneralizationMigration(),
             new PlayerConfigDataMigrations(),
-            new CertificatePublicKeyMigration()
+            new CertificatePublicKeyMigration(),
+            new FrameworkMigration()
         ]);
 
         switch (sdkConfig.platform) {
