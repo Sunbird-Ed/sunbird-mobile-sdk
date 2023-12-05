@@ -25,6 +25,7 @@ export namespace ProfileEntry {
     export const COLUMN_NAME_SOURCE = 'source';
     export const COLUMN_NAME_GRADE_VALUE = 'grade_value';
     export const COLUMN_VALUE = 'value';
+    export const COLUMN_NAME_CATEGORIES = 'categories';
 
 
     export interface SchemaMap {
@@ -39,6 +40,7 @@ export namespace ProfileEntry {
         [COLUMN_NAME_SYLLABUS]: string;
         [COLUMN_NAME_SOURCE]: string;
         [COLUMN_NAME_GRADE_VALUE]: string;
+        [COLUMN_NAME_CATEGORIES]?: string;
     }
 
     export const getCreateEntry: () => string = () => {
@@ -61,6 +63,7 @@ export namespace ProfileEntry {
             COLUMN_NAME_PROFILE_IMAGE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_PROFILE_TYPE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT "teacher"' + DbConstants.COMMA_SEP +
             COLUMN_NAME_GRADE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
+            COLUMN_NAME_CATEGORIES + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\'' + DbConstants.COMMA_SEP +
             COLUMN_NAME_SYLLABUS + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_NAME_SOURCE + DbConstants.SPACE + DbConstants.TEXT_TYPE + DbConstants.COMMA_SEP +
             COLUMN_VALUE + DbConstants.SPACE + DbConstants.TEXT_TYPE + ' DEFAULT ""' + DbConstants.COMMA_SEP +
@@ -74,6 +77,12 @@ export namespace ProfileEntry {
     export const getAlterEntryForProfileSyllabus: (() => string) = () => {
         return 'ALTER TABLE ' + TABLE_NAME + ' ADD COLUMN ' + DbConstants.SPACE +
             ProfileEntry.COLUMN_NAME_SYLLABUS + DbConstants.TEXT_TYPE + '  DEFAULT \'\';';
+
+    };
+
+    export const getAlterEntryForProfileCategories: (() => string) = () => {
+        return 'ALTER TABLE ' + TABLE_NAME + ' ADD COLUMN ' + DbConstants.SPACE +
+            ProfileEntry.COLUMN_NAME_CATEGORIES + DbConstants.SPACE + DbConstants.TEXT_TYPE + '  DEFAULT \'\';';
 
     };
 }
