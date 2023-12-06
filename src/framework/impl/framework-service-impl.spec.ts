@@ -10,8 +10,9 @@ import {SystemSettings, SystemSettingsService} from '../../system-settings';
 import {SdkConfig} from '../../sdk-config';
 import {FrameworkKeys} from '../../preference-keys';
 import {Container} from 'inversify';
-import {InjectionTokens} from '../../injection-tokens';
+import {CsInjectionTokens, InjectionTokens} from '../../injection-tokens';
 import {CsModule} from '@project-sunbird/client-services';
+import {CsFrameworkService} from '@project-sunbird/client-services/services/framework/interface';
 
 jest.mock('../handler/get-channel-detail-handler');
 
@@ -27,8 +28,9 @@ describe('FrameworkServiceImpl', () => {
     const mockFileService: Partial<FileService> = {};
     const mockCacheItemStore: Partial<CachedItemStore> = {};
     const mockSharedPreferences: Partial<SharedPreferences> = {};
-    const mockSystemSettingsService:   Partial<SystemSettingsService> = {};
+    const mockSystemSettingsService: Partial<SystemSettingsService> = {};
     const mockgetChannelDetailHandler: Partial<GetChannelDetailsHandler> = {};
+    const mockframeworkService: Partial<CsFrameworkService> = {};
     beforeAll(() => {
         container.bind<FrameworkService>(InjectionTokens.FRAMEWORK_SERVICE).to(FrameworkServiceImpl).inSingletonScope();
         container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(container);
@@ -39,6 +41,7 @@ describe('FrameworkServiceImpl', () => {
         container.bind<SharedPreferences>(InjectionTokens.SHARED_PREFERENCES).toConstantValue(mockSharedPreferences as SharedPreferences);
         // tslint:disable-next-line:max-line-length
         container.bind<SystemSettingsService>(InjectionTokens.SYSTEM_SETTINGS_SERVICE).toConstantValue(mockSystemSettingsService as SystemSettingsService);
+        container.bind<CsFrameworkService>(CsInjectionTokens.FRAMEWORK_SERVICE).toConstantValue(mockframeworkService as CsFrameworkService);
         frameworkService = container.get(InjectionTokens.FRAMEWORK_SERVICE);
     });
 
@@ -229,6 +232,22 @@ describe('FrameworkServiceImpl', () => {
         frameworkService.getChannelDetails(request).subscribe((chennal: Channel) => {
             // assert
             expect(chennal.identifier).toBe('SOME_IDENTIFIER');
+            done();
+        });
+    });
+
+    it('should be return all framework categories', (done) => {
+        const frameworkId = 'sample-frameworkId';
+        const formRequest = {
+            type: 'config',
+            subType: 'framework',
+            action: 'get'
+        };
+        mockframeworkService.getFrameworkConfig = jest.fn(() => of([
+            { code: 'sample-code', label: 'sample-label', identifier: 'fwCategory1' }
+        ]));
+        frameworkService.getFrameworkConfig(frameworkId, formRequest).subscribe(() => {
+            expect(mockframeworkService.getFrameworkConfig).toHaveBeenCalled();
             done();
         });
     });

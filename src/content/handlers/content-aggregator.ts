@@ -399,9 +399,11 @@ export class ContentAggregator {
                                 x.values = x.values.filter(y =>  facetConfig.values.
                                     find(z => (z.code === y.name.replace(/\s+/g, '').toLowerCase())));
                                 const configFacets = facetConfig.values.filter(configFacet => configFacet.type = attribute);
-                                mergeableFacets!!.values = mergeableFacets!!.values.
+                                if (mergeableFacets) {
+                                    mergeableFacets!!.values = mergeableFacets!!.values.
                                     filter(y => configFacets.find(z => (z.code === y.name.replace(/\s+/g, ''))));
                                 x.values = x.values.concat(mergeableFacets!!.values);
+                                }
                             });
                         }
                     });
