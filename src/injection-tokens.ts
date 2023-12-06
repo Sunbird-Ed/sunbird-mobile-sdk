@@ -7,6 +7,7 @@ export const CsInjectionTokens = {
     CONTENT_SERVICE: Symbol.for('CS_CONTENT_SERVICE'),
     NOTIFICATION_SERVICE_V2: Symbol.for('CS_NOTIFICATION_SERVICE'),
     CERTIFICATE_SERVICE: Symbol.for('CS_CERTIFICATE_SERVICE'),
+    FRAMEWORK_SERVICE: Symbol.for('CS_FRAMEWORK_SERVICE'),
 };
 
 export const InjectionTokens = {

@@ -5,6 +5,7 @@ import {ChannelDetailsRequest, FrameworkDetailsRequest, OrganizationSearchCriter
 import {SdkServicePreInitDelegate} from '../../sdk-service-pre-init-delegate';
 import {Organization, OrganizationSearchResponse} from '..';
 import {GetDefaultChannelDetailsRequest} from '..';
+import {FormRequest} from '../../form';
 
 export interface FrameworkService extends SdkServicePreInitDelegate {
     /** @internal */
@@ -17,6 +18,8 @@ export interface FrameworkService extends SdkServicePreInitDelegate {
     getChannelDetails(request: ChannelDetailsRequest): Observable<Channel>;
 
     getFrameworkDetails(request: FrameworkDetailsRequest): Observable<Framework>;
+
+    getFrameworkConfig(frameworkId: string, formRequest?: FormRequest): Observable<any>;
 
     searchOrganization<T extends Partial<Organization>>(request: OrganizationSearchCriteria<T>): Observable<OrganizationSearchResponse<T>>;
 
