@@ -68,7 +68,7 @@ const config = {
             "crypto": false,
             "stream": false,
             "buffer": false,
-            util: require.resolve("util/")
+            "util": false
         }
     },
     optimization: {
