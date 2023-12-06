@@ -1,7 +1,7 @@
 import {ApiRequestHandler} from '../../api';
 import {ProfileServiceConfig, ServerProfile, ServerProfileDetailsRequest} from '..';
 import {CachedItemRequest, CachedItemRequestSourceFrom, CachedItemStore, KeyValueStore} from '../../key-value-store';
-import {Observable, of} from 'rxjs';
+import {Observable, of, throwError} from 'rxjs';
 import {catchError, mergeMap, tap} from 'rxjs/operators';
 import {CsInjectionTokens} from '../../injection-tokens';
 import {CsUserService} from '@project-sunbird/client-services/services/user';
@@ -39,7 +39,10 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
                                 this.USER_PROFILE_DETAILS_KEY_PREFIX + '-' + profile.id, JSON.stringify(profile)
                             ).toPromise();
                         }),
-                        catchError(() => {
+                        catchError((error) => {
+                            if(serverProfileDetailsRequest.forceRefresh) {
+                                 throw error;
+                            }
                             return this.fetchFromCache(serverProfileDetailsRequest);
                         })
                     );
