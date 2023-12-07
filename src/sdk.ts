@@ -28,6 +28,7 @@ import {ProfileSyllabusMigration} from './db/migrations/profile-syllabus-migrati
 import {GroupProfileMigration} from './db/migrations/group-profile-migration';
 import {MillisecondsToSecondsMigration} from './db/migrations/milliseconds-to-seconds-migration';
 import {ErrorStackMigration} from './db/migrations/error-stack-migration';
+import {FrameworkMigration} from './db/migrations/framework-migration';
 import {ContentMarkerMigration} from './db/migrations/content-marker-migration';
 import {SystemSettingsService, SystemSettingsServiceImpl} from './system-settings';
 import {ZipService} from './util/zip/def/zip-service';
@@ -95,6 +96,7 @@ import {PlayerConfigDataMigrations} from './db/migrations/player-config-data-mig
 import { CertificatePublicKeyMigration } from './db/migrations/certificate-public-key-migration';
 import { CsCertificateService } from '@project-sunbird/client-services/services/certificate';
 import { CertificateService, CertificateServiceImpl } from './certificate';
+import { CsFrameworkService } from '@project-sunbird/client-services/services/framework/interface';
 
 export class SunbirdSdk {
     private _container: Container;
@@ -276,7 +278,7 @@ export class SunbirdSdk {
 
         this._container.bind<Container>(InjectionTokens.CONTAINER).toConstantValue(this._container);
 
-        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(30);
+        this._container.bind<number>(InjectionTokens.DB_VERSION).toConstantValue(31);
 
         this._container.bind<(Migration | MigrationFactory)[]>(InjectionTokens.DB_MIGRATION_LIST).toConstantValue([
             new ProfileSyllabusMigration(),
@@ -295,7 +297,8 @@ export class SunbirdSdk {
             },
             new ContentGeneralizationMigration(),
             new PlayerConfigDataMigrations(),
-            new CertificatePublicKeyMigration()
+            new CertificatePublicKeyMigration(),
+            new FrameworkMigration()
         ]);
 
         switch (sdkConfig.platform) {
@@ -444,7 +447,10 @@ export class SunbirdSdk {
                         apiPath: sdkConfig.certificateServiceConfig.apiPath,
                         apiPathLegacy: sdkConfig.certificateServiceConfig.apiPathLegacy,
                         rcApiPath: sdkConfig.certificateServiceConfig.rcApiPath
-                    }
+                    },
+                    frameworkServiceConfig: {
+                        apiPath: '/api/framework/v1'
+                    },
                 }
             }, (() => {
                 this._container.rebind<CsHttpService>(CsInjectionTokens.HTTP_SERVICE).toConstantValue(CsModule.instance.httpService);
@@ -455,6 +461,7 @@ export class SunbirdSdk {
                 this._container.rebind<CsContentService>(CsInjectionTokens.CONTENT_SERVICE).toConstantValue(CsModule.instance.contentService);
                 this._container.rebind<CsNotificationService>(CsInjectionTokens.NOTIFICATION_SERVICE_V2).toConstantValue(CsModule.instance.notificationService);
                 this._container.rebind<CsCertificateService>(CsInjectionTokens.CERTIFICATE_SERVICE).toConstantValue(CsModule.instance.certificateService);
+                this._container.rebind<CsFrameworkService>(CsInjectionTokens.FRAMEWORK_SERVICE).toConstantValue(CsModule.instance.frameworkService);
             }).bind(this),
             new class implements CsClientStorage {
 
@@ -475,6 +482,7 @@ export class SunbirdSdk {
         this._container.bind<CsContentService>(CsInjectionTokens.CONTENT_SERVICE).toConstantValue(CsModule.instance.contentService);
         this._container.bind<CsNotificationService>(CsInjectionTokens.NOTIFICATION_SERVICE_V2).toConstantValue(CsModule.instance.notificationService);
         this._container.bind<CsCertificateService>(CsInjectionTokens.CERTIFICATE_SERVICE).toConstantValue(CsModule.instance.certificateService);
+        this._container.bind<CsFrameworkService>(CsInjectionTokens.FRAMEWORK_SERVICE).toConstantValue(CsModule.instance.frameworkService);
 
         await this.dbService.init();
         await this.appInfo.init();

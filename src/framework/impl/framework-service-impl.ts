@@ -20,9 +20,11 @@ import {SystemSettingsService} from '../../system-settings';
 import {SdkConfig} from '../../sdk-config';
 import {FrameworkKeys} from '../../preference-keys';
 import {inject, injectable} from 'inversify';
-import {InjectionTokens} from '../../injection-tokens';
+import {InjectionTokens, CsInjectionTokens} from '../../injection-tokens';
 import {catchError, map, mapTo, mergeMap, tap} from 'rxjs/operators';
 import {CsModule} from '@project-sunbird/client-services';
+import { CsFrameworkService } from '@project-sunbird/client-services/services/framework/interface';
+import { FormRequest } from 'src';
 
 @injectable()
 export class FrameworkServiceImpl implements FrameworkService {
@@ -36,7 +38,8 @@ export class FrameworkServiceImpl implements FrameworkService {
                 @inject(InjectionTokens.API_SERVICE) private apiService: ApiService,
                 @inject(InjectionTokens.CACHED_ITEM_STORE) private cachedItemStore: CachedItemStore,
                 @inject(InjectionTokens.SHARED_PREFERENCES) private sharedPreferences: SharedPreferences,
-                @inject(InjectionTokens.SYSTEM_SETTINGS_SERVICE) private systemSettingsService: SystemSettingsService) {
+                @inject(InjectionTokens.SYSTEM_SETTINGS_SERVICE) private systemSettingsService: SystemSettingsService,
+                @inject(CsInjectionTokens.FRAMEWORK_SERVICE) private csFrameworkService: CsFrameworkService) {
     }
 
     get activeChannelId(): string | undefined {
@@ -104,6 +107,16 @@ export class FrameworkServiceImpl implements FrameworkService {
             this.fileService,
             this.cachedItemStore,
         ).handle(request);
+    }
+
+    getFrameworkConfig(frameworkId: string, formRequest?: FormRequest): Observable<any> {
+        let params;
+        if(formRequest){
+            params = { type: formRequest.type, subType: formRequest.subType, action: formRequest.action, rootOrgId: formRequest.rootOrgId, framework: formRequest.framework, component: formRequest.component }
+        }
+        return this.csFrameworkService.getFrameworkConfig(frameworkId,
+            { apiPath: "/api/framework/v1" },
+            { apiPath: "/api/data/v1/form", params })
     }
 
     searchOrganization<T extends Partial<Organization>>(request: OrganizationSearchCriteria<T>): Observable<OrganizationSearchResponse<T>> {
