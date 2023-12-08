@@ -14,7 +14,8 @@ export class ProfileDbEntryMapper {
             grade: profileEntry[ProfileEntry.COLUMN_NAME_GRADE] ? profileEntry[ProfileEntry.COLUMN_NAME_GRADE].split(',') : [],
             syllabus: profileEntry[ProfileEntry.COLUMN_NAME_SYLLABUS] ? profileEntry[ProfileEntry.COLUMN_NAME_SYLLABUS].split(',') : [],
             source: profileEntry[ProfileEntry.COLUMN_NAME_SOURCE] as ProfileSource,
-            gradeValue: profileEntry[ProfileEntry.COLUMN_NAME_GRADE_VALUE] && JSON.parse(profileEntry[ProfileEntry.COLUMN_NAME_GRADE_VALUE])
+            gradeValue: profileEntry[ProfileEntry.COLUMN_NAME_GRADE_VALUE] && JSON.parse(profileEntry[ProfileEntry.COLUMN_NAME_GRADE_VALUE]),
+            categories: profileEntry[ProfileEntry.COLUMN_NAME_CATEGORIES]
         };
     }
 
@@ -30,7 +31,8 @@ export class ProfileDbEntryMapper {
             [ProfileEntry.COLUMN_NAME_GRADE]: (profile.grade ? profile.grade.join(',') : ''),
             [ProfileEntry.COLUMN_NAME_SYLLABUS]: (profile.syllabus ? profile.syllabus.join(',') : ''),
             [ProfileEntry.COLUMN_NAME_SOURCE]: profile.source,
-            [ProfileEntry.COLUMN_NAME_GRADE_VALUE]: (profile.gradeValue ? JSON.stringify(profile.gradeValue) : '')
+            [ProfileEntry.COLUMN_NAME_GRADE_VALUE]: (profile.gradeValue ? JSON.stringify(profile.gradeValue) : ''),
+            [ProfileEntry.COLUMN_NAME_CATEGORIES]: (profile.categories ? JSON.stringify(profile.categories) : ''),
         };
     }
 
