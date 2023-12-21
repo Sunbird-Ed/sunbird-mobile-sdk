@@ -1,4 +1,4 @@
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { DeleteProfileDataHandler } from './delete-profile-data.handler';
 import { DbService } from '../../db';
 
@@ -63,14 +63,15 @@ describe('DeleteProfileDataHandler', () => {
   it('should handle errors during deletion',  (done) => {
     //arrange
     mockDbService.beginTransaction = jest.fn();
-    mockDbService.delete = jest.fn(() => of(undefined));
+    mockDbService.delete = jest.fn(() => throwError({error: 'error'}));
+
     mockDbService.execute = jest.fn(() => of([{value: JSON.stringify({
-        managedBy: 'sample',
-        userId: 'sampleUser'
+        managedBy: 'sample1',
+        userId: 'sampleUser1'
     })},
     {value: JSON.stringify({
-        managedBy: 'sample',
-        userId: 'sampleUser'
+        managedBy: 'sample2',
+        userId: 'sampleUser2'
     })}]))
     const uid = 'testUid';
 
@@ -81,9 +82,9 @@ describe('DeleteProfileDataHandler', () => {
 
         //assert
         setTimeout(() => {
-        expect(mockDbService.endTransaction).toHaveBeenCalledWith(true);
+        expect(mockDbService.endTransaction).toHaveBeenCalledWith(false);
         expect(mockDbService.execute).toHaveBeenCalled();
-        expect(data).toBe(true);
+        expect(data).toBe(false);
             done();
           }, 10); 
           })   
