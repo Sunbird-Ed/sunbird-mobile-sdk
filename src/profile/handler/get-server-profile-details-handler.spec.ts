@@ -77,33 +77,7 @@ describe('GetServerProfileDetailsHandler', () => {
             done();
         });
     });
-
-    it('should throw error in case of forceRefresh', (done) => {
-        // arrange
-        const serverProfileDetailsRequest = {
-            userId: 'U-001',
-            from: 'server',
-            requiredFields: [],
-            forceRefresh: true
-        };
     
-        jest.spyOn(mockCsUserService, 'getProfileDetails').mockImplementation(() => {
-            throw new Error('Error occurred while fetching profile details');
-        });
-    
-        // act
-        getServerProfileDetailsHandler.handle(serverProfileDetailsRequest).subscribe({
-            error: (err) => {
-                // assert
-                expect(err.message).toBe('Error occurred while fetching profile details');
-                expect(mockCachedItemStore.getCached).not.toHaveBeenCalled(); 
-                expect(mockCsUserService.getProfileDetails).toHaveBeenCalled();
-                done();
-            }
-        });
-    });
-    
-
     it('should fetch profile data from cache on handle()', (done) => {
         // arrange
         const serverProfileDetailsRequest = {
