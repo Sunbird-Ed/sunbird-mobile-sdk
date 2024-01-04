@@ -59,7 +59,8 @@ describe('GetServerProfileDetailsHandler', () => {
         const serverProfileDetailsRequest = {
             userId: 'U-001',
             from: 'server',
-            requiredFields: []
+            requiredFields: [],
+            forceRefresh: false
         };
         mockCachedItemStore.getCached = jest.fn().mockImplementation(() => of({
             userId: 'U-001',
@@ -76,7 +77,7 @@ describe('GetServerProfileDetailsHandler', () => {
             done();
         });
     });
-
+    
     it('should fetch profile data from cache on handle()', (done) => {
         // arrange
         const serverProfileDetailsRequest = {
