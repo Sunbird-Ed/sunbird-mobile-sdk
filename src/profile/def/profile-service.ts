@@ -102,4 +102,6 @@ export interface ProfileService extends SdkServicePreInitDelegate {
     updateConsent(userConsent: Consent): Observable<UpdateConsentResponse>;
 
     getConsent(userConsent: Consent): Observable<ReadConsentResponse>;
+
+    deleteProfileData(uid: string): Observable<boolean>;
 }
