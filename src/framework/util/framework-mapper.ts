@@ -17,11 +17,12 @@ export class FrameworkMapper {
                     if (!term.associations) {
                         return term;
                     }
-
-                    term.associations = term.associations.filter((association: CategoryAssociation) => {
-                        return (categoryIndex >= framework.categories!.length - 1)
-                            || (association.category === framework.categories![categoryIndex + 1].code);
-                    });
+                    if (term.associations.length) {
+                        term.associations = term.associations.filter((association: CategoryAssociation) => {
+                            return (categoryIndex >= framework.categories!.length - 1)
+                                || (association.category === framework.categories![categoryIndex + 1].code);
+                        });
+                    }
 
                     return term;
                 })
