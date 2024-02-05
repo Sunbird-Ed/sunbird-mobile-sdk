@@ -242,7 +242,7 @@ export class SearchContentHandler {
     if (!facets) {
       return contentSearchCriteria;
     }
-    console.log('appliedFilterMap.............', appliedFilterMap)
+
     facets.forEach((facet) => {
       const appliedFilter: string[] = appliedFilterMap ? appliedFilterMap[facet.name] : [];
       const facetValues: FilterValue[] = facet.values;
@@ -391,7 +391,6 @@ export class SearchContentHandler {
   }
 
   private getSortedFilterValuesWithAppliedFilters(facetValues: FilterValue[], appliedFilters: string[]): FilterValue[] {
-    console.log('appliedFilter............facetValues', appliedFilters, facetValues);
     facetValues.forEach((facetValue) => {
       let applied = false;
       if (appliedFilters) {
