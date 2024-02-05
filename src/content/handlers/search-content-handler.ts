@@ -133,17 +133,19 @@ export class SearchContentHandler {
 
         if (filterValueList.length) {
           let key = facetFilter.name;
-          switch (facetFilter.name) {
-            case 'board':
-              key = 'se_boards';
-              break;
-            case 'medium':
-              key = 'se_mediums';
-              break;
-            case 'gradeLevel':
-            case 'grade':
-              key = 'se_gradeLevels';
-              break;
+          if (facetFilter['alternative']) {
+            switch (facetFilter.name) {
+              case 'board':
+                key = 'se_boards';
+                break;
+              case 'medium':
+                key = 'se_mediums';
+                break;
+              case 'gradeLevel':
+              case 'grade':
+                key = 'se_gradeLevels';
+                break;
+            }
           }
           searchFilter[key] = filterValueList;
         }
