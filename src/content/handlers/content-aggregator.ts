@@ -388,10 +388,10 @@ export class ContentAggregator {
             task: defer(async () => {
                 const searchResult = await this.searchContents(field, searchCriteria, searchRequest);
                 return field.sections.map((section, index) => {
-                    let searchFacetFilters =  searchResult.filterCriteria.facetFilters || [];
+                    let searchFacetFilters = searchResult.filterCriteria.facetFilters ?? [];
                     const toBeDeletedFacets: string[] = [];
                     searchFacetFilters.map((x) => {
-                        const facetConfig = (field.dataSrc.params.config.find(element => element.name === x.name));
+                        const facetConfig = (field.dataSrc.params?.config?.find(element => element.name === x.name));
                         if (facetConfig) {
                             facetConfig.mergeableAttributes.map((attribute) => {
                                 toBeDeletedFacets.push(attribute);
@@ -409,12 +409,11 @@ export class ContentAggregator {
                     });
                     searchFacetFilters = searchFacetFilters.filter(x => toBeDeletedFacets.indexOf(x.name) === -1 );
                     const facetFilters = searchFacetFilters.find((x) =>
-                        x.name === (field.dataSrc.mapping[index] && field.dataSrc.mapping[index].facet)
+                        x.name === field.dataSrc.mapping[index]?.facet
                     );
 
                     if (facetFilters) {
-                        const facetConfig = field.dataSrc.params && field.dataSrc.params.config &&
-                                   field.dataSrc.params.config.find(x => x.name === facetFilters.name);
+                        const facetConfig = field.dataSrc.params?.config?.find(x => x.name === facetFilters.name);
                         return {
                             index: section.index,
                             title: section.title,
@@ -424,12 +423,11 @@ export class ContentAggregator {
                                             find(x => x.code === filterValue.name.
                                             replace(/\s+/g, '').toLowerCase()) : [];
                                 return {
-                                    facet: facetCategoryConfig && facetCategoryConfig.name ? facetCategoryConfig.name : filterValue.name,
+                                    facet: facetCategoryConfig?.name ? facetCategoryConfig.name : filterValue.name,
                                     searchCriteria: {
                                         ...searchCriteria,
                                         primaryCategories:  [],
-                                        impliedFilters: facetCategoryConfig.searchCriteria &&
-                                        facetCategoryConfig.searchCriteria.impliedFilters ?
+                                        impliedFilters: facetCategoryConfig?.searchCriteria?.impliedFilters ?
                                           facetCategoryConfig.searchCriteria.impliedFilters :
                                           [{name: facetFilters.name, values: [{name: filterValue.name, apply: true}]}]
                                         // [facetFilters.name]: [filterValue.name]
