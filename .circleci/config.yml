@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: cimg/node:14.17.3
+      - image: cimg/node:16.20.2
     steps:
       - checkout
       - run:
@@ -28,7 +28,7 @@ jobs:
           path: coverage
       - run:
           name: install sonar scanner
-          command: sudo npm install -g sonarqube-scanner
+          command: sudo npm install -g sonarqube-scanner@3.0.1
       - run:
           name: Run SonarScanner
           command: sonar-scanner
