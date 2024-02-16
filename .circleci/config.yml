@@ -28,7 +28,12 @@ jobs:
           path: coverage
       - run:
           name: install sonar scanner
-          command: sudo npm install -g sonarqube-scanner@3.0.1
+          command: |
+            cd /tmp
+            wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
+            unzip || sudo apt install unzip -y
+            unzip sonar-scanner-cli-4.6.2.2472-linux.zip
+            cd -
       - run:
           name: Run SonarScanner
           command: sonar-scanner
