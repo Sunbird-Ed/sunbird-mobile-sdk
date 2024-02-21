@@ -34,6 +34,7 @@ import {ReadConsentResponse, UpdateConsentResponse} from '@project-sunbird/clien
 import {UpdateUserFeedRequest} from './update-user-feed-request';
 import {DeleteUserFeedRequest} from './delete-user-feed-request';
 import {UpdateServerProfileResponse} from './update-server-profile-response';
+import { DeleteUserRequest } from './delete-user-request';
 
 export {Consent} from '@project-sunbird/client-services/models';
 export {ReadConsentResponse, UpdateConsentResponse} from '@project-sunbird/client-services/services/user';
@@ -104,4 +105,6 @@ export interface ProfileService extends SdkServicePreInitDelegate {
     getConsent(userConsent: Consent): Observable<ReadConsentResponse>;
 
     deleteProfileData(uid: string): Observable<boolean>;
+
+    deleteUser(deleteUserRequest: DeleteUserRequest): Observable<boolean>;
 }

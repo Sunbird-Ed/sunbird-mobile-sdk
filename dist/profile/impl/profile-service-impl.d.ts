@@ -19,6 +19,7 @@ import { Observable } from 'rxjs';
 import { UserFeed } from '../def/user-feed-response';
 import { UserMigrateRequest } from '../def/user-migrate-request';
 import { UserMigrateResponse } from '../def/user-migrate-response';
+import { DeleteUserRequest } from '../def/delete-user-request';
 export declare class ProfileServiceImpl implements ProfileService {
     private container;
     private sdkConfig;
@@ -64,4 +65,5 @@ export declare class ProfileServiceImpl implements ProfileService {
     private generateSessionEndTelemetry;
     getUserFeed(): Observable<UserFeed[]>;
     userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse>;
+    deleteUser(deleteUserRequest: DeleteUserRequest): Observable<boolean>;
 }

@@ -94,6 +94,8 @@ import {DeleteUserFeedRequest} from '../def/delete-user-feed-request';
 import {UpdateServerProfileResponse} from '../def/update-server-profile-response';
 import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-request';
 import {DeleteProfileDataHandler} from '../handler/delete-profile-data.handler';
+import { DeleteUserRequest } from '../def/delete-user-request';
+import { DeleteAccountHandler } from '../handler/delete-account-handler';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -797,6 +799,10 @@ export class ProfileServiceImpl implements ProfileService {
 
     deleteProfileData(uid: string): Observable<boolean> {
         return new DeleteProfileDataHandler(this.dbService).delete(uid);
+    }
+
+    deleteUser(deleteUserRequest: DeleteUserRequest): Observable<boolean> {
+        return new DeleteAccountHandler(this.apiService, this.sdkConfig.profileServiceConfig).handle(deleteUserRequest);
     }
 }
 
