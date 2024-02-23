@@ -81,8 +81,8 @@ export class GetChildQuestionSetHandler{
 
     async fetchServerChildQuestions(questionSetId){
         const questionSetData: any = await this.contentService.getQuestionSetHierarchy(questionSetId).toPromise();
-        if(questionSetData && questionSetData.questionSet && questionSetData.questionSet.children){
-            return questionSetData.questionSet.children
+        if(questionSetData && questionSetData.questionset && questionSetData.questionset.children){
+            return questionSetData.questionset.children
         }
         return [];
     }
