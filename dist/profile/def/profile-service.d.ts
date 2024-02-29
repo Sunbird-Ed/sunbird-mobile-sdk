@@ -26,6 +26,7 @@ import { MergeServerProfilesRequest } from './merge-server-profiles-request';
 import { UserFeed } from './user-feed-response';
 import { UserMigrateResponse } from './user-migrate-response';
 import { UserMigrateRequest } from './user-migrate-request';
+import { DeleteUserRequest } from './delete-user-request';
 export interface ProfileService extends SdkServicePreInitDelegate {
     createProfile(profile: Profile, profileSource: ProfileSource): Observable<Profile>;
     deleteProfile(uid: string): Observable<undefined>;
@@ -51,4 +52,5 @@ export interface ProfileService extends SdkServicePreInitDelegate {
     isDefaultChannelProfile(): Observable<boolean>;
     getUserFeed(): Observable<UserFeed[]>;
     userMigrate(userMigrateRequest: UserMigrateRequest): Observable<UserMigrateResponse>;
+    deleteUser(deleteUserRequest: DeleteUserRequest): Observable<boolean>;
 }
