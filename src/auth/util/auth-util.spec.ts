@@ -9,6 +9,7 @@ import {of, throwError} from 'rxjs';
 import {AuthKeys} from '../../preference-keys';
 import {NoActiveSessionError} from '../../profile';
 import {AuthTokenRefreshError} from '../errors/auth-token-refresh-error';
+import { JwtUtil } from '../../util/jwt-util';
 
 jest.mock('@project-sunbird/client-services', () => {
   return {
@@ -397,7 +398,9 @@ describe('AuthUtil', () => {
         refresh_token: 'SAMPLE_REFRESH_TOKEN',
         userToken: 'SAMPLE_USER_TOKEN'
       }));
-
+      jest.spyOn(JwtUtil, 'decodeJWT').mockImplementation(() => Promise.resolve(`{ "iss": "https://staging.sunbirded.org/auth/realms/sunbird",
+      "exp": 1711023727,
+      "sub": "f:979738b7-253c-4adf-9673-a857eeb86115:372504c7-838a-433c-a24d-f8ac0ed5c480"}`));
       // act
       authUtil.refreshSession().then(() => {
         expect(mockSharedPreferences.putString).toHaveBeenCalledWith(AuthKeys.KEY_OAUTH_SESSION, expect.any(String));

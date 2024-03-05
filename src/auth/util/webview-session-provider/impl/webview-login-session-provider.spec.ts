@@ -16,6 +16,7 @@ import {OAuthSession, SignInError} from '../../..';
 import {of} from 'rxjs';
 import {TelemetryService} from '../../../../telemetry';
 import {SunbirdSdk} from '../../../../sdk';
+import { JwtUtil } from '../../../../util/jwt-util';
 
 const mockApiService: Partial<ApiService> = {};
 const mockEventsBusService: Partial<EventsBusService> = {};
@@ -217,6 +218,10 @@ describe('WebviewLoginSessionProvider', () => {
                     mockWebviewRunner.capture = jest.fn().mockImplementation(() => Promise.resolve());
                     mockWebviewRunner.closeWebview = jest.fn().mockImplementation(() => Promise.resolve());
                     mockWebviewRunner.success = jest.fn().mockImplementation(() => Promise.resolve({'code': 'SOME_CODE'}));
+                    jest.spyOn(JwtUtil, 'decodeJWT').mockImplementation(() => Promise.resolve(`{ "iss": "https://staging.sunbirded.org/auth/realms/sunbird",
+                    "exp": 1711023727,
+                    "sub": "f:979738b7-253c-4adf-9673-a857eeb86115:372504c7-838a-433c-a24d-f8ac0ed5c480"}`));
+                    
                     mockWebviewRunner.any = jest.fn().mockImplementation((params) => Promise.race([params]));
 
                     // act
@@ -231,7 +236,7 @@ describe('WebviewLoginSessionProvider', () => {
                             accessTokenExpiresOn: expect.any(Number),
                             access_token: mockAccessToken,
                             refresh_token: mockRefreshToken,
-                            userToken: '8454cb21-3ce9-4e30-85b5-fade097880d8'
+                            userToken: '372504c7-838a-433c-a24d-f8ac0ed5c480'
                         });
                         done();
                     });
@@ -290,6 +295,8 @@ describe('WebviewLoginSessionProvider', () => {
                     mockWebviewRunner.capture = jest.fn().mockImplementation(() => Promise.resolve());
                     mockWebviewRunner.closeWebview = jest.fn().mockImplementation(() => Promise.resolve());
                     mockWebviewRunner.success = jest.fn().mockImplementation(() => Promise.resolve({'id': 'SOME_ID'}));
+                    jest.spyOn(JwtUtil, 'decodeJWT').mockImplementation(() => Promise.resolve(`{"exp": 1711023727,
+                        "sub": "f:979738b7-253c-4adf-9673-a857eeb86115:372504c7-838a-433c-a24d-f8ac0ed5c480"}`));
                     mockWebviewRunner.any = jest.fn().mockImplementation((params) => Promise.race([params]));
 
                     // act
@@ -302,7 +309,7 @@ describe('WebviewLoginSessionProvider', () => {
                             accessTokenExpiresOn: expect.any(Number),
                             access_token: mockAccessToken,
                             refresh_token: mockRefreshToken,
-                            userToken: '8454cb21-3ce9-4e30-85b5-fade097880d8'
+                            userToken: '372504c7-838a-433c-a24d-f8ac0ed5c480'
                         });
                         done();
                     });

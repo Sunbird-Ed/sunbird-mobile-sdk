@@ -1,7 +1,8 @@
 import { CsModule } from '@project-sunbird/client-services';
 import { of } from 'rxjs';
-import { ApiService, JWTokenType, JWTUtil, SunbirdSdk } from '../../../..';
+import { ApiService, SunbirdSdk } from '../../../..';
 import { NativeAppleSessionProvider } from './native-apple-session-provider';
+import { JwtUtil } from '../../../../util/jwt-util';
 
 export interface NativeAppleTokens {
     email: string;
@@ -60,6 +61,9 @@ describe('NativeAppleSessionProvider', () => {
                 }
             };
             mockApiService.fetch = jest.fn(() => of(mockSession) as any);
+            jest.spyOn(JwtUtil, 'decodeJWT').mockImplementation(() => Promise.resolve(`{ "iss": "https://staging.sunbirded.org/auth/realms/sunbird",
+            "exp": 1711023727,
+            "sub": "f:979738b7-253c-4adf-9673-a857eeb86115:372504c7-838a-433c-a24d-f8ac0ed5c480"}`));
             nativeAppleSessionProvider.provide().then(() => {
                 expect(mockApiService.fetch).toHaveBeenCalled();
                 done();

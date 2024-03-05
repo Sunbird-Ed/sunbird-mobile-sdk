@@ -6,7 +6,6 @@ export class JwtUtil {
                     resolve(res);
                 },
                 (e) => {
-                    console.error(e);
                     reject(e)
                 })
         })
