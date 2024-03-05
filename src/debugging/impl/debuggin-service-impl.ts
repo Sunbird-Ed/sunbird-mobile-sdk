@@ -1,12 +1,12 @@
 import { inject, injectable } from "inversify";
 import { Observable, of } from "rxjs";
 import { InjectionTokens } from "../../injection-tokens";
-import { JWTokenType, JWTUtil } from "../../api";
 import { DebuggingService, DebugWatcher } from "../def/debugging-service";
 import { SharedPreferences } from '../../util/shared-preferences';
 import { DebuggingDurationHandler } from "../handler/debugging-duration-handler";
 import { ProfileService } from "../../profile";
 import { CsClientStorage } from "@project-sunbird/client-services/core";
+import { JwtUtil } from "../../util/jwt-util";
 
 @injectable()
 export class DebuggingServiceImpl implements DebuggingService {
@@ -50,9 +50,9 @@ export class DebuggingServiceImpl implements DebuggingService {
          */
         return new Observable<boolean>(observer => {
             this.profileService.getActiveProfileSession().toPromise().then(async (profile) => {
-                if (profile && profile.uid) {
+                if (profile?.uid) {
                     this._userId = profile.uid;
-                    const _jwt = JWTUtil.createJWToken(this._deviceId, this.userId, JWTokenType.HS256);
+                    const _jwt = await JwtUtil.createJWTToken(this._deviceId, this.userId)
                     if (traceID) {
                         await this.sharedPreferences.putString(CsClientStorage.TRACE_ID, traceID).toPromise();
                     } else {

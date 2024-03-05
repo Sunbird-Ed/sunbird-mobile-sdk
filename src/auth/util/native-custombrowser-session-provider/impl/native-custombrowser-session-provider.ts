@@ -1,11 +1,12 @@
 import { SessionProvider } from '../../../def/session-provider';
-import { JWTUtil, ApiConfig} from '../../../../api';
+import { ApiConfig} from '../../../../api';
 import { SunbirdSdk } from '../../../../sdk';
 import { WebviewSessionProviderConfig } from '../../webview-session-provider/def/webview-session-provider-config';
 import { WebviewRunner } from '../../webview-session-provider/def/webview-runner';
 import { WebviewRunnerImpl } from '../../webview-session-provider/impl/webview-runner-impl';
 import { TelemetryService } from 'src/telemetry/def/telemetry-service';
 import * as qs from 'qs';
+import { JwtUtil } from '../../../../util/jwt-util';
 
 export class NativeCustomBrowserSessionProvider implements SessionProvider {
     private static readonly LOGIN_API_ENDPOINT = '/google/auth';
@@ -13,16 +14,18 @@ export class NativeCustomBrowserSessionProvider implements SessionProvider {
     private readonly telemetryService: TelemetryService;
     private apiConfig: ApiConfig;
 
-    private static parseAccessToken(accessToken: string): {
+    private static async parseAccessToken(accessToken: string): Promise<{
         userToken: string;
         accessTokenExpiresOn: number;
-    } {
-        const payload: { sub: string, exp: number } = JWTUtil.getJWTPayload(accessToken);
+    }> {
+        let decodeToken = await JwtUtil.decodeJWT(accessToken);
+        const payload: { sub: string, exp: number } = JSON.parse(decodeToken);
         return {
             userToken: payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub,
             accessTokenExpiresOn: payload.exp * 1000
         };
     }
+
     constructor(
         private loginConfig: WebviewSessionProviderConfig,
         private customWebViewConfig?: any,
@@ -69,11 +72,11 @@ export class NativeCustomBrowserSessionProvider implements SessionProvider {
             extraParams: this.customWebViewConfig.get('extraParam')
         }).then(() =>
             dsl.success()
-        ).then((success) => {
+        ).then(async (success) => {
             return {
                 access_token: success.access_token,
                 refresh_token: success.refresh_token,
-                userToken: NativeCustomBrowserSessionProvider.parseAccessToken(success.access_token).userToken
+                userToken: (await NativeCustomBrowserSessionProvider.parseAccessToken(success.access_token)).userToken
             };
         });
     }

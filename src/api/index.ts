@@ -15,5 +15,4 @@ export {
 export * from './config/api-config';
 export * from './def/api-service';
 export * from './def/api-request-handler';
-export * from './util/jwt.util';
 export * from './api-service-impl';

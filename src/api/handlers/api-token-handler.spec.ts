@@ -1,9 +1,10 @@
 import {ApiTokenHandler} from './api-token-handler';
 import {ApiConfig, ApiService, Response} from '..';
-import {DeviceInfo, JWTUtil, ResponseCode} from '../..';
+import {DeviceInfo, ResponseCode} from '../..';
 import {of, throwError} from 'rxjs';
 import {CsHttpServerError, CsNetworkError} from '@project-sunbird/client-services/core/http-service';
 import {catchError} from 'rxjs/operators';
+import { JwtUtil } from '../../util/jwt-util';
 
 describe('ApiTokenHandler', () => {
   let apiTokenHandler: ApiTokenHandler;
@@ -39,7 +40,7 @@ describe('ApiTokenHandler', () => {
         }
       })) as any;
       mockConfig.api_authentication = {mobileAppConsumer: 'sample-mobile-app-consumer'} as any;
-      jest.spyOn(JWTUtil, 'createJWToken').mockReturnValue('sample');
+      jest.spyOn(JwtUtil, 'createJWTToken').mockImplementation(() => Promise.resolve('sample'));
       mockDeviceInfo.getDeviceID = jest.fn(() => 'sample-device-id');
       // act
       apiTokenHandler.refreshAuthToken().subscribe(() => {
@@ -77,7 +78,7 @@ describe('ApiTokenHandler', () => {
         }
       });
       mockConfig.api_authentication = {mobileAppConsumer: 'sample-mobile-app-consumer'} as any;
-      jest.spyOn(JWTUtil, 'createJWToken').mockReturnValue('sample');
+      jest.spyOn(JwtUtil, 'createJWTToken').mockImplementation(() => Promise.resolve('sample'));
       mockDeviceInfo.getDeviceID = jest.fn(() => 'sample-device-id');
       // act
       apiTokenHandler.refreshAuthToken().subscribe(() => {
@@ -109,7 +110,7 @@ describe('ApiTokenHandler', () => {
         }
       });
       mockConfig.api_authentication = {mobileAppConsumer: 'sample-mobile-app-consumer'} as any;
-      jest.spyOn(JWTUtil, 'createJWToken').mockReturnValue('sample');
+      jest.spyOn(JwtUtil, 'createJWTToken').mockImplementation(() => Promise.resolve('sample'));
       mockDeviceInfo.getDeviceID = jest.fn(() => 'sample-device-id');
       // act
       apiTokenHandler.refreshAuthToken().subscribe(() => {
@@ -141,7 +142,7 @@ describe('ApiTokenHandler', () => {
         }
       });
       mockConfig.api_authentication = {mobileAppConsumer: 'sample-mobile-app-consumer'} as any;
-      jest.spyOn(JWTUtil, 'createJWToken').mockReturnValue('sample');
+      jest.spyOn(JwtUtil, 'createJWTToken').mockImplementation(() => Promise.resolve('sample'));
       mockDeviceInfo.getDeviceID = jest.fn(() => 'sample-device-id');
       // act
       apiTokenHandler.refreshAuthToken().subscribe(() => {
@@ -180,7 +181,7 @@ describe('ApiTokenHandler', () => {
         }
       });
       mockConfig.api_authentication = {mobileAppConsumer: 'sample-mobile-app-consumer'} as any;
-      jest.spyOn(JWTUtil, 'createJWToken').mockReturnValue('sample');
+      jest.spyOn(JwtUtil, 'createJWTToken').mockImplementation(() => Promise.resolve('sample'));
       mockDeviceInfo.getDeviceID = jest.fn(() => 'sample-device-id');
       // act
       apiTokenHandler.refreshAuthToken().subscribe(() => {
@@ -206,7 +207,7 @@ describe('ApiTokenHandler', () => {
         }
       });
       mockConfig.api_authentication = {mobileAppConsumer: 'sample-mobile-app-consumer'} as any;
-      jest.spyOn(JWTUtil, 'createJWToken').mockReturnValue('sample');
+      jest.spyOn(JwtUtil, 'createJWTToken').mockImplementation(() => Promise.resolve('sample'));
       mockDeviceInfo.getDeviceID = jest.fn(() => 'sample-device-id');
       // act
       apiTokenHandler.refreshAuthToken().pipe(

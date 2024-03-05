@@ -1,10 +1,11 @@
 import { SessionProvider } from '../../../def/session-provider';
 import { Observable } from 'rxjs';
-import { ApiService, HttpRequestType, JWTUtil, Request, ApiConfig} from '../../../../api';
+import { ApiService, HttpRequestType, Request, ApiConfig} from '../../../../api';
 import { map } from 'rxjs/operators';
 import { SunbirdSdk } from '../../../../sdk';
 import { CsModule } from '@project-sunbird/client-services';
 import { WebviewSessionProviderConfig } from '../../webview-session-provider/def/webview-session-provider-config';
+import { JwtUtil } from '../../../../util/jwt-util';
 
 export interface NativeKeycloakTokens {
     username: string;
@@ -16,11 +17,12 @@ export class NativeKeycloakSessionProvider implements SessionProvider {
     private apiService: ApiService;
     protected apiConfig: ApiConfig;
     
-    private static parseAccessToken(accessToken: string): {
+    private static async parseAccessToken(accessToken: string): Promise<{
         userToken: string;
         accessTokenExpiresOn: number;
-    } {
-        const payload: { sub: string, exp: number } = JWTUtil.getJWTPayload(accessToken);
+    }> {
+        let decodeToken = await JwtUtil.decodeJWT(accessToken)
+        const payload: { sub: string, exp: number } = JSON.parse(decodeToken);
         return {
             userToken: payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub,
             accessTokenExpiresOn: payload.exp * 1000
@@ -54,13 +56,13 @@ export class NativeKeycloakSessionProvider implements SessionProvider {
             .build();
         return this.apiService.fetch<{ access_token: string, refresh_token: string }>(apiRequest)
             .pipe(
-                map((success) => {
-                    if (success.body && success.body.access_token) {
+                map(async (success) => {
+                    if (success?.body?.access_token) {
                         CsModule.instance.updateAuthTokenConfig(success.body.access_token);
                         return {
                             access_token: success.body.access_token,
                             refresh_token: success.body.refresh_token,
-                            userToken: NativeKeycloakSessionProvider.parseAccessToken(success.body.access_token).userToken
+                            userToken: (await NativeKeycloakSessionProvider.parseAccessToken(success.body.access_token)).userToken
                         };
                     } else {
                         return success.body;
