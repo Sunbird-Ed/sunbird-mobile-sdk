@@ -46,31 +46,31 @@ export class NativeGoogleSessionProvider implements SessionProvider {
             devicePlatform = val.platform
             const platform = devicePlatform.toLowerCase() ==='ios' ? 'ios' :null;
             const apiRequest: Request = new Request.Builder()
-                .withType(HttpRequestType.POST)
-                .withPath(NativeGoogleSessionProvider.LOGIN_API_ENDPOINT)
-                .withBearerToken(false)
-                .withUserToken(false)
-                .withBody({
-                    emailId: emailId,
-                    platform: platform
-                })
-                .withHeaders({
-                    'X-GOOGLE-ID-TOKEN': idToken
-                })
-                .build();
+            .withType(HttpRequestType.POST)
+            .withPath(NativeGoogleSessionProvider.LOGIN_API_ENDPOINT)
+            .withBearerToken(false)
+            .withUserToken(false)
+            .withBody({
+                emailId: emailId,
+                platform: platform
+            })
+            .withHeaders({
+                'X-GOOGLE-ID-TOKEN': idToken
+            })
+            .build();
             return this.apiService.fetch<{ access_token: string, refresh_token: string }>(apiRequest)
-                .pipe(
-                    map((success) => {
-                        if (success.body) {
-                            CsModule.instance.updateAuthTokenConfig(success.body.access_token);
-                        }
-                        return {
-                            access_token: success.body.access_token,
-                            refresh_token: success.body.refresh_token,
-                            userToken: NativeGoogleSessionProvider.parseAccessToken(success.body.access_token).userToken
-                        };
-                    })
-                );
+            .pipe(
+                map(async (success) => {
+                    if (success.body) {
+                        CsModule.instance.updateAuthTokenConfig(success.body.access_token);
+                    }
+                    return {
+                        access_token: success.body.access_token,
+                        refresh_token: success.body.refresh_token,
+                        userToken: (await NativeGoogleSessionProvider.parseAccessToken(success.body.access_token)).userToken
+                    };
+                })
+            )
         })
     }
 }

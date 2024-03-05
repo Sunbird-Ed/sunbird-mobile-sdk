@@ -58,29 +58,29 @@ export class NativeAppleSessionProvider implements SessionProvider {
             devicePlatform = val.platform
             const platform = devicePlatform.toLowerCase() === 'ios' ? 'ios' : null;
             const apiRequest: Request = new Request.Builder()
-                .withType(HttpRequestType.POST)
-                .withPath(NativeAppleSessionProvider.LOGIN_API_ENDPOINT)
-                .withBearerToken(false)
-                .withUserToken(false)
-                .withBody({
-                    emailId: appleSignInRes.email,
-                    platform,
-                    ...appleSignInRes
-                })
-                .build();
+            .withType(HttpRequestType.POST)
+            .withPath(NativeAppleSessionProvider.LOGIN_API_ENDPOINT)
+            .withBearerToken(false)
+            .withUserToken(false)
+            .withBody({
+                emailId: appleSignInRes.email,
+                platform,
+                ...appleSignInRes
+            })
+            .build();
             return this.apiService.fetch<{ sessionId: { access_token: string, refresh_token: string }}>(apiRequest)
-                .pipe(
-                    map((success) => {
-                        if (success.body) {
-                            CsModule.instance.updateAuthTokenConfig(success.body.sessionId.access_token);
-                        }
-                        return {
-                            access_token: success.body.sessionId.access_token,
-                            refresh_token: success.body.sessionId.refresh_token,
-                            userToken: NativeAppleSessionProvider.parseAccessToken(success.body.sessionId.access_token).userToken
-                        };
-                    })
-                );
+            .pipe(
+                map(async (success) => {
+                    if (success.body) {
+                        CsModule.instance.updateAuthTokenConfig(success.body.sessionId.access_token);
+                    }
+                    return {
+                        access_token: success.body.sessionId.access_token,
+                        refresh_token: success.body.sessionId.refresh_token,
+                        userToken: (await NativeAppleSessionProvider.parseAccessToken(success.body.sessionId.access_token)).userToken
+                    };
+                })
+            )
         })
     }
 }
