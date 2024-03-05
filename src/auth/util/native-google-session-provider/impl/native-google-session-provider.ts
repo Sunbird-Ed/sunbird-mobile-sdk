@@ -1,6 +1,6 @@
 import {SessionProvider} from '../../../def/session-provider';
 import {Observable} from 'rxjs';
-import {ApiService, HttpRequestType, JWTUtil, Request} from '../../../../api';
+import {ApiService, HttpRequestType, Request} from '../../../../api';
 import {map} from 'rxjs/operators';
 import {OAuthSession} from '../../../def/o-auth-session';
 import {SunbirdSdk} from '../../../../sdk';
@@ -16,15 +16,29 @@ export class NativeGoogleSessionProvider implements SessionProvider {
     private static readonly LOGIN_API_ENDPOINT = '/google/auth/android';
     private apiService: ApiService;
 
-    private static parseAccessToken(accessToken: string): {
+    private static async parseAccessToken(accessToken: string): Promise<{
         userToken: string;
         accessTokenExpiresOn: number;
-    } {
-        const payload: { sub: string, exp: number } = JWTUtil.getJWTPayload(accessToken);
+    }> {
+        let decodeToken = await this.decodeJWT(accessToken);
+        const payload: { sub: string, exp: number } = JSON.parse(decodeToken);
         return {
             userToken: payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub,
             accessTokenExpiresOn: payload.exp * 1000
         };
+    }
+
+    private static decodeJWT(accessToken: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            return sbutility.decodeJWTToken(accessToken, 
+                (res) => {
+                    resolve(res);
+                },
+                (e) => {
+                    console.error(e);
+                    reject(e)
+                })
+        })
     }
 
     constructor(
@@ -38,7 +52,7 @@ export class NativeGoogleSessionProvider implements SessionProvider {
         return this.callGoogleNativeLogin(nativeGoogleToken.idToken, nativeGoogleToken.email).toPromise();
     }
 
-    private callGoogleNativeLogin(idToken: string, emailId: string): Observable<OAuthSession> {
+    private callGoogleNativeLogin(idToken: string, emailId: string): Observable<any> {
         const platform = window.device.platform.toLowerCase() ==='ios' ? 'ios' :null;
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
@@ -55,14 +69,14 @@ export class NativeGoogleSessionProvider implements SessionProvider {
             .build();
         return this.apiService.fetch<{ access_token: string, refresh_token: string }>(apiRequest)
             .pipe(
-                map((success) => {
+                map(async (success) => {
                     if (success.body) {
                         CsModule.instance.updateAuthTokenConfig(success.body.access_token);
                     }
                     return {
                         access_token: success.body.access_token,
                         refresh_token: success.body.refresh_token,
-                        userToken: NativeGoogleSessionProvider.parseAccessToken(success.body.access_token).userToken
+                        userToken: (await NativeGoogleSessionProvider.parseAccessToken(success.body.access_token)).userToken
                     };
                 })
             );

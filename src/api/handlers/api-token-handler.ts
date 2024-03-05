@@ -1,9 +1,8 @@
-import {ApiConfig, ApiService, JWTokenType, JWTUtil, ResponseCode} from '..';
+import {ApiConfig, ApiService, ResponseCode} from '..';
 import {from, Observable} from 'rxjs';
 import * as dayjs from 'dayjs';
 import {DeviceInfo} from '../../util/device';
 import {CsHttpRequestType, CsNetworkError, CsRequest} from '@project-sunbird/client-services/core/http-service';
-import {map} from 'rxjs/operators';
 
 export class ApiTokenHandler {
 
@@ -27,13 +26,13 @@ export class ApiTokenHandler {
     return this.config.api_authentication.producerId + '-' + this.deviceInfo.getDeviceID();
   }
 
-  private buildGetMobileDeviceConsumerSecretAPIRequest(path: string): CsRequest {
+  private async buildGetMobileDeviceConsumerSecretAPIRequest(path: string): Promise<CsRequest> {
     return new CsRequest.Builder()
       .withPath(path)
       .withType(CsHttpRequestType.POST)
       .withHeaders({
         'Content-Encoding': 'gzip',
-        'Authorization': `Bearer ${this.generateMobileAppConsumerBearerToken()}`
+        'Authorization': `Bearer ${await this.generateMobileAppConsumerBearerToken()}`
       })
       .withBody({
         id: ApiTokenHandler.ID,
@@ -48,7 +47,8 @@ export class ApiTokenHandler {
 
   private async getBearerTokenFromKongV2(): Promise<string> {
     const apiPathKongV2 = `/api/api-manager/v2/consumer/${this.config.api_authentication.mobileAppConsumer}/credential/register`;
-    return this.apiService.fetch(this.buildGetMobileDeviceConsumerSecretAPIRequest(apiPathKongV2)).toPromise()
+    let req = await this.buildGetMobileDeviceConsumerSecretAPIRequest(apiPathKongV2);
+    return this.apiService.fetch(req).toPromise()
       .then((res) => {
         return res.body.result.token;
       }).catch((e) => {
@@ -67,21 +67,38 @@ export class ApiTokenHandler {
   }
 
   private async getBearerTokenFromFallback(fallBackUrl: string): Promise<string> {
-    return this.apiService.fetch(this.buildGetMobileDeviceConsumerSecretAPIRequest(fallBackUrl)).toPromise()
+    let req = await this.buildGetMobileDeviceConsumerSecretAPIRequest(fallBackUrl);
+    return this.apiService.fetch(req).toPromise()
       .then((res) => {
         const result = res.body.result;
         if (!result.token) {
-          return JWTUtil.createJWToken({iss: this.getMobileDeviceConsumerKey()}, result.secret, JWTokenType.HS256);
+          return new Promise((resolve, reject) => {
+            return sbutility.getJWTToken(this.getMobileDeviceConsumerKey(), result.secret, 
+              (res) => {
+                resolve(res);
+              },
+              (e) => {
+                reject(e);
+              })
+          });
         }
         return result.token;
-      }).catch(() => {
-
+      }).catch((e) => {
+        console.log('e ', e);
       });
   }
 
-  private generateMobileAppConsumerBearerToken(): string {
+  private generateMobileAppConsumerBearerToken(): Promise<string> {
     const mobileAppConsumerKey = this.config.api_authentication.mobileAppKey;
     const mobileAppConsumerSecret = this.config.api_authentication.mobileAppSecret;
-    return JWTUtil.createJWToken({iss: mobileAppConsumerKey}, mobileAppConsumerSecret, JWTokenType.HS256);
+    return new Promise((resolve, reject) => {
+      return sbutility.getJWTToken(mobileAppConsumerKey, mobileAppConsumerSecret, 
+        (res) => {
+          resolve(res);
+        },
+        (e) => {
+          reject(e);
+        })
+    })
   }
 }

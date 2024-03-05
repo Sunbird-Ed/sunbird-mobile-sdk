@@ -55,4 +55,10 @@ declare var sbutility: {
 
     clearUtmInfo: (success:
         (callbackUrl: any) => void, error: (error: string) => void) => void;
+
+    getJWTToken: (key, secret, 
+        success:(callbackUrl: any) => void, error: (error: string) => void) => string;
+        
+    decodeJWTToken: (token, 
+        success:(callbackUrl: any) => void, error: (error: string) => void) => string;
 };

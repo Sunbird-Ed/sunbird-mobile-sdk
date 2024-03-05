@@ -1,4 +1,4 @@
-import {ApiConfig, ApiService, HttpClientError, HttpRequestType, HttpSerializer, JWTUtil, Request, Response, ResponseCode} from '../../api';
+import {ApiConfig, ApiService, HttpClientError, HttpRequestType, HttpSerializer, Request, Response, ResponseCode} from '../../api';
 import {OAuthSession} from '..';
 import {AuthKeys} from '../../preference-keys';
 import {NoActiveSessionError} from '../../profile';
@@ -58,7 +58,8 @@ export class AuthUtil {
                 })
                 .then(async (response: Response) => {
                     if (response.body.result.access_token && response.body.result.refresh_token) {
-                        const jwtPayload: { sub: string, exp: number } = JWTUtil.getJWTPayload(response.body.result.access_token);
+                        let playload = await this.decodeJWT(response.body.result.access_token);
+                        const jwtPayload: { sub: string, exp: number } = JSON.parse(playload);
 
                         const userToken = jwtPayload.sub.split(':').length === 3 ? <string> jwtPayload.sub.split(':').pop() : jwtPayload.sub;
 
@@ -89,6 +90,19 @@ export class AuthUtil {
 
             throw e;
         }
+    }
+
+    private decodeJWT(accessToken: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            return sbutility.decodeJWTToken(accessToken, 
+                (res) => {
+                    resolve(res);
+                },
+                (e) => {
+                    console.error(e);
+                    reject(e)
+                })
+        })
     }
 
     public async startSession(sessionData: OAuthSession): Promise<void> {

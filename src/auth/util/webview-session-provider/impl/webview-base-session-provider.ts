@@ -1,4 +1,4 @@
-import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, JWTUtil, Request, Response} from '../../../../api';
+import {ApiConfig, ApiService, HttpRequestType, HttpSerializer, Request, Response} from '../../../../api';
 import * as qs from 'qs';
 import {EventsBusService} from '../../../../events-bus';
 import {SessionProvider} from '../../../def/session-provider';
@@ -6,15 +6,29 @@ import {OAuthSession} from '../../../def/o-auth-session';
 import {SignInError} from '../../../errors/sign-in-error';
 
 export abstract class WebviewBaseSessionProvider implements SessionProvider {
-    private static parseAccessToken(accessToken: string): {
+    private static async parseAccessToken(accessToken: string): Promise<{
         userToken: string;
         accessTokenExpiresOn: number;
-    } {
-        const payload: { sub: string, exp: number } = JWTUtil.getJWTPayload(accessToken);
+    }> {
+        let playload = await this.decodeJWT(accessToken);
+        const payload: { sub: string, exp: number } = JSON.parse(playload);
         return {
             userToken: payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub,
             accessTokenExpiresOn: payload.exp * 1000
         };
+    }
+
+    private static decodeJWT(accessToken: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            return sbutility.decodeJWTToken(accessToken, 
+                (res) => {
+                    resolve(res);
+                },
+                (e) => {
+                    console.error(e);
+                    reject(e)
+                })
+        })
     }
 
     protected constructor(
@@ -114,9 +128,9 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
 
         return this.apiService.fetch(apiRequest)
             .toPromise()
-            .then((response: Response<{ access_token: string, refresh_token: string }>) => {
+            .then(async (response: Response<{ access_token: string, refresh_token: string }>) => {
                 if (response.body.access_token && response.body.refresh_token) {
-                    const {userToken, accessTokenExpiresOn} = WebviewBaseSessionProvider.parseAccessToken(response.body.access_token);
+                    const {userToken, accessTokenExpiresOn} = await WebviewBaseSessionProvider.parseAccessToken(response.body.access_token);
 
                     return {
                         access_token: response.body.access_token,
@@ -145,9 +159,9 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
 
         return this.apiService.fetch(apiRequest)
             .toPromise()
-            .then((response: Response<{ access_token: string, refresh_token: string }>) => {
+            .then(async (response: Response<{ access_token: string, refresh_token: string }>) => {
                 if (response.body.access_token && response.body.refresh_token) {
-                    const {userToken, accessTokenExpiresOn} = WebviewBaseSessionProvider.parseAccessToken(response.body.access_token);
+                    const {userToken, accessTokenExpiresOn} = await WebviewBaseSessionProvider.parseAccessToken(response.body.access_token);
 
                     return {
                         access_token: response.body.access_token,
@@ -166,7 +180,7 @@ export abstract class WebviewBaseSessionProvider implements SessionProvider {
 
     private async resolveGoogleSession(captured: {[key: string]: string}): Promise<OAuthSession> {
         if (captured['access_token'] && captured['refresh_token']) {
-            const {userToken, accessTokenExpiresOn} = WebviewBaseSessionProvider.parseAccessToken(captured['access_token']);
+            const {userToken, accessTokenExpiresOn} = await WebviewBaseSessionProvider.parseAccessToken(captured['access_token']);
 
             return {
                 access_token: captured['access_token'],

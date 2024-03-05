@@ -35,15 +35,15 @@ export class TelemetryAutoSyncServiceImpl implements TelemetryAutoSyncService {
             '4096': '3584-above'
         };
 
-        if (!Object.keys(downloadSpeedLog.distributionInKBPS).length) {
+        if (!Object.keys(downloadSpeedLog?.distributionInKBPS).length) {
             return undefined;
         }
 
         const valueMap = {
             duration: intervalTime / 1000,
-            totalKBDownloaded: downloadSpeedLog.totalKBdownloaded,
+            totalKBDownloaded: downloadSpeedLog?.totalKBdownloaded,
             distributionInKBPS: Object.keys(rangeMap).reduce<{ [key: string]: number }>((acc, key) => {
-                if (downloadSpeedLog.distributionInKBPS[key]) {
+                if (downloadSpeedLog?.distributionInKBPS[key]) {
                     acc[rangeMap[key]] = downloadSpeedLog.distributionInKBPS[key];
                 } else {
                     acc[rangeMap[key]] = 0;

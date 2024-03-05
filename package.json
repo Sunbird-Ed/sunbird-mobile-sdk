@@ -1,6 +1,6 @@
 {
   "name": "@project-sunbird/sunbird-sdk",
-  "version": "7.0.18",
+  "version": "7.0.19",
   "description": "Heart of the sunbird mobile app.",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,6 @@
     "crypto-js": "3.1.9-1",
     "dayjs": "^1.9.8",
     "inversify": "^5.1.1",
-    "jsonwebtoken": "^8.5.1",
     "node-fetch": "2.6.7",
     "pako": "^1.0.11",
     "qs": "^6.9.7",
@@ -39,7 +38,7 @@
     "sb-cordova-plugin-db": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-db.git",
     "jjdltc-cordova-plugin-zip": "git+https://github.com/swayangjit/jjdltc-cordova-plugin-zip.git",
     "cordova-plugin-android-downloadmanager": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-downloadmanager.git",
-    "sb-cordova-plugin-utility": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-utility.git"
+    "sb-cordova-plugin-utility": "git+https://github.com/swayangjit/sb-cordova-plugin-utility.git#release-6.0.0"
   },
   "devDependencies": {
     "@project-sunbird/client-services": "7.0.4",
