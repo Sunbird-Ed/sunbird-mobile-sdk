@@ -5,6 +5,7 @@ import {map} from 'rxjs/operators';
 import {OAuthSession} from '../../../def/o-auth-session';
 import {SunbirdSdk} from '../../../../sdk';
 import {CsModule} from '@project-sunbird/client-services';
+import { ObjectUtil } from '../../../../util/object-util';
 
 export interface NativeAppleTokens {
     email: string;
@@ -32,7 +33,7 @@ export class NativeAppleSessionProvider implements SessionProvider {
         userToken: string;
         accessTokenExpiresOn: number;
     }> {
-        let decodeToken = await this.decodeJWT(accessToken);
+        let decodeToken = await ObjectUtil.decodeJWT(accessToken);
         const payload: { sub: string, exp: number } = JSON.parse(decodeToken);
         return {
             userToken: payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub,
@@ -40,18 +41,6 @@ export class NativeAppleSessionProvider implements SessionProvider {
         };
     }
 
-    private static decodeJWT(accessToken: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            return sbutility.decodeJWTToken(accessToken, 
-                (res) => {
-                    resolve(res);
-                },
-                (e) => {
-                    console.error(e);
-                    reject(e)
-                })
-        })
-    }
     constructor(
         private nativeAppleTokenProvider: () => Promise<NativeAppleTokens>
     ) {

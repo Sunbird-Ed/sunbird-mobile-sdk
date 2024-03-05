@@ -4,31 +4,19 @@ import {EventsBusService} from '../../../../events-bus';
 import {SessionProvider} from '../../../def/session-provider';
 import {OAuthSession} from '../../../def/o-auth-session';
 import {SignInError} from '../../../errors/sign-in-error';
+import { ObjectUtil } from '../../../../util/object-util';
 
 export abstract class WebviewBaseSessionProvider implements SessionProvider {
     private static async parseAccessToken(accessToken: string): Promise<{
         userToken: string;
         accessTokenExpiresOn: number;
     }> {
-        let playload = await this.decodeJWT(accessToken);
+        let playload = await ObjectUtil.decodeJWT(accessToken);
         const payload: { sub: string, exp: number } = JSON.parse(playload);
         return {
             userToken: payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub,
             accessTokenExpiresOn: payload.exp * 1000
         };
-    }
-
-    private static decodeJWT(accessToken: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            return sbutility.decodeJWTToken(accessToken, 
-                (res) => {
-                    resolve(res);
-                },
-                (e) => {
-                    console.error(e);
-                    reject(e)
-                })
-        })
     }
 
     protected constructor(
