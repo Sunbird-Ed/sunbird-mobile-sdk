@@ -72,16 +72,4 @@ export class ObjectUtil {
         }, {});
     }
 
-    public static decodeJWT(accessToken: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-            return sbutility.decodeJWTToken(accessToken, 
-                (res) => {
-                    resolve(res);
-                },
-                (e) => {
-                    console.error(e);
-                    reject(e)
-                })
-        })
-    }
 }

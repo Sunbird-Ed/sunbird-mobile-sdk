@@ -4,14 +4,14 @@ import {EventsBusService} from '../../../../events-bus';
 import {SessionProvider} from '../../../def/session-provider';
 import {OAuthSession} from '../../../def/o-auth-session';
 import {SignInError} from '../../../errors/sign-in-error';
-import { ObjectUtil } from '../../../../util/object-util';
+import { JwtUtil } from '../../../../util/jwt-util';
 
 export abstract class WebviewBaseSessionProvider implements SessionProvider {
     private static async parseAccessToken(accessToken: string): Promise<{
         userToken: string;
         accessTokenExpiresOn: number;
     }> {
-        let playload = await ObjectUtil.decodeJWT(accessToken);
+        let playload = await JwtUtil.decodeJWT(accessToken);
         const payload: { sub: string, exp: number } = JSON.parse(playload);
         return {
             userToken: payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub,

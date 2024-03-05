@@ -6,6 +6,7 @@ import { SharedPreferences } from '../../util/shared-preferences';
 import { DebuggingDurationHandler } from "../handler/debugging-duration-handler";
 import { ProfileService } from "../../profile";
 import { CsClientStorage } from "@project-sunbird/client-services/core";
+import { JwtUtil } from "../../util/jwt-util";
 
 @injectable()
 export class DebuggingServiceImpl implements DebuggingService {
@@ -51,7 +52,7 @@ export class DebuggingServiceImpl implements DebuggingService {
             this.profileService.getActiveProfileSession().toPromise().then(async (profile) => {
                 if (profile?.uid) {
                     this._userId = profile.uid;
-                    const _jwt = await this.createJWTToken(this._deviceId, this.userId)
+                    const _jwt = await JwtUtil.createJWTToken(this._deviceId, this.userId)
                     if (traceID) {
                         await this.sharedPreferences.putString(CsClientStorage.TRACE_ID, traceID).toPromise();
                     } else {
@@ -65,18 +66,6 @@ export class DebuggingServiceImpl implements DebuggingService {
                 }
             });
         });
-    }
-
-    private createJWTToken(deviceId: string, userId: string): Promise<string> {
-        return new Promise((resolve, reject) => { 
-            sbutility.getJWTToken(deviceId, userId, 
-                (res) => {
-                    resolve(res);
-                },
-                (e) => {
-                    reject(e);
-                })
-        })
     }
 
     disableDebugging(): Observable<boolean> {

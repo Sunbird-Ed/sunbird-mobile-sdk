@@ -6,7 +6,7 @@ import { WebviewRunner } from '../../webview-session-provider/def/webview-runner
 import { WebviewRunnerImpl } from '../../webview-session-provider/impl/webview-runner-impl';
 import { TelemetryService } from 'src/telemetry/def/telemetry-service';
 import * as qs from 'qs';
-import { ObjectUtil } from '../../../../util/object-util';
+import { JwtUtil } from '../../../../util/jwt-util';
 
 export class NativeCustomBrowserSessionProvider implements SessionProvider {
     private static readonly LOGIN_API_ENDPOINT = '/google/auth';
@@ -18,7 +18,7 @@ export class NativeCustomBrowserSessionProvider implements SessionProvider {
         userToken: string;
         accessTokenExpiresOn: number;
     }> {
-        let decodeToken = await ObjectUtil.decodeJWT(accessToken);
+        let decodeToken = await JwtUtil.decodeJWT(accessToken);
         const payload: { sub: string, exp: number } = JSON.parse(decodeToken);
         return {
             userToken: payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub,

@@ -5,7 +5,7 @@ import {map} from 'rxjs/operators';
 import {OAuthSession} from '../../../def/o-auth-session';
 import {SunbirdSdk} from '../../../../sdk';
 import {CsModule} from '@project-sunbird/client-services';
-import { ObjectUtil } from '../../../../util/object-util';
+import { JwtUtil } from '../../../../util/jwt-util';
 
 export interface NativeAppleTokens {
     email: string;
@@ -33,7 +33,7 @@ export class NativeAppleSessionProvider implements SessionProvider {
         userToken: string;
         accessTokenExpiresOn: number;
     }> {
-        let decodeToken = await ObjectUtil.decodeJWT(accessToken);
+        let decodeToken = await JwtUtil.decodeJWT(accessToken);
         const payload: { sub: string, exp: number } = JSON.parse(decodeToken);
         return {
             userToken: payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub,

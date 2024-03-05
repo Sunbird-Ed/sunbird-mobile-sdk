@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 import { SunbirdSdk } from '../../../../sdk';
 import { CsModule } from '@project-sunbird/client-services';
 import { WebviewSessionProviderConfig } from '../../webview-session-provider/def/webview-session-provider-config';
-import { ObjectUtil } from '../../../../util/object-util';
+import { JwtUtil } from '../../../../util/jwt-util';
 
 export interface NativeKeycloakTokens {
     username: string;
@@ -21,7 +21,7 @@ export class NativeKeycloakSessionProvider implements SessionProvider {
         userToken: string;
         accessTokenExpiresOn: number;
     }> {
-        let decodeToken = await ObjectUtil.decodeJWT(accessToken)
+        let decodeToken = await JwtUtil.decodeJWT(accessToken)
         const payload: { sub: string, exp: number } = JSON.parse(decodeToken);
         return {
             userToken: payload.sub.split(':').length === 3 ? <string>payload.sub.split(':').pop() : payload.sub,

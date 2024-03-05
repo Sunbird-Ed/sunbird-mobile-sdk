@@ -5,7 +5,7 @@ import {NoActiveSessionError} from '../../profile';
 import {SharedPreferences} from '../../util/shared-preferences';
 import {AuthTokenRefreshErrorEvent, ErrorEventType, EventNamespace, EventsBusService} from '../../events-bus';
 import {AuthTokenRefreshError} from '../errors/auth-token-refresh-error';
-import { ObjectUtil } from '../../util/object-util';
+import { JwtUtil } from '../../util/jwt-util';
 
 export class AuthUtil {
     constructor(
@@ -59,7 +59,7 @@ export class AuthUtil {
                 })
                 .then(async (response: Response) => {
                     if (response.body.result.access_token && response.body.result.refresh_token) {
-                        let playload = await ObjectUtil.decodeJWT(response.body.result.access_token);
+                        let playload = await JwtUtil.decodeJWT(response.body.result.access_token);
                         const jwtPayload: { sub: string, exp: number } = JSON.parse(playload);
 
                         const userToken = jwtPayload.sub.split(':').length === 3 ? <string> jwtPayload.sub.split(':').pop() : jwtPayload.sub;

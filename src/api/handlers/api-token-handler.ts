@@ -3,6 +3,7 @@ import {from, Observable} from 'rxjs';
 import * as dayjs from 'dayjs';
 import {DeviceInfo} from '../../util/device';
 import {CsHttpRequestType, CsNetworkError, CsRequest} from '@project-sunbird/client-services/core/http-service';
+import { JwtUtil } from '../../util/jwt-util';
 
 export class ApiTokenHandler {
 
@@ -69,18 +70,10 @@ export class ApiTokenHandler {
   private async getBearerTokenFromFallback(fallBackUrl: string): Promise<string> {
     let req = await this.buildGetMobileDeviceConsumerSecretAPIRequest(fallBackUrl);
     return this.apiService.fetch(req).toPromise()
-      .then((res) => {
+      .then(async (res) => {
         const result = res.body.result;
         if (!result.token) {
-          return new Promise((resolve, reject) => {
-            return sbutility.getJWTToken(this.getMobileDeviceConsumerKey(), result.secret, 
-              (res) => {
-                resolve(res);
-              },
-              (e) => {
-                reject(e);
-              })
-          });
+          return await JwtUtil.createJWTToken(this.getMobileDeviceConsumerKey(), result.secret)
         }
         return result.token;
       }).catch((e) => {
@@ -88,17 +81,9 @@ export class ApiTokenHandler {
       });
   }
 
-  private generateMobileAppConsumerBearerToken(): Promise<string> {
+  private async generateMobileAppConsumerBearerToken(): Promise<string> {
     const mobileAppConsumerKey = this.config.api_authentication.mobileAppKey;
     const mobileAppConsumerSecret = this.config.api_authentication.mobileAppSecret;
-    return new Promise((resolve, reject) => {
-      return sbutility.getJWTToken(mobileAppConsumerKey, mobileAppConsumerSecret, 
-        (res) => {
-          resolve(res);
-        },
-        (e) => {
-          reject(e);
-        })
-    })
+    return await JwtUtil.createJWTToken(mobileAppConsumerKey, mobileAppConsumerSecret)
   }
 }
