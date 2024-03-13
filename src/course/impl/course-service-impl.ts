@@ -58,6 +58,7 @@ import {CourseCertificateManager} from '../def/course-certificate-manager';
 import {CourseCertificateManagerImpl} from './course-certificate-manager-impl';
 import {UpdateContentStateResponse} from '../def/update-content-state-response';
 import {UpdateCourseContentStateRequest} from '../def/update-course-content-state-request';
+import { Browser } from '@capacitor/browser';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -391,13 +392,11 @@ export class CourseServiceImpl implements CourseService {
 
             const accessToken = session.managed_access_token || session.access_token;
 
-            window['Capacitor']['plugins'].Browser.open(
+            Browser.open({url:
                 CourseServiceImpl.buildUrl(this.sdkConfig.apiConfig.host, CourseServiceImpl.DISCUSSION_FORUM_ENDPOINT, {
                     'access_token': accessToken,
                     'returnTo': `/category/${request.forumId}`
-                }),
-                '_blank',
-                'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes,hideurlbar=yes,hidenavigationbuttons=true'
+                })}
             );
 
             return true;

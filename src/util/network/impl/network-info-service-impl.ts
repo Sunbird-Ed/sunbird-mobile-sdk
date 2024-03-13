@@ -11,7 +11,6 @@ export class NetworkInfoServiceImpl implements NetworkInfoService {
         let networkType;
         window['Capacitor']['Plugins'].Network.getStatus().then(status => {
             networkType = status.connectionType
-            console.log("connection ", Connection);
             if (networkType === 'none') {
                 this.networkStatusSource = new BehaviorSubject<NetworkStatus>(NetworkStatus.OFFLINE);
             } else {

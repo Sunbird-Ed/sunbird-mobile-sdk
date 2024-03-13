@@ -45,7 +45,6 @@ export class NativeAppleSessionProvider implements SessionProvider {
         private nativeAppleTokenProvider: () => Promise<NativeAppleTokens>
     ) {
         this.apiService = SunbirdSdk.instance.apiService;
-        console.log(this.apiService);
     }
 
     async provide(): Promise<OAuthSession> {

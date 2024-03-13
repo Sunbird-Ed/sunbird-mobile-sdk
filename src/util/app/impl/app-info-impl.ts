@@ -22,7 +22,6 @@ export class AppInfoImpl implements AppInfo {
             this.versionName = 'sunbird-debug';
         }
         window['Capacitor']['Plugins'].App.getInfo().then((info)  => {
-            console.log('app name ', info);
             this.appName = info.name
         })
         // cordova.getAppVersion.getAppName((appName) => this.appName = appName);

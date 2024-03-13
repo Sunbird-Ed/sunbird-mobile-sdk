@@ -96,6 +96,7 @@ import {UpdateServerProfileInfoRequest} from '../def/update-server-profile-info-
 import {DeleteProfileDataHandler} from '../handler/delete-profile-data.handler';
 import { DeleteUserRequest } from '../def/delete-user-request';
 import { DeleteAccountHandler } from '../handler/delete-account-handler';
+import { Browser } from '@capacitor/browser';
 
 @injectable()
 export class ProfileServiceImpl implements ProfileService {
@@ -139,9 +140,8 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     preInit(): Observable<undefined> {
-        console.log('pre init profile service ');
         return this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION).pipe(
-            map((s) => !s && JSON.parse(s)),
+            map((s) => s && JSON.parse(s)),
             mergeMap((profileSession?: ProfileSession) => {
                 if (!profileSession) {
                     const request: Profile = {
@@ -682,18 +682,20 @@ export class ProfileServiceImpl implements ProfileService {
                 console.log(res);
                 return undefined;
             }),
-            finalize(() => {
+            finalize(async () => {
+                let listener: any;
                 const launchUrl = this.sdkConfig.apiConfig.user_authentication.mergeUserHost +
                     this.sdkConfig.apiConfig.user_authentication.authUrl + '/logout' + '?redirect_uri=' +
                     this.sdkConfig.apiConfig.host + '/oauth2callback';
 
-                const inAppBrowserRef = window['capacitor']['plugins'].Browser.open(launchUrl, '_blank', 'zoom=no,hidden=yes');
-
-                inAppBrowserRef.addEventListener('loadstart', (event) => {
-                    if ((<string> event.url).indexOf('/oauth2callback') > -1) {
-                        inAppBrowserRef.close();
+                Browser.open({url:launchUrl});
+                const loadStart = async () => {
+                    if ((<string> listener.url).indexOf('/oauth2callback') > -1) {
+                        await Browser.close();
                     }
-                });
+                }
+                listener = await Browser.addListener('browserPageLoaded', loadStart);
+
             })
         );
     }
@@ -786,7 +788,6 @@ export class ProfileServiceImpl implements ProfileService {
 
     private async generateSessionEndTelemetry() {
         const sessionString = await this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION).toPromise();
-        console.log("session string ", sessionString);
         if (sessionString) {
             const profileSession = JSON.parse(sessionString);
 

@@ -30,7 +30,6 @@ export class AuthServiceImpl implements AuthService {
 
     onInit(): Observable<undefined> {
         this.sharedPreferences.addListener(AuthKeys.KEY_OAUTH_SESSION, async (value) => {
-            console.log("addListener(AuthKeys.KEY_OAUTH_SESSION) 1 ", value)
             if (value) {
                 try {
                     const profileSession: ProfileSession = JSON.parse((await this.sharedPreferences.getString(ProfileKeys.KEY_USER_SESSION).toPromise())!);
@@ -51,12 +50,10 @@ export class AuthServiceImpl implements AuthService {
         });
 
         this.sharedPreferences.addListener(ProfileKeys.KEY_USER_SESSION, async (value) => {
-            console.log("addListener(AuthKeys.KEY_OAUTH_SESSION) 2 ", value)
             if (value) {
                 try {
                     const profileSession: ProfileSession = JSON.parse(value);
                     let val = (await this.sharedPreferences.getString(AuthKeys.KEY_OAUTH_SESSION).toPromise());
-                    console.log('val for get string after 2 ', val);
                     const authSession: OAuthSession = JSON.parse(val!);
                     CsModule.instance.config.core.api.authentication.userToken = authSession.access_token ?? "";
                     CsModule.instance.config.core.api.authentication.managedUserToken = profileSession.managedSession ? authSession.managed_access_token : undefined;
@@ -80,9 +77,7 @@ export class AuthServiceImpl implements AuthService {
                     return undefined;
                 }
                 let val = (await this.sharedPreferences.getString(ProfileKeys.KEY_USER_SESSION).toPromise());
-                console.log('val before parse ', val);
                 const profileSession: ProfileSession = JSON.parse(val!);
-                console.log("profilesession ", profileSession);
                 CsModule.instance.config.core.api.authentication.userToken = session.access_token ?? "";
                 CsModule.instance.config.core.api.authentication.managedUserToken = profileSession.managedSession ? session.managed_access_token : undefined;
                 CsModule.instance.updateConfig(CsModule.instance.config);
@@ -106,7 +101,6 @@ export class AuthServiceImpl implements AuthService {
 
     setSession(sessionProvider: SessionProvider): Observable<undefined> {
         return from(sessionProvider.provide().then(async (sessionData) => {
-            console.log('setssion session data ', sessionData);
             if (!sessionData.access_token) {
                 await this.authUtil.endSession();
                 throw sessionData;

@@ -14,7 +14,6 @@ export class SharedPreferencesAndroid implements SharedPreferences {
     public getString(key: string): Observable<string | undefined> {
         window['Capacitor']['Plugins'].Preferences.configure({group: SharedPreferencesAndroid.sharedPreferncesName})
         const value = localStorage.getItem(key);
-        console.log('*** get string ', key, value);
         if (value) {
             localStorage.removeItem(key);
 
@@ -34,9 +33,9 @@ export class SharedPreferencesAndroid implements SharedPreferences {
     public putString(key: string, value: string): Observable<undefined> {
         window['Capacitor']['Plugins'].Preferences.configure({group: SharedPreferencesAndroid.sharedPreferncesName})
         return new Observable((observer) => {
-            console.log('key , value ', key, value);
             window['Capacitor']['Plugins'].Preferences.set({key, value}).then(() => {
-                (this.listeners.get(key) || []).forEach((listener) => listener(value));
+                let getListener = this.listeners.get(key) || [];
+                getListener.forEach((listener) => listener(value))
                 observer.next(undefined);
                 observer.complete();
             }).catch((e) => {

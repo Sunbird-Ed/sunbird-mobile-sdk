@@ -75,8 +75,8 @@ export class CachedItemStoreImpl implements CachedItemStore {
                         mergeMap((isItemTTLExpired: boolean) => {
                             if (isItemTTLExpired) {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id).pipe(
-                                    map((v) => typeof(v) == 'string' ? JSON.parse(v!): v),
-                                    tap(async () => {
+                                    map((v) => {return JSON.parse(v!)}),
+                                    tap(async (v1) => {
                                         try {
                                             await fromServer().pipe(
                                                 switchMap((item: T) => {
@@ -84,7 +84,6 @@ export class CachedItemStoreImpl implements CachedItemStore {
                                                 })
                                             ).toPromise();
                                         } catch (e) {
-                                            console.error(e);
                                         }
                                     })
                                 );
@@ -122,20 +121,16 @@ export class CachedItemStoreImpl implements CachedItemStore {
     }
 
     private isItemCachedInDb(timeToLiveKey: string, id: string): Observable<boolean> {
-        console.log("is item cacheed ", id);
         return this.sharedPreferences.getString(timeToLiveKey + '-' + id).pipe(
             mergeMap((ttl) => {
                 return iif(
                     () => !!ttl,
                     defer(() => {
-                        console.log("**** res item cached");
                         return of(true)}),
                     defer(() => {
-                        console.log("**** res item cached false")
                         return of(false)})
                 );
             }),catchError((e: any) => {
-                console.log("**** res item error ", e);
                 return of(false);
             })
         );

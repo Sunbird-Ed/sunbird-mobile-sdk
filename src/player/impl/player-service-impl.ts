@@ -45,7 +45,6 @@ export class PlayerServiceImpl implements PlayerService {
         const playerInput: PlayerInput = {};
         content.rollup = ContentUtil.getRollup(content.identifier, content.hierarchyInfo!);
         context.objectRollup = content.rollup;
-        console.log('content ', content, this.devicePlatform);
         if (this.devicePlatform.toLowerCase() === 'ios') {
             content.basePath = (content.basePath || (content.basePath = '')).replace(/\/$/, '');
         } else {
@@ -57,10 +56,8 @@ export class PlayerServiceImpl implements PlayerService {
         }
         playerInput.metadata = content;
         playerInput.config = this.config.playerConfig;
-        console.log('before get active profile session ********* ');
         return this.profileService.getActiveProfileSession().pipe(
             mergeMap((session: ProfileSession | undefined) => {
-                console.log('before get active profile session ********* 1 ', session );
                 context.sid = session ? session.sid : '';
                 const actor = new Actor();
                 actor.id = session ? session.uid : '';
@@ -78,7 +75,6 @@ export class PlayerServiceImpl implements PlayerService {
                 return this.profileService.getActiveSessionProfile({requiredFields: []});
             }),
             mergeMap((profile: Profile) => {
-                console.log('before get active profile session ********* 2 profile ', profile);
                 if (profile && profile.serverProfile) {
                     const organisations = profile.serverProfile['organisations'];
                     if (organisations) {
@@ -94,7 +90,6 @@ export class PlayerServiceImpl implements PlayerService {
                 return this.groupService.getActiveGroupSession();
             }),
             mergeMap((groupSession: GroupSessionDeprecated | undefined) => {
-                console.log('before get active profile session ********* 3 group ', groupSession);
                 let corRelationList: CorrelationData[] = [];
                 if (groupSession && groupSession.gid) {
                     corRelationList.push({id: groupSession.gid, type: 'group'});
@@ -115,7 +110,6 @@ export class PlayerServiceImpl implements PlayerService {
                 return this.frameworkService.getActiveChannelId();
             }),
             mergeMap((channelId: string) => {
-                console.log('before get active profile session ********* 4 channelid ', channelId);
                 context.channel = channelId ? channelId : this.config.apiConfig.api_authentication.channelId;
                 playerInput.context = context;
                 return of(playerInput);

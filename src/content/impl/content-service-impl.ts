@@ -366,7 +366,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                 IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)})`;
 
                     const childContents = await this.dbService.execute(query).toPromise();
-                    // console.log('childContents', childContents);
                     childContents.forEach(element => {
                         childContentsMap.set(element.identifier, element);
                     });

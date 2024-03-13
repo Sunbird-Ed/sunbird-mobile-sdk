@@ -139,7 +139,7 @@ export class ManagedProfileManager {
                         managedByUid,
                         ManagedProfileManager.MANGED_SERVER_PROFILES_LOCAL_KEY,
                         'ttl_' + ManagedProfileManager.MANGED_SERVER_PROFILES_LOCAL_KEY,
-                        () => fetchFromServer(),
+                        () => {return fetchFromServer()},
                     ).toPromise();
                 });
             })
@@ -147,11 +147,9 @@ export class ManagedProfileManager {
     }
 
     switchSessionToManagedProfile({uid}: { uid: string }): Observable<undefined> {
-        console.log('switch session to managed profile');
         return defer(async () => {
             const profileSession = await this.profileService.getActiveProfileSession().toPromise();
             const initialSession = {...profileSession};
-            console.log('switch session to managed profile - profileSession ', profileSession);
             await TelemetryLogger.log.end({
                 type: 'session',
                 env: 'sdk',

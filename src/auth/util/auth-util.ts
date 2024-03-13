@@ -76,7 +76,6 @@ export class AuthUtil {
                             managed_access_token: prevSessionData ? prevSessionData.managed_access_token : undefined,
                             accessTokenExpiresOn: jwtPayload.exp * 1000
                         };
-                        console.log('authtoken put string 1 ', sessionData);
                         return await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
                     }
 
@@ -98,12 +97,10 @@ export class AuthUtil {
     }
 
     public async startSession(sessionData: OAuthSession): Promise<void> {
-        console.log('authtoken put string 2 ', sessionData);
         await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
     }
 
     public async endSession(): Promise<void> {
-        console.log('authtoken put string 3 ', 'empty');
         await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, '').toPromise();
     }
 
