@@ -1,18 +1,4 @@
-interface InAppBrowserSession {
-    addEventListener(eventname: 'loadstart' | 'loadstop' | 'loaderror' | 'exit' | 'beforeload' | 'message', callback: (event) => void);
-
-    removeEventListener(eventname: 'loadstart' | 'loadstop' | 'loaderror' | 'exit' | 'beforeload' | 'message', callback: (event) => void);
-
-    executeScript(body: any);
-
-    close();
-
-    show();
-
-    hide();
-}
-
-interface Capacitor {
+declare var Capacitor: {
     Plugins: {
         Browser: {
             open(options: OpenOptions): Promise<void>;

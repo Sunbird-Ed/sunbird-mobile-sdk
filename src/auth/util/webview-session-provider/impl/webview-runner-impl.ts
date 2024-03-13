@@ -4,68 +4,57 @@ import {zip, race} from 'rxjs';
 import {NoInappbrowserSessionAssertionFailError} from '../errors/no-inappbrowser-session-assertion-fail-error';
 import {ParamNotCapturedError} from '../errors/param-not-captured-error';
 import { take, mapTo } from 'rxjs/operators';
+import { Browser } from '@capacitor/browser';
 
 export class WebviewRunnerImpl implements WebviewRunner {
     private extras: {[key: string]: string} = {};
     private captured: {[key: string]: string} = {};
-    // private inAppBrowser?: {
-    //     ref: InAppBrowserSession;
-    //     listeners: {
-    //         loadstart: Set<any>;
-    //         exit: Set<any>;
-    //     };
-    // };
+    private inAppBrowser? = {
+        ref: Browser,
+        listeners: {
+            loadstart: new Set(),
+            exit: new Set()
+        }
+    }
 
     static buildUrl(host: string, path: string, params: { [p: string]: string }) {
         return `${host}${path}?${qs.stringify(params)}`;
     }
 
     public resetInAppBrowserEventListeners() {
-        // if (!this.inAppBrowser) {
-        //     throw new NoInappbrowserSessionAssertionFailError('InAppBrowser Session not found when resetInAppBrowserEventListeners()');
-        // }
-        window['capacitor']['plugins'].Browser.removeAllListeners()
-        // for (const key in this.inAppBrowser.listeners) {
-        //     if (this.inAppBrowser.listeners.hasOwnProperty(key)) {
-        //         (this.inAppBrowser.listeners[key] as Set<any>).forEach((listener) => {
-        //             this.inAppBrowser!.ref.removeEventListener(key as any, listener);
-        //         });
+        if (!this.inAppBrowser) {
+            throw new NoInappbrowserSessionAssertionFailError('InAppBrowser Session not found when resetInAppBrowserEventListeners()');
+        }
+        for (const key in this.inAppBrowser.listeners) {
+            if (this.inAppBrowser.listeners.hasOwnProperty(key)) {
+                (this.inAppBrowser.listeners[key] as Set<any>).forEach((listener) => {
+                    this.inAppBrowser!.ref.removeAllListeners();
+                });
 
-        //         (this.inAppBrowser.listeners[key] as Set<any>).clear();
-        //     }
-        // }
+                (this.inAppBrowser.listeners[key] as Set<any>).clear();
+            }
+        }
     }
 
     async launchWebview({ host, path, params }: { host: string; path: string; params: { [p: string]: string } }): Promise<void> {
-        // this.inAppBrowser = {
-            window['capacitor']['plugins'].Browser.open(
-                WebviewRunnerImpl.buildUrl(host, path, params),
-                '_blank',
-                'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes'
-            )
-            // listeners: {
-            //     loadstart: new Set(),
-            //     exit: new Set()
-            // }
-        // };
-
+        let res = await this.inAppBrowser.ref.open({url: WebviewRunnerImpl.buildUrl(host, path, params)})
         const onExit = () => {
             this.resetInAppBrowserEventListeners();
-            // this.inAppBrowser = undefined;
+            this.inAppBrowser = undefined;
         };
 
-        // this.inAppBrowser.listeners.exit.add(onExit);
-        // this.inAppBrowser.ref.addEventListener('exit', onExit);
-        window['capacitor']['plugins'].Browser.addEventListener('browserFinished', onExit);
+        this.inAppBrowser.listeners.exit.add(onExit);
+        this.inAppBrowser.ref.addListener('browserFinished', onExit).then(res => {
+            console.log('browser finished listner ', res);
+        });
     }
 
     async closeWebview(): Promise<void> {
-        // if (!this.inAppBrowser) {
-        //     throw new NoInappbrowserSessionAssertionFailError('InAppBrowser Session not found');
-        // }
+        if (!this.inAppBrowser) {
+            throw new NoInappbrowserSessionAssertionFailError('InAppBrowser Session not found');
+        }
 
-        // this.inAppBrowser.ref.close();
-        window['capacitor']['plugins'].Browser.close();
+        this.inAppBrowser.ref.close();
     }
 
     any<T>(...args: Promise<T>[]): Promise<T> {
@@ -115,9 +104,9 @@ export class WebviewRunnerImpl implements WebviewRunner {
     }
 
     capture({host, path, params}: { host: string; path: string; params: { key: string; resolveTo: string, match?: string, exists?: 'true' | 'false' }[] }): Promise<void> {
-        // if (!this.inAppBrowser) {
-        //     throw new NoInappbrowserSessionAssertionFailError('InAppBrowser Session not found');
-        // }
+        if (!this.inAppBrowser) {
+            throw new NoInappbrowserSessionAssertionFailError('InAppBrowser Session not found');
+        }
 
         const isHostMatching = (url: URL) => url.origin === host;
         const isPathMatching = (url: URL) => url.pathname === path;
@@ -133,10 +122,11 @@ export class WebviewRunnerImpl implements WebviewRunner {
             }
         });
 
-        return new Promise((resolve) => {
-            const onLoadStart = (event) => {
-                if (event.url) {
-                    const url = new URL(event.url);
+        return new Promise(async (resolve) => {
+            let listener: any
+            const onLoadStart = () => {
+                if (listener.url) {
+                    const url = new URL(listener.url);
 
                     if (
                         isHostMatching(url) &&
@@ -157,22 +147,22 @@ export class WebviewRunnerImpl implements WebviewRunner {
                            this.extras[key] = value;
                         });
 
-                        // if (this.inAppBrowser) {
-                        //     this.inAppBrowser.listeners.loadstart.delete(onLoadStart);
-                        //     this.inAppBrowser.ref.removeEventListener('loadstart', onLoadStart);
-                        // }
+                        if (this.inAppBrowser) {
+                            this.inAppBrowser.listeners.loadstart.delete(onLoadStart);
+                            this.inAppBrowser.ref.removeAllListeners();
+                        }
 
-                        window['capacitor']['plugins'].Browser.removeAllListeners();
+                        this.inAppBrowser.ref.removeAllListeners();
                         resolve();
                     }
                 }
             };
 
-            // if (this.inAppBrowser) {
-                // this.inAppBrowser.listeners.loadstart.add(onLoadStart);
-                // this.inAppBrowser.ref.addEventListener('loadstart', onLoadStart);
-            // }
-            window['capacitor']['plugins'].Browser.removeAllListeners();
+            if (this.inAppBrowser) {
+                this.inAppBrowser.listeners.loadstart.add(onLoadStart);
+                listener = this.inAppBrowser.ref.addListener('browserPageLoaded', onLoadStart)
+            }
+            this.inAppBrowser.ref.removeAllListeners();
         });
     }
 
@@ -189,9 +179,9 @@ export class WebviewRunnerImpl implements WebviewRunner {
     }
 
     async redirectTo({host, path, params}: { host: string; path: string; params: { [p: string]: string } }): Promise<void> {
-        // if (!this.inAppBrowser) {
-        //     throw new NoInappbrowserSessionAssertionFailError('InAppBrowser Session not found');
-        // }
+        if (!this.inAppBrowser) {
+            throw new NoInappbrowserSessionAssertionFailError('InAppBrowser Session not found');
+        }
 
         // this.inAppBrowser.ref.executeScript({
         //     code: `(() => {
