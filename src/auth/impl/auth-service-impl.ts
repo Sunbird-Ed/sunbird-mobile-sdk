@@ -30,7 +30,6 @@ export class AuthServiceImpl implements AuthService {
 
     onInit(): Observable<undefined> {
         this.sharedPreferences.addListener(AuthKeys.KEY_OAUTH_SESSION, async (value) => {
-            console.log("addListener(AuthKeys.KEY_OAUTH_SESSION) 1 ", value)
             if (value) {
                 try {
                     const profileSession: ProfileSession = JSON.parse((await this.sharedPreferences.getString(ProfileKeys.KEY_USER_SESSION).toPromise())!);
@@ -51,7 +50,6 @@ export class AuthServiceImpl implements AuthService {
         });
 
         this.sharedPreferences.addListener(ProfileKeys.KEY_USER_SESSION, async (value) => {
-            console.log("addListener(AuthKeys.KEY_OAUTH_SESSION) 2 ", value)
             if (value) {
                 try {
                     const profileSession: ProfileSession = JSON.parse(value);
@@ -103,7 +101,6 @@ export class AuthServiceImpl implements AuthService {
 
     setSession(sessionProvider: SessionProvider): Observable<undefined> {
         return from(sessionProvider.provide().then(async (sessionData) => {
-            console.log('setssion session data ', sessionData);
             if (!sessionData.access_token) {
                 await this.authUtil.endSession();
                 throw sessionData;

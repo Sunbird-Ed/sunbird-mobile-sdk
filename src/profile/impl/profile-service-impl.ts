@@ -140,9 +140,8 @@ export class ProfileServiceImpl implements ProfileService {
     }
 
     preInit(): Observable<undefined> {
-        console.log('pre init profile service ');
         return this.sharedPreferences.getString(ProfileServiceImpl.KEY_USER_SESSION).pipe(
-            map((s) => !s && JSON.parse(s)),
+            map((s) => s && JSON.parse(s)),
             mergeMap((profileSession?: ProfileSession) => {
                 if (!profileSession) {
                     const request: Profile = {

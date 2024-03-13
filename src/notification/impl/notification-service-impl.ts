@@ -195,15 +195,12 @@ export class NotificationServiceImpl implements NotificationService, SdkServiceO
                         cacheKey,
                         gzip(JSON.stringify(feed))
                     ).toPromise();
-                    console.log('return feed ', feed);
                     return feed;
                 } catch (e) {
-                    console.log('error getValue ', e);
                     return this.keyValueStore.getValue(
                         cacheKey
                     ).toPromise()
-                        .then((r) => {console.log("r ", r);
-                        return JSON.parse(ungzip(r, {to: 'string'}))})
+                        .then((r) => JSON.parse(ungzip(r, {to: 'string'})))
                         .catch((e) => {
                             console.error(e);
                             return [];

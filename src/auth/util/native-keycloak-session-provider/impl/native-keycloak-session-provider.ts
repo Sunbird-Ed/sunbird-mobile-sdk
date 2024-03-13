@@ -62,7 +62,6 @@ export class NativeKeycloakSessionProvider implements SessionProvider {
                 loginConfig: this.loginConfig.target
             })
             .build();
-            console.log('keycloack req ', apiRequest);
         return this.apiService.fetch<{ access_token: string, refresh_token: string }>(apiRequest)
             .pipe(
                 map(async (success) => {

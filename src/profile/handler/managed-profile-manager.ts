@@ -147,7 +147,6 @@ export class ManagedProfileManager {
     }
 
     switchSessionToManagedProfile({uid}: { uid: string }): Observable<undefined> {
-        console.log('switch session to managed profile');
         return defer(async () => {
             const profileSession = await this.profileService.getActiveProfileSession().toPromise();
             const initialSession = {...profileSession};
