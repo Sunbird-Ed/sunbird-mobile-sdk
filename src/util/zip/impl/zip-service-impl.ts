@@ -4,7 +4,7 @@ import {injectable} from 'inversify';
 @injectable()
 export class ZipServiceImpl implements ZipService {
     unzip(sourceZip: string, option, successCallback?, errorCallback?) {
-        window.JJzip.unzip(sourceZip, option, () => {
+        JJzip.unzip(sourceZip, option, () => {
             if (successCallback) {
                 successCallback();
             }
@@ -16,7 +16,7 @@ export class ZipServiceImpl implements ZipService {
     }
 
     zip(sourceFolderPath: string, option, directoriesToBeSkipped: string[], filesToBeSkipped: string[], successCallback?, errorCallback?) {
-        window.JJzip.zip(sourceFolderPath, option, directoriesToBeSkipped, filesToBeSkipped, () => {
+        JJzip.zip(sourceFolderPath, option, directoriesToBeSkipped, filesToBeSkipped, () => {
             if (successCallback) {
                 successCallback();
             }
