@@ -694,7 +694,9 @@ export class ProfileServiceImpl implements ProfileService {
                         await Browser.close();
                     }
                 }
-                listener = await Browser.addListener('browserPageLoaded', loadStart);
+                await Browser.addListener('browserPageLoaded', loadStart).then(res => {
+                    listener = res;
+                })
 
             })
         );

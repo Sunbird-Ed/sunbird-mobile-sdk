@@ -27,9 +27,9 @@ export class WebviewRunnerImpl implements WebviewRunner {
         }
         for (const key in this.inAppBrowser.listeners) {
             if (this.inAppBrowser.listeners.hasOwnProperty(key)) {
-                (this.inAppBrowser.listeners[key] as Set<any>).forEach((listener) => {
+                // (this.inAppBrowser.listeners[key] as Set<any>).forEach((listener) => {
                     this.inAppBrowser!.ref.removeAllListeners();
-                });
+                // });
 
                 (this.inAppBrowser.listeners[key] as Set<any>).clear();
             }
@@ -37,7 +37,7 @@ export class WebviewRunnerImpl implements WebviewRunner {
     }
 
     async launchWebview({ host, path, params }: { host: string; path: string; params: { [p: string]: string } }): Promise<void> {
-        let res = await this.inAppBrowser.ref.open({url: WebviewRunnerImpl.buildUrl(host, path, params)})
+        await this.inAppBrowser.ref.open({url: WebviewRunnerImpl.buildUrl(host, path, params)})
         const onExit = () => {
             this.resetInAppBrowserEventListeners();
             this.inAppBrowser = undefined;
@@ -160,7 +160,9 @@ export class WebviewRunnerImpl implements WebviewRunner {
 
             if (this.inAppBrowser) {
                 this.inAppBrowser.listeners.loadstart.add(onLoadStart);
-                listener = this.inAppBrowser.ref.addListener('browserPageLoaded', onLoadStart)
+                this.inAppBrowser.ref.addListener('browserPageLoaded', onLoadStart).then(res => {
+                    console.log("listener page loaded ", res);
+                })
             }
             this.inAppBrowser.ref.removeAllListeners();
         });

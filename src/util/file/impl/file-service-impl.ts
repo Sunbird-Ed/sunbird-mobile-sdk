@@ -68,11 +68,11 @@ export class FileServiceImpl implements FileService {
         });
     }
 
-    readAsText(path: string, filePath: string): Promise<string> {
+    readAsText(path: string, filePath: string): Promise<string | any> {
         return this.readFile<string>(path, filePath, 'Text');
     }
 
-    readAsBinaryString(path: string, filePath: string): Promise<string> {
+    readAsBinaryString(path: string, filePath: string): Promise<string | any> {
         return this.readFile<string>(path, filePath, 'BinaryString');
     }
 
@@ -430,32 +430,36 @@ export class FileServiceImpl implements FileService {
     //     });
     // }
 
+    private getFileReader(): FileReader {
+        const fileReader = new FileReader();
+        const zoneOriginalInstance = (fileReader as any)["__zone_symbol__originalInstance"];
+        return zoneOriginalInstance || fileReader;
+    }
     private readFile<T>(
         path: string,
         filePath: string,
         readAs: 'ArrayBuffer' | 'BinaryString' | 'DataURL' | 'Text'
-    ): Promise<T> {
+    ): Promise<T | void> {
 
         return this.resolveDirectoryUrl(path)
             .then((directoryEntry: DirectoryEntry) => {
                 return this.getFile(directoryEntry, filePath, {create: false});
             })
             .then((fileEntry: FileEntry) => {
-                const reader = new FileReader();
-                return new Promise<T>((resolve, reject) => {
-                    reader.onloadend = () => {
-                        if (reader.result !== undefined || reader.result !== null) {
-                            resolve((reader.result as any) as T);
-                        } else if (reader.error !== undefined || reader.error !== null) {
-                            reject(reader.error);
-                        } else {
-                            reject({code: null, message: 'READER_ONLOADEND_ERR'});
-                        }
-                    };
-
+                let reader = this.getFileReader();
+                return new Promise<T | any>((resolve, reject) => {
                     fileEntry.file(
                         entry => {
-                            reader[`readAs${readAs}`].call(reader, entry);
+                            reader.onloadend = (ev) => {
+                                if (reader.result !== undefined && reader.result !== null) {
+                                    resolve(reader.result as any);
+                                } else if (reader.error !== undefined && reader.error !== null) {
+                                    reject(reader.error);
+                                } else {
+                                    reject({ code: null, message: 'READER_ONLOADEND_ERR' });
+                                }
+                            };
+                            reader.readAsText(entry);
                         },
                         error => {
                             reject(error);

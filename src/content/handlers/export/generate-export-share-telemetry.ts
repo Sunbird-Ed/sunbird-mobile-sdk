@@ -27,13 +27,13 @@ export class GenerateExportShareTelemetry {
             env: 'sdk'
         };
         return this.telemetryService.share(req).toPromise()
-            .then(() => {
+            .then(async () => {
                 let exportedFilePath;
                 if (contentExportRequest.saveLocally) {
                     exportedFilePath = contentExportRequest.destinationFolder.concat(fileName);
                 } else {
                     let devicePlatform = "";
-                    window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+                    await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
                         devicePlatform = val.platform
                         const folderPath = (devicePlatform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
                         exportedFilePath = folderPath.concat(fileName);

@@ -22,6 +22,8 @@ export class DeviceMemoryCheck {
                 return Promise.reject(response);
             }
             return Promise.resolve(response);
+        }).catch((err) => {
+            return Promise.reject(err);
         });
     }
 
