@@ -22,7 +22,7 @@ export class NativeKeycloakSessionProvider implements SessionProvider {
     private static async parseAccessToken(accessToken: string): Promise<{
         userToken: string;
         accessTokenExpiresOn: number;
-    } {
+    }> {
         let decodeToken = await JwtUtil.decodeJWT(accessToken)
         const payload: { sub: string, exp: number } = JSON.parse(decodeToken);
         return {
