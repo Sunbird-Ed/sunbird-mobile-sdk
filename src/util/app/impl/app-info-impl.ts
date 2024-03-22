@@ -38,6 +38,7 @@ export class AppInfoImpl implements AppInfo {
             return undefined;
         }
         const packageName = this.sdkConfig.appConfig.buildConfigPackage ? this.sdkConfig.appConfig.buildConfigPackage : 'org.sunbird.app';
+        console.log("packageName ", packageName);
         return this.getBuildConfigValue(packageName, 'REAL_VERSION_NAME')
             .then((versionName) => {
                 this.versionName = versionName;
@@ -62,7 +63,7 @@ export class AppInfoImpl implements AppInfo {
     getBuildConfigValue(packageName, property): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             try {
-                sbutility.getBuildConfigValue(packageName, property, (entry: string) => {
+                window.sbutility.getBuildConfigValue(packageName, property, (entry: string) => {
                     resolve(entry);
                 }, err => {
                     console.error(err);
