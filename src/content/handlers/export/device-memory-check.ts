@@ -8,15 +8,20 @@ export class DeviceMemoryCheck {
 
     public async execute(exportContentContext: ExportContentContext): Promise<Response> {
         const response: Response = new Response();
-        return this.fileService.getFreeDiskSpace()
-            .then((freeSpace) => {
-                const fileSize: number = this.getFileSize(exportContentContext.items!);
-                // if (!FileUtil.isFreeSpaceAvailable(freeSpace, fileSize, 0)) {
-                //     throw response;
-                // }
-                response.body = exportContentContext;
-                return response;
-            });
+        response.body = exportContentContext;
+        return response;
+        // return this.fileService.getFreeDiskSpace()
+        //     .then((freeSpace) => {
+        //         const fileSize: number = this.getFileSize(exportContentContext.items!);
+        //         // if (!FileUtil.isFreeSpaceAvailable(freeSpace, fileSize, 0)) {
+        //         //     throw response;
+        //         // }
+        //          response.body = exportContentContext;
+        //          return response;
+        //     }).catch((err) => {
+        //         console.log('err ', err);
+        //         return Promise.reject(err);
+        //     });
     }
 
     private getFileSize(items: any[]): number {

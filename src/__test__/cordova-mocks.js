@@ -46,8 +46,8 @@ global.cordova = {
 };
 
 global.plugins = {
-    SharedPreferences: {
-        getInstance: () => {
+    Preferences: {
+        configure: () => {
         }
     }
 };

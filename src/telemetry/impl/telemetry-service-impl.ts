@@ -99,7 +99,7 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
 
     preInit(): Observable<undefined> {
         return defer(async () => {
-            this.getInitialUtmParameters().then((parameters) => {
+            await this.getInitialUtmParameters().then((parameters) => {
                 if (parameters && parameters.length) {
                     this.updateCampaignParameters(parameters);
                 }
@@ -338,10 +338,10 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
                     this.apiService,
                     this.networkQueue
                 ).handle(request).pipe(
-                    tap((syncStat) => {
+                    tap(async (syncStat) => {
                         if (!syncStat.error && syncStat.syncedEventCount) {
                             const now = Date.now();
-                            this.sharedPreferences.putString(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP, now + '').toPromise();
+                            await this.sharedPreferences.putString(TelemetryKeys.KEY_LAST_SYNCED_TIME_STAMP, now + '').toPromise();
                             this._lastSyncedTimestamp$.next(now);
                         }
                     })
@@ -411,11 +411,16 @@ export class TelemetryServiceImpl implements TelemetryService, SdkServiceOnInitD
     private getInitialUtmParameters(): Promise<CorrelationData[]> {
         return new Promise<CorrelationData[]>((resolve, reject) => {
             try {
-                sbutility.getUtmInfo((response: { val: CorrelationData[] }) => {
-                    resolve(response.val);
-                }, err => {
-                    reject(err);
-                });
+                // TODO: Capacitor temp fix
+                resolve([{id: "",
+                        type: ""}])
+                // window.sbutility.getUtmInfo((response: { val: CorrelationData[] }) => {
+                //     resolve(response.val);
+                // }, err => {
+                //     resolve([{id: "",
+                //         type: ""}])
+                //     // reject(err);
+                // });
             } catch (xc) {
                 reject(xc);
             }

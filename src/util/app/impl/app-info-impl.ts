@@ -21,7 +21,10 @@ export class AppInfoImpl implements AppInfo {
         if (sdkConfig.platform !== 'cordova') {
             this.versionName = 'sunbird-debug';
         }
-        cordova.getAppVersion.getAppName((appName) => this.appName = appName);
+        window['Capacitor']['Plugins'].App.getInfo().then((info)  => {
+            this.appName = info.name
+        })
+        // cordova.getAppVersion.getAppName((appName) => this.appName = appName);
     }
 
     getVersionName(): string {
@@ -38,9 +41,9 @@ export class AppInfoImpl implements AppInfo {
             return undefined;
         }
         const packageName = this.sdkConfig.appConfig.buildConfigPackage ? this.sdkConfig.appConfig.buildConfigPackage : 'org.sunbird.app';
-        return this.getBuildConfigValue(packageName, 'REAL_VERSION_NAME')
-            .then((versionName) => {
-                this.versionName = versionName;
+        // return this.getBuildConfigValue(packageName, 'REAL_VERSION_NAME')
+        //     .then((versionName) => {
+                this.versionName = "6.0-local";
                 if (CsModule.instance.isInitialised) {
                     CsModule.instance.updateConfig({
                         ...CsModule.instance.config,
@@ -48,21 +51,21 @@ export class AppInfoImpl implements AppInfo {
                             ...CsModule.instance.config.core,
                             global: {
                                 ...CsModule.instance.config.core.global,
-                                appVersion: versionName
+                                appVersion: "6.0-local"
                             }
                         }
                     });
                 }
                 console.log('version name', this.versionName);
                 return;
-            });
+            // });
     }
 
     /** @internal */
     getBuildConfigValue(packageName, property): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             try {
-                sbutility.getBuildConfigValue(packageName, property, (entry: string) => {
+                window.sbutility.getBuildConfigValue(packageName, property, (entry: string) => {
                     resolve(entry);
                 }, err => {
                     console.error(err);

@@ -6,6 +6,7 @@ import { SunbirdSdk } from '../../../../sdk';
 import { CsModule } from '@project-sunbird/client-services';
 import { WebviewSessionProviderConfig } from '../../webview-session-provider/def/webview-session-provider-config';
 import { JwtUtil } from '../../../../util/jwt-util';
+import { OAuthSession } from 'src/auth/def/o-auth-session';
 
 export interface NativeKeycloakTokens {
     username: string;
@@ -17,6 +18,7 @@ export class NativeKeycloakSessionProvider implements SessionProvider {
     private apiService: ApiService;
     protected apiConfig: ApiConfig;
     
+    devicePlatform = "";
     private static async parseAccessToken(accessToken: string): Promise<{
         userToken: string;
         accessTokenExpiresOn: number;
@@ -29,26 +31,32 @@ export class NativeKeycloakSessionProvider implements SessionProvider {
         };
     }
     
+    private loginConfig: WebviewSessionProviderConfig;
     constructor(
-        private loginConfig: WebviewSessionProviderConfig,
-        private nativeKeycloakTokenProvider: NativeKeycloakTokens
+        private nativeKeycloakTokenProvider: () => Promise<{WebviewSessionProviderConfig, NativeKeycloakTokens}>
     ) {
+        window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            this.devicePlatform = val.platform;
+        })
         this.apiService = SunbirdSdk.instance.apiService;
     }
 
-    async provide(): Promise<any> {
-        return this.callKeycloakNativeLogin(this.nativeKeycloakTokenProvider.username, this.nativeKeycloakTokenProvider.password).toPromise();
+    async provide(): Promise<OAuthSession> {
+        const nativeKeycloakTokenProvider = await this.nativeKeycloakTokenProvider();
+        let token = nativeKeycloakTokenProvider.NativeKeycloakTokens
+        this.loginConfig = nativeKeycloakTokenProvider.WebviewSessionProviderConfig
+        return this.callKeycloakNativeLogin(token.username, token.password).toPromise();
     }
 
-    private callKeycloakNativeLogin(emailId: string, password: string): Observable<any> {
-        const platform = window.device.platform.toLowerCase() ==='ios' ? 'ios' : window.device.platform.toLowerCase();
+    private callKeycloakNativeLogin(emailId: string, password: string): Observable<OAuthSession | any> {
+        const platform = this.devicePlatform.toLowerCase() ==='ios' ? 'ios' : this.devicePlatform.toLowerCase();
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(NativeKeycloakSessionProvider.LOGIN_API_ENDPOINT)
             .withBearerToken(false)
             .withUserToken(false)
             .withBody({
-                client_id: platform,
+                client_id: platform || 'android',
                 emailId: emailId,
                 password: password,
                 loginConfig: this.loginConfig.target

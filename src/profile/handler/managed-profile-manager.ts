@@ -129,7 +129,7 @@ export class ManagedProfileManager {
                                 );
 
                                 for (const managedProfile of nonPersistedProfiles) {
-                                    this.persistManagedProfile(managedProfile);
+                                    await this.persistManagedProfile(managedProfile);
                                 }
                             })
                         );
@@ -139,7 +139,7 @@ export class ManagedProfileManager {
                         managedByUid,
                         ManagedProfileManager.MANGED_SERVER_PROFILES_LOCAL_KEY,
                         'ttl_' + ManagedProfileManager.MANGED_SERVER_PROFILES_LOCAL_KEY,
-                        () => fetchFromServer(),
+                        () => {return fetchFromServer()},
                     ).toPromise();
                 });
             })
@@ -150,7 +150,6 @@ export class ManagedProfileManager {
         return defer(async () => {
             const profileSession = await this.profileService.getActiveProfileSession().toPromise();
             const initialSession = {...profileSession};
-
             await TelemetryLogger.log.end({
                 type: 'session',
                 env: 'sdk',
@@ -220,7 +219,7 @@ export class ManagedProfileManager {
                 ProfileKeys.KEY_USER_SESSION, JSON.stringify(profileSession)
             ).toPromise();
 
-            TelemetryLogger.log.start({
+            await TelemetryLogger.log.start({
                 type: 'session',
                 env: 'sdk',
                 mode: 'switch-user',
@@ -272,7 +271,7 @@ export class ManagedProfileManager {
             hashTagId: serverProfile['rootOrgId']
         };
 
-        this.profileService.createProfile({
+        await this.profileService.createProfile({
             uid: serverProfile.id,
             profileType: ProfileType.STUDENT,
             source: ProfileSource.SERVER,
@@ -285,7 +284,7 @@ export class ManagedProfileManager {
             serverProfile: serverProfile
         }, ProfileSource.SERVER).toPromise();
 
-        this.cachedItemStore.getCached(
+        await this.cachedItemStore.getCached(
             serverProfile.id,
             ManagedProfileManager.USER_PROFILE_DETAILS_KEY_PREFIX,
             ManagedProfileManager.USER_PROFILE_DETAILS_KEY_PREFIX,

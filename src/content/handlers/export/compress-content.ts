@@ -28,7 +28,7 @@ export class CompressContent {
                 const skipFilesName: string[] = [];
                 skipDirectoriesName.push(contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER]);
                 skipFilesName.push(contentInDb[ContentEntry.COLUMN_NAME_IDENTIFIER].concat('/', FileName.MANIFEST.valueOf()));
-                await new Promise((resolve, reject) => {
+                await new Promise<void>((resolve, reject) => {
                     this.zipService.zip(path!, {target: payload!}, skipDirectoriesName, skipFilesName, () => {
                         resolve();
                     }, () => {

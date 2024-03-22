@@ -45,7 +45,6 @@ export class NativeAppleSessionProvider implements SessionProvider {
         private nativeAppleTokenProvider: () => Promise<NativeAppleTokens>
     ) {
         this.apiService = SunbirdSdk.instance.apiService;
-        console.log(this.apiService);
     }
 
     async provide(): Promise<OAuthSession> {
@@ -53,9 +52,12 @@ export class NativeAppleSessionProvider implements SessionProvider {
         return this.callAppleNativeLogin(appleSignInRes).toPromise();
     }
 
-    private callAppleNativeLogin(appleSignInRes): Observable<any> {
-        const platform = window.device.platform.toLowerCase() === 'ios' ? 'ios' : null;
-        const apiRequest: Request = new Request.Builder()
+    private callAppleNativeLogin(appleSignInRes): Observable<OAuthSession> {
+        let devicePlatform = "";
+        return window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            devicePlatform = val.platform
+            const platform = devicePlatform.toLowerCase() === 'ios' ? 'ios' : null;
+            const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(NativeAppleSessionProvider.LOGIN_API_ENDPOINT)
             .withBearerToken(false)
@@ -66,7 +68,7 @@ export class NativeAppleSessionProvider implements SessionProvider {
                 ...appleSignInRes
             })
             .build();
-        return this.apiService.fetch<{ sessionId: { access_token: string, refresh_token: string }}>(apiRequest)
+            return this.apiService.fetch<{ sessionId: { access_token: string, refresh_token: string }}>(apiRequest)
             .pipe(
                 map(async (success) => {
                     if (success.body) {
@@ -78,6 +80,7 @@ export class NativeAppleSessionProvider implements SessionProvider {
                         userToken: (await NativeAppleSessionProvider.parseAccessToken(success.body.sessionId.access_token)).userToken
                     };
                 })
-            );
+            )
+        })
     }
 }

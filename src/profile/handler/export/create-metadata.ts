@@ -44,12 +44,13 @@ export class CreateMetaData {
     }
 
     private async populateMetaData(metaData: { [key: string]: any }) {
-        Object.keys(metaData).forEach(async (key) => {
+        let keys = Object.keys(metaData);
+        for(const key of keys) {
             const model = {key: key, value: metaData[key]};
             await this.dbService.insert({
                 table: MetaEntry.TABLE_NAME,
                 modelJson: model, useExternalDb: true
             }).toPromise();
-        });
+        };
     }
 }

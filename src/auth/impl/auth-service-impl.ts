@@ -34,8 +34,8 @@ export class AuthServiceImpl implements AuthService {
                 try {
                     const profileSession: ProfileSession = JSON.parse((await this.sharedPreferences.getString(ProfileKeys.KEY_USER_SESSION).toPromise())!);
                     const authSession: OAuthSession = JSON.parse(value);
-                    CsModule.instance.config.core.api.authentication.userToken = authSession.access_token;
-                    CsModule.instance.config.core.api.authentication.managedUserToken = profileSession.managedSession ? authSession.managed_access_token : undefined;
+                        CsModule.instance.config.core.api.authentication.userToken = authSession.access_token ?? "";
+                        CsModule.instance.config.core.api.authentication.managedUserToken = profileSession.managedSession ? authSession.managed_access_token : undefined;
                 } catch (e) {
                     console.error(e);
                     CsModule.instance.config.core.api.authentication.userToken = undefined;
@@ -53,8 +53,9 @@ export class AuthServiceImpl implements AuthService {
             if (value) {
                 try {
                     const profileSession: ProfileSession = JSON.parse(value);
-                    const authSession: OAuthSession = JSON.parse((await this.sharedPreferences.getString(AuthKeys.KEY_OAUTH_SESSION).toPromise())!);
-                    CsModule.instance.config.core.api.authentication.userToken = authSession.access_token;
+                    let val = (await this.sharedPreferences.getString(AuthKeys.KEY_OAUTH_SESSION).toPromise());
+                    const authSession: OAuthSession = JSON.parse(val!);
+                    CsModule.instance.config.core.api.authentication.userToken = authSession.access_token ?? "";
                     CsModule.instance.config.core.api.authentication.managedUserToken = profileSession.managedSession ? authSession.managed_access_token : undefined;
                 } catch (e) {
                     console.error(e);
@@ -75,9 +76,9 @@ export class AuthServiceImpl implements AuthService {
                 if (!session) {
                     return undefined;
                 }
-
-                const profileSession: ProfileSession = JSON.parse((await this.sharedPreferences.getString(ProfileKeys.KEY_USER_SESSION).toPromise())!);
-                CsModule.instance.config.core.api.authentication.userToken = session.access_token;
+                let val = (await this.sharedPreferences.getString(ProfileKeys.KEY_USER_SESSION).toPromise());
+                const profileSession: ProfileSession = JSON.parse(val!);
+                CsModule.instance.config.core.api.authentication.userToken = session.access_token ?? "";
                 CsModule.instance.config.core.api.authentication.managedUserToken = profileSession.managedSession ? session.managed_access_token : undefined;
                 CsModule.instance.updateConfig(CsModule.instance.config);
 
@@ -99,14 +100,16 @@ export class AuthServiceImpl implements AuthService {
     }
 
     setSession(sessionProvider: SessionProvider): Observable<undefined> {
-        return from(sessionProvider.provide().then((sessionData) => {
+        return from(sessionProvider.provide().then(async (sessionData) => {
             if (!sessionData.access_token) {
-                this.authUtil.endSession();
+                await this.authUtil.endSession();
                 throw sessionData;
             }
-            this.authUtil.startSession(sessionData);
-            this.authUtil.refreshSession();
+            await this.authUtil.startSession(sessionData);
+            await this.authUtil.refreshSession();
             return undefined;
+        }).catch(e => {
+            console.log('e ', e);
         }));
     }
 

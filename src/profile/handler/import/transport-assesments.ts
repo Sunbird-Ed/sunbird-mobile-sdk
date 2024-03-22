@@ -105,7 +105,7 @@ export class TransportAssesments {
                 }).toPromise();
             }
         }
-        summariesFromExternalDb.forEach(async (summaryFromExternalDB: LearnerSummaryEntry.SchemaMap) => {
+        for(const summaryFromExternalDB of summariesFromExternalDb) {
             const filter = SummarizerQueries.getFilterForLearnerAssessmentDetails(
                 summaryFromExternalDB[LearnerAssessmentsEntry.COLUMN_NAME_QID],
                 summaryFromExternalDB[LearnerAssessmentsEntry.COLUMN_NAME_UID],
@@ -124,7 +124,7 @@ export class TransportAssesments {
                     modelJson: assesmentsInCurrentDb[0]
                 }).toPromise();
             }
-        });
+        };
     }
 
 }

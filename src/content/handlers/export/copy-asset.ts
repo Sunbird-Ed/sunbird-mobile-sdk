@@ -81,7 +81,7 @@ export class CopyAsset {
         return new Promise<boolean>((resolve, reject) => {
             sbutility.copyFile(sourcePath, destinationPath, fileName,
                 () => {
-                    resolve();
+                    resolve(true);
                 }, err => {
                     console.error(err);
                     resolve(err);

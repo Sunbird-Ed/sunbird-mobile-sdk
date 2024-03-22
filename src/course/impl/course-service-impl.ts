@@ -58,6 +58,7 @@ import {CourseCertificateManager} from '../def/course-certificate-manager';
 import {CourseCertificateManagerImpl} from './course-certificate-manager-impl';
 import {UpdateContentStateResponse} from '../def/update-content-state-response';
 import {UpdateCourseContentStateRequest} from '../def/update-course-content-state-request';
+import { Browser } from '@capacitor/browser';
 
 @injectable()
 export class CourseServiceImpl implements CourseService {
@@ -257,8 +258,11 @@ export class CourseServiceImpl implements CourseService {
         return defer(async () => {
             const activeProfile = (await this.profileService.getActiveProfileSession().toPromise());
             const userId = activeProfile.managedSession ? activeProfile.managedSession.uid : activeProfile.uid;
-
-            const folderPath = (window.device.platform.toLowerCase() === 'ios') ? cordova.file.documentsDirectory : cordova.file.externalRootDirectory;
+            let devicePlatform = "";
+            await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+                devicePlatform = val.platform
+            })
+            const folderPath = (devicePlatform.toLowerCase() === 'ios') ? cordova.file.documentsDirectory : cordova.file.externalRootDirectory;
             const filePath = `${folderPath}Download/${request.certificate.name}_${request.courseId}_${userId}.pdf`;
             return {userId};
         }).pipe(
@@ -358,7 +362,9 @@ export class CourseServiceImpl implements CourseService {
 
             this.resetCapturedAssessmentEvents();
         }
-        this.offlineAssessmentScoreProcessor.process(capturedAssessmentEvents);
+        (async () => {
+            await this.offlineAssessmentScoreProcessor.process(capturedAssessmentEvents);
+        })
 
         return this.syncAssessmentEventsHandler.handle(
             capturedAssessmentEvents
@@ -386,13 +392,11 @@ export class CourseServiceImpl implements CourseService {
 
             const accessToken = session.managed_access_token || session.access_token;
 
-            cordova.InAppBrowser.open(
+            Browser.open({url:
                 CourseServiceImpl.buildUrl(this.sdkConfig.apiConfig.host, CourseServiceImpl.DISCUSSION_FORUM_ENDPOINT, {
                     'access_token': accessToken,
                     'returnTo': `/category/${request.forumId}`
-                }),
-                '_blank',
-                'zoom=no,clearcache=yes,clearsessioncache=yes,cleardata=yes,hideurlbar=yes,hidenavigationbuttons=true'
+                })}
             );
 
             return true;

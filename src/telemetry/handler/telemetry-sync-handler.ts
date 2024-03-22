@@ -97,7 +97,9 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
                     error: new Error('AUTO_SYNC_MODE: ' + TelemetryAutoSyncModes.OFF)
                   };
                 case TelemetryAutoSyncModes.OVER_WIFI:
-                  if (navigator.connection.type !== Connection.WIFI) {
+                  let connectionType;
+                  window['Capacitor']['Plugins'].Network.getStatus().then(status => connectionType = status.connectionType)
+                  if (connectionType !== 'wifi') {
                     return {
                       syncedEventCount: 0,
                       syncTime: Date.now(),
@@ -178,12 +180,12 @@ export class TelemetrySyncHandler implements ApiRequestHandler<TelemetrySyncRequ
         return this.deviceRegisterService.registerDevice().pipe(
           tap(async (res) => {
             const actions = res.result.actions;
-            actions.forEach(element => {
+            for(const element of actions) {
               if (element.type === 'experiment' && element.key) {
-                this.sharedPreferences.putString(CodePush.DEPLOYMENT_KEY,
+                await this.sharedPreferences.putString(CodePush.DEPLOYMENT_KEY,
                   element.data.key).toPromise();
               }
-            });
+            };
             const serverTime = new Date(res.ts).getTime();
             const now = Date.now();
             const currentOffset = serverTime - now;

@@ -34,7 +34,7 @@ export class GetServerProfileDetailsHandler implements ApiRequestHandler<{
             mergeMap((from: CachedItemRequestSourceFrom) => {
                 if (from === CachedItemRequestSourceFrom.SERVER) {
                     return this.fetchFromServer(serverProfileDetailsRequest).pipe(
-                        tap(async (profile) => {
+                        tap((profile) => {
                             return this.keyValueStore.setValue(
                                 this.USER_PROFILE_DETAILS_KEY_PREFIX + '-' + profile.id, JSON.stringify(profile)
                             ).toPromise();

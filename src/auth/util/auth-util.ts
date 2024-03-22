@@ -23,7 +23,11 @@ export class AuthUtil {
             throw new NoActiveSessionError('No Active Sessions found');
         }
         let request ;
-        if(window.device.platform.toLowerCase() === "ios"){
+        let platform = "";
+        await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            platform = val.platform
+        })
+        if(platform.toLowerCase() === "ios"){
             request = new Request.Builder()
             .withPath('/auth/v1/refresh/token')
             .withType(HttpRequestType.POST)
@@ -72,7 +76,6 @@ export class AuthUtil {
                             managed_access_token: prevSessionData ? prevSessionData.managed_access_token : undefined,
                             accessTokenExpiresOn: jwtPayload.exp * 1000
                         };
-
                         return await this.sharedPreferences.putString(AuthKeys.KEY_OAUTH_SESSION, JSON.stringify(sessionData)).toPromise();
                     }
 

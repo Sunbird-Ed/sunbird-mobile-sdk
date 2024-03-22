@@ -25,7 +25,7 @@ export class UpdateContentStateApiHandler implements ApiRequestHandler<UpdateCon
       true).pipe(
       mergeMap(() => {
         return new Observable((observer: Observer<{ [key: string]: any }>) => {
-          sbsync.onSyncSucces(async (response) => {
+          sbsync.onSyncSucces((response) => {
             const courseProgressResponse = response.courseProgressResponse;
             const error = response.course_progress_error;
             if (courseProgressResponse) {
@@ -34,7 +34,7 @@ export class UpdateContentStateApiHandler implements ApiRequestHandler<UpdateCon
               observer.error(error);
             }
             observer.complete();
-          }, async (error) => {
+          }, (error) => {
             observer.error(error);
           });
         });

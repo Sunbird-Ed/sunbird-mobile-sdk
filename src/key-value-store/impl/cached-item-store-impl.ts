@@ -39,10 +39,10 @@ export class CachedItemStoreImpl implements CachedItemStore {
         emptyCondition?: (item: T) => boolean
     ): Observable<T> {
         return fromServer().pipe(
-            tap((response) => {
-                this.saveItemTTL(id, timeToLiveKey).toPromise();
+            tap(async (response) => {
+                await this.saveItemTTL(id, timeToLiveKey).toPromise();
 
-                this.saveItemToDb(id, noSqlkey, response).toPromise();
+                await this.saveItemToDb(id, noSqlkey, response).toPromise();
             }),
             catchError(() => {
                 return this.getCached<T>(
@@ -75,8 +75,8 @@ export class CachedItemStoreImpl implements CachedItemStore {
                         mergeMap((isItemTTLExpired: boolean) => {
                             if (isItemTTLExpired) {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id).pipe(
-                                    map((v) => JSON.parse(v!)),
-                                    tap(async () => {
+                                    map((v) => {return JSON.parse(v!)}),
+                                    tap(async (v1) => {
                                         try {
                                             await fromServer().pipe(
                                                 switchMap((item: T) => {
@@ -84,13 +84,12 @@ export class CachedItemStoreImpl implements CachedItemStore {
                                                 })
                                             ).toPromise();
                                         } catch (e) {
-                                            console.error(e);
                                         }
                                     })
                                 );
                             } else {
                                 return this.keyValueStore.getValue(noSqlkey + '-' + id).pipe(
-                                    map((v) => JSON.parse(v!))
+                                    map((v) => typeof(v) == 'string' ? JSON.parse(v!): v)
                                 );
                             }
                         })
@@ -122,13 +121,30 @@ export class CachedItemStoreImpl implements CachedItemStore {
     }
 
     private isItemCachedInDb(timeToLiveKey: string, id: string): Observable<boolean> {
+        console.log("is item cacheed ", id);
+        // return window['Capacitor']['Plugins'].Preferences.get({key: timeToLiveKey + '-' + id}).then(ttl => {
+        //     console.log("value ", ttl.value);
+        //         return iif(
+        //             () => !!ttl.value,
+        //             defer(() => {
+        //                 console.log("**** res item cached");
+        //                 return of(true)}),
+        //             defer(() => {
+        //                 console.log("**** res item cached false")
+        //                 return of(false)})
+        //         );
+        //     })
         return this.sharedPreferences.getString(timeToLiveKey + '-' + id).pipe(
             mergeMap((ttl) => {
                 return iif(
                     () => !!ttl,
-                    defer(() => of(true)),
-                    defer(() => of(false))
+                    defer(() => {
+                        return of(true)}),
+                    defer(() => {
+                        return of(false)})
                 );
+            }),catchError((e: any) => {
+                return of(false);
             })
         );
     }

@@ -118,7 +118,7 @@ export class TelemetryExportDelegate implements ArchiveExportDelegate {
         this.workspaceSubPath = `${context.workspacePath}`;
     }
 
-    private async createWorkspace(): Promise<DirectoryEntry> {
+    private async createWorkspace(): Promise<any> {
         return this.fileService.createDir(this.workspaceSubPath, false);
     }
 

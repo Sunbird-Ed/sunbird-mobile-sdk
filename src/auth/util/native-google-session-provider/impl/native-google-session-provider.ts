@@ -40,9 +40,12 @@ export class NativeGoogleSessionProvider implements SessionProvider {
         return this.callGoogleNativeLogin(nativeGoogleToken.idToken, nativeGoogleToken.email).toPromise();
     }
 
-    private callGoogleNativeLogin(idToken: string, emailId: string): Observable<any> {
-        const platform = window.device.platform.toLowerCase() ==='ios' ? 'ios' :null;
-        const apiRequest: Request = new Request.Builder()
+    private callGoogleNativeLogin(idToken: string, emailId: string): Observable<OAuthSession> {
+        let devicePlatform = "";
+        return window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            devicePlatform = val.platform
+            const platform = devicePlatform.toLowerCase() ==='ios' ? 'ios' :null;
+            const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(NativeGoogleSessionProvider.LOGIN_API_ENDPOINT)
             .withBearerToken(false)
@@ -55,7 +58,7 @@ export class NativeGoogleSessionProvider implements SessionProvider {
                 'X-GOOGLE-ID-TOKEN': idToken
             })
             .build();
-        return this.apiService.fetch<{ access_token: string, refresh_token: string }>(apiRequest)
+            return this.apiService.fetch<{ access_token: string, refresh_token: string }>(apiRequest)
             .pipe(
                 map(async (success) => {
                     if (success.body) {
@@ -67,6 +70,7 @@ export class NativeGoogleSessionProvider implements SessionProvider {
                         userToken: (await NativeGoogleSessionProvider.parseAccessToken(success.body.access_token)).userToken
                     };
                 })
-            );
+            )
+        })
     }
 }

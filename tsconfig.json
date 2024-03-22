@@ -6,7 +6,7 @@
     "declaration": true,
     "inlineSourceMap": true,
     "inlineSources": true,
-    "strict": true,
+    "strict": false,
     "paths": {
       "crypto": [
         "../../node_modules/crypto-js"

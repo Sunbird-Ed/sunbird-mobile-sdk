@@ -15,7 +15,5 @@ export class CopyDatabase {
             response.body = exportContext;
             return response;
         });
-
-        return response;
     }
 }

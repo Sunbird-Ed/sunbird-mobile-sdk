@@ -93,7 +93,8 @@ export class ImportNExportHandler {
         let contentModelToExport: ContentEntry.SchemaMap[] = [];
         // const queue: Queue<ContentEntry.SchemaMap> = new Queue();
         const contentsInDb: ContentEntry.SchemaMap[] = await this.findAllContentsWithIdentifiers(contentIds);
-        const manifestPath = ContentUtil.getBasePath(contentsInDb[0][ContentEntry.COLUMN_NAME_PATH]!);
+        let path = contentsInDb[0][ContentEntry.COLUMN_NAME_PATH]!
+        const manifestPath = ContentUtil.getBasePath(path);
         await this.fileService!.readAsText(manifestPath, FileName.MANIFEST.valueOf())
             .then(async (fileContents) => {
                 const childContents = JSON.parse(fileContents).archive.items;

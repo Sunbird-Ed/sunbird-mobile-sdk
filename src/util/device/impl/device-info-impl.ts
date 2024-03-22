@@ -12,7 +12,11 @@ export class DeviceInfoImpl implements DeviceInfo {
     private deviceSpec: DeviceSpec;
 
     constructor() {
-        this.deviceId = SHA1(window.device.uuid).toString();
+        let uuid = "";
+        window['Capacitor']['Plugins'].Device.getId().then((val) => {
+            uuid = val.identifier
+        })
+        this.deviceId = SHA1(uuid).toString();
     }
 
     getDeviceID(): string {
@@ -24,7 +28,7 @@ export class DeviceInfoImpl implements DeviceInfo {
             return of(this.deviceSpec);
         }
         return new Observable((observer) => {
-            sbutility.getDeviceSpec((deviceSpec: DeviceSpec) => {
+            window.sbutility.getDeviceSpec((deviceSpec: DeviceSpec) => {
                 this.deviceSpec = deviceSpec;
                 observer.next(deviceSpec);
                 observer.complete();
@@ -34,7 +38,7 @@ export class DeviceInfoImpl implements DeviceInfo {
 
     getAvailableInternalMemorySize(): Observable<string> {
         return new Observable((observer) => {
-            sbutility.getAvailableInternalMemorySize((value) => {
+            window.sbutility.getAvailableInternalMemorySize((value) => {
                 observer.next(value);
                 observer.complete();
             }, (e) => {
@@ -45,7 +49,7 @@ export class DeviceInfoImpl implements DeviceInfo {
 
     getStorageVolumes(): Observable<StorageVolume[]> {
         return Observable.create((observer) => {
-            sbutility.getStorageVolumes((volumes) => {
+            window.sbutility.getStorageVolumes((volumes) => {
                 observer.next(volumes.map((v) => {
                     if (v.isRemovable) {
                         return {

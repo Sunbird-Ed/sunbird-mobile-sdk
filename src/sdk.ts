@@ -100,7 +100,7 @@ import { CsFrameworkService } from '@project-sunbird/client-services/services/fr
 
 export class SunbirdSdk {
     private _container: Container;
-
+    private uuid: String;
     private static _instance?: SunbirdSdk;
 
     public static get instance(): SunbirdSdk {
@@ -404,13 +404,14 @@ export class SunbirdSdk {
 
         const sharedPreferences = this.sharedPreferences;
 
+        await window['Capacitor']['Plugins'].Device.getId().then((v) => {this.uuid = v.identifier})
         await CsModule.instance.init({
                 core: {
                     httpAdapter: sdkConfig.platform === 'web' ? 'HttpClientBrowserAdapter' : 'HttpClientCordovaAdapter',
                     global: {
                         channelId: sdkConfig.apiConfig.api_authentication.channelId,
                         producerId: sdkConfig.apiConfig.api_authentication.producerId,
-                        deviceId: SHA1(window.device.uuid).toString()
+                        deviceId: SHA1(this.uuid).toString()
                     },
                     api: {
                         host: sdkConfig.apiConfig.host,

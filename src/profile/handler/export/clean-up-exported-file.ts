@@ -34,7 +34,7 @@ export class CleanupExportedFile {
             return this.keepAllFrameworknChannel();
         }).then(() => {
             return this.fileService.getMetaData(exportContext.destinationDBFilePath!);
-        }).then((metaData: Metadata) => {
+        }).then((metaData: any) => {
             exportContext.size = metaData.size.toString();
             return this.populateMetaData({FILE_SIZE: metaData.size});
         }).then(() => {

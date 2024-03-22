@@ -132,21 +132,19 @@ export class SearchContentHandler {
         });
 
         if (filterValueList.length) {
-          let key = facetFilter.name;
-          if (facetFilter['alternative']) {
-            switch (facetFilter.name) {
-              case 'board':
-                key = 'se_boards';
-                break;
-              case 'medium':
-                key = 'se_mediums';
-                break;
-              case 'gradeLevel':
-              case 'grade':
-                key = 'se_gradeLevels';
-                break;
-            }
-          }
+          const key = facetFilter.name;
+          // switch (facetFilter.name) {
+          //   case 'board':
+          //     key = 'se_boards';
+          //     break;
+          //   case 'medium':
+          //     key = 'se_mediums';
+          //     break;
+          //   case 'gradeLevel':
+          //   case 'grade':
+          //     key = 'se_gradeLevels';
+          //     break;
+          // }
           searchFilter[key] = filterValueList;
         }
       });
@@ -244,7 +242,7 @@ export class SearchContentHandler {
     if (!facets) {
       return contentSearchCriteria;
     }
-
+    console.log('appliedFilterMap.............', appliedFilterMap)
     facets.forEach((facet) => {
       const appliedFilter: string[] = appliedFilterMap ? appliedFilterMap[facet.name] : [];
       const facetValues: FilterValue[] = facet.values;
@@ -274,7 +272,7 @@ export class SearchContentHandler {
     }
   }
 
-  getFilterValuesWithAppliedFilter(facetValues: FilterValue[], appliedFilter: string[]): FilterValue[] {
+  getFilterValuesWithAppliedFilter(facetValues: FilterValue[], appliedFilter: any[]): FilterValue[] {
     facetValues.forEach(facetValue => {
       let isApplied = false;
       if (appliedFilter && appliedFilter.indexOf(name) > -1) {
@@ -393,6 +391,7 @@ export class SearchContentHandler {
   }
 
   private getSortedFilterValuesWithAppliedFilters(facetValues: FilterValue[], appliedFilters: string[]): FilterValue[] {
+    console.log('appliedFilter............facetValues', appliedFilters, facetValues);
     facetValues.forEach((facetValue) => {
       let applied = false;
       if (appliedFilters) {

@@ -18,6 +18,8 @@ import {PlayerConfigEntry, PlayerDbEntryMapper} from '../db/schema';
 
 @injectable()
 export class PlayerServiceImpl implements PlayerService {
+
+    devicePlatform = "";
     constructor(@inject(InjectionTokens.PROFILE_SERVICE) private profileService: ProfileService,
                 @inject(InjectionTokens.GROUP_SERVICE_DEPRECATED) private groupService: GroupServiceDeprecated,
                 @inject(InjectionTokens.SDK_CONFIG) private config: SdkConfig,
@@ -26,6 +28,9 @@ export class PlayerServiceImpl implements PlayerService {
                 @inject(InjectionTokens.APP_INFO) private appInfo: AppInfo,
                 @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
     ) {
+        window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            this.devicePlatform = val.platform
+        });
     }
 
     getPlayerConfig(content: Content, extraInfo: { [key: string]: any }): Observable<PlayerInput> {
@@ -37,14 +42,13 @@ export class PlayerServiceImpl implements PlayerService {
         pData.pid = this.config.apiConfig.api_authentication.producerUniqueId;
         pData.ver = this.appInfo.getVersionName();
         context.pdata = pData;
-
         const playerInput: PlayerInput = {};
         content.rollup = ContentUtil.getRollup(content.identifier, content.hierarchyInfo!);
         context.objectRollup = content.rollup;
-        if (window.device.platform.toLowerCase() === 'ios') {
+        if (this.devicePlatform.toLowerCase() === 'ios') {
             content.basePath = (content.basePath || (content.basePath = '')).replace(/\/$/, '');
         } else {
-            content.basePath = content.basePath.replace(/\/$/, '');
+            content.basePath = content?.basePath?.replace(/\/$/, '');
         }
         if (content.isAvailableLocally) {
             content.contentData.streamingUrl = content.basePath;

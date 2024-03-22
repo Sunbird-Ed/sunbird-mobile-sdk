@@ -10,6 +10,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     private readonly FORM_FILE_KEY_PREFIX = 'form-';
     private readonly FORM_LOCAL_KEY = 'form-';
     private readonly GET_FORM_DETAILS_ENDPOINT = '/read';
+    devicePlatform = "";
 
     constructor(
         private apiService: ApiService,
@@ -17,6 +18,9 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
         private fileService: FileService,
         private cachedItemStore: CachedItemStore
     ) {
+        window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            this.devicePlatform = val.platform
+        })
     }
 
     private static getIdForRequest(request: FormRequest): string {
@@ -33,7 +37,6 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
         if (request.component) {
             id += ('_' + request.component);
         }
-
         return id;
     }
 
@@ -42,8 +45,10 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
             GetFormHandler.getIdForRequest(request),
             this.FORM_LOCAL_KEY,
             'ttl_' + this.FORM_LOCAL_KEY,
-            () => this.fetchFormServer(request),
-            () => this.fetchFromFile(request)
+            () => {
+                return this.fetchFormServer(request)},
+            () => {
+                return this.fetchFromFile(request)}
         );
     }
 
@@ -53,7 +58,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
             .withPath(this.formServiceConfig.apiPath + this.GET_FORM_DETAILS_ENDPOINT)
             .withBearerToken(true)
             .withHeaders({
-                'X-Platform-Id': window.device.platform
+                'X-Platform-Id': this.devicePlatform
             })
             .withBody({request})
             .build();
@@ -68,7 +73,6 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     private fetchFromFile(request: FormRequest): Observable<{ [key: string]: {} }> {
         const dir = Path.getAssetPath() + this.formServiceConfig.formConfigDirPath;
         const file = this.FORM_FILE_KEY_PREFIX + GetFormHandler.getIdForRequest(request) + '.json';
-
         return from(this.fileService.readFileFromAssets(dir.concat('/', file))).pipe(
             map((filecontent: string) => {
                 const result = JSON.parse(filecontent);

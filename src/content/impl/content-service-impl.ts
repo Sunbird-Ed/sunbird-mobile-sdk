@@ -265,7 +265,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                     });
                 }
             }
-            new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute();
+            await new UpdateSizeOnDevice(this.dbService, this.sharedPreferences, this.fileService).execute();
             return contentDeleteResponse;
         }).pipe(
             tap(() => contentDeleteRequest.contentDeleteList.forEach((c) => {
@@ -366,7 +366,6 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                                 IN (${ArrayUtil.joinPreservingQuotes(childIdentifiers)})`;
 
                     const childContents = await this.dbService.execute(query).toPromise();
-                    // console.log('childContents', childContents);
                     childContents.forEach(element => {
                         childContentsMap.set(element.identifier, element);
                     });
@@ -434,7 +433,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                             contentImportResponses.push({identifier: contentId, status: status});
                         }
                     }
-                    this.downloadService.download(downloadRequestList).toPromise().then();
+                    await this.downloadService.download(downloadRequestList).toPromise().then();
                 }
 
                 return contentImportResponses;
@@ -863,9 +862,13 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return this.container.get(CsInjectionTokens.CONTENT_SERVICE);
     }
 
-    downloadTranscriptFile(transcriptReq) {
-        const dataDirectory = window.device.platform.toLowerCase() === 'ios' ?
-         cordova.file.documentsDirectory : cordova.file.externalDataDirectory + ContentServiceImpl.DOWNLOAD_DIR_NAME;
+    async downloadTranscriptFile(transcriptReq) {
+        let devicePlatform = "";
+        await window['Capacitor']['Plugins'].Device.getInfo().then((val) => {
+            devicePlatform = val.platform
+        })
+        const dataDirectory = devicePlatform.toLowerCase() === 'ios' ?
+        cordova.file.documentsDirectory : cordova.file.externalDataDirectory + ContentServiceImpl.DOWNLOAD_DIR_NAME;
         return this.createTranscriptDir(transcriptReq, dataDirectory).then(() => {
             const downloadRequest: EnqueueRequest = {
                 uri: transcriptReq.downloadUrl,
@@ -882,11 +885,11 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
                 destinationUri: transcriptReq.destinationUrl
             };
             return this.downloadTranscript(downloadRequest).toPromise()
-            .then((sourceUrl) => {
+            .then(async (sourceUrl) => {
                 if (sourceUrl && sourceUrl.path) {
-                    this.copyFile(sourceUrl.path.split(/\/(?=[^\/]+$)/)[0], dataDirectory.concat('/' + transcriptReq.identifier),
-                    transcriptReq.fileName).then(() => {
-                        this.deleteFolder(sourceUrl.path);
+                    await this.copyFile(sourceUrl.path.split(/\/(?=[^\/]+$)/)[0], dataDirectory.concat('/' + transcriptReq.identifier),
+                    transcriptReq.fileName).then(async () => {
+                        await this.deleteFolder(sourceUrl.path);
                     });
                     return sourceUrl.path;
                 }
@@ -898,8 +901,8 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return this.fileService.exists(dataDirectory.concat('/' + req.identifier)).then((entry: Entry) => {
             return entry.nativeURL;
             }).catch(() => {
-                 return this.fileService.createDir(dataDirectory, false).then((directoryEntry: DirectoryEntry) => {
-                    this.fileService.createDir(dataDirectory.concat('/' + req.identifier), false).then((directory) => {
+                 return this.fileService.createDir(dataDirectory, false).then(async (directoryEntry: DirectoryEntry) => {
+                    await this.fileService.createDir(dataDirectory.concat('/' + req.identifier), false).then((directory) => {
                         return directory.nativeURL;
                     });
                 });
@@ -942,7 +945,7 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         return new Promise<boolean>((resolve, reject) => {
             sbutility.copyFile(sourcePath, destinationPath, fileName,
                 () => {
-                    resolve();
+                    resolve(true);
                 }, err => {
                     console.error(err);
                     resolve(err);
@@ -950,11 +953,11 @@ export class ContentServiceImpl implements ContentService, DownloadCompleteDeleg
         });
     }
 
-    private async deleteFolder(deletedirectory: string): Promise<undefined> {
+    private async deleteFolder(deletedirectory: string): Promise<undefined | void> {
         if (!deletedirectory) {
             return;
         }
-        return new Promise<undefined>((resolve, reject) => {
+        return new Promise<undefined | void>((resolve, reject) => {
             sbutility.rm(deletedirectory, '', () => {
                 resolve();
             }, (e) => {

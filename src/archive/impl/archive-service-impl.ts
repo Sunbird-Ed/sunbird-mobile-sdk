@@ -46,7 +46,7 @@ interface ArchiveManifest {
 export class ArchiveServiceImpl implements ArchiveService {
     private static ARCHIVE_ID = 'sunbird.data.archive';
     private static ARCHIVE_VERSION = '1.0';
-
+    platform = "";
     constructor(
         @inject(InjectionTokens.FILE_SERVICE) private fileService: FileService,
         @inject(InjectionTokens.DB_SERVICE) private dbService: DbService,
@@ -56,6 +56,7 @@ export class ArchiveServiceImpl implements ArchiveService {
         @inject(InjectionTokens.NETWORK_QUEUE) private networkQueue: NetworkQueue,
         @inject(InjectionTokens.SDK_CONFIG) private sdkConfig: SdkConfig
     ) {
+        window['Capacitor']['Plugins'].Device.getInfo().then(val => {this.platform = val.platform});
     }
 
     private static reduceObjectProgressToArchiveObjectExportProgress(
@@ -77,7 +78,7 @@ export class ArchiveServiceImpl implements ArchiveService {
     }
 
     export(exportRequest: ArchiveExportRequest): Observable<ArchiveExportProgress> {
-        const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
+        const folderPath = (this.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
         const workspacePath = `${folderPath}${UniqueId.generateUniqueId()}`;
         let lastResult: ArchiveExportProgress | undefined;
 
@@ -125,7 +126,7 @@ export class ArchiveServiceImpl implements ArchiveService {
     }
 
     private generateExportTelemetries(progress: ArchiveExportProgress, workspacePath: string): Observable<ArchiveExportProgress> {
-        progress.progress.forEach((v, k) => {
+        progress.progress.forEach(async (v, k) => {
            switch (k) {
                case ArchiveObjectType.CONTENT:
                    // TODO
@@ -152,7 +153,7 @@ export class ArchiveServiceImpl implements ArchiveService {
                        env: 'sdk'
                    };
 
-                   this.telemetryService.share(req).toPromise();
+                   await this.telemetryService.share(req).toPromise();
                }
            }
         });
@@ -163,7 +164,7 @@ export class ArchiveServiceImpl implements ArchiveService {
     }
 
     private generateZipArchive(progress: ArchiveExportProgress, workspacePath: string): Observable<ArchiveExportProgress> {
-        const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
+        const folderPath = (this.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
         const zipFilePath = `${folderPath}archive-${new Date().toISOString()}.zip`;
         return new Observable((observer) => {
             this.zipService.zip(workspacePath, { target: zipFilePath }, [], [], () => {
@@ -218,7 +219,7 @@ export class ArchiveServiceImpl implements ArchiveService {
     }
 
     import(importRequest: ArchiveImportRequest): Observable<ArchiveImportProgress> {
-        const folderPath = (window.device.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
+        const folderPath = (this.platform.toLowerCase() === "ios") ? cordova.file.documentsDirectory : cordova.file.externalCacheDirectory;
         const workspacePath = `${folderPath}${UniqueId.generateUniqueId()}`;
 
         if (!importRequest.objects.length) {
@@ -283,7 +284,7 @@ export class ArchiveServiceImpl implements ArchiveService {
     }
 
     private generateImportTelemetries(progress: ArchiveImportProgress, workspacePath: string): Observable<ArchiveImportProgress> {
-        progress.progress.forEach((v, k) => {
+        progress.progress.forEach(async (v, k) => {
             switch (k) {
                 case ArchiveObjectType.CONTENT:
                     // TODO
@@ -310,7 +311,7 @@ export class ArchiveServiceImpl implements ArchiveService {
                         env: 'sdk'
                     };
 
-                    this.telemetryService.share(req).toPromise();
+                    await this.telemetryService.share(req).toPromise();
                 }
             }
         });
