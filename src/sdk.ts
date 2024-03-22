@@ -403,6 +403,7 @@ export class SunbirdSdk {
         this._container.bind<CertificateService>(InjectionTokens.CERTIFICATE_SERVICE).to(CertificateServiceImpl).inSingletonScope();
 
         const sharedPreferences = this.sharedPreferences;
+        console.log('cs module init');
 
         await window['Capacitor']['Plugins'].Device.getId().then((v) => {this.uuid = v.identifier})
         await CsModule.instance.init({

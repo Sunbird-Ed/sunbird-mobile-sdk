@@ -63,7 +63,7 @@ export class CourseCertificateManagerImpl implements CourseCertificateManager {
             ).
             then(() => {
                 return {
-                    path: `${cordova.file.externalDataDirectory}${fileName}`
+                    path: `${window['Capacitor']['Plugins'].Directory.Data}${fileName}`
                 };
             });
         });

@@ -24,6 +24,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     }
 
     private static getIdForRequest(request: FormRequest): string {
+        console.log('get id req ', request);
         let id = `${request.type}_${request.subType}_${request.action}`;
 
         if (request.rootOrgId && request.rootOrgId !== '*') {
@@ -53,6 +54,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
     }
 
     private fetchFormServer(request: FormRequest): Observable<{ [key: string]: {} }> {
+        console.log("fetch form server ", request, this.devicePlatform);
         const apiRequest: Request = new Request.Builder()
             .withType(HttpRequestType.POST)
             .withPath(this.formServiceConfig.apiPath + this.GET_FORM_DETAILS_ENDPOINT)
@@ -62,9 +64,11 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
             })
             .withBody({request})
             .build();
+            console.log("fetch form server api req ", apiRequest);
         return this.apiService.fetch <{ result: { [key: string]: {} } }>(apiRequest)
             .pipe(
                 map((success) => {
+                    console.log("fetch form server api req success ", success);
                     return success.body.result;
                 })
             );
@@ -76,6 +80,7 @@ export class GetFormHandler implements ApiRequestHandler<FormRequest, { [key: st
         return from(this.fileService.readFileFromAssets(dir.concat('/', file))).pipe(
             map((filecontent: string) => {
                 const result = JSON.parse(filecontent);
+                console.log("fetchFromFile result ", result);
                 return (result.result);
             })
         );

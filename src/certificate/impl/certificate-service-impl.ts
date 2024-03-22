@@ -71,7 +71,7 @@ export class CertificateServiceImpl implements CertificateService {
             ).
             then(() => {
                 return {
-                    path: `${cordova.file.externalDataDirectory}${fileName}`
+                    path: `${window['Capacitor']['Plugins'].Directory.Data}${fileName}`
                 };
             });
         });

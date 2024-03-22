@@ -45,7 +45,7 @@
     "sb-cordova-plugin-db": "git+https://github.com/vpPavithra/sb-cordova-plugin-db.git#release-7.0.0_cap",
     "jjdltc-cordova-plugin-zip": "git+https://github.com/swayangjit/jjdltc-cordova-plugin-zip.git",
     "cordova-plugin-android-downloadmanager": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-downloadmanager.git",
-    "sb-cordova-plugin-utility": "git+https://github.com/vpPavithra/sb-cordova-plugin-utility.git#release-7.0.0_cap"
+    "sb-cordova-plugin-utility": "github:vpPavithra/sb-cordova-plugin-utility#release-7.0.0_cap"
   },
   "devDependencies": {
     "@project-sunbird/client-services": "7.0.4",
