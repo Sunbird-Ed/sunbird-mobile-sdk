@@ -65,13 +65,13 @@ export class NativeKeycloakSessionProvider implements SessionProvider {
             console.log('keycloack req ', apiRequest);
         return this.apiService.fetch<{ access_token: string, refresh_token: string }>(apiRequest)
             .pipe(
-                map((success) => {
+                map(async (success) => {
                     if (success?.body?.access_token) {
                         CsModule.instance.updateAuthTokenConfig(success.body.access_token);
                         return {
                             access_token: success.body.access_token,
                             refresh_token: success.body.refresh_token,
-                            userToken: NativeKeycloakSessionProvider.parseAccessToken(success.body.access_token).userToken
+                            userToken: (await NativeKeycloakSessionProvider.parseAccessToken(success.body.access_token)).userToken
                         };
                     } else {
                         return success.body;
