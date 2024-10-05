@@ -42,7 +42,7 @@
     "sb-cordova-plugin-utility": "git+https://github.com/Sunbird-Ed/sb-cordova-plugin-utility.git"
   },
   "devDependencies": {
-    "@project-sunbird/client-services": "5.1.0",
+    "@project-sunbird/client-services": "8.0.1",
     "@types/jest": "^25.2.3",
     "@types/node": "12.0.2",
     "@types/node-fetch": "2.5.4",
