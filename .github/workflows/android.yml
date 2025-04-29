@@ -1,0 +1,55 @@
+name: Node.js Build and Publish
+
+on:
+  push:
+    tags:
+      - '*debug'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '21.7.3'
+          cache: 'npm'
+
+      - name: Install Chrome and Chromedriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable chromium-chromedriver
+          google-chrome --version
+          chromedriver --version
+
+      - name: Clean npm cache
+        run: npm cache clean --force
+
+      - name: Install project dependencies
+        run: |
+          if [ ! -d "node_modules" ]; then
+            npm ci -f
+          fi
+
+      - name: Build project
+        run: npm run build:prod
+
+      # - name: Publish to NPM
+      #   if: github.event.pull_request == null
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      #   run: |
+      #     npm pack ./dist
+      #     echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+      #     npm publish project-sunbird-sunbird-sdk-*
+
+      - name: Upload coverage artifacts (optional)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage
