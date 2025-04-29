@@ -3,7 +3,7 @@ name: Node.js Build and Publish
 on:
   push:
     tags:
-      - '*debug'
+      - '*android'
 
 jobs:
   build:
@@ -37,15 +37,6 @@ jobs:
 
       - name: Build project
         run: npm run build:prod
-
-      # - name: Publish to NPM
-      #   if: github.event.pull_request == null
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      #   run: |
-      #     npm pack ./dist
-      #     echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
-      #     npm publish project-sunbird-sunbird-sdk-*
 
       - name: Upload coverage artifacts (optional)
         if: always()
