@@ -1,3 +1,5 @@
+# 
+
 name: Create Tag on Push
 
 on:
@@ -8,9 +10,7 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    container:
-      image: cimg/node:22.0.0-browsers
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,19 +18,22 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '21.7.3'
+          node-version: '22.15.0'
           cache: 'npm'
-
-      - name: Install Chrome and Chromedriver
+          
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+        
+      - name: Setup ChromeDriver
+        uses: nanasess/setup-chromedriver@v2
+        
+      - name: Check installed versions
         run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-          sudo apt-get install -y chromedriver
           google-chrome --version
           chromedriver --version
-
-      - name: Check Node.js version
-        run: node -v
+          node -v
 
       - name: Clean npm cache
         run: npm cache clean --force
@@ -41,10 +44,12 @@ jobs:
             npm ci
           fi
 
-      - name: Build and Pack (PR)
+      - name: Build and Pack
         run: |
           npm run build:prod
           npm pack ./dist
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+          
+      - name: Configure NPM auth
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
