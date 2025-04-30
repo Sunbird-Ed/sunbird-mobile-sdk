@@ -1,4 +1,4 @@
-name: Node.js Build and Publish
+name: Create Tag on Push
 
 on:
   push:
@@ -6,8 +6,10 @@ on:
       - '*android'
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
+    container:
+      image: cimg/node:22.0.0-browsers
 
     steps:
       - name: Checkout code
@@ -16,40 +18,33 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '21.7.3'
+          node-version: '22.15.0'
           cache: 'npm'
 
       - name: Install Chrome and Chromedriver
         run: |
           sudo apt-get update
-          sudo apt-get install -y google-chrome-stable chromium-chromedriver
+          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y chromedriver
           google-chrome --version
           chromedriver --version
+
+      - name: Check Node.js version
+        run: node -v
 
       - name: Clean npm cache
         run: npm cache clean --force
 
-      - name: Install project dependencies
+      - name: Install dependencies
         run: |
           if [ ! -d "node_modules" ]; then
-            npm ci -f
+            npm ci
           fi
 
-      - name: Build project
-        run: npm run build:prod
-
-      - name: Publish to NPM
-        if: github.event.pull_request == null
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Build and Pack (PR)
         run: |
+          npm run build:prod
           npm pack ./dist
-          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
-          npm publish project-sunbird-sunbird-sdk-*
-
-      - name: Upload coverage artifacts (optional)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage
-          path: coverage
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
