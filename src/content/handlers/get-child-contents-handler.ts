@@ -49,7 +49,7 @@ export class ChildContentsHandler {
                         hierarchyInfoList);
                     if (childContent.contentData.appIcon && !childContent.contentData.appIcon.startsWith('http')) {
                         childContent.contentData.appIcon =
-                            '_app_file_'.concat(childContent.basePath).concat(childContent.contentData.appIcon);
+                            '/_capacitor_file_'.concat(childContent.basePath).concat(childContent.contentData.appIcon);
                     }
                     childContents.push(childContent);
                 }
@@ -134,6 +134,9 @@ export class ChildContentsHandler {
                     nextContentIdentifierList[idCount - 1]).toPromise();
                 if (nextContentInDb) {
                     nextContent = ContentMapper.mapContentDBEntryToContent(nextContentInDb, shouldConvertBasePath);
+                    if (nextContent.basePath && nextContent.basePath.endsWith('/')) {
+                        nextContent.basePath = nextContent.basePath.slice(0, -1);
+                    }
                     nextContent.hierarchyInfo = nextContentHierarchyList;
                     nextContent.rollup = ContentUtil.getContentRollup(nextContent.identifier, nextContent.hierarchyInfo);
                     const compatibilityLevel = ContentUtil.readCompatibilityLevel(nextContent.contentData);

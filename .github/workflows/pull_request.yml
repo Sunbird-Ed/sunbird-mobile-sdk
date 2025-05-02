@@ -1,0 +1,49 @@
+name: PR Build
+
+on:
+  pull_request:
+
+jobs:
+  build-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.15.0'
+          cache: 'npm'
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      - name: Setup ChromeDriver
+        uses: nanasess/setup-chromedriver@v2
+
+      - name: Check installed versions
+        run: |
+          google-chrome --version
+          chromedriver --version
+          node -v
+
+      - name: Clean npm cache
+        run: npm cache clean --force
+
+      - name: Install dependencies
+        run: |
+          if [ ! -d "node_modules" ]; then
+            npm ci
+          fi
+
+      - name: Build project and Pack (PR)
+          run: |
+          npm run build:prod
+          npm pack ./dist
+
+  
+  

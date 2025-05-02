@@ -180,7 +180,7 @@ export class ContentMapper {
       contentData: contentData,
       isUpdateAvailable: ContentUtil.isUpdateAvailable(serverData, localData),
       mimeType: mimeType,
-      basePath: !shouldConvertBasePath ? basePath : '/_app_file_' + basePath,
+      basePath: !shouldConvertBasePath ? basePath : '/_capacitor_file_' + basePath,
       primaryCategory: primaryCategory,
       contentType: contentType,
       isAvailableLocally: ContentUtil.isAvailableLocally(contentEntry[ContentEntry.COLUMN_NAME_CONTENT_STATE]!),
