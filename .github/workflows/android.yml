@@ -1,7 +1,9 @@
 name: PR Build
 
 on:
-  pull_request:
+  push:
+    tags:
+      - '*android'
 
 jobs:
   build-pr:
