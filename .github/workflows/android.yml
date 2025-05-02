@@ -1,6 +1,4 @@
-# 
-
-name: Create Tag on Push
+name: PR Build
 
 on:
   push:
@@ -8,9 +6,9 @@ on:
       - '*android'
 
 jobs:
-  build-and-push:
+  build-pr:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,20 +18,20 @@ jobs:
         with:
           node-version: '22.15.0'
           cache: 'npm'
-          
-      - name: Setup Chrome
-        uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: stable
-        
-      - name: Setup ChromeDriver
-        uses: nanasess/setup-chromedriver@v2
-        
-      - name: Check installed versions
-        run: |
-          google-chrome --version
-          chromedriver --version
-          node -v
+
+      # - name: Setup Chrome
+      #   uses: browser-actions/setup-chrome@v1
+      #   with:
+      #     chrome-version: stable
+
+      # - name: Setup ChromeDriver
+      #   uses: nanasess/setup-chromedriver@v2
+
+      # - name: Check installed versions
+      #   run: |
+      #     google-chrome --version
+      #     chromedriver --version
+      #     node -v
 
       - name: Clean npm cache
         run: npm cache clean --force
@@ -44,12 +42,10 @@ jobs:
             npm ci
           fi
 
-      - name: Build and Pack
-        run: |
+      - name: Build project and Pack (PR)
+          run: |
           npm run build:prod
           npm pack ./dist
-          
-      # - name: Configure NPM auth
-      #   run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-      #   # env:
-        #   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  
+  
