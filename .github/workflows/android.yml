@@ -41,7 +41,7 @@ jobs:
           fi
 
       - name: Build project and Pack (PR)
-          run: |
+        run: |
           npm run build:prod
           npm pack ./dist
 
