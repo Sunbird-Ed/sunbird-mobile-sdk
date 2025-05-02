@@ -1,9 +1,7 @@
 name: PR Build
 
 on:
-  push:
-    tags:
-      - '*android'
+  pull_request:
 
 jobs:
   build-pr:
@@ -19,19 +17,19 @@ jobs:
           node-version: '22.15.0'
           cache: 'npm'
 
-      # - name: Setup Chrome
-      #   uses: browser-actions/setup-chrome@v1
-      #   with:
-      #     chrome-version: stable
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
 
-      # - name: Setup ChromeDriver
-      #   uses: nanasess/setup-chromedriver@v2
+      - name: Setup ChromeDriver
+        uses: nanasess/setup-chromedriver@v2
 
-      # - name: Check installed versions
-      #   run: |
-      #     google-chrome --version
-      #     chromedriver --version
-      #     node -v
+      - name: Check installed versions
+        run: |
+          google-chrome --version
+          chromedriver --version
+          node -v
 
       - name: Clean npm cache
         run: npm cache clean --force
